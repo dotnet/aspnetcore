@@ -3,9 +3,7 @@
 
 using System.Buffers;
 using System.IO.Pipelines;
-using System.Net;
-using System.Net.Sockets;
-using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
@@ -25,12 +23,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         public PipeOptions OutputOptions { get; init; } = new PipeOptions();
 
         /// <summary>
-        /// Set to false to enable Nagle's algorithm for all socket connections.
+        /// Set to true to enable Nagle's algorithm for all socket connections.
         /// </summary>
         /// <remarks>
-        /// Defaults to true.
+        /// Defaults to false.
         /// </remarks>
-        public bool DelaySocketOperations { get; init; } = false;
+        public bool DelaySocketOperations { get; init; }
 
         /// <summary>
         /// Wait until there is data available to allocate a buffer. Setting this to false can increase throughput at the cost of increased memory usage.
@@ -39,5 +37,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         /// Defaults to true.
         /// </remarks>
         public bool WaitForDataBeforeAllocatingBuffer { get; set; } = true;
+
+        internal MemoryPool<byte> MemoryPool { get; init; } = default!;
+
+        internal SocketSenderPool SenderPool { get; init; } = default!;
+
     }
 }

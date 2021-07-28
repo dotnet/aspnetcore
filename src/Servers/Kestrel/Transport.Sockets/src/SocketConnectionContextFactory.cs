@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Buffers;
 using System.IO.Pipelines;
 using System.Net.Sockets;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
 using Microsoft.Extensions.Logging;
@@ -16,10 +13,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
     /// <summary>
     /// A factory for socket based connections contexts.
     /// </summary>
-    internal sealed class SocketConnectionContextFactory : ISocketConnectionContextFactory, IAsyncDisposable
+    internal sealed class SocketConnectionContextFactory : ISocketConnectionContextFactory
     {
-        private readonly MemoryPool<byte> _memoryPool;
-        private readonly SocketSenderPool _socketSender;
         private readonly SocketTransportOptions _transportOptions;
         private readonly PipeScheduler _transportScheduler;
         private readonly ISocketsTrace _trace;
@@ -29,13 +24,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             ILoggerFactory loggerFactory)
         {
             _transportOptions = transportOptions.Value;
-            _memoryPool = _transportOptions.MemoryPoolFactory();
 
             _transportScheduler = _transportOptions.UnsafePreferInlineScheduling ? PipeScheduler.Inline :
                 (_transportOptions.IOQueueCount > 0) ? new IOQueue() : PipeScheduler.ThreadPool;
             // https://github.com/aspnet/KestrelHttpServer/issues/2573
-            var awaiterScheduler = OperatingSystem.IsWindows() ? _transportScheduler : PipeScheduler.Inline;
-            _socketSender = new SocketSenderPool(awaiterScheduler);
 
             var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets");
             _trace = new SocketsTrace(logger);
@@ -49,20 +41,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         /// <returns></returns>
         public ConnectionContext Create(Socket socket, SocketConnectionOptions options)
             => new SocketConnection(socket,
-                _memoryPool,
+                options.MemoryPool,
                 _transportScheduler,
                 _trace,
-                _socketSender,
+                options.SenderPool,
                 options.InputOptions,
                 options.OutputOptions,
                 waitForData: _transportOptions.WaitForDataBeforeAllocatingBuffer);
-
-        public ValueTask DisposeAsync()
-        {
-            // Dispose any pooled senders
-            _socketSender.Dispose();
-
-            return default;
-        }
     }
 }

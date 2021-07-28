@@ -3,7 +3,6 @@
 
 using System;
 using System.Buffers;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net;
@@ -25,7 +24,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         private int _settingsIndex;
         private readonly SocketTransportOptions _options;
         private readonly ISocketConnectionContextFactory _contextFactory;
-
 
         public EndPoint EndPoint { get; private set; }
 
@@ -121,22 +119,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 {
                     Debug.Assert(_listenSocket != null, "Bind must be called first.");
 
-                    var setting = _settings[_settingsIndex];
 
                     var acceptSocket = await _listenSocket.AcceptAsync(cancellationToken);
 
                     // Only apply no delay to Tcp based endpoints
+// REVIEW: should this move to inside of _contextFactory.Create??
                     if (acceptSocket.LocalEndPoint is IPEndPoint)
                     {
                         acceptSocket.NoDelay = _options.NoDelay;
                     }
-                    
+
+                    var setting = _settings[_settingsIndex];
+
                     var connectionOptions = new SocketConnectionOptions()
                     {
                         DelaySocketOperations = acceptSocket.NoDelay,
                         InputOptions = setting.InputOptions,
                         OutputOptions = setting.OutputOptions,
-                        WaitForDataBeforeAllocatingBuffer = _options.WaitForDataBeforeAllocatingBuffer
+                        WaitForDataBeforeAllocatingBuffer = _options.WaitForDataBeforeAllocatingBuffer,
+                        MemoryPool = _memoryPool,
+                        SenderPool = setting.SocketSenderPool
                     };
 
                     _settingsIndex = (_settingsIndex + 1) % _settingsCount;
@@ -173,6 +175,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
             // Dispose the memory pool
             _memoryPool.Dispose();
+
+            // Dispose any pooled senders
+            foreach (var setting in _settings)
+            {
+                setting.SocketSenderPool.Dispose();
+            }
 
             return default;
         }
