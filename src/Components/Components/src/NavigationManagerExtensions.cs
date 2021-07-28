@@ -91,10 +91,10 @@ namespace Microsoft.AspNetCore.Components
 
             public string UriWithQueryString => _builder.ToString();
 
-            public QueryStringBuilder(ReadOnlySpan<char> uriWithoutQuery)
+            public QueryStringBuilder(ReadOnlySpan<char> uriWithoutQueryString)
             {
                 _builder = new();
-                _builder.Append(uriWithoutQuery);
+                _builder.Append(uriWithoutQueryString);
 
                 _hasNewParameters = false;
             }
@@ -365,38 +365,38 @@ namespace Microsoft.AspNetCore.Components
             var encodedName = System.Uri.EscapeDataString(name);
             var encodedValue = System.Uri.EscapeDataString(value);
 
-            if (!TryRebuildExistingQueryFromUri(uri, out var oldQueryEnumerable, out var newQueryBuilder))
+            if (!TryRebuildExistingQueryFromUri(uri, out var existingQueryStringEnumerable, out var newQueryStringBuilder))
             {
                 // There was no existing query, so we can generate the new URI immediately.
                 return $"{uri}?{encodedName}={encodedValue}";
             }
 
             var didReplace = false;
-            foreach (var pair in oldQueryEnumerable)
+            foreach (var pair in existingQueryStringEnumerable)
             {
                 if (pair.EncodedName.Span.SequenceEqual(encodedName))
                 {
                     didReplace = true;
-                    newQueryBuilder.AppendParameter(pair.EncodedName.Span, encodedValue);
+                    newQueryStringBuilder.AppendParameter(pair.EncodedName.Span, encodedValue);
                 }
                 else
                 {
-                    newQueryBuilder.AppendParameter(pair.EncodedName.Span, pair.EncodedValue.Span);
+                    newQueryStringBuilder.AppendParameter(pair.EncodedName.Span, pair.EncodedValue.Span);
                 }
             }
 
             // If there was no matching parameter, add it to the end of the query.
             if (!didReplace)
             {
-                newQueryBuilder.AppendParameter(encodedName, encodedValue);
+                newQueryStringBuilder.AppendParameter(encodedName, encodedValue);
             }
 
-            return newQueryBuilder.UriWithQueryString;
+            return newQueryStringBuilder.UriWithQueryString;
         }
 
         private static string UriWithoutQueryParameter(string uri, string name)
         {
-            if (!TryRebuildExistingQueryFromUri(uri, out var oldQueryEnumerable, out var newQueryBuilder))
+            if (!TryRebuildExistingQueryFromUri(uri, out var existingQueryStringEnumerable, out var newQueryStringBuilder))
             {
                 // There was no existing query, so the URI remains unchanged.
                 return uri;
@@ -405,15 +405,15 @@ namespace Microsoft.AspNetCore.Components
             var encodedName = System.Uri.EscapeDataString(name);
 
             // Rebuild the query omitting parameters with a matching name.
-            foreach (var pair in oldQueryEnumerable)
+            foreach (var pair in existingQueryStringEnumerable)
             {
                 if (!pair.EncodedName.Span.SequenceEqual(encodedName))
                 {
-                    newQueryBuilder.AppendParameter(pair.EncodedName.Span, pair.EncodedValue.Span);
+                    newQueryStringBuilder.AppendParameter(pair.EncodedName.Span, pair.EncodedValue.Span);
                 }
             }
 
-            return newQueryBuilder.UriWithQueryString;
+            return newQueryStringBuilder.UriWithQueryString;
         }
 
         /// <summary>
@@ -449,7 +449,7 @@ namespace Microsoft.AspNetCore.Components
                 throw new ArgumentNullException(nameof(uri));
             }
 
-            if (!TryRebuildExistingQueryFromUri(uri, out var oldQueryEnumerable, out var newQueryBuilder))
+            if (!TryRebuildExistingQueryFromUri(uri, out var existingQueryStringEnumerable, out var newQueryStringBuilder))
 			{
                 // There was no existing query, so there is no need to allocate a new dictionary to cache
                 // encoded parameter values and track which parameters have been added.
@@ -469,7 +469,7 @@ namespace Microsoft.AspNetCore.Components
             }
 
             // Rebuild the query, updating or removing parameters.
-            foreach (var pair in oldQueryEnumerable)
+            foreach (var pair in existingQueryStringEnumerable)
             {
                 if (parameterDataByEncodedName.TryGetValue(pair.EncodedName, out var parameterData))
                 {
@@ -477,12 +477,12 @@ namespace Microsoft.AspNetCore.Components
 
                     if (parameterData.EncodedValue is not null)
                     {
-                        newQueryBuilder.AppendParameter(pair.EncodedName.Span, parameterData.EncodedValue);
+                        newQueryStringBuilder.AppendParameter(pair.EncodedName.Span, parameterData.EncodedValue);
                     }
                 }
                 else
                 {
-                    newQueryBuilder.AppendParameter(pair.EncodedName.Span, pair.EncodedValue.Span);
+                    newQueryStringBuilder.AppendParameter(pair.EncodedName.Span, pair.EncodedValue.Span);
                 }
             }
 
@@ -491,18 +491,18 @@ namespace Microsoft.AspNetCore.Components
             {
                 if (!data.DidReplace && data.EncodedValue is not null)
                 {
-                    newQueryBuilder.AppendParameter(encodedName.Span, data.EncodedValue);
+                    newQueryStringBuilder.AppendParameter(encodedName.Span, data.EncodedValue);
                 }
             }
 
-            return newQueryBuilder.UriWithQueryString;
+            return newQueryStringBuilder.UriWithQueryString;
         }
 
         private static string UriWithAppendedQueryParameters(
-            string uriWithoutQuery,
+            string uriWithoutQueryString,
             IReadOnlyDictionary<string, object?> parameters)
         {
-            var builder = new QueryStringBuilder(uriWithoutQuery);
+            var builder = new QueryStringBuilder(uriWithoutQueryString);
 
             // Build a new query from the existing URI, appending all parameters with non-null values.
             foreach (var (name, value) in parameters)
@@ -539,23 +539,23 @@ namespace Microsoft.AspNetCore.Components
 
         private static bool TryRebuildExistingQueryFromUri(
             string uri,
-            out QueryStringEnumerable oldQueryEnumerable,
-            out QueryStringBuilder newQueryBuilder)
+            out QueryStringEnumerable existingQueryStringEnumerable,
+            out QueryStringBuilder newQueryStringBuilder)
         {
             var queryStartIndex = uri.IndexOf('?');
 
             if (queryStartIndex < 0)
             {
-                oldQueryEnumerable = default;
-                newQueryBuilder = default;
+                existingQueryStringEnumerable = default;
+                newQueryStringBuilder = default;
                 return false;
             }
 
             var query = uri.AsMemory(queryStartIndex);
-            oldQueryEnumerable = new(query);
+            existingQueryStringEnumerable = new(query);
 
-            var uriWithoutQuery = uri.AsSpan(0, queryStartIndex);
-            newQueryBuilder = new(uriWithoutQuery);
+            var uriWithoutQueryString = uri.AsSpan(0, queryStartIndex);
+            newQueryStringBuilder = new(uriWithoutQueryString);
 
             return true;
         }
