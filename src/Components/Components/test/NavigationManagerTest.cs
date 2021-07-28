@@ -134,6 +134,7 @@ namespace Microsoft.AspNetCore.Components
         [InlineData("scheme://host/?search=rugs&filter=price%3Ahigh", "scheme://host/?search=rugs&filter=price%3Alow&filter=shipping%3Afree&filter=category%3Arug")]
         [InlineData("scheme://host/?filter=price%3Ahigh&search=rugs&filter=shipping%3A2day", "scheme://host/?filter=price%3Alow&search=rugs&filter=shipping%3Afree&filter=category%3Arug")]
         [InlineData("scheme://host/?filter=price&filter=shipping%3A2day&filter=category%3Arug&filter=availability%3Atoday", "scheme://host/?filter=price%3Alow&filter=shipping%3Afree&filter=category%3Arug")]
+        [InlineData("scheme://host/", "scheme://host/?filter=price%3Alow&filter=shipping%3Afree&filter=category%3Arug")]
         public void UriWithQueryParameterOfTValue_ReplacesExistingQueryParameters(string baseUri, string expectedUri)
         {
             var navigationManager = new TestNavigationManager(baseUri);
@@ -149,6 +150,7 @@ namespace Microsoft.AspNetCore.Components
 
         [Theory]
         [InlineData("scheme://host/?search=rugs&items=8&items=42", "scheme://host/?search=rugs&items=5&items=13")]
+        [InlineData("scheme://host/", "scheme://host/?items=5&items=13")]
         public void UriWithQueryParameterOfTValue_SkipsNullValues(string baseUri, string expectedUri)
         {
             var navigationManager = new TestNavigationManager(baseUri);
