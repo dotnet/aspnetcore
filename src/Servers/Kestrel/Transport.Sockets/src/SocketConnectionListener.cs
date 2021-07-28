@@ -123,17 +123,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                     var acceptSocket = await _listenSocket.AcceptAsync(cancellationToken);
 
                     // Only apply no delay to Tcp based endpoints
+                    var noDelay = false;
 // REVIEW: should this move to inside of _contextFactory.Create??
                     if (acceptSocket.LocalEndPoint is IPEndPoint)
                     {
                         acceptSocket.NoDelay = _options.NoDelay;
+                        noDelay = true;
                     }
 
                     var setting = _settings[_settingsIndex];
 
                     var connectionOptions = new SocketConnectionOptions()
                     {
-                        DelaySocketOperations = !acceptSocket.NoDelay,
+                        DelaySocketOperations = !noDelay,
                         InputOptions = setting.InputOptions,
                         OutputOptions = setting.OutputOptions,
                         WaitForDataBeforeAllocatingBuffer = _options.WaitForDataBeforeAllocatingBuffer,
@@ -155,10 +157,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                     // A call was made to UnbindAsync/DisposeAsync just return null which signals we're done
                     return null;
                 }
-                catch (SocketException)
+                catch (SocketException e)
                 {
                     // The connection got reset while it was in the backlog, so we try again.
-                    _trace.ConnectionReset(connectionId: "(null)");
+                    _trace.ConnectionReset(connectionId: "(null)" + e.ToString());
                 }
             }
         }
