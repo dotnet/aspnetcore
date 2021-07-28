@@ -39,7 +39,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
                 projectName = projectName.Substring(0, comma);
             }
 
-            var projects = _projects.Value;
             if (string.Equals(projectName, "Components.TestServer", StringComparison.Ordinal))
             {
                 projectName = "TestServer"; // This testasset doesn't match the folder name for some reason
