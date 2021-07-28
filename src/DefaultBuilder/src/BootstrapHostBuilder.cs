@@ -68,11 +68,6 @@ namespace Microsoft.AspNetCore.Hosting
             return this;
         }
 
-        public string? GetSetting(string key)
-        {
-            return _configuration[key];
-        }
-
         public IHostBuilder ConfigureServices(Action<HostBuilderContext, IServiceCollection> configureDelegate)
         {
             // HostingHostBuilderExtensions.ConfigureDefaults calls this via ConfigureLogging
@@ -108,16 +103,10 @@ namespace Microsoft.AspNetCore.Hosting
 
         public void RunDefaultCallbacks(HostBuilder innerBuilder)
         {
-            // This is called twice. Once in the WebApplicationBuilde ctor and again in Build() after
-            // WebHostBuilderExtensions.Configure(ConfigureApplication) is called on a GenericWebHostBuilder
-            // that was captured in a ConfigureWebHostDeafaults() callback in the ctor.
-
-            // We clear the Lists so Actions run in the constructor don't get run again during Build().
             foreach (var configureHostAction in _configureHostActions)
             {
                 configureHostAction(_configuration);
             }
-            _configureHostActions.Clear();
 
             // Configuration doesn't auto-update during the bootstrap phase to reduce I/O,
             // but we do need to update between host and app configuration so the right environment is used.
@@ -127,7 +116,6 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 configureAppAction(_hostContext, _configuration);
             }
-            _configureAppActions.Clear();
 
             _environment.ApplyConfigurationSettings(_configuration);
 
@@ -135,13 +123,11 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 configureServicesAction(_hostContext, _serviceCollection);
             }
-            _configureServicesActions.Clear();
 
             foreach (var callback in _remainingOperations)
             {
                 callback(innerBuilder);
             }
-            _remainingOperations.Clear();
         }
     }
 }

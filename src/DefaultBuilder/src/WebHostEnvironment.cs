@@ -56,17 +56,15 @@ namespace Microsoft.AspNetCore.Builder
             WebRootPath = configuration[WebHostDefaults.WebRootKey] ?? WebRootPath;
         }
 
-        public void ApplyEnvironmentSettings(IWebHostBuilder genericWebHostBuilder)
+        public void ApplyEnvironmentSettings(IWebHostBuilder genericWebHostBuilder, HostBuilder hostBuilder)
         {
             genericWebHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, ApplicationName);
             genericWebHostBuilder.UseSetting(WebHostDefaults.EnvironmentKey, EnvironmentName);
             genericWebHostBuilder.UseSetting(WebHostDefaults.ContentRootKey, ContentRootPath);
             genericWebHostBuilder.UseSetting(WebHostDefaults.WebRootKey, WebRootPath);
 
-            genericWebHostBuilder.ConfigureAppConfiguration((context, builder) =>
-            {
-                CopyPropertiesTo(context.HostingEnvironment);
-            });
+            var context = (WebHostBuilderContext)hostBuilder.Properties[typeof(WebHostBuilderContext)];
+            CopyPropertiesTo(context.HostingEnvironment);
         }
 
         internal void CopyPropertiesTo(IWebHostEnvironment destination)

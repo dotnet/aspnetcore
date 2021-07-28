@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Builder
         private readonly WebApplicationServiceCollection _services = new();
 
         // This is effectively readonly because it is always set inline by the ConfigureWebHostDefaults callback in the ctor.
-        private IWebHostBuilder _bootstrapWebHostBuilder = default!;
+        private IWebHostBuilder _capturedWebHostBuilder = default!;
 
         private WebApplication? _builtApplication;
 
@@ -45,8 +45,11 @@ namespace Microsoft.AspNetCore.Builder
             _bootstrapHostBuilder.ConfigureDefaults(args);
             _bootstrapHostBuilder.ConfigureWebHostDefaults(webHostBuilder =>
             {
-                // This runs inline.
-                _bootstrapWebHostBuilder = webHostBuilder;
+                // Runs inline.
+                webHostBuilder.Configure(ConfigureApplication);
+
+                // Store this so we can apply settings from _environment during build.
+                _capturedWebHostBuilder = webHostBuilder;
             });
             _bootstrapHostBuilder.RunDefaultCallbacks(_hostBuilder);
 
@@ -101,6 +104,9 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>A configured <see cref="WebApplication"/>.</returns>
         public WebApplication Build()
         {
+            // Apply changes made to WebApplicationBuilder.Environment directly before building.
+            _environment.ApplyEnvironmentSettings(_capturedWebHostBuilder, _hostBuilder);
+
             // Copy the configuration sources into the final IConfigurationBuilder
             _hostBuilder.ConfigureHostConfiguration(builder =>
             {
@@ -114,12 +120,6 @@ namespace Microsoft.AspNetCore.Builder
                     builder.Properties[key] = value;
                 }
             });
-
-            // Configure the original GenericWebHostBuilder that added the default services we use.
-            _bootstrapWebHostBuilder.Configure(ConfigureApplication);
-            _environment.ApplyEnvironmentSettings(_bootstrapWebHostBuilder);
-            // This has further modified the _bootstrapHostBuilder, so we need to run the newly added callbacks in the proper order.
-            _bootstrapHostBuilder.RunDefaultCallbacks(_hostBuilder);
 
             // This needs to go here to avoid adding the IHostedService that boots the server twice (the GenericWebHostService).
             // Copy the services that were added via WebApplicationBuilder.Services into the final IServiceCollection
