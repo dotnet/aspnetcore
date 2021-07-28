@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         Http1AndHttp2 = Http1 | Http2,
         [RequiresPreviewFeatures]
         Http3 = 0x4,
-        [RequiresPreviewFeaturesAttribute]
+        [RequiresPreviewFeatures]
         Http1AndHttp2AndHttp3 = Http1 | Http2 | Http3
     }
 }
