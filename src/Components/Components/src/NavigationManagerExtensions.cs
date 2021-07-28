@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Components
@@ -127,15 +128,6 @@ namespace Microsoft.AspNetCore.Components
                 EncodedValue = encodedValue;
                 DidReplace = false;
             }
-        }
-
-        private struct EncodedParameterNameEqualityComparer : IEqualityComparer<ReadOnlyMemory<char>>
-        {
-            public bool Equals(ReadOnlyMemory<char> x, ReadOnlyMemory<char> y)
-                => x.Span.SequenceEqual(y.Span);
-
-            public int GetHashCode([DisallowNull] ReadOnlyMemory<char> obj)
-                => string.GetHashCode(obj.Span);
         }
 
         /// <summary>
@@ -459,7 +451,7 @@ namespace Microsoft.AspNetCore.Components
             // Build a dictionary mapping encoded parameter names to an object containing their encoded values
             // and whether they've replaced an existing parameter.
             var parameterDataByEncodedName = new Dictionary<ReadOnlyMemory<char>, ParameterData>(
-                new EncodedParameterNameEqualityComparer());
+                QueryParameterNameComparer.Instance);
             foreach (var (name, value) in parameters)
             {
                 var encodedName = System.Uri.EscapeDataString(name).AsMemory();
