@@ -139,7 +139,8 @@ namespace Microsoft.AspNetCore.Components
         }
 
         /// <summary>
-        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter added or updated.
+        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter
+        /// added or updated.
         /// </summary>
         /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
         /// <param name="name">The name of the paramter to add or update.</param>
@@ -148,19 +149,22 @@ namespace Microsoft.AspNetCore.Components
             => UriWithQueryParameter(navigationManager, name, Format(value));
 
         /// <summary>
-        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter added, updated, or removed.
+        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter
+        /// added, updated, or removed.
         /// </summary>
         /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
         /// <param name="name">The name of the paramter to add or update.</param>
         /// <param name="value">The value of the parameter to add or update.</param>
         /// <remarks>
-        /// If <paramref name="value"/> is <c>null</c>, the parameter will be removed if it exists in the URI. Otherwise, it will be added or updated.
+        /// If <paramref name="value"/> is <c>null</c>, the parameter will be removed if it exists in the URI.
+        /// Otherwise, it will be added or updated.
         /// </remarks>
         public static string UriWithQueryParameter(this NavigationManager navigationManager, string name, bool? value)
             => UriWithQueryParameter(navigationManager, name, Format(value));
 
         /// <summary>
-        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter added or updated.
+        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter
+        /// added or updated.
         /// </summary>
         /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
         /// <param name="name">The name of the paramter to add or update.</param>
@@ -169,19 +173,22 @@ namespace Microsoft.AspNetCore.Components
             => UriWithQueryParameter(navigationManager, name, Format(value));
 
         /// <summary>
-        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter added, updated, or removed.
+        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter
+        /// added, updated, or removed.
         /// </summary>
         /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
         /// <param name="name">The name of the paramter to add or update.</param>
         /// <param name="value">The value of the parameter to add or update.</param>
         /// <remarks>
-        /// If <paramref name="value"/> is <c>null</c>, the parameter will be removed if it exists in the URI. Otherwise, it will be added or updated.
+        /// If <paramref name="value"/> is <c>null</c>, the parameter will be removed if it exists in the URI.
+        /// Otherwise, it will be added or updated.
         /// </remarks>
         public static string UriWithQueryParameter(this NavigationManager navigationManager, string name, DateTime? value)
             => UriWithQueryParameter(navigationManager, name, Format(value));
 
         /// <summary>
-        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter added or updated.
+        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter
+        /// added or updated.
         /// </summary>
         /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
         /// <param name="name">The name of the paramter to add or update.</param>
@@ -190,19 +197,22 @@ namespace Microsoft.AspNetCore.Components
             => UriWithQueryParameter(navigationManager, name, Format(value));
 
         /// <summary>
-        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter added, updated, or removed.
+        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter
+        /// added, updated, or removed.
         /// </summary>
         /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
         /// <param name="name">The name of the paramter to add or update.</param>
         /// <param name="value">The value of the parameter to add or update.</param>
         /// <remarks>
-        /// If <paramref name="value"/> is <c>null</c>, the parameter will be removed if it exists in the URI. Otherwise, it will be added or updated.
+        /// If <paramref name="value"/> is <c>null</c>, the parameter will be removed if it exists in the URI.
+        /// Otherwise, it will be added or updated.
         /// </remarks>
         public static string UriWithQueryParameter(this NavigationManager navigationManager, string name, decimal? value)
             => UriWithQueryParameter(navigationManager, name, Format(value));
 
         /// <summary>
-        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter added or updated.
+        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter
+        /// added or updated.
         /// </summary>
         /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
         /// <param name="name">The name of the paramter to add or update.</param>
@@ -211,19 +221,22 @@ namespace Microsoft.AspNetCore.Components
             => UriWithQueryParameter(navigationManager, name, Format(value));
 
         /// <summary>
-        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter added, updated, or removed.
+        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter
+        /// added, updated, or removed.
         /// </summary>
         /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
         /// <param name="name">The name of the paramter to add or update.</param>
         /// <param name="value">The value of the parameter to add or update.</param>
         /// <remarks>
-        /// If <paramref name="value"/> is <c>null</c>, the parameter will be removed if it exists in the URI. Otherwise, it will be added or updated.
+        /// If <paramref name="value"/> is <c>null</c>, the parameter will be removed if it exists in the URI.
+        /// Otherwise, it will be added or updated.
         /// </remarks>
         public static string UriWithQueryParameter(this NavigationManager navigationManager, string name, double? value)
             => UriWithQueryParameter(navigationManager, name, Format(value));
 
         /// <summary>
-        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter added or updated.
+        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter
+        /// added or updated.
         /// </summary>
         /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
         /// <param name="name">The name of the paramter to add or update.</param>
@@ -232,19 +245,22 @@ namespace Microsoft.AspNetCore.Components
             => UriWithQueryParameter(navigationManager, name, Format(value));
 
         /// <summary>
-        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter added, updated, or removed.
+        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter
+        /// added, updated, or removed.
         /// </summary>
         /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
         /// <param name="name">The name of the paramter to add or update.</param>
         /// <param name="value">The value of the parameter to add or update.</param>
         /// <remarks>
-        /// If <paramref name="value"/> is <c>null</c>, the parameter will be removed if it exists in the URI. Otherwise, it will be added or updated.
+        /// If <paramref name="value"/> is <c>null</c>, the parameter will be removed if it exists in the URI.
+        /// Otherwise, it will be added or updated.
         /// </remarks>
         public static string UriWithQueryParameter(this NavigationManager navigationManager, string name, float? value)
             => UriWithQueryParameter(navigationManager, name, Format(value));
 
         /// <summary>
-        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter added or updated.
+        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter
+        /// added or updated.
         /// </summary>
         /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
         /// <param name="name">The name of the paramter to add or update.</param>
@@ -253,19 +269,22 @@ namespace Microsoft.AspNetCore.Components
             => UriWithQueryParameter(navigationManager, name, Format(value));
 
         /// <summary>
-        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter added, updated, or removed.
+        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter
+        /// added, updated, or removed.
         /// </summary>
         /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
         /// <param name="name">The name of the paramter to add or update.</param>
         /// <param name="value">The value of the parameter to add or update.</param>
         /// <remarks>
-        /// If <paramref name="value"/> is <c>null</c>, the parameter will be removed if it exists in the URI. Otherwise, it will be added or updated.
+        /// If <paramref name="value"/> is <c>null</c>, the parameter will be removed if it exists in the URI.
+        /// Otherwise, it will be added or updated.
         /// </remarks>
         public static string UriWithQueryParameter(this NavigationManager navigationManager, string name, Guid? value)
             => UriWithQueryParameter(navigationManager, name, Format(value));
 
         /// <summary>
-        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter added or updated.
+        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter
+        /// added or updated.
         /// </summary>
         /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
         /// <param name="name">The name of the paramter to add or update.</param>
@@ -274,19 +293,22 @@ namespace Microsoft.AspNetCore.Components
             => UriWithQueryParameter(navigationManager, name, Format(value));
 
         /// <summary>
-        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter added, updated, or removed.
+        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter
+        /// added, updated, or removed.
         /// </summary>
         /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
         /// <param name="name">The name of the paramter to add or update.</param>
         /// <param name="value">The value of the parameter to add or update.</param>
         /// <remarks>
-        /// If <paramref name="value"/> is <c>null</c>, the parameter will be removed if it exists in the URI. Otherwise, it will be added or updated.
+        /// If <paramref name="value"/> is <c>null</c>, the parameter will be removed if it exists in the URI.
+        /// Otherwise, it will be added or updated.
         /// </remarks>
         public static string UriWithQueryParameter(this NavigationManager navigationManager, string name, int? value)
             => UriWithQueryParameter(navigationManager, name, Format(value));
 
         /// <summary>
-        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter added or updated.
+        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter
+        /// added or updated.
         /// </summary>
         /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
         /// <param name="name">The name of the paramter to add or update.</param>
@@ -295,25 +317,29 @@ namespace Microsoft.AspNetCore.Components
             => UriWithQueryParameter(navigationManager, name, Format(value));
 
         /// <summary>
-        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter added, updated, or removed.
+        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter
+        /// added, updated, or removed.
         /// </summary>
         /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
         /// <param name="name">The name of the paramter to add or update.</param>
         /// <param name="value">The value of the parameter to add or update.</param>
         /// <remarks>
-        /// If <paramref name="value"/> is <c>null</c>, the parameter will be removed if it exists in the URI. Otherwise, it will be added or updated.
+        /// If <paramref name="value"/> is <c>null</c>, the parameter will be removed if it exists in the URI.
+        /// Otherwise, it will be added or updated.
         /// </remarks>
         public static string UriWithQueryParameter(this NavigationManager navigationManager, string name, long? value)
             => UriWithQueryParameter(navigationManager, name, Format(value));
 
         /// <summary>
-        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter added, updated, or removed.
+        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter
+        /// added, updated, or removed.
         /// </summary>
         /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
         /// <param name="name">The name of the paramter to add or update.</param>
         /// <param name="value">The value of the parameter to add or update.</param>
         /// <remarks>
-        /// If <paramref name="value"/> is <c>null</c>, the parameter will be removed if it exists in the URI. Otherwise, it will be added or updated.
+        /// If <paramref name="value"/> is <c>null</c>, the parameter will be removed if it exists in the URI.
+        /// Otherwise, it will be added or updated.
         /// </remarks>
         public static string UriWithQueryParameter(this NavigationManager navigationManager, string name, string? value)
         {
@@ -391,20 +417,27 @@ namespace Microsoft.AspNetCore.Components
         }
 
         /// <summary>
-        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with multiple parameters added, updated, or removed.
+        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with multiple parameters
+        /// added, updated, or removed.
         /// </summary>
         /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
         /// <param name="parameters">The values to add, update, or remove.</param>
-        public static string UriWithQueryParameters(this NavigationManager navigationManager, IReadOnlyDictionary<string, object?> parameters)
+        public static string UriWithQueryParameters(
+            this NavigationManager navigationManager,
+            IReadOnlyDictionary<string, object?> parameters)
             => UriWithQueryParameters(navigationManager, navigationManager.Uri, parameters);
 
         /// <summary>
-        /// Returns a <see cref="string"/> equal to <paramref name="uri"/> except with multiple parameters added, updated, or removed.
+        /// Returns a <see cref="string"/> equal to <paramref name="uri"/> except with multiple parameters
+        /// added, updated, or removed.
         /// </summary>
         /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
         /// <param name="uri">The URI with the query to modify.</param>
         /// <param name="parameters">The values to add, update, or remove.</param>
-        public static string UriWithQueryParameters(this NavigationManager navigationManager, string uri, IReadOnlyDictionary<string, object?> parameters)
+        public static string UriWithQueryParameters(
+            this NavigationManager navigationManager,
+            string uri,
+            IReadOnlyDictionary<string, object?> parameters)
         {
             if (navigationManager is null)
             {
@@ -425,7 +458,8 @@ namespace Microsoft.AspNetCore.Components
 
             // Build a dictionary mapping encoded parameter names to a class containing their encoded values
             // and whether they've replaced an existing parameter.
-            var parameterDataByEncodedName = new Dictionary<ReadOnlyMemory<char>, ParameterData>(new EncodedParameterNameEqualityComparer());
+            var parameterDataByEncodedName = new Dictionary<ReadOnlyMemory<char>, ParameterData>(
+                new EncodedParameterNameEqualityComparer());
             foreach (var (name, value) in parameters)
             {
                 var encodedName = System.Uri.EscapeDataString(name).AsMemory();
@@ -464,7 +498,9 @@ namespace Microsoft.AspNetCore.Components
             return newQueryBuilder.UriWithQueryString;
         }
 
-        private static string UriWithAppendedQueryParameters(string uriWithoutQuery, IReadOnlyDictionary<string, object?> parameters)
+        private static string UriWithAppendedQueryParameters(
+            string uriWithoutQuery,
+            IReadOnlyDictionary<string, object?> parameters)
         {
             var builder = new QueryStringBuilder(uriWithoutQuery);
 
@@ -501,7 +537,10 @@ namespace Microsoft.AspNetCore.Components
             return formattedValue is null ? null : System.Uri.EscapeDataString(formattedValue);
         }
 
-        private static bool TryRebuildExistingQueryFromUri(string uri, out QueryStringEnumerable oldQueryEnumerable, out QueryStringBuilder newQueryBuilder)
+        private static bool TryRebuildExistingQueryFromUri(
+            string uri,
+            out QueryStringEnumerable oldQueryEnumerable,
+            out QueryStringBuilder newQueryBuilder)
         {
             var queryStartIndex = uri.IndexOf('?');
 
