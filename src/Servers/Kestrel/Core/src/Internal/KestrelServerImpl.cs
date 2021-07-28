@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             IOptions<KestrelServerOptions> options,
             IEnumerable<IConnectionListenerFactory> transportFactories,
             ILoggerFactory loggerFactory)
-            : this(transportFactories, null, CreateServiceContext(options, loggerFactory))
+            : this(transportFactories, null, CreateServiceContext(options, loggerFactory, null))
         {
         }
 
@@ -49,7 +49,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             IEnumerable<IConnectionListenerFactory> transportFactories,
             IEnumerable<IMultiplexedConnectionListenerFactory> multiplexedFactories,
             ILoggerFactory loggerFactory)
-            : this(transportFactories, multiplexedFactories, CreateServiceContext(options, loggerFactory))
+            : this(transportFactories, multiplexedFactories, CreateServiceContext(options, loggerFactory, null))
+        {
+        }
+
+        public KestrelServerImpl(
+            IOptions<KestrelServerOptions> options,
+            IEnumerable<IConnectionListenerFactory> transportFactories,
+            IEnumerable<IMultiplexedConnectionListenerFactory> multiplexedFactories,
+            ILoggerFactory loggerFactory,
+            DiagnosticSource diagnosticSource)
+            : this(transportFactories, multiplexedFactories, CreateServiceContext(options, loggerFactory, diagnosticSource))
         {
         }
 
@@ -89,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             HttpCharacters.Initialize();
         }
 
-        private static ServiceContext CreateServiceContext(IOptions<KestrelServerOptions> options, ILoggerFactory loggerFactory)
+        private static ServiceContext CreateServiceContext(IOptions<KestrelServerOptions> options, ILoggerFactory loggerFactory, DiagnosticSource? diagnosticSource)
         {
             if (options == null)
             {
@@ -124,7 +134,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 DateHeaderValueManager = dateHeaderValueManager,
                 ConnectionManager = connectionManager,
                 Heartbeat = heartbeat,
-                ServerOptions = serverOptions
+                ServerOptions = serverOptions,
+                DiagnosticSource = diagnosticSource
             };
         }
 

@@ -29,7 +29,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                           IHttpRequestLifetimeFeature,
                                           IHttpBodyControlFeature,
                                           IHttpMaxRequestBodySizeFeature,
-                                          IHttpRequestBodyDetectionFeature
+                                          IHttpRequestBodyDetectionFeature,
+                                          IRejectedRequestDetailsFeature
     {
         // Implemented features
         internal protected IHttpRequestFeature? _currentIHttpRequestFeature;
@@ -46,6 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         internal protected IHttpBodyControlFeature? _currentIHttpBodyControlFeature;
         internal protected IHttpMaxRequestBodySizeFeature? _currentIHttpMaxRequestBodySizeFeature;
         internal protected IHttpRequestBodyDetectionFeature? _currentIHttpRequestBodyDetectionFeature;
+        internal protected IRejectedRequestDetailsFeature? _currentIRejectedRequestDetailsFeature;
 
         // Other reserved feature slots
         internal protected IServiceProvidersFeature? _currentIServiceProvidersFeature;
@@ -85,6 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentIHttpBodyControlFeature = this;
             _currentIHttpMaxRequestBodySizeFeature = this;
             _currentIHttpRequestBodyDetectionFeature = this;
+            _currentIRejectedRequestDetailsFeature = this;
 
             _currentIServiceProvidersFeature = null;
             _currentIHttpActivityFeature = null;
@@ -257,6 +260,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     feature = _currentIHttpWebSocketFeature;
                 }
+                else if (key == typeof(IRejectedRequestDetailsFeature))
+                {
+                    feature = _currentIRejectedRequestDetailsFeature;
+                }
                 else if (key == typeof(IHttp2StreamIdFeature))
                 {
                     feature = _currentIHttp2StreamIdFeature;
@@ -388,6 +395,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else if (key == typeof(IHttpWebSocketFeature))
                 {
                     _currentIHttpWebSocketFeature = (IHttpWebSocketFeature?)value;
+                }
+                else if (key == typeof(IRejectedRequestDetailsFeature))
+                {
+                    _currentIRejectedRequestDetailsFeature = (IRejectedRequestDetailsFeature?)value;
                 }
                 else if (key == typeof(IHttp2StreamIdFeature))
                 {
@@ -522,6 +533,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else if (typeof(TFeature) == typeof(IHttpWebSocketFeature))
             {
                 feature = Unsafe.As<IHttpWebSocketFeature?, TFeature?>(ref _currentIHttpWebSocketFeature);
+            }
+            else if (typeof(TFeature) == typeof(IRejectedRequestDetailsFeature))
+            {
+                feature = Unsafe.As<IRejectedRequestDetailsFeature?, TFeature?>(ref _currentIRejectedRequestDetailsFeature);
             }
             else if (typeof(TFeature) == typeof(IHttp2StreamIdFeature))
             {
@@ -663,6 +678,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _currentIHttpWebSocketFeature = Unsafe.As<TFeature?, IHttpWebSocketFeature?>(ref feature);
             }
+            else if (typeof(TFeature) == typeof(IRejectedRequestDetailsFeature))
+            {
+                _currentIRejectedRequestDetailsFeature = Unsafe.As<TFeature?, IRejectedRequestDetailsFeature?>(ref feature);
+            }
             else if (typeof(TFeature) == typeof(IHttp2StreamIdFeature))
             {
                 _currentIHttp2StreamIdFeature = Unsafe.As<TFeature?, IHttp2StreamIdFeature?>(ref feature);
@@ -790,6 +809,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (_currentIHttpWebSocketFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(typeof(IHttpWebSocketFeature), _currentIHttpWebSocketFeature);
+            }
+            if (_currentIRejectedRequestDetailsFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IRejectedRequestDetailsFeature), _currentIRejectedRequestDetailsFeature);
             }
             if (_currentIHttp2StreamIdFeature != null)
             {

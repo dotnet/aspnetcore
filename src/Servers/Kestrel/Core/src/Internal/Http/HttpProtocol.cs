@@ -1335,6 +1335,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public void SetBadRequestState(BadHttpRequestException ex)
         {
             Log.ConnectionBadRequest(ConnectionId, ex);
+            _requestRejectedException = ex;
+
+            const string badRequestEventName = "Microsoft.AspNetCore.Server.Kestrel.RejectedRequestDetails";
+            if (ServiceContext.DiagnosticSource?.IsEnabled(badRequestEventName) == true)
+            {
+                ServiceContext.DiagnosticSource.Write(badRequestEventName, this);
+            }
 
             if (!HasResponseStarted)
             {
@@ -1342,7 +1349,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             _keepAlive = false;
-            _requestRejectedException = ex;
         }
 
         public void ReportApplicationError(Exception? ex)

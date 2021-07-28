@@ -39,7 +39,8 @@ namespace CodeGenerator
                 "IHttpResponseTrailersFeature",
                 "ITlsConnectionFeature",
                 "IHttpUpgradeFeature",
-                "IHttpWebSocketFeature"
+                "IHttpWebSocketFeature",
+                "IRejectedRequestDetailsFeature"
             };
             var maybeFeatures = new[]
             {
@@ -78,6 +79,7 @@ namespace CodeGenerator
                 "IHttpBodyControlFeature",
                 "IHttpMaxRequestBodySizeFeature",
                 "IHttpRequestBodyDetectionFeature",
+                "IRejectedRequestDetailsFeature"
             };
 
             var usings = $@"
