@@ -18,12 +18,13 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     public static class NavigationManagerExtensions
     {
-        private delegate string? QueryParameterForamtter(object value);
+        private delegate string QueryParameterFormatter(object value);
 
-        // We don't include mappings for Nullable types, because we explicitly check for null values
+        // We don't include mappings for Nullable types because we explicitly check for null values
         // to see if the parameter should be excluded from the querystring. Therefore, we will only
-        // invoke these formatters for non-null values.
-        private static readonly Dictionary<Type, QueryParameterForamtter> _queryParameterFormatters = new()
+        // invoke these formatters for non-null values. We also get the underlying type of any Nullable
+        // types before performing lookups in this dictionary.
+        private static readonly Dictionary<Type, QueryParameterFormatter> _queryParameterFormatters = new()
         {
             [typeof(string)] = value => (string)value,
             [typeof(bool)] = value => Format((bool)value),
@@ -36,49 +37,49 @@ namespace Microsoft.AspNetCore.Components
             [typeof(long)] = value => Format((long)value),
         };
 
-        private static string? Format(bool value)
+        private static string Format(bool value)
             => value.ToString(CultureInfo.InvariantCulture);
 
         private static string? Format(bool? value)
             => value?.ToString(CultureInfo.InvariantCulture);
 
-        private static string? Format(DateTime value)
+        private static string Format(DateTime value)
             => value.ToString(CultureInfo.InvariantCulture);
 
         private static string? Format(DateTime? value)
             => value?.ToString(CultureInfo.InvariantCulture);
 
-        private static string? Format(decimal value)
+        private static string Format(decimal value)
             => value.ToString(CultureInfo.InvariantCulture);
 
         private static string? Format(decimal? value)
             => value?.ToString(CultureInfo.InvariantCulture);
 
-        private static string? Format(double value)
+        private static string Format(double value)
             => value.ToString(CultureInfo.InvariantCulture);
 
         private static string? Format(double? value)
             => value?.ToString(CultureInfo.InvariantCulture);
 
-        private static string? Format(float value)
+        private static string Format(float value)
             => value.ToString(CultureInfo.InvariantCulture);
 
         private static string? Format(float? value)
             => value?.ToString(CultureInfo.InvariantCulture);
 
-        private static string? Format(Guid value)
+        private static string Format(Guid value)
             => value.ToString(null, CultureInfo.InvariantCulture);
 
         private static string? Format(Guid? value)
             => value?.ToString(null, CultureInfo.InvariantCulture);
 
-        private static string? Format(int value)
+        private static string Format(int value)
             => value.ToString(CultureInfo.InvariantCulture);
 
         private static string? Format(int? value)
             => value?.ToString(CultureInfo.InvariantCulture);
 
-        private static string? Format(long value)
+        private static string Format(long value)
             => value.ToString(CultureInfo.InvariantCulture);
 
         private static string? Format(long? value)
@@ -352,10 +353,95 @@ namespace Microsoft.AspNetCore.Components
                 : UriWithQueryParameterCore(uri, name, value);
         }
 
+        /// <summary>
+        /// Returns a <see cref="string"/> equal to <see cref="NavigationManager.Uri"/> except with a single parameter
+        /// updated with the provided <paramref name="values"/>.
+        /// </summary>
+        /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
+        /// <param name="name">The name of the paramter to add or update.</param>
+        /// <param name="values">The value of the parameter to add or update.</param>
+        /// <remarks>
+        /// Any <c>null</c> entries in <paramref name="values"/> will be skipped. Existing querystring parameters not in
+        /// <paramref name="values"/> will be removed from the querystring in the returned URI.
+        /// </remarks>
+        public static string UriWithQueryParameter<TValue>(this NavigationManager navigationManager, string name, IEnumerable<TValue> values)
+        {
+            if (navigationManager is null)
+            {
+                throw new ArgumentNullException(nameof(navigationManager));
+            }
+
+            if (name is null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            var uri = navigationManager.Uri;
+
+            if (!TryRebuildExistingQueryFromUri(uri, out var existingQueryStringEnumerable, out var newQueryStringBuilder))
+            {
+                return UriWithAppendedQueryParameters(uri, name, values);
+            }
+
+            var formatter = GetFormatterFromParameterValueType(typeof(TValue));
+            var encodedName = Uri.EscapeDataString(name).AsSpan();
+            var valueEnumerator = values.GetEnumerator();
+            var hasNextValue = valueEnumerator.MoveNext();
+
+            foreach (var pair in existingQueryStringEnumerable)
+            {
+                if (pair.EncodedName.Span.SequenceEqual(encodedName))
+                {
+                    if (!hasNextValue)
+                    {
+                        // We've added all provided values, so we'll skip any parameters with the provided name from
+                        // now on.
+                        continue;
+                    }
+
+                    hasNextValue = AppendNextValue(pair.EncodedName.Span, valueEnumerator, formatter, ref newQueryStringBuilder);
+                }
+                else
+                {
+                    newQueryStringBuilder.AppendParameter(pair.EncodedName.Span, pair.EncodedValue.Span);
+                }
+            }
+
+            while (hasNextValue)
+            {
+                hasNextValue = AppendNextValue(encodedName, valueEnumerator, formatter, ref newQueryStringBuilder);
+            }
+
+            return newQueryStringBuilder.UriWithQueryString;
+
+            static bool AppendNextValue(
+                ReadOnlySpan<char> name,
+                IEnumerator<TValue> valueEnumerator,
+                QueryParameterFormatter formatter,
+                ref QueryStringBuilder queryStringBuilder)
+            {
+                var currentValue = valueEnumerator.Current;
+                var hasNext = valueEnumerator.MoveNext();
+
+                if (currentValue is null)
+                {
+                    // If we encounter a null value, we exclude it from the querystring, so we skip whatever
+                    // the old value was.
+                    return hasNext;
+                }
+
+                var formattedValue = formatter(currentValue);
+                var encodedValue = Uri.EscapeDataString(formattedValue);
+                queryStringBuilder.AppendParameter(name, encodedValue);
+
+                return hasNext;
+            }
+        }
+
         private static string UriWithQueryParameterCore(string uri, string name, string value)
         {
-            var encodedName = System.Uri.EscapeDataString(name);
-            var encodedValue = System.Uri.EscapeDataString(value);
+            var encodedName = Uri.EscapeDataString(name);
+            var encodedValue = Uri.EscapeDataString(value);
 
             if (!TryRebuildExistingQueryFromUri(uri, out var existingQueryStringEnumerable, out var newQueryStringBuilder))
             {
@@ -394,7 +480,7 @@ namespace Microsoft.AspNetCore.Components
                 return uri;
             }
 
-            var encodedName = System.Uri.EscapeDataString(name);
+            var encodedName = Uri.EscapeDataString(name);
 
             // Rebuild the query omitting parameters with a matching name.
             foreach (var pair in existingQueryStringEnumerable)
@@ -454,7 +540,7 @@ namespace Microsoft.AspNetCore.Components
                 QueryParameterNameComparer.Instance);
             foreach (var (name, value) in parameters)
             {
-                var encodedName = System.Uri.EscapeDataString(name).AsMemory();
+                var encodedName = Uri.EscapeDataString(name).AsMemory();
                 var encodedValue = GetEncodedParameterValue(value);
 
                 parameterDataByEncodedName.Add(encodedName, new ParameterData(encodedValue));
@@ -490,6 +576,32 @@ namespace Microsoft.AspNetCore.Components
             return newQueryStringBuilder.UriWithQueryString;
         }
 
+        private static string UriWithAppendedQueryParameters<TValue>(
+            string uriWithoutQueryString,
+            string name,
+            IEnumerable<TValue> values)
+        {
+            var formatter = GetFormatterFromParameterValueType(typeof(TValue));
+            var encodedName = Uri.EscapeDataString(name);
+            var builder = new QueryStringBuilder(uriWithoutQueryString);
+
+            // Build a new query from the existing URI, appending all values.
+            foreach (var value in values)
+            {
+                if (value is null)
+                {
+                    continue;
+                }
+
+                var formattedValue = formatter(value);
+                var encodedValue = Uri.EscapeDataString(formattedValue);
+
+                builder.AppendParameter(encodedName, encodedValue);
+            }
+
+            return builder.UriWithQueryString;
+        }
+
         private static string UriWithAppendedQueryParameters(
             string uriWithoutQueryString,
             IReadOnlyDictionary<string, object?> parameters)
@@ -499,7 +611,7 @@ namespace Microsoft.AspNetCore.Components
             // Build a new query from the existing URI, appending all parameters with non-null values.
             foreach (var (name, value) in parameters)
             {
-                var encodedName = System.Uri.EscapeDataString(name);
+                var encodedName = Uri.EscapeDataString(name);
                 var encodedValue = GetEncodedParameterValue(value);
 
                 if (encodedValue is not null)
@@ -518,15 +630,22 @@ namespace Microsoft.AspNetCore.Components
                 return null;
             }
 
-            var parameterType = value.GetType();
+            var formatter = GetFormatterFromParameterValueType(value.GetType());
+            var formattedValue = formatter(value);
+            return formattedValue is null ? null : Uri.EscapeDataString(formattedValue);
+        }
 
-            if (!_queryParameterFormatters.TryGetValue(parameterType, out var formatter))
+        private static QueryParameterFormatter GetFormatterFromParameterValueType(Type parameterValueType)
+        {
+            var underlyingParameterValueType = Nullable.GetUnderlyingType(parameterValueType) ?? parameterValueType;
+
+            if (!_queryParameterFormatters.TryGetValue(underlyingParameterValueType, out var formatter))
             {
-                throw new InvalidOperationException($"Cannot add query parameter of type '{parameterType}'.");
+                throw new InvalidOperationException(
+                    $"Cannot format query parameters with values of type '{underlyingParameterValueType}'.");
             }
 
-            var formattedValue = formatter(value);
-            return formattedValue is null ? null : System.Uri.EscapeDataString(formattedValue);
+            return formatter;
         }
 
         private static bool TryRebuildExistingQueryFromUri(

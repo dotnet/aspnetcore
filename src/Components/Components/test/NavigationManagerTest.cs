@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Components
         [InlineData("scheme://host/?age=42", "scheme://host/?age=42&name=John%20Doe")]
         [InlineData("scheme://host/", "scheme://host/?name=John%20Doe")]
         [InlineData("scheme://host/?", "scheme://host/?name=John%20Doe")]
-        public void UriWithQueryParameter_AppendsWhenParamterDoesNotExist(string baseUri, string expectedUri)
+        public void UriWithQueryParameter_AppendsWhenParameterDoesNotExist(string baseUri, string expectedUri)
         {
             var navigationManager = new TestNavigationManager(baseUri);
             var actualUri = navigationManager.UriWithQueryParameter("name", "John Doe");
@@ -126,6 +126,38 @@ namespace Microsoft.AspNetCore.Components
         {
             var navigationManager = new TestNavigationManager(baseUri);
             var actualUri = navigationManager.UriWithQueryParameter("name", (string)null);
+
+            Assert.Equal(expectedUri, actualUri);
+        }
+
+        [Theory]
+        [InlineData("scheme://host/?search=rugs&filter=price%3Ahigh", "scheme://host/?search=rugs&filter=price%3Alow&filter=shipping%3Afree&filter=category%3Arug")]
+        [InlineData("scheme://host/?filter=price%3Ahigh&search=rugs&filter=shipping%3A2day", "scheme://host/?filter=price%3Alow&search=rugs&filter=shipping%3Afree&filter=category%3Arug")]
+        [InlineData("scheme://host/?filter=price&filter=shipping%3A2day&filter=category%3Arug&filter=availability%3Atoday", "scheme://host/?filter=price%3Alow&filter=shipping%3Afree&filter=category%3Arug")]
+        public void UriWithQueryParameterOfTValue_ReplacesExistingQueryParameters(string baseUri, string expectedUri)
+        {
+            var navigationManager = new TestNavigationManager(baseUri);
+            var actualUri = navigationManager.UriWithQueryParameter("filter", new string[]
+            {
+                "price:low",
+                "shipping:free",
+                "category:rug",
+            });
+
+            Assert.Equal(expectedUri, actualUri);
+        }
+
+        [Theory]
+        [InlineData("scheme://host/?search=rugs&items=8&items=42", "scheme://host/?search=rugs&items=5&items=13")]
+        public void UriWithQueryParameterOfTValue_SkipsNullValues(string baseUri, string expectedUri)
+        {
+            var navigationManager = new TestNavigationManager(baseUri);
+            var actualUri = navigationManager.UriWithQueryParameter("items", new int?[]
+            {
+                5,
+                null,
+                13,
+            });
 
             Assert.Equal(expectedUri, actualUri);
         }
