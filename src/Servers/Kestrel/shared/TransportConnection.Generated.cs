@@ -30,6 +30,10 @@ namespace Microsoft.AspNetCore.Connections
         // Other reserved feature slots
         internal protected IPersistentStateFeature? _currentIPersistentStateFeature;
         internal protected IConnectionSocketFeature? _currentIConnectionSocketFeature;
+        internal protected IProtocolErrorCodeFeature? _currentIProtocolErrorCodeFeature;
+        internal protected IStreamDirectionFeature? _currentIStreamDirectionFeature;
+        internal protected IStreamIdFeature? _currentIStreamIdFeature;
+        internal protected ITlsConnectionFeature? _currentITlsConnectionFeature;
 
         private int _featureRevision;
 
@@ -45,6 +49,10 @@ namespace Microsoft.AspNetCore.Connections
 
             _currentIPersistentStateFeature = null;
             _currentIConnectionSocketFeature = null;
+            _currentIProtocolErrorCodeFeature = null;
+            _currentIStreamDirectionFeature = null;
+            _currentIStreamIdFeature = null;
+            _currentITlsConnectionFeature = null;
         }
 
         // Internal for testing
@@ -144,6 +152,22 @@ namespace Microsoft.AspNetCore.Connections
                 {
                     feature = _currentIConnectionSocketFeature;
                 }
+                else if (key == typeof(IProtocolErrorCodeFeature))
+                {
+                    feature = _currentIProtocolErrorCodeFeature;
+                }
+                else if (key == typeof(IStreamDirectionFeature))
+                {
+                    feature = _currentIStreamDirectionFeature;
+                }
+                else if (key == typeof(IStreamIdFeature))
+                {
+                    feature = _currentIStreamIdFeature;
+                }
+                else if (key == typeof(ITlsConnectionFeature))
+                {
+                    feature = _currentITlsConnectionFeature;
+                }
                 else if (MaybeExtra != null)
                 {
                     feature = ExtraFeatureGet(key);
@@ -183,6 +207,22 @@ namespace Microsoft.AspNetCore.Connections
                 else if (key == typeof(IConnectionSocketFeature))
                 {
                     _currentIConnectionSocketFeature = (IConnectionSocketFeature?)value;
+                }
+                else if (key == typeof(IProtocolErrorCodeFeature))
+                {
+                    _currentIProtocolErrorCodeFeature = (IProtocolErrorCodeFeature?)value;
+                }
+                else if (key == typeof(IStreamDirectionFeature))
+                {
+                    _currentIStreamDirectionFeature = (IStreamDirectionFeature?)value;
+                }
+                else if (key == typeof(IStreamIdFeature))
+                {
+                    _currentIStreamIdFeature = (IStreamIdFeature?)value;
+                }
+                else if (key == typeof(ITlsConnectionFeature))
+                {
+                    _currentITlsConnectionFeature = (ITlsConnectionFeature?)value;
                 }
                 else
                 {
@@ -225,6 +265,22 @@ namespace Microsoft.AspNetCore.Connections
             else if (typeof(TFeature) == typeof(IConnectionSocketFeature))
             {
                 feature = Unsafe.As<IConnectionSocketFeature?, TFeature?>(ref _currentIConnectionSocketFeature);
+            }
+            else if (typeof(TFeature) == typeof(IProtocolErrorCodeFeature))
+            {
+                feature = Unsafe.As<IProtocolErrorCodeFeature?, TFeature?>(ref _currentIProtocolErrorCodeFeature);
+            }
+            else if (typeof(TFeature) == typeof(IStreamDirectionFeature))
+            {
+                feature = Unsafe.As<IStreamDirectionFeature?, TFeature?>(ref _currentIStreamDirectionFeature);
+            }
+            else if (typeof(TFeature) == typeof(IStreamIdFeature))
+            {
+                feature = Unsafe.As<IStreamIdFeature?, TFeature?>(ref _currentIStreamIdFeature);
+            }
+            else if (typeof(TFeature) == typeof(ITlsConnectionFeature))
+            {
+                feature = Unsafe.As<ITlsConnectionFeature?, TFeature?>(ref _currentITlsConnectionFeature);
             }
             else if (MaybeExtra != null)
             {
@@ -269,6 +325,22 @@ namespace Microsoft.AspNetCore.Connections
             {
                 _currentIConnectionSocketFeature = Unsafe.As<TFeature?, IConnectionSocketFeature?>(ref feature);
             }
+            else if (typeof(TFeature) == typeof(IProtocolErrorCodeFeature))
+            {
+                _currentIProtocolErrorCodeFeature = Unsafe.As<TFeature?, IProtocolErrorCodeFeature?>(ref feature);
+            }
+            else if (typeof(TFeature) == typeof(IStreamDirectionFeature))
+            {
+                _currentIStreamDirectionFeature = Unsafe.As<TFeature?, IStreamDirectionFeature?>(ref feature);
+            }
+            else if (typeof(TFeature) == typeof(IStreamIdFeature))
+            {
+                _currentIStreamIdFeature = Unsafe.As<TFeature?, IStreamIdFeature?>(ref feature);
+            }
+            else if (typeof(TFeature) == typeof(ITlsConnectionFeature))
+            {
+                _currentITlsConnectionFeature = Unsafe.As<TFeature?, ITlsConnectionFeature?>(ref feature);
+            }
             else
             {
                 ExtraFeatureSet(typeof(TFeature), feature);
@@ -304,6 +376,22 @@ namespace Microsoft.AspNetCore.Connections
             if (_currentIConnectionSocketFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(typeof(IConnectionSocketFeature), _currentIConnectionSocketFeature);
+            }
+            if (_currentIProtocolErrorCodeFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IProtocolErrorCodeFeature), _currentIProtocolErrorCodeFeature);
+            }
+            if (_currentIStreamDirectionFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IStreamDirectionFeature), _currentIStreamDirectionFeature);
+            }
+            if (_currentIStreamIdFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IStreamIdFeature), _currentIStreamIdFeature);
+            }
+            if (_currentITlsConnectionFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(ITlsConnectionFeature), _currentITlsConnectionFeature);
             }
 
             if (MaybeExtra != null)

@@ -106,6 +106,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
             var quicStreamContext = Assert.IsType<QuicStreamContext>(serverStream);
 
+            Assert.Equal((long)Http3ErrorCode.InternalError, quicStreamContext.Error);
+
             // Both send and receive loops have exited.
             await quicStreamContext._processingTask.DefaultTimeout();
 

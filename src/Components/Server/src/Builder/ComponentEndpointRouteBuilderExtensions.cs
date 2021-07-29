@@ -49,7 +49,8 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(path));
             }
 
-            return endpoints.MapBlazorHub(path, configureOptions: _ => { });
+            // Only support the WebSockets transport type by default
+            return endpoints.MapBlazorHub(path, configureOptions: options => { options.Transports = HttpTransportType.WebSockets; });
         }
 
         /// <summary>

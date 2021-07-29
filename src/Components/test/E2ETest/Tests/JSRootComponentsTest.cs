@@ -5,6 +5,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using Xunit;
 using Xunit.Abstractions;
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
     public class JSRootComponentsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
     {
-        private IWebElement app;
+        protected IWebElement app;
 
         public JSRootComponentsTest(
             BrowserFixture browserFixture,
@@ -78,6 +79,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34743")]
         public void CannotAddMultipleRootComponentsToTheSameElementAtTheSameTime()
         {
             // Try adding a second without removing the first
@@ -143,7 +145,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             app.FindElement(By.Id("add-root-component")).Click();
             app.FindElement(By.Id("set-invalid-params")).Click();
-            Browser.Contains("Error: System.Text.Json.JsonException", () => app.FindElement(By.Id("message")).Text);
+            Browser.Contains("Error setting parameters", () => app.FindElement(By.Id("message")).Text);
         }
 
         [Fact]

@@ -6,9 +6,9 @@ This is a quick overview of how to add `EventSource` and `EventCounter` tracing 
 
 ### Prerequisites
 
-You should have a basic understanding of `EventSource` and how to write events. See https://blogs.msdn.microsoft.com/vancem/2012/07/09/introduction-tutorial-logging-etw-events-in-c-system-diagnostics-tracing-eventsource/ for some guidance.
+You should have a basic understanding of `EventSource` and how to write events. See <https://blogs.msdn.microsoft.com/vancem/2012/07/09/introduction-tutorial-logging-etw-events-in-c-system-diagnostics-tracing-eventsource/> for some guidance.
 
-Similarly, you should have a basic understanding of `EventCounter` and how they work. See https://github.com/dotnet/corefx/blob/master/src/System.Diagnostics.Tracing/documentation/EventCounterTutorial.md for guidance.
+Similarly, you should have a basic understanding of `EventCounter` and how they work. See <https://github.com/dotnet/corefx/blob/master/src/System.Diagnostics.Tracing/documentation/EventCounterTutorial.md> for guidance.
 
 ## Event Patterns
 
@@ -55,13 +55,13 @@ public void SomethingHappened(ObjectNeededToCalulateThePayload p, AnotherObjectN
   {
     // Write to an event counter if one is associated with this event
     _somethingsHappenedCounter.WriteMetric(1.0f);
-    
+
     // Check that this specific event is actually enabled (by level and optionally keywords).
     if (IsEnabled(EventLevel.Informational, EventKeyords.None))
     {
       // Do any complex calculation needed to determine the payload values.
       var payloadValue = CalculateThePayload(p);
-      
+
       // Fire the actual event method
       SomethingHappened(payloadValue, p2.MorePayload, p2.SomeValue - p2.SomeOtherValue);
     }
@@ -78,7 +78,7 @@ The above example is one that covers basically all the scenarios. However, many 
 
 ```csharp
 [Event(eventId: 42, Level = EventLevel.Informational)]
-public void SomethingHappened(string payloadValue) 
+public void SomethingHappened(string payloadValue)
 {
   if (IsEnabled(EventLevel.Informational, EventKeywords.None))
   {
@@ -89,7 +89,7 @@ public void SomethingHappened(string payloadValue)
 
 ## Keywords
 
-When we have places where we want to enable events but only when explicitly requested by the user, we can use Keywords to control those. Keywords are a simple flags value that are provided when a listener enables an event source, and can be tested when calling `IsEnabled`. See [https://msdn.microsoft.com/en-us/library/dn774985(v=pandp.20).aspx#_Using_keywords](https://msdn.microsoft.com/en-us/library/dn774985(v=pandp.20).aspx#_Using_keywords) for some guidance about keywords
+When we have places where we want to enable events but only when explicitly requested by the user, we can use Keywords to control those. Keywords are a simple flags value that are provided when a listener enables an event source, and can be tested when calling `IsEnabled`. See <https://msdn.microsoft.com/library/dn774985(v=pandp.20).aspx#_Using_keywords> for some guidance about keywords
 
 ## Event Counters
 
@@ -100,7 +100,7 @@ There are a number of different "kinds" of event counters in our system. They ar
 * Counters track the number of times an event occurs. They are written by calling `.WriteMetric(1.0f)` to the counter. The consumer can determine the number of events that occurred over an interval by reading the "Count" aggregation. They should have names combining a plural noun and adjective, like "RequestsStarted"
 * Metrics track a value that changes over time or per "unit" (i.e. per request, per connection, etc.). They are written by calling `.WriteMetric` with the current value of the metric. The consumer can use the aggregates to get data about the metric over time. They should have names combining a singular nouns describing the metric, like "RequestBodySize"
   * Durations are a Metric that tracks a time duration in milliseconds. They have names ending with "Duration", like "RequestDuration"
-  
+
 ## Full Example
 
 Here is an example of a straw-man Event Source for Authentication:
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Authentication.Internal
             if (IsEnabled())
             {
                 _authenticationMiddlewareDuration.WriteMetric((float)duration.TotalMilliseconds);
-                
+
                 if (IsEnabled(EventLevel.Informational, EventKeywords.None))
                 {
                     AuthenticationMiddlewareEnd(context.TraceIdentifier, context.Request.Path.Value, duration.TotalMilliseconds);
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Authentication.Internal
     }
 }
 ```
-  
+
 ## Automated Testing of EventSources
 
 EventSources can be tested using the `EventSourceTestBase` base class in `Microsoft.AspNetCore.Testing`. An example test is below:
@@ -184,10 +184,10 @@ public class SomeTest : EventSourceTestBase
 
         // Act: Do things that causes the events to be fired.
         DoStuff();
-        
+
         // Assert: Get the collected events and assert that they match the expectations
         var events = GetEvents();
-        
+
         // EventAssert is a helper for testing events. It's a little odd in that EventAssert.Event returns a "builder"
         // that creates an Action<EventWrittenEventArgs> that will assert the things you configured when called.
         // This pattern makes for clearer test code.

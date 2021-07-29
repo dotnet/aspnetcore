@@ -22,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -44,7 +45,7 @@ class HubConnectionTest {
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
 
-        hubConnection.stop();
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
     }
 
@@ -99,7 +100,7 @@ class HubConnectionTest {
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
 
-        hubConnection.stop();
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
     }
 
@@ -2564,7 +2565,7 @@ class HubConnectionTest {
             assertNull(value1.get());
             value1.set("Closed callback ran.");
         });
-        hubConnection.stop();
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
         assertEquals(value1.get(), "Closed callback ran.");
@@ -2589,7 +2590,7 @@ class HubConnectionTest {
 
         assertNull(value1.get());
         assertNull(value2.get());
-        hubConnection.stop();
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
         assertEquals("Closed callback ran.",value1.get());
@@ -3888,6 +3889,42 @@ class HubConnectionTest {
             hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
             assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         }
+
+        assertTrue(close.blockingAwait(30, TimeUnit.SECONDS));
+    }
+
+    @Test
+    public void hubConnectionStopDuringConnecting() {
+        MockTransport mockTransport = new MockTransport();
+        CompletableSubject waitForStop = CompletableSubject.create();
+        TestHttpClient client = new TestHttpClient()
+                .on("POST", "http://example.com/negotiate?negotiateVersion=1", (req) ->
+                {
+                    return Single.defer(() -> {
+                        waitForStop.blockingAwait();
+                        return Single.just(new HttpResponse(200, "",
+                            TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+                    }).subscribeOn(Schedulers.computation());
+                });
+
+        CompletableSubject close = CompletableSubject.create();
+
+        HubConnection hubConnection = HubConnectionBuilder
+            .create("http://example.com")
+            .withTransportImplementation(mockTransport)
+            .withHttpClient(client)
+            .build();
+
+        hubConnection.onClosed(e -> {
+            close.onComplete();
+        });
+        hubConnection.start();
+        assertEquals(HubConnectionState.CONNECTING, hubConnection.getConnectionState());
+
+        Completable stopTask = hubConnection.stop();
+        waitForStop.onComplete();
+        stopTask.timeout(30, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
 
         assertTrue(close.blockingAwait(30, TimeUnit.SECONDS));
     }

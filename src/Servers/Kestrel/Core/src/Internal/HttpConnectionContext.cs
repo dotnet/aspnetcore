@@ -14,17 +14,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public HttpConnectionContext(
             string connectionId,
             HttpProtocols protocols,
-            ConnectionContext connectionContext,
+            BaseConnectionContext connectionContext,
             ServiceContext serviceContext,
             IFeatureCollection connectionFeatures,
             MemoryPool<byte> memoryPool,
             IPEndPoint? localEndPoint,
-            IPEndPoint? remoteEndPoint,
-            IDuplexPipe transport) : base(connectionId, protocols, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
+            IPEndPoint? remoteEndPoint) : base(connectionId, protocols, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
         {
-            Transport = transport;
         }
 
-        public IDuplexPipe Transport { get; }
+        public IDuplexPipe Transport { get; set; } = default!;
     }
 }

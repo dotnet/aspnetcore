@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
@@ -307,6 +309,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 pendingRenderInfo.TrySetException(new InvalidOperationException(errorMessageOrNull));
             }
+        }
+
+        public ValueTask InitializeJSComponentSupportAsync(JSComponentConfigurationStore configuration, JsonSerializerOptions jsonOptions)
+        {
+            var interop = new CircuitJSComponentInterop(configuration, jsonOptions, _options);
+            return InitializeJSComponentSupportAsync(interop);
         }
 
         internal readonly struct UnacknowledgedRenderBatch

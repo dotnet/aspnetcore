@@ -63,5 +63,11 @@ namespace Microsoft.AspNetCore.Connections
         {
             return _inner.GetSpan(sizeHint);
         }
+
+        public void Reset()
+        {
+            IsCompleted = false;
+            CompleteException = null;
+        }
     }
 }

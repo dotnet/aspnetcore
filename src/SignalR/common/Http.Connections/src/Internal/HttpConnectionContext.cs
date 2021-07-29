@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             ConnectionId = connectionId;
             ConnectionToken = connectionToken;
-            LastSeenUtc = DateTime.UtcNow;
+            LastSeenTicks = Environment.TickCount64;
             _options = options;
 
             // The default behavior is that both formats are supported.
@@ -121,15 +121,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         public Task? ApplicationTask { get; set; }
 
-        public DateTime LastSeenUtc { get; set; }
+        public long LastSeenTicks { get; set; }
 
-        public DateTime? LastSeenUtcIfInactive
+        public long? LastSeenTicksIfInactive
         {
             get
             {
                 lock (_stateLock)
                 {
-                    return Status == HttpConnectionStatus.Inactive ? (DateTime?)LastSeenUtc : null;
+                    return Status == HttpConnectionStatus.Inactive ? LastSeenTicks : null;
                 }
             }
         }
@@ -543,7 +543,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 if (Status == HttpConnectionStatus.Active)
                 {
                     Status = HttpConnectionStatus.Inactive;
-                    LastSeenUtc = DateTime.UtcNow;
+                    LastSeenTicks = Environment.TickCount64;
                 }
             }
         }
@@ -575,7 +575,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     _sendCts = new CancellationTokenSource();
                     SendingToken = _sendCts.Token;
                 }
-                _startedSendTime = DateTime.UtcNow.Ticks;
+                _startedSendTime = Environment.TickCount64;
                 _activeSend = true;
             }
         }

@@ -733,7 +733,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Assert.Null(context.Connection.ClientCertificate);
 
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.Connection.GetClientCertificateAsync());
-                Assert.Equal("Received data during renegotiation.", ex.Message);
+                Assert.Equal("Client stream needs to be drained before renegotiation.", ex.Message);
                 Assert.Null(tlsFeature.ClientCertificate);
                 Assert.Null(context.Connection.ClientCertificate);
             }, new TestServiceContext(LoggerFactory), ConfigureListenOptions);
@@ -778,7 +778,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Assert.Null(context.Connection.ClientCertificate);
 
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.Connection.GetClientCertificateAsync());
-                Assert.Equal("Received data during renegotiation.", ex.Message);
+                Assert.Equal("Client stream needs to be drained before renegotiation.", ex.Message);
                 Assert.Null(tlsFeature.ClientCertificate);
                 Assert.Null(context.Connection.ClientCertificate);
             }, new TestServiceContext(LoggerFactory), ConfigureListenOptions);

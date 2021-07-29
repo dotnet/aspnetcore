@@ -56,4 +56,4 @@ $HelixQueues = $HelixQueues -replace ";", "%3B"
 dotnet msbuild $Project /t:Helix /p:TargetArchitecture="$TargetArchitecture" /p:IsRequiredCheck=true `
     /p:IsHelixDaily=true /p:HelixTargetQueues=$HelixQueues /p:RunQuarantinedTests=$RunQuarantinedTests `
     /p:_UseHelixOpenQueues=true /p:CrossgenOutput=false /p:ASPNETCORE_TEST_LOG_DIR=artifacts/log `
-    @MSBuildArguments
+    /p:DoNotRequireSharedFxHelix=true @MSBuildArguments

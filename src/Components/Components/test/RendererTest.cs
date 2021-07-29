@@ -4579,6 +4579,35 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public async Task CannotRemoveSameRootComponentMultipleTimesSynchronously()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var rootComponent = new AsyncDisposableComponent
+            {
+                // Show that, even if the component tries to delay its disposal by returning
+                // a task that never completes, it still gets removed from the renderer synchronously
+                AsyncDisposeAction = () => new ValueTask(new TaskCompletionSource().Task)
+            };
+            var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+
+            // Act/Assert
+            var didRunTestLogic = false; // Don't just trust the dispatcher here - verify it runs our callback
+            await renderer.Dispatcher.InvokeAsync(() =>
+            {
+                renderer.RemoveRootComponent(rootComponentId);
+
+                // Even though we didn't await anything, it's synchronously unavailable for re-removal
+                var ex = Assert.Throws<ArgumentException>(() =>
+                    renderer.RemoveRootComponent(rootComponentId));
+                Assert.Equal($"The renderer does not have a component with ID {rootComponentId}.", ex.Message);
+                didRunTestLogic = true;
+            });
+
+            Assert.True(didRunTestLogic);
+        }
+
+        [Fact]
         public async Task CannotRemoveNonRootComponentsDirectly()
         {
             // Arrange

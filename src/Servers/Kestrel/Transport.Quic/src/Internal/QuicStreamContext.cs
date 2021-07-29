@@ -12,11 +12,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
-    internal partial class QuicStreamContext : TransportConnection, IStreamDirectionFeature, IProtocolErrorCodeFeature, IStreamIdFeature, IPooledStream
+    internal partial class QuicStreamContext : TransportConnection, IPooledStream
     {
         // Internal for testing.
         internal Task _processingTask = Task.CompletedTask;
@@ -69,10 +70,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         private PipeWriter Input => Application.Output;
         private PipeReader Output => Application.Input;
 
-        public bool CanRead { get; private set; }
-        public bool CanWrite { get; private set; }
-
-        public long StreamId { get; private set; }
         public bool CanReuse { get; private set; }
 
         public void Initialize(QuicStream stream)
@@ -88,13 +85,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
             ConnectionClosed = _streamClosedTokenSource.Token;
 
-            // TODO - add to generated features
-            Features.Set<IStreamDirectionFeature>(this);
-            Features.Set<IProtocolErrorCodeFeature>(this);
-            Features.Set<IStreamIdFeature>(this);
-            // TODO populate the ITlsConnectionFeature (requires client certs).
-            Features.Set<ITlsConnectionFeature>(new FakeTlsConnectionFeature());
-
             InitializeFeatures();
 
             CanRead = _stream.CanRead;
@@ -105,6 +95,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
             Transport = _originalTransport;
             Application = _originalApplication;
+
+            _transportPipeReader.Reset();
+            _transportPipeWriter.Reset();
 
             _connectionId = null;
             _shutdownReason = null;
@@ -126,11 +119,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         public override string ConnectionId
         {
-            get => _connectionId ??= $"{_connection.ConnectionId}:{StreamId}";
+            get => _connectionId ??= StringUtilities.ConcatAsHexSuffix(_connection.ConnectionId, ':', (uint)StreamId);
             set => _connectionId = value;
         }
-
-        public long Error { get; set; }
 
         public long PoolExpirationTicks { get; set; }
 
@@ -186,6 +177,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             catch (QuicStreamAbortedException ex)
             {
                 // Abort from peer.
+                Error = ex.ErrorCode;
                 _log.StreamAborted(this, ex);
 
                 // This could be ignored if _shutdownReason is already set.
@@ -301,6 +293,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             catch (QuicStreamAbortedException ex)
             {
                 // Abort from peer.
+                Error = ex.ErrorCode;
                 _log.StreamAborted(this, ex);
 
                 // This could be ignored if _shutdownReason is already set.

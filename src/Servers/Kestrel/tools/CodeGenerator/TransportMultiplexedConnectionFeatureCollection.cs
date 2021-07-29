@@ -17,7 +17,9 @@ namespace CodeGenerator
                 "IConnectionTransportFeature",
                 "IConnectionItemsFeature",
                 "IMemoryPoolFeature",
-                "IConnectionLifetimeFeature"
+                "IConnectionLifetimeFeature",
+                "IProtocolErrorCodeFeature",
+                "ITlsConnectionFeature"
             };
             var implementedFeatures = new[]
             {

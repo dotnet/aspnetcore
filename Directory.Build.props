@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <Import Project="eng\Common.props" />
 
   <PropertyGroup>
@@ -13,6 +13,12 @@
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisLevel>latest</AnalysisLevel>
     <AnalysisMode>Default</AnalysisMode>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(VisualStudioVersion)' == '17.0' ">
+    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+    <RunAnalyzersDuringLiveAnalysis>false</RunAnalyzersDuringLiveAnalysis>
+    <RunAnalyzers>false</RunAnalyzers>
   </PropertyGroup>
 
   <!-- Defines project type conventions. -->

@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
-    internal class QuicConnectionContext : TransportMultiplexedConnection, IProtocolErrorCodeFeature
+    internal partial class QuicConnectionContext : TransportMultiplexedConnection
     {
         // Internal for testing.
         internal PooledStreamStack<QuicStreamContext> StreamPool;
@@ -30,8 +30,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         private Task? _closeTask;
 
-        public long Error { get; set; }
-
         internal const int InitialStreamPoolSize = 5;
         internal const int MaxStreamPoolSize = 100;
         internal const long StreamPoolExpiryTicks = TimeSpan.TicksPerSecond * 5;
@@ -42,10 +40,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             _context = context;
             _connection = connection;
             ConnectionClosed = _connectionClosedTokenSource.Token;
-            Features.Set<ITlsConnectionFeature>(new FakeTlsConnectionFeature());
-            Features.Set<IProtocolErrorCodeFeature>(this);
 
             StreamPool = new PooledStreamStack<QuicStreamContext>(InitialStreamPoolSize);
+
+            InitializeFeatures();
         }
 
         public override async ValueTask DisposeAsync()
@@ -93,6 +91,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 if (context == null)
                 {
                     context = new QuicStreamContext(this, _context);
+                }
+                else
+                {
+                    context.ResetFeatureCollection();
+                    context.ResetItems();
                 }
 
                 context.Initialize(stream);

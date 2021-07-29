@@ -105,16 +105,23 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     await OnCircuitOpenedAsync(cancellationToken);
                     await OnConnectionUpAsync(cancellationToken);
 
-                    // We add the root components *after* the circuit is flagged as open.
-                    // That's because AddComponentAsync waits for quiescence, which can take
-                    // arbitrarily long. In the meantime we might need to be receiving and
-                    // processing incoming JSInterop calls or similar.
+                    // From this point onwards, JavaScript code can add root components if configured
+                    await Renderer.InitializeJSComponentSupportAsync(
+                        _options.RootComponents.JSComponents,
+                        JSRuntime.ReadJsonSerializerOptions());
+
+                    // Here, we add each root component but don't await the returned tasks so that the
+                    // components can be processed in parallel.
                     var count = Descriptors.Count;
+                    var pendingRenders = new Task[count];
                     for (var i = 0; i < count; i++)
                     {
                         var (componentType, parameters, sequence) = Descriptors[i];
-                        await Renderer.AddComponentAsync(componentType, parameters, sequence.ToString(CultureInfo.InvariantCulture));
+                        pendingRenders[i] = Renderer.AddComponentAsync(componentType, parameters, sequence.ToString(CultureInfo.InvariantCulture));
                     }
+
+                    // Now we wait for all components to finish rendering.
+                    await Task.WhenAll(pendingRenders);
 
                     // At this point all components have successfully produced an initial render and we can clear the contents of the component
                     // application state store. This ensures the memory that was not used during the initial render of these components gets

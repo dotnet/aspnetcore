@@ -49,10 +49,8 @@ Microsoft.AspNetCore.Components.Web.MouseEventArgs.PageY.set -> void
 Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration
 Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration.JSComponents.get -> Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore!
 Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop
-Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.AddRootComponent(string! identifier, string! domElementSelector) -> int
 Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.Dispose() -> void
 Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.JSComponentInterop(Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore! configuration, System.Text.Json.JsonSerializerOptions! jsonOptions) -> void
-Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.RemoveRootComponent(int componentId) -> void
 Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.SetRootComponentParameters(int componentId, int parameterCount, byte[]! parametersJsonUtf8) -> void
 Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore
 Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore.JSComponentConfigurationStore() -> void
@@ -73,3 +71,5 @@ Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.EventName.get -> s
 Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.EventName.set -> void
 *REMOVED*Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.EventArgsType.get -> string!
 *REMOVED*Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.EventArgsType.set -> void
+virtual Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.AddRootComponent(string! identifier, string! domElementSelector) -> int
+virtual Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.RemoveRootComponent(int componentId) -> void

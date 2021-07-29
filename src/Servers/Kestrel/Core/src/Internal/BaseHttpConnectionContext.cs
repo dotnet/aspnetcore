@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             RemoteEndPoint = remoteEndPoint;
         }
 
-        public string ConnectionId { get; }
+        public string ConnectionId { get; set; }
         public HttpProtocols Protocols { get; }
         public BaseConnectionContext ConnectionContext { get; }
         public ServiceContext ServiceContext { get; }

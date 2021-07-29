@@ -29,7 +29,9 @@ namespace Microsoft.AspNetCore.HttpLogging
         private int _fileNumber;
         private bool _maxFilesReached;
         private TimeSpan _flushInterval;
+        private W3CLoggingFields _fields;
         private DateTime _today = DateTime.Now;
+        private bool _firstFile = true;
 
         private readonly IOptionsMonitor<W3CLoggerOptions> _options;
         private readonly BlockingCollection<string> _messageQueue = new BlockingCollection<string>(_maxQueuedMessages);
@@ -42,6 +44,8 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         public FileLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory)
         {
+            _logger = factory.CreateLogger(typeof(FileLoggerProcessor));
+
             _options = options;
             var loggerOptions = _options.CurrentValue;
 
@@ -62,24 +66,37 @@ namespace Microsoft.AspNetCore.HttpLogging
             _maxFileSize = loggerOptions.FileSizeLimit;
             _maxRetainedFiles = loggerOptions.RetainedFileCountLimit;
             _flushInterval = loggerOptions.FlushInterval;
+            _fields = loggerOptions.LoggingFields;
             _options.OnChange(options =>
             {
                 lock (_pathLock)
                 {
                     // Clear the cached settings.
                     loggerOptions = options;
+
+                    // Move to a new file if the fields have changed
+                    if (_fields != loggerOptions.LoggingFields)
+                    {
+                        _fileNumber++;
+                        if (_fileNumber >= W3CLoggerOptions.MaxFileCount)
+                        {
+                            _maxFilesReached = true;
+                            Log.MaxFilesReached(_logger);
+                        }
+                        _fields = loggerOptions.LoggingFields;
+                    }
+
                     if (!string.IsNullOrEmpty(loggerOptions.LogDirectory))
                     {
                         _path = loggerOptions.LogDirectory;
                     }
+
                     _fileName = loggerOptions.FileName;
                     _maxFileSize = loggerOptions.FileSizeLimit;
                     _maxRetainedFiles = loggerOptions.RetainedFileCountLimit;
                     _flushInterval = loggerOptions.FlushInterval;
                 }
             });
-
-            _logger = factory.CreateLogger(typeof(FileLoggerProcessor));
 
             // Start message queue processor
             _cancellationTokenSource = new CancellationTokenSource();
@@ -140,6 +157,23 @@ namespace Microsoft.AspNetCore.HttpLogging
             // Files are written up to _maxFileSize before rolling to a new file
             DateTime today = DateTime.Now;
             var fullName = GetFullName(today);
+            // Don't write to an incomplete file left around by a previous FileLoggerProcessor
+            if (_firstFile)
+            {
+                while (File.Exists(fullName))
+                {
+                    _fileNumber++;
+                    if (_fileNumber >= W3CLoggerOptions.MaxFileCount)
+                    {
+                        _maxFilesReached = true;
+                        // Return early if log directory is already full
+                        Log.MaxFilesReached(_logger);
+                        return;
+                    }
+                    fullName = GetFullName(today);
+                }
+            }
+            _firstFile = false;
             if (_maxFilesReached)
             {
                 // Return early if we've already logged that today's file limit has been reached.
@@ -167,26 +201,20 @@ namespace Microsoft.AspNetCore.HttpLogging
                     fileInfo.Refresh();
                     // Roll to new file if _maxFileSize is reached
                     // _maxFileSize could be less than the length of the file header - in that case we still write the first log message before rolling.
-                    // Previous instance of FileLoggerProcessor could have already written files to the same directory.
-                    // Loop through them until we find what the current _fileNumber should be.
                     if (fileInfo.Exists && fileInfo.Length > _maxFileSize)
                     {
                         streamWriter.Dispose();
-                        do
+                        _fileNumber++;
+                        if (_fileNumber >= W3CLoggerOptions.MaxFileCount)
                         {
-                            _fileNumber++;
-                            if (_fileNumber >= W3CLoggerOptions.MaxFileCount)
-                            {
-                                streamWriter = null;
-                                _maxFilesReached = true;
-                                // Return early if log directory is already full
-                                Log.MaxFilesReached(_logger, new ApplicationException());
-                                return;
-                            }
-                            fullName = GetFullName(today);
-                            fileInfo = new FileInfo(fullName);
+                            streamWriter = null;
+                            _maxFilesReached = true;
+                            // Return early if log directory is already full
+                            Log.MaxFilesReached(_logger);
+                            return;
                         }
-                        while (fileInfo.Exists && fileInfo.Length > _maxFileSize);
+                        fullName = GetFullName(today);
+                        fileInfo = new FileInfo(fullName);
                         if (!TryCreateDirectory())
                         {
                             streamWriter = null;
@@ -309,13 +337,13 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             public static void CreateDirectoryFailed(ILogger logger, string path, Exception ex) => _createDirectoryFailed(logger, path, ex);
 
-            private static readonly Action<ILogger, Exception> _maxFilesReached =
+            private static readonly Action<ILogger, Exception?> _maxFilesReached =
                 LoggerMessage.Define(
                     LogLevel.Warning,
                     new EventId(3, "MaxFilesReached"),
-                    "Limit of 10,000 files per day has been reached");
+                    $"Limit of {W3CLoggerOptions.MaxFileCount} files per day has been reached");
 
-            public static void MaxFilesReached(ILogger logger, Exception ex) => _maxFilesReached(logger, ex);
+            public static void MaxFilesReached(ILogger logger) => _maxFilesReached(logger, null);
         }
     }
 

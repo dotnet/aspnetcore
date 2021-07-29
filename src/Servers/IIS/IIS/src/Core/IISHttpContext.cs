@@ -195,13 +195,15 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
                 (RequestBody, ResponseBody) = _streams.Start();
 
-                var pipe = new Pipe(
-                    new PipeOptions(
-                        _memoryPool,
-                        readerScheduler: PipeScheduler.ThreadPool,
-                        pauseWriterThreshold: PauseWriterThreshold,
-                        resumeWriterThreshold: ResumeWriterTheshold,
-                        minimumSegmentSize: MinAllocBufferSize));
+                var pipe = new Pipe(new PipeOptions(
+                    _memoryPool,
+                    // The readerScheduler schedules internal non-blocking logic, so there's no reason to dispatch.
+                    // The writerScheduler is PipeScheduler.ThreadPool by default which is correct because it
+                    // schedules app code when backpressure is relieved which may block.
+                    readerScheduler: PipeScheduler.Inline,
+                    pauseWriterThreshold: PauseWriterThreshold,
+                    resumeWriterThreshold: ResumeWriterTheshold,
+                    minimumSegmentSize: MinAllocBufferSize));
                 _bodyOutput = new OutputProducer(pipe);
             }
 

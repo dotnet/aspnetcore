@@ -159,6 +159,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             if (builder is null)
             {
                 var deferredHostBuilder = new DeferredHostBuilder();
+                deferredHostBuilder.UseEnvironment(Environments.Development);
                 // This helper call does the hard work to determine if we can fallback to diagnostic source events to get the host instance
                 var factory = HostFactoryResolver.ResolveHostFactory(
                     typeof(TEntryPoint).Assembly,

@@ -34,8 +34,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 connectionContext.Features,
                 memoryPoolFeature?.MemoryPool ?? System.Buffers.MemoryPool<byte>.Shared,
                 connectionContext.LocalEndPoint as IPEndPoint,
-                connectionContext.RemoteEndPoint as IPEndPoint,
-                connectionContext.Transport);
+                connectionContext.RemoteEndPoint as IPEndPoint);
+            httpConnectionContext.Transport = connectionContext.Transport;
 
             var connection = new HttpConnection(httpConnectionContext);
 

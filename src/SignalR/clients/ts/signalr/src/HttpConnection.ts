@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { DefaultHttpClient } from "./DefaultHttpClient";
-import { HttpError } from "./Errors";
+import { AggregateErrors, DisabledTransportError, FailedToStartTransportError, HttpError, UnsupportedTransportError } from "./Errors";
 import { HeaderNames } from "./HeaderNames";
 import { HttpClient } from "./HttpClient";
 import { IConnection } from "./IConnection";
@@ -375,7 +375,8 @@ export class HttpConnection implements IConnection {
             const transportOrError = this._resolveTransportOrError(endpoint, requestedTransport, requestedTransferFormat);
             if (transportOrError instanceof Error) {
                 // Store the error and continue, we don't want to cause a re-negotiate in these cases
-                transportExceptions.push(`${endpoint.transport} failed: ${transportOrError}`);
+                transportExceptions.push(`${endpoint.transport} failed:`);
+                transportExceptions.push(transportOrError);
             } else if (this._isITransport(transportOrError)) {
                 this.transport = transportOrError;
                 if (!negotiate) {
@@ -393,7 +394,7 @@ export class HttpConnection implements IConnection {
                 } catch (ex) {
                     this._logger.log(LogLevel.Error, `Failed to start the transport '${endpoint.transport}': ${ex}`);
                     negotiate = undefined;
-                    transportExceptions.push(`${endpoint.transport} failed: ${ex}`);
+                    transportExceptions.push(new FailedToStartTransportError(`${endpoint.transport} failed: ${ex}`, HttpTransportType[endpoint.transport]));
 
                     if (this._connectionState !== ConnectionState.Connecting) {
                         const message = "Failed to select transport before stop() was called.";
@@ -405,7 +406,7 @@ export class HttpConnection implements IConnection {
         }
 
         if (transportExceptions.length > 0) {
-            return Promise.reject(new Error(`Unable to connect to the server with any of the available transports. ${transportExceptions.join(" ")}`));
+            return Promise.reject(new AggregateErrors(`Unable to connect to the server with any of the available transports. ${transportExceptions.join(" ")}`, transportExceptions));
         }
         return Promise.reject(new Error("None of the transports supported by the client are supported by the server."));
     }
@@ -447,7 +448,7 @@ export class HttpConnection implements IConnection {
                     if ((transport === HttpTransportType.WebSockets && !this._options.WebSocket) ||
                         (transport === HttpTransportType.ServerSentEvents && !this._options.EventSource)) {
                         this._logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it is not supported in your environment.'`);
-                        return new Error(`'${HttpTransportType[transport]}' is not supported in your environment.`);
+                        return new UnsupportedTransportError(`'${HttpTransportType[transport]}' is not supported in your environment.`, transport);
                     } else {
                         this._logger.log(LogLevel.Debug, `Selecting transport '${HttpTransportType[transport]}'.`);
                         try {
@@ -462,7 +463,7 @@ export class HttpConnection implements IConnection {
                 }
             } else {
                 this._logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it was disabled by the client.`);
-                return new Error(`'${HttpTransportType[transport]}' is disabled by the client.`);
+                return new DisabledTransportError(`'${HttpTransportType[transport]}' is disabled by the client.`, transport);
             }
         }
     }

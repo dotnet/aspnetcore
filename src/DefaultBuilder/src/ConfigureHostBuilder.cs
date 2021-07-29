@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -15,22 +13,24 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public sealed class ConfigureHostBuilder : IHostBuilder
     {
-        private readonly List<Action<IHostBuilder>> _operations = new();
-
-        /// <inheritdoc />
-        public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
-
-        private readonly WebHostEnvironment _environment;
         private readonly ConfigurationManager _configuration;
+        private readonly WebHostEnvironment _environment;
         private readonly IServiceCollection _services;
-
         private readonly HostBuilderContext _context;
 
-        internal ConfigureHostBuilder(ConfigurationManager configuration, WebHostEnvironment environment, IServiceCollection services)
+        private readonly List<Action<IHostBuilder>> _operations = new();
+
+        internal ConfigureHostBuilder(
+            ConfigurationManager configuration,
+            WebHostEnvironment environment,
+            IServiceCollection services,
+            IDictionary<object, object> properties)
         {
             _configuration = configuration;
             _environment = environment;
             _services = services;
+
+            Properties = properties;
 
             _context = new HostBuilderContext(Properties)
             {
@@ -39,7 +39,8 @@ namespace Microsoft.AspNetCore.Builder
             };
         }
 
-        internal bool ConfigurationEnabled { get; set; }
+        /// <inheritdoc />
+        public IDictionary<object, object> Properties { get; }
 
         IHost IHostBuilder.Build()
         {
@@ -49,13 +50,9 @@ namespace Microsoft.AspNetCore.Builder
         /// <inheritdoc />
         public IHostBuilder ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> configureDelegate)
         {
-            if (ConfigurationEnabled)
-            {
-                // Run these immediately so that they are observable by the imperative code
-                configureDelegate(_context, _configuration);
-                _environment.ApplyConfigurationSettings(_configuration);
-            }
-
+            // Run these immediately so that they are observable by the imperative code
+            configureDelegate(_context, _configuration);
+            _environment.ApplyConfigurationSettings(_configuration);
             return this;
         }
 
@@ -74,13 +71,9 @@ namespace Microsoft.AspNetCore.Builder
         /// <inheritdoc />
         public IHostBuilder ConfigureHostConfiguration(Action<IConfigurationBuilder> configureDelegate)
         {
-            if (ConfigurationEnabled)
-            {
-                // Run these immediately so that they are observable by the imperative code
-                configureDelegate(_configuration);
-                _environment.ApplyConfigurationSettings(_configuration);
-            }
-
+            // Run these immediately so that they are observable by the imperative code
+            configureDelegate(_configuration);
+            _environment.ApplyConfigurationSettings(_configuration);
             return this;
         }
 
@@ -89,7 +82,6 @@ namespace Microsoft.AspNetCore.Builder
         {
             // Run these immediately so that they are observable by the imperative code
             configureDelegate(_context, _services);
-
             return this;
         }
 

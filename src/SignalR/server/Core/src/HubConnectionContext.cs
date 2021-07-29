@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.SignalR
         private readonly CancellationTokenRegistration? _closedRequestedRegistration;
 
         private StreamTracker? _streamTracker;
-        private long _lastSendTimeStamp;
+        private long _lastSendTick;
         private ReadOnlyMemory<byte> _cachedPingMessage;
         private bool _clientTimeoutActive;
         private volatile bool _connectionAborted;
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.SignalR
         private readonly long? _maxMessageSize;
         private bool _receivedMessageTimeoutEnabled;
         private long _receivedMessageElapsedTicks;
-        private long _receivedMessageTimestamp;
+        private long _receivedMessageTick;
         private ClaimsPrincipal? _user;
 
         /// <summary>
@@ -62,8 +62,8 @@ namespace Microsoft.AspNetCore.SignalR
         /// <param name="contextOptions">The options to configure the HubConnectionContext.</param>
         public HubConnectionContext(ConnectionContext connectionContext, HubConnectionContextOptions contextOptions, ILoggerFactory loggerFactory)
         {
-            _keepAliveInterval = contextOptions.KeepAliveInterval.Ticks;
-            _clientTimeoutInterval = contextOptions.ClientTimeoutInterval.Ticks;
+            _keepAliveInterval = (long)contextOptions.KeepAliveInterval.TotalMilliseconds;
+            _clientTimeoutInterval = (long)contextOptions.ClientTimeoutInterval.TotalMilliseconds;
             _streamBufferCapacity = contextOptions.StreamBufferCapacity;
             _maxMessageSize = contextOptions.MaximumReceiveMessageSize;
 
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.SignalR
             HubCallerContext = new DefaultHubCallerContext(this);
 
             _systemClock = contextOptions.SystemClock ?? new SystemClock();
-            _lastSendTimeStamp = _systemClock.UtcNowTicks;
+            _lastSendTick = _systemClock.CurrentTicks;
 
             // We'll be avoiding using the semaphore when the limit is set to 1, so no need to allocate it
             var maxInvokeLimit = contextOptions.MaximumParallelInvocations;
@@ -623,7 +623,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         private void KeepAliveTick()
         {
-            var currentTime = _systemClock.UtcNowTicks;
+            var currentTime = _systemClock.CurrentTicks;
 
             // Implements the keep-alive tick behavior
             // Each tick, we check if the time since the last send is larger than the keep alive duration (in ticks).
@@ -631,7 +631,7 @@ namespace Microsoft.AspNetCore.SignalR
             // true "ping rate" of the server could be (_hubOptions.KeepAliveInterval + HubEndPoint.KeepAliveTimerInterval),
             // because if the interval elapses right after the last tick of this timer, it won't be detected until the next tick.
 
-            if (currentTime - Volatile.Read(ref _lastSendTimeStamp) > _keepAliveInterval)
+            if (currentTime - Volatile.Read(ref _lastSendTick) > _keepAliveInterval)
             {
                 // Haven't sent a message for the entire keep-alive duration, so send a ping.
                 // If the transport channel is full, this will fail, but that's OK because
@@ -641,7 +641,7 @@ namespace Microsoft.AspNetCore.SignalR
 
                 // We only update the timestamp here, because updating on each sent message is bad for performance
                 // There can be a lot of sent messages per 15 seconds
-                Volatile.Write(ref _lastSendTimeStamp, currentTime);
+                Volatile.Write(ref _lastSendTick, currentTime);
             }
         }
 
@@ -666,7 +666,7 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 if (_receivedMessageTimeoutEnabled)
                 {
-                    _receivedMessageElapsedTicks = _systemClock.UtcNowTicks - _receivedMessageTimestamp;
+                    _receivedMessageElapsedTicks = _systemClock.CurrentTicks - _receivedMessageTick;
 
                     if (_receivedMessageElapsedTicks >= _clientTimeoutInterval)
                     {
@@ -716,7 +716,7 @@ namespace Microsoft.AspNetCore.SignalR
             lock (_receiveMessageTimeoutLock)
             {
                 _receivedMessageTimeoutEnabled = true;
-                _receivedMessageTimestamp = _systemClock.UtcNowTicks;
+                _receivedMessageTick = _systemClock.CurrentTicks;
             }
         }
 
@@ -727,7 +727,7 @@ namespace Microsoft.AspNetCore.SignalR
                 // we received a message so stop the timer and reset it
                 // it will resume after the message has been processed
                 _receivedMessageElapsedTicks = 0;
-                _receivedMessageTimestamp = 0;
+                _receivedMessageTick = 0;
                 _receivedMessageTimeoutEnabled = false;
             }
         }
