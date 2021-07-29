@@ -379,6 +379,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             var httpConnectionContext = new Http3StreamContext(
                 _multiplexedContext.ConnectionId,
                 HttpProtocols.Http3,
+                _context.AltSvcHeader,
                 _multiplexedContext,
                 _context.ServiceContext,
                 streamContext.Features,
@@ -461,6 +462,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             var httpConnectionContext = new Http3StreamContext(
                 _multiplexedContext.ConnectionId,
                 HttpProtocols.Http3,
+                _context.AltSvcHeader,
                 _multiplexedContext,
                 _context.ServiceContext,
                 streamContext.Features,

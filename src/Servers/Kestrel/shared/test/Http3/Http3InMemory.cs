@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
@@ -219,6 +220,8 @@ namespace Microsoft.AspNetCore.Testing
 
             var httpConnectionContext = new HttpMultiplexedConnectionContext(
                 connectionId: "TestConnectionId",
+                HttpProtocols.Http3,
+                altSvcHeader: null,
                 connectionContext: MultiplexedConnectionContext,
                 connectionFeatures: MultiplexedConnectionContext.Features,
                 serviceContext: _serviceContext,

@@ -85,6 +85,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public HttpProtocols Protocols { get; set; } = DefaultHttpProtocols;
 
         /// <summary>
+        /// Gets or sets a value that controls whether to the "Alt-Svc" header is included with response headers.
+        /// The "Alt-Svc" header is used by clients to upgrade HTTP/1.1 and HTTP/2 connections to HTTP/3.
+        /// <para>
+        /// The "Alt-Svc" header is only included with a response if <see cref="Protocols"/> has either
+        /// HTTP/1.1 or HTTP/2 enabled, and HTTP/3 is enabled.
+        /// </para>
+        /// </summary>
+        /// <remarks>
+        /// Defaults to true.
+        /// </remarks>
+        public bool AddAltSvcHeader { get; set; } = true;
+
+        /// <summary>
         /// Gets the application <see cref="IServiceProvider"/>.
         /// </summary>
         public IServiceProvider ApplicationServices => KestrelServerOptions?.ApplicationServices!; // TODO - Always available?

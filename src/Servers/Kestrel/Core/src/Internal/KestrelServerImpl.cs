@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                             throw new InvalidOperationException($"Cannot start HTTP/1.x or HTTP/2 server if no {nameof(IConnectionListenerFactory)} is registered.");
                         }
 
-                        options.UseHttpServer(ServiceContext, application, options.Protocols);
+                        options.UseHttpServer(ServiceContext, application, options.Protocols, options.AddAltSvcHeader);
                         var connectionDelegate = options.Build();
 
                         // Add the connection limit middleware
@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                             throw new InvalidOperationException($"Cannot start HTTP/3 server if no {nameof(IMultiplexedConnectionListenerFactory)} is registered.");
                         }
 
-                        options.UseHttp3Server(ServiceContext, application);
+                        options.UseHttp3Server(ServiceContext, application, options.Protocols, options.AddAltSvcHeader);
                         var multiplexedConnectionDelegate = ((IMultiplexedConnectionBuilder)options).Build();
 
                         // Add the connection limit middleware

@@ -36,7 +36,6 @@ namespace Http3SampleApp
                     .ConfigureKestrel((context, options) =>
                     {
                         var basePort = 5557;
-                        options.EnableAltSvc = true;
 
                         options.Listen(IPAddress.Any, basePort, listenOptions =>
                         {
