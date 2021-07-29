@@ -42,6 +42,7 @@ Microsoft.AspNetCore.Components.Web.HeadOutlet
 Microsoft.AspNetCore.Components.Web.HeadOutlet.HeadOutlet() -> void
 Microsoft.AspNetCore.Components.Web.IErrorBoundaryLogger
 Microsoft.AspNetCore.Components.Web.IErrorBoundaryLogger.LogErrorAsync(System.Exception! exception) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Web.JSComponentConfigurationExtensions
 Microsoft.AspNetCore.Components.Web.MouseEventArgs.PageX.get -> double
 Microsoft.AspNetCore.Components.Web.MouseEventArgs.PageX.set -> void
 Microsoft.AspNetCore.Components.Web.MouseEventArgs.PageY.get -> double
@@ -71,5 +72,9 @@ Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.EventName.get -> s
 Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.EventName.set -> void
 *REMOVED*Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.EventArgsType.get -> string!
 *REMOVED*Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.EventArgsType.set -> void
+static Microsoft.AspNetCore.Components.Web.JSComponentConfigurationExtensions.RegisterForJavaScript(this Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration! configuration, System.Type! componentType, string! identifier) -> void
+static Microsoft.AspNetCore.Components.Web.JSComponentConfigurationExtensions.RegisterForJavaScript(this Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration! configuration, System.Type! componentType, string! identifier, string! javaScriptInitializer) -> void
+static Microsoft.AspNetCore.Components.Web.JSComponentConfigurationExtensions.RegisterForJavaScript<TComponent>(this Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration! configuration, string! identifier) -> void
+static Microsoft.AspNetCore.Components.Web.JSComponentConfigurationExtensions.RegisterForJavaScript<TComponent>(this Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration! configuration, string! identifier, string! javaScriptInitializer) -> void
 virtual Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.AddRootComponent(string! identifier, string! domElementSelector) -> int
 virtual Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.RemoveRootComponent(int componentId) -> void

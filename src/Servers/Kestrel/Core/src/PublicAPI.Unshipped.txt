@@ -117,6 +117,7 @@ Microsoft.AspNetCore.Server.Kestrel.Https.TlsHandshakeCallbackOptions.OnConnecti
 Microsoft.AspNetCore.Server.Kestrel.Https.TlsHandshakeCallbackOptions.OnConnectionState.get -> object?
 Microsoft.AspNetCore.Server.Kestrel.Https.TlsHandshakeCallbackOptions.OnConnectionState.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Https.TlsHandshakeCallbackOptions.TlsHandshakeCallbackOptions() -> void
+override Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate.ToString() -> string!
 static Microsoft.AspNetCore.Hosting.ListenOptionsHttpsExtensions.UseHttps(this Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions! listenOptions, Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions! httpsOptions) -> Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!
 static Microsoft.AspNetCore.Hosting.ListenOptionsHttpsExtensions.UseHttps(this Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions! listenOptions, Microsoft.AspNetCore.Server.Kestrel.Https.TlsHandshakeCallbackOptions! callbackOptions) -> Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!
 static Microsoft.AspNetCore.Hosting.ListenOptionsHttpsExtensions.UseHttps(this Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions! listenOptions, System.Action<Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions!>! configureOptions) -> Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!
@@ -212,4 +213,3 @@ static Microsoft.AspNetCore.Hosting.ListenOptionsHttpsExtensions.UseHttps(this M
 static Microsoft.AspNetCore.Hosting.ListenOptionsHttpsExtensions.UseHttps(this Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions! listenOptions, System.Security.Cryptography.X509Certificates.X509Certificate2! serverCertificate, System.Action<Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions!>! configureOptions) -> Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!
 static Microsoft.AspNetCore.Hosting.ListenOptionsHttpsExtensions.UseHttps(this Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions! listenOptions, string! fileName) -> Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!
 static Microsoft.AspNetCore.Server.Kestrel.Https.CertificateLoader.LoadFromStoreCert(string! subject, string! storeName, System.Security.Cryptography.X509Certificates.StoreLocation storeLocation, bool allowInvalid) -> System.Security.Cryptography.X509Certificates.X509Certificate2!
-override Microsoft.AspNetCore.Server.Kestrel.MinDataRate.ToString() -> string!
