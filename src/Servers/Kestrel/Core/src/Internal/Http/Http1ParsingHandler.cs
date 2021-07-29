@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             else
             {
-                Connection.OnHeader(name, value);
+                Connection.OnHeader(name, value, checkForNewlineChars : false);
             }
         }
 

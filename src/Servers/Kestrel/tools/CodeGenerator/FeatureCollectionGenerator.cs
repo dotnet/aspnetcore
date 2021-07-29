@@ -212,8 +212,7 @@ namespace {namespaceName}
 }}
 ";
 
-            // Temporary workaround for https://github.com/dotnet/runtime/issues/55688
-            return s.Replace("{{", "{").Replace("}}", "}");
+            return s;
         }
 
         static string Each<T>(IEnumerable<T> values, Func<T, string> formatter)

@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -29,6 +30,9 @@ namespace TestServer
             {
                 options.RootComponents.MaxJSRootComponents = 5; // To make it easier to test
                 options.RootComponents.RegisterForJavaScript<BasicTestApp.DynamicallyAddedRootComponent>("my-dynamic-root-component");
+                options.RootComponents.RegisterForJavaScript<BasicTestApp.JavaScriptRootComponentParameterTypes>(
+                    "component-with-many-parameters",
+                    javaScriptInitializer: "myJsRootComponentInitializers.testInitializer");
             });
             services.AddSingleton<ResourceRequestLog>();
 

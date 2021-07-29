@@ -674,7 +674,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void AppendHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
-            HttpRequestHeaders.Append(name, value);
+            HttpRequestHeaders.Append(name, value, checkForNewlineChars : true);
         }
 
         void IPooledStream.DisposeCore()

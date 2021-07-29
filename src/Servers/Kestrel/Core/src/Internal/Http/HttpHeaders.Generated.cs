@@ -7053,7 +7053,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
         
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public unsafe void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        public unsafe void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value, bool checkForNewlineChars)
         {
             ref byte nameStart = ref MemoryMarshal.GetReference(name);
             var nameStr = string.Empty;
@@ -7430,7 +7430,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
 
                 // We didn't have a previous matching header value, or have already added a header, so get the string for this value.
-                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector);
+                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector, checkForNewlineChars);
                 if ((_bits & flag) == 0)
                 {
                     // We didn't already have a header set, so add a new one.
@@ -7449,7 +7449,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // Convert value to string first, because passing two spans causes 8 bytes stack zeroing in
                 // this method with rep stosd, which is slower than necessary.
                 nameStr = name.GetHeaderName();
-                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector);
+                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector, checkForNewlineChars);
                 AppendUnknownHeaders(nameStr, valueStr);
             }
         }
@@ -7460,6 +7460,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
             var nameStr = string.Empty;
             var flag = 0L;
+            var checkForNewlineChars = true;
 
             // Does the HPack static index match any "known" headers
             switch (index)
@@ -7646,7 +7647,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
 
                 // We didn't have a previous matching header value, or have already added a header, so get the string for this value.
-                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector);
+                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector, checkForNewlineChars);
                 if ((_bits & flag) == 0)
                 {
                     // We didn't already have a header set, so add a new one.

@@ -1,0 +1,24 @@
+﻿@using Microsoft.JSInterop
+
+<p>This component is used in the test for JS root component initializers.</p>
+
+@code {
+    [Parameter] public string StringParam { get; set; }
+    [Parameter] public int IntParam { get; set; }
+    [Parameter] public long LongParam { get; set; }
+    [Parameter] public float FloatParam { get; set; }
+    [Parameter] public double DoubleParam { get; set; }
+    [Parameter] public decimal DecimalParam { get; set; }
+    [Parameter] public int? NullableIntParam { get; set; }
+    [Parameter] public long? NullableLongParam { get; set; }
+    [Parameter] public float? NullableFloatParam { get; set; }
+    [Parameter] public double? NullableDoubleParam { get; set; }
+    [Parameter] public decimal? NullableDecimalParam { get; set; }
+    [Parameter] public bool BoolParam { get; set; }
+    [Parameter] public bool? NullableBoolParam { get; set; }
+    [Parameter] public DateTime DateTimeParam { get; set; }
+    [Parameter] public MyComplexType ComplexTypeParam { get; set; }
+    [Parameter] public IJSObjectReference JSObjectReferenceParam { get; set; }
+
+    public class MyComplexType {}
+}

@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             LoggerFactory = NullLoggerFactory.Instance;
         }
 
-        public virtual IDisposable StartVerifiableLog(Func<WriteContext, bool> expectedErrorsFilter = null)
+        public virtual VerifyNoErrorsScope StartVerifiableLog(Func<WriteContext, bool> expectedErrorsFilter = null)
         {
             return CreateScope(expectedErrorsFilter);
         }

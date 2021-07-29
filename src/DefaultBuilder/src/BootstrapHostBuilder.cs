@@ -1,11 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Hosting
@@ -14,26 +14,25 @@ namespace Microsoft.AspNetCore.Hosting
     internal class BootstrapHostBuilder : IHostBuilder
     {
         private readonly ConfigurationManager _configuration;
-        private readonly WebHostEnvironment _environment;
-
-        private readonly HostBuilderContext _hostContext;
-
+        private readonly IServiceCollection _services;
         private readonly List<Action<IConfigurationBuilder>> _configureHostActions = new();
         private readonly List<Action<HostBuilderContext, IConfigurationBuilder>> _configureAppActions = new();
+        private readonly List<Action<HostBuilderContext, IServiceCollection>> _configureServicesActions = new();
 
-        public BootstrapHostBuilder(ConfigurationManager configuration, WebHostEnvironment webHostEnvironment)
+        private readonly List<Action<IHostBuilder>> _remainingOperations = new();
+
+        public BootstrapHostBuilder(
+            ConfigurationManager configuration,
+            IServiceCollection services,
+            IDictionary<object, object> properties)
         {
             _configuration = configuration;
-            _environment = webHostEnvironment;
+            _services = services;
 
-            _hostContext = new HostBuilderContext(Properties)
-            {
-                Configuration = configuration,
-                HostingEnvironment = webHostEnvironment
-            };
+            Properties = properties;
         }
 
-        public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
+        public IDictionary<object, object> Properties { get; }
 
         public IHost Build()
         {
@@ -51,6 +50,12 @@ namespace Microsoft.AspNetCore.Hosting
         {
             // This is not called by HostingHostBuilderExtensions.ConfigureDefaults currently, but that could change in the future.
             // If this does get called in the future, it should be called again at a later stage on the ConfigureHostBuilder.
+            if (configureDelegate is null)
+            {
+                throw new ArgumentNullException(nameof(configureDelegate));
+            }
+
+            _remainingOperations.Add(hostBuilder => hostBuilder.ConfigureContainer<TContainerBuilder>(configureDelegate));
             return this;
         }
 
@@ -60,15 +65,10 @@ namespace Microsoft.AspNetCore.Hosting
             return this;
         }
 
-        public string? GetSetting(string key)
-        {
-            return _configuration[key];
-        }
-
         public IHostBuilder ConfigureServices(Action<HostBuilderContext, IServiceCollection> configureDelegate)
         {
             // HostingHostBuilderExtensions.ConfigureDefaults calls this via ConfigureLogging
-            // during the initial config stage. It should be called again later on the ConfigureHostBuilder.
+            _configureServicesActions.Add(configureDelegate ?? throw new ArgumentNullException(nameof(configureDelegate)));
             return this;
         }
 
@@ -76,6 +76,12 @@ namespace Microsoft.AspNetCore.Hosting
         {
             // This is not called by HostingHostBuilderExtensions.ConfigureDefaults currently, but that could change in the future.
             // If this does get called in the future, it should be called again at a later stage on the ConfigureHostBuilder.
+            if (factory is null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
+            _remainingOperations.Add(hostBuilder => hostBuilder.UseServiceProviderFactory<TContainerBuilder>(factory));
             return this;
         }
 
@@ -83,26 +89,75 @@ namespace Microsoft.AspNetCore.Hosting
         {
             // HostingHostBuilderExtensions.ConfigureDefaults calls this via UseDefaultServiceProvider
             // during the initial config stage. It should be called again later on the ConfigureHostBuilder.
+            if (factory is null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
+            _remainingOperations.Add(hostBuilder => hostBuilder.UseServiceProviderFactory<TContainerBuilder>(factory));
             return this;
         }
 
-        internal void RunConfigurationCallbacks()
+        public void RunDefaultCallbacks(HostBuilder innerBuilder)
         {
             foreach (var configureHostAction in _configureHostActions)
             {
                 configureHostAction(_configuration);
             }
 
-            // Configuration doesn't auto-update during the bootstrap phase to reduce I/O,
-            // but we do need to update between host and app configuration so the right environment is used.
-            _environment.ApplyConfigurationSettings(_configuration);
+            // This is the hosting environment based on configuration we've seen so far.
+            var hostingEnvironment = new HostingEnvironment()
+            {
+                ApplicationName = _configuration[HostDefaults.ApplicationKey],
+                EnvironmentName = _configuration[HostDefaults.EnvironmentKey] ?? Environments.Production,
+                ContentRootPath = HostingEnvironment.ResolveContentRootPath(_configuration[HostDefaults.ContentRootKey], AppContext.BaseDirectory),
+            };
+
+            hostingEnvironment.ContentRootFileProvider = new PhysicalFileProvider(hostingEnvironment.ContentRootPath);
+
+            var hostContext = new HostBuilderContext(Properties)
+            {
+                Configuration = _configuration,
+                HostingEnvironment = hostingEnvironment,
+            };
+
+            _configuration.SetBasePath(hostingEnvironment.ContentRootPath);
 
             foreach (var configureAppAction in _configureAppActions)
             {
-                configureAppAction(_hostContext, _configuration);
+                configureAppAction(hostContext, _configuration);
             }
 
-            _environment.ApplyConfigurationSettings(_configuration);
+            foreach (var configureServicesAction in _configureServicesActions)
+            {
+                configureServicesAction(hostContext, _services);
+            }
+
+            foreach (var callback in _remainingOperations)
+            {
+                callback(innerBuilder);
+            }
+        }
+
+        private class HostingEnvironment : IHostEnvironment
+        {
+            public string EnvironmentName { get; set; } = default!;
+            public string ApplicationName { get; set; } = default!;
+            public string ContentRootPath { get; set; } = default!;
+            public IFileProvider ContentRootFileProvider { get; set; } = default!;
+
+            public static string ResolveContentRootPath(string contentRootPath, string basePath)
+            {
+                if (string.IsNullOrEmpty(contentRootPath))
+                {
+                    return basePath;
+                }
+                if (Path.IsPathRooted(contentRootPath))
+                {
+                    return contentRootPath;
+                }
+                return Path.Combine(Path.GetFullPath(basePath), contentRootPath);
+            }
         }
     }
 }

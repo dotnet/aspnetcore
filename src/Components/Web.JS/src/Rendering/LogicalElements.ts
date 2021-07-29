@@ -174,7 +174,7 @@ export function isSvgElement(element: LogicalElement) {
   // Note: This check is intentionally case-sensitive since we expect this element
   // to appear as a child of an SVG element and SVGs are case-sensitive.
   var closestElement = getClosestDomElement(element);
-  return closestElement.namespaceURI === 'http://www.w3.org/2000/svg' && closestElement.tagName !== 'foreignObject';
+  return closestElement.namespaceURI === 'http://www.w3.org/2000/svg' && closestElement['tagName'] !== 'foreignObject';
 }
 
 export function getLogicalChildrenArray(element: LogicalElement) {
@@ -235,7 +235,7 @@ export function permuteLogicalChildren(parent: LogicalElement, permutationList: 
 }
 
 export function getClosestDomElement(logicalElement: LogicalElement) {
-  if (logicalElement instanceof Element) {
+  if (logicalElement instanceof Element || logicalElement instanceof DocumentFragment) {
     return logicalElement;
   } else if (logicalElement instanceof Comment) {
     return logicalElement.parentNode! as Element;
@@ -265,7 +265,7 @@ function getLogicalNextSibling(element: LogicalElement): LogicalElement | null {
 function appendDomNode(child: Node, parent: LogicalElement) {
   // This function only puts 'child' into the DOM in the right place relative to 'parent'
   // It does not update the logical children array of anything
-  if (parent instanceof Element) {
+  if (parent instanceof Element || parent instanceof DocumentFragment) {
     parent.appendChild(child);
   } else if (parent instanceof Comment) {
     const parentLogicalNextSibling = getLogicalNextSibling(parent) as any as Node;
@@ -286,7 +286,7 @@ function appendDomNode(child: Node, parent: LogicalElement) {
 // Returns the final node (in depth-first evaluation order) that is a descendant of the logical element.
 // As such, the entire subtree is between 'element' and 'findLastDomNodeInRange(element)' inclusive.
 function findLastDomNodeInRange(element: LogicalElement) {
-  if (element instanceof Element) {
+  if (element instanceof Element || element instanceof DocumentFragment) {
     return element;
   }
 
@@ -298,7 +298,7 @@ function findLastDomNodeInRange(element: LogicalElement) {
     // Harder case: there's no logical next-sibling, so recurse upwards until we find
     // a logical ancestor that does have one, or a physical element
     const logicalParent = getLogicalParent(element)!;
-    return logicalParent instanceof Element
+    return logicalParent instanceof Element || logicalParent instanceof DocumentFragment
       ? logicalParent.lastChild
       : findLastDomNodeInRange(logicalParent);
   }

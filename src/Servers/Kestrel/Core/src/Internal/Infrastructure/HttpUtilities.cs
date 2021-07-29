@@ -108,25 +108,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public static string GetAsciiOrUTF8StringNonNullCharacters(this ReadOnlySpan<byte> span)
             => StringUtilities.GetAsciiOrUTF8StringNonNullCharacters(span, DefaultRequestHeaderEncoding);
 
-        public static string GetRequestHeaderString(this ReadOnlySpan<byte> span, string name, Func<string, Encoding?> encodingSelector)
+        public static string GetRequestHeaderString(this ReadOnlySpan<byte> span, string name, Func<string, Encoding?> encodingSelector, bool checkForNewlineChars)
         {
+            string result;
             if (ReferenceEquals(KestrelServerOptions.DefaultHeaderEncodingSelector, encodingSelector))
             {
-                return span.GetAsciiOrUTF8StringNonNullCharacters(DefaultRequestHeaderEncoding);
+                result = span.GetAsciiOrUTF8StringNonNullCharacters(DefaultRequestHeaderEncoding);
+            }
+            else
+            {
+                result = span.GetRequestHeaderStringWithoutDefaultEncodingCore(name, encodingSelector);
             }
 
+            // New Line characters (CR, LF) are considered invalid at this point.
+            if (checkForNewlineChars && ((ReadOnlySpan<char>)result).IndexOfAny('\r', '\n') >= 0)
+            {
+                throw new InvalidOperationException("Newline characters (CR/LF) are not allowed in request headers.");
+            }
+
+            return result;
+        }
+
+        private static string GetRequestHeaderStringWithoutDefaultEncodingCore(this ReadOnlySpan<byte> span, string name, Func<string, Encoding?> encodingSelector)
+        {
             var encoding = encodingSelector(name);
 
             if (encoding is null)
             {
                 return span.GetAsciiOrUTF8StringNonNullCharacters(DefaultRequestHeaderEncoding);
             }
-
             if (ReferenceEquals(encoding, Encoding.Latin1))
             {
                 return span.GetLatin1StringNonNullCharacters();
             }
-
             try
             {
                 return encoding.GetString(span);

@@ -17,7 +17,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
-    internal partial class QuicStreamContext : TransportConnection, IStreamDirectionFeature, IProtocolErrorCodeFeature, IStreamIdFeature, IPooledStream
+    internal partial class QuicStreamContext : TransportConnection, IPooledStream
     {
         // Internal for testing.
         internal Task _processingTask = Task.CompletedTask;
@@ -70,10 +70,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         private PipeWriter Input => Application.Output;
         private PipeReader Output => Application.Input;
 
-        public bool CanRead { get; private set; }
-        public bool CanWrite { get; private set; }
-
-        public long StreamId { get; private set; }
         public bool CanReuse { get; private set; }
 
         public void Initialize(QuicStream stream)
@@ -88,13 +84,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             }
 
             ConnectionClosed = _streamClosedTokenSource.Token;
-
-            // TODO - add to generated features
-            Features.Set<IStreamDirectionFeature>(this);
-            Features.Set<IProtocolErrorCodeFeature>(this);
-            Features.Set<IStreamIdFeature>(this);
-            // TODO populate the ITlsConnectionFeature (requires client certs).
-            Features.Set<ITlsConnectionFeature>(new FakeTlsConnectionFeature());
 
             InitializeFeatures();
 
@@ -133,8 +122,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             get => _connectionId ??= StringUtilities.ConcatAsHexSuffix(_connection.ConnectionId, ':', (uint)StreamId);
             set => _connectionId = value;
         }
-
-        public long Error { get; set; }
 
         public long PoolExpirationTicks { get; set; }
 

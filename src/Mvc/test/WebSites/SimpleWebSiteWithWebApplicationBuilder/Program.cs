@@ -25,6 +25,10 @@ app.MapGet("/many-results", (int id) =>
 
 app.MapGet("/problem", () => Results.Problem("Some problem"));
 
+app.MapGet("/environment", (IHostEnvironment environment) => environment.EnvironmentName);
+
+app.MapGet("/greeting", (IConfiguration config) => config["Greeting"]);
+
 app.Run();
 
 record Person(string Name, int Age);

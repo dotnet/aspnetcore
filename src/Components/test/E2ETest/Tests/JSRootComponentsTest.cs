@@ -31,11 +31,18 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void CanAddAndDisposeRootComponents(bool intoBlazorUi)
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public void CanAddAndDisposeRootComponents(bool intoBlazorUi, bool attachShadowRoot)
         {
             var message = app.FindElement(By.Id("message"));
+
+            if (attachShadowRoot)
+            {
+                app.FindElement(By.Id("add-shadow-root")).Click();
+            }
 
             // We can add root components with initial parameters
             var buttonId = intoBlazorUi ? "add-root-component-inside-blazor" : "add-root-component";
@@ -44,6 +51,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // They render and work
             var containerId = intoBlazorUi ? "container-rendered-by-blazor" : "root-container-1";
             var dynamicRootContainer = Browser.FindElement(By.Id(containerId));
+            if (attachShadowRoot)
+            {
+                dynamicRootContainer = GetShadowRoot(dynamicRootContainer);
+            }
             Browser.Equal("0", () => dynamicRootContainer.FindElement(By.ClassName("click-count")).Text);
             dynamicRootContainer.FindElement(By.ClassName("increment")).Click();
             dynamicRootContainer.FindElement(By.ClassName("increment")).Click();
@@ -51,10 +62,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // We can dispose the root component
             app.FindElement(By.Id("remove-root-component")).Click();
-            Browser.Equal($"Disposed component in {containerId}", () => message.Text);
+            Browser.Equal($"Disposed component in {(attachShadowRoot ? "ShadowDOM" : containerId)}", () => message.Text);
 
             // It's gone from the UI
-            Browser.Equal(string.Empty, () => dynamicRootContainer.Text);
             Browser.Empty(() => dynamicRootContainer.FindElements(By.CssSelector("*")));
 
             AssertGlobalErrorState(false);
@@ -79,7 +89,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34743")]
         public void CannotAddMultipleRootComponentsToTheSameElementAtTheSameTime()
         {
             // Try adding a second without removing the first
@@ -189,10 +198,43 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 });
         }
 
+        [Fact]
+        public void CallsJavaScriptInitializers()
+        {
+            app.FindElement(By.Id("show-initializer-call-log")).Click();
+
+            var expectedCallLog = "[{\"name\":\"component-with-many-parameters\",\"parameters\":[" +
+                "{\"name\":\"StringParam\",\"type\":\"string\"}," +
+                "{\"name\":\"IntParam\",\"type\":\"number\"}," +
+                "{\"name\":\"LongParam\",\"type\":\"number\"}," +
+                "{\"name\":\"FloatParam\",\"type\":\"number\"}," +
+                "{\"name\":\"DoubleParam\",\"type\":\"number\"}," +
+                "{\"name\":\"DecimalParam\",\"type\":\"number\"}," +
+                "{\"name\":\"NullableIntParam\",\"type\":\"number?\"}," +
+                "{\"name\":\"NullableLongParam\",\"type\":\"number?\"}," +
+                "{\"name\":\"NullableFloatParam\",\"type\":\"number?\"}," +
+                "{\"name\":\"NullableDoubleParam\",\"type\":\"number?\"}," +
+                "{\"name\":\"NullableDecimalParam\",\"type\":\"number?\"}," +
+                "{\"name\":\"BoolParam\",\"type\":\"boolean\"}," +
+                "{\"name\":\"NullableBoolParam\",\"type\":\"boolean?\"}," +
+                "{\"name\":\"DateTimeParam\",\"type\":\"object\"}," +
+                "{\"name\":\"ComplexTypeParam\",\"type\":\"object\"}," +
+                "{\"name\":\"JSObjectReferenceParam\",\"type\":\"object\"}]}" +
+                "]";
+
+            Browser.Equal(expectedCallLog, () => Browser.FindElement(By.Id("message")).Text);
+        }
+
         void AssertGlobalErrorState(bool hasGlobalError)
         {
             var globalErrorUi = Browser.Exists(By.Id("blazor-error-ui"));
-            Assert.Equal(hasGlobalError ? "block" : "none", globalErrorUi.GetCssValue("display"));
+            Browser.Equal(hasGlobalError ? "block" : "none", () => globalErrorUi.GetCssValue("display"));
+        }
+
+        IWebElement GetShadowRoot(IWebElement element)
+        {
+            var result = ((IJavaScriptExecutor)Browser).ExecuteScript("return arguments[0].shadowRoot", element);
+            return (IWebElement)result;
         }
     }
 }
