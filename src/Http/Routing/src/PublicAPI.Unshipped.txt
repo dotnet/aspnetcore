@@ -23,3 +23,16 @@ static Microsoft.AspNetCore.Builder.MinimalActionEndpointRouteBuilderExtensions.
 static Microsoft.AspNetCore.Builder.MinimalActionEndpointRouteBuilderExtensions.MapMethods(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Collections.Generic.IEnumerable<string!>! httpMethods, System.Delegate! action) -> Microsoft.AspNetCore.Builder.MinimalActionEndpointConventionBuilder!
 static Microsoft.AspNetCore.Builder.MinimalActionEndpointRouteBuilderExtensions.MapPost(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Delegate! action) -> Microsoft.AspNetCore.Builder.MinimalActionEndpointConventionBuilder!
 static Microsoft.AspNetCore.Builder.MinimalActionEndpointRouteBuilderExtensions.MapPut(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Delegate! action) -> Microsoft.AspNetCore.Builder.MinimalActionEndpointConventionBuilder!
+Microsoft.AspNetCore.Routing.IEndpointGroupNameMetadata
+Microsoft.AspNetCore.Routing.IEndpointGroupNameMetadata.EndpointGroupName.get -> string!
+Microsoft.AspNetCore.Routing.EndpointGroupNameMetadata
+Microsoft.AspNetCore.Routing.EndpointGroupNameMetadata.EndpointGroupNameMetadata(string! endpointGroupName) -> void
+Microsoft.AspNetCore.Routing.EndpointGroupNameMetadata.EndpointGroupName.get -> string!
+Microsoft.AspNetCore.Routing.EndpointGroupNameAttribute
+Microsoft.AspNetCore.Routing.EndpointGroupNameAttribute.EndpointGroupNameAttribute(string! endpointGroupName) -> void
+Microsoft.AspNetCore.Routing.EndpointGroupNameAttribute.EndpointGroupName.get -> string!
+Microsoft.AspNetCore.Routing.EndpointNameAttribute
+Microsoft.AspNetCore.Routing.EndpointNameAttribute.EndpointNameAttribute(string! endpointName) -> void
+Microsoft.AspNetCore.Routing.EndpointNameAttribute.EndpointName.get -> string!
+static Microsoft.AspNetCore.Builder.RoutingEndpointConventionBuilderExtensions.WithName<TBuilder>(this TBuilder builder, string! endpointName) -> TBuilder
+static Microsoft.AspNetCore.Builder.RoutingEndpointConventionBuilderExtensions.WithGroupName<TBuilder>(this TBuilder builder, string! endpointGroupName) -> TBuilder
