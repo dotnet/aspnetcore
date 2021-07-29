@@ -5,9 +5,6 @@
 #include <filesystem>
 #include "exceptions.h"
 #include "EventLog.h"
-#include <chrono>
-#include <time.h>
-#include <cwchar>
 
 AggregateRedirectionOutput::AggregateRedirectionOutput(std::shared_ptr<RedirectionOutput> outputA, std::shared_ptr<RedirectionOutput> outputB, std::shared_ptr<RedirectionOutput> outputC) noexcept(true):
     m_outputA(std::move(outputA)), m_outputB(std::move(outputB)), m_outputC(std::move(outputC))
