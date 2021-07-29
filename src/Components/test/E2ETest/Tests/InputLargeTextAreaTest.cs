@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal(string.Empty, () => textResultFromComponent.GetAttribute("innerHTML"));
 
             var newValue = new string('a', 25_000);
-            SetTextAreaValueInBrowser(newValue);
+            SetTextAreaValueInBrowser('a');
 
             getTextBtn.Click();
             Browser.Equal(newValue, () => textResultFromComponent.GetAttribute("innerHTML"));
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void CanEditValue_LargeAmountOfContent_Insert()
         {
             var newValue = new string('f', 25_000);
-            SetTextAreaValueInBrowser(newValue);
+            SetTextAreaValueInBrowser('f');
 
             var textArea = Browser.Exists(By.Id("largeTextArea"), TimeSpan.FromSeconds(10));
             Assert.NotNull(textArea);
@@ -119,9 +119,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             textArea.SendKeys("abc");
             FocusAway();
 
-            var firstTick = Convert.ToInt64(lastChangedTime.GetAttribute("value"));
+            var firstTick = Convert.ToInt64(lastChangedTime.GetAttribute("innerHTML"));
             Assert.True(firstTick > 0);
-            var firstLength = Convert.ToInt32(lastChangedLength.GetAttribute("value"));
+            var firstLength = Convert.ToInt32(lastChangedLength.GetAttribute("innerHTML"));
             Assert.Equal(3, firstLength);
 
             // Ensure time passes between first and second changes
@@ -130,9 +130,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             textArea.SendKeys("123");
             FocusAway();
 
-            var secondTick = Convert.ToInt64(lastChangedTime.GetAttribute("value"));
+            var secondTick = Convert.ToInt64(lastChangedTime.GetAttribute("innerHTML"));
             Assert.True(secondTick > firstTick);
-            var secondLengthLength = Convert.ToInt32(lastChangedLength.GetAttribute("value"));
+            var secondLengthLength = Convert.ToInt32(lastChangedLength.GetAttribute("innerHTML"));
             Assert.Equal(6, secondLengthLength);
 
             FocusAway();
@@ -142,18 +142,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanEditValue_LargeAmountOfContent_Delete()
         {
-            var newValue = new string('f', 25_000);
-            SetTextAreaValueInBrowser(newValue);
+            SetTextAreaValueInBrowser('g');
 
             var textArea = Browser.Exists(By.Id("largeTextArea"), TimeSpan.FromSeconds(10));
             Assert.NotNull(textArea);
 
             for (var i = 0; i < 500; i++)
             {
-                textArea.SendKeys(Keys.Delete);
+                textArea.SendKeys(Keys.Backspace);
             }
 
-            Assert.Equal(new string('f', 24_500), GetTextAreaValueFromBrowser());
+            Assert.Equal(new string('g', 24_500), GetTextAreaValueFromBrowser());
 
             FocusAway();
             AssertLogDoesNotContainMessages(CircuitErrors);
@@ -175,10 +174,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             return (string)textArea.GetAttribute("value");
         }
 
-        private void SetTextAreaValueInBrowser(string newValue)
+        private void SetTextAreaValueInBrowser(char charToRepeat, int numChars = 25_000)
         {
             var javascript = (IJavaScriptExecutor)Browser;
-            javascript.ExecuteScript($"document.getElementById(\"largeTextArea\").value = {newValue};");
+            javascript.ExecuteScript($"document.getElementById(\"largeTextArea\").value = '{charToRepeat}'.repeat({numChars});");
         }
 
         private void FocusAway()
