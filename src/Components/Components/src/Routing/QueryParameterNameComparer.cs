@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
-    internal class QueryParameterNameComparer : IComparer<ReadOnlyMemory<char>>, IEqualityComparer<ReadOnlyMemory<char>>
+    internal sealed class QueryParameterNameComparer : IComparer<ReadOnlyMemory<char>>, IEqualityComparer<ReadOnlyMemory<char>>
     {
         public static readonly QueryParameterNameComparer Instance = new();
 

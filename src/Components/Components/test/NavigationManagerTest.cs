@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Globalization;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components
@@ -94,6 +95,7 @@ namespace Microsoft.AspNetCore.Components
 
         [Theory]
         [InlineData("scheme://host/?name=Bob%20Joe&age=42", "scheme://host/?name=John%20Doe&age=42")]
+        [InlineData("scheme://host/?NaMe=Bob%20Joe&AgE=42", "scheme://host/?name=John%20Doe&AgE=42")]
         [InlineData("scheme://host/?name=Sally%Smith&age=42&name=Emily", "scheme://host/?name=John%20Doe&age=42&name=John%20Doe")]
         [InlineData("scheme://host/?name=&age=42", "scheme://host/?name=John%20Doe&age=42")]
         [InlineData("scheme://host/?name=", "scheme://host/?name=John%20Doe")]
@@ -120,6 +122,7 @@ namespace Microsoft.AspNetCore.Components
         [Theory]
         [InlineData("scheme://host/?name=Bob%20Joe&age=42", "scheme://host/?age=42")]
         [InlineData("scheme://host/?name=Sally%Smith&age=42&name=Emily", "scheme://host/?age=42")]
+        [InlineData("scheme://host/?name=Sally%Smith&age=42&NaMe=Emily", "scheme://host/?age=42")]
         [InlineData("scheme://host/?name=&age=42", "scheme://host/?age=42")]
         [InlineData("scheme://host/?name=", "scheme://host/")]
         [InlineData("scheme://host/", "scheme://host/")]
@@ -147,6 +150,7 @@ namespace Microsoft.AspNetCore.Components
         [InlineData("scheme://host/?search=rugs&filter=price%3Ahigh", "scheme://host/?search=rugs&filter=price%3Alow&filter=shipping%3Afree&filter=category%3Arug")]
         [InlineData("scheme://host/?filter=price%3Ahigh&search=rugs&filter=shipping%3A2day", "scheme://host/?filter=price%3Alow&search=rugs&filter=shipping%3Afree&filter=category%3Arug")]
         [InlineData("scheme://host/?filter=price&filter=shipping%3A2day&filter=category%3Arug&filter=availability%3Atoday", "scheme://host/?filter=price%3Alow&filter=shipping%3Afree&filter=category%3Arug")]
+        [InlineData("scheme://host/?filter=price&FiLtEr=shipping%3A2day&filter=category%3Arug&FiLtEr=availability%3Atoday", "scheme://host/?filter=price%3Alow&filter=shipping%3Afree&filter=category%3Arug")]
         [InlineData("scheme://host/", "scheme://host/?filter=price%3Alow&filter=shipping%3Afree&filter=category%3Arug")]
         public void UriWithQueryParameterOfTValue_ReplacesExistingQueryParameters(string baseUri, string expectedUri)
         {
@@ -177,17 +181,6 @@ namespace Microsoft.AspNetCore.Components
             Assert.Equal(expectedUri, actualUri);
         }
 
-        [Fact]
-        public void UriWithQueryParameterOfTValue_ThrowsWhenParameterValueTypeIsUnsupported()
-        {
-            var baseUri = "scheme://host/";
-            var navigationManager = new TestNavigationManager(baseUri);
-            var unsupportedParameterValues = new[] { new { Value = 3 } };
-
-            var exception = Assert.Throws<InvalidOperationException>(() => navigationManager.UriWithQueryParameter("value", unsupportedParameterValues));
-            Assert.StartsWith("Cannot format query parameters with values of type", exception.Message);
-        }
-
         [Theory]
         [InlineData("")]
         [InlineData((string)null)]
@@ -203,6 +196,7 @@ namespace Microsoft.AspNetCore.Components
 
         [Theory]
         [InlineData("scheme://host/?name=Bob%20Joe&age=42", "scheme://host/?age=25&eye-color=green")]
+        [InlineData("scheme://host/?NaMe=Bob%20Joe&AgE=42", "scheme://host/?age=25&eye-color=green")]
         [InlineData("scheme://host/?name=Bob%20Joe&age=42&keepme=true", "scheme://host/?age=25&keepme=true&eye-color=green")]
         [InlineData("scheme://host/?age=42&eye-color=87", "scheme://host/?age=25&eye-color=green")]
         [InlineData("scheme://host/?", "scheme://host/?age=25&eye-color=green")]
