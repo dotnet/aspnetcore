@@ -36,11 +36,11 @@ namespace Microsoft.JSInterop.Implementation
         }
 
         /// <inheritdoc />
-        async ValueTask<Stream> IJSStreamReference.OpenReadStreamAsync(long maxLength, CancellationToken cancellationToken)
+        async ValueTask<Stream> IJSStreamReference.OpenReadStreamAsync(long maxAllowedSize, CancellationToken cancellationToken)
         {
-            if (Length > maxLength)
+            if (Length > maxAllowedSize)
             {
-                throw new ArgumentOutOfRangeException(nameof(maxLength), $"The incoming data stream of length {Length} exceeds the maximum length {maxLength}.");
+                throw new ArgumentOutOfRangeException(nameof(maxAllowedSize), $"The incoming data stream of length {Length} exceeds the maximum allowed length {maxAllowedSize}.");
             }
 
             return await _jsRuntime.ReadJSDataAsStreamAsync(this, Length, cancellationToken);
