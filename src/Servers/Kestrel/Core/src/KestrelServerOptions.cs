@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             // ListenOptions
             writer.WritePropertyName(nameof(ListenOptions));
             writer.WriteStartArray();
-            foreach (var listenOptions in ListenOptions)
+            foreach (var listenOptions in OptionsInUse)
             {
                 writer.WriteStartObject();
                 writer.WriteString("Address", listenOptions.GetDisplayName());
