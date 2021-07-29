@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public ILoggerFactory LoggerFactory { get; }
 
+        public IList<LogRecord> GetLogs() => _sink.GetLogs();
+
         public VerifyNoErrorsScope(ILoggerFactory loggerFactory = null, IDisposable wrappedDisposable = null, Func<WriteContext, bool> expectedErrorsFilter = null)
         {
             _wrappedDisposable = wrappedDisposable;
