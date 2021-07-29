@@ -115,6 +115,38 @@ namespace Microsoft.AspNetCore.Builder
             Assert.True(chainedBuilder.TestProperty);
         }
 
+        [Fact]
+        public void WithName_SetsEndpointName()
+        {
+            // Arrange
+            var builder = CreateBuilder();
+
+            // Act
+            builder.WithName("SomeEndpointName");
+
+            // Assert
+            var endpoint = builder.Build();
+
+            var endpointName = endpoint.Metadata.GetMetadata<EndpointNameMetadata>();
+            Assert.Equal("SomeEndpointName", endpointName.EndpointName);
+        }
+
+        [Fact]
+        public void WithGroupName_SetsEndpointGroupName()
+        {
+            // Arrange
+            var builder = CreateBuilder();
+
+            // Act
+            builder.WithGroupName("SomeEndpointGroupName");
+
+            // Assert
+            var endpoint = builder.Build();
+
+            var endpointGroupName = endpoint.Metadata.GetMetadata<EndpointGroupNameMetadata>();
+            Assert.Equal("SomeEndpointGroupName", endpointGroupName.EndpointGroupName);
+        }
+
         private TestEndpointConventionBuilder CreateBuilder()
         {
             var conventionBuilder = new DefaultEndpointConventionBuilder(new RouteEndpointBuilder(
