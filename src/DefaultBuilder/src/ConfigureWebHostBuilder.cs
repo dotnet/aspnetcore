@@ -15,13 +15,13 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public sealed class ConfigureWebHostBuilder : IWebHostBuilder
     {
-        private readonly WebHostEnvironment _environment;
+        private readonly IWebHostEnvironment _environment;
         private readonly ConfigurationManager _configuration;
         private readonly IServiceCollection _services;
 
         private readonly WebHostBuilderContext _context;
 
-        internal ConfigureWebHostBuilder(ConfigurationManager configuration, WebHostEnvironment environment, IServiceCollection services)
+        internal ConfigureWebHostBuilder(ConfigurationManager configuration, IWebHostEnvironment environment, IServiceCollection services)
         {
             _configuration = configuration;
             _environment = environment;
@@ -44,7 +44,9 @@ namespace Microsoft.AspNetCore.Builder
         {
             // Run these immediately so that they are observable by the imperative code
             configureDelegate(_context, _configuration);
-            _environment.ApplyConfigurationSettings(_configuration);
+
+            // Important: We disallow changing host configuration via this API.
+
             return this;
         }
 
@@ -71,8 +73,6 @@ namespace Microsoft.AspNetCore.Builder
         /// <inheritdoc />
         public IWebHostBuilder UseSetting(string key, string? value)
         {
-            _configuration[key] = value;
-
             // All properties on IWebHostEnvironment are non-nullable.
             if (value is null)
             {
@@ -81,20 +81,43 @@ namespace Microsoft.AspNetCore.Builder
 
             if (string.Equals(key, WebHostDefaults.ApplicationKey, StringComparison.OrdinalIgnoreCase))
             {
-                _environment.ApplicationName = value;
+                // Disallow changing any host configuration
+                throw new NotSupportedException();
             }
             else if (string.Equals(key, WebHostDefaults.ContentRootKey, StringComparison.OrdinalIgnoreCase))
             {
-                _environment.ContentRootPath = value;
+                // Disallow changing any host configuration
+                throw new NotSupportedException();
             }
             else if (string.Equals(key, WebHostDefaults.EnvironmentKey, StringComparison.OrdinalIgnoreCase))
             {
-                _environment.EnvironmentName = value;
+                // Disallow changing any host configuration
+                throw new NotSupportedException();
             }
             else if (string.Equals(key, WebHostDefaults.WebRootKey, StringComparison.OrdinalIgnoreCase))
             {
-                _environment.WebRootPath = value;
+                // We allow changing the web root since it's based off the content root and typically
+                // read after the host is built.
+                _environment.WebRootPath = Path.Combine(_environment.ContentRootPath, value);
             }
+            else if (string.Equals(key, WebHostDefaults.HostingStartupAssembliesKey, StringComparison.OrdinalIgnoreCase))
+            {
+                // Disallow changing any host configuration
+                throw new NotSupportedException();
+            }
+            else if (string.Equals(key, WebHostDefaults.HostingStartupExcludeAssembliesKey, StringComparison.OrdinalIgnoreCase))
+            {
+                // Disallow changing any host configuration
+                throw new NotSupportedException();
+            }
+            else if (string.Equals(key, WebHostDefaults.HostingStartupAssembliesKey, StringComparison.OrdinalIgnoreCase))
+            {
+                // Disallow changing any host configuration
+                throw new NotSupportedException();
+            }
+
+            // Set the configuration value after we've validated the key
+            _configuration[key] = value;
 
             return this;
         }

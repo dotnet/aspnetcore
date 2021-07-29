@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Hosting
@@ -12,10 +14,7 @@ namespace Microsoft.AspNetCore.Hosting
     internal class BootstrapHostBuilder : IHostBuilder
     {
         private readonly ConfigurationManager _configuration;
-        private readonly WebHostEnvironment _environment;
         private readonly IServiceCollection _services;
-        private readonly HostBuilderContext _hostContext;
-
         private readonly List<Action<IConfigurationBuilder>> _configureHostActions = new();
         private readonly List<Action<HostBuilderContext, IConfigurationBuilder>> _configureAppActions = new();
         private readonly List<Action<HostBuilderContext, IServiceCollection>> _configureServicesActions = new();
@@ -24,21 +23,13 @@ namespace Microsoft.AspNetCore.Hosting
 
         public BootstrapHostBuilder(
             ConfigurationManager configuration,
-            WebHostEnvironment webHostEnvironment,
             IServiceCollection services,
             IDictionary<object, object> properties)
         {
             _configuration = configuration;
-            _environment = webHostEnvironment;
             _services = services;
 
             Properties = properties;
-
-            _hostContext = new HostBuilderContext(Properties)
-            {
-                Configuration = configuration,
-                HostingEnvironment = webHostEnvironment
-            };
         }
 
         public IDictionary<object, object> Properties { get; }
@@ -114,25 +105,58 @@ namespace Microsoft.AspNetCore.Hosting
                 configureHostAction(_configuration);
             }
 
-            // Configuration doesn't auto-update during the bootstrap phase to reduce I/O,
-            // but we do need to update between host and app configuration so the right environment is used.
-            _environment.ApplyConfigurationSettings(_configuration);
+            // This is the hosting environment based on configuration we've seen so far.
+            var hostingEnvironment = new HostingEnvironment()
+            {
+                ApplicationName = _configuration[HostDefaults.ApplicationKey],
+                EnvironmentName = _configuration[HostDefaults.EnvironmentKey] ?? Environments.Production,
+                ContentRootPath = HostingEnvironment.ResolveContentRootPath(_configuration[HostDefaults.ContentRootKey], AppContext.BaseDirectory),
+            };
+
+            hostingEnvironment.ContentRootFileProvider = new PhysicalFileProvider(hostingEnvironment.ContentRootPath);
+
+            var hostContext = new HostBuilderContext(Properties)
+            {
+                Configuration = _configuration,
+                HostingEnvironment = hostingEnvironment,
+            };
+
+            _configuration.SetBasePath(hostingEnvironment.ContentRootPath);
 
             foreach (var configureAppAction in _configureAppActions)
             {
-                configureAppAction(_hostContext, _configuration);
+                configureAppAction(hostContext, _configuration);
             }
-
-            _environment.ApplyConfigurationSettings(_configuration);
 
             foreach (var configureServicesAction in _configureServicesActions)
             {
-                configureServicesAction(_hostContext, _services);
+                configureServicesAction(hostContext, _services);
             }
 
             foreach (var callback in _remainingOperations)
             {
                 callback(innerBuilder);
+            }
+        }
+
+        private class HostingEnvironment : IHostEnvironment
+        {
+            public string EnvironmentName { get; set; } = default!;
+            public string ApplicationName { get; set; } = default!;
+            public string ContentRootPath { get; set; } = default!;
+            public IFileProvider ContentRootFileProvider { get; set; } = default!;
+
+            public static string ResolveContentRootPath(string contentRootPath, string basePath)
+            {
+                if (string.IsNullOrEmpty(contentRootPath))
+                {
+                    return basePath;
+                }
+                if (Path.IsPathRooted(contentRootPath))
+                {
+                    return contentRootPath;
+                }
+                return Path.Combine(Path.GetFullPath(basePath), contentRootPath);
             }
         }
     }
