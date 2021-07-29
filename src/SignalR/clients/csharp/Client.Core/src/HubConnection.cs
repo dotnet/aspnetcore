@@ -1447,7 +1447,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     _state.ReleaseConnectionLock();
                 }
 
-                nextRetryDelay = GetNextRetryDelay(previousReconnectAttempts + 1, DateTime.UtcNow - reconnectStartTime, retryReason);
+                nextRetryDelay = GetNextRetryDelay(previousReconnectAttempts, DateTime.UtcNow - reconnectStartTime, retryReason);
             }
 
             await _state.WaitConnectionLockAsync(token: default);
