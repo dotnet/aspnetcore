@@ -12,6 +12,7 @@ import { Platform, Pointer, System_String, System_Array, System_Object, System_B
 import { getNextChunk } from './StreamingInterop';
 import { RootComponentsFunctions, setDynamicRootComponentManager } from './Rendering/JSRootComponents';
 import { DotNet } from '@microsoft/dotnet-js-interop';
+import { InputLargeTextArea } from './InputLargeTextArea';
 
 interface IBlazor {
   navigateTo: (uri: string, options: NavigationOptions) => void;
@@ -31,6 +32,7 @@ interface IBlazor {
     PageTitle: typeof PageTitle,
     forceCloseConnection?: () => Promise<void>;
     InputFile?: typeof InputFile,
+    InputLargeTextArea?: typeof InputLargeTextArea,
     invokeJSFromDotNet?: (callInfo: Pointer, arg0: any, arg1: any, arg2: any) => any;
     endInvokeDotNetFromJS?: (callId: System_String, success: System_Boolean, resultJsonOrErrorMessage: System_String) => void;
     receiveByteArray?: (id: System_Int, data: System_Array<System_Byte>) => void;
@@ -75,6 +77,7 @@ export const Blazor: IBlazor = {
     Virtualize,
     PageTitle,
     InputFile,
+    InputLargeTextArea,
     getJSDataStreamChunk: getNextChunk,
     setDynamicRootComponentManager,
   },

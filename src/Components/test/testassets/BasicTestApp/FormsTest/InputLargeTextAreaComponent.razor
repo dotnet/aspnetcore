@@ -1,0 +1,48 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+<h1>Input Large Text Area</h1>
+
+<InputLargeTextArea @ref="TextArea" OnChange="TextAreaChanged" />
+
+<br />
+
+<button id="setTextBtn" @onclick="SetTextAsync">SetTextAsync</button>
+<button id="getTextBtn" @onclick="GetTextAsync">GetTextAsync</button>
+
+<hr />
+
+<h3>Last Changed:</h3>
+Time:   <p id="lastChangedTime">@LastChangedTime</p>
+Length: <p id="lastChangedLength">@LastChangedLength</p>
+
+<hr />
+
+<h3>Get Text Result:</h3>
+<p id="getTextResult">@GetTextResult</p>
+
+@code {
+  public DateTime LastChangedTime { get; set; }
+  public int LastChangedLength { get; set; }
+  public string GetTextResult { get; set; }
+
+  InputLargeTextArea TextArea;
+
+  public async Task GetTextAsync()
+  {
+      var text = await TextArea.GetTextAsync();
+      GetTextResult = text.Length == 25000 ? "Success" : "Failure";
+      StateHasChanged();
+  }
+
+  public async Task SetTextAsync()
+  {
+      await TextArea.SetTextAsync(new string('c', 25_000));
+  }
+
+  public void TextAreaChanged(InputLargeTextAreaChangeEventArgs args)
+  {
+      LastChangedTime = DateTime.Now;
+      LastChangedLength = args.Length;
+      StateHasChanged();
+  }
+}
