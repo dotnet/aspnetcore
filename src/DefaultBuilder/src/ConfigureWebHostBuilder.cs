@@ -42,10 +42,47 @@ namespace Microsoft.AspNetCore.Builder
         /// <inheritdoc />
         public IWebHostBuilder ConfigureAppConfiguration(Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate)
         {
+            var previousContentRoot = _configuration[WebHostDefaults.ContentRootKey];
+            var previousWebRoot = _configuration[WebHostDefaults.ContentRootKey];
+            var previousApplication = _configuration[WebHostDefaults.ApplicationKey];
+            var previousEnvironment = _configuration[WebHostDefaults.EnvironmentKey];
+            var previousHostingStartupAssemblies = _configuration[WebHostDefaults.HostingStartupAssembliesKey];
+            var previousHostingStartupAssembliesExclude = _configuration[WebHostDefaults.HostingStartupExcludeAssembliesKey];
+
             // Run these immediately so that they are observable by the imperative code
             configureDelegate(_context, _configuration);
 
-            // Important: We disallow changing host configuration via this API.
+            if (_configuration[WebHostDefaults.WebRootKey] is string value && !string.Equals(previousWebRoot, value, StringComparison.OrdinalIgnoreCase))
+            {
+                // We allow changing the web root since it's based off the content root and typically
+                // read after the host is built.
+                _environment.WebRootPath = Path.Combine(_environment.ContentRootPath, value);
+            }
+            else if (!string.Equals(previousApplication, _configuration[WebHostDefaults.ApplicationKey], StringComparison.OrdinalIgnoreCase))
+            {
+                // Disallow changing any host configuration
+                throw new NotSupportedException("The application name changed. Changing the host configuration is not supported.");
+            }
+            else if (!string.Equals(previousContentRoot, _configuration[WebHostDefaults.ContentRootKey], StringComparison.OrdinalIgnoreCase))
+            {
+                // Disallow changing any host configuration
+                throw new NotSupportedException("The content root changed. Changing the host configuration is not supported.");
+            }
+            else if (!string.Equals(previousEnvironment, _configuration[WebHostDefaults.EnvironmentKey], StringComparison.OrdinalIgnoreCase))
+            {
+                // Disallow changing any host configuration
+                throw new NotSupportedException("The environment changed. Changing the host configuration is not supported.");
+            }
+            else if (!string.Equals(previousHostingStartupAssemblies, _configuration[WebHostDefaults.HostingStartupAssembliesKey], StringComparison.OrdinalIgnoreCase))
+            {
+                // Disallow changing any host configuration
+                throw new NotSupportedException("The hosting startup assemblies changed. Changing the host configuration is not supported.");
+            }
+            else if (!string.Equals(previousHostingStartupAssembliesExclude, _configuration[WebHostDefaults.HostingStartupExcludeAssembliesKey], StringComparison.OrdinalIgnoreCase))
+            {
+                // Disallow changing any host configuration
+                throw new NotSupportedException("The hosting startup assemblies exclude list changed. Changing the host configuration is not supported.");
+            }
 
             return this;
         }
@@ -79,41 +116,36 @@ namespace Microsoft.AspNetCore.Builder
                 return this;
             }
 
-            if (string.Equals(key, WebHostDefaults.ApplicationKey, StringComparison.OrdinalIgnoreCase))
-            {
-                // Disallow changing any host configuration
-                throw new NotSupportedException();
-            }
-            else if (string.Equals(key, WebHostDefaults.ContentRootKey, StringComparison.OrdinalIgnoreCase))
-            {
-                // Disallow changing any host configuration
-                throw new NotSupportedException();
-            }
-            else if (string.Equals(key, WebHostDefaults.EnvironmentKey, StringComparison.OrdinalIgnoreCase))
-            {
-                // Disallow changing any host configuration
-                throw new NotSupportedException();
-            }
-            else if (string.Equals(key, WebHostDefaults.WebRootKey, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(key, WebHostDefaults.WebRootKey, StringComparison.OrdinalIgnoreCase))
             {
                 // We allow changing the web root since it's based off the content root and typically
                 // read after the host is built.
                 _environment.WebRootPath = Path.Combine(_environment.ContentRootPath, value);
             }
+            else if (string.Equals(key, WebHostDefaults.ApplicationKey, StringComparison.OrdinalIgnoreCase))
+            {
+                // Disallow changing any host configuration
+                throw new NotSupportedException("The application name changed. Changing the host configuration is not supported.");
+            }
+            else if (string.Equals(key, WebHostDefaults.ContentRootKey, StringComparison.OrdinalIgnoreCase))
+            {
+                // Disallow changing any host configuration
+                throw new NotSupportedException("The content root changed. Changing the host configuration is not supported.");
+            }
+            else if (string.Equals(key, WebHostDefaults.EnvironmentKey, StringComparison.OrdinalIgnoreCase))
+            {
+                // Disallow changing any host configuration
+                throw new NotSupportedException("The environment changed. Changing the host configuration is not supported.");
+            }
             else if (string.Equals(key, WebHostDefaults.HostingStartupAssembliesKey, StringComparison.OrdinalIgnoreCase))
             {
                 // Disallow changing any host configuration
-                throw new NotSupportedException();
+                throw new NotSupportedException("The hosting startup assemblies changed. Changing the host configuration is not supported.");
             }
             else if (string.Equals(key, WebHostDefaults.HostingStartupExcludeAssembliesKey, StringComparison.OrdinalIgnoreCase))
             {
                 // Disallow changing any host configuration
-                throw new NotSupportedException();
-            }
-            else if (string.Equals(key, WebHostDefaults.HostingStartupAssembliesKey, StringComparison.OrdinalIgnoreCase))
-            {
-                // Disallow changing any host configuration
-                throw new NotSupportedException();
+                throw new NotSupportedException("The hosting startup assemblies exclude list changed. Changing the host configuration is not supported.");
             }
 
             // Set the configuration value after we've validated the key

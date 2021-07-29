@@ -183,6 +183,56 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
+        public void WebApplicationBuilderWebHostSettingsThatAffectTheHostCannotBeModifiedViaConfigureAppConfiguration()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            var contentRoot = Path.GetTempPath().ToString();
+            var webRoot = Path.GetTempPath().ToString();
+            var envName = $"{nameof(WebApplicationTests)}_ENV";
+
+            Assert.Throws<NotSupportedException>(() => builder.WebHost.ConfigureAppConfiguration(builder =>
+            {
+                builder.AddInMemoryCollection(new Dictionary<string, string>
+                {
+                    { WebHostDefaults.ApplicationKey, nameof(WebApplicationTests) }
+                });
+            }));
+
+            Assert.Throws<NotSupportedException>(() => builder.WebHost.ConfigureAppConfiguration(builder =>
+            {
+                builder.AddInMemoryCollection(new Dictionary<string, string>
+                {
+                    { WebHostDefaults.EnvironmentKey, envName }
+                });
+            }));
+
+            Assert.Throws<NotSupportedException>(() => builder.WebHost.ConfigureAppConfiguration(builder =>
+            {
+                builder.AddInMemoryCollection(new Dictionary<string, string>
+                {
+                    { WebHostDefaults.ContentRootKey, contentRoot }
+                });
+            }));
+
+            Assert.Throws<NotSupportedException>(() => builder.WebHost.ConfigureAppConfiguration(builder =>
+            {
+                builder.AddInMemoryCollection(new Dictionary<string, string>
+                {
+                    { WebHostDefaults.HostingStartupAssembliesKey, "hosting" }
+                });
+            }));
+
+            Assert.Throws<NotSupportedException>(() => builder.WebHost.ConfigureAppConfiguration(builder =>
+            {
+                builder.AddInMemoryCollection(new Dictionary<string, string>
+                {
+                    { WebHostDefaults.HostingStartupExcludeAssembliesKey, "hostingexclude" }
+                });
+            }));
+        }
+
+        [Fact]
         public void WebApplicationBuilderHostBuilderSettingsThatAffectTheHostCannotBeModified()
         {
             var builder = WebApplication.CreateBuilder();
@@ -537,6 +587,27 @@ namespace Microsoft.AspNetCore.Tests
             var fullWebRootPath = Path.Combine(Directory.GetCurrentDirectory(), webRootPath);
 
             builder.WebHost.UseWebRoot(webRootPath);
+            Assert.Equal(webRootPath, builder.WebHost.GetSetting("webroot"));
+
+            var app = builder.Build();
+            Assert.Equal(fullWebRootPath, app.Environment.WebRootPath);
+        }
+
+        [Fact]
+        public void WebApplicationBuilder_CanChangeSetWebRootPathsViaConfigureAppConfiguration()
+        {
+            var builder = WebApplication.CreateBuilder();
+            var webRootPath = "www";
+            var fullWebRootPath = Path.Combine(Directory.GetCurrentDirectory(), webRootPath);
+
+            builder.WebHost.ConfigureAppConfiguration(builder =>
+            {
+                builder.AddInMemoryCollection(new Dictionary<string, string>
+                {
+                    { WebHostDefaults.WebRootKey , webRootPath }
+                });
+            });
+
             Assert.Equal(webRootPath, builder.WebHost.GetSetting("webroot"));
 
             var app = builder.Build();

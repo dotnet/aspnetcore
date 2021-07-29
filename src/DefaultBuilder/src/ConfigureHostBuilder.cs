@@ -71,30 +71,26 @@ namespace Microsoft.AspNetCore.Builder
         /// <inheritdoc />
         public IHostBuilder ConfigureHostConfiguration(Action<IConfigurationBuilder> configureDelegate)
         {
-            var beforeApplicationName = _configuration[HostDefaults.ApplicationKey];
-            var beforeContentRoot = _configuration[HostDefaults.ContentRootKey];
-            var beforeEnvironment = _configuration[HostDefaults.EnvironmentKey];
+            var previousApplicationName = _configuration[HostDefaults.ApplicationKey];
+            var previousContentRoot = _configuration[HostDefaults.ContentRootKey];
+            var previousEnvironment = _configuration[HostDefaults.EnvironmentKey];
 
             // Run these immediately so that they are observable by the imperative code
             configureDelegate(_configuration);
 
-            var afterApplicationName = _configuration[HostDefaults.ApplicationKey];
-            var afterContentRoot = _configuration[HostDefaults.ContentRootKey];
-            var afterEnvironment = _configuration[HostDefaults.EnvironmentKey];
-
             // Disallow changing any host settings this late in the cycle, the reasoning is that we've already loaded the default configuration
             // and done other things based on environment name, application name or content root.
-            if (!string.Equals(beforeApplicationName, afterApplicationName, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(previousApplicationName, _configuration[HostDefaults.ApplicationKey], StringComparison.OrdinalIgnoreCase))
             {
-                throw new NotSupportedException("The application name changed.Changing the host configuration is not supported");
+                throw new NotSupportedException("The application name changed. Changing the host configuration is not supported");
             }
 
-            if (!string.Equals(beforeContentRoot, afterContentRoot, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(previousContentRoot, _configuration[HostDefaults.ContentRootKey], StringComparison.OrdinalIgnoreCase))
             {
                 throw new NotSupportedException("The content root changed. Changing the host configuration is not supported");
             }
 
-            if (!string.Equals(beforeEnvironment, afterEnvironment, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(previousEnvironment, _configuration[HostDefaults.EnvironmentKey], StringComparison.OrdinalIgnoreCase))
             {
                 throw new NotSupportedException("The environment changed. Changing the host configuration is not supported");
             }
