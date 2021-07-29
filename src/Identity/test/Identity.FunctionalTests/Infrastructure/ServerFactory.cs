@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
                 {
                     typeof(StaticWebAssetsLoader)
                         .GetMethod("UseStaticWebAssetsCore", BindingFlags.NonPublic | BindingFlags.Static)
-                        .Invoke(null, new object[] { context.HostingEnvironment, manifest });
+                        .Invoke(null, new object[] { context.HostingEnvironment, manifest, false });
                 }
             });
         }
