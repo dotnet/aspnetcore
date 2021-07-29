@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -14,7 +15,7 @@ namespace Microsoft.AspNetCore.Builder
     public sealed class ConfigureHostBuilder : IHostBuilder
     {
         private readonly ConfigurationManager _configuration;
-        private readonly WebHostEnvironment _environment;
+        private readonly IWebHostEnvironment _environment;
         private readonly IServiceCollection _services;
         private readonly HostBuilderContext _context;
 
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.Builder
 
         internal ConfigureHostBuilder(
             ConfigurationManager configuration,
-            WebHostEnvironment environment,
+            IWebHostEnvironment environment,
             IServiceCollection services,
             IDictionary<object, object> properties)
         {
@@ -52,7 +53,6 @@ namespace Microsoft.AspNetCore.Builder
         {
             // Run these immediately so that they are observable by the imperative code
             configureDelegate(_context, _configuration);
-            _environment.ApplyConfigurationSettings(_configuration);
             return this;
         }
 
@@ -71,9 +71,30 @@ namespace Microsoft.AspNetCore.Builder
         /// <inheritdoc />
         public IHostBuilder ConfigureHostConfiguration(Action<IConfigurationBuilder> configureDelegate)
         {
+            var previousApplicationName = _configuration[HostDefaults.ApplicationKey];
+            var previousContentRoot = _configuration[HostDefaults.ContentRootKey];
+            var previousEnvironment = _configuration[HostDefaults.EnvironmentKey];
+
             // Run these immediately so that they are observable by the imperative code
             configureDelegate(_configuration);
-            _environment.ApplyConfigurationSettings(_configuration);
+
+            // Disallow changing any host settings this late in the cycle, the reasoning is that we've already loaded the default configuration
+            // and done other things based on environment name, application name or content root.
+            if (!string.Equals(previousApplicationName, _configuration[HostDefaults.ApplicationKey], StringComparison.OrdinalIgnoreCase))
+            {
+                throw new NotSupportedException("The application name changed. Changing the host configuration is not supported");
+            }
+
+            if (!string.Equals(previousContentRoot, _configuration[HostDefaults.ContentRootKey], StringComparison.OrdinalIgnoreCase))
+            {
+                throw new NotSupportedException("The content root changed. Changing the host configuration is not supported");
+            }
+
+            if (!string.Equals(previousEnvironment, _configuration[HostDefaults.EnvironmentKey], StringComparison.OrdinalIgnoreCase))
+            {
+                throw new NotSupportedException("The environment changed. Changing the host configuration is not supported");
+            }
+
             return this;
         }
 
