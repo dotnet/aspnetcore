@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.Web
@@ -21,21 +22,30 @@ namespace Microsoft.AspNetCore.Components.Web
         internal Dictionary<string, Type> JsComponentTypesByIdentifier { get; } = new (StringComparer.Ordinal);
         internal Dictionary<string, List<JSComponentInfo>> JSComponentInfoByInitializer { get; } = new(StringComparer.Ordinal);
 
-        internal void Add(Type componentType, string identifier, string? javaScriptInitializer)
+        internal void Add(Type componentType, string identifier)
         {
             JsComponentTypesByIdentifier.Add(identifier, componentType);
+        }
 
-            // If it has a JS initializer, prepare the metadata we'll supply to JS code
-            if (!string.IsNullOrEmpty(javaScriptInitializer))
+        [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(JSComponentInfo))]
+        [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(JSComponentParameter))]
+        internal void Add(Type componentType, string identifier, string javaScriptInitializer)
+        {
+            Add(componentType, identifier);
+
+            if (string.IsNullOrEmpty(javaScriptInitializer))
             {
-                if (!JSComponentInfoByInitializer.TryGetValue(javaScriptInitializer, out var entriesForInitializer))
-                {
-                    entriesForInitializer = new();
-                    JSComponentInfoByInitializer.Add(javaScriptInitializer, entriesForInitializer);
-                }
-
-                entriesForInitializer.Add(new JSComponentInfo(componentType, identifier));
+                throw new ArgumentException($"'{nameof(javaScriptInitializer)}' cannot be null or empty.", nameof(javaScriptInitializer));
             }
+
+            // Since it has a JS initializer, prepare the metadata we'll supply to JS code
+            if (!JSComponentInfoByInitializer.TryGetValue(javaScriptInitializer, out var entriesForInitializer))
+            {
+                entriesForInitializer = new();
+                JSComponentInfoByInitializer.Add(javaScriptInitializer, entriesForInitializer);
+            }
+
+            entriesForInitializer.Add(new JSComponentInfo(componentType, identifier));
         }
 
         // This is the DTO that we JSON-serialize and send to an internal function on blazor.*.js.
