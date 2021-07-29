@@ -189,6 +189,33 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 });
         }
 
+        [Fact]
+        public void CallsJavaScriptInitializers()
+        {
+            app.FindElement(By.Id("show-initializer-call-log")).Click();
+
+            var expectedCallLog = "[{\"name\":\"component-with-many-parameters\",\"parameters\":[" +
+                "{\"name\":\"StringParam\",\"type\":\"string\"}," +
+                "{\"name\":\"IntParam\",\"type\":\"number\"}," +
+                "{\"name\":\"LongParam\",\"type\":\"number\"}," +
+                "{\"name\":\"FloatParam\",\"type\":\"number\"}," +
+                "{\"name\":\"DoubleParam\",\"type\":\"number\"}," +
+                "{\"name\":\"DecimalParam\",\"type\":\"number\"}," +
+                "{\"name\":\"NullableIntParam\",\"type\":\"number?\"}," +
+                "{\"name\":\"NullableLongParam\",\"type\":\"number?\"}," +
+                "{\"name\":\"NullableFloatParam\",\"type\":\"number?\"}," +
+                "{\"name\":\"NullableDoubleParam\",\"type\":\"number?\"}," +
+                "{\"name\":\"NullableDecimalParam\",\"type\":\"number?\"}," +
+                "{\"name\":\"BoolParam\",\"type\":\"boolean\"}," +
+                "{\"name\":\"NullableBoolParam\",\"type\":\"boolean?\"}," +
+                "{\"name\":\"DateTimeParam\",\"type\":\"object\"}," +
+                "{\"name\":\"ComplexTypeParam\",\"type\":\"object\"}," +
+                "{\"name\":\"JSObjectReferenceParam\",\"type\":\"object\"}]}" +
+                "]";
+
+            Browser.Equal(expectedCallLog, () => Browser.FindElement(By.Id("message")).Text);
+        }
+
         void AssertGlobalErrorState(bool hasGlobalError)
         {
             var globalErrorUi = Browser.Exists(By.Id("blazor-error-ui"));

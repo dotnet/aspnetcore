@@ -10,6 +10,7 @@
     <button id="add-root-component" onclick="addRootComponent(false)">Add new root component</button>
     <button id="add-root-component-inside-blazor" onclick="addRootComponent(true)">Add new root component inside Blazor UI</button>
     <button id="remove-root-component" onclick="removeRootComponent()">Remove root component</button>
+    <button id="show-initializer-call-log" onclick="showInitializerCallLog()">Show initializer calls</button>
 </p>
 
 <p>
@@ -103,6 +104,11 @@
         const { component, containerElement } = addedComponents.shift();
         setMessage(`Disposed component in ${containerElement.id}`);
         component.dispose();
+    }
+
+    function showInitializerCallLog() {
+        const callLog = myJsRootComponentInitializers.getCallLog();
+        setMessage(JSON.stringify(callLog));
     }
 
     function setMessage(message) {

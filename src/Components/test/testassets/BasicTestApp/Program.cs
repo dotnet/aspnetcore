@@ -30,6 +30,9 @@ namespace BasicTestApp
             builder.RootComponents.Add<HeadOutlet>("head::after");
             builder.RootComponents.Add<Index>("root");
             builder.RootComponents.RegisterForJavaScript<DynamicallyAddedRootComponent>("my-dynamic-root-component");
+            builder.RootComponents.RegisterForJavaScript<JSRootComponentParameterTypes>(
+                "component-with-many-parameters",
+                javaScriptInitializer: "myJsRootComponentInitializers.testInitializer");
 
             builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
             builder.Services.AddSingleton<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
