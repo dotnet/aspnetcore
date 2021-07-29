@@ -1337,7 +1337,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Log.ConnectionBadRequest(ConnectionId, ex);
             _requestRejectedException = ex;
 
-            const string badRequestEventName = "Microsoft.AspNetCore.Server.Kestrel.RejectedRequestDetails";
+            const string badRequestEventName = "Microsoft.AspNetCore.Server.Kestrel.BadRequest";
             if (ServiceContext.DiagnosticSource?.IsEnabled(badRequestEventName) == true)
             {
                 ServiceContext.DiagnosticSource.Write(badRequestEventName, this);

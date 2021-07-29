@@ -40,7 +40,7 @@ namespace CodeGenerator
                 "ITlsConnectionFeature",
                 "IHttpUpgradeFeature",
                 "IHttpWebSocketFeature",
-                "IRejectedRequestDetailsFeature"
+                "IBadRequestExceptionFeature"
             };
             var maybeFeatures = new[]
             {
@@ -79,7 +79,7 @@ namespace CodeGenerator
                 "IHttpBodyControlFeature",
                 "IHttpMaxRequestBodySizeFeature",
                 "IHttpRequestBodyDetectionFeature",
-                "IRejectedRequestDetailsFeature"
+                "IBadRequestExceptionFeature"
             };
 
             var usings = $@"
