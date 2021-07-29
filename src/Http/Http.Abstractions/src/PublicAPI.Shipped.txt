@@ -47,6 +47,12 @@ Microsoft.AspNetCore.Builder.UseMiddlewareExtensions
 Microsoft.AspNetCore.Builder.UsePathBaseExtensions
 Microsoft.AspNetCore.Builder.UseWhenExtensions
 Microsoft.AspNetCore.Cors.Infrastructure.ICorsMetadata
+Microsoft.AspNetCore.Http.BadHttpRequestException
+Microsoft.AspNetCore.Http.BadHttpRequestException.BadHttpRequestException(string! message) -> void
+Microsoft.AspNetCore.Http.BadHttpRequestException.BadHttpRequestException(string! message, System.Exception! innerException) -> void
+Microsoft.AspNetCore.Http.BadHttpRequestException.BadHttpRequestException(string! message, int statusCode) -> void
+Microsoft.AspNetCore.Http.BadHttpRequestException.BadHttpRequestException(string! message, int statusCode, System.Exception! innerException) -> void
+Microsoft.AspNetCore.Http.BadHttpRequestException.StatusCode.get -> int
 Microsoft.AspNetCore.Http.ConnectionInfo
 Microsoft.AspNetCore.Http.ConnectionInfo.ConnectionInfo() -> void
 Microsoft.AspNetCore.Http.CookieBuilder
@@ -143,6 +149,7 @@ Microsoft.AspNetCore.Http.QueryString.Value.get -> string?
 Microsoft.AspNetCore.Http.RequestDelegate
 Microsoft.AspNetCore.Http.RequestTrailerExtensions
 Microsoft.AspNetCore.Http.ResponseTrailerExtensions
+Microsoft.AspNetCore.Http.StatusCodes
 Microsoft.AspNetCore.Http.WebSocketManager
 Microsoft.AspNetCore.Http.WebSocketManager.WebSocketManager() -> void
 Microsoft.AspNetCore.Routing.RouteValueDictionary

@@ -1337,15 +1337,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Log.ConnectionBadRequest(ConnectionId, ex);
             _requestRejectedException = ex;
 
+            if (!HasResponseStarted)
+            {
+                SetErrorResponseException(ex);
+            }
+
             const string badRequestEventName = "Microsoft.AspNetCore.Server.Kestrel.BadRequest";
             if (ServiceContext.DiagnosticSource?.IsEnabled(badRequestEventName) == true)
             {
                 ServiceContext.DiagnosticSource.Write(badRequestEventName, this);
-            }
-
-            if (!HasResponseStarted)
-            {
-                SetErrorResponseException(ex);
             }
 
             _keepAlive = false;
