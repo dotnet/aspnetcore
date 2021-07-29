@@ -18,13 +18,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
     public sealed class SocketTransportFactory : IConnectionListenerFactory
     {
         private readonly SocketTransportOptions _options;
-        private readonly ISocketConnectionContextFactory _contextFactory;
+        private readonly SocketConnectionContextFactory _contextFactory;
         private readonly SocketsTrace _trace;
 
         public SocketTransportFactory(
             IOptions<SocketTransportOptions> options,
             ILoggerFactory loggerFactory,
-            ISocketConnectionContextFactory contextFactory)
+            SocketConnectionContextFactory contextFactory)
         {
             if (options == null)
             {

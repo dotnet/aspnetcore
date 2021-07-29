@@ -23,14 +23,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         private Socket? _listenSocket;
         private int _settingsIndex;
         private readonly SocketTransportOptions _options;
-        private readonly ISocketConnectionContextFactory _contextFactory;
+        private readonly SocketConnectionContextFactory _contextFactory;
 
         public EndPoint EndPoint { get; private set; }
 
         internal SocketConnectionListener(
             EndPoint endpoint,
             SocketTransportOptions options,
-            ISocketConnectionContextFactory contextFactory,
+            SocketConnectionContextFactory contextFactory,
             ISocketsTrace trace)
         {
             EndPoint = endpoint;

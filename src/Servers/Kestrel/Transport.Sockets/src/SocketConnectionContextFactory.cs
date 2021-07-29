@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
     /// <summary>
     /// A factory for socket based connections contexts.
     /// </summary>
-    public sealed class SocketConnectionContextFactory : ISocketConnectionContextFactory
+    public sealed class SocketConnectionContextFactory
     {
         /// <summary>
         /// Create a <see cref="ConnectionContext"/> for a socket.
