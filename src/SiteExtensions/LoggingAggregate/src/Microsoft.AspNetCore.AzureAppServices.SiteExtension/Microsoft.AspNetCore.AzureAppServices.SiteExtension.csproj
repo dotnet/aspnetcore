@@ -17,7 +17,8 @@
     <NoSemVer20>true</NoSemVer20>
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
-    <IsShipping Condition=" '$(PreReleaseVersionLabel)' == 'preview' ">false</IsShipping>
+    <!-- TODO: Undo this change. I just wanted to test if the CI produces the right packages -->
+    <!-- <IsShipping Condition=" '$(PreReleaseVersionLabel)' == 'preview' ">false</IsShipping> -->
 
     <!-- Grab packages LB.csproj should have just built. -->
     <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);$(ArtifactsNonShippingPackagesDir)</RestoreAdditionalProjectSources>
@@ -32,11 +33,8 @@
     <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.1" PrivateAssets="All" />
     <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x64" PrivateAssets="All" />
     <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x86" PrivateAssets="All" />
-    <!--
-      Coming soon...
     <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.5.0.x64" PrivateAssets="All" />
     <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.5.0.x86" PrivateAssets="All" />
-    -->
     <!--
       Bundle the just-built LB.csproj package content into this one the easy way. See
       UpdateLatestPackageReferences for the hard way.
