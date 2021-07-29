@@ -89,6 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var apiDescription = new ApiDescription
             {
                 HttpMethod = httpMethod,
+                GroupName = routeEndpoint.Metadata.GetMetadata<EndpointGroupNameMetadata>()?.EndpointGroupName,
                 RelativePath = routeEndpoint.RoutePattern.RawText?.TrimStart('/'),
                 ActionDescriptor = new ActionDescriptor
                 {

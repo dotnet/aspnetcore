@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -358,6 +359,56 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.True(apiExplorerSettings.IgnoreApi);
         }
 
+        [Fact]
+        public void RespectsProducesProblemExtensionMethod()
+        {
+            // Arrange
+            var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(null));
+            builder.MapGet("/api/todos", () => "").ProducesProblem();
+            var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+            var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+            var hostEnvironment = new HostEnvironment
+            {
+                ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+            };
+            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var apiDescription = Assert.Single(context.Results);
+            var responseTypes = Assert.Single(apiDescription.SupportedResponseTypes);
+            Assert.Equal(typeof(ProblemDetails), responseTypes.Type);
+        }
+
+        [Fact]
+        public void RespectsProducesWithGroupNameExtensionMethod()
+        {
+            // Arrange
+            var endpointGroupName = "SomeEndpointGroupName";
+            var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(null));
+            builder.MapGet("/api/todos", () => "").Produces<InferredJsonClass>().WithGroupName(endpointGroupName);
+            var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+            
+            var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+            var hostEnvironment = new HostEnvironment
+            {
+                ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+            };
+            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var apiDescription = Assert.Single(context.Results);
+            var responseTypes = Assert.Single(apiDescription.SupportedResponseTypes);
+            Assert.Equal(typeof(InferredJsonClass), responseTypes.Type);
+            Assert.Equal(endpointGroupName, apiDescription.GroupName); 
+        }
+
         private IList<ApiDescription> GetApiDescriptions(
             Delegate action,
             string pattern = null,
@@ -422,6 +473,23 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             public string ApplicationName { get; set; }
             public string ContentRootPath { get; set; }
             public IFileProvider ContentRootFileProvider { get; set; }
+        }
+
+        private class TestEndpointRouteBuilder : IEndpointRouteBuilder
+        {
+            public TestEndpointRouteBuilder(IApplicationBuilder applicationBuilder)
+            {
+                ApplicationBuilder = applicationBuilder ?? throw new ArgumentNullException(nameof(applicationBuilder));
+                DataSources = new List<EndpointDataSource>();
+            }
+
+            public IApplicationBuilder ApplicationBuilder { get; }
+
+            public IApplicationBuilder CreateApplicationBuilder() => ApplicationBuilder.New();
+
+            public ICollection<EndpointDataSource> DataSources { get; }
+
+            public IServiceProvider ServiceProvider => ApplicationBuilder.ApplicationServices;
         }
     }
 }
