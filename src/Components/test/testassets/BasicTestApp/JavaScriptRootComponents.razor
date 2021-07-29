@@ -14,6 +14,13 @@
 </p>
 
 <p>
+    <label>
+        <input type="checkbox" id="add-shadow-root" />
+        When adding, create shadow DOM for root component
+    </label>
+</p>
+
+<p>
     Increment amount: <input type="number" id="increment-amount" value="1" />
     <button id="set-increment-amount" onclick="setIncrementAmount()">Set</button>
 </p>
@@ -46,6 +53,11 @@
             containerElement = document.createElement('div');
             containerElement.id = `root-container-${++numAddedComponents}`;
             document.body.appendChild(containerElement);
+        }
+
+        if (document.getElementById('add-shadow-root').checked) {
+            containerElement = containerElement.attachShadow({ mode: 'open' });
+            containerElement.id = 'ShadowDOM';
         }
 
         const component = await Blazor.rootComponents.add(containerElement, 'my-dynamic-root-component', { incrementAmount: 1 });
