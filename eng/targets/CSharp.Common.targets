@@ -20,6 +20,12 @@
         '$(IsImplementationProject)' == 'true' OR
         '$(IsAnalyzersProject)' == true OR
         '$(IsSpecificationTestProject)' == 'true') ">enable</Nullable>
+    
+    <!-- Strip out non-public nullable annotations for src projects. This should help with size reduction -->
+     <Features Condition="
+        '$(IsImplementationProject)' == 'true' OR
+        '$(IsAnalyzersProject)' == true OR
+        '$(IsSpecificationTestProject)' == 'true'">$(Features);nullablePublicOnly</Features>
 
     <!-- Turn off platform compatibility analyzer warnings in test, test assets, and samples. -->
     <NoWarn Condition=" '$(IsTestProject)' == 'true' OR
