@@ -94,8 +94,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal($"Vrijdag{Environment.NewLine}Month: FirstOne", response, ignoreLineEndingDifferences: true);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(WebPagesData))]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/34599")]
         public async Task HtmlGenerationWebSite_GeneratesExpectedResults(string action, string antiforgeryPath)
         {
             // Arrange
