@@ -30,7 +30,7 @@ namespace BasicTestApp
             builder.RootComponents.Add<HeadOutlet>("head::after");
             builder.RootComponents.Add<Index>("root");
             builder.RootComponents.RegisterForJavaScript<DynamicallyAddedRootComponent>("my-dynamic-root-component");
-            builder.RootComponents.RegisterForJavaScript<JSRootComponentParameterTypes>(
+            builder.RootComponents.RegisterForJavaScript<JavaScriptRootComponentParameterTypes>(
                 "component-with-many-parameters",
                 javaScriptInitializer: "myJsRootComponentInitializers.testInitializer");
 

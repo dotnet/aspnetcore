@@ -31,7 +31,7 @@ namespace PhotinoTestApp
 
             mainWindow.RootComponents.Add<BasicTestApp.Index>("root");
             mainWindow.RootComponents.RegisterForJavaScript<BasicTestApp.DynamicallyAddedRootComponent>("my-dynamic-root-component");
-            mainWindow.RootComponents.RegisterForJavaScript<BasicTestApp.JSRootComponentParameterTypes>(
+            mainWindow.RootComponents.RegisterForJavaScript<BasicTestApp.JavaScriptRootComponentParameterTypes>(
                 "component-with-many-parameters",
                 javaScriptInitializer: "myJsRootComponentInitializers.testInitializer");
 
