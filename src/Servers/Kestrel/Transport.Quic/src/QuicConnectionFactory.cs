@@ -40,13 +40,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
             {
                 throw new NotSupportedException($"{endPoint} is not supported");
             }
-            if (_transportContext.Options.Alpn == null)
-            {
-                throw new InvalidOperationException("QuicTransportOptions.Alpn must be configured with a value.");
-            }
 
-            var sslOptions = new SslClientAuthenticationOptions();
-            sslOptions.ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol(_transportContext.Options.Alpn) };
+            var sslOptions = features?.Get<SslClientAuthenticationOptions>();
             var connection = new QuicConnection(QuicImplementationProviders.MsQuic, (IPEndPoint)endPoint, sslOptions);
 
             await connection.ConnectAsync(cancellationToken);

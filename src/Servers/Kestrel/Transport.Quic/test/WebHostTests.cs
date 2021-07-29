@@ -1,25 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Buffers;
 using System.Net;
 using System.Net.Http;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
-using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
@@ -31,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
         public async Task UseUrls_HelloWorld_ClientSuccess()
         {
             // Arrange
-            var builder = GetHostBuilder()
+            var builder = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -82,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
         public async Task Listen_Http3AndSocketsCoexistOnDifferentEndpoints_ClientSuccess(int http3Port, int http1Port)
         {
             // Arrange
-            var builder = GetHostBuilder()
+            var builder = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -122,7 +112,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
         public async Task Listen_Http3AndSocketsCoexistOnSameEndpoint_ClientSuccess()
         {
             // Arrange
-            var builder = GetHostBuilder()
+            var builder = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -157,7 +147,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
         public async Task Listen_Http3AndSocketsCoexistOnSameEndpoint_AltSvcEnabled_Upgrade()
         {
             // Arrange
-            var builder = GetHostBuilder()
+            var builder = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -254,21 +244,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
 
             return new HttpClient(httpHandler);
-        }
-
-        public static IHostBuilder GetHostBuilder(long? maxReadBufferSize = null)
-        {
-            return new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
-                {
-                    webHostBuilder
-                        .UseQuic(options =>
-                        {
-                            options.MaxReadBufferSize = maxReadBufferSize;
-                            options.Alpn = QuicTestHelpers.Alpn;
-                            options.IdleTimeout = TimeSpan.FromSeconds(20);
-                        });
-                });
         }
     }
 }

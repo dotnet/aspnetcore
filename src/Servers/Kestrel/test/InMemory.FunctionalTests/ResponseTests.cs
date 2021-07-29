@@ -4089,8 +4089,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 options =>
                 {
                     options.EnableAltSvc = true;
-                    options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)));
-                    options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 1)) { Protocols = protocols });
+                    options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)) { IsTls = true });
+                    options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 1)) { Protocols = protocols, IsTls = true });
                 },
                 services => { }))
             {

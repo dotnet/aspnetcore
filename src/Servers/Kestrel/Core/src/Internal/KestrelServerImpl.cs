@@ -160,9 +160,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                 async Task OnBind(ListenOptions options, CancellationToken onBindCancellationToken)
                 {
+                    var hasHttp1 = options.Protocols.HasFlag(HttpProtocols.Http1);
+                    var hasHttp2 = options.Protocols.HasFlag(HttpProtocols.Http2);
+                    var hasHttp3 = options.Protocols.HasFlag(HttpProtocols.Http3);
+                    var hasTls = options.IsTls;
+
+                    // Filter out invalid combinations.
+
+                    if (!hasTls)
+                    {
+                        // Http/1 without TLS, no-op HTTP/2 and 3.
+                        if (hasHttp1)
+                        {
+                            hasHttp2 = false;
+                            hasHttp3 = false;
+                        }
+                        // Http/3 requires TLS. Note we only let it fall back to HTTP/1, not HTTP/2
+                        else if (hasHttp3)
+                        {
+                            throw new InvalidOperationException("HTTP/3 requires https.");
+                        }
+                    }
+
+                    // Quic isn't registered if it's not supported, throw if we can't fall back to 1 or 2
+                    if (hasHttp3 && _multiplexedTransportFactory is null && !(hasHttp1 || hasHttp2))
+                    {
+                        throw new InvalidOperationException("This platform does not support QUIC or HTTP/3.");
+                    }
+
                     // Add the HTTP middleware as the terminal connection middleware
-                    if ((options.Protocols & HttpProtocols.Http1) == HttpProtocols.Http1
-                        || (options.Protocols & HttpProtocols.Http2) == HttpProtocols.Http2
+                    if (hasHttp1 || hasHttp2
                         || options.Protocols == HttpProtocols.None) // TODO a test fails because it doesn't throw an exception in the right place
                                                                     // when there is no HttpProtocols in KestrelServer, can we remove/change the test?
                     {
@@ -180,13 +207,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                         options.EndPoint = await _transportManager.BindAsync(options.EndPoint, connectionDelegate, options.EndpointConfig, onBindCancellationToken).ConfigureAwait(false);
                     }
 
-                    if ((options.Protocols & HttpProtocols.Http3) == HttpProtocols.Http3)
+                    if (hasHttp3 && _multiplexedTransportFactory is not null)
                     {
-                        if (_multiplexedTransportFactory is null)
-                        {
-                            throw new InvalidOperationException($"Cannot start HTTP/3 server if no {nameof(IMultiplexedConnectionListenerFactory)} is registered.");
-                        }
-
                         options.UseHttp3Server(ServiceContext, application);
                         var multiplexedConnectionDelegate = ((IMultiplexedConnectionBuilder)options).Build();
 

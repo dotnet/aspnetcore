@@ -445,16 +445,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task Http3_NoUseHttp3_NoSslServerOptions()
+        public async Task Http1And2And3_NoUseHttps_MultiplexBindNotCalled()
         {
             var serverOptions = CreateServerOptions();
             serverOptions.DefaultCertificate = _x509Certificate2;
 
-            IFeatureCollection bindFeatures = null;
+            var bindCalled = false;
             var multiplexedConnectionListenerFactory = new MockMultiplexedConnectionListenerFactory();
             multiplexedConnectionListenerFactory.OnBindAsync = (ep, features) =>
             {
-                bindFeatures = features;
+                bindCalled = true;
             };
 
             var testContext = new TestServiceContext(LoggerFactory);
@@ -465,7 +465,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     serverOptions.ListenLocalhost(5001, listenOptions =>
                     {
-                        listenOptions.Protocols = HttpProtocols.Http3;
+                        listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
                     });
                 },
                 services =>
@@ -475,10 +475,79 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
             }
 
-            Assert.NotNull(bindFeatures);
+            Assert.False(bindCalled);
+        }
 
-            var sslOptions = bindFeatures.Get<SslServerAuthenticationOptions>();
-            Assert.Null(sslOptions);
+        [Fact]
+        public async Task Http2and3_NoUseHttps_Throws()
+        {
+            var serverOptions = CreateServerOptions();
+            serverOptions.DefaultCertificate = _x509Certificate2;
+
+            var bindCalled = false;
+            var multiplexedConnectionListenerFactory = new MockMultiplexedConnectionListenerFactory();
+            multiplexedConnectionListenerFactory.OnBindAsync = (ep, features) =>
+            {
+                bindCalled = true;
+            };
+
+            var testContext = new TestServiceContext(LoggerFactory);
+            testContext.ServerOptions = serverOptions;
+            var ex = await Assert.ThrowsAsync<IOException>(async () =>
+            {
+                await using var server = new TestServer(context => Task.CompletedTask,
+                    testContext,
+                    serverOptions =>
+                    {
+                        serverOptions.ListenLocalhost(5001, listenOptions =>
+                        {
+                            listenOptions.Protocols = HttpProtocols.Http3;
+                        });
+                    },
+                    services =>
+                    {
+                        services.AddSingleton<IMultiplexedConnectionListenerFactory>(multiplexedConnectionListenerFactory);
+                    });
+            });
+
+            Assert.False(bindCalled);
+            Assert.Equal("HTTP/3 requires https.", ex.InnerException.InnerException.Message);
+        }
+
+        [Fact]
+        public async Task Http3_NoUseHttps_Throws()
+        {
+            var serverOptions = CreateServerOptions();
+            serverOptions.DefaultCertificate = _x509Certificate2;
+
+            var bindCalled = false;
+            var multiplexedConnectionListenerFactory = new MockMultiplexedConnectionListenerFactory();
+            multiplexedConnectionListenerFactory.OnBindAsync = (ep, features) =>
+            {
+                bindCalled = true;
+            };
+
+            var testContext = new TestServiceContext(LoggerFactory);
+            testContext.ServerOptions = serverOptions;
+            var ex = await Assert.ThrowsAsync<IOException>(async () =>
+            {
+                await using var server = new TestServer(context => Task.CompletedTask,
+                    testContext,
+                    serverOptions =>
+                    {
+                        serverOptions.ListenLocalhost(5001, listenOptions =>
+                        {
+                            listenOptions.Protocols = HttpProtocols.Http3;
+                        });
+                    },
+                    services =>
+                    {
+                        services.AddSingleton<IMultiplexedConnectionListenerFactory>(multiplexedConnectionListenerFactory);
+                    });
+            });
+
+            Assert.False(bindCalled);
+            Assert.Equal("HTTP/3 requires https.", ex.InnerException.InnerException.Message);
         }
 
         [Fact]
