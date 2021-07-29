@@ -79,7 +79,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34743")]
         public void CannotAddMultipleRootComponentsToTheSameElementAtTheSameTime()
         {
             // Try adding a second without removing the first
@@ -219,7 +218,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         void AssertGlobalErrorState(bool hasGlobalError)
         {
             var globalErrorUi = Browser.Exists(By.Id("blazor-error-ui"));
-            Assert.Equal(hasGlobalError ? "block" : "none", globalErrorUi.GetCssValue("display"));
+            Browser.Equal(hasGlobalError ? "block" : "none", () => globalErrorUi.GetCssValue("display"));
         }
     }
 }
