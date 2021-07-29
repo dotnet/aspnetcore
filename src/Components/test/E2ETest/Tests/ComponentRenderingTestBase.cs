@@ -702,7 +702,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             });
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/34857")]
         public void CanHandleClearedChild()
         {
             var appElement = Browser.MountTestComponent<ContentEditable>();
