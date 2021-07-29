@@ -10,6 +10,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.Extensions.Configuration;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Web.Infrastructure
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
 
         private const int MaxParameters = 100;
         private readonly DotNetObjectReference<JSComponentInterop> _selfReference;
-        private readonly Dictionary<string, Type> _allowedComponentTypes;
+        private readonly JSComponentConfigurationStore _configuration;
         private readonly JsonSerializerOptions _jsonOptions;
         private WebRenderer? _renderer;
 
@@ -52,10 +53,8 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
             JsonSerializerOptions jsonOptions)
         {
             _selfReference = DotNetObjectReference.Create(this);
+            _configuration = configuration;
             _jsonOptions = jsonOptions;
-
-            // Snapshot the config to ensure it's not mutated later
-            _allowedComponentTypes = new(configuration.JsComponentTypesByIdentifier, StringComparer.Ordinal);
         }
 
         // This has to be internal and only called by WebRenderer (through a protected API) because,
@@ -64,7 +63,7 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
         // other way to attach a renderer to this instance.
         internal async ValueTask InitializeAsync(IJSRuntime jsRuntime, WebRenderer renderer)
         {
-            if (_allowedComponentTypes.Count == 0)
+            if (_configuration.JsComponentTypesByIdentifier.Count == 0)
             {
                 return;
             }
@@ -72,8 +71,9 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
             _renderer = renderer;
 
             await jsRuntime.InvokeVoidAsync(
-                "Blazor._internal.setDynamicRootComponentManager",
-                _selfReference);
+                "Blazor._internal.enableJSRootComponents",
+                _selfReference,
+                _configuration.JSComponentInfoByInitializer);
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
         [JSInvokable]
         public virtual int AddRootComponent(string identifier, string domElementSelector)
         {
-            if (!_allowedComponentTypes.TryGetValue(identifier, out var componentType))
+            if (!_configuration.JsComponentTypesByIdentifier.TryGetValue(identifier, out var componentType))
             {
                 throw new ArgumentException($"There is no registered JS component with identifier '{identifier}'.");
             }
@@ -172,13 +172,16 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
         public void Dispose()
             => _selfReference.Dispose();
 
-        private bool TryGetComponentParameterType(Type componentType, string parameterName, out Type parameterType)
+        internal static ParameterTypeCache GetComponentParameters(Type componentType)
+            => ParameterTypeCaches.GetOrAdd(componentType, static type => new ParameterTypeCache(type));
+
+        private static bool TryGetComponentParameterType(Type componentType, string parameterName, out Type parameterType)
         {
-            var cacheForComponent = ParameterTypeCaches.GetOrAdd(componentType, static type => new ParameterTypeCache(type));
+            var cacheForComponent = GetComponentParameters(componentType);
             return cacheForComponent.ParameterTypes.TryGetValue(parameterName, out parameterType!);
         }
 
-        private readonly struct ParameterTypeCache
+        internal readonly struct ParameterTypeCache
         {
             public readonly Dictionary<string, Type> ParameterTypes;
 
