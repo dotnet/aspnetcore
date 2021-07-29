@@ -2,7 +2,7 @@
 
 <h1>Input Large Text Area</h1>
 
-<InputLargeTextArea @ref="TextArea" OnChange="TextAreaChanged" />
+<InputLargeTextArea id="largeTextArea" @ref="TextArea" OnChange="TextAreaChanged" />
 
 <br />
 
@@ -12,13 +12,17 @@
 <hr />
 
 <h3>Last Changed:</h3>
-Time:   <p id="lastChangedTime">@LastChangedTime</p>
+Time:   <p id="lastChangedTime">@LastChangedTime.Ticks</p>
 Length: <p id="lastChangedLength">@LastChangedLength</p>
 
 <hr />
 
 <h3>Get Text Result:</h3>
 <p id="getTextResult">@GetTextResult</p>
+
+<hr />
+
+<button id="focusAwayBtn">Focus Away From InputLargeTextArea</button>
 
 @code {
   public DateTime LastChangedTime { get; set; }
@@ -29,8 +33,7 @@ Length: <p id="lastChangedLength">@LastChangedLength</p>
 
   public async Task GetTextAsync()
   {
-      var text = await TextArea.GetTextAsync();
-      GetTextResult = text.Length == 25000 ? "Success" : "Failure";
+      GetTextResult = await TextArea.GetTextAsync();
       StateHasChanged();
   }
 
