@@ -94,9 +94,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal($"Vrijdag{Environment.NewLine}Month: FirstOne", response, ignoreLineEndingDifferences: true);
         }
 
-        [ConditionalTheory]
+        [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/34599")]
         [MemberData(nameof(WebPagesData))]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/34599")]
         public async Task HtmlGenerationWebSite_GeneratesExpectedResults(string action, string antiforgeryPath)
         {
             // Arrange
@@ -138,8 +137,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             }
         }
 
-        [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/34599")]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/34599")]
         public async Task HtmlGenerationWebSite_GeneratesExpectedResults_WithImageData()
         {
             await HtmlGenerationWebSite_GeneratesExpectedResults("Image", antiforgeryPath: null);
