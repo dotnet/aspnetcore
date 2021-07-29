@@ -43,5 +43,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// starting at the time data is first read or written.
         /// </summary>
         public TimeSpan GracePeriod { get; }
+
+        public override string ToString()
+        {
+            return $"Bytes per second: {BytesPerSecond}, Grace Period: {GracePeriod}";
+        }
     }
 }
