@@ -16,6 +16,7 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
+    <NoWarn>RS0016;RS0026</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
