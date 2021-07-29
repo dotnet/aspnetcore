@@ -348,7 +348,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         private static void AssertTimestampAndPIDPrefix(int processId, string log)
         {
-            var prefixPattern = new Regex(@"^\[(.{24}), PID: (\d+)\]", RegexOptions.Singleline);
+            var prefixPattern = new Regex(@"\[(.{24}), PID: (\d+)\]", RegexOptions.Singleline);
             var prefixMatch = prefixPattern.Match(log);
             Assert.True(prefixMatch.Success, $"'{prefixPattern}' did not match '{log}'");
 
