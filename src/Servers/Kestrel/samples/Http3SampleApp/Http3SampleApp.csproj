@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <!-- Turn off warnings about using preview features -->
-    <NoWarn>CA2252;$(NoWarn)</NoWarn>
+    <!-- Turn on preview features so we can use Http3 -->
+    <EnablePreviewFeatures>True</EnablePreviewFeatures>
   </PropertyGroup>
 
   <ItemGroup>
