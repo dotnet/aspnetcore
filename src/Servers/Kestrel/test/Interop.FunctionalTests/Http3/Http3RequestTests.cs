@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Quic;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
@@ -172,6 +173,53 @@ namespace Interop.FunctionalTests.Http3
             }
         }
 
+        [ConditionalTheory]
+        [MsQuicSupported]
+        [InlineData(HttpProtocols.Http3, 11)]
+        [InlineData(HttpProtocols.Http3, 1024, Skip = "HttpClient issue https://github.com/dotnet/runtime/issues/56115")]
+        [InlineData(HttpProtocols.Http2, 11)]
+        [InlineData(HttpProtocols.Http2, 1024)]
+        public async Task GET_ServerStreaming_ClientReadsPartialResponse(HttpProtocols protocol, int clientBufferSize)
+        {
+            // Arrange
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var builder = CreateHostBuilder(async context =>
+            {
+                await context.Response.Body.WriteAsync(TestData);
+
+                await tcs.Task;
+
+                await context.Response.Body.WriteAsync(TestData);
+            }, protocol: protocol);
+
+            using (var host = builder.Build())
+            using (var client = CreateClient())
+            {
+                await host.StartAsync();
+
+                var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+                request.Version = GetProtocol(protocol);
+                request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                // Act
+                var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+
+                // Assert
+                response.EnsureSuccessStatusCode();
+                Assert.Equal(GetProtocol(protocol), response.Version);
+
+                var responseStream = await response.Content.ReadAsStreamAsync().DefaultTimeout();
+
+                var buffer = new byte[clientBufferSize];
+                await responseStream.ReadAtLeastLengthAsync(TestData.Length, buffer).DefaultTimeout();
+
+                tcs.SetResult();
+                await responseStream.ReadAtLeastLengthAsync(TestData.Length, buffer).DefaultTimeout();
+
+                await host.StopAsync();
+            }
+        }
+
         [ConditionalFact]
         [MsQuicSupported]
         public async Task POST_ServerCompletesWithoutReadingRequestBody_ClientGetsResponse()
@@ -181,19 +229,9 @@ namespace Interop.FunctionalTests.Http3
             {
                 var body = context.Request.Body;
 
-                var data = new List<byte>();
-                var buffer = new byte[1024];
-                var readCount = 0;
-                while ((readCount = await body.ReadAsync(buffer).DefaultTimeout()) != -1)
-                {
-                    data.AddRange(buffer.AsMemory(0, readCount).ToArray());
-                    if (data.Count == TestData.Length)
-                    {
-                        break;
-                    }
-                }
+                var data = await body.ReadAtLeastLengthAsync(TestData.Length).DefaultTimeout();
 
-                await context.Response.Body.WriteAsync(buffer.AsMemory(0, TestData.Length));
+                await context.Response.Body.WriteAsync(data);
             });
 
             using (var host = builder.Build())
@@ -249,17 +287,7 @@ namespace Interop.FunctionalTests.Http3
                 var body = context.Request.Body;
 
                 // Read content
-                var data = new List<byte>();
-                var buffer = new byte[1024];
-                var readCount = 0;
-                while ((readCount = await body.ReadAsync(buffer).DefaultTimeout()) != -1)
-                {
-                    data.AddRange(buffer.AsMemory(0, readCount).ToArray());
-                    if (data.Count == TestData.Length)
-                    {
-                        break;
-                    }
-                }
+                await body.ReadAtLeastLengthAsync(TestData.Length).DefaultTimeout();
 
                 // Sync with client
                 await syncPoint.WaitToContinue();
@@ -267,7 +295,7 @@ namespace Interop.FunctionalTests.Http3
                 // Wait for task cancellation
                 await cancelledTcs.Task;
 
-                readAsyncTask.SetResult(body.ReadAsync(buffer).AsTask());
+                readAsyncTask.SetResult(body.ReadAsync(new byte[1024]).AsTask());
             }, protocol: protocol);
 
             using (var host = builder.Build())
