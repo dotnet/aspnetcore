@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// If a ticket was produced, authenticate was successful.
         /// </summary>
-        [MemberNotNullWhen(true, nameof(Ticket))]
+        [MemberNotNullWhen(true, nameof(Ticket), nameof(Principal))]
         public bool Succeeded => Ticket != null;
 
         /// <summary>
