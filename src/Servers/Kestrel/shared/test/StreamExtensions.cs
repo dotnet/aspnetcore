@@ -41,7 +41,7 @@ namespace System.IO
 
             while (offset < length)
             {
-                var read = await stream.ReadAsync(buffer, 0, length - offset, cancellationToken);
+                var read = await stream.ReadAsync(buffer, 0, Math.Min(length - offset, buffer.Length), cancellationToken);
                 offset += read;
 
                 Assert.NotEqual(0, read);
