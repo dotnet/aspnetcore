@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        [Event(11, Level = EventLevel.Informational)]
+        [Event(11, Level = EventLevel.LogAlways)]
         public void Configuration(int instanceId, string configuration)
         {
             // If the event source is already enabled, dump configuration
@@ -230,17 +230,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         [NonEvent]
         public void Configuration(KestrelServerOptions options)
         {
-            var bufferWriter = new ArrayBufferWriter<byte>();
-            var writer = new Utf8JsonWriter(bufferWriter);
+            // If the event source is already enabled, dump configuration
+            if (IsEnabled())
+            {
+                var bufferWriter = new ArrayBufferWriter<byte>();
+                var writer = new Utf8JsonWriter(bufferWriter);
 
-            writer.WriteStartObject();
-            options.Serialize(writer);
-            writer.WriteEndObject();
-            writer.Flush();
+                writer.WriteStartObject();
+                options.Serialize(writer);
+                writer.WriteEndObject();
+                writer.Flush();
 
-            var serializedConfig = Encoding.UTF8.GetString(bufferWriter.WrittenSpan);
+                var serializedConfig = Encoding.UTF8.GetString(bufferWriter.WrittenSpan);
 
-            Configuration(options.GetHashCode(), serializedConfig);
+                Configuration(options.GetHashCode(), serializedConfig);
+            }
         }
 
         [NonEvent]
@@ -251,11 +255,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 _options.Add(options);
             }
 
-            // If the event source is already enabled, dump configuration
-            if (IsEnabled(EventLevel.Informational, EventKeywords.None))
-            {
-                Configuration(options);
-            }
+            Configuration(options);
         }
 
         [NonEvent]
