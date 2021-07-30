@@ -117,6 +117,7 @@ Microsoft.AspNetCore.Server.Kestrel.Https.TlsHandshakeCallbackOptions.OnConnecti
 Microsoft.AspNetCore.Server.Kestrel.Https.TlsHandshakeCallbackOptions.OnConnectionState.get -> object?
 Microsoft.AspNetCore.Server.Kestrel.Https.TlsHandshakeCallbackOptions.OnConnectionState.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Https.TlsHandshakeCallbackOptions.TlsHandshakeCallbackOptions() -> void
+override Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate.ToString() -> string!
 static Microsoft.AspNetCore.Hosting.ListenOptionsHttpsExtensions.UseHttps(this Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions! listenOptions, Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions! httpsOptions) -> Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!
 static Microsoft.AspNetCore.Hosting.ListenOptionsHttpsExtensions.UseHttps(this Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions! listenOptions, Microsoft.AspNetCore.Server.Kestrel.Https.TlsHandshakeCallbackOptions! callbackOptions) -> Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!
 static Microsoft.AspNetCore.Hosting.ListenOptionsHttpsExtensions.UseHttps(this Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions! listenOptions, System.Action<Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions!>! configureOptions) -> Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!

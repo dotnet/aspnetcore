@@ -36,7 +36,7 @@
 
     <!-- Enable .NET code style analysis during build for src projects. -->
     <!-- Workaround bug where turning this on produces warnings in VS -->
-    <EnforceCodeStyleInBuild Condition="'$(VisualStudioVersion)' &lt; '17.0'">false</EnforceCodeStyleInBuild>
+    <EnforceCodeStyleInBuild Condition="'$(BuildingInsideVisualStudio)' == 'true' AND '$(VisualStudioVersion)' &lt; '17.0'">false</EnforceCodeStyleInBuild>
     <EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == ''">true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
