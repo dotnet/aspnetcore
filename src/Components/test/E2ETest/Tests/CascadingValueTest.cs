@@ -72,6 +72,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34867")]
         public void CanUpdateFixedValuesMatchedByInterface()
         {
             var currentCount = Browser.Exists(By.Id("current-count"));
