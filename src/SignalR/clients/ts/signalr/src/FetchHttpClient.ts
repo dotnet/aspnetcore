@@ -36,7 +36,13 @@ export class FetchHttpClient extends HttpClient {
             // Node needs EventListener methods on AbortController which our custom polyfill doesn't provide
             this._abortControllerType = requireFunc("abort-controller");
         } else {
-            this._fetchType = fetch.bind(self);
+            if(Platform.isNode) {
+                this._fetchType = fetch.bind(global);
+            }
+            else{
+                this._fetchType = fetch.bind(self);
+            }
+
             this._abortControllerType = AbortController;
         }
     }
