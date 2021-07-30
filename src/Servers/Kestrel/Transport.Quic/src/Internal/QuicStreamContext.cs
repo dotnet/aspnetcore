@@ -49,6 +49,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             _log = context.Log;
             MemoryPool = connection.MemoryPool;
 
+            RemoteEndPoint = connection.RemoteEndPoint;
+            LocalEndPoint = connection.LocalEndPoint;
+
             var maxReadBufferSize = context.Options.MaxReadBufferSize ?? 0;
             var maxWriteBufferSize = context.Options.MaxWriteBufferSize ?? 0;
 
