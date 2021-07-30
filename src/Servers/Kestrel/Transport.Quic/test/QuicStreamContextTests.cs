@@ -210,22 +210,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
             await using var clientStream = await quicConnection.AcceptStreamAsync();
 
-            var data = new List<byte>();
-            var buffer = new byte[1024];
-            var readCount = 0;
-            while ((readCount = await clientStream.ReadAsync(buffer).DefaultTimeout()) != -1)
-            {
-                data.AddRange(buffer.AsMemory(0, readCount).ToArray());
-                if (data.Count == TestData.Length)
-                {
-                    break;
-                }
-            }
+            var data = await clientStream.ReadUntilLengthAsync(TestData.Length).DefaultTimeout();
+
             Assert.Equal(TestData, data);
 
             await serverStream.Transport.Output.CompleteAsync();
 
-            readCount = await clientStream.ReadAsync(buffer).DefaultTimeout();
+            var readCount = await clientStream.ReadAsync(new byte[1024]).DefaultTimeout();
 
             // Assert
             Assert.Equal(0, readCount);
@@ -259,23 +250,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
             await using var clientStream = await quicConnection.AcceptStreamAsync();
 
-            var data = new List<byte>();
-            var buffer = new byte[1024];
-            var readCount = 0;
-            while ((readCount = await clientStream.ReadAsync(buffer).DefaultTimeout()) != -1)
-            {
-                data.AddRange(buffer.AsMemory(0, readCount).ToArray());
-                if (data.Count == TestData.Length)
-                {
-                    break;
-                }
-            }
+            var data = await clientStream.ReadUntilLengthAsync(TestData.Length).DefaultTimeout();
+
             Assert.Equal(TestData, data);
 
             ((IProtocolErrorCodeFeature)serverStream).Error = (long)Http3ErrorCode.InternalError;
             serverStream.Abort(new ConnectionAbortedException("Test message"));
 
-            var ex = await Assert.ThrowsAsync<QuicStreamAbortedException>(() => clientStream.ReadAsync(buffer).AsTask()).DefaultTimeout();
+            var ex = await Assert.ThrowsAsync<QuicStreamAbortedException>(() => clientStream.ReadAsync(new byte[1024]).AsTask()).DefaultTimeout();
 
             // Assert
             Assert.Equal((long)Http3ErrorCode.InternalError, ex.ErrorCode);

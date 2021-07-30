@@ -9,37 +9,66 @@ namespace System.IO
 {
     public static class StreamFillBufferExtensions
     {
-        public static async Task<int> ReadUntilEndAsync(this Stream stream, byte[] buffer, CancellationToken cancellationToken = default)
+        public static async Task<byte[]> ReadUntilEndAsync(this Stream stream, byte[] buffer = null, CancellationToken cancellationToken = default)
         {
+            buffer ??= new byte[1024];
+            var data = new List<byte>();
             var offset = 0;
 
             while (offset < buffer.Length)
             {
-                var read = await stream.ReadAsync(buffer, offset, buffer.Length - offset, cancellationToken);
+                var read = await stream.ReadAsync(buffer, 0, buffer.Length - offset, cancellationToken);
                 offset += read;
 
                 if (read == 0)
                 {
-                    return offset;
+                    return data.ToArray();
                 }
+
+                data.AddRange(buffer.AsMemory(0, read).ToArray());
             }
 
             Assert.Equal(0, await stream.ReadAsync(new byte[1], 0, 1, cancellationToken));
 
-            return offset;
+            return data.ToArray();
         }
 
-        public static async Task ReadUntilLengthAsync(this Stream stream, byte[] buffer, int length, CancellationToken cancellationToken = default)
+        public static async Task<byte[]> ReadUntilLengthAsync(this Stream stream, int length, byte[] buffer = null, CancellationToken cancellationToken = default)
         {
+            buffer ??= new byte[1024];
+            var data = new List<byte>();
             var offset = 0;
 
             while (offset < length)
             {
-                var read = await stream.ReadAsync(buffer, offset, length - offset, cancellationToken);
+                var read = await stream.ReadAsync(buffer, 0, length - offset, cancellationToken);
                 offset += read;
 
                 Assert.NotEqual(0, read);
+
+                data.AddRange(buffer.AsMemory(0, read).ToArray());
             }
+
+            return data.ToArray();
+        }
+
+        public static async Task<byte[]> ReadAtLeastLengthAsync(this Stream stream, int length, byte[] buffer = null, CancellationToken cancellationToken = default)
+        {
+            buffer ??= new byte[1024];
+            var data = new List<byte>();
+            var offset = 0;
+
+            while (offset < length)
+            {
+                var read = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
+                offset += read;
+
+                Assert.NotEqual(0, read);
+
+                data.AddRange(buffer.AsMemory(0, read).ToArray());
+            }
+
+            return data.ToArray();
         }
     }
 }
