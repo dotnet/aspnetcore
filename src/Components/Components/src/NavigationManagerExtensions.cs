@@ -122,10 +122,10 @@ namespace Microsoft.AspNetCore.Components
         }
 
         // A utility for feeding a collection of parameter values into a QueryStringBuilder.
-        private struct QueryParameterSource<TValue>
+        private readonly struct QueryParameterSource<TValue>
         {
-            private IEnumerator<TValue?>? _enumerator;
-            private QueryParameterFormatter<TValue>? _formatter;
+            private readonly IEnumerator<TValue?>? _enumerator;
+            private readonly QueryParameterFormatter<TValue>? _formatter;
 
             public string EncodedName { get; }
 
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Components
         // a QueryStringBuilder.
         private struct QueryParameterSource
         {
-            private QueryParameterSource<object> _source;
+            private readonly QueryParameterSource<object> _source;
             private string? _encodedValue;
 
             public string EncodedName => _source.EncodedName;
