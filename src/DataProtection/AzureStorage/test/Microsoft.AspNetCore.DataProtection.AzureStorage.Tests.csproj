@@ -14,8 +14,6 @@
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Data.OData"/>
     <Reference Include="Microsoft.Data.Services.Client"/>
-    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
-    <Reference Include="Microsoft.AspNetCore.DataProtection" />
   </ItemGroup>
 
 </Project>
