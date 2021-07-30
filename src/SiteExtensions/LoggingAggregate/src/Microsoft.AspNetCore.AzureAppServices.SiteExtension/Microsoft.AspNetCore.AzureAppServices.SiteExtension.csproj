@@ -17,8 +17,7 @@
     <NoSemVer20>true</NoSemVer20>
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
-    <!-- TODO: Undo this change. I just wanted to test if the CI produces the right packages -->
-    <!-- <IsShipping Condition=" '$(PreReleaseVersionLabel)' == 'preview' ">false</IsShipping> -->
+    <IsShipping Condition=" '$(PreReleaseVersionLabel)' == 'preview' ">false</IsShipping>
 
     <!-- Grab packages LB.csproj should have just built. -->
     <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);$(ArtifactsNonShippingPackagesDir)</RestoreAdditionalProjectSources>
