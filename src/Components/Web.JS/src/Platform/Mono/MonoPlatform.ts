@@ -279,6 +279,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     return []; // No exports
   };
 
+  // Environment variables could be set via mono only after the runtime is ready.
   module.onRuntimeInitialized = () => {
     if (!icuDataResource) {
       // Use invariant culture if the app does not carry icu data.
