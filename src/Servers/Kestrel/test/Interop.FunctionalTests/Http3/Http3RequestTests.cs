@@ -176,7 +176,7 @@ namespace Interop.FunctionalTests.Http3
         [ConditionalTheory]
         [MsQuicSupported]
         [InlineData(11)]
-        [InlineData(1024, Skip = "HttpClient issue https://github.com/dotnet/runtime/issues/56115.")]
+        [InlineData(1024, Skip = "HttpClient issue https://github.com/dotnet/runtime/issues/56115")]
         public async Task GET_ServerStreaming_ClientReadsPartialResponse(int clientBufferSize)
         {
             // Arrange
