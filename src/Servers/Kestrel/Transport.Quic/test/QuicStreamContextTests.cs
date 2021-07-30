@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
             await using var clientStream = await quicConnection.AcceptStreamAsync();
 
-            var data = await clientStream.ReadUntilLengthAsync(TestData.Length).DefaultTimeout();
+            var data = await clientStream.ReadAtLeastLengthAsync(TestData.Length).DefaultTimeout();
 
             Assert.Equal(TestData, data);
 
@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
             await using var clientStream = await quicConnection.AcceptStreamAsync();
 
-            var data = await clientStream.ReadUntilLengthAsync(TestData.Length).DefaultTimeout();
+            var data = await clientStream.ReadAtLeastLengthAsync(TestData.Length).DefaultTimeout();
 
             Assert.Equal(TestData, data);
 

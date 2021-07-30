@@ -229,7 +229,7 @@ namespace Interop.FunctionalTests.Http3
             {
                 var body = context.Request.Body;
 
-                var data = await body.ReadUntilLengthAsync(TestData.Length).DefaultTimeout();
+                var data = await body.ReadAtLeastLengthAsync(TestData.Length).DefaultTimeout();
 
                 await context.Response.Body.WriteAsync(data);
             });
@@ -287,7 +287,7 @@ namespace Interop.FunctionalTests.Http3
                 var body = context.Request.Body;
 
                 // Read content
-                await body.ReadUntilLengthAsync(TestData.Length).DefaultTimeout();
+                await body.ReadAtLeastLengthAsync(TestData.Length).DefaultTimeout();
 
                 // Sync with client
                 await syncPoint.WaitToContinue();
