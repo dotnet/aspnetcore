@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+using System.Collections;
 using System.Globalization;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Internal;
 
@@ -18,16 +14,15 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     public static class NavigationManagerExtensions
     {
-        private const string EmptyQueryParameterExceptionMessage = "Cannot have empty query parameter names.";
+        private const string EmptyQueryParameterNameExceptionMessage = "Cannot have empty query parameter names.";
 
-        private delegate string QueryParameterFormatter(object value);
-        private delegate string? QueryParameterFormatter<TValue>(TValue? value);
+        private delegate string? QueryParameterFormatter<TValue>(TValue value);
 
         // We don't include mappings for Nullable types because we explicitly check for null values
         // to see if the parameter should be excluded from the querystring. Therefore, we will only
         // invoke these formatters for non-null values. We also get the underlying type of any Nullable
         // types before performing lookups in this dictionary.
-        private static readonly Dictionary<Type, QueryParameterFormatter> _queryParameterFormatters = new()
+        private static readonly Dictionary<Type, QueryParameterFormatter<object>> _queryParameterFormatters = new()
         {
             [typeof(string)] = value => Format((string)value)!,
             [typeof(bool)] = value => Format((bool)value),
@@ -91,6 +86,7 @@ namespace Microsoft.AspNetCore.Components
         private static string? Format(long? value)
             => value?.ToString(CultureInfo.InvariantCulture);
 
+        // Used for constructing a new query string from a URI.
         private struct QueryStringBuilder
         {
             private readonly StringBuilder _builder;
@@ -125,9 +121,122 @@ namespace Microsoft.AspNetCore.Components
             }
         }
 
-        private readonly record struct ParameterData(string? EncodedName, string? EncodedValue)
+        // A utility for feeding a collection of parameter values into a QueryStringBuilder.
+        private struct QueryParameterSource<TValue>
         {
-            public bool DidReplace { get; init; } = false;
+            private IEnumerator<TValue?>? _enumerator;
+            private QueryParameterFormatter<TValue>? _formatter;
+
+            public string EncodedName { get; }
+
+            // Creates an empty instance to simulate a source without any elements.
+            public QueryParameterSource(string name)
+            {
+                if (string.IsNullOrEmpty(name))
+                {
+                    throw new InvalidOperationException(EmptyQueryParameterNameExceptionMessage);
+                }
+
+                EncodedName = Uri.EscapeDataString(name);
+
+                _enumerator = default;
+                _formatter = default;
+            }
+
+            public QueryParameterSource(string name, IEnumerable<TValue?> values, QueryParameterFormatter<TValue> formatter)
+                : this(name)
+            {
+                _enumerator = values.GetEnumerator();
+                _formatter = formatter;
+            }
+
+            public bool AppendNextParameter(ref QueryStringBuilder builder)
+            {
+                if (_enumerator is null || !_enumerator.MoveNext())
+                {
+                    return false;
+                }
+
+                var currentValue = _enumerator.Current;
+
+                if (currentValue is null)
+                {
+                    // No-op to simulate appending a null parameter.
+                    return true;
+                }
+
+                var formattedValue = _formatter!(currentValue);
+                var encodedValue = Uri.EscapeDataString(formattedValue!);
+                builder.AppendParameter(EncodedName, encodedValue);
+                return true;
+            }
+        }
+
+        // A utility for feeding an object of unknown type as one or more parameter values into
+        // a QueryStringBuilder.
+        private struct QueryParameterSource
+        {
+            private QueryParameterSource<object> _source;
+            private string? _encodedValue;
+
+            public string EncodedName => _source.EncodedName;
+
+            public QueryParameterSource(string name, object? value)
+            {
+                if (value is null)
+                {
+                    _source = new(name);
+                    _encodedValue = default;
+                    return;
+                }
+
+                var valueType = value.GetType();
+
+                if (valueType != typeof(string) && typeof(IEnumerable).IsAssignableFrom(valueType))
+                {
+                    // The provided value was of enumerable type, so we populate the underlying source.
+                    var elementType = valueType.GetElementType()!;
+                    var formatter = GetFormatterFromParameterValueType(elementType);
+
+                    // This cast is inevitable; the values have to be boxed anyway to be formatted.
+                    var values = ((IEnumerable)value).Cast<object>();
+
+                    _source = new(name, values, formatter);
+                    _encodedValue = default;
+                }
+                else
+                {
+                    // The provided value was not of enumerable type, so we leave the underlying source
+                    // empty and instead cache the encoded value to be appended later.
+                    var formatter = GetFormatterFromParameterValueType(valueType);
+                    var formattedValue = formatter(value);
+                    _source = new(name);
+                    _encodedValue = Uri.EscapeDataString(formattedValue!);
+                }
+            }
+
+            public bool AppendNextParameter(ref QueryStringBuilder builder)
+            {
+                if (_source.AppendNextParameter(ref builder))
+                {
+                    // The underlying source of values had elements, so there is no more work to do here.
+                    return true;
+                }
+
+                // Either we've run out of elements to append or the given value was not of enumerable
+                // type in the first place.
+
+                // If the value was not of enumerable type and has not been appended, append it
+                // and set it to null so we don't provide the value more than once.
+                if (_encodedValue is not null)
+                {
+                    builder.AppendParameter(_source.EncodedName, _encodedValue);
+                    _encodedValue = null;
+                    return true;
+                }
+
+                return false;
+            }
         }
 
         /// <summary>
@@ -580,7 +689,7 @@ namespace Microsoft.AspNetCore.Components
 
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException(EmptyQueryParameterExceptionMessage, nameof(name));
+                throw new InvalidOperationException(EmptyQueryParameterNameExceptionMessage);
             }
 
             var uri = navigationManager.Uri;
@@ -601,35 +710,19 @@ namespace Microsoft.AspNetCore.Components
                 throw new ArgumentNullException(nameof(navigationManager));
             }
 
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentException(EmptyQueryParameterExceptionMessage, nameof(name));
-            }
-
             var uri = navigationManager.Uri;
+            var source = new QueryParameterSource<TValue>(name, values, formatter);
 
             if (!TryRebuildExistingQueryFromUri(uri, out var existingQueryStringEnumerable, out var newQueryStringBuilder))
             {
-                return UriWithAppendedQueryParameters(uri, name, values);
+                return UriWithAppendedQueryParameters(uri, ref source);
             }
-
-            var encodedName = Uri.EscapeDataString(name).AsSpan();
-            var valueEnumerator = values.GetEnumerator();
-            var hasNextValue = valueEnumerator.MoveNext();
 
             foreach (var pair in existingQueryStringEnumerable)
             {
-                if (pair.EncodedName.Span.Equals(encodedName, StringComparison.OrdinalIgnoreCase))
+                if (pair.EncodedName.Span.Equals(source.EncodedName, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (!hasNextValue)
-                    {
-                        // We've added all provided values, so we'll skip any parameters with the provided name from
-                        // now on.
-                        continue;
-                    }
-
-                    AppendNextValue(encodedName, valueEnumerator.Current, formatter, ref newQueryStringBuilder);
-                    hasNextValue = valueEnumerator.MoveNext();
+                    source.AppendNextParameter(ref newQueryStringBuilder);
                 }
                 else
                 {
@@ -637,31 +730,9 @@ namespace Microsoft.AspNetCore.Components
                 }
             }
 
-            while (hasNextValue)
-            {
-                AppendNextValue(encodedName, valueEnumerator.Current, formatter, ref newQueryStringBuilder);
-                hasNextValue = valueEnumerator.MoveNext();
-            }
+            while (source.AppendNextParameter(ref newQueryStringBuilder)) ;
 
             return newQueryStringBuilder.UriWithQueryString;
-
-            static void AppendNextValue(
-                ReadOnlySpan<char> name,
-                TValue? value,
-                QueryParameterFormatter<TValue> formatter,
-                ref QueryStringBuilder queryStringBuilder)
-            {
-                if (value is null)
-                {
-                    // If we encounter a null value, we exclude it from the querystring, so we skip whatever
-                    // the old value was.
-                    return;
-                }
-
-                var formattedValue = formatter(value);
-                var encodedValue = Uri.EscapeDataString(formattedValue!);
-                queryStringBuilder.AppendParameter(name, encodedValue);
-            }
         }
 
         private static string UriWithQueryParameterCore(string uri, string name, string value)
@@ -760,34 +831,18 @@ namespace Microsoft.AspNetCore.Components
                 return UriWithAppendedQueryParameters(uri, parameters);
             }
 
-            // Build a dictionary mapping encoded parameter names to an object containing their encoded values
-            // and whether they've replaced an existing parameter.
-            var parameterDataByEncodedName = new Dictionary<ReadOnlyMemory<char>, ParameterData>(
-                QueryParameterNameComparer.Instance);
-            foreach (var (name, value) in parameters)
-            {
-                if (string.IsNullOrEmpty(name))
-                {
-                    throw new InvalidOperationException(EmptyQueryParameterExceptionMessage);
-                }
-
-                var encodedName = Uri.EscapeDataString(name);
-                var encodedValue = GetEncodedParameterValue(value);
-
-                parameterDataByEncodedName.Add(encodedName.AsMemory(), new ParameterData(encodedName, encodedValue));
-            }
+            var parameterSourceCollection = CreateParameterSourceDictionary(parameters);
 
             // Rebuild the query, updating or removing parameters.
             foreach (var pair in existingQueryStringEnumerable)
             {
-                if (parameterDataByEncodedName.TryGetValue(pair.EncodedName, out var parameterData))
+                if (parameterSourceCollection.TryGetValue(pair.EncodedName, out var source))
                 {
-                    if (parameterData.EncodedValue is not null)
+                    if (source.AppendNextParameter(ref newQueryStringBuilder))
                     {
-                        newQueryStringBuilder.AppendParameter(parameterData.EncodedName, parameterData.EncodedValue);
+                        // We need to add the parameter source back into the dictionary since we're working on a copy.
+                        parameterSourceCollection[pair.EncodedName] = source;
                     }
-
-                    parameterDataByEncodedName[pair.EncodedName] = parameterData with { DidReplace = true };
                 }
                 else
                 {
@@ -796,12 +851,9 @@ namespace Microsoft.AspNetCore.Components
             }
 
             // Append any parameters with non-null values that did not replace existing parameters.
-            foreach (var (encodedName, data) in parameterDataByEncodedName)
+            foreach (var source in parameterSourceCollection.Values)
             {
-                if (!data.DidReplace && data.EncodedValue is not null)
-                {
-                    newQueryStringBuilder.AppendParameter(encodedName.Span, data.EncodedValue);
-                }
+                while (source.AppendNextParameter(ref newQueryStringBuilder)) ;
             }
 
             return newQueryStringBuilder.UriWithQueryString;
@@ -809,26 +861,11 @@ namespace Microsoft.AspNetCore.Components
 
         private static string UriWithAppendedQueryParameters<TValue>(
             string uriWithoutQueryString,
-            string name,
-            IEnumerable<TValue> values)
+            ref QueryParameterSource<TValue> queryParameterSource)
         {
-            var formatter = GetFormatterFromParameterValueType(typeof(TValue));
-            var encodedName = Uri.EscapeDataString(name);
             var builder = new QueryStringBuilder(uriWithoutQueryString);
 
-            // Build a new query from the existing URI, appending all values.
-            foreach (var value in values)
-            {
-                if (value is null)
-                {
-                    continue;
-                }
-
-                var formattedValue = formatter(value);
-                var encodedValue = Uri.EscapeDataString(formattedValue);
-
-                builder.AppendParameter(encodedName, encodedValue);
-            }
+            while (queryParameterSource.AppendNextParameter(ref builder)) ;
 
             return builder.UriWithQueryString;
         }
@@ -839,39 +876,30 @@ namespace Microsoft.AspNetCore.Components
         {
             var builder = new QueryStringBuilder(uriWithoutQueryString);
 
-            // Build a new query from the existing URI, appending all parameters with non-null values.
             foreach (var (name, value) in parameters)
             {
-                if (string.IsNullOrEmpty(name))
-                {
-                    throw new InvalidOperationException(EmptyQueryParameterExceptionMessage);
-                }
-
-                var encodedName = Uri.EscapeDataString(name);
-                var encodedValue = GetEncodedParameterValue(value);
-
-                if (encodedValue is not null)
-                {
-                    builder.AppendParameter(encodedName, encodedValue);
-                }
+                var source = new QueryParameterSource(name, value);
+                while (source.AppendNextParameter(ref builder)) ;
             }
 
             return builder.UriWithQueryString;
         }
 
-        private static string? GetEncodedParameterValue(object? value)
+        private static Dictionary<ReadOnlyMemory<char>, QueryParameterSource> CreateParameterSourceDictionary(
+            IReadOnlyDictionary<string, object?> parameters)
         {
-            if (value is null)
+            var parameterSources = new Dictionary<ReadOnlyMemory<char>, QueryParameterSource>(QueryParameterNameComparer.Instance);
+
+            foreach (var (name, value) in parameters)
             {
-                return null;
+                var parameterSource = new QueryParameterSource(name, value);
+                parameterSources.Add(parameterSource.EncodedName.AsMemory(), parameterSource);
             }
 
-            var formatter = GetFormatterFromParameterValueType(value.GetType());
-            var formattedValue = formatter(value);
-            return formattedValue is null ? null : Uri.EscapeDataString(formattedValue);
+            return parameterSources;
         }
 
-        private static QueryParameterFormatter GetFormatterFromParameterValueType(Type parameterValueType)
+        private static QueryParameterFormatter<object> GetFormatterFromParameterValueType(Type parameterValueType)
         {
             var underlyingParameterValueType = Nullable.GetUnderlyingType(parameterValueType) ?? parameterValueType;
 
