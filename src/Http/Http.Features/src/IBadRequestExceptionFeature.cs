@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Http;
-
 namespace Microsoft.AspNetCore.Http.Features
 {
     /// <summary>
@@ -13,6 +11,6 @@ namespace Microsoft.AspNetCore.Http.Features
         /// <summary>
         /// Synchronously retrieves the exception associated with the rejected HTTP request.
         /// </summary>
-        BadHttpRequestException? Error { get; }
+        Exception? Error { get; }
     }
 }
