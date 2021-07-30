@@ -1,5 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Components.Web.JSComponentConfigurationExtensions
 Microsoft.AspNetCore.Components.Forms.InputCheckbox.Element.get -> Microsoft.AspNetCore.Components.ElementReference?
 Microsoft.AspNetCore.Components.Forms.InputCheckbox.Element.set -> void
 Microsoft.AspNetCore.Components.Forms.InputDate<TValue>.Element.get -> Microsoft.AspNetCore.Components.ElementReference?
