@@ -567,7 +567,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
             // Arrange
             var action = CreateActionDescriptor(methodName, controllerType);
             action.FilterDescriptors = filterDescriptors;
-            var expectedMediaTypes = new[] { "application/json", "text/json" };
+            var expectedMediaTypes = new[] { "application/json", "application/xml", "text/json", "text/xml" };
 
             // Act
             var descriptions = GetApiDescriptions(action);
@@ -677,7 +677,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
             // Arrange
             var action = CreateActionDescriptor(methodName, controllerType);
             action.FilterDescriptors = filterDescriptors;
-            var expectedMediaTypes = new[] { "application/json", "text/json" };
+            var expectedMediaTypes = new[] { "application/json", "application/xml", "text/json", "text/xml" };
 
             // Act
             var descriptions = GetApiDescriptions(action);
@@ -740,7 +740,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
                     new ProducesResponseTypeAttribute(typeof(ErrorDetails), 500),
                     FilterScope.Action)
             };
-            var expectedMediaTypes = new[] { "application/json", "text/json" };
+            var expectedMediaTypes = new[] { "application/json", "application/xml", "text/json", "text/xml" };
 
             // Act
             var descriptions = GetApiDescriptions(action);
@@ -810,7 +810,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
                     new ProducesResponseTypeAttribute(typeof(ErrorDetails), 500),
                     FilterScope.Action)
             };
-            var expectedMediaTypes = new[] { "application/json", "text/json" };
+            var expectedMediaTypes = new[] { "application/json", "application/xml", "text/json", "text/xml" };
 
             // Act
             var descriptions = GetApiDescriptions(action);
@@ -880,7 +880,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
                     new ProducesResponseTypeAttribute(typeof(ErrorDetails), 500),
                     FilterScope.Action)
             };
-            var expectedMediaTypes = new[] { "application/json", "text/json" };
+            var expectedMediaTypes = new[] { "application/json", "application/xml", "text/json", "text/xml" };
 
             // Act
             var descriptions = GetApiDescriptions(action);
