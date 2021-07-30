@@ -173,9 +173,11 @@ namespace Interop.FunctionalTests.Http3
             }
         }
 
-        [ConditionalFact]
+        [ConditionalTheory]
         [MsQuicSupported]
-        public async Task GET_ServerStreaming_ClientReadsPartialResponse()
+        [InlineData(11)]
+        [InlineData(1024, Skip = "HttpClient issue https://github.com/dotnet/runtime/issues/56115.")]
+        public async Task GET_ServerStreaming_ClientReadsPartialResponse(int clientBufferSize)
         {
             // Arrange
             var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -207,7 +209,7 @@ namespace Interop.FunctionalTests.Http3
                 var responseStream = await response.Content.ReadAsStreamAsync();
 
                 var data = new List<byte>();
-                var buffer = new byte[1024];
+                var buffer = new byte[clientBufferSize];
                 var readCount = 0;
 
                 while ((readCount = await responseStream.ReadAsync(buffer).DefaultTimeout()) != -1)
@@ -222,7 +224,7 @@ namespace Interop.FunctionalTests.Http3
                 tcs.SetResult();
 
                 data = new List<byte>();
-                buffer = new byte[1024];
+                buffer = new byte[clientBufferSize];
                 readCount = 0;
 
                 while ((readCount = await responseStream.ReadAsync(buffer).DefaultTimeout()) != -1)
