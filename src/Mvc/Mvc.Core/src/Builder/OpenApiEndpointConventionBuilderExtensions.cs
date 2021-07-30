@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -11,6 +12,19 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     public static class OpenApiEndpointConventionBuilderExtensions
     {
+        /// <summary>
+        /// Adds metadata to support suppressing OpenAPI documentation from
+        /// being generated for this endpoint.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static IEndpointConventionBuilder SuppressApi(this IEndpointConventionBuilder builder)
+        {
+            builder.WithMetadata(new SuppressApiMetadata());
+
+            return builder;
+        }
+
         /// <summary>
         /// Adds metadata indicating the type of response an endpoint produces.
         /// </summary>

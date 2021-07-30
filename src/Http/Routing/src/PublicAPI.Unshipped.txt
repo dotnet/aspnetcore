@@ -36,3 +36,8 @@ Microsoft.AspNetCore.Routing.EndpointNameAttribute.EndpointNameAttribute(string!
 Microsoft.AspNetCore.Routing.EndpointNameAttribute.EndpointName.get -> string!
 static Microsoft.AspNetCore.Builder.RoutingEndpointConventionBuilderExtensions.WithName<TBuilder>(this TBuilder builder, string! endpointName) -> TBuilder
 static Microsoft.AspNetCore.Builder.RoutingEndpointConventionBuilderExtensions.WithGroupName<TBuilder>(this TBuilder builder, string! endpointGroupName) -> TBuilder
+Microsoft.AspNetCore.Routing.ISuppressApiMetadata
+Microsoft.AspNetCore.Routing.ISuppressApiMetadata.SuppressApi.get -> bool
+Microsoft.AspNetCore.Routing.SuppressApiMetadata
+Microsoft.AspNetCore.Routing.SuppressApiMetadata.SuppressApiMetadata() -> void
+Microsoft.AspNetCore.Routing.SuppressApiMetadata.SuppressApi.get -> bool
