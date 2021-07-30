@@ -65,13 +65,13 @@ override Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.OnAfterRenderAs
 override Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.OnParametersSet() -> void
 override Microsoft.AspNetCore.Components.Web.ErrorBoundary.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 override Microsoft.AspNetCore.Components.Web.ErrorBoundary.OnErrorAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
-static Microsoft.AspNetCore.Builder.JSComponentConfigurationExtensions.RegisterForJavaScript<TComponent>(this Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration! configuration, string! identifier) -> void
 static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(this Microsoft.AspNetCore.Components.ElementReference elementReference, bool preventScroll) -> System.Threading.Tasks.ValueTask
 static Microsoft.AspNetCore.Components.Forms.BrowserFileExtensions.RequestImageFileAsync(this Microsoft.AspNetCore.Components.Forms.IBrowserFile! browserFile, string! format, int maxWidth, int maxHeight) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Forms.IBrowserFile!>
 Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.EventName.get -> string!
 Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.EventName.set -> void
 *REMOVED*Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.EventArgsType.get -> string!
 *REMOVED*Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.EventArgsType.set -> void
+Microsoft.AspNetCore.Builder.JSComponentConfigurationExtensions
 static Microsoft.AspNetCore.Components.Web.JSComponentConfigurationExtensions.RegisterForJavaScript(this Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration! configuration, System.Type! componentType, string! identifier) -> void
 static Microsoft.AspNetCore.Components.Web.JSComponentConfigurationExtensions.RegisterForJavaScript(this Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration! configuration, System.Type! componentType, string! identifier, string! javaScriptInitializer) -> void
 static Microsoft.AspNetCore.Components.Web.JSComponentConfigurationExtensions.RegisterForJavaScript<TComponent>(this Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration! configuration, string! identifier) -> void
