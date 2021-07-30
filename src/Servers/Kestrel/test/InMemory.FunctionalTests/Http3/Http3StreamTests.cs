@@ -728,7 +728,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/33760")]
         public async Task ContentLength_Received_NoDataFrames_Reset()
         {
             var headers = new[]
