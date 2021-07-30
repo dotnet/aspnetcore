@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Components
         private static string? Format(long? value)
             => value?.ToString(CultureInfo.InvariantCulture);
 
-        // Used for constructing a new query string from a URI.
+        // Used for constructing a URI with a new querystring from an existing URI.
         private struct QueryStringBuilder
         {
             private readonly StringBuilder _builder;
