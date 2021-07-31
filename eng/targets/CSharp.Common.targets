@@ -20,7 +20,7 @@
         '$(IsImplementationProject)' == 'true' OR
         '$(IsAnalyzersProject)' == true OR
         '$(IsSpecificationTestProject)' == 'true') ">enable</Nullable>
-    
+
     <!-- Strip out non-public nullable annotations for src projects. This should help with size reduction -->
      <Features Condition="
         '$(IsImplementationProject)' == 'true' OR
@@ -36,7 +36,7 @@
 
     <!-- Enable .NET code style analysis during build for src projects. -->
     <!-- Workaround bug where turning this on produces warnings in VS -->
-    <EnforceCodeStyleInBuild Condition="'$(BuildingInsideVisualStudio)' == 'true' AND '$(VisualStudioVersion)' &lt; '17.0'">false</EnforceCodeStyleInBuild>
+    <EnforceCodeStyleInBuild Condition="'$(MSBuildRuntimeType)' != 'Core' AND $([MSBuild]::VersionLessThanOrEquals('$(VisualStudioVersion)', '17.0'))">false</EnforceCodeStyleInBuild>
     <EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == ''">true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
