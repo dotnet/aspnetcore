@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     public static class OpenApiEndpointConventionBuilderExtensions
     {
+        private static readonly SuppressApiMetadata _suppressApiMetadata = new();
         /// <summary>
         /// Adds metadata to support suppressing OpenAPI documentation from
         /// being generated for this endpoint.
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static IEndpointConventionBuilder SuppressApi(this IEndpointConventionBuilder builder)
         {
-            builder.WithMetadata(new SuppressApiMetadata());
+            builder.WithMetadata(_suppressApiMetadata);
 
             return builder;
         }
@@ -30,11 +31,13 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <typeparam name="TResponse">The type of the response.</typeparam>
         /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
-        /// <param name="statusCode">The response status code. Defatuls to StatusCodes.Status200OK.</param>
-        /// <param name="contentType">The response content type. Defaults to "application/json"</param>
+        /// <param name="statusCode">The response status code. Defaults to StatusCodes.Status200OK.</param>
+        /// <param name="contentType">The response content type. Defaults to "application/json".</param>
         /// <param name="additionalContentTypes">Additional response content types the endpoint produces for the supplied status code.</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+#pragma warning disable RS0026
         public static IEndpointConventionBuilder Produces<TResponse>(this IEndpointConventionBuilder builder,
+#pragma warning restore RS0026
             int statusCode = StatusCodes.Status200OK,
             string? contentType = "application/json",
             params string[] additionalContentTypes)
@@ -46,12 +49,14 @@ namespace Microsoft.AspNetCore.Http
         /// Adds metadata indicating the type of response an endpoint produces.
         /// </summary>
         /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
-        /// <param name="statusCode">The response status code. Defatuls to StatusCodes.Status200OK.</param>
+        /// <param name="statusCode">The response status code. Defaults to StatusCodes.Status200OK.</param>
         /// <param name="responseType">The type of the response. Defaults to null.</param>
         /// <param name="contentType">The response content type. Defaults to "application/json" if responseType is not null, otherwise defaults to null.</param>
         /// <param name="additionalContentTypes">Additional response content types the endpoint produces for the supplied status code.</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+#pragma warning disable RS0026
         public static IEndpointConventionBuilder Produces(this IEndpointConventionBuilder builder,
+#pragma warning restore RS0026
             int statusCode = StatusCodes.Status200OK,
             Type? responseType = null,
             string? contentType = null,
@@ -71,7 +76,7 @@ namespace Microsoft.AspNetCore.Http
         /// Adds metadata indicating that the endpoint produces a Problem Details response.
         /// </summary>
         /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
-        /// <param name="statusCode">The response status code. Defatuls to StatusCodes.Status500InternalServerError.</param>
+        /// <param name="statusCode">The response status code. Defaults to StatusCodes.Status500InternalServerError.</param>
         /// <param name="contentType">The response content type. Defaults to "application/problem+json".</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static IEndpointConventionBuilder ProducesProblem(this IEndpointConventionBuilder builder,
@@ -85,7 +90,7 @@ namespace Microsoft.AspNetCore.Http
         /// Adds metadata indicating that the endpoint produces a ProblemDetails response for validation errors.
         /// </summary>
         /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
-        /// <param name="statusCode">The response status code. Defatuls to StatusCodes.Status400BadRequest.</param>
+        /// <param name="statusCode">The response status code. Defaults to StatusCodes.Status400BadRequest.</param>
         /// <param name="contentType">The response content type. Defaults to "application/problem+json".</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static IEndpointConventionBuilder ProducesValidationProblem(this IEndpointConventionBuilder builder,
