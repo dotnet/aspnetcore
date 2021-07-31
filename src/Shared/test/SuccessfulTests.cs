@@ -15,7 +15,7 @@ namespace AlwaysTestTests
         /// Test that executes in quarantined runs and always succeeds.
         /// </summary>
         [Fact]
-        [QuarantinedTest]
+        [Flaky("No issue", FlakyOn.All)]
         public void GuaranteedQuarantinedTest()
         {
         }
@@ -31,7 +31,7 @@ namespace AlwaysTestTests
         /// make it work (yet?).
         /// </remarks>
         [Fact]
-        [Trait("Quarantined", "false")]
+        [Trait("Flaky:AzP:All", "false")]
         public void GuaranteedUnquarantinedTest()
         {
         }
