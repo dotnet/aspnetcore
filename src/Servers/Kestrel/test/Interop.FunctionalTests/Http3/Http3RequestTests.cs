@@ -634,6 +634,55 @@ namespace Interop.FunctionalTests.Http3
             }
         }
 
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task GET_ConnectionInfo_PropertiesSet()
+        {
+            string connectionId = null;
+            IPAddress remoteAddress = null;
+            int? remotePort = null;
+            IPAddress localAddress = null;
+            int? localPort = null;
+
+            // Arrange
+            var builder = CreateHostBuilder(context =>
+            {
+                connectionId = context.Connection.Id;
+                remoteAddress = context.Connection.RemoteIpAddress;
+                remotePort = context.Connection.RemotePort;
+                localAddress = context.Connection.LocalIpAddress;
+                localPort = context.Connection.LocalPort;
+                return Task.CompletedTask;
+            });
+
+            using (var host = builder.Build())
+            using (var client = CreateClient())
+            {
+                await host.StartAsync();
+
+                var port = host.GetPort();
+
+                // Act
+                var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{port}/");
+                request1.Version = HttpVersion.Version30;
+                request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                var response1 = await client.SendAsync(request1);
+                response1.EnsureSuccessStatusCode();
+
+                // Assert
+                Assert.NotNull(connectionId);
+
+                Assert.NotNull(remoteAddress);
+                Assert.NotNull(remotePort);
+
+                Assert.NotNull(localAddress);
+                Assert.Equal(port, localPort);
+
+                await host.StopAsync();
+            }
+        }
+
         private static HttpClient CreateClient()
         {
             var httpHandler = new HttpClientHandler();
