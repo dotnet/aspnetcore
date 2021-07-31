@@ -70,6 +70,14 @@
         </InputSelect>
         <span>@string.Join(", ", person.HostileStrings)</span>
     </p>
+    <p class="select-bool-values">
+        T/F: 77 + 33 = 100<br>
+        <InputSelect @bind-Value="person.IsSelectMathStatementTrue">
+            <option>(select)</option>
+            <option value="true">true</option>
+            <option value="false">false</option>
+        </InputSelect>
+    </p>
     <p class="airline">
         <InputRadioGroup @bind-Value="person.Airline">
             Airline:
@@ -94,6 +102,14 @@
                 <InputRadio Name="country" Value="Country.Latvia" />latvia<br>
                 <InputRadio Name="color" Value="Color.Orange" />orange<br>
             </InputRadioGroup>
+        </InputRadioGroup>
+    </p>
+    <p class="radio-group-bool-values">
+        T/F: 7 * 3 = 21<br>
+        <InputRadioGroup @bind-Value="person.IsRadioMathStatementTrue">
+            @*<InputRadio Value="null" />unknown<br>*@
+            <InputRadio Value="true" />true<br>
+            <InputRadio Value="false" />false<br>
         </InputRadioGroup>
     </p>
     <p class="socks">
@@ -187,6 +203,12 @@
 
         [Required, EnumDataType(typeof(Country))]
         public Country? Country { get; set; } = null;
+
+        [Required, Range(typeof(bool), "false", "false", ErrorMessage = "77 + 33 = 100 is a false statement, unfortunately.")]
+        public bool? IsSelectMathStatementTrue { get; set; } = null;
+
+        [Required, Range(typeof(bool), "true", "true", ErrorMessage = "7 * 3 = 21 is a true statement.")]
+        public bool IsRadioMathStatementTrue { get; set; } = false;
 
         [Required, StringLength(10), CustomValidationClassName(Valid = "valid-socks", Invalid = "invalid-socks")]
         public string SocksColor { get; set; }
