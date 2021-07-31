@@ -729,7 +729,7 @@ namespace Interop.FunctionalTests.Http3
                         .UseQuic(options =>
                         {
                             options.MaxReadBufferSize = maxReadBufferSize;
-                            options.Alpn = "h3-29";
+                            options.Alpn = "h3";
                             options.IdleTimeout = TimeSpan.FromSeconds(20);
                         });
                 });
