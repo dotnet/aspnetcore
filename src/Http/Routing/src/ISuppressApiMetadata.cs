@@ -7,16 +7,13 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Routing
 {
     /// <summary>
-    /// Specifies an endpoint name in <see cref="Endpoint.Metadata"/>.
+    /// Indicates that API explorer data should not be emitted for this endpoint.
     /// </summary>
-    /// <remarks>
-    /// Endpoint names must be unique within an application, and can be used to unambiguously
-    /// identify a desired endpoint for URI generation using <see cref="LinkGenerator"/>.
-    /// </remarks>
     public interface ISuppressApiMetadata
     {
         /// <summary>
-        /// Gets the endpoint name.
+        /// Gets a value indicating whether API explorer 
+        /// data should be emitted for this endpoint. 
         /// </summary>
         bool SuppressApi { get; }
     }

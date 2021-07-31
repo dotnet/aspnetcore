@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc
                        () => new ProducesResponseTypeAttribute(typeof(void), StatusCodes.Status200OK, contentTypes[0], contentTypes.Skip(1).ToArray()));
 
             Assert.Equal(
-                $"Content types with wild cards are not supported.",
+                $"Content types with wildcards are not supported.",
                 ex.Message);
         }
 

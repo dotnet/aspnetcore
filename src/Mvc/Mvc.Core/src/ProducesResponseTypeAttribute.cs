@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Mvc
                 var mediaType = new MediaType(type);
                 if (mediaType.HasWildcard)
                 {
-                    throw new InvalidOperationException("Content types with wild cards are not supported.");
+                    throw new InvalidOperationException("Content types with wildcards are not supported.");
                 }
 
                 contentTypes.Add(type);
