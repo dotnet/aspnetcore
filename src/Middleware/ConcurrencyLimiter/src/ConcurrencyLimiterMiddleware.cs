@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -12,7 +10,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
     /// <summary>
     /// Limits the number of concurrent requests allowed in the application.
     /// </summary>
-    public class ConcurrencyLimiterMiddleware
+    public partial class ConcurrencyLimiterMiddleware
     {
         private readonly IQueuePolicy _queuePolicy;
         private readonly RequestDelegate _next;
@@ -84,39 +82,19 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
             }
         }
 
-        private static class ConcurrencyLimiterLog
+        private static partial class ConcurrencyLimiterLog
         {
-            private static readonly Action<ILogger, int, Exception?> _requestEnqueued =
-                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(1, "RequestEnqueued"), "MaxConcurrentRequests limit reached, request has been queued. Current active requests: {ActiveRequests}.");
+            [LoggerMessage(1, LogLevel.Debug, "MaxConcurrentRequests limit reached, request has been queued. Current active requests: {ActiveRequests}.", EventName = "RequestEnqueued")]
+            internal static partial void RequestEnqueued(ILogger logger, int activeRequests);
 
-            private static readonly Action<ILogger, int, Exception?> _requestDequeued =
-                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(2, "RequestDequeued"), "Request dequeued. Current active requests: {ActiveRequests}.");
+            [LoggerMessage(2, LogLevel.Debug, "Request dequeued. Current active requests: {ActiveRequests}.", EventName = "RequestDequeued")]
+            internal static partial void RequestDequeued(ILogger logger, int activeRequests);
 
-            private static readonly Action<ILogger, int, Exception?> _requestRunImmediately =
-                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(3, "RequestRunImmediately"), "Below MaxConcurrentRequests limit, running request immediately. Current active requests: {ActiveRequests}");
+            [LoggerMessage(3, LogLevel.Debug, "Below MaxConcurrentRequests limit, running request immediately. Current active requests: {ActiveRequests}", EventName = "RequestRunImmediately")]
+            internal static partial void RequestRunImmediately(ILogger logger, int activeRequests);
 
-            private static readonly Action<ILogger, Exception?> _requestRejectedQueueFull =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(4, "RequestRejectedQueueFull"), "Currently at the 'RequestQueueLimit', rejecting this request with a '503 server not available' error");
-
-            internal static void RequestEnqueued(ILogger logger, int activeRequests)
-            {
-                _requestEnqueued(logger, activeRequests, null);
-            }
-
-            internal static void RequestDequeued(ILogger logger, int activeRequests)
-            {
-                _requestDequeued(logger, activeRequests, null);
-            }
-
-            internal static void RequestRunImmediately(ILogger logger, int activeRequests)
-            {
-                _requestRunImmediately(logger, activeRequests, null);
-            }
-
-            internal static void RequestRejectedQueueFull(ILogger logger)
-            {
-                _requestRejectedQueueFull(logger, null);
-            }
+            [LoggerMessage(4, LogLevel.Debug, "Currently at the 'RequestQueueLimit', rejecting this request with a '503 server not available' error", EventName = "RequestRejectedQueueFull")]
+            internal static partial void RequestRejectedQueueFull(ILogger logger);
         }
     }
 }

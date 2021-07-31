@@ -18,7 +18,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.HttpLogging
 {
-    internal class FileLoggerProcessor : IAsyncDisposable
+    internal partial class FileLoggerProcessor : IAsyncDisposable
     {
         private const int _maxQueuedMessages = 1024;
 
@@ -319,31 +319,17 @@ namespace Microsoft.AspNetCore.HttpLogging
             return Task.CompletedTask;
         }
 
-        private static class Log
+        private static partial class Log
         {
-            private static readonly Action<ILogger, Exception> _writeMessagesFailed =
-                LoggerMessage.Define(
-                    LogLevel.Debug,
-                    new EventId(1, "WriteMessagesFailed"),
-                    "Failed to write all messages.");
 
-            public static void WriteMessagesFailed(ILogger logger, Exception ex) => _writeMessagesFailed(logger, ex);
+            [LoggerMessage(1, LogLevel.Debug, "Failed to write all messages.", EventName = "WriteMessagesFailed")]
+            public static partial void WriteMessagesFailed(ILogger logger, Exception ex);
 
-            private static readonly Action<ILogger, string, Exception> _createDirectoryFailed =
-                LoggerMessage.Define<string>(
-                    LogLevel.Debug,
-                    new EventId(2, "CreateDirectoryFailed"),
-                    "Failed to create directory {Path}.");
+            [LoggerMessage(2, LogLevel.Debug, "Failed to create directory {Path}.", EventName = "CreateDirectoryFailed")]
+            public static partial void CreateDirectoryFailed(ILogger logger, string path, Exception ex);
 
-            public static void CreateDirectoryFailed(ILogger logger, string path, Exception ex) => _createDirectoryFailed(logger, path, ex);
-
-            private static readonly Action<ILogger, Exception?> _maxFilesReached =
-                LoggerMessage.Define(
-                    LogLevel.Warning,
-                    new EventId(3, "MaxFilesReached"),
-                    $"Limit of {W3CLoggerOptions.MaxFileCount} files per day has been reached");
-
-            public static void MaxFilesReached(ILogger logger) => _maxFilesReached(logger, null);
+            [LoggerMessage(3, LogLevel.Warning, "Limit of 10000 files per day has been reached", EventName = "MaxFilesReached")]
+            public static partial void MaxFilesReached(ILogger logger);
         }
     }
 
