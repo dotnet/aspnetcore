@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Routing
 {
     /// <summary>
-    /// Defines a contract use to specify an endpoint group name in <see cref="Endpoint.Metadata"/>.
+    /// Defines a contract used to specify an endpoint group name in <see cref="Endpoint.Metadata"/>.
     /// </summary>
     public interface IEndpointGroupNameMetadata
     {

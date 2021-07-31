@@ -7,14 +7,14 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Routing
 {
     /// <summary>
-    /// Specifies an endpoint group name in <see cref="Endpoint.Metadata"/>.
+    /// Specifies an endpoint group name in <see cref="Microsoft.AspNetCore.Http.Endpoint.Metadata"/>.
     /// </summary>
     public class EndpointGroupNameMetadata : IEndpointGroupNameMetadata
     {
         /// <summary>
-        /// Creates a new instance of <see cref="EndpointGroupNameMetadata"/> with the provided endpoint name.
+        /// Creates a new instance of <see cref="EndpointGroupNameMetadata"/> with the provided endpoint group name.
         /// </summary>
-        /// <param name="endpointGroupName">The endpoint name.</param>
+        /// <param name="endpointGroupName">The endpoint group name.</param>
         public EndpointGroupNameMetadata(string endpointGroupName)
         {
             if (endpointGroupName == null)
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// Gets the endpoint name.
+        /// Gets the endpoint group name.
         /// </summary>
         public string EndpointGroupName { get; }
     }

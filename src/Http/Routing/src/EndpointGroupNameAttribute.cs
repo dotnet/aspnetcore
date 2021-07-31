@@ -1,4 +1,4 @@
-﻿ // Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
  namespace Microsoft.AspNetCore.Routing
  {
     /// <summary>
-    /// Specifies the endpoint group name in Microsoft.AspNetCore.Http.Endpoint.Metadata.
+    /// Specifies the endpoint group name in <see cref="Microsoft.AspNetCore.Http.Endpoint.Metadata"/>.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Delegate, Inherited = false, AllowMultiple = false)]
     public sealed class EndpointGroupNameAttribute : Attribute, IEndpointGroupNameMetadata
