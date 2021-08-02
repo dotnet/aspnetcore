@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         {
             if (_logger.IsEnabled(LogLevel.Debug))
             {
-                _streamAbortRead(_logger, streamContext.ConnectionId, reason, null);
+                StreamAbortRead(_logger, streamContext.ConnectionId, reason);
             }
         }
 
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         {
             if (_logger.IsEnabled(LogLevel.Debug))
             {
-                _streamAbortWrite(_logger, streamContext.ConnectionId, reason, null);
+                StreamAbortWrite(_logger, streamContext.ConnectionId, reason);
             }
         }
         
