@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     // Quic isn't registered if it's not supported, throw if we can't fall back to 1 or 2
                     if (hasHttp3 && _multiplexedTransportFactory is null && !(hasHttp1 || hasHttp2))
                     {
-                        throw new InvalidOperationException("This platform does not support QUIC or HTTP/3.");
+                        throw new InvalidOperationException("This platform doesn't support QUIC or HTTP/3.");
                     }
 
                     // Add the HTTP middleware as the terminal connection middleware
