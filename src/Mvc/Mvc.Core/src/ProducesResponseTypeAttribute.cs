@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 throw new ArgumentNullException(nameof(contentType));
             }
-            
+
             Type = type ?? throw new ArgumentNullException(nameof(type));
             StatusCode = statusCode;
             IsResponseTypeSetByDefault = false;
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc
             }
         }
 
-        private MediaTypeCollection GetContentTypes(string contentType, string[] additionalContentTypes)
+        private static MediaTypeCollection GetContentTypes(string contentType, string[] additionalContentTypes)
         {
             List<string> completeContentTypes = new(additionalContentTypes.Length + 1);
             completeContentTypes.Add(contentType);

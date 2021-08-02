@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     public static class OpenApiEndpointConventionBuilderExtensions
     {
-        private static readonly ExclueFromApiExplorerAttribute _excludeFromApiMetadataAttribute = new();
+        private static readonly ExcludeFromApiExplorerAttribute _excludeFromApiMetadataAttribute = new();
 
         /// <summary>
         /// Adds metadata to support suppressing OpenAPI documentation from
