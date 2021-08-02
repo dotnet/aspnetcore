@@ -89,8 +89,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// The "Alt-Svc" header is used by clients to upgrade HTTP/1.1 and HTTP/2 connections to HTTP/3.
         /// <para>
         /// The "Alt-Svc" header is automatically included with a response if <see cref="Protocols"/> has either
-        /// HTTP/1.1 or HTTP/2 enabled, and HTTP/3 is enabled. If an "Alt-Svc" header already has a value then it
-        /// isn't changed.
+        /// HTTP/1.1 or HTTP/2 enabled, and HTTP/3 is enabled. If the "Alt-Svc" header already has a value then
+        /// it isn't changed.
         /// </para>
         /// </summary>
         /// <remarks>
