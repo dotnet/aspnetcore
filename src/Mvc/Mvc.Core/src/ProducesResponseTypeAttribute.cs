@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Mvc
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public class ProducesResponseTypeAttribute : Attribute, IApiResponseMetadataProvider
     {
+        private readonly MediaTypeCollection _contentTypes = new();
+
         /// <summary>
         /// Initializes an instance of <see cref="ProducesResponseTypeAttribute"/>.
         /// </summary>
@@ -34,7 +36,6 @@ namespace Microsoft.AspNetCore.Mvc
             Type = type ?? throw new ArgumentNullException(nameof(type));
             StatusCode = statusCode;
             IsResponseTypeSetByDefault = false;
-            ContentTypes = new();
         }
 
         /// <summary>
@@ -44,27 +45,24 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="statusCode">The HTTP response status code.</param>
         /// <param name="contentType">The content type associated with the response.</param>
         /// <param name="additionalContentTypes">Additional content types supported by the response.</param>
-        public ProducesResponseTypeAttribute(Type type, int statusCode, string? contentType, params string[] additionalContentTypes)
+        public ProducesResponseTypeAttribute(Type type, int statusCode, string contentType, params string[] additionalContentTypes)
         {
+            if (contentType == null)
+            {
+                throw new ArgumentNullException(nameof(contentType));
+            }
+            
             Type = type ?? throw new ArgumentNullException(nameof(type));
             StatusCode = statusCode;
             IsResponseTypeSetByDefault = false;
 
-            if (!string.IsNullOrEmpty(contentType))
+            MediaTypeHeaderValue.Parse(contentType);
+            for (var i = 0; i < additionalContentTypes.Length; i++)
             {
-                MediaTypeHeaderValue.Parse(contentType);
-                for (var i = 0; i < additionalContentTypes.Length; i++)
-                {
-                    MediaTypeHeaderValue.Parse(additionalContentTypes[i]);
-                }
-
-                ContentTypes = GetContentTypes(contentType, additionalContentTypes);
-            }
-            else
-            {
-                ContentTypes = new();
+                MediaTypeHeaderValue.Parse(additionalContentTypes[i]);
             }
 
+            _contentTypes = GetContentTypes(contentType, additionalContentTypes);
         }
 
         /// <summary>
@@ -78,11 +76,6 @@ namespace Microsoft.AspNetCore.Mvc
         public int StatusCode { get; set; }
 
         /// <summary>
-        /// Gets or sets the content types supported by the response.
-        /// </summary>
-        public MediaTypeCollection ContentTypes { get; set; }
-
-        /// <summary>
         /// Used to distinguish a `Type` set by default in the constructor versus
         /// one provided by the user.
         ///
@@ -94,11 +87,14 @@ namespace Microsoft.AspNetCore.Mvc
         /// <value></value>
         internal bool IsResponseTypeSetByDefault { get; }
 
+        // Internal for testing
+        internal MediaTypeCollection ContentTypes => _contentTypes;
+
         /// <inheritdoc />
-        public void SetContentTypes(MediaTypeCollection contentTypes)
+        void IApiResponseMetadataProvider.SetContentTypes(MediaTypeCollection contentTypes)
         {
             contentTypes.Clear();
-            foreach (var contentType in ContentTypes)
+            foreach (var contentType in _contentTypes)
             {
                 contentTypes.Add(contentType);
             }

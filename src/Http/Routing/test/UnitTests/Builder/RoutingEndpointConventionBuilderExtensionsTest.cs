@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Builder
             // Assert
             var endpoint = builder.Build();
 
-            var endpointName = endpoint.Metadata.GetMetadata<EndpointNameMetadata>();
+            var endpointName = endpoint.Metadata.GetMetadata<IEndpointNameMetadata>();
             Assert.Equal("SomeEndpointName", endpointName.EndpointName);
         }
 
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Builder
             // Assert
             var endpoint = builder.Build();
 
-            var endpointGroupName = endpoint.Metadata.GetMetadata<EndpointGroupNameMetadata>();
+            var endpointGroupName = endpoint.Metadata.GetMetadata<IEndpointGroupNameMetadata>();
             Assert.Equal("SomeEndpointGroupName", endpointGroupName.EndpointGroupName);
         }
 

@@ -414,7 +414,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         {
             // Arrange
             var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(null));
-            builder.MapGet("/api/todos", () => "").Produces<InferredJsonClass>().SuppressApi();
+            builder.MapGet("/api/todos", () => "").Produces<InferredJsonClass>().ExcludeFromApiExplorer();
             var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
             
             var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();

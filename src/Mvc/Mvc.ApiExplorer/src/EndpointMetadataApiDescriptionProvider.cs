@@ -53,8 +53,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 if (endpoint is RouteEndpoint routeEndpoint &&
                     routeEndpoint.Metadata.GetMetadata<MethodInfo>() is { } methodInfo &&
                     routeEndpoint.Metadata.GetMetadata<IHttpMethodMetadata>() is { } httpMethodMetadata &&
-                    (routeEndpoint.Metadata.GetMetadata<ISuppressApiMetadata>() == null || 
-                    routeEndpoint.Metadata.GetMetadata<ISuppressApiMetadata>() is { SuppressApi: false} ))
+                    (routeEndpoint.Metadata.GetMetadata<IExclueFromApiExplorerMetadata>() == null || 
+                    routeEndpoint.Metadata.GetMetadata<IExclueFromApiExplorerMetadata>() is { ExclueFromApiExplorer: false} ))
                 {
                     // REVIEW: Should we add an ApiDescription for endpoints without IHttpMethodMetadata? Swagger doesn't handle
                     // a null HttpMethod even though it's nullable on ApiDescription, so we'd need to define "default" HTTP methods.
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var apiDescription = new ApiDescription
             {
                 HttpMethod = httpMethod,
-                GroupName = routeEndpoint.Metadata.GetMetadata<EndpointGroupNameMetadata>()?.EndpointGroupName,
+                GroupName = routeEndpoint.Metadata.GetMetadata<IEndpointGroupNameMetadata>()?.EndpointGroupName,
                 RelativePath = routeEndpoint.RoutePattern.RawText?.TrimStart('/'),
                 ActionDescriptor = new ActionDescriptor
                 {

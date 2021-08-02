@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <summary>
-        /// Sets the <see cref="EndpointNameMetadata"/> for all endpoints produced
+        /// Sets the <see cref="EndpointNameAttribute"/> for all endpoints produced
         /// on the target <see cref="IEndpointConventionBuilder"/>.
         /// </summary>
         /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
@@ -128,12 +128,12 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
         public static TBuilder WithName<TBuilder>(this TBuilder builder, string endpointName) where TBuilder : IEndpointConventionBuilder
         {
-            builder.WithMetadata(new EndpointNameMetadata(endpointName));
+            builder.WithMetadata(new EndpointNameAttribute(endpointName));
             return builder;
         }
 
         /// <summary>
-        /// Sets the <see cref="EndpointGroupNameMetadata"/> for all endpoints produced
+        /// Sets the <see cref="EndpointGroupNameAttribute"/> for all endpoints produced
         /// on the target <see cref="IEndpointConventionBuilder"/>.
         /// </summary>
         /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
         public static TBuilder WithGroupName<TBuilder>(this TBuilder builder, string endpointGroupName) where TBuilder : IEndpointConventionBuilder
         {
-            builder.WithMetadata(new EndpointGroupNameMetadata(endpointGroupName));
+            builder.WithMetadata(new EndpointGroupNameAttribute(endpointGroupName));
             return builder;
         }
     }
