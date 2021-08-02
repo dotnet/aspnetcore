@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
         /// <summary>
         /// Sets the idle timeout for connections and streams.
         /// </summary>
-        public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromMinutes(2);
+        public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromSeconds(130); // Matches KestrelServerLimits.KeepAliveTimeout.
 
         /// <summary>
         /// The maximum read size.
