@@ -509,81 +509,45 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
         }
     }
 
-    internal static class HttpsConnectionMiddlewareLoggerExtensions
+    internal static partial class HttpsConnectionMiddlewareLoggerExtensions
     {
-        private static readonly Action<ILogger, Exception> _authenticationFailed =
-            LoggerMessage.Define(
-                logLevel: LogLevel.Debug,
-                eventId: new EventId(1, "AuthenticationFailed"),
-                formatString: CoreStrings.AuthenticationFailed);
+        [LoggerMessage(1, LogLevel.Debug, "Failed to authenticate HTTPS connection.", EventName = "AuthenticationFailed")]
+        public static partial void AuthenticationFailed(this ILogger<HttpsConnectionMiddleware> logger, Exception exception);
 
-        private static readonly Action<ILogger, Exception?> _authenticationTimedOut =
-            LoggerMessage.Define(
-                logLevel: LogLevel.Debug,
-                eventId: new EventId(2, "AuthenticationTimedOut"),
-                formatString: CoreStrings.AuthenticationTimedOut);
+        [LoggerMessage(2, LogLevel.Debug, "Authentication of the HTTPS connection timed out.", EventName = "AuthenticationTimedOut")]
+        public static partial void AuthenticationTimedOut(this ILogger<HttpsConnectionMiddleware> logger);
 
-        private static readonly Action<ILogger, string, SslProtocols, Exception?> _httpsConnectionEstablished =
-            LoggerMessage.Define<string, SslProtocols>(
-                logLevel: LogLevel.Debug,
-                eventId: new EventId(3, "HttpsConnectionEstablished"),
-                formatString: CoreStrings.HttpsConnectionEstablished);
+        [LoggerMessage(3, LogLevel.Debug, "Connection {connectionId} established using the following protocol: {protocol}", EventName = "HttpsConnectionEstablished")]
+        public static partial void HttpsConnectionEstablished(this ILogger<HttpsConnectionMiddleware> logger, string connectionId, SslProtocols protocol);
 
-        private static readonly Action<ILogger, Exception?> _http2DefaultCiphersInsufficient =
-            LoggerMessage.Define(
-                logLevel: LogLevel.Information,
-                eventId: new EventId(4, "Http2DefaultCiphersInsufficient"),
-                formatString: CoreStrings.Http2DefaultCiphersInsufficient);
+        [LoggerMessage(4, LogLevel.Information, "HTTP/2 over TLS is not supported on Windows versions older than Windows 10 and Windows Server 2016 due to incompatible ciphers or missing ALPN support. Falling back to HTTP/1.1 instead.",
+            EventName = "Http2DefaultCiphersInsufficient")]
+        public static partial void Http2DefaultCiphersInsufficient(this ILogger<HttpsConnectionMiddleware> logger);
 
-        private static readonly Action<ILogger, string, Exception?> _locatingCertWithPrivateKey =
-            LoggerMessage.Define<string>(
-                logLevel: LogLevel.Debug,
-                eventId: new EventId(5, "LocateCertWithPrivateKey"),
-                formatString: CoreStrings.LocatingCertWithPrivateKey);
+        [LoggerMessage(5, LogLevel.Debug, "Searching for certificate with private key and thumbprint {Thumbprint} in the certificate store.", EventName = "LocateCertWithPrivateKey")]
+        private static partial void LocatingCertWithPrivateKey(this ILogger<HttpsConnectionMiddleware> logger, string thumbPrint);
 
-        private static readonly Action<ILogger, string, string, Exception?> _foundCertWithPrivateKey =
-            LoggerMessage.Define<string, string>(
-                logLevel: LogLevel.Debug,
-                eventId: new EventId(6, "FoundCertWithPrivateKey"),
-                formatString: CoreStrings.FoundCertWithPrivateKey);
+        public static void LocatingCertWithPrivateKey(this ILogger<HttpsConnectionMiddleware> logger, X509Certificate2 certificate) => LocatingCertWithPrivateKey(logger, certificate.Thumbprint);
 
-        private static readonly Action<ILogger, Exception> _failedToFindCertificateInStore =
-            LoggerMessage.Define(
-                logLevel: LogLevel.Debug,
-                eventId: new EventId(7, "FailToLocateCertificate"),
-                formatString: CoreStrings.FailedToLocateCertificateFromStore);
-
-
-        private static readonly Action<ILogger, string, Exception> _failedToOpenCertificateStore =
-            LoggerMessage.Define<string>(
-                logLevel: LogLevel.Debug,
-                eventId: new EventId(8, "FailToOpenStore"),
-                formatString: CoreStrings.FailedToOpenCertStore);
-
-        public static void AuthenticationFailed(this ILogger<HttpsConnectionMiddleware> logger, Exception exception) => _authenticationFailed(logger, exception);
-
-        public static void AuthenticationTimedOut(this ILogger<HttpsConnectionMiddleware> logger) => _authenticationTimedOut(logger, null);
-
-        public static void HttpsConnectionEstablished(this ILogger<HttpsConnectionMiddleware> logger, string connectionId, SslProtocols sslProtocol) => _httpsConnectionEstablished(logger, connectionId, sslProtocol, null);
-
-        public static void Http2DefaultCiphersInsufficient(this ILogger<HttpsConnectionMiddleware> logger) => _http2DefaultCiphersInsufficient(logger, null);
-
-        public static void LocatingCertWithPrivateKey(this ILogger<HttpsConnectionMiddleware> logger, X509Certificate2 certificate) => _locatingCertWithPrivateKey(logger, certificate.Thumbprint, null);
+        [LoggerMessage(6, LogLevel.Debug, "Found certificate with private key and thumbprint {Thumbprint} in certificate store {StoreName}.", EventName = "FoundCertWithPrivateKey")]
+        public static partial void FoundCertWithPrivateKey(this ILogger<HttpsConnectionMiddleware> logger, string thumbprint, string? storeName);
 
         public static void FoundCertWithPrivateKey(this ILogger<HttpsConnectionMiddleware> logger, X509Certificate2 certificate, StoreLocation storeLocation)
         {
             var storeLocationString = storeLocation == StoreLocation.LocalMachine ? nameof(StoreLocation.LocalMachine) : nameof(StoreLocation.CurrentUser);
-
-            _foundCertWithPrivateKey(logger, certificate.Thumbprint, storeLocationString, null);
+            FoundCertWithPrivateKey(logger, certificate.Thumbprint, storeLocationString);
         }
 
-        public static void FailedToFindCertificateInStore(this ILogger<HttpsConnectionMiddleware> logger, Exception exception) => _failedToFindCertificateInStore(logger, exception);
+        [LoggerMessage(7, LogLevel.Debug, "Failure to locate certificate from store.", EventName = "FailToLocateCertificate")]
+        public static partial void FailedToFindCertificateInStore(this ILogger<HttpsConnectionMiddleware> logger, Exception exception);
+
+        [LoggerMessage(8, LogLevel.Debug, "Failed to open certificate store {StoreName}.", EventName = "FailToOpenStore")]
+        public static partial void FailedToOpenStore(this ILogger<HttpsConnectionMiddleware> logger, string? storeName, Exception exception);
 
         public static void FailedToOpenStore(this ILogger<HttpsConnectionMiddleware> logger, StoreLocation storeLocation, Exception exception)
         {
             var storeLocationString = storeLocation == StoreLocation.LocalMachine ? nameof(StoreLocation.LocalMachine) : nameof(StoreLocation.CurrentUser);
-
-            _failedToOpenCertificateStore(logger, storeLocationString, exception);
+            FailedToOpenStore(logger, storeLocationString, exception);
         }
     }
 }
