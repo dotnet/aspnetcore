@@ -122,6 +122,7 @@ namespace Microsoft.AspNetCore.Components
         }
 
         // A utility for feeding a collection of parameter values into a QueryStringBuilder.
+        // This is used when generating a querystring with a query parameter that has multiple values.
         private readonly struct QueryParameterSource<TValue>
         {
             private readonly IEnumerator<TValue?>? _enumerator;
@@ -150,7 +151,7 @@ namespace Microsoft.AspNetCore.Components
                 _formatter = formatter;
             }
 
-            public bool AppendNextParameter(ref QueryStringBuilder builder)
+            public bool TryAppendNextParameter(ref QueryStringBuilder builder)
             {
                 if (_enumerator is null || !_enumerator.MoveNext())
                 {
@@ -215,9 +216,9 @@ namespace Microsoft.AspNetCore.Components
                 }
             }
 
-            public bool AppendNextParameter(ref QueryStringBuilder builder)
+            public bool TryAppendNextParameter(ref QueryStringBuilder builder)
             {
-                if (_source.AppendNextParameter(ref builder))
+                if (_source.TryAppendNextParameter(ref builder))
                 {
                     // The underlying source of values had elements, so there is no more work to do here.
                     return true;
@@ -443,7 +444,7 @@ namespace Microsoft.AspNetCore.Components
         /// <paramref name="values"/> will be removed from the querystring in the returned URI.
         /// </remarks>
         public static string UriWithQueryParameter(this NavigationManager navigationManager, string name, IEnumerable<string?> values)
-            => UriWithQueryParameter(navigationManager, name, values, Format);
+            => GetUriWithUpdatedQueryParameter(navigationManager, name, values, Format);
 
         /// <summary>
         /// Returns a URI that is constructed by updating <see cref="NavigationManager.Uri"/> with a single parameter
@@ -457,7 +458,7 @@ namespace Microsoft.AspNetCore.Components
         /// <paramref name="values"/> will be removed from the querystring in the returned URI.
         /// </remarks>
         public static string UriWithQueryParameter(this NavigationManager navigationManager, string name, IEnumerable<bool> values)
-            => UriWithQueryParameter(navigationManager, name, values, Format);
+            => GetUriWithUpdatedQueryParameter(navigationManager, name, values, Format);
 
         /// <summary>
         /// Returns a URI that is constructed by updating <see cref="NavigationManager.Uri"/> with a single parameter
@@ -471,7 +472,7 @@ namespace Microsoft.AspNetCore.Components
         /// <paramref name="values"/> will be removed from the querystring in the returned URI.
         /// </remarks>
         public static string UriWithQueryParameter(this NavigationManager navigationManager, string name, IEnumerable<bool?> values)
-            => UriWithQueryParameter(navigationManager, name, values, Format);
+            => GetUriWithUpdatedQueryParameter(navigationManager, name, values, Format);
 
         /// <summary>
         /// Returns a URI that is constructed by updating <see cref="NavigationManager.Uri"/> with a single parameter
@@ -485,7 +486,7 @@ namespace Microsoft.AspNetCore.Components
         /// <paramref name="values"/> will be removed from the querystring in the returned URI.
         /// </remarks>
         public static string UriWithQueryParameter(this NavigationManager navigationManager, string name, IEnumerable<DateTime> values)
-            => UriWithQueryParameter(navigationManager, name, values, Format);
+            => GetUriWithUpdatedQueryParameter(navigationManager, name, values, Format);
 
         /// <summary>
         /// Returns a URI that is constructed by updating <see cref="NavigationManager.Uri"/> with a single parameter
@@ -499,7 +500,7 @@ namespace Microsoft.AspNetCore.Components
         /// <paramref name="values"/> will be removed from the querystring in the returned URI.
         /// </remarks>
         public static string UriWithQueryParameter(this NavigationManager navigationManager, string name, IEnumerable<DateTime?> values)
-            => UriWithQueryParameter(navigationManager, name, values, Format);
+            => GetUriWithUpdatedQueryParameter(navigationManager, name, values, Format);
 
         /// <summary>
         /// Returns a URI that is constructed by updating <see cref="NavigationManager.Uri"/> with a single parameter
@@ -513,7 +514,7 @@ namespace Microsoft.AspNetCore.Components
         /// <paramref name="values"/> will be removed from the querystring in the returned URI.
         /// </remarks>
         public static string UriWithQueryParameter(this NavigationManager navigationManager, string name, IEnumerable<decimal> values)
-            => UriWithQueryParameter(navigationManager, name, values, Format);
+            => GetUriWithUpdatedQueryParameter(navigationManager, name, values, Format);
 
         /// <summary>
         /// Returns a URI that is constructed by updating <see cref="NavigationManager.Uri"/> with a single parameter
@@ -527,7 +528,7 @@ namespace Microsoft.AspNetCore.Components
         /// <paramref name="values"/> will be removed from the querystring in the returned URI.
         /// </remarks>
         public static string UriWithQueryParameter(this NavigationManager navigationManager, string name, IEnumerable<decimal?> values)
-            => UriWithQueryParameter(navigationManager, name, values, Format);
+            => GetUriWithUpdatedQueryParameter(navigationManager, name, values, Format);
 
         /// <summary>
         /// Returns a URI that is constructed by updating <see cref="NavigationManager.Uri"/> with a single parameter
@@ -541,7 +542,7 @@ namespace Microsoft.AspNetCore.Components
         /// <paramref name="values"/> will be removed from the querystring in the returned URI.
         /// </remarks>
         public static string UriWithQueryParameter(this NavigationManager navigationManager, string name, IEnumerable<double> values)
-            => UriWithQueryParameter(navigationManager, name, values, Format);
+            => GetUriWithUpdatedQueryParameter(navigationManager, name, values, Format);
 
         /// <summary>
         /// Returns a URI that is constructed by updating <see cref="NavigationManager.Uri"/> with a single parameter
@@ -555,7 +556,7 @@ namespace Microsoft.AspNetCore.Components
         /// <paramref name="values"/> will be removed from the querystring in the returned URI.
         /// </remarks>
         public static string UriWithQueryParameter(this NavigationManager navigationManager, string name, IEnumerable<double?> values)
-            => UriWithQueryParameter(navigationManager, name, values, Format);
+            => GetUriWithUpdatedQueryParameter(navigationManager, name, values, Format);
 
         /// <summary>
         /// Returns a URI that is constructed by updating <see cref="NavigationManager.Uri"/> with a single parameter
@@ -569,7 +570,7 @@ namespace Microsoft.AspNetCore.Components
         /// <paramref name="values"/> will be removed from the querystring in the returned URI.
         /// </remarks>
         public static string UriWithQueryParameter(this NavigationManager navigationManager, string name, IEnumerable<float> values)
-            => UriWithQueryParameter(navigationManager, name, values, Format);
+            => GetUriWithUpdatedQueryParameter(navigationManager, name, values, Format);
 
         /// <summary>
         /// Returns a URI that is constructed by updating <see cref="NavigationManager.Uri"/> with a single parameter
@@ -583,7 +584,7 @@ namespace Microsoft.AspNetCore.Components
         /// <paramref name="values"/> will be removed from the querystring in the returned URI.
         /// </remarks>
         public static string UriWithQueryParameter(this NavigationManager navigationManager, string name, IEnumerable<float?> values)
-            => UriWithQueryParameter(navigationManager, name, values, Format);
+            => GetUriWithUpdatedQueryParameter(navigationManager, name, values, Format);
 
         /// <summary>
         /// Returns a URI that is constructed by updating <see cref="NavigationManager.Uri"/> with a single parameter
@@ -597,7 +598,7 @@ namespace Microsoft.AspNetCore.Components
         /// <paramref name="values"/> will be removed from the querystring in the returned URI.
         /// </remarks>
         public static string UriWithQueryParameter(this NavigationManager navigationManager, string name, IEnumerable<Guid> values)
-            => UriWithQueryParameter(navigationManager, name, values, Format);
+            => GetUriWithUpdatedQueryParameter(navigationManager, name, values, Format);
 
         /// <summary>
         /// Returns a URI that is constructed by updating <see cref="NavigationManager.Uri"/> with a single parameter
@@ -611,7 +612,7 @@ namespace Microsoft.AspNetCore.Components
         /// <paramref name="values"/> will be removed from the querystring in the returned URI.
         /// </remarks>
         public static string UriWithQueryParameter(this NavigationManager navigationManager, string name, IEnumerable<Guid?> values)
-            => UriWithQueryParameter(navigationManager, name, values, Format);
+            => GetUriWithUpdatedQueryParameter(navigationManager, name, values, Format);
 
         /// <summary>
         /// Returns a URI that is constructed by updating <see cref="NavigationManager.Uri"/> with a single parameter
@@ -625,7 +626,7 @@ namespace Microsoft.AspNetCore.Components
         /// <paramref name="values"/> will be removed from the querystring in the returned URI.
         /// </remarks>
         public static string UriWithQueryParameter(this NavigationManager navigationManager, string name, IEnumerable<int> values)
-            => UriWithQueryParameter(navigationManager, name, values, Format);
+            => GetUriWithUpdatedQueryParameter(navigationManager, name, values, Format);
 
         /// <summary>
         /// Returns a URI that is constructed by updating <see cref="NavigationManager.Uri"/> with a single parameter
@@ -639,7 +640,7 @@ namespace Microsoft.AspNetCore.Components
         /// <paramref name="values"/> will be removed from the querystring in the returned URI.
         /// </remarks>
         public static string UriWithQueryParameter(this NavigationManager navigationManager, string name, IEnumerable<int?> values)
-            => UriWithQueryParameter(navigationManager, name, values, Format);
+            => GetUriWithUpdatedQueryParameter(navigationManager, name, values, Format);
 
         /// <summary>
         /// Returns a URI that is constructed by updating <see cref="NavigationManager.Uri"/> with a single parameter
@@ -653,7 +654,7 @@ namespace Microsoft.AspNetCore.Components
         /// <paramref name="values"/> will be removed from the querystring in the returned URI.
         /// </remarks>
         public static string UriWithQueryParameter(this NavigationManager navigationManager, string name, IEnumerable<long> values)
-            => UriWithQueryParameter(navigationManager, name, values, Format);
+            => GetUriWithUpdatedQueryParameter(navigationManager, name, values, Format);
 
         /// <summary>
         /// Returns a URI that is constructed by updating <see cref="NavigationManager.Uri"/> with a single parameter
@@ -667,7 +668,7 @@ namespace Microsoft.AspNetCore.Components
         /// <paramref name="values"/> will be removed from the querystring in the returned URI.
         /// </remarks>
         public static string UriWithQueryParameter(this NavigationManager navigationManager, string name, IEnumerable<long?> values)
-            => UriWithQueryParameter(navigationManager, name, values, Format);
+            => GetUriWithUpdatedQueryParameter(navigationManager, name, values, Format);
 
         /// <summary>
         /// Returns a URI that is constructed by updating <see cref="NavigationManager.Uri"/> with a single parameter
@@ -695,100 +696,8 @@ namespace Microsoft.AspNetCore.Components
             var uri = navigationManager.Uri;
 
             return value is null
-                ? UriWithoutQueryParameter(uri, name)
-                : UriWithQueryParameterCore(uri, name, value);
-        }
-
-        private static string UriWithQueryParameter<TValue>(
-            this NavigationManager navigationManager,
-            string name,
-            IEnumerable<TValue?> values,
-            QueryParameterFormatter<TValue> formatter)
-        {
-            if (navigationManager is null)
-            {
-                throw new ArgumentNullException(nameof(navigationManager));
-            }
-
-            var uri = navigationManager.Uri;
-            var source = new QueryParameterSource<TValue>(name, values, formatter);
-
-            if (!TryRebuildExistingQueryFromUri(uri, out var existingQueryStringEnumerable, out var newQueryStringBuilder))
-            {
-                return UriWithAppendedQueryParameters(uri, ref source);
-            }
-
-            foreach (var pair in existingQueryStringEnumerable)
-            {
-                if (pair.EncodedName.Span.Equals(source.EncodedName, StringComparison.OrdinalIgnoreCase))
-                {
-                    source.AppendNextParameter(ref newQueryStringBuilder);
-                }
-                else
-                {
-                    newQueryStringBuilder.AppendParameter(pair.EncodedName.Span, pair.EncodedValue.Span);
-                }
-            }
-
-            while (source.AppendNextParameter(ref newQueryStringBuilder)) ;
-
-            return newQueryStringBuilder.UriWithQueryString;
-        }
-
-        private static string UriWithQueryParameterCore(string uri, string name, string value)
-        {
-            var encodedName = Uri.EscapeDataString(name);
-            var encodedValue = Uri.EscapeDataString(value);
-
-            if (!TryRebuildExistingQueryFromUri(uri, out var existingQueryStringEnumerable, out var newQueryStringBuilder))
-            {
-                // There was no existing query, so we can generate the new URI immediately.
-                return $"{uri}?{encodedName}={encodedValue}";
-            }
-
-            var didReplace = false;
-            foreach (var pair in existingQueryStringEnumerable)
-            {
-                if (pair.EncodedName.Span.Equals(encodedName, StringComparison.OrdinalIgnoreCase))
-                {
-                    didReplace = true;
-                    newQueryStringBuilder.AppendParameter(encodedName, encodedValue);
-                }
-                else
-                {
-                    newQueryStringBuilder.AppendParameter(pair.EncodedName.Span, pair.EncodedValue.Span);
-                }
-            }
-
-            // If there was no matching parameter, add it to the end of the query.
-            if (!didReplace)
-            {
-                newQueryStringBuilder.AppendParameter(encodedName, encodedValue);
-            }
-
-            return newQueryStringBuilder.UriWithQueryString;
-        }
-
-        private static string UriWithoutQueryParameter(string uri, string name)
-        {
-            if (!TryRebuildExistingQueryFromUri(uri, out var existingQueryStringEnumerable, out var newQueryStringBuilder))
-            {
-                // There was no existing query, so the URI remains unchanged.
-                return uri;
-            }
-
-            var encodedName = Uri.EscapeDataString(name);
-
-            // Rebuild the query omitting parameters with a matching name.
-            foreach (var pair in existingQueryStringEnumerable)
-            {
-                if (!pair.EncodedName.Span.Equals(encodedName, StringComparison.OrdinalIgnoreCase))
-                {
-                    newQueryStringBuilder.AppendParameter(pair.EncodedName.Span, pair.EncodedValue.Span);
-                }
-            }
-
-            return newQueryStringBuilder.UriWithQueryString;
+                ? GetUriWithRemovedQueryParameter(uri, name)
+                : GetUriWithUpdatedQueryParameter(uri, name, value);
         }
 
         /// <summary>
@@ -828,20 +737,20 @@ namespace Microsoft.AspNetCore.Components
             {
                 // There was no existing query, so there is no need to allocate a new dictionary to cache
                 // encoded parameter values and track which parameters have been added.
-                return UriWithAppendedQueryParameters(uri, parameters);
+                return GetUriWithAppendedQueryParameters(uri, parameters);
             }
 
-            var parameterSourceCollection = CreateParameterSourceDictionary(parameters);
+            var parameterSources = CreateParameterSourceDictionary(parameters);
 
             // Rebuild the query, updating or removing parameters.
             foreach (var pair in existingQueryStringEnumerable)
             {
-                if (parameterSourceCollection.TryGetValue(pair.EncodedName, out var source))
+                if (parameterSources.TryGetValue(pair.EncodedName, out var source))
                 {
-                    if (source.AppendNextParameter(ref newQueryStringBuilder))
+                    if (source.TryAppendNextParameter(ref newQueryStringBuilder))
                     {
-                        // We need to add the parameter source back into the dictionary since we're working on a copy.
-                        parameterSourceCollection[pair.EncodedName] = source;
+                        // We have just mutated the struct value so we need to overwrite the copy in the dictionary.
+                        parameterSources[pair.EncodedName] = source;
                     }
                 }
                 else
@@ -851,26 +760,118 @@ namespace Microsoft.AspNetCore.Components
             }
 
             // Append any parameters with non-null values that did not replace existing parameters.
-            foreach (var source in parameterSourceCollection.Values)
+            foreach (var source in parameterSources.Values)
             {
-                while (source.AppendNextParameter(ref newQueryStringBuilder)) ;
+                while (source.TryAppendNextParameter(ref newQueryStringBuilder)) ;
             }
 
             return newQueryStringBuilder.UriWithQueryString;
         }
 
-        private static string UriWithAppendedQueryParameters<TValue>(
+        private static string GetUriWithUpdatedQueryParameter(string uri, string name, string value)
+        {
+            var encodedName = Uri.EscapeDataString(name);
+            var encodedValue = Uri.EscapeDataString(value);
+
+            if (!TryRebuildExistingQueryFromUri(uri, out var existingQueryStringEnumerable, out var newQueryStringBuilder))
+            {
+                // There was no existing query, so we can generate the new URI immediately.
+                return $"{uri}?{encodedName}={encodedValue}";
+            }
+
+            var didReplace = false;
+            foreach (var pair in existingQueryStringEnumerable)
+            {
+                if (pair.EncodedName.Span.Equals(encodedName, StringComparison.OrdinalIgnoreCase))
+                {
+                    didReplace = true;
+                    newQueryStringBuilder.AppendParameter(encodedName, encodedValue);
+                }
+                else
+                {
+                    newQueryStringBuilder.AppendParameter(pair.EncodedName.Span, pair.EncodedValue.Span);
+                }
+            }
+
+            // If there was no matching parameter, add it to the end of the query.
+            if (!didReplace)
+            {
+                newQueryStringBuilder.AppendParameter(encodedName, encodedValue);
+            }
+
+            return newQueryStringBuilder.UriWithQueryString;
+        }
+
+        private static string GetUriWithRemovedQueryParameter(string uri, string name)
+        {
+            if (!TryRebuildExistingQueryFromUri(uri, out var existingQueryStringEnumerable, out var newQueryStringBuilder))
+            {
+                // There was no existing query, so the URI remains unchanged.
+                return uri;
+            }
+
+            var encodedName = Uri.EscapeDataString(name);
+
+            // Rebuild the query omitting parameters with a matching name.
+            foreach (var pair in existingQueryStringEnumerable)
+            {
+                if (!pair.EncodedName.Span.Equals(encodedName, StringComparison.OrdinalIgnoreCase))
+                {
+                    newQueryStringBuilder.AppendParameter(pair.EncodedName.Span, pair.EncodedValue.Span);
+                }
+            }
+
+            return newQueryStringBuilder.UriWithQueryString;
+        }
+
+        private static string GetUriWithUpdatedQueryParameter<TValue>(
+            this NavigationManager navigationManager,
+            string name,
+            IEnumerable<TValue?> values,
+            QueryParameterFormatter<TValue> formatter)
+        {
+            if (navigationManager is null)
+            {
+                throw new ArgumentNullException(nameof(navigationManager));
+            }
+
+            var uri = navigationManager.Uri;
+            var source = new QueryParameterSource<TValue>(name, values, formatter);
+
+            if (!TryRebuildExistingQueryFromUri(uri, out var existingQueryStringEnumerable, out var newQueryStringBuilder))
+            {
+                return GetUriWithAppendedQueryParameter(uri, ref source);
+            }
+
+            foreach (var pair in existingQueryStringEnumerable)
+            {
+                if (pair.EncodedName.Span.Equals(source.EncodedName, StringComparison.OrdinalIgnoreCase))
+                {
+                    source.TryAppendNextParameter(ref newQueryStringBuilder);
+                }
+                else
+                {
+                    newQueryStringBuilder.AppendParameter(pair.EncodedName.Span, pair.EncodedValue.Span);
+                }
+            }
+
+            while (source.TryAppendNextParameter(ref newQueryStringBuilder)) ;
+
+            return newQueryStringBuilder.UriWithQueryString;
+        }
+
+        private static string GetUriWithAppendedQueryParameter<TValue>(
             string uriWithoutQueryString,
             ref QueryParameterSource<TValue> queryParameterSource)
         {
             var builder = new QueryStringBuilder(uriWithoutQueryString);
 
-            while (queryParameterSource.AppendNextParameter(ref builder)) ;
+            while (queryParameterSource.TryAppendNextParameter(ref builder)) ;
 
             return builder.UriWithQueryString;
         }
 
-        private static string UriWithAppendedQueryParameters(
+        private static string GetUriWithAppendedQueryParameters(
             string uriWithoutQueryString,
             IReadOnlyDictionary<string, object?> parameters)
         {
@@ -879,7 +880,7 @@ namespace Microsoft.AspNetCore.Components
             foreach (var (name, value) in parameters)
             {
                 var source = new QueryParameterSource(name, value);
-                while (source.AppendNextParameter(ref builder)) ;
+                while (source.TryAppendNextParameter(ref builder)) ;
             }
 
             return builder.UriWithQueryString;
