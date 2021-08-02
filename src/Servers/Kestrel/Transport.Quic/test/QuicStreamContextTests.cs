@@ -306,12 +306,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             await serverStream.Transport.Output.CompleteAsync().DefaultTimeout();
 
             // Client successfully reads data to end
-            var buffer = new byte[1024];
-            var readCount = await clientStream.ReadUntilEndAsync(buffer).DefaultTimeout();
-            Assert.Equal(TestData.Length, readCount);
+            var data = await clientStream.ReadUntilEndAsync().DefaultTimeout();
+            Assert.Equal(TestData, data);
 
             // Client errors when writing
-            var clientEx = await Assert.ThrowsAsync<QuicStreamAbortedException>(() => clientStream.WriteAsync(buffer).AsTask()).DefaultTimeout();
+            var clientEx = await Assert.ThrowsAsync<QuicStreamAbortedException>(() => clientStream.WriteAsync(data).AsTask()).DefaultTimeout();
             Assert.Equal((long)Http3ErrorCode.InternalError, clientEx.ErrorCode);
 
             // Server errors when reading
