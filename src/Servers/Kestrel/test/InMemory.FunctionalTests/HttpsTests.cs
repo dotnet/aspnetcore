@@ -445,6 +445,48 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        public async Task Http3_ConfigureHttpsDefaults_Works()
+        {
+            var serverOptions = CreateServerOptions();
+
+            IFeatureCollection bindFeatures = null;
+            var multiplexedConnectionListenerFactory = new MockMultiplexedConnectionListenerFactory();
+            multiplexedConnectionListenerFactory.OnBindAsync = (ep, features) =>
+            {
+                bindFeatures = features;
+            };
+
+            var testContext = new TestServiceContext(LoggerFactory);
+            testContext.ServerOptions = serverOptions;
+            await using (var server = new TestServer(context => Task.CompletedTask,
+                testContext,
+                serverOptions =>
+                {
+                    serverOptions.ConfigureHttpsDefaults(https =>
+                    {
+                        https.ServerCertificate = _x509Certificate2;
+                    });
+                    serverOptions.ListenLocalhost(5001, listenOptions =>
+                    {
+                        listenOptions.Protocols = HttpProtocols.Http3;
+                        listenOptions.UseHttps();
+                    });
+                },
+                services =>
+                {
+                    services.AddSingleton<IMultiplexedConnectionListenerFactory>(multiplexedConnectionListenerFactory);
+                }))
+            {
+            }
+
+            Assert.NotNull(bindFeatures);
+
+            var sslOptions = bindFeatures.Get<SslServerAuthenticationOptions>();
+            Assert.NotNull(sslOptions);
+            Assert.Equal(_x509Certificate2, sslOptions.ServerCertificate);
+        }
+
+        [Fact]
         public async Task Http1And2And3_NoUseHttps_MultiplexBindNotCalled()
         {
             var serverOptions = CreateServerOptions();
