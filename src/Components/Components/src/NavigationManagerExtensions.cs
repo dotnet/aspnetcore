@@ -847,6 +847,7 @@ namespace Microsoft.AspNetCore.Components
             {
                 if (pair.EncodedName.Span.Equals(source.EncodedName, StringComparison.OrdinalIgnoreCase))
                 {
+                    // This will no-op if all parameter values have been appended.
                     source.TryAppendNextParameter(ref newQueryStringBuilder);
                 }
                 else
