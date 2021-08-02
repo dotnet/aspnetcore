@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
                         {
                             o.ConfigureEndpointDefaults(listenOptions =>
                             {
-                                listenOptions.AddAltSvcHeader = false;
+                                listenOptions.DisableAltSvcHeader = true;
                             });
                             o.Listen(IPAddress.Parse("127.0.0.1"), 0, listenOptions =>
                             {

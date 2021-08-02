@@ -4078,7 +4078,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task EnableAltSvc_HeaderSetInAppCode_AltSvcNotOverwritten()
+        public async Task AltSvc_HeaderSetInAppCode_AltSvcNotOverwritten()
         {
             await using (var server = new TestServer(
                 httpContext =>
@@ -4115,7 +4115,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task EnableAltSvc_Enabled_Http1And2And3EndpointConfigured_AltSvcInResponseHeaders()
+        public async Task AltSvc_Http1And2And3EndpointConfigured_AltSvcInResponseHeaders()
         {
             await using (var server = new TestServer(
                 httpContext => Task.CompletedTask,
@@ -4148,7 +4148,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task EnableAltSvc_Enabled_Http1_NoAltSvcInResponseHeaders()
+        public async Task AltSvc_Http1_NoAltSvcInResponseHeaders()
         {
             await using (var server = new TestServer(
                 httpContext => Task.CompletedTask,
@@ -4173,7 +4173,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task EnableAltSvc_Enabled_Http3ConfiguredDifferentEndpoint_NoAltSvcInResponseHeaders()
+        public async Task AltSvc_Http3ConfiguredDifferentEndpoint_NoAltSvcInResponseHeaders()
         {
             await using (var server = new TestServer(
                 httpContext => Task.CompletedTask,
@@ -4209,7 +4209,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task EnableAltSvc_Disabled_Http1And2And3EndpointConfigured_NoAltSvcInResponseHeaders()
+        public async Task AltSvc_DisableAltSvcHeaderIsTrue_Http1And2And3EndpointConfigured_NoAltSvcInResponseHeaders()
         {
             await using (var server = new TestServer(
                 httpContext => Task.CompletedTask,
@@ -4219,7 +4219,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
                     {
                         Protocols = HttpProtocols.Http1AndHttp2AndHttp3,
-                        AddAltSvcHeader = false
+                        DisableAltSvcHeader = true
                     });
                 },
                 services => { }))
