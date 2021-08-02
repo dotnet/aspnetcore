@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.Hosting
     // This exists solely to bootstrap the configuration
     internal class BootstrapHostBuilder : IHostBuilder
     {
-        private readonly ConfigurationManager _configuration;
         private readonly IServiceCollection _services;
         private readonly List<Action<IConfigurationBuilder>> _configureHostActions = new();
         private readonly List<Action<HostBuilderContext, IConfigurationBuilder>> _configureAppActions = new();
@@ -21,12 +20,8 @@ namespace Microsoft.AspNetCore.Hosting
 
         private readonly List<Action<IHostBuilder>> _remainingOperations = new();
 
-        public BootstrapHostBuilder(
-            ConfigurationManager configuration,
-            IServiceCollection services,
-            IDictionary<object, object> properties)
+        public BootstrapHostBuilder(IServiceCollection services, IDictionary<object, object> properties)
         {
-            _configuration = configuration;
             _services = services;
 
             Properties = properties;
@@ -98,35 +93,50 @@ namespace Microsoft.AspNetCore.Hosting
             return this;
         }
 
-        public void RunDefaultCallbacks(HostBuilder innerBuilder)
+        public (HostBuilderContext, ConfigurationManager) RunDefaultCallbacks(HostBuilder innerBuilder)
         {
+            var hostConfiguration = new ConfigurationManager();
+
             foreach (var configureHostAction in _configureHostActions)
             {
-                configureHostAction(_configuration);
+                configureHostAction(hostConfiguration);
             }
 
             // This is the hosting environment based on configuration we've seen so far.
             var hostingEnvironment = new HostingEnvironment()
             {
-                ApplicationName = _configuration[HostDefaults.ApplicationKey],
-                EnvironmentName = _configuration[HostDefaults.EnvironmentKey] ?? Environments.Production,
-                ContentRootPath = HostingEnvironment.ResolveContentRootPath(_configuration[HostDefaults.ContentRootKey], AppContext.BaseDirectory),
+                ApplicationName = hostConfiguration[HostDefaults.ApplicationKey],
+                EnvironmentName = hostConfiguration[HostDefaults.EnvironmentKey] ?? Environments.Production,
+                ContentRootPath = HostingEnvironment.ResolveContentRootPath(hostConfiguration[HostDefaults.ContentRootKey], AppContext.BaseDirectory),
             };
 
             hostingEnvironment.ContentRootFileProvider = new PhysicalFileProvider(hostingEnvironment.ContentRootPath);
 
             var hostContext = new HostBuilderContext(Properties)
             {
-                Configuration = _configuration,
+                Configuration = hostConfiguration,
                 HostingEnvironment = hostingEnvironment,
             };
 
-            _configuration.SetBasePath(hostingEnvironment.ContentRootPath);
+            // Split the host configuration and app configuration so that the
+            // subsequent callback don't get a chance to modify the host configuration.
+            var configuration = new ConfigurationManager();
+            configuration.SetBasePath(hostingEnvironment.ContentRootPath);
 
+            // Chain the host configuration and app configuration together.
+            configuration.AddConfiguration(hostConfiguration, shouldDisposeConfiguration: true);
+
+            // ConfigureAppConfiguration sees the hosting configuration only, this is important
+            // so that code running during ConfigureAppConfiguration cannot see mutations to
+            // host configuration while running (e.g. the environment, content root, nor application name won't change).
             foreach (var configureAppAction in _configureAppActions)
             {
-                configureAppAction(hostContext, _configuration);
+                configureAppAction(hostContext, configuration);
             }
+
+            // Update the host context, everything from here seems the final
+            // app configuration
+            hostContext.Configuration = configuration;
 
             foreach (var configureServicesAction in _configureServicesActions)
             {
@@ -137,6 +147,8 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 callback(innerBuilder);
             }
+
+            return (hostContext, configuration);
         }
 
         private class HostingEnvironment : IHostEnvironment

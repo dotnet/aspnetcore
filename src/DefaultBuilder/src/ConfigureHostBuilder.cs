@@ -15,33 +15,20 @@ namespace Microsoft.AspNetCore.Builder
     public sealed class ConfigureHostBuilder : IHostBuilder
     {
         private readonly ConfigurationManager _configuration;
-        private readonly IWebHostEnvironment _environment;
         private readonly IServiceCollection _services;
         private readonly HostBuilderContext _context;
 
         private readonly List<Action<IHostBuilder>> _operations = new();
 
-        internal ConfigureHostBuilder(
-            ConfigurationManager configuration,
-            IWebHostEnvironment environment,
-            IServiceCollection services,
-            IDictionary<object, object> properties)
+        internal ConfigureHostBuilder(HostBuilderContext context, ConfigurationManager configuration, IServiceCollection services)
         {
             _configuration = configuration;
-            _environment = environment;
             _services = services;
-
-            Properties = properties;
-
-            _context = new HostBuilderContext(Properties)
-            {
-                Configuration = _configuration,
-                HostingEnvironment = _environment
-            };
+            _context = context;
         }
 
         /// <inheritdoc />
-        public IDictionary<object, object> Properties { get; }
+        public IDictionary<object, object> Properties => _context.Properties;
 
         IHost IHostBuilder.Build()
         {
