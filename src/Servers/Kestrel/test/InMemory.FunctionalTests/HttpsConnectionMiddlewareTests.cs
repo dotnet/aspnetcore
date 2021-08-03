@@ -540,6 +540,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 listenOptions.UseHttps(options =>
                 {
                     options.ServerCertificate = _x509Certificate2;
+                    options.SslProtocols = SslProtocols.Tls12; // Linux doesn't support renegotiate on TLS1.3 yet. https://github.com/dotnet/runtime/issues/55757
                     options.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
                     options.AllowAnyClientCertificate();
                 });
@@ -625,6 +626,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         return ValueTask.FromResult(new SslServerAuthenticationOptions()
                         {
                             ServerCertificate = _x509Certificate2,
+                            EnabledSslProtocols = SslProtocols.Tls12, // Linux doesn't support renegotiate on TLS1.3 yet. https://github.com/dotnet/runtime/issues/55757
                             ClientCertificateRequired = false,
                             RemoteCertificateValidationCallback = (_, _, _, _) => true,
                         });
@@ -667,6 +669,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 listenOptions.UseHttps(options =>
                 {
                     options.ServerCertificate = _x509Certificate2;
+                    options.SslProtocols = SslProtocols.Tls12; // Linux doesn't support renegotiate on TLS1.3 yet. https://github.com/dotnet/runtime/issues/55757
                     options.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
                     options.AllowAnyClientCertificate();
                 });
@@ -897,6 +900,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 listenOptions.UseHttps(options =>
                 {
                     options.ServerCertificate = _x509Certificate2;
+                    options.SslProtocols = SslProtocols.Tls12; // Linux doesn't support renegotiate on TLS1.3 yet. https://github.com/dotnet/runtime/issues/55757
                     options.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
                     options.AllowAnyClientCertificate();
                 });
