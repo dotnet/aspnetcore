@@ -62,7 +62,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 // TODO Set other relevant values on options
                 var sslServerAuthenticationOptions = new SslServerAuthenticationOptions
                 {
-                    ServerCertificate = listenOptions.HttpsOptions.ServerCertificate
+                    ServerCertificate = listenOptions.HttpsOptions.ServerCertificate,
+                    ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol("h3") }
                 };
 
                 features.Set(sslServerAuthenticationOptions);

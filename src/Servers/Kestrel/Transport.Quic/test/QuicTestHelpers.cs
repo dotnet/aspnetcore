@@ -31,7 +31,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
         public static QuicTransportFactory CreateTransportFactory(ILoggerFactory loggerFactory = null, ISystemClock systemClock = null)
         {
             var quicTransportOptions = new QuicTransportOptions();
-            quicTransportOptions.Alpn = Alpn;
             quicTransportOptions.IdleTimeout = TimeSpan.FromMinutes(1);
             quicTransportOptions.MaxBidirectionalStreamCount = 200;
             quicTransportOptions.MaxUnidirectionalStreamCount = 200;
@@ -59,6 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             var cert = TestResources.GetTestCertificate();
 
             var sslServerAuthenticationOptions = new SslServerAuthenticationOptions();
+            sslServerAuthenticationOptions.ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol(Alpn) };
             sslServerAuthenticationOptions.ServerCertificate = cert;
             sslServerAuthenticationOptions.RemoteCertificateValidationCallback = RemoteCertificateValidationCallback;
 

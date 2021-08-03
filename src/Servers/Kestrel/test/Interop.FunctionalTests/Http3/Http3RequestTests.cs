@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections;
-using System.Globalization;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Net.Quic;
 using System.Text;
 using System.Threading.Tasks;
@@ -693,7 +690,7 @@ namespace Interop.FunctionalTests.Http3
 
         private IHostBuilder CreateHostBuilder(RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null)
         {
-            return GetHostBuilder()
+            return new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -718,21 +715,6 @@ namespace Interop.FunctionalTests.Http3
                         });
                 })
                 .ConfigureServices(AddTestLogging);
-        }
-
-        public static IHostBuilder GetHostBuilder(long? maxReadBufferSize = null)
-        {
-            return new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
-                {
-                    webHostBuilder
-                        .UseQuic(options =>
-                        {
-                            options.MaxReadBufferSize = maxReadBufferSize;
-                            options.Alpn = "h3";
-                            options.IdleTimeout = TimeSpan.FromSeconds(20);
-                        });
-                });
         }
     }
 }
