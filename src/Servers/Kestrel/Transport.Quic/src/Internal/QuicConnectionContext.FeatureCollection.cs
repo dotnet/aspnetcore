@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         public X509Certificate2? ClientCertificate
         {
             get { return _clientCert ??= (X509Certificate2?)_connection.RemoteCertificate; }
-            set { _clientCert = !(_clientCert is null) ? value : _clientCert; }
+            set { _clientCert = value; }
         }
 
         public ReadOnlyMemory<byte> ApplicationProtocol => _connection.NegotiatedApplicationProtocol.Protocol;
