@@ -12,6 +12,19 @@ Microsoft.AspNetCore.Components.Forms.InputDateType.Month = 2 -> Microsoft.AspNe
 Microsoft.AspNetCore.Components.Forms.InputDateType.Time = 3 -> Microsoft.AspNetCore.Components.Forms.InputDateType
 Microsoft.AspNetCore.Components.Forms.InputFile.Element.get -> Microsoft.AspNetCore.Components.ElementReference?
 Microsoft.AspNetCore.Components.Forms.InputFile.Element.set -> void
+Microsoft.AspNetCore.Components.Forms.InputLargeTextArea
+Microsoft.AspNetCore.Components.Forms.InputLargeTextArea.AdditionalAttributes.get -> System.Collections.Generic.IDictionary<string!, object!>?
+Microsoft.AspNetCore.Components.Forms.InputLargeTextArea.AdditionalAttributes.set -> void
+Microsoft.AspNetCore.Components.Forms.InputLargeTextArea.Element.get -> Microsoft.AspNetCore.Components.ElementReference?
+Microsoft.AspNetCore.Components.Forms.InputLargeTextArea.Element.set -> void
+Microsoft.AspNetCore.Components.Forms.InputLargeTextArea.GetTextAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Forms.InputLargeTextArea.InputLargeTextArea() -> void
+Microsoft.AspNetCore.Components.Forms.InputLargeTextArea.OnChange.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Forms.InputLargeTextAreaChangeEventArgs!>
+Microsoft.AspNetCore.Components.Forms.InputLargeTextArea.OnChange.set -> void
+Microsoft.AspNetCore.Components.Forms.InputLargeTextArea.SetTextAsync(string! newValue) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Forms.InputLargeTextAreaChangeEventArgs
+Microsoft.AspNetCore.Components.Forms.InputLargeTextAreaChangeEventArgs.InputLargeTextAreaChangeEventArgs(int length) -> void
+Microsoft.AspNetCore.Components.Forms.InputLargeTextAreaChangeEventArgs.Length.get -> int
 Microsoft.AspNetCore.Components.Forms.InputNumber<TValue>.Element.get -> Microsoft.AspNetCore.Components.ElementReference?
 Microsoft.AspNetCore.Components.Forms.InputNumber<TValue>.Element.set -> void
 Microsoft.AspNetCore.Components.Forms.InputSelect<TValue>.Element.get -> Microsoft.AspNetCore.Components.ElementReference?
