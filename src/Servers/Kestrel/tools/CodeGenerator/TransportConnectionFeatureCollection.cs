@@ -25,7 +25,8 @@ namespace CodeGenerator
                 "IStreamDirectionFeature",
                 "IStreamIdFeature",
                 "IStreamAbortFeature",
-                "ITlsConnectionFeature"
+                "ITlsConnectionFeature",
+                "ITlsApplicationProtocolFeature"
             };
 
             var implementedFeatures = new[]
@@ -39,7 +40,8 @@ namespace CodeGenerator
 
             var usings = $@"
 using Microsoft.AspNetCore.Connections.Features;
-using Microsoft.AspNetCore.Http.Features;";
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Features;";
 
             return FeatureCollectionGenerator.GenerateFile(
                 namespaceName: "Microsoft.AspNetCore.Connections",

@@ -69,6 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             _currentIStreamIdFeature = this;
             _currentIStreamAbortFeature = this;
             _currentITlsConnectionFeature = _connection._currentITlsConnectionFeature;
+            _currentITlsApplicationProtocolFeature = _connection._currentITlsApplicationProtocolFeature;
         }
     }
 }
