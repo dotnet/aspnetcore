@@ -12,11 +12,7 @@ namespace Microsoft.AspNetCore.Routing
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method | AttributeTargets.Delegate, AllowMultiple = false, Inherited = true)]
     public sealed class ExcludeFromDescriptionAttribute : Attribute, IExcludeFromDescriptionMetadata
     {
-        /// <summary>
-        /// Gets a value indicating whether API explorer
-        /// data should be excluded for this endpoint. If <see langword="true"/>,
-        /// API metadata is not emitted.
-        /// </summary>
+        /// <inheritdoc />
         public bool ExcludeFromDescription => true;
     }
 }

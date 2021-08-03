@@ -12,8 +12,9 @@ namespace Microsoft.AspNetCore.Routing
     public interface IExcludeFromDescriptionMetadata
     {
         /// <summary>
-        /// Gets a value indicating whether API explorer
-        /// data should be emitted for this endpoint.
+        /// Gets a value indicating whether OpenAPI
+        /// data should be excluded for this endpoint. If <see langword="true"/>,
+        /// API metadata is not emitted.
         /// </summary>
         bool ExcludeFromDescription { get; }
     }

@@ -30,9 +30,7 @@ using Microsoft.AspNetCore.Http;
             EndpointName = endpointName;
         }
 
-        /// <summary>
-        /// The endpoint name.
-        /// </summary>
+        /// <inheritdoc />
         public string EndpointName { get; }
     }
  }

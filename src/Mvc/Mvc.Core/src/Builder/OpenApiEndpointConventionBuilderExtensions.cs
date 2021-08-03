@@ -15,8 +15,8 @@ namespace Microsoft.AspNetCore.Http
         private static readonly ExcludeFromDescriptionAttribute _excludeFromApiMetadataAttribute = new();
 
         /// <summary>
-        /// Adds metadata to support suppressing OpenAPI documentation from
-        /// being generated for this endpoint.
+        /// Adds the <see cref="IExcludeFromDescriptionMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+        /// produced by <paramref name="builder"/>.
         /// </summary>
         /// <param name="builder">The <see cref="MinimalActionEndpointConventionBuilder"/>.</param>
         /// <returns>A <see cref="MinimalActionEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
@@ -28,7 +28,8 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Adds metadata indicating the type of response an endpoint produces.
+        /// Adds the <see cref="ProducesResponseTypeAttribute"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+        /// produced by <paramref name="builder"/>.
         /// </summary>
         /// <typeparam name="TResponse">The type of the response.</typeparam>
         /// <param name="builder">The <see cref="MinimalActionEndpointConventionBuilder"/>.</param>
@@ -47,10 +48,11 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Adds metadata indicating the type of response an endpoint produces.
+        /// Adds the <see cref="ProducesResponseTypeAttribute"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+        /// produced by <paramref name="builder"/>.
         /// </summary>
         /// <param name="builder">The <see cref="MinimalActionEndpointConventionBuilder"/>.</param>
-        /// <param name="statusCode">The response status code. Defaults to StatusCodes.Status200OK.</param>
+        /// <param name="statusCode">The response status code.</param>
         /// <param name="responseType">The type of the response. Defaults to null.</param>
         /// <param name="contentType">The response content type. Defaults to "application/json" if responseType is not null, otherwise defaults to null.</param>
         /// <param name="additionalContentTypes">Additional response content types the endpoint produces for the supplied status code.</param>
@@ -80,10 +82,11 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Adds metadata indicating that the endpoint produces a Problem Details response.
+        /// Adds the <see cref="ProducesResponseTypeAttribute"/> with a <see cref="ProblemDetails"/> type
+        /// to <see cref="EndpointBuilder.Metadata"/> for all builders produced by <paramref name="builder"/>. 
         /// </summary>
         /// <param name="builder">The <see cref="MinimalActionEndpointConventionBuilder"/>.</param>
-        /// <param name="statusCode">The response status code. Defaults to StatusCodes.Status500InternalServerError.</param>
+        /// <param name="statusCode">The response status code.</param>
         /// <param name="contentType">The response content type. Defaults to "application/problem+json".</param>
         /// <returns>A <see cref="MinimalActionEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static MinimalActionEndpointConventionBuilder ProducesProblem(this MinimalActionEndpointConventionBuilder builder,
@@ -94,7 +97,8 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Adds metadata indicating that the endpoint produces a ProblemDetails response for validation errors.
+        /// Adds the <see cref="ProducesResponseTypeAttribute"/> with a <see cref="HttpValidationProblemDetails"/> type
+        /// to <see cref="EndpointBuilder.Metadata"/> for all builders produced by <paramref name="builder"/>. 
         /// </summary>
         /// <param name="builder">The <see cref="MinimalActionEndpointConventionBuilder"/>.</param>
         /// <param name="statusCode">The response status code. Defaults to StatusCodes.Status400BadRequest.</param>

@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Http;
         /// <summary>
         /// Initializes an instance of the EndpointGroupNameAttribute.
         /// </summary>
-        /// <param name="endpointGroupName">The endpoint name.</param>
+        /// <param name="endpointGroupName">The endpoint group name.</param>
         public EndpointGroupNameAttribute(string endpointGroupName)
         {
             if (endpointGroupName == null)
@@ -26,9 +26,7 @@ using Microsoft.AspNetCore.Http;
             EndpointGroupName = endpointGroupName;
         }
 
-        /// <summary>
-        /// The endpoint group name.
-        /// </summary>
+        /// <inheritdoc />
         public string EndpointGroupName { get; }
     }
  }

@@ -410,7 +410,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
-        public void RespectsSuppressApiMethod()
+        public void RespectsExcludeFromDescription()
         {
             // Arrange
             var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(null));
