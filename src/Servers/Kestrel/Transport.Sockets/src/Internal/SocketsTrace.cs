@@ -6,34 +6,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    internal class SocketsTrace : ISocketsTrace
+    internal partial class SocketsTrace : ISocketsTrace
     {
-        private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
-
-        // ConnectionRead: Reserved: 3
-
-        private static readonly Action<ILogger, string, Exception?> _connectionPause =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(4, "ConnectionPause"), @"Connection id ""{ConnectionId}"" paused.", SkipEnabledCheckLogOptions);
-
-        private static readonly Action<ILogger, string, Exception?> _connectionResume =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, "ConnectionResume"), @"Connection id ""{ConnectionId}"" resumed.", SkipEnabledCheckLogOptions);
-
-        private static readonly Action<ILogger, string, Exception?> _connectionReadFin =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, "ConnectionReadFin"), @"Connection id ""{ConnectionId}"" received FIN.", SkipEnabledCheckLogOptions);
-
-        private static readonly Action<ILogger, string, string, Exception?> _connectionWriteFin =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(7, "ConnectionWriteFin"), @"Connection id ""{ConnectionId}"" sending FIN because: ""{Reason}""", SkipEnabledCheckLogOptions);
-
-        // ConnectionWrite: Reserved: 11
-
-        // ConnectionWriteCallback: Reserved: 12
-
-        private static readonly Action<ILogger, string, Exception?> _connectionError =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(14, "ConnectionError"), @"Connection id ""{ConnectionId}"" communication error.", SkipEnabledCheckLogOptions);
-
-        private static readonly Action<ILogger, string, Exception?> _connectionReset =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(19, "ConnectionReset"), @"Connection id ""{ConnectionId}"" reset.", SkipEnabledCheckLogOptions);
-
         private readonly ILogger _logger;
 
         public SocketsTrace(ILogger logger)
@@ -47,19 +21,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             // Reserved: Event ID 3
         }
 
+        [LoggerMessage(6, LogLevel.Debug, @"Connection id ""{ConnectionId}"" received FIN.", EventName = "ConnectionReadFin", SkipEnabledCheck = true)]
+        private static partial void ConnectionReadFin(ILogger logger, string connectionId);
+
         public void ConnectionReadFin(SocketConnection connection)
         {
             if (_logger.IsEnabled(LogLevel.Debug))
             {
-                _connectionReadFin(_logger, connection.ConnectionId, null);
+                ConnectionReadFin(_logger, connection.ConnectionId);
             }
         }
+
+        [LoggerMessage(7, LogLevel.Debug, @"Connection id ""{ConnectionId}"" sending FIN because: ""{Reason}""", EventName = "ConnectionWriteFin", SkipEnabledCheck = true)]
+        private static partial void ConnectionWriteFin(ILogger logger, string connectionId, string reason);
 
         public void ConnectionWriteFin(SocketConnection connection, string reason)
         {
             if (_logger.IsEnabled(LogLevel.Debug))
             {
-                _connectionWriteFin(_logger, connection.ConnectionId, reason, null);
+                ConnectionWriteFin(_logger, connection.ConnectionId, reason);
             }
         }
 
@@ -75,40 +55,47 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             // Reserved: Event ID 12
         }
 
+        [LoggerMessage(14, LogLevel.Debug, @"Connection id ""{ConnectionId}"" communication error.", EventName = "ConnectionError", SkipEnabledCheck = true)]
+        private static partial void ConnectionError(ILogger logger, string connectionId, Exception ex);
+
         public void ConnectionError(SocketConnection connection, Exception ex)
         {
             if (_logger.IsEnabled(LogLevel.Debug))
             {
-                _connectionError(_logger, connection.ConnectionId, ex);
+                ConnectionError(_logger, connection.ConnectionId, ex);
             }
         }
 
-        public void ConnectionReset(string connectionId)
-        {
-            _connectionReset(_logger, connectionId, null);
-        }
+        [LoggerMessage(19, LogLevel.Debug, @"Connection id ""{ConnectionId}"" reset.", EventName = "ConnectionReset", SkipEnabledCheck = true)]
+        public partial void ConnectionReset(string connectionId);
 
         public void ConnectionReset(SocketConnection connection)
         {
             if (_logger.IsEnabled(LogLevel.Debug))
             {
-                _connectionReset(_logger, connection.ConnectionId, null);
+                ConnectionReset(connection.ConnectionId);
             }
         }
+
+        [LoggerMessage(4, LogLevel.Debug, @"Connection id ""{ConnectionId}"" paused.", EventName = "ConnectionPause", SkipEnabledCheck = true)]
+        private static partial void ConnectionPause(ILogger logger, string connectionId);
 
         public void ConnectionPause(SocketConnection connection)
         {
             if (_logger.IsEnabled(LogLevel.Debug))
             {
-                _connectionPause(_logger, connection.ConnectionId, null);
+                ConnectionPause(_logger, connection.ConnectionId);
             }
         }
+
+        [LoggerMessage(5, LogLevel.Debug, @"Connection id ""{ConnectionId}"" resumed.", EventName = "ConnectionResume", SkipEnabledCheck = true)]
+        private static partial void ConnectionResume(ILogger logger, string connectionId);
 
         public void ConnectionResume(SocketConnection connection)
         {
             if (_logger.IsEnabled(LogLevel.Debug))
             {
-                _connectionResume(_logger, connection.ConnectionId, null);
+                ConnectionResume(_logger, connection.ConnectionId);
             }
         }
 

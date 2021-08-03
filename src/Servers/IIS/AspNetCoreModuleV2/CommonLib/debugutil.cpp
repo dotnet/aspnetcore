@@ -22,11 +22,36 @@ inline HMODULE g_hModule;
 inline SRWLOCK g_logFileLock;
 inline HANDLE g_stdOutHandle = INVALID_HANDLE_VALUE;
 
+std::wstring GetDateTime()
+{
+    std::chrono::milliseconds milliseconds =
+        std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+    std::chrono::seconds seconds = std::chrono::duration_cast<std::chrono::seconds>(milliseconds);
+    milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(milliseconds - seconds);
+
+    time_t t = seconds.count();
+    tm time;
+    // convert time to utc
+    gmtime_s(&time, &t);
+
+    constexpr auto size = sizeof("2019-11-23T13:23:02.000Z");
+    wchar_t timeString[size];
+
+    // format string to ISO8601 with additional space for 3 digits of millisecond precision
+    std::wcsftime(timeString, size, L"%FT%T.000Z", &time);
+
+    // add millisecond part
+    // 5 = 3 digits of millisecond precision + 'Z' + null character ending
+    swprintf(timeString + size - 5, 5, L"%03dZ", (int)milliseconds.count());
+
+    return std::wstring(timeString);
+}
+
 HRESULT
 PrintDebugHeader()
 {
     // Major, minor are stored in dwFileVersionMS field and patch, build in dwFileVersionLS field as pair of 32 bit numbers
-    LOG_INFOF(L"Initializing logs for '%ls'. %ls. %ls.",
+    LOG_INFOF(L"Initializing logs for '%ls'. %ls %ls.",
         GetModuleName().c_str(),
         GetProcessIdString().c_str(),
         GetVersionInfoString().c_str()
@@ -320,9 +345,10 @@ DebugPrintW(
 
     if ( IsEnabled( dwFlag ) )
     {
+        auto time = GetDateTime();
         hr = strOutput.SafeSnwprintf(
-            L"[%S] %s\r\n",
-            DEBUG_LABEL_VAR, szString );
+            L"[%s, PID: %u] [%S] %s\r\n",
+            time.c_str(), GetCurrentProcessId(), DEBUG_LABEL_VAR, szString );
 
         if (FAILED (hr))
         {

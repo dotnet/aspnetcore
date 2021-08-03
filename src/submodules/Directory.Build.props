@@ -1,9 +1,5 @@
-<Project>
-  <!--
-    For everything but Microsoft.DotNet.Web.Spa.ProjectTemplates, intentionally break the inheritance chain so
-    submodules do not inherit build settings from this repo. For Microsoft.DotNet.Web.Spa.ProjectTemplates, break the
-    build if referenced file does not exist.
-  -->
-  <Import Project="..\ProjectTemplates\Directory.Build.props"
-      Condition=" '$(MSBuildProjectName)' == 'Microsoft.DotNet.Web.Spa.ProjectTemplates' " />
-</Project>
+<!--
+  For everything but Microsoft.DotNet.Web.Spa.ProjectTemplates (which bypasses this file), intentionally break
+  the inheritance chain so submodules do not inherit build settings from this repo.
+-->
+<Project />

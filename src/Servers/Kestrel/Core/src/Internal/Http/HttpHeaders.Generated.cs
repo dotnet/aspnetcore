@@ -7053,7 +7053,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
         
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public unsafe void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        public unsafe void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value, bool checkForNewlineChars)
         {
             ref byte nameStart = ref MemoryMarshal.GetReference(name);
             var nameStr = string.Empty;
@@ -7430,7 +7430,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
 
                 // We didn't have a previous matching header value, or have already added a header, so get the string for this value.
-                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector);
+                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector, checkForNewlineChars);
                 if ((_bits & flag) == 0)
                 {
                     // We didn't already have a header set, so add a new one.
@@ -7449,7 +7449,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // Convert value to string first, because passing two spans causes 8 bytes stack zeroing in
                 // this method with rep stosd, which is slower than necessary.
                 nameStr = name.GetHeaderName();
-                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector);
+                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector, checkForNewlineChars);
                 AppendUnknownHeaders(nameStr, valueStr);
             }
         }
@@ -7460,6 +7460,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
             var nameStr = string.Empty;
             var flag = 0L;
+            var checkForNewlineChars = true;
 
             // Does the HPack static index match any "known" headers
             switch (index)
@@ -7646,7 +7647,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
 
                 // We didn't have a previous matching header value, or have already added a header, so get the string for this value.
-                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector);
+                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector, checkForNewlineChars);
                 if ((_bits & flag) == 0)
                 {
                     // We didn't already have a header set, so add a new one.
@@ -8184,6 +8185,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public bool HasConnection => (_bits & 0x1L) != 0;
         public bool HasDate => (_bits & 0x4L) != 0;
         public bool HasServer => (_bits & 0x8L) != 0;
+        public bool HasAltSvc => (_bits & 0x2000L) != 0;
         public bool HasTransferEncoding => (_bits & 0x100000000L) != 0;
 
 
@@ -8237,6 +8239,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _bits |= 0x2000L;
                 _headers._AltSvc = value; 
+                _headers._rawAltSvc = null;
             }
         }
         public StringValues HeaderTransferEncoding
@@ -8681,6 +8684,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     _bits &= ~flag;
                     _headers._AltSvc = default;
                 }
+                    _headers._rawAltSvc = null;
             }
         }
         StringValues IHeaderDictionary.CacheControl
@@ -10318,6 +10322,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _headers._Server = value;
             _headers._rawServer = raw;
         }
+        public void SetRawAltSvc(StringValues value, byte[] raw)
+        {
+            _bits |= 0x2000L;
+            _headers._AltSvc = value;
+            _headers._rawAltSvc = raw;
+        }
         public void SetRawTransferEncoding(StringValues value, byte[] raw)
         {
             _bits |= 0x100000000L;
@@ -11267,6 +11277,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         _bits |= 0x2000L;
                         _headers._AltSvc = value;
+                        _headers._rawAltSvc = null;
                         return;
                     }
                     if (ReferenceEquals(HeaderNames.Expires, key))
@@ -11298,6 +11309,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         _bits |= 0x2000L;
                         _headers._AltSvc = value;
+                        _headers._rawAltSvc = null;
                         return;
                     }
                     if (HeaderNames.Expires.Equals(key, StringComparison.OrdinalIgnoreCase))
@@ -11912,6 +11924,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         {
                             _bits |= 0x2000L;
                             _headers._AltSvc = value;
+                            _headers._rawAltSvc = null;
                             return true;
                         }
                         return false;
@@ -11963,6 +11976,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         {
                             _bits |= 0x2000L;
                             _headers._AltSvc = value;
+                            _headers._rawAltSvc = null;
                             return true;
                         }
                         return false;
@@ -12802,6 +12816,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         {
                             _bits &= ~0x2000L;
                             _headers._AltSvc = default(StringValues);
+                            _headers._rawAltSvc = null;
                             return true;
                         }
                         return false;
@@ -12853,6 +12868,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         {
                             _bits &= ~0x2000L;
                             _headers._AltSvc = default(StringValues);
+                            _headers._rawAltSvc = null;
                             return true;
                         }
                         return false;
@@ -14411,9 +14427,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                     case 13: // Header: "Alt-Svc"
                         Debug.Assert((tempBits & 0x2000L) != 0);
-                        values = ref _headers._AltSvc;
-                        keyStart = 271;
-                        keyLength = 11;
+                        if (_headers._rawAltSvc != null)
+                        {
+                            // Clear and set next as not using common output.
+                            tempBits ^= 0x2000L;
+                            next = BitOperations.TrailingZeroCount(tempBits);
+                            output.Write(_headers._rawAltSvc);
+                            continue; // Jump to next, already output header
+                        }
+                        else
+                        {
+                            values = ref _headers._AltSvc;
+                            keyStart = 271;
+                            keyLength = 11;
+                            headerName = HeaderNames.AltSvc;
+                        }
                         break; // OutputHeader
 
                     case 14: // Header: "Cache-Control"
@@ -14677,6 +14705,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             public byte[]? _rawConnection;
             public byte[]? _rawDate;
             public byte[]? _rawServer;
+            public byte[]? _rawAltSvc;
             public byte[]? _rawTransferEncoding;
         }
 

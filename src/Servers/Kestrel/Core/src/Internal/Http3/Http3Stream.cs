@@ -43,6 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private Http3StreamContext _context = default!;
         private IProtocolErrorCodeFeature _errorCodeFeature = default!;
         private IStreamIdFeature _streamIdFeature = default!;
+        private IStreamAbortFeature _streamAbortFeature = default!;
         private int _isClosed;
         private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
         protected RequestHeaderParsingState _requestHeaderParsingState;
@@ -58,7 +59,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public bool EndStreamReceived => (_completionState & StreamCompletionFlags.EndStreamReceived) == StreamCompletionFlags.EndStreamReceived;
         private bool IsAborted => (_completionState & StreamCompletionFlags.Aborted) == StreamCompletionFlags.Aborted;
-        internal bool RstStreamReceived => (_completionState & StreamCompletionFlags.RstStreamReceived) == StreamCompletionFlags.RstStreamReceived;
 
         public Pipe RequestBodyPipe { get; private set; } = default!;
 
@@ -87,6 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             _errorCodeFeature = _context.ConnectionFeatures.Get<IProtocolErrorCodeFeature>()!;
             _streamIdFeature = _context.ConnectionFeatures.Get<IStreamIdFeature>()!;
+            _streamAbortFeature = _context.ConnectionFeatures.Get<IStreamAbortFeature>()!;
 
             _appCompleted = null;
             _isClosed = 0;
@@ -183,7 +184,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             OnHeader(knownHeader.Name, value);
         }
 
-        public override void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value) => OnHeader(name, value, checkForNewlineChars : true);
+
+        public override void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value, bool checkForNewlineChars)
         {
             // https://tools.ietf.org/html/rfc7540#section-6.5.2
             // "The value is based on the uncompressed size of header fields, including the length of the name and value in octets plus an overhead of 32 octets for each header field.";
@@ -204,7 +207,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 {
                     // Throws BadRequest for header count limit breaches.
                     // Throws InvalidOperation for bad encoding.
-                    base.OnHeader(name, value);
+                    base.OnHeader(name, value, checkForNewlineChars);
                 }
             }
             catch (Microsoft.AspNetCore.Http.BadHttpRequestException bre)
@@ -369,7 +372,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     Log.RequestBodyNotEntirelyRead(ConnectionIdFeature, TraceIdentifier);
                 }
 
-                var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
+                var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.AbortedRead);
                 if (oldState != newState)
                 {
                     // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1-15
@@ -377,10 +380,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     // the request stream, send a complete response, and cleanly close the sending part of the stream.
                     // The error code H3_NO_ERROR SHOULD be used when requesting that the client stop sending on the
                     // request stream.
-
-                    // TODO(JamesNK): Abort the read half of the stream with H3_NO_ERROR
-                    // https://github.com/dotnet/aspnetcore/issues/33575
-
+                    _streamAbortFeature.AbortRead((long)Http3ErrorCode.NoError, new ConnectionAbortedException("The application completed without reading the entire request body."));
                     RequestBodyPipe.Writer.Complete();
                 }
 
@@ -938,8 +938,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private enum StreamCompletionFlags
         {
             None = 0,
-            RstStreamReceived = 1,
-            EndStreamReceived = 2,
+            EndStreamReceived = 1,
+            AbortedRead = 2,
             Aborted = 4,
         }
 

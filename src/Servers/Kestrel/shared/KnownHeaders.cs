@@ -167,14 +167,16 @@ namespace CodeGenerator
                 HeaderNames.Connection,
                 HeaderNames.Server,
                 HeaderNames.Date,
-                HeaderNames.TransferEncoding
+                HeaderNames.TransferEncoding,
+                HeaderNames.AltSvc
             };
             var enhancedHeaders = new[]
             {
                 HeaderNames.Connection,
                 HeaderNames.Server,
                 HeaderNames.Date,
-                HeaderNames.TransferEncoding
+                HeaderNames.TransferEncoding,
+                HeaderNames.AltSvc
             };
             // http://www.w3.org/TR/cors/#syntax
             var corsResponseHeaders = new[]
@@ -311,7 +313,7 @@ namespace CodeGenerator
                 }}
 
                 // We didn't have a previous matching header value, or have already added a header, so get the string for this value.
-                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector);
+                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector, checkForNewlineChars);
                 if ((_bits & flag) == 0)
                 {{
                     // We didn't already have a header set, so add a new one.
@@ -1239,7 +1241,7 @@ $@"        private void Clear(long bitsToClear)
             }} while (tempBits != 0);
         }}" : "")}{(loop.ClassName == "HttpRequestHeaders" ? $@"
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public unsafe void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        public unsafe void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value, bool checkForNewlineChars)
         {{
             ref byte nameStart = ref MemoryMarshal.GetReference(name);
             var nameStr = string.Empty;
@@ -1259,7 +1261,7 @@ $@"        private void Clear(long bitsToClear)
                 // Convert value to string first, because passing two spans causes 8 bytes stack zeroing in
                 // this method with rep stosd, which is slower than necessary.
                 nameStr = name.GetHeaderName();
-                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector);
+                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector, checkForNewlineChars);
                 AppendUnknownHeaders(nameStr, valueStr);
             }}
         }}
@@ -1270,6 +1272,7 @@ $@"        private void Clear(long bitsToClear)
             ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
             var nameStr = string.Empty;
             var flag = 0L;
+            var checkForNewlineChars = true;
 
             // Does the HPack static index match any ""known"" headers
             {AppendHPackSwitch(GroupHPack(loop.Headers))}

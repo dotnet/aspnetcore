@@ -7,6 +7,7 @@ using System.Net;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
@@ -15,6 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public Http2StreamContext(
             string connectionId,
             HttpProtocols protocols,
+            AltSvcHeader? altSvcHeader,
             ServiceContext serviceContext,
             IFeatureCollection connectionFeatures,
             MemoryPool<byte> memoryPool,
@@ -26,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             Http2PeerSettings serverPeerSettings,
             Http2FrameWriter frameWriter,
             InputFlowControl connectionInputFlowControl,
-            OutputFlowControl connectionOutputFlowControl) : base(connectionId, protocols, connectionContext: null!, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
+            OutputFlowControl connectionOutputFlowControl) : base(connectionId, protocols, altSvcHeader, connectionContext: null!, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
         {
             StreamId = streamId;
             StreamLifetimeHandler = streamLifetimeHandler;

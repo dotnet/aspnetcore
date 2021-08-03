@@ -9,9 +9,11 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.Extensions.Configuration;
@@ -68,6 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </remarks>
         public bool AllowSynchronousIO { get; set; }
 
+        /// <summary>
         /// Gets or sets a value that controls how the `:scheme` field for HTTP/2 and HTTP/3 requests is validated.
         /// <para>
         /// If <c>false</c> then the `:scheme` field for HTTP/2 and HTTP/3 requests must exactly match the transport (e.g. https for TLS
@@ -77,6 +80,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// scenarios such as proxies converting from alternate protocols. See https://datatracker.ietf.org/doc/html/rfc7540#section-8.1.2.3.
         /// Applications that enable this should validate an expected scheme is provided before using it.
         /// </para>
+        /// </summary>
         /// <remarks>
         /// Defaults to <c>false</c>.
         /// </remarks>
@@ -97,6 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <remarks>
         /// Defaults to false.
         /// </remarks>
+        [Obsolete($"This property is obsolete and will be removed in a future version. It no longer has any impact on runtime behavior. Use {nameof(Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions)}.{nameof(Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.DisableAltSvcHeader)} to configure \"Alt-Svc\" behavior.", error: true)]
         public bool EnableAltSvc { get; set; }
 
         /// <summary>
@@ -197,6 +202,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             EnsureDefaultCert();
 
             httpsOptions.ServerCertificate = DefaultCertificate;
+        }
+
+        internal void Serialize(Utf8JsonWriter writer)
+        {
+            writer.WritePropertyName(nameof(AllowSynchronousIO));
+            writer.WriteBooleanValue(AllowSynchronousIO);
+
+            writer.WritePropertyName(nameof(AddServerHeader));
+            writer.WriteBooleanValue(AddServerHeader);
+
+            writer.WritePropertyName(nameof(AllowAlternateSchemes));
+            writer.WriteBooleanValue(AllowAlternateSchemes);
+
+            writer.WritePropertyName(nameof(AllowResponseHeaderCompression));
+            writer.WriteBooleanValue(AllowResponseHeaderCompression);
+
+            writer.WritePropertyName(nameof(EnableAltSvc));
+            writer.WriteBooleanValue(EnableAltSvc);
+
+            writer.WritePropertyName(nameof(IsDevCertLoaded));
+            writer.WriteBooleanValue(IsDevCertLoaded);
+
+            writer.WriteString(nameof(RequestHeaderEncodingSelector), RequestHeaderEncodingSelector == DefaultHeaderEncodingSelector ? "default" : "configured");
+            writer.WriteString(nameof(ResponseHeaderEncodingSelector), ResponseHeaderEncodingSelector == DefaultHeaderEncodingSelector ? "default" : "configured");
+
+            // Limits
+            writer.WritePropertyName(nameof(Limits));
+            writer.WriteStartObject();
+            Limits.Serialize(writer);
+            writer.WriteEndObject();
+            
+            // ListenOptions
+            writer.WritePropertyName(nameof(ListenOptions));
+            writer.WriteStartArray();
+            foreach (var listenOptions in OptionsInUse)
+            {
+                writer.WriteStartObject();
+                writer.WriteString("Address", listenOptions.GetDisplayName());
+                writer.WritePropertyName(nameof(listenOptions.IsTls));
+                writer.WriteBooleanValue(listenOptions.IsTls);
+                writer.WriteString(nameof(listenOptions.Protocols), listenOptions.Protocols.ToString());
+                writer.WriteEndObject();
+            }
+            writer.WriteEndArray();
         }
 
         private void EnsureDefaultCert()

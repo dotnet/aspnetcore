@@ -650,6 +650,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             var streamContext = new Http2StreamContext(
                 ConnectionId,
                 protocols: default,
+                _context.AltSvcHeader,
                 _context.ServiceContext,
                 _context.ConnectionFeatures,
                 _context.MemoryPool,
@@ -1307,7 +1308,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
                     else
                     {
-                        _currentHeadersStream.OnHeader(name, value);
+                        _currentHeadersStream.OnHeader(name, value, checkForNewlineChars : true);
                     }
                 }
             }

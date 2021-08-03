@@ -21,6 +21,12 @@
         '$(IsAnalyzersProject)' == true OR
         '$(IsSpecificationTestProject)' == 'true') ">enable</Nullable>
 
+    <!-- Strip out non-public nullable annotations for src projects. This should help with size reduction -->
+     <Features Condition="
+        '$(IsImplementationProject)' == 'true' OR
+        '$(IsAnalyzersProject)' == true OR
+        '$(IsSpecificationTestProject)' == 'true'">$(Features);nullablePublicOnly</Features>
+
     <!-- Turn off platform compatibility analyzer warnings in test, test assets, and samples. -->
     <NoWarn Condition=" '$(IsTestProject)' == 'true' OR
         '$(IsTestAssetProject)' == 'true' OR
@@ -30,7 +36,8 @@
 
     <!-- Enable .NET code style analysis during build for src projects. -->
     <!-- Workaround bug where turning this on produces warnings in VS -->
-    <EnforceCodeStyleInBuild Condition="'$(VisualStudioVersion)' &lt; '17.0'">false</EnforceCodeStyleInBuild>
+    <!-- See https://github.com/dotnet/roslyn/issues/54867 for more info. -->
+    <EnforceCodeStyleInBuild Condition="'$(BuildingInsideVisualStudio)' == 'true' AND $([MSBuild]::VersionGreaterThanOrEquals('$(VisualStudioVersion)', '17.0'))">false</EnforceCodeStyleInBuild>
     <EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == ''">true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 

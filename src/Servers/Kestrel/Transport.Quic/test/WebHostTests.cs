@@ -163,7 +163,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
                     webHostBuilder
                         .UseKestrel(o =>
                         {
-                            o.EnableAltSvc = true;
                             o.Listen(IPAddress.Parse("127.0.0.1"), 0, listenOptions =>
                             {
                                 listenOptions.Protocols = Core.HttpProtocols.Http1AndHttp2AndHttp3;
@@ -196,8 +195,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
                 var responseText1 = await response1.Content.ReadAsStringAsync().DefaultTimeout();
                 Assert.Equal("hello, world", responseText1);
 
-                Assert.True(response1.Headers.TryGetValues("alt-svc", out var altSvcValues));
-                Assert.Single(altSvcValues, @$"h3="":{host.GetPort()}""; ma=84600");
+                Assert.True(response1.Headers.TryGetValues("alt-svc", out var altSvcValues1));
+                Assert.Single(altSvcValues1, @$"h3="":{host.GetPort()}""");
 
                 // Act
                 var request2 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
@@ -207,6 +206,73 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
                 // Assert
                 response2.EnsureSuccessStatusCode();
                 Assert.Equal(HttpVersion.Version30, response2.Version);
+                var responseText2 = await response2.Content.ReadAsStringAsync().DefaultTimeout();
+                Assert.Equal("hello, world", responseText2);
+
+                Assert.True(response2.Headers.TryGetValues("alt-svc", out var altSvcValues2));
+                Assert.Single(altSvcValues2, @$"h3="":{host.GetPort()}""");
+            }
+
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task Listen_Http3AndSocketsCoexistOnSameEndpoint_AltSvcDisabled_NoUpgrade()
+        {
+            // Arrange
+            var builder = GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseKestrel(o =>
+                        {
+                            o.ConfigureEndpointDefaults(listenOptions =>
+                            {
+                                listenOptions.DisableAltSvcHeader = true;
+                            });
+                            o.Listen(IPAddress.Parse("127.0.0.1"), 0, listenOptions =>
+                            {
+                                listenOptions.Protocols = Core.HttpProtocols.Http1AndHttp2AndHttp3;
+                                listenOptions.UseHttps();
+                            });
+                        })
+                        .Configure(app =>
+                        {
+                            app.Run(async context =>
+                            {
+                                await context.Response.WriteAsync("hello, world");
+                            });
+                        });
+                })
+                .ConfigureServices(AddTestLogging);
+
+            using var host = builder.Build();
+            await host.StartAsync().DefaultTimeout();
+
+            using (var client = CreateClient())
+            {
+                // Act
+                var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+                request1.VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+                var response1 = await client.SendAsync(request1).DefaultTimeout();
+
+                // Assert
+                response1.EnsureSuccessStatusCode();
+                Assert.Equal(HttpVersion.Version20, response1.Version);
+                var responseText1 = await response1.Content.ReadAsStringAsync().DefaultTimeout();
+                Assert.Equal("hello, world", responseText1);
+
+                Assert.False(response1.Headers.Contains("alt-svc"));
+
+                // Act
+                var request2 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+                request2.VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+                var response2 = await client.SendAsync(request2).DefaultTimeout();
+
+                // Assert
+                response2.EnsureSuccessStatusCode();
+                Assert.Equal(HttpVersion.Version20, response2.Version);
                 var responseText2 = await response2.Content.ReadAsStringAsync().DefaultTimeout();
                 Assert.Equal("hello, world", responseText2);
 

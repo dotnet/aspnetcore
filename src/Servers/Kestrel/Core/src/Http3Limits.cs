@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
@@ -54,6 +55,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                 _maxRequestHeaderFieldSize = value;
             }
+        }
+
+        internal void Serialize(Utf8JsonWriter writer)
+        {
+            writer.WritePropertyName(nameof(HeaderTableSize));
+            writer.WriteNumberValue(HeaderTableSize);
+
+            writer.WritePropertyName(nameof(MaxRequestHeaderFieldSize));
+            writer.WriteNumberValue(MaxRequestHeaderFieldSize);
         }
     }
 }

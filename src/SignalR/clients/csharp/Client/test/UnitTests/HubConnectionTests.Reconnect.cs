@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
@@ -269,6 +270,104 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     Assert.True(TimeSpan.Zero <= retryContexts[1].ElapsedTime);
 
                     Assert.Equal(1, reconnectingCount);
+                    Assert.Equal(0, reconnectedCount);
+                }
+            }
+
+            [Fact]
+            [LogLevel(LogLevel.Trace)]
+            public async Task HasCorrectRetryNumberAfterRetriesExhausted()
+            {
+                bool ExpectedErrors(WriteContext writeContext)
+                {
+                    return writeContext.LoggerName == typeof(HubConnection).FullName &&
+                           (writeContext.EventId.Name == "ServerDisconnectedWithError" ||
+                            writeContext.EventId.Name == "ReconnectingWithError");
+                }
+
+                var failReconnectTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                using (var logCollector = StartVerifiableLog(ExpectedErrors))
+                {
+                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("http://example.com");
+                    var startCallCount = 0;
+
+                    Task OnTestConnectionStart()
+                    {
+                        startCallCount++;
+
+                        // Fail the first reconnect attempts.
+                        if (startCallCount > 1)
+                        {
+                            return failReconnectTcs.Task;
+                        }
+
+                        return Task.CompletedTask;
+                    }
+
+                    var testConnectionFactory = new ReconnectingConnectionFactory(() => new TestConnection(OnTestConnectionStart));
+                    builder.Services.AddSingleton<IConnectionFactory>(testConnectionFactory);
+
+                    var retryContexts = new List<RetryContext>();
+                    var mockReconnectPolicy = new Mock<IRetryPolicy>();
+                    mockReconnectPolicy.Setup(p => p.NextRetryDelay(It.IsAny<RetryContext>())).Returns<RetryContext>(context =>
+                    {
+                        retryContexts.Add(context);
+                        return context.PreviousRetryCount == 0 ? TimeSpan.Zero : (TimeSpan?)null;
+                    });
+                    builder.WithAutomaticReconnect(mockReconnectPolicy.Object);
+
+                    await using var hubConnection = builder.Build();
+                    var reconnectingCount = 0;
+                    var reconnectedCount = 0;
+                    var reconnectingErrorTcs = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var closedErrorTcs = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                    hubConnection.Reconnecting += error =>
+                    {
+                        reconnectingCount++;
+                        reconnectingErrorTcs.SetResult(error);
+                        return Task.CompletedTask;
+                    };
+
+                    hubConnection.Reconnected += connectionId =>
+                    {
+                        reconnectedCount++;
+                        return Task.CompletedTask;
+                    };
+
+                    hubConnection.Closed += error =>
+                    {
+                        closedErrorTcs.SetResult(error);
+                        return Task.CompletedTask;
+                    };
+
+                    await hubConnection.StartAsync().DefaultTimeout();
+
+                    var firstException = new Exception();
+                    (await testConnectionFactory.GetNextOrCurrentTestConnection()).CompleteFromTransport(firstException);
+
+                    Assert.Same(firstException, await reconnectingErrorTcs.Task.DefaultTimeout());
+
+                    var reconnectException = new Exception();
+                    failReconnectTcs.SetException(reconnectException);
+
+                    var closeError = await closedErrorTcs.Task.DefaultTimeout();
+                    Assert.IsType<OperationCanceledException>(closeError);
+
+                    Assert.Contains($"after {reconnectingCount} failed attempts", closeError.Message);
+
+                    var logs = logCollector.GetLogs();
+                    var attemptsLog = logs.SingleOrDefault(r => r.Write.EventId.Name == "ReconnectAttemptsExhausted");
+                    Assert.NotNull(attemptsLog);
+                    Assert.Contains($"after {reconnectingCount} failed attempts", attemptsLog.Write.Message);
+                    Assert.Equal(LogLevel.Information, attemptsLog.Write.LogLevel);
+
+                    var waitingLog = logs.SingleOrDefault(r => r.Write.EventId.Name == "AwaitingReconnectRetryDelay");
+                    Assert.NotNull(waitingLog);
+                    Assert.Contains($"Reconnect attempt number 1 will start in ", waitingLog.Write.Message);
+                    Assert.Equal(LogLevel.Trace, waitingLog.Write.LogLevel);
+
                     Assert.Equal(0, reconnectedCount);
                 }
             }

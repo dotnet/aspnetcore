@@ -43,6 +43,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
             StreamPool = new PooledStreamStack<QuicStreamContext>(InitialStreamPoolSize);
 
+            RemoteEndPoint = connection.RemoteEndPoint;
+            LocalEndPoint = connection.LocalEndPoint;
+
             InitializeFeatures();
         }
 

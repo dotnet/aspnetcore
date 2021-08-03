@@ -423,7 +423,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Equal(eventIndex, events.Count);
         }
 
-        private string GetProperty(EventSnapshot data, string propName) => data.Payload[propName];
+        private string GetProperty(EventSnapshot data, string propName) => data.Payload.TryGetValue(propName, out var value) ? value : null;
 
         private class TestEventListener : EventListener
         {

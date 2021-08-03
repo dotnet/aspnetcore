@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Hosting
@@ -11,34 +13,18 @@ namespace Microsoft.AspNetCore.Hosting
     // This exists solely to bootstrap the configuration
     internal class BootstrapHostBuilder : IHostBuilder
     {
-        private readonly ConfigurationManager _configuration;
-        private readonly WebHostEnvironment _environment;
         private readonly IServiceCollection _services;
-        private readonly HostBuilderContext _hostContext;
-
         private readonly List<Action<IConfigurationBuilder>> _configureHostActions = new();
         private readonly List<Action<HostBuilderContext, IConfigurationBuilder>> _configureAppActions = new();
         private readonly List<Action<HostBuilderContext, IServiceCollection>> _configureServicesActions = new();
 
         private readonly List<Action<IHostBuilder>> _remainingOperations = new();
 
-        public BootstrapHostBuilder(
-            ConfigurationManager configuration,
-            WebHostEnvironment webHostEnvironment,
-            IServiceCollection services,
-            IDictionary<object, object> properties)
+        public BootstrapHostBuilder(IServiceCollection services, IDictionary<object, object> properties)
         {
-            _configuration = configuration;
-            _environment = webHostEnvironment;
             _services = services;
 
             Properties = properties;
-
-            _hostContext = new HostBuilderContext(Properties)
-            {
-                Configuration = configuration,
-                HostingEnvironment = webHostEnvironment
-            };
         }
 
         public IDictionary<object, object> Properties { get; }
@@ -107,32 +93,80 @@ namespace Microsoft.AspNetCore.Hosting
             return this;
         }
 
-        public void RunDefaultCallbacks(HostBuilder innerBuilder)
+        public HostBuilderContext RunDefaultCallbacks(ConfigurationManager configuration, HostBuilder innerBuilder)
         {
+            var hostConfiguration = new ConfigurationManager();
+
             foreach (var configureHostAction in _configureHostActions)
             {
-                configureHostAction(_configuration);
+                configureHostAction(hostConfiguration);
             }
 
-            // Configuration doesn't auto-update during the bootstrap phase to reduce I/O,
-            // but we do need to update between host and app configuration so the right environment is used.
-            _environment.ApplyConfigurationSettings(_configuration);
+            // This is the hosting environment based on configuration we've seen so far.
+            var hostingEnvironment = new HostingEnvironment()
+            {
+                ApplicationName = hostConfiguration[HostDefaults.ApplicationKey],
+                EnvironmentName = hostConfiguration[HostDefaults.EnvironmentKey] ?? Environments.Production,
+                ContentRootPath = HostingEnvironment.ResolveContentRootPath(hostConfiguration[HostDefaults.ContentRootKey], AppContext.BaseDirectory),
+            };
 
+            hostingEnvironment.ContentRootFileProvider = new PhysicalFileProvider(hostingEnvironment.ContentRootPath);
+
+            var hostContext = new HostBuilderContext(Properties)
+            {
+                Configuration = hostConfiguration,
+                HostingEnvironment = hostingEnvironment,
+            };
+
+            // Split the host configuration and app configuration so that the
+            // subsequent callback don't get a chance to modify the host configuration.
+            configuration.SetBasePath(hostingEnvironment.ContentRootPath);
+
+            // Chain the host configuration and app configuration together.
+            configuration.AddConfiguration(hostConfiguration, shouldDisposeConfiguration: true);
+
+            // ConfigureAppConfiguration cannot modify the host configuration because doing so could
+            // change the environment, content root and application name which is not allowed at this stage.
             foreach (var configureAppAction in _configureAppActions)
             {
-                configureAppAction(_hostContext, _configuration);
+                configureAppAction(hostContext, configuration);
             }
 
-            _environment.ApplyConfigurationSettings(_configuration);
+            // Update the host context, everything from here sees the final
+            // app configuration
+            hostContext.Configuration = configuration;
 
             foreach (var configureServicesAction in _configureServicesActions)
             {
-                configureServicesAction(_hostContext, _services);
+                configureServicesAction(hostContext, _services);
             }
 
             foreach (var callback in _remainingOperations)
             {
                 callback(innerBuilder);
+            }
+
+            return hostContext;
+        }
+
+        private class HostingEnvironment : IHostEnvironment
+        {
+            public string EnvironmentName { get; set; } = default!;
+            public string ApplicationName { get; set; } = default!;
+            public string ContentRootPath { get; set; } = default!;
+            public IFileProvider ContentRootFileProvider { get; set; } = default!;
+
+            public static string ResolveContentRootPath(string contentRootPath, string basePath)
+            {
+                if (string.IsNullOrEmpty(contentRootPath))
+                {
+                    return basePath;
+                }
+                if (Path.IsPathRooted(contentRootPath))
+                {
+                    return contentRootPath;
+                }
+                return Path.Combine(Path.GetFullPath(basePath), contentRootPath);
             }
         }
     }

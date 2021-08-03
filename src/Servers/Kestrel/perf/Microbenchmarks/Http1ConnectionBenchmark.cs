@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
             }
 
             public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
-                => RequestHandler.Connection.OnHeader(name, value);
+                => RequestHandler.Connection.OnHeader(name, value, checkForNewlineChars : false);
 
             public void OnHeadersComplete(bool endStream)
                 => RequestHandler.Connection.OnHeadersComplete();
