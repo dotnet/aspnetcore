@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         public Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken)
         {
-            return Task.FromResult((X509Certificate2?)_connection.RemoteCertificate);
+            return Task.FromResult(ClientCertificate);
         }
 
         private void InitializeFeatures()
