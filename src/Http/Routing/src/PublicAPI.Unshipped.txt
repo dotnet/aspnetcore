@@ -14,6 +14,7 @@ Microsoft.AspNetCore.Routing.IDataTokensMetadata.DataTokens.get -> System.Collec
 Microsoft.AspNetCore.Routing.IRouteNameMetadata.RouteName.get -> string?
 Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteName.get -> string?
 Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteNameMetadata(string? routeName) -> void
+static Microsoft.AspNetCore.Builder.EndpointRoutingApplicationBuilderExtensions.UseRouting(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder, bool overrideEndpointRouteBuilder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.MinimalActionEndpointRouteBuilderExtensions.Map(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, Microsoft.AspNetCore.Routing.Patterns.RoutePattern! pattern, System.Delegate! action) -> Microsoft.AspNetCore.Builder.MinimalActionEndpointConventionBuilder!
 static Microsoft.AspNetCore.Builder.MinimalActionEndpointRouteBuilderExtensions.Map(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Delegate! action) -> Microsoft.AspNetCore.Builder.MinimalActionEndpointConventionBuilder!
 static Microsoft.AspNetCore.Builder.MinimalActionEndpointRouteBuilderExtensions.MapDelete(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Delegate! action) -> Microsoft.AspNetCore.Builder.MinimalActionEndpointConventionBuilder!
