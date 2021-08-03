@@ -42,7 +42,7 @@ static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JS
 *REMOVED*static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, params object![]! args) -> System.Threading.Tasks.ValueTask
 static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, params object?[]? args) -> System.Threading.Tasks.ValueTask
 virtual Microsoft.JSInterop.JSRuntime.ReadJSDataAsStreamAsync(Microsoft.JSInterop.IJSStreamReference! jsStreamReference, long totalLength, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.IO.Stream!>!
-virtual Microsoft.JSInterop.JSRuntime.BeginTransmittingStream(long streamId, Microsoft.JSInterop.DotNetStreamReference! dotNetStreamReference) -> void
+virtual Microsoft.JSInterop.JSRuntime.TransmitStreamAsync(long streamId, Microsoft.JSInterop.DotNetStreamReference! dotNetStreamReference) -> System.Threading.Tasks.Task!
 virtual Microsoft.JSInterop.JSRuntime.ReceiveByteArray(int id, byte[]! data) -> void
 virtual Microsoft.JSInterop.JSRuntime.SendByteArray(int id, byte[]! data) -> void
 Microsoft.JSInterop.JSDisconnectedException

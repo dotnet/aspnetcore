@@ -36,6 +36,7 @@ export function receiveDotNetDataStream(streamId: number, data: Uint8Array, byte
 
   if (errorMessage) {
     streamController!.error(errorMessage);
+    transmittingDotNetToJSStreams.delete(streamId);
   } else if (bytesRead === 0) {
     streamController!.close();
     transmittingDotNetToJSStreams.delete(streamId);

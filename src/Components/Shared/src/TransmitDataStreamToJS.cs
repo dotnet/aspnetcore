@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components
     {
         internal static async Task TransmitStreamAsync(IJSRuntime runtime, long streamId, DotNetStreamReference dotNetStreamReference)
         {
-            byte[] buffer = ArrayPool<byte>.Shared.Rent(32 * 1024);
+            var buffer = ArrayPool<byte>.Shared.Rent(32 * 1024);
 
             try
             {
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Components
                     // JS Interop encountered an issue, unable to send error message to JS.
                 }
 
-                throw ex;
+                throw;
             }
             finally
             {
