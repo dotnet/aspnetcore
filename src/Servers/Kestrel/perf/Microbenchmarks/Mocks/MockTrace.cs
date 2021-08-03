@@ -70,5 +70,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
         public void QPackDecodingError(string connectionId, long streamId, Exception ex) { }
         public void QPackEncodingError(string connectionId, long streamId, Exception ex) { }
         public void Http3OutboundControlStreamError(string connectionId, Exception ex) { }
+        public void Http3GoAwayHighestStreamId(string connectionId, long highestStreamId) { }
     }
 }

@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     feature = ExtraFeatureGet(key);
                 }
 
-                return feature ?? ConnectionFeatures[key];
+                return feature ?? ConnectionFeatures?[key];
             }
 
             set
@@ -564,7 +564,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 feature = (TFeature?)(ExtraFeatureGet(typeof(TFeature)));
             }
 
-            if (feature == null)
+            if (feature == null && ConnectionFeatures != null)
             {
                 feature = ConnectionFeatures.Get<TFeature>();
             }

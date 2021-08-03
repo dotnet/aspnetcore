@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Testing
             return _inboundControlStream;
         }
 
-        internal void CloseConnectionGracefully()
+        internal void CloseServerGracefully()
         {
             MultiplexedConnectionContext.ConnectionClosingCts.Cancel();
         }

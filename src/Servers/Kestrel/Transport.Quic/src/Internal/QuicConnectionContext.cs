@@ -119,6 +119,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 },
                 this,
                 preferLocal: false);
+
+                // Throw error so consumer sees the connection is aborted by peer.
+                throw new ConnectionResetException(ex.Message, ex);
             }
             catch (QuicOperationAbortedException)
             {

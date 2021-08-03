@@ -50,6 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             _context = context;
             _log = context.Log;
             MemoryPool = connection.MemoryPool;
+            MultiplexedConnectionFeatures = connection.Features;
 
             RemoteEndPoint = connection.RemoteEndPoint;
             LocalEndPoint = connection.LocalEndPoint;
@@ -223,8 +224,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             catch (QuicOperationAbortedException ex)
             {
                 // AbortRead has been called for the stream.
-                // Possibily might also get here from connection closing.
-                // System.Net.Quic exception handling not finalized.
+                error = ex;
+            }
+            catch (QuicConnectionAbortedException ex)
+            {
+                // Connection has aborted.
                 error = ex;
             }
             catch (Exception ex)

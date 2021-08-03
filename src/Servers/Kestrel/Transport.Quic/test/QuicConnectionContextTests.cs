@@ -26,6 +26,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
         [ConditionalFact]
         [MsQuicSupported]
+        public async Task AcceptAsync_ClientClosesConnection_ServerNotified()
+        {
+            // Arrange
+            var connectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
+
+            // Act
+            var acceptTask = connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+
+            var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+
+            using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+            await clientConnection.ConnectAsync().DefaultTimeout();
+
+            await using var serverConnection = await acceptTask.DefaultTimeout();
+            serverConnection.ConnectionClosed.Register(() => connectionClosedTcs.SetResult());
+
+            var acceptStreamTask = serverConnection.AcceptAsync();
+
+            await clientConnection.CloseAsync(256);
+
+            // Assert
+            var ex = await Assert.ThrowsAsync<ConnectionResetException>(() => acceptStreamTask.AsTask()).DefaultTimeout();
+            var innerEx = Assert.IsType<QuicConnectionAbortedException>(ex.InnerException);
+            Assert.Equal(256, innerEx.ErrorCode);
+
+            await connectionClosedTcs.Task.DefaultTimeout();
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
         public async Task AcceptAsync_ClientStartsAndStopsUnidirectionStream_ServerAccepts()
         {
             // Arrange

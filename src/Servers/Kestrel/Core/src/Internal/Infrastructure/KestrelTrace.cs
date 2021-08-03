@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.IO;
 using System.Net.Http;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
@@ -362,6 +363,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
+        [LoggerMessage(50, LogLevel.Debug, @"Connection id ""{ConnectionId}"": Unexpected error when initializing outbound control stream.", EventName = "Http3OutboundControlStreamError")]
+        private static partial void Http3OutboundControlStreamError(ILogger logger, string connectionId, Exception ex);
+
+        public void Http3OutboundControlStreamError(string connectionId, Exception ex)
+        {
+            Http3OutboundControlStreamError(_http3Logger, connectionId, ex);
+        }
+
         [LoggerMessage(51, LogLevel.Debug, @"Connection id ""{ConnectionId}"": QPACK decoding error while decoding headers for stream ID {StreamId}.", EventName = "QPackDecodingError")]
         private static partial void QPackDecodingError(ILogger logger, string connectionId, long streamId, Exception ex);
 
@@ -378,12 +387,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             QPackEncodingError(_http3Logger, connectionId, streamId, ex);
         }
 
-        [LoggerMessage(50, LogLevel.Debug, @"Connection id ""{ConnectionId}"": Unexpected error when initializing outbound control stream.", EventName = "Http3OutboundControlStreamError")]
-        private static partial void Http3OutboundControlStreamError(ILogger logger, string connectionId, Exception ex);
+        [LoggerMessage(53, LogLevel.Debug, @"Connection id ""{ConnectionId}"": Highest stream ID {highestStreamId} in GOAWAY.", EventName = "Http3GoAwayHighestStreamId")]
+        private static partial void Http3GoAwayHighestStreamId(ILogger logger, string connectionId, long highestStreamId);
 
-        public void Http3OutboundControlStreamError(string connectionId, Exception ex)
+        public void Http3GoAwayHighestStreamId(string connectionId, long highestStreamId)
         {
-            Http3OutboundControlStreamError(_http3Logger, connectionId, ex);
+            Http3GoAwayHighestStreamId(_http3Logger, connectionId, highestStreamId);
         }
 
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)

@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 var sslServerAuthenticationOptions = new SslServerAuthenticationOptions
                 {
                     ServerCertificate = listenOptions.HttpsOptions.ServerCertificate,
-                    ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol("h3") }
+                    ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol("h3"), new SslApplicationProtocol("h3-29") }
                 };
 
                 features.Set(sslServerAuthenticationOptions);

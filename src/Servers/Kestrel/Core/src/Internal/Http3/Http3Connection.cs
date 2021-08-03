@@ -229,6 +229,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             Exception? error = null;
             ValueTask outboundControlStreamTask = default;
+            bool clientAbort = false;
 
             try
             {
@@ -339,10 +340,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 try
                 {
-                    if (TryClose())
+                    // Only send goaway if the connection close was initiated on the server.
+                    if (TryClose() && clientAbort)
                     {
-                        // This throws when connection is shut down.
-                        // TODO how to make it so we can distinguish between Abort from server vs client?
                         await SendGoAway(GetHighestStreamId());
                     }
 

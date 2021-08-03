@@ -108,6 +108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         internal ValueTask<FlushResult> SendGoAway(long id)
         {
+            Log.Http3GoAwayHighestStreamId(_context.ConnectionId, id);
             return _frameWriter.WriteGoAway(id);
         }
 

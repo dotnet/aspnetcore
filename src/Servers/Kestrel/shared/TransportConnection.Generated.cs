@@ -34,7 +34,6 @@ namespace Microsoft.AspNetCore.Connections
         internal protected IStreamDirectionFeature? _currentIStreamDirectionFeature;
         internal protected IStreamIdFeature? _currentIStreamIdFeature;
         internal protected IStreamAbortFeature? _currentIStreamAbortFeature;
-        internal protected ITlsConnectionFeature? _currentITlsConnectionFeature;
 
         private int _featureRevision;
 
@@ -54,7 +53,6 @@ namespace Microsoft.AspNetCore.Connections
             _currentIStreamDirectionFeature = null;
             _currentIStreamIdFeature = null;
             _currentIStreamAbortFeature = null;
-            _currentITlsConnectionFeature = null;
         }
 
         // Internal for testing
@@ -170,16 +168,12 @@ namespace Microsoft.AspNetCore.Connections
                 {
                     feature = _currentIStreamAbortFeature;
                 }
-                else if (key == typeof(ITlsConnectionFeature))
-                {
-                    feature = _currentITlsConnectionFeature;
-                }
                 else if (MaybeExtra != null)
                 {
                     feature = ExtraFeatureGet(key);
                 }
 
-                return feature;
+                return feature ?? MultiplexedConnectionFeatures?[key];
             }
 
             set
@@ -229,10 +223,6 @@ namespace Microsoft.AspNetCore.Connections
                 else if (key == typeof(IStreamAbortFeature))
                 {
                     _currentIStreamAbortFeature = (IStreamAbortFeature?)value;
-                }
-                else if (key == typeof(ITlsConnectionFeature))
-                {
-                    _currentITlsConnectionFeature = (ITlsConnectionFeature?)value;
                 }
                 else
                 {
@@ -292,13 +282,14 @@ namespace Microsoft.AspNetCore.Connections
             {
                 feature = Unsafe.As<IStreamAbortFeature?, TFeature?>(ref _currentIStreamAbortFeature);
             }
-            else if (typeof(TFeature) == typeof(ITlsConnectionFeature))
-            {
-                feature = Unsafe.As<ITlsConnectionFeature?, TFeature?>(ref _currentITlsConnectionFeature);
-            }
             else if (MaybeExtra != null)
             {
                 feature = (TFeature?)(ExtraFeatureGet(typeof(TFeature)));
+            }
+
+            if (feature == null && MultiplexedConnectionFeatures != null)
+            {
+                feature = MultiplexedConnectionFeatures.Get<TFeature>();
             }
 
             return feature;
@@ -355,10 +346,6 @@ namespace Microsoft.AspNetCore.Connections
             {
                 _currentIStreamAbortFeature = Unsafe.As<TFeature?, IStreamAbortFeature?>(ref feature);
             }
-            else if (typeof(TFeature) == typeof(ITlsConnectionFeature))
-            {
-                _currentITlsConnectionFeature = Unsafe.As<TFeature?, ITlsConnectionFeature?>(ref feature);
-            }
             else
             {
                 ExtraFeatureSet(typeof(TFeature), feature);
@@ -410,10 +397,6 @@ namespace Microsoft.AspNetCore.Connections
             if (_currentIStreamAbortFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(typeof(IStreamAbortFeature), _currentIStreamAbortFeature);
-            }
-            if (_currentITlsConnectionFeature != null)
-            {
-                yield return new KeyValuePair<Type, object>(typeof(ITlsConnectionFeature), _currentITlsConnectionFeature);
             }
 
             if (MaybeExtra != null)
