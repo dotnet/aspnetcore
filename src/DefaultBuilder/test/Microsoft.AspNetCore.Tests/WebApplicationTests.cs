@@ -234,12 +234,21 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
-        public void WebApplicationBuilderHostEnvironmentAndWebHostEnvironmentAreTheSame()
+        public void WebApplicationBuilderApplicationNameCanBeOverridden()
         {
-            var projectName = typeof(WebApplicationTests).Assembly.GetName().Name;
             var assemblyName = Assembly.GetEntryAssembly().GetName().Name;
 
-            var builder = WebApplication.CreateBuilder(new[] { $"--applicationName={assemblyName}" });
+            var builder = new WebApplicationBuilder(
+                typeof(WebApplicationTests).Assembly,
+                new[] { $"--applicationName={assemblyName}" }, bootstrapBuilder =>
+            {
+                // Verify the defaults observed by the boostrap host builder we use internally to populate
+                // the defaults
+                bootstrapBuilder.ConfigureAppConfiguration((context, config) =>
+                {
+                    Assert.Equal(assemblyName, context.HostingEnvironment.ApplicationName);
+                });
+            });
 
             Assert.Equal(assemblyName, builder.Environment.ApplicationName);
             builder.Host.ConfigureAppConfiguration((context, config) =>

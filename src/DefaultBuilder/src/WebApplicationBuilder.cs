@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Builder
 
         private WebApplication? _builtApplication;
 
-        internal WebApplicationBuilder(Assembly? callingAssembly, string[]? args = null)
+        internal WebApplicationBuilder(Assembly? callingAssembly, string[]? args = null, Action<IHostBuilder>? configureDefaults = null)
         {
             Services = _services;
 
@@ -37,6 +37,9 @@ namespace Microsoft.AspNetCore.Builder
             // Don't specify the args here since we want to apply them later so that args
             // can override the defaults specified by ConfigureWebHostDefaults
             _bootstrapHostBuilder.ConfigureDefaults(args: null);
+
+            // This is for testing purposes
+            configureDefaults?.Invoke(_bootstrapHostBuilder);
 
             // We specify the command line here last since we skipped the one in the call to ConfigureDefaults.
             // The args can contain both host and application settings so we want to make sure
