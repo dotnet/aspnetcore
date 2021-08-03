@@ -18,20 +18,14 @@ namespace Microsoft.AspNetCore.Builder
         private readonly IWebHostEnvironment _environment;
         private readonly ConfigurationManager _configuration;
         private readonly IServiceCollection _services;
-
         private readonly WebHostBuilderContext _context;
 
-        internal ConfigureWebHostBuilder(ConfigurationManager configuration, IWebHostEnvironment environment, IServiceCollection services)
+        internal ConfigureWebHostBuilder(WebHostBuilderContext webHostBuilderContext, ConfigurationManager configuration, IServiceCollection services)
         {
             _configuration = configuration;
-            _environment = environment;
+            _environment = webHostBuilderContext.HostingEnvironment;
             _services = services;
-
-            _context = new WebHostBuilderContext
-            {
-                Configuration = _configuration,
-                HostingEnvironment = _environment
-            };
+            _context = webHostBuilderContext;
         }
 
         IWebHost IWebHostBuilder.Build()
