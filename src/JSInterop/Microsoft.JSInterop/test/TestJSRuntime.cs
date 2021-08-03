@@ -22,5 +22,11 @@ namespace Microsoft.JSInterop
         {
             // No-op
         }
+
+        protected internal override Task TransmitStreamAsync(long streamId, DotNetStreamReference dotNetStreamReference)
+        {
+            // No-op
+            return Task.CompletedTask;
+        }
     }
 }
