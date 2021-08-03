@@ -15,7 +15,8 @@
     <AnalysisMode>Default</AnalysisMode>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(VisualStudioVersion)' == '17.0' ">
+  <!-- See https://github.com/dotnet/roslyn/issues/54867 for more info. -->
+  <PropertyGroup Condition="'$(BuildingInsideVisualStudio)' == 'true' AND $([MSBuild]::VersionGreaterThanOrEquals('$(VisualStudioVersion)', '17.0'))">
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
     <RunAnalyzersDuringLiveAnalysis>false</RunAnalyzersDuringLiveAnalysis>
     <RunAnalyzers>false</RunAnalyzers>

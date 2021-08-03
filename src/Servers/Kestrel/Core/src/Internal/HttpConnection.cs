@@ -202,8 +202,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             var hasTls = _context.ConnectionFeatures.Get<ITlsConnectionFeature>() != null;
             var applicationProtocol = _context.ConnectionFeatures.Get<ITlsApplicationProtocolFeature>()?.ApplicationProtocol
                 ?? new ReadOnlyMemory<byte>();
-            var http1Enabled = (_context.Protocols & HttpProtocols.Http1) == HttpProtocols.Http1;
-            var http2Enabled = (_context.Protocols & HttpProtocols.Http2) == HttpProtocols.Http2;
+            var isMultiplexTransport = _context is HttpMultiplexedConnectionContext;
+            var http1Enabled = _context.Protocols.HasFlag(HttpProtocols.Http1);
+            var http2Enabled = _context.Protocols.HasFlag(HttpProtocols.Http2);
+            var http3Enabled = _context.Protocols.HasFlag(HttpProtocols.Http3);
 
             string? error = null;
 
@@ -212,9 +214,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 error = CoreStrings.EndPointRequiresAtLeastOneProtocol;
             }
 
-            if (_context.Protocols == HttpProtocols.Http3)
+            if (isMultiplexTransport)
             {
-                return HttpProtocols.Http3;
+                if (http3Enabled)
+                {
+                    return HttpProtocols.Http3;
+                }
+
+                error = $"Protocols {_context.Protocols} not supported on multiplexed transport.";
             }
 
             if (!http1Enabled && http2Enabled && hasTls && !Http2Id.SequenceEqual(applicationProtocol.Span))

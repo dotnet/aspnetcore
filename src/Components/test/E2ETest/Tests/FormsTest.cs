@@ -304,6 +304,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34884")]
         public void InputDateInteractsWithEditContext_DateTimeLocalInput()
         {
             var appElement = MountTypicalValidationComponent();
@@ -736,7 +737,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("modified invalid-socks", () => socksInput.GetAttribute("class"));
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/34857")]
         public void NavigateOnSubmitWorks()
         {
             var app = Browser.MountTestComponent<NavigateOnSubmit>();

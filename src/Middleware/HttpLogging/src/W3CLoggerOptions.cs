@@ -17,7 +17,8 @@ namespace Microsoft.AspNetCore.HttpLogging
         private string _fileName = "w3clog-";
         private string _logDirectory = "";
         private TimeSpan _flushInterval = TimeSpan.FromSeconds(1);
-        internal static int MaxFileCount = 10000;
+        // Update the MaxFilesReached log message in FileLoggerProcessor if this value changes.
+        internal const int MaxFileCount = 10000;
 
         /// <summary>
         /// Gets or sets a strictly positive value representing the maximum log size in bytes or null for no limit.

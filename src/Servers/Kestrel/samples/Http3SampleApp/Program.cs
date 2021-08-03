@@ -30,13 +30,12 @@ namespace Http3SampleApp
                     webHost.UseKestrel()
                     .UseQuic(options =>
                     {
-                        options.Alpn = "h3-29"; // Shouldn't need to populate this as well.
+                        options.Alpn = "h3"; // Shouldn't need to populate this as well.
                         options.IdleTimeout = TimeSpan.FromHours(1);
                     })
                     .ConfigureKestrel((context, options) =>
                     {
                         var basePort = 5557;
-                        options.EnableAltSvc = true;
 
                         options.Listen(IPAddress.Any, basePort, listenOptions =>
                         {

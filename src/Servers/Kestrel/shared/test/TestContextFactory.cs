@@ -61,6 +61,7 @@ namespace Microsoft.AspNetCore.Testing
             var context = new HttpConnectionContext(
                 "TestConnectionId",
                 HttpProtocols.Http1,
+                altSvcHeader: null,
                 connectionContext,
                 serviceContext,
                 connectionFeatures,
@@ -84,6 +85,8 @@ namespace Microsoft.AspNetCore.Testing
         {
             var http3ConnectionContext = new HttpMultiplexedConnectionContext(
                 "TestConnectionId",
+                HttpProtocols.Http3,
+                altSvcHeader: null,
                 connectionContext ?? new TestMultiplexedConnectionContext(),
                 serviceContext ?? CreateServiceContext(new KestrelServerOptions()),
                 connectionFeatures ?? new FeatureCollection(),
@@ -145,6 +148,7 @@ namespace Microsoft.AspNetCore.Testing
             (
                 connectionId: connectionId ?? "TestConnectionId",
                 protocols: HttpProtocols.Http2,
+                altSvcHeader: null,
                 serviceContext: serviceContext ?? CreateServiceContext(new KestrelServerOptions()),
                 connectionFeatures: connectionFeatures ?? new FeatureCollection(),
                 memoryPool: memoryPool ?? MemoryPool<byte>.Shared,
@@ -179,6 +183,7 @@ namespace Microsoft.AspNetCore.Testing
             (
                 connectionId: connectionId ?? "TestConnectionId",
                 protocols: HttpProtocols.Http3,
+                altSvcHeader: null,
                 connectionContext: connectionContext,
                 serviceContext: serviceContext ?? CreateServiceContext(new KestrelServerOptions()),
                 connectionFeatures: connectionFeatures ?? new FeatureCollection(),

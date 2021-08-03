@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 return context.Response.WriteAsync("Hello World");
             });
 
-            listenOptions.UseHttpServer(serviceContext, testApplication, Core.HttpProtocols.Http1);
+            listenOptions.UseHttpServer(serviceContext, testApplication, Core.HttpProtocols.Http1, addAltSvcHeader: false);
 
             var transportContext = new TestLibuvTransportContext
             {

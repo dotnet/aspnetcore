@@ -347,6 +347,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     var firstException = new Exception();
                     (await testConnectionFactory.GetNextOrCurrentTestConnection()).CompleteFromTransport(firstException);
 
+                    Assert.Same(firstException, await reconnectingErrorTcs.Task.DefaultTimeout());
+
                     var reconnectException = new Exception();
                     failReconnectTcs.SetException(reconnectException);
 
@@ -365,6 +367,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     Assert.NotNull(waitingLog);
                     Assert.Contains($"Reconnect attempt number 1 will start in ", waitingLog.Write.Message);
                     Assert.Equal(LogLevel.Trace, waitingLog.Write.LogLevel);
+
+                    Assert.Equal(0, reconnectedCount);
                 }
             }
 

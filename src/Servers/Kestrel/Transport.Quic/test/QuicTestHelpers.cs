@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 {
     internal static class QuicTestHelpers
     {
-        public const string Alpn = "h3-29";
+        public const string Alpn = "h3";
         private static readonly byte[] TestData = Encoding.UTF8.GetBytes("Hello world");
 
         public static QuicTransportFactory CreateTransportFactory(ILoggerFactory loggerFactory = null, ISystemClock systemClock = null)

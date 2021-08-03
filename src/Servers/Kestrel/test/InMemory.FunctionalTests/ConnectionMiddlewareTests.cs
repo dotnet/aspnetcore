@@ -64,6 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
         [Theory]
         [MemberData(nameof(EchoAppRequestDelegates))]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34947")]
         public async Task CanReadAndWriteWithAsyncConnectionMiddleware(RequestDelegate requestDelegate)
         {
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));

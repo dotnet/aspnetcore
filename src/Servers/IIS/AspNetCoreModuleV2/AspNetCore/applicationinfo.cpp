@@ -240,15 +240,15 @@ APPLICATION_INFO::ShutDownApplication(const bool fServerInitiated)
             return;
         }
         app = m_pApplication.get();
+
+        LOG_INFOF(L"Stopping application '%ls'", QueryApplicationInfoKey().c_str());
+        app->Stop(fServerInitiated);
+
+        // do not set to null before app->Stop, it can cause issues with the file watching thread trying to join itself
+        // because it was referencing the last instance of the app and the shared_ptr would run the destructor inline.
+        m_pApplication = nullptr;
+        m_pApplicationFactory = nullptr;
     }
-
-    LOG_INFOF(L"Stopping application '%ls'", QueryApplicationInfoKey().c_str());
-    app->Stop(fServerInitiated);
-
-    SRWExclusiveLock lock(m_applicationLock);
-
-    m_pApplication = nullptr;
-    m_pApplicationFactory = nullptr;
 }
 
 std::filesystem::path

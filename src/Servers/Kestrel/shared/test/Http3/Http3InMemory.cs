@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
@@ -219,6 +220,8 @@ namespace Microsoft.AspNetCore.Testing
 
             var httpConnectionContext = new HttpMultiplexedConnectionContext(
                 connectionId: "TestConnectionId",
+                HttpProtocols.Http3,
+                altSvcHeader: null,
                 connectionContext: MultiplexedConnectionContext,
                 connectionFeatures: MultiplexedConnectionContext.Features,
                 serviceContext: _serviceContext,
@@ -297,7 +300,7 @@ namespace Microsoft.AspNetCore.Testing
 
                 if (_http3TestBase._runningStreams.TryRemove(stream.StreamId, out var testStream))
                 {
-                    testStream._onStreamCompletedTcs.TrySetResult();
+                    testStream.OnStreamCompletedTcs.TrySetResult();
                 }
             }
 
@@ -312,7 +315,7 @@ namespace Microsoft.AspNetCore.Testing
 
                 if (_http3TestBase._runningStreams.TryGetValue(stream.StreamId, out var testStream))
                 {
-                    testStream._onStreamCreatedTcs.TrySetResult();
+                    testStream.OnStreamCreatedTcs.TrySetResult();
                 }
             }
 
@@ -322,7 +325,7 @@ namespace Microsoft.AspNetCore.Testing
 
                 if (_http3TestBase._runningStreams.TryGetValue(stream.StreamId, out var testStream))
                 {
-                    testStream._onHeaderReceivedTcs.TrySetResult();
+                    testStream.OnHeaderReceivedTcs.TrySetResult();
                 }
             }
         }
@@ -404,38 +407,39 @@ namespace Microsoft.AspNetCore.Testing
         }
     }
 
-    internal class Http3StreamBase : IProtocolErrorCodeFeature
+    internal class Http3StreamBase
     {
-        internal TaskCompletionSource _onStreamCreatedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        internal TaskCompletionSource _onStreamCompletedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        internal TaskCompletionSource _onHeaderReceivedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal TaskCompletionSource OnStreamCreatedTcs { get; } = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal TaskCompletionSource OnStreamCompletedTcs { get; } = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal TaskCompletionSource OnHeaderReceivedTcs { get; } = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        internal ConnectionContext StreamContext { get; }
-        internal IProtocolErrorCodeFeature _protocolErrorCodeFeature;
-        internal DuplexPipe.DuplexPipePair _pair;
-        internal Http3InMemory _testBase;
-        internal Http3Connection _connection;
+        internal TestStreamContext StreamContext { get; }
+        internal DuplexPipe.DuplexPipePair Pair { get; }
+        internal Http3InMemory TestBase { get; private protected set; }
+        internal Http3Connection Connection { get; private protected set; }
         public long BytesReceived { get; private set; }
         public long Error
         {
-            get => _protocolErrorCodeFeature.Error;
-            set => _protocolErrorCodeFeature.Error = value;
+            get => StreamContext.Error;
+            set => StreamContext.Error = value;
         }
 
-        public Task OnStreamCreatedTask => _onStreamCreatedTcs.Task;
-        public Task OnStreamCompletedTask => _onStreamCompletedTcs.Task;
-        public Task OnHeaderReceivedTask => _onHeaderReceivedTcs.Task;
+        public Task OnStreamCreatedTask => OnStreamCreatedTcs.Task;
+        public Task OnStreamCompletedTask => OnStreamCompletedTcs.Task;
+        public Task OnHeaderReceivedTask => OnHeaderReceivedTcs.Task;
+
+        public ConnectionAbortedException AbortReadException => StreamContext.AbortReadException;
+        public ConnectionAbortedException AbortWriteException => StreamContext.AbortWriteException;
 
         public Http3StreamBase(TestStreamContext testStreamContext)
         {
             StreamContext = testStreamContext;
-            _protocolErrorCodeFeature = testStreamContext;
-            _pair = testStreamContext._pair;
+            Pair = testStreamContext._pair;
         }
 
         protected Task SendAsync(ReadOnlySpan<byte> span)
         {
-            var writableBuffer = _pair.Application.Output;
+            var writableBuffer = Pair.Application.Output;
             writableBuffer.Write(span);
             return FlushAsync(writableBuffer);
         }
@@ -462,12 +466,12 @@ namespace Microsoft.AspNetCore.Testing
 #if IS_FUNCTIONAL_TESTS
         protected Task<ReadResult> ReadApplicationInputAsync()
         {
-            return _pair.Application.Input.ReadAsync().AsTask().DefaultTimeout();
+            return Pair.Application.Input.ReadAsync().AsTask().DefaultTimeout();
         }
 #else
         protected ValueTask<ReadResult> ReadApplicationInputAsync()
         {
-            return _pair.Application.Input.ReadAsync();
+            return Pair.Application.Input.ReadAsync();
         }
 #endif
 
@@ -523,14 +527,14 @@ namespace Microsoft.AspNetCore.Testing
                 finally
                 {
                     BytesReceived += copyBuffer.Slice(copyBuffer.Start, consumed).Length;
-                    _pair.Application.Input.AdvanceTo(consumed, examined);
+                    Pair.Application.Input.AdvanceTo(consumed, examined);
                 }
             }
         }
 
         internal async Task SendFrameAsync(Http3FrameType frameType, Memory<byte> data, bool endStream = false)
         {
-            var outputWriter = _pair.Application.Output;
+            var outputWriter = Pair.Application.Output;
             Http3FrameWriter.WriteHeader(frameType, data.Length, outputWriter);
 
             if (!endStream)
@@ -547,7 +551,7 @@ namespace Microsoft.AspNetCore.Testing
 
         internal Task EndStreamAsync(ReadOnlySpan<byte> span = default)
         {
-            var writableBuffer = _pair.Application.Output;
+            var writableBuffer = Pair.Application.Output;
             if (span.Length > 0)
             {
                 writableBuffer.Write(span);
@@ -595,8 +599,8 @@ namespace Microsoft.AspNetCore.Testing
         public Http3RequestStream(Http3InMemory testBase, Http3Connection connection, TestStreamContext testStreamContext, Http3RequestHeaderHandler headerHandler)
             : base(testStreamContext)
         {
-            _testBase = testBase;
-            _connection = connection;
+            TestBase = testBase;
+            Connection = connection;
             _streamId = testStreamContext.StreamId;
             _testStreamContext = testStreamContext;
             this._headerHandler = headerHandler;
@@ -635,7 +639,7 @@ namespace Microsoft.AspNetCore.Testing
         internal async Task SendHeadersPartialAsync()
         {
             // Send HEADERS frame header without content.
-            var outputWriter = _pair.Application.Output;
+            var outputWriter = Pair.Application.Output;
             Http3FrameWriter.WriteHeader(Http3FrameType.Data, frameLength: 10, outputWriter);
             await SendAsync(Span<byte>.Empty);
         }
@@ -727,7 +731,7 @@ namespace Microsoft.AspNetCore.Testing
         public Http3ControlStream(Http3InMemory testBase, TestStreamContext testStreamContext)
             : base(testStreamContext)
         {
-            _testBase = testBase;
+            TestBase = testBase;
             _streamId = testStreamContext.StreamId;
         }
 
@@ -764,7 +768,7 @@ namespace Microsoft.AspNetCore.Testing
 
         public async Task WriteStreamIdAsync(int id)
         {
-            var writableBuffer = _pair.Application.Output;
+            var writableBuffer = Pair.Application.Output;
 
             void WriteSpan(PipeWriter pw)
             {
@@ -845,7 +849,7 @@ namespace Microsoft.AspNetCore.Testing
                 }
                 finally
                 {
-                    _pair.Application.Input.AdvanceTo(consumed, examined);
+                    Pair.Application.Input.AdvanceTo(consumed, examined);
                 }
             }
         }
@@ -938,7 +942,7 @@ namespace Microsoft.AspNetCore.Testing
         }
     }
 
-    internal class TestStreamContext : ConnectionContext, IStreamDirectionFeature, IStreamIdFeature, IProtocolErrorCodeFeature, IPersistentStateFeature
+    internal class TestStreamContext : ConnectionContext, IStreamDirectionFeature, IStreamIdFeature, IProtocolErrorCodeFeature, IPersistentStateFeature, IStreamAbortFeature
     {
         private readonly Http3InMemory _testBase;
 
@@ -999,16 +1003,22 @@ namespace Microsoft.AspNetCore.Testing
 
             Features.Set<IStreamDirectionFeature>(this);
             Features.Set<IStreamIdFeature>(this);
+            Features.Set<IStreamAbortFeature>(this);
             Features.Set<IProtocolErrorCodeFeature>(this);
             Features.Set<IPersistentStateFeature>(this);
 
             StreamId = streamId;
             _testBase.Logger.LogInformation($"Initializing stream {streamId}");
             ConnectionId = "TEST:" + streamId.ToString();
+            AbortReadException = null;
+            AbortWriteException = null;
 
             _disposedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             Disposed = false;
         }
+
+        public ConnectionAbortedException AbortReadException { get; private set; }
+        public ConnectionAbortedException AbortWriteException { get; private set; }
 
         public bool Disposed { get; private set; }
 
@@ -1075,6 +1085,16 @@ namespace Microsoft.AspNetCore.Testing
                 // Lazily allocate persistent state
                 return _persistentState ?? (_persistentState = new ConnectionItems());
             }
+        }
+
+        void IStreamAbortFeature.AbortRead(long errorCode, ConnectionAbortedException abortReason)
+        {
+            AbortReadException = abortReason;
+        }
+
+        void IStreamAbortFeature.AbortWrite(long errorCode, ConnectionAbortedException abortReason)
+        {
+            AbortWriteException = abortReason;
         }
     }
 }
