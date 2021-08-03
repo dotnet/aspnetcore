@@ -25,7 +25,6 @@ namespace Http3SampleApp
                     .ConfigureKestrel((context, options) =>
                     {
                         var cert = CertificateLoader.LoadFromStoreCert("localhost", StoreName.My.ToString(), StoreLocation.CurrentUser, false);
-                        options.EnableAltSvc = true;
                         options.ConfigureHttpsDefaults(httpsOptions =>
                         {
                             httpsOptions.ServerCertificate = cert;

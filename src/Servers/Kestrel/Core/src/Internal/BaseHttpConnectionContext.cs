@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public BaseHttpConnectionContext(
             string connectionId,
             HttpProtocols protocols,
+            AltSvcHeader? altSvcHeader,
             BaseConnectionContext connectionContext,
             ServiceContext serviceContext,
             IFeatureCollection connectionFeatures,
@@ -24,6 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             ConnectionId = connectionId;
             Protocols = protocols;
+            AltSvcHeader = altSvcHeader;
             ConnectionContext = connectionContext;
             ServiceContext = serviceContext;
             ConnectionFeatures = connectionFeatures;
@@ -34,6 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public string ConnectionId { get; set; }
         public HttpProtocols Protocols { get; }
+        public AltSvcHeader? AltSvcHeader { get; }
         public BaseConnectionContext ConnectionContext { get; }
         public ServiceContext ServiceContext { get; }
         public IFeatureCollection ConnectionFeatures { get; }

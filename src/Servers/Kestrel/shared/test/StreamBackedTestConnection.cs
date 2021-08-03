@@ -122,7 +122,8 @@ namespace Microsoft.AspNetCore.Testing
                     ex);
             }
 
-            Assert.Equal(expected, new string(actual, 0, offset));
+            var actualText = new string(actual, 0, offset);
+            Assert.Equal(expected, actualText);
         }
 
         public async Task ReceiveEnd(params string[] lines)
