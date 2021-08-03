@@ -17,11 +17,11 @@ Microsoft.AspNetCore.Components.Forms.InputLargeTextArea.AdditionalAttributes.ge
 Microsoft.AspNetCore.Components.Forms.InputLargeTextArea.AdditionalAttributes.set -> void
 Microsoft.AspNetCore.Components.Forms.InputLargeTextArea.Element.get -> Microsoft.AspNetCore.Components.ElementReference?
 Microsoft.AspNetCore.Components.Forms.InputLargeTextArea.Element.set -> void
-Microsoft.AspNetCore.Components.Forms.InputLargeTextArea.GetTextAsync() -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.AspNetCore.Components.Forms.InputLargeTextArea.GetTextAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<string!>
 Microsoft.AspNetCore.Components.Forms.InputLargeTextArea.InputLargeTextArea() -> void
 Microsoft.AspNetCore.Components.Forms.InputLargeTextArea.OnChange.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Forms.InputLargeTextAreaChangeEventArgs!>
 Microsoft.AspNetCore.Components.Forms.InputLargeTextArea.OnChange.set -> void
-Microsoft.AspNetCore.Components.Forms.InputLargeTextArea.SetTextAsync(string! newValue) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Forms.InputLargeTextArea.SetTextAsync(string! newValue, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Forms.InputLargeTextAreaChangeEventArgs
 Microsoft.AspNetCore.Components.Forms.InputLargeTextAreaChangeEventArgs.InputLargeTextAreaChangeEventArgs(int length) -> void
 Microsoft.AspNetCore.Components.Forms.InputLargeTextAreaChangeEventArgs.Length.get -> int

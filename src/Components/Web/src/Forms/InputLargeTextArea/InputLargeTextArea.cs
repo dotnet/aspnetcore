@@ -70,16 +70,18 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <summary>
         /// Retrieves the textarea value asyncronously.
         /// </summary>
+        /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken"/> used to relay cancellation of the request.</param>
         /// <returns>The string value of the textarea.</returns>
-        public ValueTask<string> GetTextAsync()
-            => JSRuntime.InvokeAsync<string>(InputLargeTextAreaInterop.GetText, _inputLargeTextAreaElement);
+        public ValueTask<string> GetTextAsync(CancellationToken cancellationToken = default)
+            => JSRuntime.InvokeAsync<string>(InputLargeTextAreaInterop.GetText, cancellationToken, _inputLargeTextAreaElement);
 
         /// <summary>
         /// Sets the textarea value asyncronously.
         /// </summary>
         /// <param name="newValue">The new content to set for the textarea.</param>
-        public ValueTask SetTextAsync(string newValue)
-            => JSRuntime.InvokeVoidAsync(InputLargeTextAreaInterop.SetText, _inputLargeTextAreaElement, newValue);
+        /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken"/> used to relay cancellation of the request.</param>
+        public ValueTask SetTextAsync(string newValue, CancellationToken cancellationToken = default)
+            => JSRuntime.InvokeVoidAsync(InputLargeTextAreaInterop.SetText, cancellationToken, _inputLargeTextAreaElement, newValue);
 
         void IDisposable.Dispose()
         {
