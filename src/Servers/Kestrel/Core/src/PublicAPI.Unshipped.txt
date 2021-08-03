@@ -213,5 +213,5 @@ static Microsoft.AspNetCore.Hosting.ListenOptionsHttpsExtensions.UseHttps(this M
 static Microsoft.AspNetCore.Hosting.ListenOptionsHttpsExtensions.UseHttps(this Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions! listenOptions, System.Security.Cryptography.X509Certificates.X509Certificate2! serverCertificate, System.Action<Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions!>! configureOptions) -> Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!
 static Microsoft.AspNetCore.Hosting.ListenOptionsHttpsExtensions.UseHttps(this Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions! listenOptions, string! fileName) -> Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!
 static Microsoft.AspNetCore.Server.Kestrel.Https.CertificateLoader.LoadFromStoreCert(string! subject, string! storeName, System.Security.Cryptography.X509Certificates.StoreLocation storeLocation, bool allowInvalid) -> System.Security.Cryptography.X509Certificates.X509Certificate2!
-Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.AddAltSvcHeader.get -> bool
-Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.AddAltSvcHeader.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.DisableAltSvcHeader.get -> bool
+Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.DisableAltSvcHeader.set -> void
