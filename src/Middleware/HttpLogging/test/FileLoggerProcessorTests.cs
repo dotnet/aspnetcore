@@ -271,6 +271,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
         }
 
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34986")]
         [Fact]
         public async Task WritesToNewFileOnNewInstance()
         {
@@ -335,6 +336,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
         }
 
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34982")]
         [Fact]
         public async Task WritesToNewFileOnOptionsChange()
         {
