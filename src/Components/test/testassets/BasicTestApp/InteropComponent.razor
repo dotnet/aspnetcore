@@ -196,6 +196,12 @@
             await ValidateStreamValuesAsync("jsToDotNetStreamWrapperObjectReturnValueAsync", dataWrapperReferenceStream);
         }
 
+        var dotNetStreamReference = DotNetStreamReferenceInterop.GetDotNetStreamReference();
+        ReturnValues["dotNetToJSReceiveDotNetStreamReferenceAsync"] = await JSRuntime.InvokeAsync<string>("receiveDotNetStreamReference", dotNetStreamReference);
+
+        var dotNetStreamReferenceWrapper = DotNetStreamReferenceInterop.GetDotNetStreamWrapperReference();
+        ReturnValues["dotNetToJSReceiveDotNetStreamWrapperReferenceAsync"] = await JSRuntime.InvokeAsync<string>("receiveDotNetStreamWrapperReference", dotNetStreamReferenceWrapper);
+
         Invocations = invocations;
         DoneWithInterop = true;
     }
@@ -248,6 +254,13 @@
         ReceiveDotNetObjectByRefResult["stringValueUpper"] = result.StringValueUpper;
         ReceiveDotNetObjectByRefResult["testDtoNonSerializedValue"] = result.TestDtoNonSerializedValue;
         ReceiveDotNetObjectByRefResult["testDto"] = result.TestDto.Value == passDotNetObjectByRef ? "Same" : "Different";
+
+        var dotNetStreamReference = DotNetStreamReferenceInterop.GetDotNetStreamReference();
+        ReturnValues["dotNetToJSReceiveDotNetStreamReference"] = inProcRuntime.Invoke<string>("receiveDotNetStreamReference", dotNetStreamReference);
+
+        var dotNetStreamReferenceWrapper = DotNetStreamReferenceInterop.GetDotNetStreamWrapperReference();
+        ReturnValues["dotNetToJSReceiveDotNetStreamWrapperReference"] = inProcRuntime.Invoke<string>("receiveDotNetStreamWrapperReference", dotNetStreamReferenceWrapper);
+
     }
 
     public async Task InvokeInProcessJSInterop()

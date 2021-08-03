@@ -49,6 +49,9 @@ async function invokeDotNetInteropMethodsAsync(shouldSupportSyncInterop, dotNetO
     var returnedByteArrayWrapper = DotNet.invokeMethod(assemblyName, 'RoundTripByteArrayWrapperObject', byteArrayWrapper);
     results['roundTripByteArrayWrapperObjectFromJS'] = returnedByteArrayWrapper;
 
+    results['requestDotNetStreamReference'] = requestDotNetStreamReference();
+    results['requestDotNetStreamWrapperReference'] = requestDotNetStreamWrapperReference();
+
     var instanceMethodResult = instanceMethodsTarget.invokeMethod('InstanceMethod', {
       stringValue: 'My string',
       dtoByRef: dotNetObjectByRef
@@ -111,6 +114,9 @@ async function invokeDotNetInteropMethodsAsync(shouldSupportSyncInterop, dotNetO
 
   var streamWrapper = { 'strVal': "SomeStr", 'jsStreamReferenceVal': jsStreamReference, 'intVal': 5 };
   results['jsToDotNetStreamWrapperObjectParameterAsync'] = await DotNet.invokeMethodAsync(assemblyName, 'JSToDotNetStreamWrapperObjectParameterAsync', streamWrapper);
+
+  results['requestDotNetStreamReferenceAsync'] = await requestDotNetStreamReferenceAsync();
+  results['requestDotNetStreamWrapperReferenceAsync'] = await requestDotNetStreamWrapperReferenceAsync();
 
   const instanceMethodAsync = await instanceMethodsTarget.invokeMethodAsync('InstanceMethodAsync', {
     stringValue: 'My string',
@@ -394,4 +400,37 @@ function receiveDotNetObjectByRefAsync(incomingData) {
       testDto: testDto
     };
   });
+}
+
+function receiveDotNetStreamReference(streamRef) {
+  const data = await streamRef.arrayBuffer();
+  const isValid = data.length === 100000 && data.every((value, index) => value === index % 256);
+  return isValid ? "Success" : `Failure, got length ${data.length} with data ${data}`;
+}
+
+function receiveDotNetStreamWrapperReference(wrapper) {
+  const isValid = receiveDotNetStreamReference(wrapper.dotNetStreamReferenceVal) === "Success" &&
+    wrapper.strVal == "somestr" &&
+    wrapper.intVal == 25;
+  return isValid ? "Success" : `Failure, got ${JSON.stringify(wrapper)}`;
+}
+
+function requestDotNetStreamReference() {
+  var streamRef = DotNet.invokeMethod(assemblyName, 'GetDotNetStreamReference');
+  return receiveDotNetStreamReference(streamRef);
+}
+
+function requestDotNetStreamWrapperReference() {
+  var wrapper = DotNet.invokeMethod(assemblyName, 'GetDotNetStreamWrapperReference');
+  return receiveDotNetStreamWrapperReference(wrapper);
+}
+
+async function requestDotNetStreamReferenceAsync() {
+  var streamRef = await DotNet.invokeMethodAsync(assemblyName, 'GetDotNetStreamReferenceAsync');
+  return receiveDotNetStreamReference(streamRef);
+}
+
+async function requestDotNetStreamWrapperReferenceAsync() {
+  var wrapper = await DotNet.invokeMethodAsync(assemblyName, 'GetDotNetStreamWrapperReferenceAsync');
+  return receiveDotNetStreamWrapperReference(wrapper);
 }
