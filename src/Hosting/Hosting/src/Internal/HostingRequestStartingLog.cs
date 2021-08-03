@@ -1,21 +1,18 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Net;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Hosting
 {
-    internal class HostingRequestStartingLog : IReadOnlyList<KeyValuePair<string, object?>>
+    internal struct HostingRequestStartingLog : IReadOnlyList<KeyValuePair<string, object?>>
     {
         private const string LogPreamble = "Request starting ";
         private const string EmptyEntry = "-";
 
-        internal static readonly Func<object, Exception?, string> Callback = (state, exception) => ((HostingRequestStartingLog)state).ToString();
+        internal static readonly Func<HostingRequestStartingLog, Exception?, string> Callback = (state, exception) => state.ToString();
 
         private readonly HttpRequest _request;
 
@@ -40,6 +37,7 @@ namespace Microsoft.AspNetCore.Hosting
         public HostingRequestStartingLog(HttpContext httpContext)
         {
             _request = httpContext.Request;
+            _cachedToString = null;
         }
 
         public override string ToString()

@@ -1,20 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Hosting
 {
     using static HostingRequestStartingLog;
 
-    internal class HostingRequestFinishedLog : IReadOnlyList<KeyValuePair<string, object?>>
+    internal struct HostingRequestFinishedLog : IReadOnlyList<KeyValuePair<string, object?>>
     {
-        internal static readonly Func<object, Exception?, string> Callback = (state, exception) => ((HostingRequestFinishedLog)state).ToString();
+        internal static readonly Func<HostingRequestFinishedLog, Exception?, string> Callback = (state, exception) => state.ToString();
 
         private readonly HostingApplication.Context _context;
 
@@ -29,22 +26,19 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 Debug.Assert(_context.HttpContext != null);
 
-                var request = _context.HttpContext.Request;
-                var response = _context.HttpContext.Response;
-
                 return index switch
                 {
                     0 => new KeyValuePair<string, object?>("ElapsedMilliseconds", Elapsed.TotalMilliseconds),
-                    1 => new KeyValuePair<string, object?>(nameof(response.StatusCode), response.StatusCode),
-                    2 => new KeyValuePair<string, object?>(nameof(response.ContentType), response.ContentType),
-                    3 => new KeyValuePair<string, object?>(nameof(response.ContentLength), response.ContentLength),
-                    4 => new KeyValuePair<string, object?>(nameof(request.Protocol), request.Protocol),
-                    5 => new KeyValuePair<string, object?>(nameof(request.Method), request.Method),
-                    6 => new KeyValuePair<string, object?>(nameof(request.Scheme), request.Scheme),
-                    7 => new KeyValuePair<string, object?>(nameof(request.Host), request.Host.Value),
-                    8 => new KeyValuePair<string, object?>(nameof(request.PathBase), request.PathBase.Value),
-                    9 => new KeyValuePair<string, object?>(nameof(request.Path), request.Path.Value),
-                    10 => new KeyValuePair<string, object?>(nameof(request.QueryString), request.QueryString.Value),
+                    1 => new KeyValuePair<string, object?>(nameof(_context.HttpContext.Response.StatusCode), _context.HttpContext.Response.StatusCode),
+                    2 => new KeyValuePair<string, object?>(nameof(_context.HttpContext.Response.ContentType), _context.HttpContext.Response.ContentType),
+                    3 => new KeyValuePair<string, object?>(nameof(_context.HttpContext.Response.ContentLength), _context.HttpContext.Response.ContentLength),
+                    4 => new KeyValuePair<string, object?>(nameof(_context.HttpContext.Request.Protocol), _context.HttpContext.Request.Protocol),
+                    5 => new KeyValuePair<string, object?>(nameof(_context.HttpContext.Request.Method), _context.HttpContext.Request.Method),
+                    6 => new KeyValuePair<string, object?>(nameof(_context.HttpContext.Request.Scheme), _context.HttpContext.Request.Scheme),
+                    7 => new KeyValuePair<string, object?>(nameof(_context.HttpContext.Request.Host), _context.HttpContext.Request.Host.Value),
+                    8 => new KeyValuePair<string, object?>(nameof(_context.HttpContext.Request.PathBase), _context.HttpContext.Request.PathBase.Value),
+                    9 => new KeyValuePair<string, object?>(nameof(_context.HttpContext.Request.Path), _context.HttpContext.Request.Path.Value),
+                    10 => new KeyValuePair<string, object?>(nameof(_context.HttpContext.Request.QueryString), _context.HttpContext.Request.QueryString.Value),
                     _ => throw new IndexOutOfRangeException(nameof(index)),
                 };
             }
@@ -54,6 +48,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             _context = context;
             Elapsed = elapsed;
+            _cachedToString = null;
         }
 
         public override string ToString()
@@ -63,7 +58,7 @@ namespace Microsoft.AspNetCore.Hosting
                 Debug.Assert(_context.HttpContext != null && _context.StartLog != null);
 
                 var response = _context.HttpContext.Response;
-                _cachedToString = $"Request finished {_context.StartLog.ToStringWithoutPreamble()} - {response.StatusCode.ToString(CultureInfo.InvariantCulture)} {ValueOrEmptyMarker(response.ContentLength)} {EscapedValueOrEmptyMarker(response.ContentType)} {Elapsed.TotalMilliseconds.ToString("0.0000", CultureInfo.InvariantCulture)}ms";
+                _cachedToString = $"Request finished {_context.StartLog.Value.ToStringWithoutPreamble()} - {response.StatusCode.ToString(CultureInfo.InvariantCulture)} {ValueOrEmptyMarker(response.ContentLength)} {EscapedValueOrEmptyMarker(response.ContentType)} {Elapsed.TotalMilliseconds.ToString("0.0000", CultureInfo.InvariantCulture)}ms";
             }
 
             return _cachedToString;
