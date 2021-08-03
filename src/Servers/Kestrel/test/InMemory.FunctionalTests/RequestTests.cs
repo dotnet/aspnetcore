@@ -89,10 +89,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             await using (var server = new TestServer(async context =>
             {
-                byte[] data = null;
+                var data = new byte[6];
                 try
                 {
-                    data = await context.Request.Body.ReadUntilLengthAsync(6, cancellationToken: cts.Token).DefaultTimeout();
+                    await context.Request.Body.FillEntireBufferAsync(data, cts.Token).DefaultTimeout();
 
                     Assert.Equal("Hello ", Encoding.ASCII.GetString(data));
 
@@ -157,7 +157,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 var stream = await context.Features.Get<IHttpUpgradeFeature>().UpgradeAsync();
 
-                var data = await stream.ReadUntilLengthAsync(3).DefaultTimeout();
+                var data = new byte[3];
+                await stream.FillEntireBufferAsync(data).DefaultTimeout();
 
                 dataRead = Encoding.ASCII.GetString(data) == "abc";
             }, new TestServiceContext(LoggerFactory)))
@@ -1284,7 +1285,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
                 var duplexStream = await upgradeFeature.UpgradeAsync();
 
-                var data = await duplexStream.ReadUntilLengthAsync(message.Length).DefaultTimeout();
+                var data = new byte[message.Length];
+                await duplexStream.FillEntireBufferAsync(data).DefaultTimeout();
 
                 await duplexStream.WriteAsync(data, 0, data.Length);
             }, testContext))
@@ -1723,9 +1725,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Assert.Equal(CoreStrings.SynchronousReadsDisallowed, ioEx2.Message);
 
                 var buffer = new byte[5];
-                var data = await context.Request.Body.ReadUntilEndAsync(buffer).DefaultTimeout();
+                var length = await context.Request.Body.ReadUntilEndAsync(buffer).DefaultTimeout();
 
-                Assert.Equal("Hello", Encoding.ASCII.GetString(data));
+                Assert.Equal(5, length);
+                Assert.Equal("Hello", Encoding.ASCII.GetString(buffer));
             }, testContext))
             {
                 using (var connection = server.CreateConnection())
