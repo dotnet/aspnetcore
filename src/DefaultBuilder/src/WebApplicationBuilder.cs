@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Builder
             var hostContext = _bootstrapHostBuilder.RunDefaultCallbacks(Configuration, _hostBuilder);
 
             // Grab the WebHostBuilderContext from the property bag to use in the ConfigureWebHostBuilder
-            var webHostContext = (WebHostBuilderContext)_hostBuilder.Properties[typeof(WebHostBuilderContext)];
+            var webHostContext = (WebHostBuilderContext)hostContext.Properties[typeof(WebHostBuilderContext)];
 
             // Grab the IWebHostEnvironment from the webHostContext. This also matches the instance in the IServiceCollection.
             Environment = webHostContext.HostingEnvironment;

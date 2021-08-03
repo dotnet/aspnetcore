@@ -91,9 +91,16 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Initializes a new instance of the <see cref="WebApplicationBuilder"/> class with preconfigured defaults.
         /// </summary>
+        /// <returns>The <see cref="WebApplicationBuilder"/>.</returns>
+        public static WebApplicationBuilder CreateBuilder() =>
+            new WebApplicationBuilder(Assembly.GetCallingAssembly(), new());
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WebApplicationBuilder"/> class with preconfigured defaults.
+        /// </summary>
         /// <param name="args">Command line arguments</param>
         /// <returns>The <see cref="WebApplicationBuilder"/>.</returns>
-        public static WebApplicationBuilder CreateBuilder(string[]? args = null) =>
+        public static WebApplicationBuilder CreateBuilder(string[] args) =>
             new WebApplicationBuilder(Assembly.GetCallingAssembly(), new() { Args = args });
 
         /// <summary>
