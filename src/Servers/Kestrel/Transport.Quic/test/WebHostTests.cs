@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
         public async Task Listen_Http3AndSocketsCoexistOnSameEndpoint_AltSvcDisabled_NoUpgrade()
         {
             // Arrange
-            var builder = GetHostBuilder()
+            var builder = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
