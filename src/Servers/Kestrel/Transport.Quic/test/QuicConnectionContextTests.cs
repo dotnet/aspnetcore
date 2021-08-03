@@ -100,8 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             serverStream.Transport.Input.AdvanceTo(read.Buffer.End);
 
             // Read data from server.
-            var data = new byte[TestData.Length];
-            await clientStream.FillEntireBufferAsync(data).DefaultTimeout();
+            var data = await clientStream.ReadAtLeastLengthAsync(TestData.Length).DefaultTimeout();
 
             Assert.Equal(TestData, data);
 

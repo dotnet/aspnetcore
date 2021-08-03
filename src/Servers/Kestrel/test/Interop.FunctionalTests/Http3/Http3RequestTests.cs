@@ -207,11 +207,10 @@ namespace Interop.FunctionalTests.Http3
 
                 var responseStream = await response.Content.ReadAsStreamAsync().DefaultTimeout();
 
-                var buffer = new byte[clientBufferSize];
-                await responseStream.ReadAtLeastLengthAsync(buffer, TestData.Length).DefaultTimeout();
+                await responseStream.ReadAtLeastLengthAsync(TestData.Length, clientBufferSize).DefaultTimeout();
 
                 tcs.SetResult();
-                await responseStream.ReadAtLeastLengthAsync(buffer, TestData.Length).DefaultTimeout();
+                await responseStream.ReadAtLeastLengthAsync(TestData.Length, clientBufferSize).DefaultTimeout();
 
                 await host.StopAsync();
             }
@@ -226,8 +225,7 @@ namespace Interop.FunctionalTests.Http3
             {
                 var body = context.Request.Body;
 
-                var data = new byte[TestData.Length];
-                await body.FillEntireBufferAsync(data).DefaultTimeout();
+                var data = await body.ReadAtLeastLengthAsync(TestData.Length).DefaultTimeout();
 
                 await context.Response.Body.WriteAsync(data);
             });
@@ -285,7 +283,7 @@ namespace Interop.FunctionalTests.Http3
                 var body = context.Request.Body;
 
                 // Read content
-                await body.FillEntireBufferAsync(new byte[TestData.Length]).DefaultTimeout();
+                await body.ReadAtLeastLengthAsync(TestData.Length).DefaultTimeout();
 
                 // Sync with client
                 await syncPoint.WaitToContinue();

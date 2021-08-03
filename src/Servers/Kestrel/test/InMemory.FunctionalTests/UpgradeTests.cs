@@ -235,7 +235,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     Assert.False(feature.IsUpgradableRequest);
                     Assert.Equal("chunked", context.Request.Headers.TransferEncoding);
 
-                    var length = await context.Request.Body.ReadUntilEndAsync(new byte[100]);
+                    var length = await context.Request.Body.FillBufferUntilEndAsync(new byte[100]);
                     Assert.Equal(11, length);
                 }
                 else
