@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Hosting
             return this;
         }
 
-        public (HostBuilderContext, ConfigurationManager) RunDefaultCallbacks(HostBuilder innerBuilder)
+        public HostBuilderContext RunDefaultCallbacks(ConfigurationManager configuration, HostBuilder innerBuilder)
         {
             var hostConfiguration = new ConfigurationManager();
 
@@ -120,21 +120,19 @@ namespace Microsoft.AspNetCore.Hosting
 
             // Split the host configuration and app configuration so that the
             // subsequent callback don't get a chance to modify the host configuration.
-            var configuration = new ConfigurationManager();
             configuration.SetBasePath(hostingEnvironment.ContentRootPath);
 
             // Chain the host configuration and app configuration together.
             configuration.AddConfiguration(hostConfiguration, shouldDisposeConfiguration: true);
 
-            // ConfigureAppConfiguration sees the hosting configuration only, this is important
-            // so that code running during ConfigureAppConfiguration cannot see mutations to
-            // host configuration while running (e.g. the environment, content root, nor application name won't change).
+            // ConfigureAppConfiguration cannot modify the host configuration because doing so could
+            // change the environment, content root and application name which is not allowed at this stage.
             foreach (var configureAppAction in _configureAppActions)
             {
                 configureAppAction(hostContext, configuration);
             }
 
-            // Update the host context, everything from here seems the final
+            // Update the host context, everything from here sees the final
             // app configuration
             hostContext.Configuration = configuration;
 
@@ -148,7 +146,7 @@ namespace Microsoft.AspNetCore.Hosting
                 callback(innerBuilder);
             }
 
-            return (hostContext, configuration);
+            return hostContext;
         }
 
         private class HostingEnvironment : IHostEnvironment

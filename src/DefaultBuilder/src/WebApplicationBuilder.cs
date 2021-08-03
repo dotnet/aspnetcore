@@ -71,8 +71,10 @@ namespace Microsoft.AspNetCore.Builder
                 });
             }
 
+            Configuration = new();
+
             // This is the application configuration
-            (var hostContext, Configuration) = _bootstrapHostBuilder.RunDefaultCallbacks(_hostBuilder);
+            var hostContext = _bootstrapHostBuilder.RunDefaultCallbacks(Configuration, _hostBuilder);
 
             // Grab the WebHostBuilderContext from the property bag to use in the ConfigureWebHostBuilder
             var webHostContext = (WebHostBuilderContext)_hostBuilder.Properties[typeof(WebHostBuilderContext)];
