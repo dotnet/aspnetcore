@@ -20,26 +20,15 @@ namespace System.IO
                 offset += read;
             } while (read != 0 && offset < buffer.Length);
 
-            Assert.Equal(0, await stream.ReadAsync(new byte[1], 0, 1, cancellationToken));
+            if (read != 0)
+            {
+                Assert.Equal(0, await stream.ReadAsync(new byte[1], 0, 1, cancellationToken));
+            }
 
             return offset;
         }
 
-        public static async Task FillEntireBufferAsync(this Stream stream, byte[] buffer, CancellationToken cancellationToken = default)
-        {
-            var offset = 0;
-            int read;
-
-            do
-            {
-                read = await stream.ReadAsync(buffer, offset, buffer.Length - offset, cancellationToken);
-                offset += read;
-            } while (read != 0 && offset < buffer.Length);
-
-            Assert.Equal(buffer.Length, offset);
-        }
-
-        public static async Task<int> ReadAtLeastLengthAsync(this Stream stream, int minLength, byte[] buffer, CancellationToken cancellationToken = default)
+        public static async Task<int> ReadAtLeastLengthAsync(this Stream stream, byte[] buffer, int minLength, CancellationToken cancellationToken = default)
         {
             Assert.True(minLength <= buffer.Length);
 
@@ -55,5 +44,8 @@ namespace System.IO
             Assert.True(offset >= minLength);
             return offset;
         }
+
+        public static Task FillEntireBufferAsync(this Stream stream, byte[] buffer, CancellationToken cancellationToken = default) =>
+            stream.ReadAtLeastLengthAsync(buffer, buffer.Length, cancellationToken);
     }
 }

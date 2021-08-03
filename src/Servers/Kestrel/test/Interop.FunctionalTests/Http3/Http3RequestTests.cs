@@ -211,10 +211,10 @@ namespace Interop.FunctionalTests.Http3
                 var responseStream = await response.Content.ReadAsStreamAsync().DefaultTimeout();
 
                 var buffer = new byte[clientBufferSize];
-                await responseStream.ReadAtLeastLengthAsync(TestData.Length, buffer).DefaultTimeout();
+                await responseStream.ReadAtLeastLengthAsync(buffer, TestData.Length).DefaultTimeout();
 
                 tcs.SetResult();
-                await responseStream.ReadAtLeastLengthAsync(TestData.Length, buffer).DefaultTimeout();
+                await responseStream.ReadAtLeastLengthAsync(buffer, TestData.Length).DefaultTimeout();
 
                 await host.StopAsync();
             }
