@@ -25,9 +25,11 @@ namespace Microsoft.AspNetCore.Builder
 
         private WebApplication? _builtApplication;
 
-        internal WebApplicationBuilder(Assembly? callingAssembly, string[]? args = null, Action<IHostBuilder>? configureDefaults = null)
+        internal WebApplicationBuilder(Assembly? callingAssembly, WebApplicationOptions options, Action<IHostBuilder>? configureDefaults = null)
         {
             Services = _services;
+
+            var args = options.Args;
 
             // Run methods to configure both generic and web host defaults early to populate config from appsettings.json
             // environment variables (both DOTNET_ and ASPNETCORE_ prefixed) and other possible default sources to prepopulate
@@ -63,13 +65,18 @@ namespace Microsoft.AspNetCore.Builder
             });
 
             // Apply the args to host configuration last since ConfigureWebHostDefaults overrides a host specific setting (the application name).
-            if (args is { Length: > 0 })
+
+            _bootstrapHostBuilder.ConfigureHostConfiguration(config =>
             {
-                _bootstrapHostBuilder.ConfigureHostConfiguration(config =>
+                if (args is { Length: > 0 })
                 {
                     config.AddCommandLine(args);
-                });
-            }
+                }
+
+                // Apply the options after the args
+                options.ApplyHostConfiguration(config);
+            });
+
 
             Configuration = new();
 
