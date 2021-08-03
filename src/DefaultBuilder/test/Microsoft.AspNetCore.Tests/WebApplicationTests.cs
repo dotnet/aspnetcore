@@ -669,6 +669,15 @@ namespace Microsoft.AspNetCore.Tests
             Assert.ThrowsAny<Exception>(() => builder.Build());
         }
 
+        [Fact]
+        public async Task WebApplicationBuilder_ThrowsExceptionIfServicesAlreadyBuilt()
+        {
+            var builder = WebApplication.CreateBuilder();
+            await using var app = builder.Build();
+
+            Assert.Throws<InvalidOperationException>(() => builder.Services.AddSingleton<IServer>(new MockAddressesServer()));
+        }
+
         private class Service : IService { }
         private interface IService { }
 

@@ -138,6 +138,9 @@ namespace Microsoft.AspNetCore.Builder
             ((IConfigurationBuilder)Configuration).Sources.Clear();
             Configuration.AddConfiguration(_builtApplication.Configuration);
 
+            // Mark the service collection as read-only to prevent future modifications
+            ((WebApplicationServiceCollection)Services).IsReadOnly = true;
+
             return _builtApplication;
         }
 

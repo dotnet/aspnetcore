@@ -19,17 +19,21 @@ namespace Microsoft.AspNetCore
 
         public int Count => _services.Count;
 
-        public bool IsReadOnly => _services.IsReadOnly;
+        public bool IsReadOnly { get; set; }
 
         public IServiceCollection InnerCollection { get => _services; set => _services = value; }
 
         public void Add(ServiceDescriptor item)
         {
+            CheckServicesAccess();
+
             _services.Add(item);
         }
 
         public void Clear()
         {
+            CheckServicesAccess();
+
             _services.Clear();
         }
 
@@ -55,22 +59,36 @@ namespace Microsoft.AspNetCore
 
         public void Insert(int index, ServiceDescriptor item)
         {
+            CheckServicesAccess();
+
             _services.Insert(index, item);
         }
 
         public bool Remove(ServiceDescriptor item)
         {
+            CheckServicesAccess();
+
             return _services.Remove(item);
         }
 
         public void RemoveAt(int index)
         {
+            CheckServicesAccess();
+
             _services.RemoveAt(index);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        private void CheckServicesAccess()
+        {
+            if (IsReadOnly)
+            {
+                throw new InvalidOperationException("Cannot modify ServiceCollection after application is built.");
+            }
         }
     }
 }
