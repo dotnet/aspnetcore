@@ -10,13 +10,13 @@ namespace Microsoft.AspNetCore.Routing
     /// Indicates that this <see cref="Endpoint"/> should not be included in the generated API metadata.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method | AttributeTargets.Delegate, AllowMultiple = false, Inherited = true)]
-    public sealed class ExcludeFromApiExplorerAttribute : Attribute, IExcludeFromApiExplorerMetadata
+    public sealed class ExcludeFromDescriptionAttribute : Attribute, IExcludeFromDescriptionMetadata
     {
         /// <summary>
         /// Gets a value indicating whether API explorer
         /// data should be excluded for this endpoint. If <see langword="true"/>,
         /// API metadata is not emitted.
         /// </summary>
-        public bool ExcludeFromApiExplorer => true;
+        public bool ExcludeFromDescription => true;
     }
 }

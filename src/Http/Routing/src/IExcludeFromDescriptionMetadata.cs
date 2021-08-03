@@ -9,12 +9,12 @@ namespace Microsoft.AspNetCore.Routing
     /// <summary>
     /// Indicates wheter or not that API explorer data should be emitted for this endpoint.
     /// </summary>
-    public interface IExcludeFromApiExplorerMetadata
+    public interface IExcludeFromDescriptionMetadata
     {
         /// <summary>
         /// Gets a value indicating whether API explorer
         /// data should be emitted for this endpoint.
         /// </summary>
-        bool ExcludeFromApiExplorer { get; }
+        bool ExcludeFromDescription { get; }
     }
 }

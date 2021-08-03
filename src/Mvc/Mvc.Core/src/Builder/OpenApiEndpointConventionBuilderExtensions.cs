@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     public static class OpenApiEndpointConventionBuilderExtensions
     {
-        private static readonly ExcludeFromApiExplorerAttribute _excludeFromApiMetadataAttribute = new();
+        private static readonly ExcludeFromDescriptionAttribute _excludeFromApiMetadataAttribute = new();
 
         /// <summary>
         /// Adds metadata to support suppressing OpenAPI documentation from
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="builder">The <see cref="MinimalActionEndpointConventionBuilder"/>.</param>
         /// <returns>A <see cref="MinimalActionEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static MinimalActionEndpointConventionBuilder ExcludeFromApiExplorer(this MinimalActionEndpointConventionBuilder builder)
+        public static MinimalActionEndpointConventionBuilder ExcludeFromDescription(this MinimalActionEndpointConventionBuilder builder)
         {
             builder.WithMetadata(_excludeFromApiMetadataAttribute);
 
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Http
 #pragma warning disable RS0026
         public static MinimalActionEndpointConventionBuilder Produces(this MinimalActionEndpointConventionBuilder builder,
 #pragma warning restore RS0026
-            int statusCode = StatusCodes.Status200OK,
+            int statusCode,
             Type? responseType = null,
             string? contentType = null,
             params string[] additionalContentTypes)
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="contentType">The response content type. Defaults to "application/problem+json".</param>
         /// <returns>A <see cref="MinimalActionEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static MinimalActionEndpointConventionBuilder ProducesProblem(this MinimalActionEndpointConventionBuilder builder,
-            int statusCode = StatusCodes.Status500InternalServerError,
+            int statusCode,
             string contentType = "application/problem+json")
         {
             return Produces<ProblemDetails>(builder, statusCode, contentType);

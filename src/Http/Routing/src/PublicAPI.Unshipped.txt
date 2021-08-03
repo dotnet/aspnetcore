@@ -33,8 +33,8 @@ Microsoft.AspNetCore.Routing.EndpointNameAttribute.EndpointNameAttribute(string!
 Microsoft.AspNetCore.Routing.EndpointNameAttribute.EndpointName.get -> string!
 static Microsoft.AspNetCore.Builder.RoutingEndpointConventionBuilderExtensions.WithName<TBuilder>(this TBuilder builder, string! endpointName) -> TBuilder
 static Microsoft.AspNetCore.Builder.RoutingEndpointConventionBuilderExtensions.WithGroupName<TBuilder>(this TBuilder builder, string! endpointGroupName) -> TBuilder
-Microsoft.AspNetCore.Routing.IExcludeFromApiExplorerMetadata
-Microsoft.AspNetCore.Routing.IExcludeFromApiExplorerMetadata.ExcludeFromApiExplorer.get -> bool
-Microsoft.AspNetCore.Routing.ExcludeFromApiExplorerAttribute
-Microsoft.AspNetCore.Routing.ExcludeFromApiExplorerAttribute.ExcludeFromApiExplorerAttribute() -> void
-Microsoft.AspNetCore.Routing.ExcludeFromApiExplorerAttribute.ExcludeFromApiExplorer.get -> bool
+Microsoft.AspNetCore.Routing.IExcludeFromDescriptionMetadata
+Microsoft.AspNetCore.Routing.IExcludeFromDescriptionMetadata.ExcludeFromDescription.get -> bool
+Microsoft.AspNetCore.Routing.ExcludeFromDescriptionAttribute
+Microsoft.AspNetCore.Routing.ExcludeFromDescriptionAttribute.ExcludeFromDescriptionAttribute() -> void
+Microsoft.AspNetCore.Routing.ExcludeFromDescriptionAttribute.ExcludeFromDescription.get -> bool

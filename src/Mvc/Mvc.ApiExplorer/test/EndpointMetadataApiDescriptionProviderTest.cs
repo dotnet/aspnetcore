@@ -364,7 +364,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         {
             // Arrange
             var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(null));
-            builder.MapGet("/api/todos", () => "").ProducesProblem();
+            builder.MapGet("/api/todos", () => "").ProducesProblem(StatusCodes.Status400BadRequest);
             var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
 
             var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
@@ -414,7 +414,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         {
             // Arrange
             var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(null));
-            builder.MapGet("/api/todos", () => "").Produces<InferredJsonClass>().ExcludeFromApiExplorer();
+            builder.MapGet("/api/todos", () => "").Produces<InferredJsonClass>().ExcludeFromDescription();
             var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
             
             var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
