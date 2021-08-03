@@ -2,8 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder
@@ -95,7 +99,22 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(options));
             }
 
-            return app.UseMiddleware<ExceptionHandlerMiddleware>(Options.Create(options));
+            return app.Use(next =>
+            {
+                var loggerFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
+                var diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
+                var endpointDataSource = app.ApplicationServices.GetRequiredService<EndpointDataSource>();
+
+                if (!string.IsNullOrEmpty(options.ExceptionHandlingPath) && options.ExceptionHandler is null)
+                {
+                    var errorBuilder = app.New();
+                    errorBuilder.UseRouting(overrideEndpointRouteBuilder: false);
+                    errorBuilder.Run(next);
+                    options.ExceptionHandler = errorBuilder.Build();
+                }
+
+                return new ExceptionHandlerMiddleware(next, loggerFactory, Options.Create(options), diagnosticListener).Invoke;
+            });
         }
     }
 }

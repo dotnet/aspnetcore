@@ -42,10 +42,56 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(builder));
             }
 
+            return UseRouting(builder, true);
+        }
+
+        /// <summary>
+        /// Adds a <see cref="EndpointRoutingMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <param name="overrideEndpointRouteBuilder">Whether a new <see cref="EndpointRouteBuilder"/> should be created.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <remarks>
+        /// <para>
+        /// A call to <see cref="UseRouting(IApplicationBuilder)"/> must be followed by a call to
+        /// <see cref="UseEndpoints(IApplicationBuilder, Action{IEndpointRouteBuilder})"/> for the same <see cref="IApplicationBuilder"/>
+        /// instance.
+        /// </para>
+        /// <para>
+        /// The <see cref="EndpointRoutingMiddleware"/> defines a point in the middleware pipeline where routing decisions are
+        /// made, and an <see cref="Endpoint"/> is associated with the <see cref="HttpContext"/>. The <see cref="EndpointMiddleware"/>
+        /// defines a point in the middleware pipeline where the current <see cref="Endpoint"/> is executed. Middleware between
+        /// the <see cref="EndpointRoutingMiddleware"/> and <see cref="EndpointMiddleware"/> may observe or change the
+        /// <see cref="Endpoint"/> associated with the <see cref="HttpContext"/>.
+        /// </para>
+        /// </remarks>
+        public static IApplicationBuilder UseRouting(this IApplicationBuilder builder, bool overrideEndpointRouteBuilder)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             VerifyRoutingServicesAreRegistered(builder);
 
-            var endpointRouteBuilder = new DefaultEndpointRouteBuilder(builder);
-            builder.Properties[EndpointRouteBuilder] = endpointRouteBuilder;
+            IEndpointRouteBuilder endpointRouteBuilder;
+            if (overrideEndpointRouteBuilder)
+            {
+                endpointRouteBuilder = new DefaultEndpointRouteBuilder(builder);
+                builder.Properties[EndpointRouteBuilder] = endpointRouteBuilder;
+            }
+            else
+            {
+                if (builder.Properties.TryGetValue(EndpointRouteBuilder, out var routeBuilder))
+                {
+                    endpointRouteBuilder = (IEndpointRouteBuilder)routeBuilder!;
+                }
+                else
+                {
+                    endpointRouteBuilder = new DefaultEndpointRouteBuilder(builder);
+                    builder.Properties[EndpointRouteBuilder] = endpointRouteBuilder;
+                }
+            }
 
             return builder.UseMiddleware<EndpointRoutingMiddleware>(endpointRouteBuilder);
         }
