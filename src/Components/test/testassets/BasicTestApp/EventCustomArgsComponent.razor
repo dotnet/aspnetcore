@@ -94,7 +94,7 @@
 <button id="clear-log" @onclick="@(() => { logValue = string.Empty; })">Clear log</button>
 
 <script suppress-error="BL9992">
-    var customEventArgDotNetObjectReference;
+    let customEventArgDotNetObjectReference;
 
     function setDotNetObjectReference(value) {
         customEventArgDotNetObjectReference = value;
@@ -110,7 +110,7 @@
             detail: {
                 jsObject: DotNet.createJSObjectReference({ getMyValue: () => 'Hello!' }),
                 dotNetObject: customEventArgDotNetObjectReference,
-                byteArray: new Uint8Array([ 123, 456, 789 ])
+                byteArray: new Uint8Array([ 1, 1, 2, 3, 5, 8, 13 ])
             }
         }));
     }
@@ -125,7 +125,7 @@
     {
         if (firstRender)
         {
-            var value = new SomeOtherType("This is correct");
+            var value = new DotNetType("This is correct");
             await JS.InvokeVoidAsync("setDotNetObjectReference", DotNetObjectReference.Create(value));
         }
     }

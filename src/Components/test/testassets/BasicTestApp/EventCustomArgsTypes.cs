@@ -34,17 +34,17 @@ namespace BasicTestApp.CustomEventTypesNamespace
     class EventWithCustomSerializedDataEventArgs : EventArgs
     {
         public IJSObjectReference JsObject { get; set; }
-        public DotNetObjectReference<SomeOtherType> DotNetObject { get; set; }
+        public DotNetObjectReference<DotNetType> DotNetObject { get; set; }
         public byte[] ByteArray { get; set; }
     }
 
-    class SomeOtherType
+    class DotNetType
     {
         // Deliberately not creatable through JSON deserialization
         // since we want to show it's the original .NET object instance
         public string Property { get; }
 
-        public SomeOtherType(string propertyValue)
+        public DotNetType(string propertyValue)
         {
             Property = propertyValue;
         }
