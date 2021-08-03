@@ -73,6 +73,8 @@ Microsoft.AspNetCore.Components.Web.PageTitle.ChildContent.set -> void
 Microsoft.AspNetCore.Components.Web.PageTitle.PageTitle() -> void
 override Microsoft.AspNetCore.Components.Forms.InputDate<TValue>.OnParametersSet() -> void
 abstract Microsoft.AspNetCore.Components.RenderTree.WebRenderer.AttachRootComponentToBrowser(int componentId, string! domElementSelector) -> void
+override Microsoft.AspNetCore.Components.Forms.InputLargeTextArea.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
+override Microsoft.AspNetCore.Components.Forms.InputLargeTextArea.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.OnParametersSet() -> void
 override Microsoft.AspNetCore.Components.Web.ErrorBoundary.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
