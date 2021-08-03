@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
     internal sealed partial class QuicConnectionContext : IProtocolErrorCodeFeature, ITlsConnectionFeature
     {
-
         private X509Certificate2? _clientCert;
 
         public long Error { get; set; }
@@ -24,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         // https://github.com/dotnet/aspnetcore/issues/34756
         public X509Certificate2? ClientCertificate
         {
-            get { return _clientCert ??= (X509Certificate2?)_connection.RemoteCertificate; }
+            get { return _clientCert ??= ConvertToX509Certificate2(_connection.RemoteCertificate); }
             set { _clientCert = value; }
         }
 
@@ -37,6 +36,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         {
             _currentIProtocolErrorCodeFeature = this;
             _currentITlsConnectionFeature = this;
+        }
+
+        private static X509Certificate2? ConvertToX509Certificate2(X509Certificate? certificate)
+        {
+            return certificate switch
+            {
+                null => null,
+                X509Certificate2 cert2 => cert2,
+                _ => new X509Certificate2(certificate),
+            };
         }
     }
 }
