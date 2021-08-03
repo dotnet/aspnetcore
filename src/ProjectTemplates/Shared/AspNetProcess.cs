@@ -146,7 +146,6 @@ namespace Templates.Test.Helpers
             }
 
             Assert.True(html.Links.Length == page.Links.Count(), $"Expected {page.Url} to have {page.Links.Count()} links but it had {html.Links.Length}");
-            var linkFailures = "";
             foreach ((var link, var expectedLink) in html.Links.Zip(page.Links, Tuple.Create))
             {
                 IHtmlAnchorElement anchor = (IHtmlAnchorElement)link;
@@ -157,11 +156,7 @@ namespace Templates.Test.Helpers
                 }
                 else
                 {
-                    if (!string.Equals(anchor.Href, expectedLink))
-                    {
-                        linkFailures += $"Expected next link to be {expectedLink} but it was {anchor.Href}.";
-                    }
-                    //Assert.True(string.Equals(anchor.Href, expectedLink), $"Expected next link to be {expectedLink} but it was {anchor.Href}.");
+                    Assert.True(string.Equals(anchor.Href, expectedLink), $"Expected next link to be {expectedLink} but it was {anchor.Href}.");
                     var result = await RetryHelper.RetryRequest(async () =>
                     {
                         return await _httpClient.GetAsync(anchor.Href);
@@ -169,7 +164,6 @@ namespace Templates.Test.Helpers
 
                     Assert.True(IsSuccessStatusCode(result), $"{anchor.Href} is a broken link!");
                 }
-                Assert.True(string.IsNullOrEmpty(linkFailures), "Link failures: "+linkFailures);
             }
         }
 
