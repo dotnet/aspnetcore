@@ -6,6 +6,7 @@ using System.IO.Pipelines;
 using System.Net;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
@@ -14,6 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         public Http3StreamContext(
             string connectionId,
             HttpProtocols protocols,
+            AltSvcHeader? altSvcHeader,
             BaseConnectionContext connectionContext,
             ServiceContext serviceContext,
             IFeatureCollection connectionFeatures,
@@ -23,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             IHttp3StreamLifetimeHandler streamLifetimeHandler,
             ConnectionContext streamContext,
             Http3PeerSettings clientPeerSettings,
-            Http3PeerSettings serverPeerSettings) : base(connectionId, protocols, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
+            Http3PeerSettings serverPeerSettings) : base(connectionId, protocols, altSvcHeader, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
         {
             StreamLifetimeHandler = streamLifetimeHandler;
             StreamContext = streamContext;

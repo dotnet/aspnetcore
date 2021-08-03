@@ -99,6 +99,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             (
                 connectionId: "TestConnectionId",
                 protocols: HttpProtocols.Http2,
+                altSvcHeader: null,
                 serviceContext: TestContextFactory.CreateServiceContext(serverOptions: new KestrelServerOptions()),
                 connectionFeatures: new FeatureCollection(),
                 memoryPool: MemoryPool<byte>.Shared,

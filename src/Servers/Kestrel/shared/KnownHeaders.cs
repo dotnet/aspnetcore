@@ -167,14 +167,16 @@ namespace CodeGenerator
                 HeaderNames.Connection,
                 HeaderNames.Server,
                 HeaderNames.Date,
-                HeaderNames.TransferEncoding
+                HeaderNames.TransferEncoding,
+                HeaderNames.AltSvc
             };
             var enhancedHeaders = new[]
             {
                 HeaderNames.Connection,
                 HeaderNames.Server,
                 HeaderNames.Date,
-                HeaderNames.TransferEncoding
+                HeaderNames.TransferEncoding,
+                HeaderNames.AltSvc
             };
             // http://www.w3.org/TR/cors/#syntax
             var corsResponseHeaders = new[]
