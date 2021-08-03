@@ -25,6 +25,7 @@
   <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
     <Reference Include="Microsoft.AspNetCore.Testing" />
     <Reference Include="Moq" />
+    <Compile Include="$(SharedSourceRoot)test\SuccessfulTests.cs" LinkBase="SharedTests" />
   </ItemGroup>
 
   <ItemDefinitionGroup Condition=" '$(IsTestProject)' == 'true' ">
