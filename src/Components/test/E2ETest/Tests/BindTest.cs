@@ -1104,6 +1104,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
         // Blazor have different formatting behaviour by default.
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34984")]
         [Fact]
         public void CanBindTextboxNullableDateOnlyWithFormat()
         {
