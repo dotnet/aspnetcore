@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
-    internal sealed partial class QuicConnectionContext : IProtocolErrorCodeFeature, ITlsConnectionFeature, ITlsApplicationProtocolFeature
+    internal sealed partial class QuicConnectionContext : IProtocolErrorCodeFeature, ITlsConnectionFeature
     {
 
         private X509Certificate2? _clientCert;
@@ -28,8 +28,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             set { _clientCert = value; }
         }
 
-        public ReadOnlyMemory<byte> ApplicationProtocol => _connection.NegotiatedApplicationProtocol.Protocol;
-
         public Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(ClientCertificate);
@@ -39,7 +37,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         {
             _currentIProtocolErrorCodeFeature = this;
             _currentITlsConnectionFeature = this;
-            _currentITlsApplicationProtocolFeature = this;
         }
     }
 }

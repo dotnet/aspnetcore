@@ -8,7 +8,6 @@ using System.Runtime.CompilerServices;
 
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 
 #nullable enable
 
@@ -36,7 +35,6 @@ namespace Microsoft.AspNetCore.Connections
         internal protected IStreamIdFeature? _currentIStreamIdFeature;
         internal protected IStreamAbortFeature? _currentIStreamAbortFeature;
         internal protected ITlsConnectionFeature? _currentITlsConnectionFeature;
-        internal protected ITlsApplicationProtocolFeature? _currentITlsApplicationProtocolFeature;
 
         private int _featureRevision;
 
@@ -57,7 +55,6 @@ namespace Microsoft.AspNetCore.Connections
             _currentIStreamIdFeature = null;
             _currentIStreamAbortFeature = null;
             _currentITlsConnectionFeature = null;
-            _currentITlsApplicationProtocolFeature = null;
         }
 
         // Internal for testing
@@ -177,10 +174,6 @@ namespace Microsoft.AspNetCore.Connections
                 {
                     feature = _currentITlsConnectionFeature;
                 }
-                else if (key == typeof(ITlsApplicationProtocolFeature))
-                {
-                    feature = _currentITlsApplicationProtocolFeature;
-                }
                 else if (MaybeExtra != null)
                 {
                     feature = ExtraFeatureGet(key);
@@ -240,10 +233,6 @@ namespace Microsoft.AspNetCore.Connections
                 else if (key == typeof(ITlsConnectionFeature))
                 {
                     _currentITlsConnectionFeature = (ITlsConnectionFeature?)value;
-                }
-                else if (key == typeof(ITlsApplicationProtocolFeature))
-                {
-                    _currentITlsApplicationProtocolFeature = (ITlsApplicationProtocolFeature?)value;
                 }
                 else
                 {
@@ -306,10 +295,6 @@ namespace Microsoft.AspNetCore.Connections
             else if (typeof(TFeature) == typeof(ITlsConnectionFeature))
             {
                 feature = Unsafe.As<ITlsConnectionFeature?, TFeature?>(ref _currentITlsConnectionFeature);
-            }
-            else if (typeof(TFeature) == typeof(ITlsApplicationProtocolFeature))
-            {
-                feature = Unsafe.As<ITlsApplicationProtocolFeature?, TFeature?>(ref _currentITlsApplicationProtocolFeature);
             }
             else if (MaybeExtra != null)
             {
@@ -374,10 +359,6 @@ namespace Microsoft.AspNetCore.Connections
             {
                 _currentITlsConnectionFeature = Unsafe.As<TFeature?, ITlsConnectionFeature?>(ref feature);
             }
-            else if (typeof(TFeature) == typeof(ITlsApplicationProtocolFeature))
-            {
-                _currentITlsApplicationProtocolFeature = Unsafe.As<TFeature?, ITlsApplicationProtocolFeature?>(ref feature);
-            }
             else
             {
                 ExtraFeatureSet(typeof(TFeature), feature);
@@ -433,10 +414,6 @@ namespace Microsoft.AspNetCore.Connections
             if (_currentITlsConnectionFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(typeof(ITlsConnectionFeature), _currentITlsConnectionFeature);
-            }
-            if (_currentITlsApplicationProtocolFeature != null)
-            {
-                yield return new KeyValuePair<Type, object>(typeof(ITlsApplicationProtocolFeature), _currentITlsApplicationProtocolFeature);
             }
 
             if (MaybeExtra != null)
