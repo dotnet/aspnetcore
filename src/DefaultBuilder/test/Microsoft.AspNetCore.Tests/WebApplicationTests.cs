@@ -680,6 +680,8 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Throws<InvalidOperationException>(() => builder.Services.TryAddSingleton(new Service()));
             Assert.Throws<InvalidOperationException>(() => builder.Services.AddScoped<IService, Service>());
             Assert.Throws<InvalidOperationException>(() => builder.Services.TryAddScoped<IService, Service>());
+            Assert.Throws<InvalidOperationException>(() => builder.Services.Remove(ServiceDescriptor.Singleton(new Service())));
+            Assert.Throws<InvalidOperationException>(() => builder.Services[0] = ServiceDescriptor.Singleton(new Service()));
         }
 
         private class Service : IService { }

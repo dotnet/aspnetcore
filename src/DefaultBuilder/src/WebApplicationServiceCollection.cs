@@ -15,8 +15,15 @@ namespace Microsoft.AspNetCore
     {
         private IServiceCollection _services = new ServiceCollection();
 
-        public ServiceDescriptor this[int index] { get => _services[index]; set => _services[index] = value; }
-
+        public ServiceDescriptor this[int index]
+        {
+            get => _services[index];
+            set
+            {
+                CheckServicesAccess();
+                _services[index] = value;
+            }
+        }
         public int Count => _services.Count;
 
         public bool IsReadOnly { get; set; }
