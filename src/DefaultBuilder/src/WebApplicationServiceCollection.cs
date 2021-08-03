@@ -21,7 +21,15 @@ namespace Microsoft.AspNetCore
 
         public bool IsReadOnly { get; set; }
 
-        public IServiceCollection InnerCollection { get => _services; set => _services = value; }
+        public IServiceCollection InnerCollection
+        {
+            get => _services;
+            set
+            {
+                CheckServicesAccess();
+                _services = value;
+            }
+        }
 
         public void Add(ServiceDescriptor item)
         {

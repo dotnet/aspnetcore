@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Builder
             Configuration.AddConfiguration(_builtApplication.Configuration);
 
             // Mark the service collection as read-only to prevent future modifications
-            ((WebApplicationServiceCollection)Services).IsReadOnly = true;
+            _services.IsReadOnly = true;
 
             return _builtApplication;
         }

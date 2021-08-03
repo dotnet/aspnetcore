@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -675,7 +676,10 @@ namespace Microsoft.AspNetCore.Tests
             var builder = WebApplication.CreateBuilder();
             await using var app = builder.Build();
 
-            Assert.Throws<InvalidOperationException>(() => builder.Services.AddSingleton<IServer>(new MockAddressesServer()));
+            Assert.Throws<InvalidOperationException>(() => builder.Services.AddSingleton<IService>(new Service()));
+            Assert.Throws<InvalidOperationException>(() => builder.Services.TryAddSingleton(new Service()));
+            Assert.Throws<InvalidOperationException>(() => builder.Services.AddScoped<IService, Service>());
+            Assert.Throws<InvalidOperationException>(() => builder.Services.TryAddScoped<IService, Service>());
         }
 
         private class Service : IService { }
