@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -737,6 +738,20 @@ namespace Microsoft.AspNetCore.Tests
             // This currently throws an AggregateException, but any Exception from Build() is enough to make this test pass.
             // If this is throwing for any reason other than service scope validation, we'll likely see it in other tests.
             Assert.ThrowsAny<Exception>(() => builder.Build());
+        }
+
+        [Fact]
+        public async Task WebApplicationBuilder_ThrowsExceptionIfServicesAlreadyBuilt()
+        {
+            var builder = WebApplication.CreateBuilder();
+            await using var app = builder.Build();
+
+            Assert.Throws<InvalidOperationException>(() => builder.Services.AddSingleton<IService>(new Service()));
+            Assert.Throws<InvalidOperationException>(() => builder.Services.TryAddSingleton(new Service()));
+            Assert.Throws<InvalidOperationException>(() => builder.Services.AddScoped<IService, Service>());
+            Assert.Throws<InvalidOperationException>(() => builder.Services.TryAddScoped<IService, Service>());
+            Assert.Throws<InvalidOperationException>(() => builder.Services.Remove(ServiceDescriptor.Singleton(new Service())));
+            Assert.Throws<InvalidOperationException>(() => builder.Services[0] = ServiceDescriptor.Singleton(new Service()));
         }
 
         private class Service : IService { }
