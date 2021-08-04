@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Builder
 
         private WebApplication? _builtApplication;
 
-        internal WebApplicationBuilder(Assembly? callingAssembly, WebApplicationOptions options, Action<IHostBuilder>? configureDefaults = null)
+        internal WebApplicationBuilder(Assembly? callingAssembly, WebApplicationBuilderOptions options, Action<IHostBuilder>? configureDefaults = null)
         {
             Services = _services;
 

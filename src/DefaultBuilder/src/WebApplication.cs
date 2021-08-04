@@ -106,9 +106,9 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Initializes a new instance of the <see cref="WebApplicationBuilder"/> class with preconfigured defaults.
         /// </summary>
-        /// <param name="options">The <see cref="WebApplicationOptions"/> to configure the <see cref="WebApplicationBuilder"/>.</param>
+        /// <param name="options">The <see cref="WebApplicationBuilderOptions"/> to configure the <see cref="WebApplicationBuilder"/>.</param>
         /// <returns>The <see cref="WebApplicationBuilder"/>.</returns>
-        public static WebApplicationBuilder CreateBuilder(WebApplicationOptions options) =>
+        public static WebApplicationBuilder CreateBuilder(WebApplicationBuilderOptions options) =>
             new WebApplicationBuilder(Assembly.GetCallingAssembly(), options);
 
         /// <summary>

@@ -13,13 +13,17 @@ using Microsoft.Extensions.Hosting;
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// Options for configuing the behavior for <see cref="WebApplication.CreateBuilder(WebApplicationOptions)"/>.
+    /// Options for configuing the behavior for <see cref="WebApplication.CreateBuilder(WebApplicationBuilderOptions)"/>.
     /// </summary>
-    public class WebApplicationOptions
+    public class WebApplicationBuilderOptions
     {
         /// <summary>
-        /// The command line arguments.
+        /// The command line arguments that contain configuration values.
         /// </summary>
+        /// <remarks>
+        /// The environment name, application name and content root specified as args will be overridden by
+        /// the specified properties.
+        /// </remarks>
         public string[]? Args { get; init; }
 
         /// <summary>
