@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             _interopMethodsReference = DotNetObjectReference.Create(
                 new WebRendererInteropMethods(this, jsonOptions, jsComponentInterop));
 
+            // Supply a DotNetObjectReference to JS that it can use to call us back for events etc.
             jsComponentInterop.AttachToRenderer(this);
             var jsRuntime = _serviceProvider.GetRequiredService<IJSRuntime>();
             var hasJSComponents = jsComponentInterop.Configuration.JsComponentTypesByIdentifier.Count > 0;
