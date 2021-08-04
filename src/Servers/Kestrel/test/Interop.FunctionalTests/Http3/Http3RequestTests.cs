@@ -950,6 +950,43 @@ namespace Interop.FunctionalTests.Http3
             }
         }
 
+        // Verify HTTP/2 and HTTP/3 match behavior
+        [ConditionalTheory]
+        [MsQuicSupported]
+        [InlineData(HttpProtocols.Http3)]
+        [InlineData(HttpProtocols.Http2)]
+        public async Task GET_GracefulServerShutdown_WaitForActiveRequestsToDrain(HttpProtocols protocol)
+        {
+            // Arrange
+            var requestsTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var builder = CreateHostBuilder(async context =>
+            {
+                await requestsTcs.Task;
+            }, protocol: protocol);
+
+            using (var host = builder.Build())
+            using (var client = CreateClient())
+            {
+                await host.StartAsync().DefaultTimeout();
+
+                var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+                request.Version = GetProtocol(protocol);
+                request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                // Act
+                var activeRequestTask = client.SendAsync(request, CancellationToken.None).DefaultTimeout();
+
+                var stopTask = host.StopAsync();
+
+                var rejectedRequestTask = client.SendAsync(request, CancellationToken.None).DefaultTimeout();
+
+                //Assert.NotNull(connectionIdFromFeature);
+                //Assert.NotNull(mockScopeLoggerProvider.LogScope);
+                //Assert.Equal(connectionIdFromFeature, mockScopeLoggerProvider.LogScope[0].Value);
+            }
+        }
+
         private static HttpMessageInvoker CreateClient(TimeSpan? idleTimeout = null)
         {
             var handler = new SocketsHttpHandler();

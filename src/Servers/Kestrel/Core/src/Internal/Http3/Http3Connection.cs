@@ -100,6 +100,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 if (Interlocked.CompareExchange(ref _gracefulCloseInitiator, initiator, GracefulCloseInitiator.None) == GracefulCloseInitiator.None)
                 {
+                    if (_gracefulCloseInitiator == GracefulCloseInitiator.Server)
+                    {
+                        if (TryClose())
+                        {
+                            SendGoAway(GetHighestStreamId()).Preserve();
+                        }
+                    }
+
                     // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-5.2-11
                     // An endpoint that completes a graceful shutdown SHOULD use the H3_NO_ERROR error code
                     // when closing the connection.

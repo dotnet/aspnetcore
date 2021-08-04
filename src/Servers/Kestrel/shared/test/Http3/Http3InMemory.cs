@@ -140,6 +140,23 @@ namespace Microsoft.AspNetCore.Testing
         internal async Task WaitForConnectionErrorAsync<TException>(bool ignoreNonGoAwayFrames, long? expectedLastStreamId, Http3ErrorCode expectedErrorCode, Action<Type, string[]> matchExpectedErrorMessage = null, params string[] expectedErrorMessage)
             where TException : Exception
         {
+            await WaitForGoAwayAsync(ignoreNonGoAwayFrames, expectedLastStreamId);
+
+            AssertConnectionError<TException>(expectedErrorCode, matchExpectedErrorMessage, expectedErrorMessage);
+
+            // Verify HttpConnection.ProcessRequestsAsync has exited.
+#if IS_FUNCTIONAL_TESTS
+            await _connectionTask.DefaultTimeout();
+#else
+            await _connectionTask;
+#endif
+
+            // Verify server-to-client control stream has completed.
+            await _inboundControlStream.ReceiveEndAsync();
+        }
+
+        internal async Task WaitForGoAwayAsync(bool ignoreNonGoAwayFrames, long? expectedLastStreamId)
+        {
             var frame = await _inboundControlStream.ReceiveFrameAsync();
 
             if (ignoreNonGoAwayFrames)
@@ -154,18 +171,6 @@ namespace Microsoft.AspNetCore.Testing
             {
                 VerifyGoAway(frame, expectedLastStreamId.GetValueOrDefault());
             }
-
-            AssertConnectionError<TException>(expectedErrorCode, matchExpectedErrorMessage, expectedErrorMessage);
-
-            // Verify HttpConnection.ProcessRequestsAsync has exited.
-#if IS_FUNCTIONAL_TESTS
-            await _connectionTask.DefaultTimeout();
-#else
-            await _connectionTask;
-#endif
-
-            // Verify server-to-client control stream has completed.
-            await _inboundControlStream.ReceiveEndAsync();
         }
 
         internal void AssertConnectionError<TException>(Http3ErrorCode expectedErrorCode, Action<Type, string[]> matchExpectedErrorMessage = null, params string[] expectedErrorMessage) where TException : Exception
@@ -853,6 +858,38 @@ namespace Microsoft.AspNetCore.Testing
                 }
             }
         }
+
+        internal async Task WaitForGoAwayAsync(bool ignoreNonGoAwayFrames, long? expectedLastStreamId)
+        {
+            var frame = await ReceiveFrameAsync();
+
+            if (ignoreNonGoAwayFrames)
+            {
+                while (frame.Type != Http3FrameType.GoAway)
+                {
+                    frame = await ReceiveFrameAsync();
+                }
+            }
+
+            if (expectedLastStreamId != null)
+            {
+                VerifyGoAway(frame, expectedLastStreamId.GetValueOrDefault());
+            }
+        }
+
+        internal void VerifyGoAway(Http3FrameWithPayload frame, long expectedLastStreamId)
+        {
+            Http3InMemory.AssertFrameType(frame.Type, Http3FrameType.GoAway);
+            var payload = frame.Payload;
+            if (!VariableLengthIntegerHelper.TryRead(payload.Span, out var streamId, out var _))
+            {
+                throw new InvalidOperationException("Failed to read GO_AWAY stream ID.");
+            }
+            if (streamId != expectedLastStreamId)
+            {
+                throw new InvalidOperationException($"Expected stream ID {expectedLastStreamId}, got {streamId}.");
+            }
+        }
     }
 
     internal class TestMultiplexedConnectionContext : MultiplexedConnectionContext, IConnectionLifetimeNotificationFeature, IConnectionLifetimeFeature, IConnectionHeartbeatFeature, IProtocolErrorCodeFeature
@@ -891,6 +928,7 @@ namespace Microsoft.AspNetCore.Testing
         public CancellationToken ConnectionClosedRequested { get; set; }
 
         public CancellationTokenSource ConnectionClosingCts { get; set; } = new CancellationTokenSource();
+        public Func<ConnectionContext, Task> OnAcceptAsyncCallback { get; set; }
 
         public long Error
         {
@@ -915,6 +953,11 @@ namespace Microsoft.AspNetCore.Testing
             {
                 while (ToServerAcceptQueue.Reader.TryRead(out var connection))
                 {
+                    if (OnAcceptAsyncCallback != null)
+                    {
+                        await OnAcceptAsyncCallback(connection);
+                    }
+
                     return connection;
                 }
             }
