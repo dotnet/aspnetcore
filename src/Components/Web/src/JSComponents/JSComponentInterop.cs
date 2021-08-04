@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
         /// For framework use only.
         /// </summary>
         [JSInvokable]
-        public void SetRootComponentParameters(int componentId, int parameterCount, byte[] parametersJsonUtf8)
+        public void SetRootComponentParameters(int componentId, int parameterCount, JsonElement parametersJson)
         {
             // In case the client misreports the number of parameters, impose bounds so we know the amount
             // of work done is limited to a fixed, low amount.
@@ -106,21 +106,17 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
             var componentType = Renderer.GetRootComponentType(componentId);
             var parameterViewBuilder = new ParameterViewBuilder(parameterCount);
 
-            var parametersReader = new Utf8JsonReader(parametersJsonUtf8);
-
-            parametersReader.Read();
-            Debug.Assert(parametersReader.TokenType == JsonTokenType.StartObject);
-
-            parametersReader.Read();
-            while (parametersReader.TokenType == JsonTokenType.PropertyName)
+            var parametersJsonEnumerator = parametersJson.EnumerateObject();
+            foreach (var jsonProperty in parametersJsonEnumerator)
             {
-                var parameterName = parametersReader.GetString()!;
+                var parameterName = jsonProperty.Name;
+                var parameterJsonValue = jsonProperty.Value;
                 object? parameterValue;
                 if (TryGetComponentParameterType(componentType, parameterName, out var parameterType))
                 {
                     // It's a statically-declared parameter, so we can parse it into a known .NET type
                     parameterValue = JsonSerializer.Deserialize(
-                        ref parametersReader,
+                        parameterJsonValue,
                         parameterType,
                         _jsonOptions);
                 }
@@ -128,20 +124,20 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
                 {
                     // Unknown parameter - possibly valid as "catch-all". Use whatever type appears
                     // to be present in the JSON data.
-                    parametersReader.Read();
-                    switch (parametersReader.TokenType)
+                    switch (parameterJsonValue.ValueKind)
                     {
-                        case JsonTokenType.Number:
-                            parameterValue = parametersReader.GetDouble();
+                        case JsonValueKind.Number:
+                            parameterValue = parameterJsonValue.GetDouble();
                             break;
-                        case JsonTokenType.String:
-                            parameterValue = parametersReader.GetString();
+                        case JsonValueKind.String:
+                            parameterValue = parameterJsonValue.GetString();
                             break;
-                        case JsonTokenType.True:
-                        case JsonTokenType.False:
-                            parameterValue = parametersReader.GetBoolean();
+                        case JsonValueKind.True:
+                        case JsonValueKind.False:
+                            parameterValue = parameterJsonValue.GetBoolean();
                             break;
-                        case JsonTokenType.Null:
+                        case JsonValueKind.Null:
+                        case JsonValueKind.Undefined:
                             parameterValue = null;
                             break;
                         default:
@@ -150,7 +146,6 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
                 }
 
                 parameterViewBuilder.Add(parameterName, parameterValue);
-                parametersReader.Read();
             }
 
             // This call gets back a task that represents the renderer reaching quiescence, but is not
