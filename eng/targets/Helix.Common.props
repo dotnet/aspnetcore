@@ -23,7 +23,7 @@
     <HelixAvailableTargetQueue Include="OSX.1100.Amd64.Open" Platform="OSX" />
     <HelixAvailableTargetQueue Include="Debian.9.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Redhat.7.Amd64.Open" Platform="Linux" />
-    <HelixAvailableTargetQueue Include="(Fedora.33.Amd64.Open)Ubuntu.1804.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-33-helix-20210120000908-a9df267" Platform="Linux" />
+    <HelixAvailableTargetQueue Include="(Fedora.34.Amd64.Open)ubuntu.1604.amd64.open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-34-helix-20210728124700-4f64125" Platform="Linux" />
     <HelixAvailableTargetQueue Include="(Alpine.312.Amd64.Open)Ubuntu.1804.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.12-helix-20200908125345-56c6673" Platform="Linux" />
     <HelixAvailableTargetQueue Include="(Mariner)Ubuntu.1804.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-1.0-helix-20210528192219-92bf620" Platform="Linux" />    
   </ItemGroup>
