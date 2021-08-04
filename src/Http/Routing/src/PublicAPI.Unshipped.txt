@@ -12,8 +12,8 @@ Microsoft.AspNetCore.Routing.DataTokensMetadata.DataTokens.get -> System.Collect
 Microsoft.AspNetCore.Routing.DataTokensMetadata.DataTokensMetadata(System.Collections.Generic.IReadOnlyDictionary<string!, object?>! dataTokens) -> void
 Microsoft.AspNetCore.Routing.IDataTokensMetadata.DataTokens.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
 Microsoft.AspNetCore.Routing.IRouteNameMetadata.RouteName.get -> string?
-Microsoft.AspNetCore.Routing.Matching
-Microsoft.AspNetCore.Routing.Matching.MatchesLiteral(string parameterName, string literal) -> bool;
+Microsoft.AspNetCore.Routing.Matching.IParameterLiteralNodeMatchingPolicy
+Microsoft.AspNetCore.Routing.Matching.IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string parameterName, string literal) -> bool;
 Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteName.get -> string?
 Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteNameMetadata(string? routeName) -> void
 static Microsoft.AspNetCore.Builder.MinimalActionEndpointRouteBuilderExtensions.Map(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, Microsoft.AspNetCore.Routing.Patterns.RoutePattern! pattern, System.Delegate! action) -> Microsoft.AspNetCore.Builder.MinimalActionEndpointConventionBuilder!
