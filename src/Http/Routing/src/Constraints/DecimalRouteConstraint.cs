@@ -4,13 +4,14 @@
 using System;
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Matching;
 
 namespace Microsoft.AspNetCore.Routing.Constraints
 {
     /// <summary>
     /// Constrains a route parameter to represent only decimal values.
     /// </summary>
-    public class DecimalRouteConstraint : IRouteConstraint, ILiteralConstraint
+    public class DecimalRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
     {
         /// <inheritdoc />
         public bool Match(
@@ -49,7 +50,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             return decimal.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out _);
         }
 
-        bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
+        bool IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string parameterName, string literal)
         {
             return CheckConstraintCore(literal);
         }

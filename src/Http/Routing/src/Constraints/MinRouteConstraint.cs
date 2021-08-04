@@ -4,13 +4,14 @@
 using System;
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Matching;
 
 namespace Microsoft.AspNetCore.Routing.Constraints
 {
     /// <summary>
     /// Constrains a route parameter to be a long with a minimum value.
     /// </summary>
-    public class MinRouteConstraint : IRouteConstraint, ILiteralConstraint
+    public class MinRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MinRouteConstraint" /> class.
@@ -62,7 +63,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             return false;
         }
 
-        bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
+        bool IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string parameterName, string literal)
         {
             return CheckConstraintCore(literal);
         }

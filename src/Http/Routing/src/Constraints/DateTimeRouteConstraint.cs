@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Matching;
 
 namespace Microsoft.AspNetCore.Routing.Constraints
 {
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     /// For a sample on how to list all formats which are considered, please visit
     /// http://msdn.microsoft.com/en-us/library/aszyst2c(v=vs.110).aspx
     /// </remarks>
-    public class DateTimeRouteConstraint : IRouteConstraint, ILiteralConstraint
+    public class DateTimeRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
     {
         /// <inheritdoc />
         public bool Match(
@@ -55,7 +56,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             return DateTime.TryParse(valueString, CultureInfo.InvariantCulture, DateTimeStyles.None, out _);
         }
 
-        bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
+        bool IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string parameterName, string literal)
         {
             return CheckConstraintCore(literal);
         }

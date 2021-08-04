@@ -4,13 +4,14 @@
 using System;
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Matching;
 
 namespace Microsoft.AspNetCore.Routing.Constraints
 {
     /// <summary>
     /// Constrains a route parameter to contain only a specified string.
     /// </summary>
-    public class StringRouteConstraint : IRouteConstraint, ILiteralConstraint
+    public class StringRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
     {
         private readonly string _value;
 
@@ -56,7 +57,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             return parameterValueString.Equals(_value, StringComparison.OrdinalIgnoreCase);
         }
 
-        bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
+        bool IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string parameterName, string literal)
         {
             return CheckConstraintCore(literal);
         }

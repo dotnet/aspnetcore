@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Matching;
 
 namespace Microsoft.AspNetCore.Routing.Constraints
 {
@@ -77,7 +78,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     /// </list>
     /// </para>
     /// </remarks>
-    public class NonFileNameRouteConstraint : IRouteConstraint, ILiteralConstraint
+    public class NonFileNameRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
     {
         /// <inheritdoc />
         public bool Match(
@@ -111,7 +112,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             return true;
         }
 
-        bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
+        bool IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string parameterName, string literal)
         {
             return !FileNameRouteConstraint.IsFileName(literal);
         }

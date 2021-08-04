@@ -4,13 +4,14 @@
 using System;
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Matching;
 
 namespace Microsoft.AspNetCore.Routing.Constraints
 {
     /// <summary>
     /// Constraints a route parameter to be an integer within a given range of values.
     /// </summary>
-    public class RangeRouteConstraint : IRouteConstraint, ILiteralConstraint
+    public class RangeRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RangeRouteConstraint" /> class.
@@ -76,7 +77,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             return false;
         }
 
-        bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
+        bool IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string parameterName, string literal)
         {
             return CheckConstraintCore(literal);
         }

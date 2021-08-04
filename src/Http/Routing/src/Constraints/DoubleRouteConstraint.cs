@@ -4,13 +4,14 @@
 using System;
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Matching;
 
 namespace Microsoft.AspNetCore.Routing.Constraints
 {
     /// <summary>
     /// Constrains a route parameter to represent only 64-bit floating-point values.
     /// </summary>
-    public class DoubleRouteConstraint : IRouteConstraint, ILiteralConstraint
+    public class DoubleRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
     {
         /// <inheritdoc />
         public bool Match(
@@ -53,7 +54,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
                 out _);
         }
 
-        bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
+        bool IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string parameterName, string literal)
         {
             return CheckConstraintCore(literal);
         }

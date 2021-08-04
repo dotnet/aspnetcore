@@ -4,13 +4,14 @@
 using System;
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Matching;
 
 namespace Microsoft.AspNetCore.Routing.Constraints
 {
     /// <summary>
     /// Constrains a route parameter to represent only 32-bit integer values.
     /// </summary>
-    public class IntRouteConstraint : IRouteConstraint, ILiteralConstraint
+    public class IntRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
     {
         /// <inheritdoc />
         public bool Match(
@@ -49,7 +50,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             return int.TryParse(valueString, NumberStyles.Integer, CultureInfo.InvariantCulture, out _);
         }
 
-        bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
+        bool IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string parameterName, string literal)
         {
             return CheckConstraintCore(literal);
         }

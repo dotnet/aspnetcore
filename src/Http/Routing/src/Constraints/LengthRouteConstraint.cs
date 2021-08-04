@@ -4,13 +4,14 @@
 using System;
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Matching;
 
 namespace Microsoft.AspNetCore.Routing.Constraints
 {
     /// <summary>
     /// Constrains a route parameter to be a string of a given length or within a given range of lengths.
     /// </summary>
-    public class LengthRouteConstraint : IRouteConstraint, ILiteralConstraint
+    public class LengthRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LengthRouteConstraint" /> class that constrains
@@ -102,7 +103,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             return length >= MinLength && length <= MaxLength;
         }
 
-        bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
+        bool IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string parameterName, string literal)
         {
             return CheckConstraintCore(literal);
         }

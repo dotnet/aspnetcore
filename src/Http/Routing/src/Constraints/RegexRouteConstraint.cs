@@ -5,13 +5,14 @@ using System;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Matching;
 
 namespace Microsoft.AspNetCore.Routing.Constraints
 {
     /// <summary>
     /// Constrains a route parameter to match a regular expression.
     /// </summary>
-    public class RegexRouteConstraint : IRouteConstraint, ILiteralConstraint
+    public class RegexRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
     {
         private static readonly TimeSpan RegexMatchTimeout = TimeSpan.FromSeconds(10);
 
@@ -80,7 +81,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             return false;
         }
 
-        bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
+        bool IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string parameterName, string literal)
         {
             return Constraint.IsMatch(literal);
         }

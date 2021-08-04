@@ -4,13 +4,14 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Matching;
 
 namespace Microsoft.AspNetCore.Routing.Constraints
 {
     /// <summary>
     /// Constrains a route by several child constraints.
     /// </summary>
-    public class CompositeRouteConstraint : IRouteConstraint, ILiteralConstraint
+    public class CompositeRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CompositeRouteConstraint" /> class.
@@ -60,11 +61,11 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             return true;
         }
 
-        bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
+        bool IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string parameterName, string literal)
         {
             foreach (var constraint in Constraints)
             {
-                if (constraint is ILiteralConstraint literalConstraint && !literalConstraint.MatchLiteral(parameterName, literal))
+                if (constraint is IParameterLiteralNodeMatchingPolicy literalConstraint && !literalConstraint.MatchesLiteral(parameterName, literal))
                 {
                     return false;
                 }

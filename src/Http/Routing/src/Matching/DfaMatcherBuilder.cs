@@ -358,7 +358,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                                 {
                                     var reference = parameterPolicyReferences[j];
                                     var parameterPolicy = _parameterPolicyFactory.Create(parameterPart, reference);
-                                    if (parameterPolicy is ILiteralConstraint constraint && !constraint.MatchLiteral(partParameter.Name, (string)parameterValue))
+                                    if (parameterPolicy is IParameterLiteralNodeMatchingPolicy constraint && !constraint.MatchesLiteral(partParameter.Name, (string)parameterValue))
                                     {
                                         passedAllPolicies = false;
                                         break;
@@ -379,7 +379,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             private void AddParentsWithMatchingLiteralConstraints(List<DfaNode> nextParents, DfaNode parent, RoutePatternParameterPart parameterPart, IReadOnlyList<RoutePatternParameterPolicyReference> parameterPolicyReferences)
             {
-                // The list of parameters that fail to meet at least one ILiteralConstraint.
+                // The list of parameters that fail to meet at least one IParameterLiteralNodeMatchingPolicy.
                 var hasFailingPolicy = parent.Literals.Keys.Count < 32 ?
                     (stackalloc bool[32]).Slice(0, parent.Literals.Keys.Count) :
                     new bool[parent.Literals.Keys.Count];
@@ -389,13 +389,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 {
                     var reference = parameterPolicyReferences[i];
                     var parameterPolicy = _parameterPolicyFactory.Create(parameterPart, reference);
-                    if (parameterPolicy is ILiteralConstraint constraint)
+                    if (parameterPolicy is IParameterLiteralNodeMatchingPolicy constraint)
                     {
                         var literalIndex = 0;
                         var allFailed = true;
                         foreach (var literal in parent.Literals.Keys)
                         {
-                            if (!hasFailingPolicy[literalIndex] && !constraint.MatchLiteral(parameterPart.Name, literal))
+                            if (!hasFailingPolicy[literalIndex] && !constraint.MatchesLiteral(parameterPart.Name, literal))
                             {
                                 hasFailingPolicy[literalIndex] = true;
                             }

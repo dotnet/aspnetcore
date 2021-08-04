@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Matching;
 
 namespace Microsoft.AspNetCore.Routing.Constraints
 {
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     /// Matches values specified in any of the five formats "N", "D", "B", "P", or "X",
     /// supported by Guid.ToString(string) and Guid.ToString(String, IFormatProvider) methods.
     /// </summary>
-    public class GuidRouteConstraint : IRouteConstraint, ILiteralConstraint
+    public class GuidRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
     {
         /// <inheritdoc />
         public bool Match(
@@ -51,7 +52,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             return Guid.TryParse(valueString, out _);
         }
 
-        bool ILiteralConstraint.MatchLiteral(string parameterName, string literal)
+        bool IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string parameterName, string literal)
         {
             return CheckConstraintCore(literal);
         }
