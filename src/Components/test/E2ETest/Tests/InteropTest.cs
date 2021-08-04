@@ -65,8 +65,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 ["roundTripByteArrayWrapperObjectAsyncFromDotNet"] = @"StrVal: Some String, IntVal: 100000, ByteArrayVal: 1,5,7,15,35,200",
                 ["jsToDotNetStreamReturnValueAsync"] = "Success",
                 ["jsToDotNetStreamWrapperObjectReturnValueAsync"] = "Success",
-                ["dotNetToJSReceiveDotNetStreamReferenceAsync"] = "Success",
-                ["dotNetToJSReceiveDotNetStreamWrapperReferenceAsync"] = "Success",
+                // ["dotNetToJSReceiveDotNetStreamReferenceAsync"] = "Success",
+                // ["dotNetToJSReceiveDotNetStreamWrapperReferenceAsync"] = "Success",
                 ["jsToDotNetStreamParameterAsync"] = @"""Success""",
                 ["jsToDotNetStreamWrapperObjectParameterAsync"] = @"""Success""",
                 ["AsyncThrowSyncException"] = @"""System.InvalidOperationException: Threw a sync exception!",
@@ -90,8 +90,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 ["jsObjectReferenceModule"] = "Returned from module!",
                 ["syncGenericInstanceMethod"] = @"""Initial value""",
                 ["asyncGenericInstanceMethod"] = @"""Updated value 1""",
-                ["requestDotNetStreamReferenceAsync"] = "Success",
-                ["requestDotNetStreamWrapperReferenceAsync"] = "Success",
+                ["requestDotNetStreamReferenceAsync"] = @"""Success""",
+                ["requestDotNetStreamWrapperReferenceAsync"] = @"""Success""",
             };
 
             var expectedSyncValues = new Dictionary<string, string>
@@ -139,8 +139,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 ["returnPrimitive"] = "123",
                 ["returnArray"] = "first,second",
                 ["genericInstanceMethod"] = @"""Updated value 2""",
-                ["requestDotNetStreamReference"] = "Success",
-                ["requestDotNetStreamWrapperReference"] = "Success",
+                ["requestDotNetStreamReference"] = @"""Success""",
+                ["requestDotNetStreamWrapperReference"] = @"""Success""",
             };
 
             // Include the sync assertions only when running under WebAssembly
@@ -163,8 +163,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             foreach (var expectedValue in expectedValues)
             {
-                var currentValue = Browser.Exists(By.Id(expectedValue.Key));
-                actualValues.Add(expectedValue.Key, currentValue.Text);
+                try
+                {
+                    var currentValue = Browser.Exists(By.Id(expectedValue.Key));
+                    actualValues.Add(expectedValue.Key, currentValue.Text);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception($"Failed to find test id {expectedValue.Key} in DOM.", ex);
+                }
             }
 
             // Assert

@@ -254,13 +254,6 @@
         ReceiveDotNetObjectByRefResult["stringValueUpper"] = result.StringValueUpper;
         ReceiveDotNetObjectByRefResult["testDtoNonSerializedValue"] = result.TestDtoNonSerializedValue;
         ReceiveDotNetObjectByRefResult["testDto"] = result.TestDto.Value == passDotNetObjectByRef ? "Same" : "Different";
-
-        var dotNetStreamReference = DotNetStreamReferenceInterop.GetDotNetStreamReference();
-        ReturnValues["dotNetToJSReceiveDotNetStreamReference"] = inProcRuntime.Invoke<string>("receiveDotNetStreamReference", dotNetStreamReference);
-
-        var dotNetStreamReferenceWrapper = DotNetStreamReferenceInterop.GetDotNetStreamWrapperReference();
-        ReturnValues["dotNetToJSReceiveDotNetStreamWrapperReference"] = inProcRuntime.Invoke<string>("receiveDotNetStreamWrapperReference", dotNetStreamReferenceWrapper);
-
     }
 
     public async Task InvokeInProcessJSInterop()
@@ -291,6 +284,22 @@
         var dataReference = unmarshalledRuntime.InvokeUnmarshalled<IJSStreamReference>("jsToDotNetStreamReturnValue");
         using var dataReferenceStream = await dataReference.OpenReadStreamAsync();
         await ValidateStreamValuesAsync("jsToDotNetStreamReturnValueUnmarshalled", dataReferenceStream);
+    }
+
+    [JSInvokable]
+    public void TriggerReceiveDotNetStreamReferenceAndSetResult()
+    {
+        var dotNetStreamReference = DotNetStreamReferenceInterop.GetDotNetStreamReference();
+        var inProcRuntime = ((IJSInProcessRuntime)JSRuntime);
+        inProcRuntime.Invoke<object>("receiveDotNetStreamReferenceAndSetResult", dotNetStreamReference);
+    }
+
+    [JSInvokable]
+    public void TriggerReceiveDotNetStreamWrapperReferenceAndSetResult()
+    {
+        var dotNetStreamReferenceWrapper = DotNetStreamReferenceInterop.GetDotNetStreamWrapperReference();
+        var inProcRuntime = ((IJSInProcessRuntime)JSRuntime);
+        inProcRuntime.Invoke<object>("receiveDotNetStreamWrapperReferenceAndSetResult", dotNetStreamReferenceWrapper);
     }
 
     public class PassDotNetObjectByRefArgs

@@ -49,8 +49,15 @@ async function invokeDotNetInteropMethodsAsync(shouldSupportSyncInterop, dotNetO
     var returnedByteArrayWrapper = DotNet.invokeMethod(assemblyName, 'RoundTripByteArrayWrapperObject', byteArrayWrapper);
     results['roundTripByteArrayWrapperObjectFromJS'] = returnedByteArrayWrapper;
 
-    results['requestDotNetStreamReference'] = requestDotNetStreamReference();
-    results['requestDotNetStreamWrapperReference'] = requestDotNetStreamWrapperReference();
+    // Note the following .NET Stream Reference E2E tests are synchronous for the test execution
+    // however the validation is async (due to the nature of stream validations).
+    var streamRef = DotNet.invokeMethod(assemblyName, 'GetDotNetStreamReference');
+    results['requestDotNetStreamReference'] = await receiveDotNetStreamReference(streamRef);
+    var streamWrapper = DotNet.invokeMethod(assemblyName, 'GetDotNetStreamWrapperReference');
+    results['requestDotNetStreamWrapperReference'] = await receiveDotNetStreamWrapperReference(streamWrapper);
+
+    // DotNet.invokeMethod(assemblyName, 'TriggerReceiveDotNetStreamReferenceAndSetResult');
+    // DotNet.invokeMethod(assemblyName, 'TriggerReceiveDotNetStreamWrapperReferenceAndSetResult');
 
     var instanceMethodResult = instanceMethodsTarget.invokeMethod('InstanceMethod', {
       stringValue: 'My string',
@@ -222,7 +229,9 @@ window.jsInteropTests = {
   returnJSObjectReference: returnJSObjectReference,
   addViaJSObjectReference: addViaJSObjectReference,
   receiveDotNetObjectByRef: receiveDotNetObjectByRef,
-  receiveDotNetObjectByRefAsync: receiveDotNetObjectByRefAsync
+  receiveDotNetObjectByRefAsync: receiveDotNetObjectByRefAsync,
+  receiveDotNetStreamReference: receiveDotNetStreamReference,
+  receiveDotNetStreamWrapperReference: receiveDotNetStreamWrapperReference,
 };
 
 function returnPrimitive() {
@@ -402,35 +411,37 @@ function receiveDotNetObjectByRefAsync(incomingData) {
   });
 }
 
-function receiveDotNetStreamReference(streamRef) {
-  const data = await streamRef.arrayBuffer();
-  const isValid = data.length === 100000 && data.every((value, index) => value === index % 256);
+function receiveDotNetStreamReferenceAndSetResult(streamRef) {
+  setTimeout(async () => {
+    result['dotNetToJSReceiveDotNetStreamReference'] = await receiveDotNetStreamReference(streamRef);
+  }, 0);
+}
+
+function receiveDotNetStreamWrapperReferenceAndSetResult(wrapper) {
+  setTimeout(async () => {
+    result['dotNetToJSReceiveDotNetStreamWrapperReference'] = await receiveDotNetStreamWrapperReference(wrapper);
+  }, 0);
+}
+
+async function receiveDotNetStreamReference(streamRef) {
+  const data = new Uint8Array(await streamRef.arrayBuffer());
+  const isValid = data.length == 100000 && data.every((value, index) => value == index % 256);
   return isValid ? "Success" : `Failure, got length ${data.length} with data ${data}`;
 }
 
-function receiveDotNetStreamWrapperReference(wrapper) {
-  const isValid = receiveDotNetStreamReference(wrapper.dotNetStreamReferenceVal) === "Success" &&
+async function receiveDotNetStreamWrapperReference(wrapper) {
+  const isValid = await receiveDotNetStreamReference(wrapper.dotNetStreamReferenceVal) == "Success" &&
     wrapper.strVal == "somestr" &&
     wrapper.intVal == 25;
   return isValid ? "Success" : `Failure, got ${JSON.stringify(wrapper)}`;
 }
 
-function requestDotNetStreamReference() {
-  var streamRef = DotNet.invokeMethod(assemblyName, 'GetDotNetStreamReference');
-  return receiveDotNetStreamReference(streamRef);
-}
-
-function requestDotNetStreamWrapperReference() {
-  var wrapper = DotNet.invokeMethod(assemblyName, 'GetDotNetStreamWrapperReference');
-  return receiveDotNetStreamWrapperReference(wrapper);
-}
-
 async function requestDotNetStreamReferenceAsync() {
   var streamRef = await DotNet.invokeMethodAsync(assemblyName, 'GetDotNetStreamReferenceAsync');
-  return receiveDotNetStreamReference(streamRef);
+  return await receiveDotNetStreamReference(streamRef);
 }
 
 async function requestDotNetStreamWrapperReferenceAsync() {
   var wrapper = await DotNet.invokeMethodAsync(assemblyName, 'GetDotNetStreamWrapperReferenceAsync');
-  return receiveDotNetStreamWrapperReference(wrapper);
+  return await receiveDotNetStreamWrapperReference(wrapper);
 }
