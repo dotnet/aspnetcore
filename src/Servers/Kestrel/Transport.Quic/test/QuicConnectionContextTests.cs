@@ -557,7 +557,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
         public async Task CertificatePassedToQuicConnectionContext()
         {
             // Arrange
-            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory, clientCertificateRequired: true);
 
             var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
             var testCert = TestResources.GetTestCertificate();
@@ -567,17 +567,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
             var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
-            var tlsFeature = serverConnection.Features.Get<ITlsConnectionFeature>();
+            /*var tlsFeature = serverConnection.Features.Get<ITlsConnectionFeature>();
             Assert.NotNull(tlsFeature);
             Assert.NotNull(tlsFeature.ClientCertificate);
-            Assert.Equal(testCert, tlsFeature.ClientCertificate);
+            Assert.Equal(testCert, tlsFeature.ClientCertificate); */
 
             // Act
             var acceptTask = quicConnection.AcceptStreamAsync();
 
             await using var serverStream = await serverConnection.ConnectAsync();
 
-            tlsFeature = serverStream.Features.Get<ITlsConnectionFeature>();
+            var tlsFeature = serverStream.Features.Get<ITlsConnectionFeature>();
             Assert.NotNull(tlsFeature);
             Assert.NotNull(tlsFeature.ClientCertificate);
             Assert.Equal(testCert, tlsFeature.ClientCertificate);

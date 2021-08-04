@@ -42,18 +42,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             return new QuicTransportFactory(loggerFactory ?? NullLoggerFactory.Instance, Options.Create(quicTransportOptions));
         }
 
-        public static async Task<QuicConnectionListener> CreateConnectionListenerFactory(ILoggerFactory loggerFactory = null, ISystemClock systemClock = null)
+        public static async Task<QuicConnectionListener> CreateConnectionListenerFactory(ILoggerFactory loggerFactory = null, ISystemClock systemClock = null, bool clientCertificateRequired = false)
         {
             var transportFactory = CreateTransportFactory(loggerFactory, systemClock);
 
             // Use ephemeral port 0. OS will assign unused port.
             var endpoint = new IPEndPoint(IPAddress.Loopback, 0);
 
-            var features = CreateBindAsyncFeatures();
+            var features = CreateBindAsyncFeatures(clientCertificateRequired);
             return (QuicConnectionListener)await transportFactory.BindAsync(endpoint, features, cancellationToken: CancellationToken.None);
         }
 
-        public static FeatureCollection CreateBindAsyncFeatures()
+        public static FeatureCollection CreateBindAsyncFeatures(bool clientCertificateRequired = false)
         {
             var cert = TestResources.GetTestCertificate();
 
@@ -61,6 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             sslServerAuthenticationOptions.ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol(Alpn) };
             sslServerAuthenticationOptions.ServerCertificate = cert;
             sslServerAuthenticationOptions.RemoteCertificateValidationCallback = RemoteCertificateValidationCallback;
+            sslServerAuthenticationOptions.ClientCertificateRequired = clientCertificateRequired;
 
             var features = new FeatureCollection();
             features.Set(sslServerAuthenticationOptions);

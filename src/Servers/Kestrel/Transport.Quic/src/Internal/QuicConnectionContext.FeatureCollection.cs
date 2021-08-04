@@ -19,12 +19,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         public long Error { get; set; }
 
-        // Support accessing client certificate
-        // https://github.com/dotnet/aspnetcore/issues/34756
         public X509Certificate2? ClientCertificate
         {
             get { return _clientCert ??= ConvertToX509Certificate2(_connection.RemoteCertificate); }
-            set { _clientCert = value; }
+            set
+            {
+                _clientCert = value;
+                _clientCertTask = Task.FromResult(value);
+            }
         }
 
         public Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken)
