@@ -35,7 +35,7 @@
 </p>
 
 <script suppress-error="BL9992">
-    let someDotNetObjectReference;
+    let dotNetObjectReferenceForJSComponents;
     let numAddedComponents = 0;
     const addedComponents = [];
     const jsObject = DotNet.createJSObjectReference({
@@ -90,8 +90,9 @@
             showComplexParameters: true,
             somePerson: { name: 'Bert', age: 123.456 },
             someJSObject: jsObject,
-            someDotNetObject: someDotNetObjectReference,
-            byteArray: new Uint8Array([2, 3, 5, 7, 11, 13, 17])
+            someDotNetObject: dotNetObjectReferenceForJSComponents,
+            byteArray: new Uint8Array([2, 3, 5, 7, 11, 13, 17]),
+            someUndefinedValue: undefined, // Undefined isn't serialized into the JSON. Adding this to show parameter counting still works.
         });
     }
 
@@ -133,8 +134,8 @@
         document.getElementById('message').textContent = message;
     }
 
-    function setDotNetObjectReference(value) {
-        someDotNetObjectReference = value;
+    function setDotNetObjectReferenceForJSComponents(value) {
+        dotNetObjectReferenceForJSComponents = value;
     }
 </script>
 
@@ -144,7 +145,7 @@
         if (firstRender)
         {
             var value = new DotNetType("This is correct");
-            await JS.InvokeVoidAsync("setDotNetObjectReference", DotNetObjectReference.Create(value));
+            await JS.InvokeVoidAsync("setDotNetObjectReferenceForJSComponents", DotNetObjectReference.Create(value));
         }
     }
 

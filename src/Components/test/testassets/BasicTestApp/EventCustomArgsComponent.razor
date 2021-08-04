@@ -96,7 +96,7 @@
 <script suppress-error="BL9992">
     let customEventArgDotNetObjectReference;
 
-    function setDotNetObjectReference(value) {
+    function setDotNetObjectReferenceForEventArgs(value) {
         customEventArgDotNetObjectReference = value;
     }
 
@@ -126,7 +126,7 @@
         if (firstRender)
         {
             var value = new DotNetType("This is correct");
-            await JS.InvokeVoidAsync("setDotNetObjectReference", DotNetObjectReference.Create(value));
+            await JS.InvokeVoidAsync("setDotNetObjectReferenceForEventArgs", DotNetObjectReference.Create(value));
         }
     }
 
