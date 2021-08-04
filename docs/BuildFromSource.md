@@ -284,13 +284,13 @@ To build a code change associated with a modification, run the build script in t
 On Windows, you can run the command script:
 
 ```powershell
-.\build.cmd
+.\eng\build.cmd
 ```
 
 On macOS/Linux, you can run the shell script:
 
 ```bash
-./build.sh
+./eng/build.sh
 ```
 
 > :bulb: Before using the `build.cmd` or `build.sh` at the top-level or in a subfolder, you will need to make sure that [the dependencies documented above](#step-2-install-pre-requisites) have been installed.
