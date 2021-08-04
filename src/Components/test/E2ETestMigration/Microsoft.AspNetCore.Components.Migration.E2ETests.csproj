@@ -77,10 +77,26 @@
     </None>
   </ItemGroup>
 
+  <Target Name="PublishBasicTestApp" BeforeTargets="PublishAssets">
+    <ItemGroup>
+        <ProjectToPublish Include="..\testassets\BasicTestApp\BasicTestApp.csproj" />
+    </ItemGroup>
+    <MSBuild
+      Projects="@(ProjectToPublish)"
+      Targets="Restore;Publish"
+      Properties="PublishDir=$(OutputPath)helixcontent\BasicTestApp\"
+     />
+    <ItemGroup>
+      <_PublishBasicFiles Include="$(OutputPath)helixcontent\BasicTestApp\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_PublishBasicFiles)" DestinationFolder="$(OutputPath)\testassets\BasicTestApp\%(_PublishBasicFiles.RecursiveDir)\" />
+
+  </Target>
+
   <Target Name="PublishAssets" AfterTargets="Publish">
     <ItemGroup>
       <_PublishFiles Include="$(OutputPath).playwright\**\*.*" />
-      <_PublishBasicFiles Include="$(OutputPath)trimmed\BasicTestApp\**\*.*" />
+      <_PublishBasicFiles Include="$(OutputPath)helixcontent\BasicTestApp\**\*.*" />
     </ItemGroup>
     <Copy SourceFiles="@(_PublishFiles)" DestinationFolder="$(PublishDir)\.playwright\%(_PublishFiles.RecursiveDir)\" />
     <Copy SourceFiles="@(_PublishBasicFiles)" DestinationFolder="$(PublishDir)\testassets\BasicTestApp\%(_PublishBasicFiles.RecursiveDir)\" />
