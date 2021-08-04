@@ -567,7 +567,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
             var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
-            Debugger.Launch();
             var tlsFeature = serverConnection.Features.Get<ITlsConnectionFeature>();
             Assert.NotNull(tlsFeature);
             Assert.NotNull(tlsFeature.ClientCertificate);
