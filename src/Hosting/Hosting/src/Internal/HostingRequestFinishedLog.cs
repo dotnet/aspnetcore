@@ -9,13 +9,13 @@ namespace Microsoft.AspNetCore.Hosting
 {
     using static HostingRequestStartingLog;
 
-    internal struct HostingRequestFinishedLog : IReadOnlyList<KeyValuePair<string, object?>>
+    internal readonly struct HostingRequestFinishedLog : IReadOnlyList<KeyValuePair<string, object?>>
     {
         internal static readonly Func<HostingRequestFinishedLog, Exception?, string> Callback = (state, exception) => state.ToString();
 
         private readonly HostingApplication.Context _context;
 
-        private string? _cachedToString;
+        private readonly string _cachedToString;
         public TimeSpan Elapsed { get; }
 
         public int Count => 11;
@@ -48,19 +48,13 @@ namespace Microsoft.AspNetCore.Hosting
         {
             _context = context;
             Elapsed = elapsed;
-            _cachedToString = null;
+
+            var response = _context.HttpContext!.Response;
+            _cachedToString = $"Request finished {_context.StartLog!.Value.ToStringWithoutPreamble()} - {response.StatusCode.ToString(CultureInfo.InvariantCulture)} {ValueOrEmptyMarker(response.ContentLength)} {EscapedValueOrEmptyMarker(response.ContentType)} {Elapsed.TotalMilliseconds.ToString("0.0000", CultureInfo.InvariantCulture)}ms";
         }
 
         public override string ToString()
         {
-            if (_cachedToString == null)
-            {
-                Debug.Assert(_context.HttpContext != null && _context.StartLog != null);
-
-                var response = _context.HttpContext.Response;
-                _cachedToString = $"Request finished {_context.StartLog.Value.ToStringWithoutPreamble()} - {response.StatusCode.ToString(CultureInfo.InvariantCulture)} {ValueOrEmptyMarker(response.ContentLength)} {EscapedValueOrEmptyMarker(response.ContentType)} {Elapsed.TotalMilliseconds.ToString("0.0000", CultureInfo.InvariantCulture)}ms";
-            }
-
             return _cachedToString;
         }
 

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Hosting
 {
-    internal struct HostingRequestStartingLog : IReadOnlyList<KeyValuePair<string, object?>>
+    internal readonly struct HostingRequestStartingLog : IReadOnlyList<KeyValuePair<string, object?>>
     {
         private const string LogPreamble = "Request starting ";
         private const string EmptyEntry = "-";
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         private readonly HttpRequest _request;
 
-        private string? _cachedToString;
+        private readonly string _cachedToString;
 
         public int Count => 9;
 
@@ -37,17 +37,11 @@ namespace Microsoft.AspNetCore.Hosting
         public HostingRequestStartingLog(HttpContext httpContext)
         {
             _request = httpContext.Request;
-            _cachedToString = null;
+            _cachedToString = $"{LogPreamble}{_request.Protocol} {_request.Method} {_request.Scheme}://{_request.Host.Value}{_request.PathBase.Value}{_request.Path.Value}{_request.QueryString.Value} {EscapedValueOrEmptyMarker(_request.ContentType)} {ValueOrEmptyMarker(_request.ContentLength)}";
         }
 
         public override string ToString()
         {
-            if (_cachedToString == null)
-            {
-                var request = _request;
-                _cachedToString = $"{LogPreamble}{request.Protocol} {request.Method} {request.Scheme}://{request.Host.Value}{request.PathBase.Value}{request.Path.Value}{request.QueryString.Value} {EscapedValueOrEmptyMarker(request.ContentType)} {ValueOrEmptyMarker(request.ContentLength)}"; ;
-            }
-
             return _cachedToString;
         }
 

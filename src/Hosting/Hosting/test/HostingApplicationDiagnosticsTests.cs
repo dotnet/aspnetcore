@@ -542,6 +542,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
 
             features = new FeatureCollection();
             features.Set<IHttpRequestFeature>(new HttpRequestFeature());
+            features.Set<IHttpResponseFeature>(new HttpResponseFeature());
             var context = new DefaultHttpContext(features);
             configure?.Invoke(context);
             httpContextFactory.Setup(s => s.Create(It.IsAny<IFeatureCollection>())).Returns(context);
