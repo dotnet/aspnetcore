@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // precedence part of the DFA is over.
             var precedenceDigitComparer = Comparer<DfaBuilderWorkerWorkItem>.Create((x, y) =>
             {
-                return x._precedenceDigit.CompareTo(y._precedenceDigit);
+                return x.PrecedenceDigit.CompareTo(y.PrecedenceDigit);
             });
 
             var dfaWorker = new DfaBuilderWorker(work, precedenceDigitComparer, includeLabel, _parameterPolicyFactory);
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     List<DfaNode> nextParents;
                     if (nextWorkCount < nextWork.Count)
                     {
-                        nextParents = nextWork[nextWorkCount]._parents;
+                        nextParents = nextWork[nextWorkCount].Parents;
                         nextParents.Clear();
 
                         var nextPrecedenceDigit = GetPrecedenceDigitAtDepth(endpoint, depth + 1);
@@ -943,45 +943,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return !RouteValueEqualityComparer.Default.Equals(value, string.Empty);
         }
 
-        // TODO: Convert to record struct when available
-        [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
-        private struct DfaBuilderWorkerWorkItem
-        {
-            public readonly RouteEndpoint _endpoint;
-            public readonly int _precedenceDigit;
-            public readonly List<DfaNode> _parents;
-
-            public DfaBuilderWorkerWorkItem(RouteEndpoint endpoint, int precedenceDigit, List<DfaNode> parents)
-            {
-                _endpoint = endpoint;
-                _precedenceDigit = precedenceDigit;
-                _parents = parents;
-            }
-
-            public override bool Equals(object obj)
-            {
-                return obj is DfaBuilderWorkerWorkItem other &&
-                       EqualityComparer<RouteEndpoint>.Default.Equals(_endpoint, other._endpoint) &&
-                       _precedenceDigit == other._precedenceDigit &&
-                       EqualityComparer<List<DfaNode>>.Default.Equals(_parents, other._parents);
-            }
-
-            public override int GetHashCode()
-            {
-                return HashCode.Combine(_endpoint, _precedenceDigit, _parents);
-            }
-
-            public void Deconstruct(out RouteEndpoint endpoint, out int precedenceDigit, out List<DfaNode> parents)
-            {
-                endpoint = _endpoint;
-                precedenceDigit = _precedenceDigit;
-                parents = _parents;
-            }
-
-            private string GetDebuggerDisplay()
-            {
-                return $"Endpoint: {_endpoint.RoutePattern.RawText} - Parents: {string.Join(", ", _parents.Select(p => p.Label))}";
-            }
-        }
+        private record struct DfaBuilderWorkerWorkItem(RouteEndpoint Endpoint, int PrecedenceDigit, List<DfaNode> Parents);
     }
 }
