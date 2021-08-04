@@ -1,4 +1,3 @@
-import { EventDescriptor } from '../../Rendering/Events/EventDispatcher';
 import { trySerializeMessage } from './WebViewIpcCommon';
 
 export function sendAttachPage(baseUrl: string, startUrl: string) {

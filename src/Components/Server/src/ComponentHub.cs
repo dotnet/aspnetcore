@@ -242,21 +242,6 @@ namespace Microsoft.AspNetCore.Components.Server
             return await circuitHost.ReceiveJSDataChunk(streamId, chunkId, chunk, error);
         }
 
-        public async ValueTask DispatchBrowserEvent(JsonElement eventInfo)
-        {
-            Debug.Assert(eventInfo.GetArrayLength() == 2, "Array length should be 2");
-            var eventDescriptor = eventInfo[0];
-            var eventArgs = eventInfo[1];
-
-            var circuitHost = await GetActiveCircuitAsync();
-            if (circuitHost == null)
-            {
-                return;
-            }
-
-            _ = circuitHost.DispatchEvent(eventDescriptor, eventArgs);
-        }
-
         public async ValueTask OnRenderCompleted(long renderId, string errorMessageOrNull)
         {
             var circuitHost = await GetActiveCircuitAsync();

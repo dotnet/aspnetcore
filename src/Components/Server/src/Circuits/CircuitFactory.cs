@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 _options,
                 client,
                 _loggerFactory.CreateLogger<RemoteRenderer>(),
-                jsRuntime.ElementReferenceContext);
+                jsRuntime);
 
             var circuitHandlers = scope.ServiceProvider.GetServices<CircuitHandler>()
                 .OrderBy(h => h.Order)

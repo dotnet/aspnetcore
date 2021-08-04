@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to use when initializing components.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public WebAssemblyRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
-            : base(serviceProvider, loggerFactory)
+            : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions())
         {
             // The WebAssembly renderer registers and unregisters itself with the static registry
             _webAssemblyRendererId = RendererRegistry.Add(this);
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         public ValueTask InitializeJSComponentSupportAsync(JSComponentConfigurationStore configuration, JsonSerializerOptions jsonOptions)
         {
             var interop = new JSComponentInterop(configuration, jsonOptions);
-            return InitializeJSComponentSupportAsync(interop);
+            return InitializeJSComponentSupportAsync(_webAssemblyRendererId, interop);
         }
 
         /// <inheritdoc />

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView.Services;
@@ -23,7 +22,6 @@ namespace Microsoft.AspNetCore.Components.WebView
     internal class PageContext : IAsyncDisposable
     {
         private readonly AsyncServiceScope _serviceScope;
-        private readonly DotNetObjectReference<PageContext> _selfReference;
 
         public WebViewNavigationManager NavigationManager { get; }
         public WebViewJSRuntime JSRuntime { get; }
@@ -46,31 +44,13 @@ namespace Microsoft.AspNetCore.Components.WebView
             JSRuntime.AttachToWebView(ipcSender);
 
             var loggerFactory = services.GetRequiredService<ILoggerFactory>();
-            Renderer = new WebViewRenderer(services, dispatcher, ipcSender, loggerFactory, JSRuntime.ElementReferenceContext);
-
-            // We need to dispatch events via JS interop so that all the special data types (byte arrays,
-            // DotNetObjectReference, etc.) can be passed as eventargs data. So, register an object that
-            // the JS side can use to call back with event data.
-            _selfReference = DotNetObjectReference.Create(this);
-            _ = JSRuntime.InvokeVoidAsync("Blazor._internal.attachEventDispatcher", _selfReference);
+            Renderer = new WebViewRenderer(services, dispatcher, ipcSender, loggerFactory, JSRuntime);
         }
 
         public ValueTask DisposeAsync()
         {
             Renderer.Dispose();
-            _selfReference.Dispose();
             return _serviceScope.DisposeAsync();
-        }
-
-        [JSInvokable]
-        public Task DispatchEventAsync(JsonElement eventDescriptor, JsonElement eventArgs)
-        {
-            var jsonOptions = JSRuntime.ReadJsonSerializerOptions();
-            var webEventData = WebEventData.Parse(Renderer, jsonOptions, eventDescriptor, eventArgs);
-            return Renderer.DispatchEventAsync(
-                webEventData.EventHandlerId,
-                webEventData.EventFieldInfo,
-                webEventData.EventArgs);
         }
     }
 }

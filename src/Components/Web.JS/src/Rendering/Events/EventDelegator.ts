@@ -1,6 +1,6 @@
 import { EventFieldInfo } from './EventFieldInfo';
-import { dispatchEvent } from './EventDispatcher';
 import { eventNameAliasRegisteredCallbacks, getBrowserEventName, getEventNameAliases, getEventTypeOptions } from './EventTypes';
+import { dispatchEvent } from '../WebRendererInteropMethods';
 
 const nonBubblingEvents = toLookup([
   'abort',
@@ -156,8 +156,7 @@ export class EventDelegator {
             browserEvent.preventDefault();
           }
 
-          dispatchEvent({
-            browserRendererId: this.browserRendererId,
+          dispatchEvent(this.browserRendererId, {
             eventHandlerId: handlerInfo.eventHandlerId,
             eventName: eventName,
             eventFieldInfo: EventFieldInfo.fromEvent(handlerInfo.renderingComponentId, browserEvent)
@@ -317,6 +316,12 @@ class EventHandlerInfosForElement {
 
     return this.stopPropagationFlags ? this.stopPropagationFlags[eventName] : false;
   }
+}
+
+export interface EventDescriptor {
+  eventHandlerId: number;
+  eventName: string;
+  eventFieldInfo: EventFieldInfo | null;
 }
 
 interface EventHandlerInfo {

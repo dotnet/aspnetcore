@@ -16,6 +16,9 @@
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.JSInterop" />
     <Reference Include="System.IO.Pipelines" />
+
+    <!-- TODO: Make not shared any more -->
+    <Compile Include="$(ComponentsSharedSourceRoot)src\WebEventData\*.cs" LinkBase="WebEventData" />
   </ItemGroup>
 
 </Project>

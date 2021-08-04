@@ -30,26 +30,5 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
         {
             WebAssemblyNavigationManager.Instance.SetLocation(uri, isInterceptedLink);
         }
-
-        /// <summary>
-        /// For framework use only.
-        /// </summary>
-        [JSInvokable(nameof(DispatchEvent))]
-        public static async Task DispatchEvent(JsonElement eventDescriptorJson, JsonElement eventArgsJson)
-        {
-            var eventDescriptor = WebEventDescriptorReader.Read(eventDescriptorJson);
-            var renderer = RendererRegistry.Find(eventDescriptor.BrowserRendererId);
-
-            var webEvent = WebEventData.Parse(
-                renderer,
-                DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(),
-                eventDescriptor,
-                eventArgsJson);
-
-            await renderer.DispatchEventAsync(
-                webEvent.EventHandlerId,
-                webEvent.EventFieldInfo,
-                webEvent.EventArgs);
-        }
     }
 }

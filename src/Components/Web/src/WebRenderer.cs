@@ -18,16 +18,20 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     public abstract class WebRenderer : Renderer
     {
         private readonly IServiceProvider _serviceProvider;
+        private readonly DotNetObjectReference<WebRendererInteropMethods> _interopMethodsReference;
 
         /// <summary>
         /// Constructs an instance of <see cref="WebRenderer"/>.
         /// </summary>
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when initializing components.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        public WebRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
+        /// <param name="jsonOptions">The <see cref="JsonSerializerOptions"/>.</param>
+        public WebRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, JsonSerializerOptions jsonOptions)
             : base(serviceProvider, loggerFactory)
         {
             _serviceProvider = serviceProvider;
+            _interopMethodsReference = DotNetObjectReference.Create(
+                new WebRendererInteropMethods(this, jsonOptions));
         }
 
         /// <summary>
@@ -54,12 +58,48 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <summary>
         /// Enables support for adding, updating, and removing root components from JavaScript.
         /// </summary>
+        /// <param name="rendererId">An identifier for the renderer that will be used by JavaScript code.</param>
         /// <param name="interop">The object that provides JS-callable methods for adding, updating, and removing root components.</param>
         /// <returns>A task representing the completion of the operation.</returns>
-        protected ValueTask InitializeJSComponentSupportAsync(JSComponentInterop interop)
+        protected async ValueTask InitializeJSComponentSupportAsync(int rendererId, JSComponentInterop interop)
         {
             var jsRuntime = _serviceProvider.GetRequiredService<IJSRuntime>();
-            return interop.InitializeAsync(jsRuntime, this);
+            await interop.InitializeAsync(jsRuntime, this);
+            await jsRuntime.InvokeVoidAsync("Blazor._internal.attachWebRendererInterop", rendererId, _interopMethodsReference);
+        }
+
+        /// <inheritdoc />
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _interopMethodsReference.Dispose();
+            }
+
+            base.Dispose(disposing);
+        }
+
+        private class WebRendererInteropMethods
+        {
+            private readonly Renderer _renderer;
+            private readonly JsonSerializerOptions _jsonOptions;
+
+            [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, typeof(WebRendererInteropMethods))]
+            public WebRendererInteropMethods(Renderer renderer, JsonSerializerOptions jsonOptions)
+            {
+                _renderer = renderer;
+                _jsonOptions = jsonOptions;
+            }
+
+            [JSInvokable]
+            public Task DispatchEventAsync(JsonElement eventDescriptor, JsonElement eventArgs)
+            {
+                var webEventData = WebEventData.Parse(_renderer, _jsonOptions, eventDescriptor, eventArgs);
+                return _renderer.DispatchEventAsync(
+                    webEventData.EventHandlerId,
+                    webEventData.EventFieldInfo,
+                    webEventData.EventArgs);
+            }
         }
     }
 }

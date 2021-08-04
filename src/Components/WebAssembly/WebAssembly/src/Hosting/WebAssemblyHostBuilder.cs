@@ -38,7 +38,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// <param name="args">The argument passed to the application's main method.</param>
         /// <returns>A <see cref="WebAssemblyHostBuilder"/>.</returns>
         [DynamicDependency(nameof(JSInteropMethods.NotifyLocationChanged), typeof(JSInteropMethods))]
-        [DynamicDependency(nameof(JSInteropMethods.DispatchEvent), typeof(JSInteropMethods))]
         [DynamicDependency(JsonSerialized, typeof(WebEventDescriptor))]
         public static WebAssemblyHostBuilder CreateDefault(string[]? args = default)
         {

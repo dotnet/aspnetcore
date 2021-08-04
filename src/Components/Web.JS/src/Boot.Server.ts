@@ -8,7 +8,6 @@ import { RenderQueue } from './Platform/Circuits/RenderQueue';
 import { ConsoleLogger } from './Platform/Logging/Loggers';
 import { LogLevel, Logger } from './Platform/Logging/Logger';
 import { CircuitDescriptor } from './Platform/Circuits/CircuitManager';
-import { setEventDispatcher } from './Rendering/Events/EventDispatcher';
 import { resolveOptions, CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
 import { attachRootComponentToLogicalElement } from './Rendering/Renderer';
@@ -91,13 +90,6 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
   options.configureSignalR(connectionBuilder);
 
   const connection = connectionBuilder.build();
-  const textEncoder = new TextEncoder();
-
-  setEventDispatcher((descriptor, args) => {
-    connection.send('DispatchBrowserEvent',
-      textEncoder.encode(JSON.stringify([descriptor, args]))
-    );
-  });
 
   // Configure navigation via SignalR
   Blazor._internal.navigationManager.listenForNavigationEvents((uri: string, intercepted: boolean): Promise<void> => {
