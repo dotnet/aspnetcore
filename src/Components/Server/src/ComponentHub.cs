@@ -258,35 +258,33 @@ namespace Microsoft.AspNetCore.Components.Server
             _ = circuitHost.DispatchEvent(eventDescriptor, eventArgs);
         }
 
-        public ChannelReader<ArraySegment<byte>> SendDotNetStreamToJS(long streamId)
+        public async IAsyncEnumerable<ArraySegment<byte>> SendDotNetStreamToJS(long streamId)
         {
-            var channel = Channel.CreateUnbounded<ArraySegment<byte>>();
-            _ = WriteStreamDataAsync(channel.Writer, streamId);
-            return channel.Reader;
-
-            async Task WriteStreamDataAsync(ChannelWriter<ArraySegment<byte>> writer, long streamId)
+            var circuitHost = await GetActiveCircuitAsync();
+            if (circuitHost == null)
             {
-                Exception localException = null;
+                throw new Exception();
+            }
 
-                try
-                {
-                    var circuitHost = await GetActiveCircuitAsync();
-                    if (circuitHost == null)
-                    {
-                        return;
-                    }
+            var dotNetStreamReference = await circuitHost.TryClaimPendingStream(streamId);
+            if (dotNetStreamReference is null)
+            {
+                throw new Exception();
+            }
 
-                    await circuitHost.SendDotNetStreamAsync(streamId, writer);
-                }
-                catch (Exception ex)
+            var buffer = ArrayPool<byte>.Shared.Rent(32 * 1024);
+
+            try
+            {
+                int bytesRead;
+                while ((bytesRead = await circuitHost.SendDotNetStreamAsync(dotNetStreamReference, buffer)) > 0)
                 {
-                    localException = ex;
-                    Log.SendingDotNetStreamFailed(_logger, ex);
+                    yield return new ArraySegment<byte>(buffer, 0, bytesRead);
                 }
-                finally
-                {
-                    writer.Complete(localException);
-                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
             }
         }
 

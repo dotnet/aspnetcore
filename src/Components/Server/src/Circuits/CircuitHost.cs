@@ -450,40 +450,59 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
-        public async Task SendDotNetStreamAsync(long streamId, ChannelWriter<ArraySegment<byte>> writer)
+        public async Task<int> SendDotNetStreamAsync(DotNetStreamReference dotNetStreamReference, byte[] buffer)
+        {
+            AssertInitialized();
+            AssertNotDisposed();
+
+            int bytesRead = 0;
+
+            try
+            {
+                return await Renderer.Dispatcher.InvokeAsync<int>(async () =>
+                {
+
+                    bytesRead = await dotNetStreamReference.Stream.ReadAsync(buffer);
+
+                    Log.SendDotNetStreamSuccess(_logger, 0);
+                    return bytesRead;
+                });
+            }
+            catch (Exception ex)
+            {
+                // An error completing stream interop means that the user sent invalid data, a well-behaved
+                // client won't do this.
+                Log.SendDotNetStreamException(_logger, 0, ex);
+                await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, "Unable to send .NET stream."));
+                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+                return 0;
+            }
+            finally
+            {
+                if (bytesRead == 0 && dotNetStreamReference is not null && !dotNetStreamReference.LeaveOpen)
+                {
+                    dotNetStreamReference.Stream?.Dispose();
+                }
+            }
+        }
+
+        public async Task<DotNetStreamReference> TryClaimPendingStream(long streamId)
         {
             AssertInitialized();
             AssertNotDisposed();
 
             DotNetStreamReference dotNetStreamReference = null;
-            byte[] buffer = null;
 
             try
             {
-                await Renderer.Dispatcher.InvokeAsync(async () =>
+                return await Renderer.Dispatcher.InvokeAsync<DotNetStreamReference>(() =>
                 {
                     if (!JSRuntime.TryClaimPendingStreamForSending(streamId, out dotNetStreamReference))
                     {
                         throw new InvalidOperationException($"The stream with ID {streamId} is not available. It may have timed out.");
                     }
 
-                    buffer = ArrayPool<byte>.Shared.Rent(32 * 1024);
-
-                    int bytesRead;
-                    while ((bytesRead = await dotNetStreamReference.Stream.ReadAsync(buffer)) > 0)
-                    {
-                        // We have to stop sending if the circuit disconnects. It doesn't stop otherwise.
-                        if (_disposed)
-                        {
-                            break;
-                        }
-
-                        // Should the client stop reading mid-stream, a connection closure will occur after
-                        // a few seconds as the pipe will hit backpressure on the server side and then timeout.
-                        await writer.WriteAsync(new ArraySegment<byte>(buffer, 0, bytesRead));
-                    }
-
-                    Log.SendDotNetStreamSuccess(_logger, streamId);
+                    return dotNetStreamReference;
                 });
             }
             catch (Exception ex)
@@ -493,18 +512,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 Log.SendDotNetStreamException(_logger, streamId, ex);
                 await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, "Unable to send .NET stream."));
                 UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
-            }
-            finally
-            {
-                if (buffer is not null)
-                {
-                    ArrayPool<byte>.Shared.Return(buffer, clearArray: true);
-                }
-
-                if (dotNetStreamReference is not null && !dotNetStreamReference.LeaveOpen)
-                {
-                    dotNetStreamReference.Stream?.Dispose();
-                }
+                return default;
             }
         }
 
