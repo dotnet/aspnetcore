@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Routing
 {
     /// <summary>
-    /// Indicates wheter or not that API explorer data should be emitted for this endpoint.
+    /// Indicates whether or not that API explorer data should be emitted for this endpoint.
     /// </summary>
     public interface IExcludeFromDescriptionMetadata
     {

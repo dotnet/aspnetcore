@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     public static class OpenApiEndpointConventionBuilderExtensions
     {
-        private static readonly ExcludeFromDescriptionAttribute _excludeFromApiMetadataAttribute = new();
+        private static readonly ExcludeFromDescriptionAttribute _excludeFromDescriptionMetadataAttribute = new();
 
         /// <summary>
         /// Adds the <see cref="IExcludeFromDescriptionMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>A <see cref="MinimalActionEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static MinimalActionEndpointConventionBuilder ExcludeFromDescription(this MinimalActionEndpointConventionBuilder builder)
         {
-            builder.WithMetadata(_excludeFromApiMetadataAttribute);
+            builder.WithMetadata(_excludeFromDescriptionMetadataAttribute);
 
             return builder;
         }
