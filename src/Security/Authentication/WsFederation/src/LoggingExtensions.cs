@@ -5,81 +5,27 @@ using System;
 
 namespace Microsoft.Extensions.Logging
 {
-    internal static class LoggingExtensions
+    internal static partial class LoggingExtensions
     {
-        private static readonly Action<ILogger, Exception?> _signInWithoutWResult;
-        private static readonly Action<ILogger, Exception?> _signInWithoutToken;
-        private static readonly Action<ILogger, Exception> _exceptionProcessingMessage;
-        private static readonly Action<ILogger, string, Exception?> _malformedRedirectUri;
-        private static readonly Action<ILogger, Exception?> _remoteSignOutHandledResponse;
-        private static readonly Action<ILogger, Exception?> _remoteSignOutSkipped;
-        private static readonly Action<ILogger, Exception?> _remoteSignOut;
+        [LoggerMessage(1, LogLevel.Debug, "Received a sign-in message without a WResult.", EventName = "SignInWithoutWResult")]
+        public static partial void SignInWithoutWResult(this ILogger logger);
 
-        static LoggingExtensions()
-        {
-            _signInWithoutWResult = LoggerMessage.Define(
-                eventId: new EventId(1, "SignInWithoutWResult"),
-                logLevel: LogLevel.Debug,
-                formatString: "Received a sign-in message without a WResult.");
-            _signInWithoutToken = LoggerMessage.Define(
-                eventId: new EventId(2, "SignInWithoutToken"),
-                logLevel: LogLevel.Debug,
-                formatString: "Received a sign-in message without a token.");
-            _exceptionProcessingMessage = LoggerMessage.Define(
-                eventId: new EventId(3, "ExceptionProcessingMessage"),
-                logLevel: LogLevel.Error,
-                formatString: "Exception occurred while processing message.");
-            _malformedRedirectUri = LoggerMessage.Define<string>(
-                eventId: new EventId(4, "MalformedRedirectUri"),
-                logLevel: LogLevel.Warning,
-                formatString: "The sign-out redirect URI '{0}' is malformed.");
-            _remoteSignOutHandledResponse = LoggerMessage.Define(
-                eventId: new EventId(5, "RemoteSignOutHandledResponse"),
-               logLevel: LogLevel.Debug,
-               formatString: "RemoteSignOutContext.HandledResponse");
-            _remoteSignOutSkipped = LoggerMessage.Define(
-                eventId: new EventId(6, "RemoteSignOutSkipped"),
-               logLevel: LogLevel.Debug,
-               formatString: "RemoteSignOutContext.Skipped");
-            _remoteSignOut = LoggerMessage.Define(
-                eventId: new EventId(7, "RemoteSignOut"),
-               logLevel: LogLevel.Information,
-               formatString: "Remote signout request processed.");
-        }
+        [LoggerMessage(2, LogLevel.Debug, "Received a sign-in message without a token.", EventName = "SignInWithoutToken")]
+        public static partial void SignInWithoutToken(this ILogger logger);
 
-        public static void SignInWithoutWResult(this ILogger logger)
-        {
-            _signInWithoutWResult(logger, null);
-        }
+        [LoggerMessage(3, LogLevel.Error, "Exception occurred while processing message.", EventName = "ExceptionProcessingMessage")]
+        public static partial void ExceptionProcessingMessage(this ILogger logger, Exception ex);
 
-        public static void SignInWithoutToken(this ILogger logger)
-        {
-            _signInWithoutToken(logger, null);
-        }
+        [LoggerMessage(4, LogLevel.Warning, "The sign-out redirect URI '{uri}' is malformed.", EventName = "MalformedRedirectUri")]
+        public static partial void MalformedRedirectUri(this ILogger logger, string uri);
 
-        public static void ExceptionProcessingMessage(this ILogger logger, Exception ex)
-        {
-            _exceptionProcessingMessage(logger, ex);
-        }
+        [LoggerMessage(5, LogLevel.Debug, "RemoteSignOutContext.HandledResponse", EventName = "RemoteSignOutHandledResponse")]
+        public static partial void RemoteSignOutHandledResponse(this ILogger logger);
 
-        public static void MalformedRedirectUri(this ILogger logger, string uri)
-        {
-            _malformedRedirectUri(logger, uri, null);
-        }
+        [LoggerMessage(6, LogLevel.Debug, "RemoteSignOutContext.Skipped", EventName = "RemoteSignOutSkipped")]
+        public static partial void RemoteSignOutSkipped(this ILogger logger);
 
-        public static void RemoteSignOutHandledResponse(this ILogger logger)
-        {
-            _remoteSignOutHandledResponse(logger, null);
-        }
-
-        public static void RemoteSignOutSkipped(this ILogger logger)
-        {
-            _remoteSignOutSkipped(logger, null);
-        }
-
-        public static void RemoteSignOut(this ILogger logger)
-        {
-            _remoteSignOut(logger, null);
-        }
+        [LoggerMessage(7, LogLevel.Information, "Remote signout request processed.", EventName = "RemoteSignOut")]
+        public static partial void RemoteSignOut(this ILogger logger);
     }
 }

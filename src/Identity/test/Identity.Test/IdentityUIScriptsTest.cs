@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         private static List<ScriptTag> GetScriptTags()
         {
-            var uiDirV4 = Path.Combine(GetProjectBasePath(), "Areas", "Identity", "Pages", "V4");
+            var uiDirV4 = Path.Combine(GetProjectBasePath(), "Areas", "Identity", "Pages", "V5");
             var cshtmlFiles = GetRazorFiles(uiDirV4);
 
             var scriptTags = new List<ScriptTag>();

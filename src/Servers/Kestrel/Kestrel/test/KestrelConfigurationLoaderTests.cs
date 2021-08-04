@@ -553,6 +553,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         [InlineData("http1", HttpProtocols.Http1)]
         [InlineData("http2", HttpProtocols.Http2)]
         [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)]
+        [InlineData("http1AndHttp2andHttp3", HttpProtocols.Http1AndHttp2AndHttp3)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81)]
         public void DefaultConfigSectionCanSetProtocols_NonMacAndWin7(string input, HttpProtocols expected)

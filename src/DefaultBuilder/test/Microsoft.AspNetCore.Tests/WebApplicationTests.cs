@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
+using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
@@ -15,6 +16,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -230,6 +232,75 @@ namespace Microsoft.AspNetCore.Tests
                     { WebHostDefaults.HostingStartupExcludeAssembliesKey, "hostingexclude" }
                 });
             }));
+        }
+
+        [Fact]
+        public void WebApplicationBuilderApplicationNameCanBeOverridden()
+        {
+            var assemblyName = Assembly.GetEntryAssembly().GetName().Name;
+
+            var builder = new WebApplicationBuilder(
+                typeof(WebApplicationTests).Assembly,
+                new[] { $"--applicationName={assemblyName}" }, bootstrapBuilder =>
+            {
+                // Verify the defaults observed by the boostrap host builder we use internally to populate
+                // the defaults
+                bootstrapBuilder.ConfigureAppConfiguration((context, config) =>
+                {
+                    Assert.Equal(assemblyName, context.HostingEnvironment.ApplicationName);
+                });
+            });
+
+            Assert.Equal(assemblyName, builder.Environment.ApplicationName);
+            builder.Host.ConfigureAppConfiguration((context, config) =>
+            {
+                Assert.Equal(assemblyName, context.HostingEnvironment.ApplicationName);
+            });
+
+            builder.WebHost.ConfigureAppConfiguration((context, config) =>
+            {
+                Assert.Equal(assemblyName, context.HostingEnvironment.ApplicationName);
+            });
+
+            var app = builder.Build();
+            var hostEnv = app.Services.GetRequiredService<IHostEnvironment>();
+            var webHostEnv = app.Services.GetRequiredService<IWebHostEnvironment>();
+
+            Assert.Equal(assemblyName, hostEnv.ApplicationName);
+            Assert.Equal(assemblyName, webHostEnv.ApplicationName);
+        }
+
+        [Fact]
+        public void WebApplicationBuilderCanFlowCommandLineConfigurationToApplication()
+        {
+            var builder = WebApplication.CreateBuilder(new[] { "--x=1", "--name=Larry", "--age=20", "--environment=Testing" });
+
+            Assert.Equal("1", builder.Configuration["x"]);
+            Assert.Equal("Larry", builder.Configuration["name"]);
+            Assert.Equal("20", builder.Configuration["age"]);
+            Assert.Equal("Testing", builder.Configuration["environment"]);
+            Assert.Equal("Testing", builder.Environment.EnvironmentName);
+
+            builder.WebHost.ConfigureAppConfiguration((context, config) =>
+            {
+                Assert.Equal("Testing", context.HostingEnvironment.EnvironmentName);
+            });
+
+            builder.Host.ConfigureAppConfiguration((context, config) =>
+            {
+                Assert.Equal("Testing", context.HostingEnvironment.EnvironmentName);
+            });
+
+            var app = builder.Build();
+            var hostEnv = app.Services.GetRequiredService<IHostEnvironment>();
+            var webHostEnv = app.Services.GetRequiredService<IWebHostEnvironment>();
+
+            Assert.Equal("Testing", hostEnv.EnvironmentName);
+            Assert.Equal("Testing", webHostEnv.EnvironmentName);
+            Assert.Equal("1", app.Configuration["x"]);
+            Assert.Equal("Larry", app.Configuration["name"]);
+            Assert.Equal("20", app.Configuration["age"]);
+            Assert.Equal("Testing", app.Configuration["environment"]);
         }
 
         [Fact]
@@ -667,6 +738,20 @@ namespace Microsoft.AspNetCore.Tests
             // This currently throws an AggregateException, but any Exception from Build() is enough to make this test pass.
             // If this is throwing for any reason other than service scope validation, we'll likely see it in other tests.
             Assert.ThrowsAny<Exception>(() => builder.Build());
+        }
+
+        [Fact]
+        public async Task WebApplicationBuilder_ThrowsExceptionIfServicesAlreadyBuilt()
+        {
+            var builder = WebApplication.CreateBuilder();
+            await using var app = builder.Build();
+
+            Assert.Throws<InvalidOperationException>(() => builder.Services.AddSingleton<IService>(new Service()));
+            Assert.Throws<InvalidOperationException>(() => builder.Services.TryAddSingleton(new Service()));
+            Assert.Throws<InvalidOperationException>(() => builder.Services.AddScoped<IService, Service>());
+            Assert.Throws<InvalidOperationException>(() => builder.Services.TryAddScoped<IService, Service>());
+            Assert.Throws<InvalidOperationException>(() => builder.Services.Remove(ServiceDescriptor.Singleton(new Service())));
+            Assert.Throws<InvalidOperationException>(() => builder.Services[0] = ServiceDescriptor.Singleton(new Service()));
         }
 
         private class Service : IService { }

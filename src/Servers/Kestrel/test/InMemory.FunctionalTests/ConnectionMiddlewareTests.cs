@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
@@ -64,14 +65,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
         [Theory]
         [MemberData(nameof(EchoAppRequestDelegates))]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34947")]
         public async Task CanReadAndWriteWithAsyncConnectionMiddleware(RequestDelegate requestDelegate)
         {
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
-            listenOptions.Use(next => new AsyncConnectionMiddleware(next).OnConnectionAsync);
-
             var serviceContext = new TestServiceContext(LoggerFactory);
 
-            await using (var server = new TestServer(requestDelegate, serviceContext, listenOptions))
+            await using (var server = new TestServer(requestDelegate, serviceContext, listenOptions =>
+            {
+                listenOptions.UseConnectionLogging();
+                listenOptions.Use(next => new AsyncConnectionMiddleware(next).OnConnectionAsync);
+                listenOptions.UseConnectionLogging();
+            }))
             {
                 using (var connection = server.CreateConnection())
                 {

@@ -5,21 +5,9 @@ using System;
 
 namespace Microsoft.Extensions.Logging
 {
-    internal static class LoggingExtensions
+    internal static partial class LoggingExtensions
     {
-        private static readonly Action<ILogger, Exception?> _noCertificate;
-
-        static LoggingExtensions()
-        {
-            _noCertificate = LoggerMessage.Define(
-                eventId: new EventId(0, "NoCertificate"),
-                logLevel: LogLevel.Warning,
-                formatString: "Could not read certificate from header.");
-        }
-
-        public static void NoCertificate(this ILogger logger, Exception exception)
-        {
-            _noCertificate(logger, exception);
-        }
+        [LoggerMessage(0, LogLevel.Warning, "Could not read certificate from header.", EventName = "NoCertificate")]
+        public static partial void NoCertificate(this ILogger logger, Exception exception);
     }
 }

@@ -35,6 +35,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         private CancellationTokenSource _streamClosedTokenSource = default!;
         private string? _connectionId;
         private const int MinAllocBufferSize = 4096;
+        private volatile Exception? _shutdownReadReason;
+        private volatile Exception? _shutdownWriteReason;
         private volatile Exception? _shutdownReason;
         private bool _streamClosed;
         private bool _serverAborted;
@@ -48,6 +50,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             _context = context;
             _log = context.Log;
             MemoryPool = connection.MemoryPool;
+
+            RemoteEndPoint = connection.RemoteEndPoint;
+            LocalEndPoint = connection.LocalEndPoint;
 
             var maxReadBufferSize = context.Options.MaxReadBufferSize ?? 0;
             var maxWriteBufferSize = context.Options.MaxWriteBufferSize ?? 0;
@@ -154,11 +159,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 // Now wait for both to complete
                 await receiveTask;
                 await sendTask;
-
-                CanReuse = _stream.CanRead && _stream.CanWrite
-                    && _transportPipeReader.IsCompletedSuccessfully
-                    && _transportPipeWriter.IsCompletedSuccessfully
-                    && !_clientAbort;
             }
             catch (Exception ex)
             {
@@ -172,7 +172,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
             try
             {
-                await ProcessReceives();
+                var input = Input;
+                while (true)
+                {
+                    var buffer = Input.GetMemory(MinAllocBufferSize);
+                    var bytesReceived = await _stream.ReadAsync(buffer);
+
+                    if (bytesReceived == 0)
+                    {
+                        // Read completed.
+                        break;
+                    }
+
+                    input.Advance(bytesReceived);
+
+                    var flushTask = input.FlushAsync();
+
+                    var paused = !flushTask.IsCompleted;
+
+                    if (paused)
+                    {
+                        _log.StreamPause(this);
+                    }
+
+                    var result = await flushTask;
+
+                    if (paused)
+                    {
+                        _log.StreamResume(this);
+                    }
+
+                    if (result.IsCompleted || result.IsCanceled)
+                    {
+                        // Pipe consumer is shut down, do we stop writing
+                        break;
+                    }
+                }
             }
             catch (QuicStreamAbortedException ex)
             {
@@ -201,51 +236,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             finally
             {
                 // If Shutdown() has already bee called, assume that was the reason ProcessReceives() exited.
-                Input.Complete(_shutdownReason ?? error);
+                Input.Complete(_shutdownReadReason ?? _shutdownReason ?? error);
 
                 FireStreamClosed();
 
                 await _waitForConnectionClosedTcs.Task;
-            }
-        }
-
-        private async Task ProcessReceives()
-        {
-            var input = Input;
-            while (true)
-            {
-                var buffer = Input.GetMemory(MinAllocBufferSize);
-                var bytesReceived = await _stream.ReadAsync(buffer);
-
-                if (bytesReceived == 0)
-                {
-                    // Read completed.
-                    break;
-                }
-
-                input.Advance(bytesReceived);
-
-                var flushTask = input.FlushAsync();
-
-                var paused = !flushTask.IsCompleted;
-
-                if (paused)
-                {
-                    _log.StreamPause(this);
-                }
-
-                var result = await flushTask;
-
-                if (paused)
-                {
-                    _log.StreamResume(this);
-                }
-
-                if (result.IsCompleted || result.IsCanceled)
-                {
-                    // Pipe consumer is shut down, do we stop writing
-                    break;
-                }
             }
         }
 
@@ -288,7 +283,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
             try
             {
-                await ProcessSends();
+                // Resolve `output` PipeReader via the IDuplexPipe interface prior to loop start for performance.
+                var output = Output;
+                while (true)
+                {
+                    var result = await output.ReadAsync();
+
+                    if (result.IsCanceled)
+                    {
+                        break;
+                    }
+
+                    var buffer = result.Buffer;
+
+                    var end = buffer.End;
+                    var isCompleted = result.IsCompleted;
+                    if (!buffer.IsEmpty)
+                    {
+                        await _stream.WriteAsync(buffer, endStream: isCompleted);
+                    }
+
+                    output.AdvanceTo(end);
+
+                    if (isCompleted)
+                    {
+                        // Once the stream pipe is closed, shutdown the stream.
+                        break;
+                    }
+                }
             }
             catch (QuicStreamAbortedException ex)
             {
@@ -316,45 +338,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             }
             finally
             {
-                await ShutdownWrite(shutdownReason);
+                ShutdownWrite(shutdownReason);
 
                 // Complete the output after disposing the stream
                 Output.Complete(unexpectedError ?? shutdownReason);
 
                 // Cancel any pending flushes so that the input loop is un-paused
                 Input.CancelPendingFlush();
-            }
-        }
-
-        private async Task ProcessSends()
-        {
-            // Resolve `output` PipeReader via the IDuplexPipe interface prior to loop start for performance.
-            var output = Output;
-            while (true)
-            {
-                var result = await output.ReadAsync();
-
-                if (result.IsCanceled)
-                {
-                    break;
-                }
-
-                var buffer = result.Buffer;
-
-                var end = buffer.End;
-                var isCompleted = result.IsCompleted;
-                if (!buffer.IsEmpty)
-                {
-                    await _stream.WriteAsync(buffer, endStream: isCompleted);
-                }
-
-                output.AdvanceTo(end);
-
-                if (isCompleted)
-                {
-                    // Once the stream pipe is closed, shutdown the stream.
-                    break;
-                }
             }
         }
 
@@ -387,7 +377,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             Output.CancelPendingRead();
         }
 
-        private async ValueTask ShutdownWrite(Exception? shutdownReason)
+        private void ShutdownWrite(Exception? shutdownReason)
         {
             try
             {
@@ -399,17 +389,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
                     _stream.Shutdown();
                 }
-
-                try
-                {
-                    // TODO: Take cancellation token?
-                    await _stream.ShutdownCompleted();
-                }
-                catch (QuicOperationAbortedException)
-                {
-                    // AbortRead or AbortWrite has been called before
-                    // or during ShutdownCompleted.
-                }
             }
             catch (Exception ex)
             {
@@ -420,6 +399,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         public override async ValueTask DisposeAsync()
         {
+            CanReuse = _stream.CanRead && _stream.CanWrite
+                && _transportPipeReader.IsCompletedSuccessfully
+                && _transportPipeWriter.IsCompletedSuccessfully
+                && !_clientAbort
+                && !_serverAborted;
+
             _originalTransport.Input.Complete();
             _originalTransport.Output.Complete();
 
