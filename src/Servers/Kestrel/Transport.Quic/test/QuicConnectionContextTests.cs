@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Quic;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -549,6 +550,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             Assert.Equal(1, quicConnectionContext.StreamPool.Count);
 
             Assert.Equal(true, state);
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task CertificatePassedToQuicConnectionContext()
+        {
+            // Arrange
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
+
+            var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+            var testCert = TestResources.GetTestCertificate();
+            options.ClientAuthenticationOptions.ClientCertificates = new X509CertificateCollection { testCert };
+            using var quicConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+            await quicConnection.ConnectAsync().DefaultTimeout();
+
+            var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+
+            Debugger.Launch();
+            var tlsFeature = serverConnection.Features.Get<ITlsConnectionFeature>();
+            Assert.NotNull(tlsFeature);
+            Assert.NotNull(tlsFeature.ClientCertificate);
+            Assert.Equal(testCert, tlsFeature.ClientCertificate);
+
+            // Act
+            var acceptTask = quicConnection.AcceptStreamAsync();
+
+            await using var serverStream = await serverConnection.ConnectAsync();
+
+            tlsFeature = serverStream.Features.Get<ITlsConnectionFeature>();
+            Assert.NotNull(tlsFeature);
+            Assert.NotNull(tlsFeature.ClientCertificate);
+            Assert.Equal(testCert, tlsFeature.ClientCertificate);
+
+            // Complete server.
+            await serverStream.Transport.Output.CompleteAsync().DefaultTimeout();
         }
 
         private record RequestState(

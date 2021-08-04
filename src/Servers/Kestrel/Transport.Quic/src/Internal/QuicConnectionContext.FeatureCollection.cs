@@ -9,13 +9,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
     internal sealed partial class QuicConnectionContext : IProtocolErrorCodeFeature, ITlsConnectionFeature
     {
         private X509Certificate2? _clientCert;
+        private Task<X509Certificate2?>? _clientCertTask;
 
         public long Error { get; set; }
 
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         public Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken)
         {
-            return Task.FromResult(ClientCertificate);
+            return _clientCertTask ??= Task.FromResult(ClientCertificate);
         }
 
         private void InitializeFeatures()
