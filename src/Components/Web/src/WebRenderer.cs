@@ -26,13 +26,33 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when initializing components.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         /// <param name="jsonOptions">The <see cref="JsonSerializerOptions"/>.</param>
-        public WebRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, JsonSerializerOptions jsonOptions)
+        /// <param name="jsComponentInterop">The <see cref="JSComponentInterop"/>.</param>
+        public WebRenderer(
+            IServiceProvider serviceProvider,
+            ILoggerFactory loggerFactory,
+            JsonSerializerOptions jsonOptions,
+            JSComponentInterop jsComponentInterop)
             : base(serviceProvider, loggerFactory)
         {
             _serviceProvider = serviceProvider;
             _interopMethodsReference = DotNetObjectReference.Create(
-                new WebRendererInteropMethods(this, jsonOptions));
+                new WebRendererInteropMethods(this, jsonOptions, jsComponentInterop));
+
+            jsComponentInterop.AttachToRenderer(this);
+            var jsRuntime = _serviceProvider.GetRequiredService<IJSRuntime>();
+            var hasJSComponents = jsComponentInterop.Configuration.JsComponentTypesByIdentifier.Count > 0;
+            _ = jsRuntime.InvokeVoidAsync(
+                "Blazor._internal.attachWebRendererInterop",
+                RendererId,
+                _interopMethodsReference,
+                hasJSComponents,
+                jsComponentInterop.Configuration.JSComponentInfoByInitializer);
         }
+
+        /// <summary>
+        /// Gets the identifier for the renderer.
+        /// </summary>
+        protected int RendererId { get; init; } // Only used on WebAssembly. Will be zero in other cases.
 
         /// <summary>
         /// Instantiates a root component and attaches it to the browser within the specified element.
@@ -55,19 +75,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
         protected abstract void AttachRootComponentToBrowser(int componentId, string domElementSelector);
 
-        /// <summary>
-        /// Enables support for adding, updating, and removing root components from JavaScript.
-        /// </summary>
-        /// <param name="rendererId">An identifier for the renderer that will be used by JavaScript code.</param>
-        /// <param name="interop">The object that provides JS-callable methods for adding, updating, and removing root components.</param>
-        /// <returns>A task representing the completion of the operation.</returns>
-        protected async ValueTask InitializeJSComponentSupportAsync(int rendererId, JSComponentInterop interop)
-        {
-            var jsRuntime = _serviceProvider.GetRequiredService<IJSRuntime>();
-            await interop.InitializeAsync(jsRuntime, this);
-            await jsRuntime.InvokeVoidAsync("Blazor._internal.attachWebRendererInterop", rendererId, _interopMethodsReference);
-        }
-
         /// <inheritdoc />
         protected override void Dispose(bool disposing)
         {
@@ -79,16 +86,23 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             base.Dispose(disposing);
         }
 
+        /// <summary>
+        /// A collection of JS invokable methods that the JS-side code can use when it needs to
+        /// make calls in the context of a particular renderer. This object is never exposed to
+        /// .NET code so is only reachable via JS.
+        /// </summary>
         private class WebRendererInteropMethods
         {
-            private readonly Renderer _renderer;
+            private readonly WebRenderer _renderer;
             private readonly JsonSerializerOptions _jsonOptions;
+            private readonly JSComponentInterop _jsComponentInterop;
 
             [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, typeof(WebRendererInteropMethods))]
-            public WebRendererInteropMethods(Renderer renderer, JsonSerializerOptions jsonOptions)
+            public WebRendererInteropMethods(WebRenderer renderer, JsonSerializerOptions jsonOptions, JSComponentInterop jsComponentInterop)
             {
                 _renderer = renderer;
                 _jsonOptions = jsonOptions;
+                _jsComponentInterop = jsComponentInterop;
             }
 
             [JSInvokable]
@@ -100,6 +114,18 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     webEventData.EventFieldInfo,
                     webEventData.EventArgs);
             }
+
+            [JSInvokable]
+            public int AddRootComponent(string identifier, string domElementSelector)
+                => _jsComponentInterop.AddRootComponent(identifier, domElementSelector);
+
+            [JSInvokable]
+            public void SetRootComponentParameters(int componentId, int parameterCount, JsonElement parametersJson)
+                => _jsComponentInterop.SetRootComponentParameters(componentId, parameterCount, parametersJson, _jsonOptions);
+
+            [JSInvokable]
+            public void RemoveRootComponent(int componentId)
+                => _jsComponentInterop.RemoveRootComponent(componentId);
         }
     }
 }

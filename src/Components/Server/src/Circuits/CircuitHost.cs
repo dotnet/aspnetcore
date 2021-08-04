@@ -105,11 +105,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     await OnCircuitOpenedAsync(cancellationToken);
                     await OnConnectionUpAsync(cancellationToken);
 
-                    // From this point onwards, JavaScript code can add root components if configured
-                    await Renderer.InitializeJSComponentSupportAsync(
-                        _options.RootComponents.JSComponents,
-                        JSRuntime.ReadJsonSerializerOptions());
-
                     // Here, we add each root component but don't await the returned tasks so that the
                     // components can be processed in parallel.
                     var count = Descriptors.Count;

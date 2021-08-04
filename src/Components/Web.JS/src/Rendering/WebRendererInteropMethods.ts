@@ -1,14 +1,20 @@
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { EventDescriptor } from './Events/EventDelegator';
+import { enableJSRootComponents, JSComponentInfoByInitializer } from './JSRootComponents';
 
 const interopMethodsByRenderer = new Map<number, DotNet.DotNetObject>();
 
-export function attachWebRendererInterop(rendererId: number, interopMethods: DotNet.DotNetObject) {
+export function attachWebRendererInterop(rendererId: number, interopMethods: DotNet.DotNetObject, hasJSComponents: boolean, jsRootComponents: JSComponentInfoByInitializer) {
   if (interopMethodsByRenderer.has(rendererId)) {
     throw new Error(`Interop methods are already registered for renderer ${rendererId}`);
   }
 
   interopMethodsByRenderer.set(rendererId, interopMethods);
+
+  if (hasJSComponents) {
+    const manager = getInteropMethods(rendererId);
+    enableJSRootComponents(manager, jsRootComponents);
+  }
 }
 
 export function dispatchEvent(browserRendererId: number, eventDescriptor: EventDescriptor, eventArgs: any) {

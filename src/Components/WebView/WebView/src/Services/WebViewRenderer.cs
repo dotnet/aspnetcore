@@ -22,8 +22,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
             Dispatcher dispatcher,
             IpcSender ipcSender,
             ILoggerFactory loggerFactory,
-            WebViewJSRuntime jsRuntime) :
-            base(serviceProvider, loggerFactory, jsRuntime.ReadJsonSerializerOptions())
+            WebViewJSRuntime jsRuntime,
+            JSComponentInterop jsComponentInterop) :
+            base(serviceProvider, loggerFactory, jsRuntime.ReadJsonSerializerOptions(), jsComponentInterop)
         {
             _dispatcher = dispatcher;
             _ipcSender = ipcSender;
@@ -69,12 +70,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
 
         public new void RemoveRootComponent(int componentId)
            => base.RemoveRootComponent(componentId);
-
-        public ValueTask InitializeJSComponentSupportAsync(JSComponentConfigurationStore configuration, JsonSerializerOptions jsonOptions)
-        {
-            var interop = new JSComponentInterop(configuration, jsonOptions);
-            return InitializeJSComponentSupportAsync(rendererId: 0, interop);
-        }
 
         public void NotifyRenderCompleted(long batchId)
         {

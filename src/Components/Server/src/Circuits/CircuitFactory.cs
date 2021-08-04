@@ -66,13 +66,16 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var appLifetime = scope.ServiceProvider.GetRequiredService<ComponentApplicationLifetime>();
             await appLifetime.RestoreStateAsync(store);
 
+            var jsonOptions = jsRuntime.ReadJsonSerializerOptions();
+            var jsComponentInterop = new CircuitJSComponentInterop(_options, jsonOptions);
             var renderer = new RemoteRenderer(
                 scope.ServiceProvider,
                 _loggerFactory,
                 _options,
                 client,
                 _loggerFactory.CreateLogger<RemoteRenderer>(),
-                jsRuntime);
+                jsRuntime,
+                jsComponentInterop);
 
             var circuitHandlers = scope.ServiceProvider.GetServices<CircuitHandler>()
                 .OrderBy(h => h.Order)

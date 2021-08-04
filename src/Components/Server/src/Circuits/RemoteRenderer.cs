@@ -36,8 +36,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             CircuitOptions options,
             CircuitClientProxy client,
             ILogger logger,
-            RemoteJSRuntime jsRuntime)
-            : base(serviceProvider, loggerFactory, jsRuntime.ReadJsonSerializerOptions())
+            RemoteJSRuntime jsRuntime,
+            CircuitJSComponentInterop jsComponentInterop)
+            : base(serviceProvider, loggerFactory, jsRuntime.ReadJsonSerializerOptions(), jsComponentInterop)
         {
             _client = client;
             _options = options;
@@ -309,12 +310,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 pendingRenderInfo.TrySetException(new InvalidOperationException(errorMessageOrNull));
             }
-        }
-
-        public ValueTask InitializeJSComponentSupportAsync(JSComponentConfigurationStore configuration, JsonSerializerOptions jsonOptions)
-        {
-            var interop = new CircuitJSComponentInterop(configuration, jsonOptions, _options);
-            return InitializeJSComponentSupportAsync(rendererId: 0, interop);
         }
 
         internal readonly struct UnacknowledgedRenderBatch
