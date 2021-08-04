@@ -1725,7 +1725,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Assert.Equal(CoreStrings.SynchronousReadsDisallowed, ioEx2.Message);
 
                 var buffer = new byte[5];
-                var length = await context.Request.Body.ReadUntilEndAsync(buffer).DefaultTimeout();
+                var length = await context.Request.Body.FillBufferUntilEndAsync(buffer).DefaultTimeout();
 
                 Assert.Equal(5, length);
                 Assert.Equal("Hello", Encoding.ASCII.GetString(buffer));
