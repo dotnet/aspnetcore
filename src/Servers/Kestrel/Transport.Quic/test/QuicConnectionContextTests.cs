@@ -554,7 +554,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
         [ConditionalFact]
         [MsQuicSupported]
-        public async Task CertificatePassedToQuicConnectionContext()
+        public async Task TlsConnectionFeature_ClientSendsCertificate_PopulatedOnFeature()
         {
             // Arrange
             await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory, clientCertificateRequired: true);
