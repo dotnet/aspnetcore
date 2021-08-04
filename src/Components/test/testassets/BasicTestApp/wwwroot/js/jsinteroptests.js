@@ -56,9 +56,6 @@ async function invokeDotNetInteropMethodsAsync(shouldSupportSyncInterop, dotNetO
     var streamWrapper = DotNet.invokeMethod(assemblyName, 'GetDotNetStreamWrapperReference');
     results['requestDotNetStreamWrapperReference'] = await receiveDotNetStreamWrapperReference(streamWrapper);
 
-    // DotNet.invokeMethod(assemblyName, 'TriggerReceiveDotNetStreamReferenceAndSetResult');
-    // DotNet.invokeMethod(assemblyName, 'TriggerReceiveDotNetStreamWrapperReferenceAndSetResult');
-
     var instanceMethodResult = instanceMethodsTarget.invokeMethod('InstanceMethod', {
       stringValue: 'My string',
       dtoByRef: dotNetObjectByRef
@@ -409,18 +406,6 @@ function receiveDotNetObjectByRefAsync(incomingData) {
       testDto: testDto
     };
   });
-}
-
-function receiveDotNetStreamReferenceAndSetResult(streamRef) {
-  setTimeout(async () => {
-    result['dotNetToJSReceiveDotNetStreamReference'] = await receiveDotNetStreamReference(streamRef);
-  }, 0);
-}
-
-function receiveDotNetStreamWrapperReferenceAndSetResult(wrapper) {
-  setTimeout(async () => {
-    result['dotNetToJSReceiveDotNetStreamWrapperReference'] = await receiveDotNetStreamWrapperReference(wrapper);
-  }, 0);
 }
 
 async function receiveDotNetStreamReference(streamRef) {
