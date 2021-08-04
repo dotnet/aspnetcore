@@ -112,7 +112,7 @@ export async function sendMessage(logger: ILogger, transportName: string, httpCl
         content,
         headers: { ...headers, ...options.headers},
         responseType,
-        timeout: options.httpTimeout,
+        timeout: options.timeout,
         withCredentials: options.withCredentials,
     });
 

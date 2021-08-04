@@ -257,7 +257,7 @@ describe("ServerSentEventsTransport", () => {
                 return "";
             });
 
-            const sse = await createAndStartSSE(logger, "http://example.com", undefined, { httpClient, httpTimeout: 123 });
+            const sse = await createAndStartSSE(logger, "http://example.com", undefined, { httpClient, timeout: 123 });
 
             await sse.send("");
 
@@ -268,7 +268,7 @@ describe("ServerSentEventsTransport", () => {
 
 async function createAndStartSSE(logger: ILogger, url?: string, accessTokenFactory?: (() => string | Promise<string>), options?: IHttpConnectionOptions): Promise<ServerSentEventsTransport> {
     const sse = new ServerSentEventsTransport(options?.httpClient || new TestHttpClient(), accessTokenFactory, logger,
-        { logMessageContent: true, EventSource: TestEventSource, withCredentials: true, httpTimeout: 10205, ...options });
+        { logMessageContent: true, EventSource: TestEventSource, withCredentials: true, timeout: 10205, ...options });
 
     const connectPromise = sse.connect(url || "http://example.com", TransferFormat.Text);
     await TestEventSource.eventSource.openSet;

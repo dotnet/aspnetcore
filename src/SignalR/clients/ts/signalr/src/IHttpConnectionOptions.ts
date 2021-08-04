@@ -72,5 +72,5 @@ export interface IHttpConnectionOptions {
      *
      * This will not apply to Long Polling poll requests, EventSource, or WebSockets.
      */
-    httpTimeout?: number;
+    timeout?: number;
 }

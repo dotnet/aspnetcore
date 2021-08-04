@@ -81,7 +81,7 @@ export class HttpConnection implements IConnection {
         } else {
             throw new Error("withCredentials option was not a 'boolean' or 'undefined' value");
         }
-        options.httpTimeout = options.httpTimeout === undefined ? 100 * 1000 : options.httpTimeout;
+        options.timeout = options.timeout === undefined ? 100 * 1000 : options.timeout;
 
         let webSocketModule: any = null;
         let eventSourceModule: any = null;
@@ -323,7 +323,7 @@ export class HttpConnection implements IConnection {
             const response = await this._httpClient.post(negotiateUrl, {
                 content: "",
                 headers: { ...headers, ...this._options.headers },
-                timeout: this._options.httpTimeout,
+                timeout: this._options.timeout,
                 withCredentials: this._options.withCredentials,
             });
 

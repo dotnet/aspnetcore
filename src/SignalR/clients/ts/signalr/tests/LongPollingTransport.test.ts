@@ -252,7 +252,7 @@ describe("LongPollingTransport", () => {
                 });
 
             const transport = new LongPollingTransport(httpClient, undefined, logger,
-                { logMessageContent: false, withCredentials: true, headers: {}, httpTimeout: 123 });
+                { logMessageContent: false, withCredentials: true, headers: {}, timeout: 123 });
 
             await transport.connect("http://tempuri.org", TransferFormat.Text);
 
