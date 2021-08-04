@@ -9,10 +9,6 @@ export function sendRenderCompleted(batchId: number, errorOrNull: string | null)
   send('OnRenderCompleted', batchId, errorOrNull);
 }
 
-export function sendBrowserEvent(descriptor: EventDescriptor, eventArgs: any) {
-  send('DispatchBrowserEvent', descriptor, eventArgs);
-}
-
 export function sendBeginInvokeDotNetFromJS(callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): void {
   send('BeginInvokeDotNet', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
 }

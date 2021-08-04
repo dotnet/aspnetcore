@@ -57,6 +57,7 @@ interface IBlazor {
     sendJSDataStream?: (data: any, streamId: number, chunkSize: number) => void,
     getJSDataStreamChunk?: (data: any, position: number, chunkSize: number) => Promise<Uint8Array>,
     enableJSRootComponents?: (manager: DotNet.DotNetObject, initializerInfo: JSComponentInfoByInitializer) => void,
+    attachEventDispatcher?: (eventDispatcher: DotNet.DotNetObject) => void;
 
     // APIs invoked by hot reload
     applyHotReload?: (id: string, metadataDelta: string, ilDelta: string) => void,
