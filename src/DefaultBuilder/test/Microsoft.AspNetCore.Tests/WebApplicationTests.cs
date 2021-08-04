@@ -755,13 +755,17 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
-        public void WebApplicationBuilder_UseStartupAndConfigureAreNotSupportedByWebHost()
+        public void WebApplicationBuilder_ThrowsFromExtensionMethodsNotSupportedByHostAndWebHost()
         {
             var builder = WebApplication.CreateBuilder();
 
             Assert.Throws<NotSupportedException>(() => builder.WebHost.Configure(app => { }));
             Assert.Throws<NotSupportedException>(() => builder.WebHost.UseStartup<MyStartup>());
             Assert.Throws<NotSupportedException>(() => builder.WebHost.UseStartup(typeof(MyStartup)));
+
+            Assert.Throws<NotSupportedException>(() => builder.Host.ConfigureWebHost(webHostBuilder => { }));
+            Assert.Throws<NotSupportedException>(() => builder.Host.ConfigureWebHost(webHostBuilder => { }, options => { }));
+            Assert.Throws<NotSupportedException>(() => builder.Host.ConfigureWebHostDefaults(webHostBuilder => { }));
         }
 
         private class Service : IService { }

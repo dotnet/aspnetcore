@@ -15,6 +15,9 @@ namespace Microsoft.Extensions.Hosting
         /// <summary>
         /// Adds and configures an ASP.NET Core web application.
         /// </summary>
+        /// <param name="builder">The <see cref="IHostBuilder"/> to add the <see cref="IWebHostBuilder"/> to.</param>
+        /// <param name="configure">The delegate that configures the <see cref="IWebHostBuilder"/>.</param>
+        /// <returns>The <see cref="IHostBuilder"/>.</returns>
         public static IHostBuilder ConfigureWebHost(this IHostBuilder builder, Action<IWebHostBuilder> configure)
         {
             if (configure is null)
@@ -28,6 +31,10 @@ namespace Microsoft.Extensions.Hosting
         /// <summary>
         /// Adds and configures an ASP.NET Core web application.
         /// </summary>
+        /// <param name="builder">The <see cref="IHostBuilder"/> to add the <see cref="IWebHostBuilder"/> to.</param>
+        /// <param name="configure">The delegate that configures the <see cref="IWebHostBuilder"/>.</param>
+        /// <param name="configureWebHostBuilder">The delegate that configures the <see cref="WebHostBuilderOptions"/>.</param>
+        /// <returns>The <see cref="IHostBuilder"/>.</returns>
         public static IHostBuilder ConfigureWebHost(this IHostBuilder builder, Action<IWebHostBuilder> configure, Action<WebHostBuilderOptions> configureWebHostBuilder)
         {
             if (configure is null)
@@ -38,6 +45,12 @@ namespace Microsoft.Extensions.Hosting
             if (configureWebHostBuilder is null)
             {
                 throw new ArgumentNullException(nameof(configureWebHostBuilder));
+            }
+
+            // Light up custom implementations namely ConfigureHostBuilder which throws.
+            if (builder is ISupportsConfigureWebHost supportsConfigureWebHost)
+            {
+                return supportsConfigureWebHost.ConfigureWebHost(configure, configureWebHostBuilder);
             }
 
             var webHostBuilderOptions = new WebHostBuilderOptions();
