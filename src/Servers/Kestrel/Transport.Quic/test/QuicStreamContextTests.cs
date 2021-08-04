@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
@@ -40,6 +41,68 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             await QuicTestHelpers.CreateAndCompleteBidirectionalStreamGracefully(clientConnection, serverConnection);
 
             Assert.Contains(LogMessages, m => m.Message.Contains("send loop completed gracefully"));
+
+            var quicConnectionContext = Assert.IsType<QuicConnectionContext>(serverConnection);
+
+            Assert.Equal(1, quicConnectionContext.StreamPool.Count);
+        }
+
+        [ConditionalTheory]
+        [MsQuicSupported]
+        [InlineData(1024)]
+        [InlineData(1024 * 1024)]
+        [InlineData(1024 * 1024 * 5)]
+        public async Task BidirectionalStream_ServerWritesDataAndDisposes_ClientReadsData(int dataLength)
+        {
+            // Arrange
+            var testData = new byte[dataLength];
+            for (int i = 0; i < dataLength; i++)
+            {
+                testData[i] = (byte)i;
+            }
+
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
+
+            var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+            using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+            await clientConnection.ConnectAsync().DefaultTimeout();
+
+            await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+
+            // Act
+            Logger.LogInformation("Client starting stream.");
+            var clientStream = clientConnection.OpenBidirectionalStream();
+            await clientStream.WriteAsync(TestData, endStream: true).DefaultTimeout();
+            var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
+
+            Logger.LogInformation("Server accepted stream.");
+            var readResult = await serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
+            serverStream.Transport.Input.AdvanceTo(readResult.Buffer.End);
+
+            // Input should be completed.
+            readResult = await serverStream.Transport.Input.ReadAsync().DefaultTimeout();
+            Assert.True(readResult.IsCompleted);
+
+            Logger.LogInformation("Server sending data.");
+            await serverStream.Transport.Output.WriteAsync(testData).DefaultTimeout();
+
+            Logger.LogInformation("Server completing pipes.");
+            await serverStream.Transport.Input.CompleteAsync().DefaultTimeout();
+            await serverStream.Transport.Output.CompleteAsync().DefaultTimeout();
+
+            var quicStreamContext = Assert.IsType<QuicStreamContext>(serverStream);
+
+            Logger.LogInformation("Server waiting for send and receiving loops to complete.");
+            await quicStreamContext._processingTask.DefaultTimeout();
+            Assert.True(quicStreamContext.CanWrite);
+            Assert.True(quicStreamContext.CanRead);
+
+            Logger.LogInformation("Server disposing stream.");
+            await quicStreamContext.DisposeAsync().DefaultTimeout();
+
+            Logger.LogInformation("Client reading until end of stream.");
+            var data = await clientStream.ReadUntilEndAsync().DefaultTimeout();
+            Assert.Equal(testData, data);
 
             var quicConnectionContext = Assert.IsType<QuicConnectionContext>(serverConnection);
 

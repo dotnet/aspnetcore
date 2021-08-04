@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
@@ -97,7 +98,7 @@ namespace Interop.FunctionalTests.Http3
                 request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
                 // Act
-                var responseMessage = await client.SendAsync(request).DefaultTimeout();
+                var responseMessage = await client.SendAsync(request, CancellationToken.None).DefaultTimeout();
 
                 // Assert
                 Assert.Equal("hello, world", await responseMessage.Content.ReadAsStringAsync());
@@ -199,7 +200,7 @@ namespace Interop.FunctionalTests.Http3
                 request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
                 // Act
-                var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+                var response = await client.SendAsync(request, CancellationToken.None);
 
                 // Assert
                 response.EnsureSuccessStatusCode();
@@ -243,7 +244,7 @@ namespace Interop.FunctionalTests.Http3
                 request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
                 // Act
-                var responseTask = client.SendAsync(request);
+                var responseTask = client.SendAsync(request, CancellationToken.None);
 
                 var requestStream = await requestContent.GetStreamAsync();
 
@@ -278,17 +279,21 @@ namespace Interop.FunctionalTests.Http3
 
             var builder = CreateHostBuilder(async context =>
             {
-                context.RequestAborted.Register(() => cancelledTcs.SetResult());
+                context.RequestAborted.Register(() =>
+                {
+                    Logger.LogInformation("Server received cancellation");
+                    cancelledTcs.SetResult();
+                });
 
                 var body = context.Request.Body;
 
-                // Read content
+                Logger.LogInformation("Server reading content");
                 await body.ReadAtLeastLengthAsync(TestData.Length).DefaultTimeout();
 
                 // Sync with client
                 await syncPoint.WaitToContinue();
 
-                // Wait for task cancellation
+                Logger.LogInformation("Server waiting for cancellation");
                 await cancelledTcs.Task;
 
                 readAsyncTask.SetResult(body.ReadAsync(new byte[1024]).AsTask());
@@ -312,15 +317,17 @@ namespace Interop.FunctionalTests.Http3
 
                 var requestStream = await requestContent.GetStreamAsync().DefaultTimeout();
 
-                // Send headers
+                Logger.LogInformation("Client sending request headers");
                 await requestStream.FlushAsync().DefaultTimeout();
-                // Write content
-                await requestStream.WriteAsync(TestData).DefaultTimeout();
 
-                // Wait until content is read on server
+                Logger.LogInformation("Client sending request content");
+                await requestStream.WriteAsync(TestData).DefaultTimeout();
+                await requestStream.FlushAsync().DefaultTimeout();
+
+                Logger.LogInformation("Client waiting until content is read on server");
                 await syncPoint.WaitForSyncPoint().DefaultTimeout();
 
-                // Cancel request
+                Logger.LogInformation("Client cancelling");
                 cts.Cancel();
 
                 // Continue on server
@@ -373,7 +380,7 @@ namespace Interop.FunctionalTests.Http3
                 request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
                 // Act
-                var ex = await Assert.ThrowsAnyAsync<HttpRequestException>(() => client.SendAsync(request)).DefaultTimeout();
+                var ex = await Assert.ThrowsAnyAsync<HttpRequestException>(() => client.SendAsync(request, CancellationToken.None)).DefaultTimeout();
 
                 // Assert
                 if (protocol == HttpProtocols.Http3)
@@ -439,7 +446,7 @@ namespace Interop.FunctionalTests.Http3
                 request1.Version = HttpVersion.Version30;
                 request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
-                var response1 = await client.SendAsync(request1);
+                var response1 = await client.SendAsync(request1, CancellationToken.None);
                 response1.EnsureSuccessStatusCode();
                 var firstRequestState = persistedState;
 
@@ -450,7 +457,7 @@ namespace Interop.FunctionalTests.Http3
                 request2.Version = HttpVersion.Version30;
                 request2.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
-                var response2 = await client.SendAsync(request2);
+                var response2 = await client.SendAsync(request2, CancellationToken.None);
                 response2.EnsureSuccessStatusCode();
                 var secondRequestState = persistedState;
 
@@ -491,7 +498,7 @@ namespace Interop.FunctionalTests.Http3
                 request1.Version = HttpVersion.Version30;
                 request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
-                var response1 = await client.SendAsync(request1);
+                var response1 = await client.SendAsync(request1, CancellationToken.None);
                 response1.EnsureSuccessStatusCode();
 
                 var connectionId1 = connectionId;
@@ -501,7 +508,7 @@ namespace Interop.FunctionalTests.Http3
                 request2.Version = HttpVersion.Version30;
                 request2.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
-                var response2 = await client.SendAsync(request2);
+                var response2 = await client.SendAsync(request2, CancellationToken.None);
                 response2.EnsureSuccessStatusCode();
 
                 var connectionId2 = connectionId;
@@ -558,7 +565,7 @@ namespace Interop.FunctionalTests.Http3
                 request1.Version = HttpVersion.Version30;
                 request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
-                var response1 = await client.SendAsync(request1);
+                var response1 = await client.SendAsync(request1, CancellationToken.None);
                 response1.EnsureSuccessStatusCode();
 
                 // Delay to ensure the stream has enough time to return to pool
@@ -569,7 +576,7 @@ namespace Interop.FunctionalTests.Http3
                 request2.Version = HttpVersion.Version30;
                 request2.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
-                var response2 = await client.SendAsync(request2);
+                var response2 = await client.SendAsync(request2, CancellationToken.None);
                 response2.EnsureSuccessStatusCode();
 
                 // Assert
@@ -578,6 +585,67 @@ namespace Interop.FunctionalTests.Http3
 
                 await host.StopAsync();
             }
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task Get_CompleteAsyncAndReset_StreamNotPooled()
+        {
+            // Arrange
+            var requestCount = 0;
+            var contexts = new List<HttpContext>();
+            var builder = CreateHostBuilder(async context =>
+            {
+                contexts.Add(context);
+                requestCount++;
+                Logger.LogInformation($"Server received request {requestCount}");
+                if (requestCount == 1)
+                {
+                    await context.Response.CompleteAsync();
+
+                    context.Features.Get<IHttpResetFeature>().Reset(256);
+                }
+            });
+
+            using (var host = builder.Build())
+            using (var client = CreateClient())
+            {
+                await host.StartAsync();
+
+                // Act
+                var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+                request1.Version = HttpVersion.Version30;
+                request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+
+                // TODO: There is a race between CompleteAsync and Reset.
+                // https://github.com/dotnet/aspnetcore/issues/34915
+                try
+                {
+                    Logger.LogInformation("Client sending request 1");
+                    await client.SendAsync(request1, CancellationToken.None);
+                }
+                catch (HttpRequestException)
+                {
+                }                
+
+                // Delay to ensure the stream has enough time to return to pool
+                await Task.Delay(100);
+
+                var request2 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+                request2.Version = HttpVersion.Version30;
+                request2.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                Logger.LogInformation("Client sending request 2");
+                var response2 = await client.SendAsync(request2, CancellationToken.None);
+
+                // Assert
+                response2.EnsureSuccessStatusCode();
+
+                await host.StopAsync();
+            }
+
+            Assert.NotSame(contexts[0], contexts[1]);
         }
 
         [ConditionalFact]
@@ -612,7 +680,7 @@ namespace Interop.FunctionalTests.Http3
                 request1.Version = HttpVersion.Version30;
                 request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
-                var response1 = await client.SendAsync(request1);
+                var response1 = await client.SendAsync(request1, CancellationToken.None);
                 response1.EnsureSuccessStatusCode();
 
                 // Assert
@@ -663,7 +731,7 @@ namespace Interop.FunctionalTests.Http3
                 request1.Version = HttpVersion.Version30;
                 request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
-                var response1 = await client.SendAsync(request1);
+                var response1 = await client.SendAsync(request1, CancellationToken.None);
                 response1.EnsureSuccessStatusCode();
 
                 // Assert
@@ -679,12 +747,12 @@ namespace Interop.FunctionalTests.Http3
             }
         }
 
-        private static HttpClient CreateClient()
+        private static HttpMessageInvoker CreateClient()
         {
             var httpHandler = new HttpClientHandler();
             httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
 
-            return new HttpClient(httpHandler);
+            return new HttpMessageInvoker(httpHandler);
         }
 
         private IHostBuilder CreateHostBuilder(RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null)

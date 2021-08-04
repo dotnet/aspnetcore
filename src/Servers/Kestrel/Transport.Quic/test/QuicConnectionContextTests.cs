@@ -206,6 +206,52 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
         [ConditionalFact]
         [MsQuicSupported]
+        public async Task StreamPool_StreamAbortedOnServerAfterComplete_NotPooled()
+        {
+            // Arrange
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
+
+            var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+            using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+            await clientConnection.ConnectAsync().DefaultTimeout();
+
+            await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+
+            var testHeartbeatFeature = new TestHeartbeatFeature();
+            serverConnection.Features.Set<IConnectionHeartbeatFeature>(testHeartbeatFeature);
+
+            // Act & Assert
+            var quicConnectionContext = Assert.IsType<QuicConnectionContext>(serverConnection);
+            Assert.Equal(0, quicConnectionContext.StreamPool.Count);
+
+            var clientStream = clientConnection.OpenBidirectionalStream();
+            await clientStream.WriteAsync(TestData, endStream: true).DefaultTimeout();
+            var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
+            var readResult = await serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
+            serverStream.Transport.Input.AdvanceTo(readResult.Buffer.End);
+
+            // Input should be completed.
+            readResult = await serverStream.Transport.Input.ReadAsync();
+            Assert.True(readResult.IsCompleted);
+
+            // Complete reading and writing.
+            await serverStream.Transport.Input.CompleteAsync();
+            await serverStream.Transport.Output.CompleteAsync();
+
+            var quicStreamContext = Assert.IsType<QuicStreamContext>(serverStream);
+
+            // Both send and receive loops have exited.
+            await quicStreamContext._processingTask.DefaultTimeout();
+
+            serverStream.Abort(new ConnectionAbortedException("Test message"));
+
+            await quicStreamContext.DisposeAsync();
+
+            Assert.Equal(0, quicConnectionContext.StreamPool.Count);
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
         public async Task StreamPool_StreamAbortedOnClient_NotPooled()
         {
             // Arrange
