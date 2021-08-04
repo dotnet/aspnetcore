@@ -13,8 +13,8 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
     [global::Microsoft.AspNetCore.Razor.Hosting.RazorSourceChecksumAttribute(@"SHA1", @"6d079dd6c39f39d17a2faff14404b37ab7e8b8fc", @"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml")]
+    [global::Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItemMetadataAttribute("Identifier", "/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml")]
     [global::System.Runtime.CompilerServices.CreateNewOnMetadataUpdateAttribute]
-    [global::Microsoft.AspNetCore.Razor.Hosting.RazorFileIdentifierAttribute(@"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml")]
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Basic : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
     {
         #pragma warning disable 1998

@@ -13,8 +13,8 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
     [global::Microsoft.AspNetCore.Razor.Hosting.RazorSourceChecksumAttribute(@"SHA1", @"010d175bb6c3f7fa6f2ae04c1fecb4e3bfbf928b", @"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InvalidNamespaceAtEOF.cshtml")]
+    [global::Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItemMetadataAttribute("Identifier", "/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InvalidNamespaceAtEOF.cshtml")]
     [global::System.Runtime.CompilerServices.CreateNewOnMetadataUpdateAttribute]
-    [global::Microsoft.AspNetCore.Razor.Hosting.RazorFileIdentifierAttribute(@"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InvalidNamespaceAtEOF.cshtml")]
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_InvalidNamespaceAtEOF : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
     {
         #pragma warning disable 1998

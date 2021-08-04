@@ -31,8 +31,8 @@ using System;
 #line default
 #line hidden
 #nullable disable
+    [global::Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItemMetadataAttribute("Identifier", "/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/AttributeDirectiveWithViewImports.cshtml")]
     [global::System.Runtime.CompilerServices.CreateNewOnMetadataUpdateAttribute]
-    [global::Microsoft.AspNetCore.Razor.Hosting.RazorFileIdentifierAttribute(@"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/AttributeDirectiveWithViewImports.cshtml")]
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_AttributeDirectiveWithViewImports : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
     {
         #pragma warning disable 219
