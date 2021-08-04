@@ -108,6 +108,72 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         [Fact]
+        public void UseRouting_Default_CreatesEndpointRouteBuilder()
+        {
+            // Arrange
+            var services = CreateServices();
+            var app = new ApplicationBuilder(services);
+
+            // Assert
+            Assert.False(app.Properties.ContainsKey(EndpointRoutingApplicationBuilderExtensions.EndpointRouteBuilder));
+
+            // Act
+            app.UseRouting();
+
+            // Assert
+            Assert.NotNull(app.Properties[EndpointRoutingApplicationBuilderExtensions.EndpointRouteBuilder]);
+        }
+
+        [Fact]
+        public void UseRouting_Default_OverridesEndpointRouteBuilder()
+        {
+            // Arrange
+            var services = CreateServices();
+            var app = new ApplicationBuilder(services);
+            var endpointRouteBuilder = new DefaultEndpointRouteBuilder(app);
+            app.Properties[EndpointRoutingApplicationBuilderExtensions.EndpointRouteBuilder] = endpointRouteBuilder;
+
+            // Act
+            app.UseRouting();
+
+            // Assert
+            Assert.NotSame(endpointRouteBuilder, app.Properties[EndpointRoutingApplicationBuilderExtensions.EndpointRouteBuilder]);
+        }
+
+        [Fact]
+        public void UseRouting_OverrideEndpointRouteBuilderFalse_CreatesEndpointRouteBuilderIfNotFound()
+        {
+            // Arrange
+            var services = CreateServices();
+            var app = new ApplicationBuilder(services);
+
+            // Assert
+            Assert.False(app.Properties.ContainsKey(EndpointRoutingApplicationBuilderExtensions.EndpointRouteBuilder));
+
+            // Act
+            app.UseRouting(overrideEndpointRouteBuilder: false);
+
+            // Assert
+            Assert.NotNull(app.Properties[EndpointRoutingApplicationBuilderExtensions.EndpointRouteBuilder]);
+        }
+
+        [Fact]
+        public void UseRouting_OverrideEndpointRouteBuilderFalse_UsesExistingEndpointRouteBuilderIfFound()
+        {
+            // Arrange
+            var services = CreateServices();
+            var app = new ApplicationBuilder(services);
+            var endpointRouteBuilder = new DefaultEndpointRouteBuilder(app);
+            app.Properties[EndpointRoutingApplicationBuilderExtensions.EndpointRouteBuilder] = endpointRouteBuilder;
+
+            // Act
+            app.UseRouting(overrideEndpointRouteBuilder: false);
+
+            // Assert
+            Assert.Same(endpointRouteBuilder, app.Properties[EndpointRoutingApplicationBuilderExtensions.EndpointRouteBuilder]);
+        }
+
+        [Fact]
         public void UseEndpoint_WithoutEndpointRoutingMiddleware_Throws()
         {
             // Arrange

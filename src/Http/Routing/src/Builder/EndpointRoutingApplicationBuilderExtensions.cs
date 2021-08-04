@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public static class EndpointRoutingApplicationBuilderExtensions
     {
-        private const string EndpointRouteBuilder = "__EndpointRouteBuilder";
+        internal const string EndpointRouteBuilder = "__EndpointRouteBuilder";
 
         /// <summary>
         /// Adds a <see cref="EndpointRoutingMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>.
