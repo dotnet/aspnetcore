@@ -59,6 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public bool EndStreamReceived => (_completionState & StreamCompletionFlags.EndStreamReceived) == StreamCompletionFlags.EndStreamReceived;
         private bool IsAborted => (_completionState & StreamCompletionFlags.Aborted) == StreamCompletionFlags.Aborted;
+        private bool IsCompleted => (_completionState & StreamCompletionFlags.Completed) == StreamCompletionFlags.Completed;
 
         public Pipe RequestBodyPipe { get; private set; } = default!;
 
@@ -137,27 +138,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public void Abort(ConnectionAbortedException abortReason, Http3ErrorCode errorCode)
         {
-            var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
-
-            if (oldState == newState)
+            lock (_completionLock)
             {
-                return;
+                if (IsCompleted)
+                {
+                    return;
+                }
+
+                var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
+
+                if (oldState == newState)
+                {
+                    return;
+                }
+
+                Log.Http3StreamAbort(TraceIdentifier, errorCode, abortReason);
+
+                _errorCodeFeature.Error = (long)errorCode;
+                _frameWriter.Abort(abortReason);
+
+                // Call _http3Output.Stop() prior to poisoning the request body stream or pipe to
+                // ensure that an app that completes early due to the abort doesn't result in header frames being sent.
+                _http3Output.Stop();
+
+                CancelRequestAbortedToken();
+
+                // Unblock the request body.
+                PoisonBody(abortReason);
+                RequestBodyPipe.Writer.Complete(abortReason);
             }
-
-            Log.Http3StreamAbort(TraceIdentifier, errorCode, abortReason);
-
-            _errorCodeFeature.Error = (long)errorCode;
-            _frameWriter.Abort(abortReason);
-
-            // Call _http3Output.Stop() prior to poisoning the request body stream or pipe to
-            // ensure that an app that completes early due to the abort doesn't result in header frames being sent.
-            _http3Output.Stop();
-
-            CancelRequestAbortedToken();
-
-            // Unblock the request body.
-            PoisonBody(abortReason);
-            RequestBodyPipe.Writer.Complete(abortReason);
         }
 
         protected override void OnErrorAfterResponseStarted()
@@ -490,6 +499,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 }
                 finally
                 {
+                    ApplyCompletionFlag(StreamCompletionFlags.Completed);
+
                     // Tells the connection to remove the stream from its active collection.
                     _context.StreamLifetimeHandler.OnStreamCompleted(this);
 
@@ -941,6 +952,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             EndStreamReceived = 1,
             AbortedRead = 2,
             Aborted = 4,
+            Completed = 8,
         }
 
         private static class GracefulCloseInitiator

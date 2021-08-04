@@ -4124,7 +4124,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
                     {
-                        Protocols = HttpProtocols.Http1AndHttp2AndHttp3
+                        Protocols = HttpProtocols.Http1AndHttp2AndHttp3,
+                        IsTls = true
                     });
                 },
                 services => { }))
@@ -4186,7 +4187,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     });
                     options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 1))
                     {
-                        Protocols = HttpProtocols.Http3
+                        Protocols = HttpProtocols.Http3,
+                        IsTls = true
                     });
                 },
                 services => { }))

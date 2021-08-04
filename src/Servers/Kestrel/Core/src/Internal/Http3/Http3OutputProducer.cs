@@ -314,6 +314,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public void WriteResponseHeaders(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool appCompleted)
         {
+            // appCompleted flag is not used here. The write FIN is sent via the transport and not via the frame.
+            // Headers are written to buffer and flushed with a FIN when Http3FrameWriter.CompleteAsync is called
+            // in ProcessDataWrites.
+
             lock (_dataWriterLock)
             {
                 if (_streamCompleted)
