@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// make calls in the context of a particular renderer. This object is never exposed to
         /// .NET code so is only reachable via JS.
         /// </summary>
-        private class WebRendererInteropMethods
+        private sealed class WebRendererInteropMethods
         {
             private readonly WebRenderer _renderer;
             private readonly JsonSerializerOptions _jsonOptions;
