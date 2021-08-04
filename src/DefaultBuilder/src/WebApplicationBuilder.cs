@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Builder
     public sealed class WebApplicationBuilder
     {
         private const string EndpointRouteBuilderKey = "__EndpointRouteBuilder";
+        private const string WebApplicationBuilderKey = "__WebApplicationBuilder";
 
         private readonly HostBuilder _hostBuilder = new();
         private readonly BootstrapHostBuilder _bootstrapHostBuilder;
@@ -137,6 +138,8 @@ namespace Microsoft.AspNetCore.Builder
             // we clear the sources and add the built configuration as a source
             ((IConfigurationBuilder)Configuration).Sources.Clear();
             Configuration.AddConfiguration(_builtApplication.Configuration);
+
+            _builtApplication.Properties[WebApplicationBuilderKey] = true;
 
             return _builtApplication;
         }

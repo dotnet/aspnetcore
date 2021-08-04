@@ -99,22 +99,29 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(options));
             }
 
-            return app.Use(next =>
+            // UseRouting called before this middleware or Minimal
+            if (app.Properties.ContainsKey("__EndpointRouteBuilder") || app.Properties.ContainsKey("__WebApplicationBuilder"))
             {
-                var loggerFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
-                var diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
-                var endpointDataSource = app.ApplicationServices.GetRequiredService<EndpointDataSource>();
-
-                if (!string.IsNullOrEmpty(options.ExceptionHandlingPath) && options.ExceptionHandler is null)
+                return app.Use(next =>
                 {
-                    var errorBuilder = app.New();
-                    errorBuilder.UseRouting(overrideEndpointRouteBuilder: false);
-                    errorBuilder.Run(next);
-                    options.ExceptionHandler = errorBuilder.Build();
-                }
+                    var loggerFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
+                    var diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
 
-                return new ExceptionHandlerMiddleware(next, loggerFactory, Options.Create(options), diagnosticListener).Invoke;
-            });
+                    if (!string.IsNullOrEmpty(options.ExceptionHandlingPath) && options.ExceptionHandler is null)
+                    {
+                        var errorBuilder = app.New();
+                        errorBuilder.UseRouting(overrideEndpointRouteBuilder: false);
+                        errorBuilder.Run(next);
+                        options.ExceptionHandler = errorBuilder.Build();
+                    }
+
+                    return new ExceptionHandlerMiddleware(next, loggerFactory, Options.Create(options), diagnosticListener).Invoke;
+                });
+            }
+            else
+            {
+                return app.UseMiddleware<ExceptionHandlerMiddleware>(Options.Create(options));
+            }
         }
     }
 }

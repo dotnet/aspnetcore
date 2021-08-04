@@ -657,5 +657,45 @@ namespace Microsoft.AspNetCore.Diagnostics
                 && w.EventId == 4
                 && w.Message == "No exception handler was found, rethrowing original exception.");
         }
+
+        [Fact]
+        public async Task ExceptionHandler_RerunsRoutingOnError_WhenConfiguredWithExceptionHandlingPath()
+        {
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
+                    {
+                        services.AddRouting();
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+
+                        app.UseExceptionHandler("/error");
+
+                        app.UseEndpoints(endpoints =>
+                        {
+                            endpoints.MapGet("/error", context =>
+                            {
+                                return context.Response.WriteAsync("Exception handled");
+                            });
+                            endpoints.MapGet("/throw", context => throw new InvalidOperationException("Something bad happened."));
+                        });
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
+            {
+                var client = server.CreateClient();
+                var response = await client.GetAsync("throw");
+                Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+                Assert.Equal("Exception handled", await response.Content.ReadAsStringAsync());
+            }
+        }
     }
 }
