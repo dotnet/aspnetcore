@@ -45,7 +45,7 @@ namespace Templates.Test
         public Task WebApiTemplateFSharp() => WebApiTemplateCore(languageOverride: "F#");
 
         [ConditionalFact]
-        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.Windows10Amd64Server20H)]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.Windows10Amd64Server20H2)]
         public Task WebApiTemplateCSharp() => WebApiTemplateCore(languageOverride: null);
 
         [ConditionalFact]
