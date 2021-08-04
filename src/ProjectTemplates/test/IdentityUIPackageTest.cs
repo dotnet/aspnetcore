@@ -135,7 +135,7 @@ namespace Templates.Test
                 var response = await aspNetProcess.SendRequest("/Identity/lib/bootstrap/dist/css/bootstrap.css");
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.Contains(versionValidator, await response.Content.ReadAsStringAsync());
-                await ValidatePublishedFiles(aspNetProcess, Bootstrap4ContentFiles);
+                await ValidatePublishedFiles(aspNetProcess, Bootstrap5ContentFiles);
             }
 
             using (var aspNetProcess = project.StartPublishedProjectAsync())
