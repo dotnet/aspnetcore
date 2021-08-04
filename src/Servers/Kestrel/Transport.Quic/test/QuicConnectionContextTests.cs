@@ -562,28 +562,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
             var testCert = TestResources.GetTestCertificate();
             options.ClientAuthenticationOptions.ClientCertificates = new X509CertificateCollection { testCert };
+
+            // Act
             using var quicConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
             await quicConnection.ConnectAsync().DefaultTimeout();
 
             var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+            // Server waits for stream from client
+            var serverStreamTask = serverConnection.AcceptAsync().DefaultTimeout();
 
-            /*var tlsFeature = serverConnection.Features.Get<ITlsConnectionFeature>();
-            Assert.NotNull(tlsFeature);
-            Assert.NotNull(tlsFeature.ClientCertificate);
-            Assert.Equal(testCert, tlsFeature.ClientCertificate); */
+            // Client creates stream
+            using var clientStream = quicConnection.OpenBidirectionalStream();
+            await clientStream.WriteAsync(TestData).DefaultTimeout();
 
-            // Act
-            var acceptTask = quicConnection.AcceptStreamAsync();
+            // Server finishes accepting
+            var serverStream = await serverStreamTask.DefaultTimeout();
 
-            await using var serverStream = await serverConnection.ConnectAsync();
+            // Assert
+            AssertTlsConnectionFeature(serverConnection.Features, testCert);
+            AssertTlsConnectionFeature(serverStream.Features, testCert);
 
-            var tlsFeature = serverStream.Features.Get<ITlsConnectionFeature>();
-            Assert.NotNull(tlsFeature);
-            Assert.NotNull(tlsFeature.ClientCertificate);
-            Assert.Equal(testCert, tlsFeature.ClientCertificate);
-
-            // Complete server.
-            await serverStream.Transport.Output.CompleteAsync().DefaultTimeout();
+            static void AssertTlsConnectionFeature(IFeatureCollection features, X509Certificate2 testCert)
+            {
+                var tlsFeature = features.Get<ITlsConnectionFeature>();
+                Assert.NotNull(tlsFeature);
+                Assert.NotNull(tlsFeature.ClientCertificate);
+                Assert.Equal(testCert, tlsFeature.ClientCertificate);
+            }
         }
 
         private record RequestState(
