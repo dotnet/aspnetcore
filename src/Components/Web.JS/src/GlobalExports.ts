@@ -10,8 +10,7 @@ import { CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { Platform, Pointer, System_String, System_Array, System_Object, System_Boolean, System_Byte, System_Int } from './Platform/Platform';
 import { getNextChunk } from './StreamingInterop';
-import { RootComponentsFunctions, enableJSRootComponents, JSComponentInfoByInitializer, JSComponentInitializerCallback } from './Rendering/JSRootComponents';
-import { DotNet } from '@microsoft/dotnet-js-interop';
+import { RootComponentsFunctions } from './Rendering/JSRootComponents';
 import { attachWebRendererInterop } from './Rendering/WebRendererInteropMethods';
 
 interface IBlazor {
@@ -57,7 +56,6 @@ interface IBlazor {
     getSatelliteAssemblies?: any,
     sendJSDataStream?: (data: any, streamId: number, chunkSize: number) => void,
     getJSDataStreamChunk?: (data: any, position: number, chunkSize: number) => Promise<Uint8Array>,
-    enableJSRootComponents?: (manager: DotNet.DotNetObject, initializerInfo: JSComponentInfoByInitializer) => void,
     attachWebRendererInterop?: typeof attachWebRendererInterop,
 
     // APIs invoked by hot reload
@@ -78,7 +76,6 @@ export const Blazor: IBlazor = {
     PageTitle,
     InputFile,
     getJSDataStreamChunk: getNextChunk,
-    enableJSRootComponents,
     attachWebRendererInterop,
   },
 };
