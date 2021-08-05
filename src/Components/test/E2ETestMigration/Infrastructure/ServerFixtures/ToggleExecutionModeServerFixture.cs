@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
@@ -32,8 +31,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
         {
             if (_buildWebHostMethod == null)
             {
-                // Use Blazor's dev host server
-                var underlying = new DevHostServerFixture<TClientProgram>();
+                var underlying = new BlazorWasmTestAppFixture<TClientProgram>();
                 underlying.PathBase = "/subdir";
                 _serverToDispose = underlying;
                 var uri = underlying.RootUri.AbsoluteUri; // As a side-effect, this starts the server
@@ -62,7 +60,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
             _serverToDispose?.Dispose();
         }
 
-        internal ToggleExecutionModeServerFixture<TClientProgram> WithAdditionalArguments(string [] additionalArguments)
+        internal ToggleExecutionModeServerFixture<TClientProgram> WithAdditionalArguments(string[] additionalArguments)
         {
             AspNetFixtureAdditionalArguments.AddRange(additionalArguments);
             return this;
