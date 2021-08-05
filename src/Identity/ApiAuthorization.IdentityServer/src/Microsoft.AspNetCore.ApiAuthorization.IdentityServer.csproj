@@ -9,7 +9,7 @@
          avoid errors during restore -->
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
     <!-- IdentityServer packages are not strong named -->
-    <NoWarn>CS8002</NoWarn>
+    <NoWarn>$(NoWarn);CS8002</NoWarn>
     <Nullable>disable</Nullable>
   </PropertyGroup>
 

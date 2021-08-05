@@ -6,8 +6,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.WebView
 {
@@ -195,12 +197,8 @@ namespace Microsoft.AspNetCore.Components.WebView
             }
 
             var serviceScope = _provider.CreateAsyncScope();
-            _currentPageContext = new PageContext(_dispatcher, serviceScope, _ipcSender, baseUrl, startUrl);
 
-            // Enable JS root components
-            var jsonOptions = _currentPageContext.JSRuntime.ReadJsonSerializerOptions();
-            await _currentPageContext.Renderer.InitializeJSComponentSupportAsync(
-                JSComponentConfiguration, jsonOptions);
+            _currentPageContext = new PageContext(_dispatcher, serviceScope, _ipcSender, JSComponentConfiguration, baseUrl, startUrl);
 
             // Add any root components that were registered before the page attached. We don't await any of the
             // returned render tasks so that the components can be processed in parallel.

@@ -23,9 +23,9 @@ namespace Microsoft.AspNetCore.BrowserTesting
         private bool _disposed;
         private readonly ILoggerFactory _loggerFactory;
 
-        private BrowserManager(IConfiguration configuration, ILoggerFactory loggerFactory)
+        private BrowserManager(BrowserManagerConfiguration configuration, ILoggerFactory loggerFactory)
         {
-            _browserManagerConfiguration = new BrowserManagerConfiguration(configuration);
+            _browserManagerConfiguration = configuration;
             _loggerFactory = loggerFactory;
         }
 
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.BrowserTesting
 
         public bool HasFailedTests { get; set; }
 
-        public static async Task<BrowserManager> CreateAsync(IConfiguration configuration, ILoggerFactory loggerFactory)
+        public static async Task<BrowserManager> CreateAsync(BrowserManagerConfiguration configuration, ILoggerFactory loggerFactory)
         {
             var manager = new BrowserManager(configuration, loggerFactory);
             await manager.InitializeAsync();

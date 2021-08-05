@@ -41,21 +41,17 @@ namespace Microsoft.AspNetCore.Components.Web
         {
             var parsedEventArgs = ParseEventArgsJson(renderer, jsonSerializerOptions, eventDescriptor.EventHandlerId, eventDescriptor.EventName, eventArgsJson);
             return new WebEventData(
-                eventDescriptor.BrowserRendererId,
                 eventDescriptor.EventHandlerId,
                 eventDescriptor.EventFieldInfo,
                 parsedEventArgs);
         }
 
-        private WebEventData(int browserRendererId, ulong eventHandlerId, EventFieldInfo? eventFieldInfo, EventArgs eventArgs)
+        private WebEventData(ulong eventHandlerId, EventFieldInfo? eventFieldInfo, EventArgs eventArgs)
         {
-            BrowserRendererId = browserRendererId;
             EventHandlerId = eventHandlerId;
             EventFieldInfo = eventFieldInfo;
             EventArgs = eventArgs;
         }
-
-        public int BrowserRendererId { get; }
 
         public ulong EventHandlerId { get; }
 

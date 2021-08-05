@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Components.Web
             // Arrange
             var args = new WebEventDescriptor
             {
-                BrowserRendererId = 8,
                 EventFieldInfo = new EventFieldInfo
                 {
                     ComponentId = 89,
@@ -30,7 +29,6 @@ namespace Microsoft.AspNetCore.Components.Web
             var result = WebEventDescriptorReader.Read(jsonElement);
 
             // Assert
-            Assert.Equal(args.BrowserRendererId, result.BrowserRendererId);
             Assert.Equal(args.EventHandlerId, result.EventHandlerId);
             Assert.Equal(args.EventName, result.EventName);
             Assert.Equal(args.EventFieldInfo.ComponentId, result.EventFieldInfo.ComponentId);
@@ -45,7 +43,6 @@ namespace Microsoft.AspNetCore.Components.Web
             // Arrange
             var args = new WebEventDescriptor
             {
-                BrowserRendererId = 8,
                 EventFieldInfo = new EventFieldInfo
                 {
                     ComponentId = 89,
@@ -60,7 +57,6 @@ namespace Microsoft.AspNetCore.Components.Web
             var result = WebEventDescriptorReader.Read(jsonElement);
 
             // Assert
-            Assert.Equal(args.BrowserRendererId, result.BrowserRendererId);
             Assert.Equal(args.EventHandlerId, result.EventHandlerId);
             Assert.Equal(args.EventName, result.EventName);
             Assert.Equal(args.EventFieldInfo.ComponentId, result.EventFieldInfo.ComponentId);

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.Web
@@ -29,6 +30,9 @@ namespace Microsoft.AspNetCore.Components.Web
 
         [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(JSComponentInfo))]
         [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(JSComponentParameter))]
+        [DynamicDependency(nameof(WebRenderer.WebRendererInteropMethods.AddRootComponent), typeof(WebRenderer.WebRendererInteropMethods))]
+        [DynamicDependency(nameof(WebRenderer.WebRendererInteropMethods.SetRootComponentParameters), typeof(WebRenderer.WebRendererInteropMethods))]
+        [DynamicDependency(nameof(WebRenderer.WebRendererInteropMethods.RemoveRootComponent), typeof(WebRenderer.WebRendererInteropMethods))]
         internal void Add(Type componentType, string identifier, string javaScriptInitializer)
         {
             Add(componentType, identifier);

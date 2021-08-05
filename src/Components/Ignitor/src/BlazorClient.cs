@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
@@ -160,11 +161,11 @@ namespace Ignitor
             }
             if (expectRenderBatch)
             {
-                return ExpectRenderBatch(() => elementNode.ClickAsync(HubConnection));
+                return ExpectRenderBatch(() => elementNode.ClickAsync(this));
             }
             else
             {
-                return elementNode.ClickAsync(HubConnection);
+                return elementNode.ClickAsync(this);
             }
         }
 
@@ -175,7 +176,27 @@ namespace Ignitor
                 throw new InvalidOperationException($"Could not find element with id {elementId}.");
             }
 
-            return ExpectRenderBatch(() => elementNode.SelectAsync(HubConnection, value));
+            return ExpectRenderBatch(() => elementNode.SelectAsync(this, value));
+        }
+
+        public Task DispatchEventAsync(object descriptor, EventArgs eventArgs)
+        {
+            var attachWebRendererInteropCall = Operations.JSInteropCalls.FirstOrDefault(c => c.Identifier == "Blazor._internal.attachWebRendererInterop");
+            if (attachWebRendererInteropCall is null)
+            {
+                throw new InvalidOperationException("The server has not yet attached interop methods, so events cannot be dispatched.");
+            }
+
+            var args = JsonSerializer.Deserialize<JsonElement>(attachWebRendererInteropCall.ArgsJson);
+            var dotNetObjectRef = args.EnumerateArray().Skip(1).First();
+            var dotNetObjectId = dotNetObjectRef.GetProperty("__dotNetObject").GetInt32();
+
+            return InvokeDotNetMethod(
+                null,
+                null,
+                "DispatchEventAsync",
+                dotNetObjectId,
+                JsonSerializer.Serialize(new object[] { descriptor, eventArgs }, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
         }
 
         public async Task<CapturedRenderBatch?> ExpectRenderBatch(Func<Task> action, TimeSpan? timeout = null)
@@ -483,7 +504,7 @@ namespace Ignitor
             }
         }
 
-        public async Task InvokeDotNetMethod(object callId, string assemblyName, string methodIdentifier, object dotNetObjectId, string argsJson)
+        public async Task InvokeDotNetMethod(object? callId, string? assemblyName, string methodIdentifier, object dotNetObjectId, string argsJson)
         {
             await ExpectDotNetInterop(() => HubConnection.InvokeAsync(
                 "BeginInvokeDotNetFromJS",

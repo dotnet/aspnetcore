@@ -163,11 +163,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void CanRegisterCustomEventAndSupplyIJSObjectReference()
+        public void CanRegisterCustomEventAndSupplyComplexParams()
         {
             Browser.Exists(By.Id("register-sendjsobject")).Click();
             Browser.FindElement(By.Id("trigger-sendjsobject-event-directly")).Click();
-            Browser.Equal("Event with IJSObjectReference received: Hello!", () => GetLogLines().Single());
+            Browser.Collection(() => GetLogLines(),
+                line => Assert.Equal("Received DotNetObject with property: This is correct", line),
+                line => Assert.Equal("Received byte array of length 7 and first entry 1", line),
+                line => Assert.Equal("Event with IJSObjectReference received: Hello!", line));
         }
 
         void SendKeysSequentially(IWebElement target, string text)

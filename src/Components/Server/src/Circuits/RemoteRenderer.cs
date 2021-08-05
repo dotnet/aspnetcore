@@ -36,14 +36,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             CircuitOptions options,
             CircuitClientProxy client,
             ILogger logger,
-            ElementReferenceContext? elementReferenceContext)
-            : base(serviceProvider, loggerFactory)
+            RemoteJSRuntime jsRuntime,
+            CircuitJSComponentInterop jsComponentInterop)
+            : base(serviceProvider, loggerFactory, jsRuntime.ReadJsonSerializerOptions(), jsComponentInterop)
         {
             _client = client;
             _options = options;
             _logger = logger;
 
-            ElementReferenceContext = elementReferenceContext;
+            ElementReferenceContext = jsRuntime.ElementReferenceContext;
         }
 
         public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
@@ -309,12 +310,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 pendingRenderInfo.TrySetException(new InvalidOperationException(errorMessageOrNull));
             }
-        }
-
-        public ValueTask InitializeJSComponentSupportAsync(JSComponentConfigurationStore configuration, JsonSerializerOptions jsonOptions)
-        {
-            var interop = new CircuitJSComponentInterop(configuration, jsonOptions, _options);
-            return InitializeJSComponentSupportAsync(interop);
         }
 
         internal readonly struct UnacknowledgedRenderBatch

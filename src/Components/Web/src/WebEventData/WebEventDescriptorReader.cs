@@ -10,7 +10,6 @@ namespace Microsoft.AspNetCore.Components.Web
 {
     internal static class WebEventDescriptorReader
     {
-        private static readonly JsonEncodedText BrowserRendererIdKey = JsonEncodedText.Encode("browserRendererId");
         private static readonly JsonEncodedText EventHandlerIdKey = JsonEncodedText.Encode("eventHandlerId");
         private static readonly JsonEncodedText EventNameKey = JsonEncodedText.Encode("eventName");
         private static readonly JsonEncodedText EventFieldInfoKey = JsonEncodedText.Encode("eventFieldInfo");
@@ -22,11 +21,7 @@ namespace Microsoft.AspNetCore.Components.Web
             var descriptor = new WebEventDescriptor();
             foreach (var property in jsonElement.EnumerateObject())
             {
-                if (property.NameEquals(BrowserRendererIdKey.EncodedUtf8Bytes))
-                {
-                    descriptor.BrowserRendererId = property.Value.GetInt32();
-                }
-                else if (property.NameEquals(EventHandlerIdKey.EncodedUtf8Bytes))
+                if (property.NameEquals(EventHandlerIdKey.EncodedUtf8Bytes))
                 {
                     descriptor.EventHandlerId = property.Value.GetUInt64();
                 }

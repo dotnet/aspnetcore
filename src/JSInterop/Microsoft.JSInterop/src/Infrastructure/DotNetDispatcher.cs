@@ -181,6 +181,15 @@ namespace Microsoft.JSInterop.Infrastructure
 
                 throw;
             }
+            finally
+            {
+                // We require the invoked method to retrieve any pending byte arrays synchronously. If we didn't,
+                // we wouldn't be able to have overlapping async calls. As a way to enforce this, we clear the
+                // pending byte arrays synchronously after the call. This also helps because the recipient isn't
+                // required to consume all the pending byte arrays, since it's legal for the JS data model to contain
+                // more data than the .NET data model (like overposting)
+                jsRuntime.ByteArraysToBeRevived.Clear();
+            }
         }
 
         internal static object?[] ParseArguments(JSRuntime jsRuntime, string methodIdentifier, string arguments, Type[] parameterTypes)
@@ -217,11 +226,6 @@ namespace Microsoft.JSInterop.Infrastructure
                     suppliedArgs[index] = JsonSerializer.Deserialize(ref reader, parameterType, jsRuntime.JsonSerializerOptions);
                     index++;
                 }
-
-                // Note it's possible not all ByteArraysToBeRevived were actually revived
-                // due to potential differences between the JS & .NET data models for a
-                // particular type.
-                jsRuntime.ByteArraysToBeRevived.Clear();
 
                 if (index < parameterTypes.Length)
                 {

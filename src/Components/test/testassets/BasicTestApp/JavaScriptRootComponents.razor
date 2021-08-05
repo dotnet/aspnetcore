@@ -1,4 +1,7 @@
-﻿<h1>JavaScript root components</h1>
+﻿@using Microsoft.JSInterop
+@inject IJSRuntime JS
+
+<h1>JavaScript root components</h1>
 
 <p>This shows that we can dynamically add root components using JavaScript.</p>
 
@@ -32,6 +35,7 @@
 </p>
 
 <script suppress-error="BL9992">
+    let dotNetObjectReferenceForJSComponents;
     let numAddedComponents = 0;
     const addedComponents = [];
     const jsObject = DotNet.createJSObjectReference({
@@ -85,7 +89,10 @@
             incrementAmount: 123,
             showComplexParameters: true,
             somePerson: { name: 'Bert', age: 123.456 },
-            someJSObject: jsObject
+            someJSObject: jsObject,
+            someDotNetObject: dotNetObjectReferenceForJSComponents,
+            byteArray: new Uint8Array([2, 3, 5, 7, 11, 13, 17]),
+            someUndefinedValue: undefined, // Undefined isn't serialized into the JSON. Adding this to show parameter counting still works.
         });
     }
 
@@ -126,4 +133,31 @@
     function setMessage(message) {
         document.getElementById('message').textContent = message;
     }
+
+    function setDotNetObjectReferenceForJSComponents(value) {
+        dotNetObjectReferenceForJSComponents = value;
+    }
 </script>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var value = new DotNetType("This is correct");
+            await JS.InvokeVoidAsync("setDotNetObjectReferenceForJSComponents", DotNetObjectReference.Create(value));
+        }
+    }
+
+    public class DotNetType
+    {
+        // Deliberately not creatable through JSON deserialization
+        // since we want to show it's the original .NET object instance
+        public string Property { get; }
+
+        public DotNetType(string propertyValue)
+        {
+            Property = propertyValue;
+        }
+    }
+}
