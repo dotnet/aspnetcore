@@ -3,8 +3,8 @@ import { BootConfigResult, BootJsonDataExtension } from "../BootConfig";
 import { WebAssemblyStartOptions } from "../WebAssemblyStartOptions";
 
 type BeforeBlazorStartedCallback = (options: Partial<WebAssemblyStartOptions> | undefined, bootConfigResul?: BootJsonDataExtension) => Promise<void>;
-type AfterBlazorStartedCallback = (blazor: IBlazor) => Promise<void>;
-type BlazorInitializer = { beforeBlazorStarts: BeforeBlazorStartedCallback, afterBlazorStarted: AfterBlazorStartedCallback };
+export type AfterBlazorStartedCallback = (blazor: IBlazor) => Promise<void>;
+type BlazorInitializer = { beforeStart: BeforeBlazorStartedCallback, afterStarted: AfterBlazorStartedCallback };
 
 export class WebAssemblyJSInitializers {
 
@@ -35,13 +35,13 @@ export class WebAssemblyJSInitializers {
       if (initializer === undefined) {
         return;
       }
-      const { beforeBlazorStarts, afterBlazorStarted } = initializer;
-      if (afterBlazorStarted) {
-        afterBlazorStartedCallbacks.push(afterBlazorStarted);
+      const { beforeStart: beforeStart, afterStarted: afterStarted } = initializer;
+      if (afterStarted) {
+        afterBlazorStartedCallbacks.push(afterStarted);
       }
 
-      if (beforeBlazorStarts) {
-        return beforeBlazorStarts(candidateOptions, bootConfigResult.bootConfig.extensions);
+      if (beforeStart) {
+        return beforeStart(candidateOptions, bootConfigResult.bootConfig.extensions);
       }
     }
   }

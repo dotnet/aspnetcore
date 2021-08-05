@@ -1,6 +1,6 @@
 /* eslint-disable array-element-newline */
 import { DotNet } from '@microsoft/dotnet-js-interop';
-import { Blazor, IBlazor } from './GlobalExports';
+import { Blazor } from './GlobalExports';
 import * as Environment from './Environment';
 import { byteArrayBeingTransferred, monoPlatform } from './Platform/Mono/MonoPlatform';
 import { renderBatch, getRendererer, attachRootComponentToElement, attachRootComponentToLogicalElement } from './Rendering/Renderer';
@@ -113,9 +113,9 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     }
   };
 
-  const bootConfigResult : BootConfigResult = await bootConfigPromise;
+  const bootConfigResult: BootConfigResult = await bootConfigPromise;
 
-  await WebAssemblyJSInitializers.invokeInitializersAsync(bootConfigResult, candidateOptions);
+  var afterBlazorStartedCallbacks = await WebAssemblyJSInitializers.invokeInitializersAsync(bootConfigResult, candidateOptions);
 
   const [resourceLoader] = await Promise.all([
     WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig, options || {}),
@@ -128,9 +128,9 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   }
 
   // Start up the application
-  invokeBlazorStartedCallbacks(platform.callEntryPoint(resourceLoader.bootConfig.entryAssembly));
+  invokeBlazorStartedCallbacks(platform.callEntryPoint(resourceLoader.bootConfig.entryAssembly), afterBlazorStartedCallbacks);
 
-  async function invokeBlazorStartedCallbacks(applicationStarted: Promise<void>) {
+  async function invokeBlazorStartedCallbacks(applicationStarted: Promise<void>, afterBlazorStartedCallbacks: AfterBlazorStartedCallback[]) {
     await applicationStarted;
     await Promise.all(afterBlazorStartedCallbacks.map(c => c(Blazor)));
   }
