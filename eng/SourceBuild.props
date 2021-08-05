@@ -47,7 +47,7 @@
           BeforeTargets="Execute">
 
     <Exec
-      Command="./eng/build.sh --only-build-repo-tasks"
+      Command="./eng/build.sh --only-build-repo-tasks -bl"
       WorkingDirectory="$(InnerSourceBuildRepoRoot)"
       EnvironmentVariables="@(InnerBuildEnv)" />
   </Target>
