@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.IO;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Xunit;
@@ -29,7 +30,11 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         public IISDeploymentParameters GetBaseDeploymentParameters(HostingModel hostingModel = HostingModel.InProcess)
         {
             var publisher = hostingModel == HostingModel.InProcess ? InProcessTestSite : OutOfProcessTestSite;
-            return GetBaseDeploymentParameters(publisher, hostingModel);
+            var directory = TempDirectory.Create();
+            var deploymentParameters = GetBaseDeploymentParameters(publisher, hostingModel); ;
+            deploymentParameters.HandlerSettings["experimentalEnableShadowCopy"] = "true";
+            deploymentParameters.HandlerSettings["shadowCopyDirectory"] = directory.DirectoryPath;
+            return deploymentParameters;
         }
 
         public IISDeploymentParameters GetBaseDeploymentParameters(TestVariant variant)
@@ -60,5 +65,56 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 PublishApplicationBeforeDeployment = true
             };
         }
+
+        public class TempDirectory : IDisposable
+        {
+            public static TempDirectory Create()
+            {
+                var directoryPath = Path.Combine(@"C:\ShadowCopyTemp", Path.GetRandomFileName());
+                var directoryInfo = Directory.CreateDirectory(directoryPath);
+                return new TempDirectory(directoryInfo);
+            }
+
+            public TempDirectory(DirectoryInfo directoryInfo)
+            {
+                DirectoryInfo = directoryInfo;
+
+                DirectoryPath = directoryInfo.FullName;
+            }
+
+            public string DirectoryPath { get; }
+            public DirectoryInfo DirectoryInfo { get; }
+
+            public void Dispose()
+            {
+                DeleteDirectory(DirectoryPath);
+            }
+
+            private static void DeleteDirectory(string directoryPath)
+            {
+                foreach (var subDirectoryPath in Directory.EnumerateDirectories(directoryPath))
+                {
+                    DeleteDirectory(subDirectoryPath);
+                }
+
+                try
+                {
+                    foreach (var filePath in Directory.EnumerateFiles(directoryPath))
+                    {
+                        var fileInfo = new FileInfo(filePath)
+                        {
+                            Attributes = FileAttributes.Normal
+                        };
+                        fileInfo.Delete();
+                    }
+                    Directory.Delete(directoryPath);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($@"Failed to delete directory {directoryPath}: {e.Message}");
+                }
+            }
+        }
+
     }
 }
