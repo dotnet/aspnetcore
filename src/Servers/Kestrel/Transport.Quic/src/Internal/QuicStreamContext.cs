@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             catch (QuicOperationAbortedException ex)
             {
                 // AbortRead has been called for the stream.
-                error = ex;
+                error = new ConnectionAbortedException(ex.Message, ex);
             }
             catch (QuicConnectionAbortedException ex)
             {

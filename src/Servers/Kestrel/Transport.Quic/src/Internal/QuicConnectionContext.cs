@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Net.Quic;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -23,12 +24,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         private long _heartbeatTicks;
         private readonly object _poolLock = new object();
 
+        private readonly object _shutdownLock = new object();
         private readonly QuicConnection _connection;
         private readonly QuicTransportContext _context;
         private readonly IQuicTrace _log;
         private readonly CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
 
         private Task? _closeTask;
+        private ExceptionDispatchInfo? _abortReason;
 
         internal const int InitialStreamPoolSize = 5;
         internal const int MaxStreamPoolSize = 100;
@@ -53,7 +56,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         {
             try
             {
-                _closeTask ??= _connection.CloseAsync(errorCode: 0).AsTask();
+                lock (_shutdownLock)
+                {
+                    _closeTask ??= _connection.CloseAsync(errorCode: 0).AsTask();
+                }
+
                 await _closeTask;
             }
             catch (Exception ex)
@@ -68,9 +75,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         public override void Abort(ConnectionAbortedException abortReason)
         {
-            // dedup calls to abort here.
-            _log.ConnectionAbort(this, abortReason.Message);
-            _closeTask = _connection.CloseAsync(errorCode: Error).AsTask();
+            lock (_shutdownLock)
+            {
+                // Check if connection has already been already aborted.
+                if (_abortReason != null)
+                {
+                    return;
+                }
+
+                _abortReason = ExceptionDispatchInfo.Capture(abortReason);
+                _log.ConnectionAbort(this, abortReason.Message);
+                _closeTask = _connection.CloseAsync(errorCode: Error).AsTask();
+            }
         }
 
         public override async ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
@@ -125,11 +141,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             }
             catch (QuicOperationAbortedException)
             {
-                // Shutdown initiated by us
+                // Shutdown initiated by us.
 
-                // Allow for graceful closure.
+                lock (_shutdownLock)
+                {
+                    // Connection has been aborted. Throw reason exception.
+                    _abortReason?.Throw();
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Shutdown initiated by us.
+
+                lock (_shutdownLock)
+                {
+                    // Connection has been aborted. Throw reason exception.
+                    _abortReason?.Throw();
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.LogWarning(0, ex, $"Unexpected exception in {nameof(QuicConnectionContext)}.{nameof(AcceptAsync)}.");
+                throw;
             }
 
+            // Return null for graceful closure.
             return null;
         }
 

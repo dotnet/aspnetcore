@@ -928,7 +928,6 @@ namespace Microsoft.AspNetCore.Testing
         public CancellationToken ConnectionClosedRequested { get; set; }
 
         public CancellationTokenSource ConnectionClosingCts { get; set; } = new CancellationTokenSource();
-        public Func<ConnectionContext, Task> OnAcceptAsyncCallback { get; set; }
 
         public long Error
         {
@@ -949,17 +948,19 @@ namespace Microsoft.AspNetCore.Testing
 
         public override async ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
         {
-            while (await ToServerAcceptQueue.Reader.WaitToReadAsync())
+            try
             {
-                while (ToServerAcceptQueue.Reader.TryRead(out var connection))
+                while (await ToServerAcceptQueue.Reader.WaitToReadAsync(cancellationToken))
                 {
-                    if (OnAcceptAsyncCallback != null)
+                    while (ToServerAcceptQueue.Reader.TryRead(out var connection))
                     {
-                        await OnAcceptAsyncCallback(connection);
+                        return connection;
                     }
-
-                    return connection;
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                // Cancellation token. Graceful server abort.
             }
 
             return null;

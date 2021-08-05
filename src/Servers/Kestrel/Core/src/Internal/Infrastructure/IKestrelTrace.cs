@@ -100,6 +100,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         void Http3OutboundControlStreamError(string connectionId, Exception ex);
 
-        void Http3GoAwayHighestStreamId(string connectionId, long highestStreamId);
+        void Http3GoAwayHighestOpenedStreamId(string connectionId, long highestOpenedStreamId);
     }
 }

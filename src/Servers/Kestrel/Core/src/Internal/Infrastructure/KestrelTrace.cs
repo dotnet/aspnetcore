@@ -387,12 +387,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             QPackEncodingError(_http3Logger, connectionId, streamId, ex);
         }
 
-        [LoggerMessage(53, LogLevel.Debug, @"Connection id ""{ConnectionId}"": Highest stream ID {highestStreamId} in GOAWAY.", EventName = "Http3GoAwayHighestStreamId")]
-        private static partial void Http3GoAwayHighestStreamId(ILogger logger, string connectionId, long highestStreamId);
+        [LoggerMessage(53, LogLevel.Debug, @"Connection id ""{ConnectionId}"": Highest opened stream ID {HighestOpenedStreamId} in GOAWAY.", EventName = "Http3GoAwayHighestOpenedStreamId")]
+        private static partial void Http3GoAwayHighestOpenedStreamId(ILogger logger, string connectionId, long highestOpenedStreamId);
 
-        public void Http3GoAwayHighestStreamId(string connectionId, long highestStreamId)
+        public void Http3GoAwayHighestOpenedStreamId(string connectionId, long highestOpenedStreamId)
         {
-            Http3GoAwayHighestStreamId(_http3Logger, connectionId, highestStreamId);
+            Http3GoAwayHighestOpenedStreamId(_http3Logger, connectionId, highestOpenedStreamId);
         }
 
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)

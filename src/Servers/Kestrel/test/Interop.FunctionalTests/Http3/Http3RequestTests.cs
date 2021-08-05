@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Quic;
@@ -765,7 +766,7 @@ namespace Interop.FunctionalTests.Http3
 
         [ConditionalFact]
         [MsQuicSupported]
-        public async Task GET_ServerEndConnection_ConnectionAbortRaised()
+        public async Task ConnectionLifetimeNotificationFeature_RequestClose_ConnectionEnds()
         {
             // Arrange
             var syncPoint = new SyncPoint();
@@ -799,20 +800,25 @@ namespace Interop.FunctionalTests.Http3
 
                 connection.RequestClose();
 
-                await Assert.ThrowsAsync<HttpRequestException>(() => responseTask).DefaultTimeout();
+                // Allow request to finish so connection shutdown can happen.
+                syncPoint.Continue();
+
+                var response = await responseTask.DefaultTimeout();
+                response.EnsureSuccessStatusCode();
 
                 // Assert
-                const int applicationAbortedConnectionId = 6;
-                Assert.Single(TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" &&
-                                                         w.EventId == applicationAbortedConnectionId));
-
                 await WaitForLogAsync(logs =>
                 {
                     return logs.Any(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Http3" &&
-                                                         w.Message.Contains("sending GOAWAY frame for stream ID 3"));
+                                         w.Message.Contains("sending GOAWAY frame for stream ID 3"));
                 }, "Check for GO_AWAY frame sent on server initiated shutdown.");
 
-                syncPoint.Continue();
+                await WaitForLogAsync(logs =>
+                {
+                    const int applicationAbortedConnectionId = 6;
+                    return logs.Any(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" &&
+                                         w.EventId == applicationAbortedConnectionId);
+                }, "Wait for connection abort.");
 
                 await host.StopAsync();
             }
@@ -955,14 +961,28 @@ namespace Interop.FunctionalTests.Http3
         [MsQuicSupported]
         [InlineData(HttpProtocols.Http3)]
         [InlineData(HttpProtocols.Http2)]
-        public async Task GET_GracefulServerShutdown_WaitForActiveRequestsToDrain(HttpProtocols protocol)
+        public async Task GET_GracefulServerShutdown_AbortRequestsAfterHostTimeout(HttpProtocols protocol)
         {
             // Arrange
-            var requestsTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestStartedTcs = new TaskCompletionSource<HttpContext>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var readAsyncTask = new TaskCompletionSource<Task>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestAbortedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var builder = CreateHostBuilder(async context =>
             {
-                await requestsTcs.Task;
+                context.RequestAborted.Register(() => requestAbortedTcs.SetResult());
+
+                requestStartedTcs.SetResult(context);
+
+                Logger.LogInformation("Server sending response headers");
+                await context.Response.Body.FlushAsync();
+
+                Logger.LogInformation("Server reading");
+                var readTask = context.Request.Body.ReadUntilEndAsync();
+
+                readAsyncTask.SetResult(readTask);
+
+                await readTask;
             }, protocol: protocol);
 
             using (var host = builder.Build())
@@ -970,20 +990,118 @@ namespace Interop.FunctionalTests.Http3
             {
                 await host.StartAsync().DefaultTimeout();
 
-                var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+                var requestContent = new StreamingHttpContext();
+
+                var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
+                request.Content = requestContent;
                 request.Version = GetProtocol(protocol);
                 request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
                 // Act
-                var activeRequestTask = client.SendAsync(request, CancellationToken.None).DefaultTimeout();
+                var responseTask = client.SendAsync(request, CancellationToken.None);
 
+                var requestStream = await requestContent.GetStreamAsync().DefaultTimeout();
+
+                // Send headers
+                await requestStream.FlushAsync();
+                // Write content
+                await requestStream.WriteAsync(TestData);
+
+                var response = await responseTask.DefaultTimeout();
+
+                var httpContext = await requestStartedTcs.Task.DefaultTimeout();
+
+                Logger.LogInformation("Stopping host");
                 var stopTask = host.StopAsync();
 
-                var rejectedRequestTask = client.SendAsync(request, CancellationToken.None).DefaultTimeout();
+                var readTask = await readAsyncTask.Task.DefaultTimeout();
 
-                //Assert.NotNull(connectionIdFromFeature);
-                //Assert.NotNull(mockScopeLoggerProvider.LogScope);
-                //Assert.Equal(connectionIdFromFeature, mockScopeLoggerProvider.LogScope[0].Value);
+                // Assert
+                var ex = await Assert.ThrowsAnyAsync<Exception>(() => readTask).DefaultTimeout();
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
+
+                Assert.IsType<ConnectionAbortedException>(ex);
+                Assert.Equal("The connection was aborted because the server is shutting down and request processing didn't complete within the time specified by HostOptions.ShutdownTimeout.", ex.Message);
+
+                await requestAbortedTcs.Task.DefaultTimeout();
+
+                await stopTask.DefaultTimeout();
+
+                Assert.Contains(TestSink.Writes, m => m.Message.Contains("Some connections failed to close gracefully during server shutdown."));
+            }
+        }
+
+        // Verify HTTP/2 and HTTP/3 match behavior
+        [ConditionalTheory]
+        [MsQuicSupported]
+        [InlineData(HttpProtocols.Http3)]
+        [InlineData(HttpProtocols.Http2)]
+        public async Task GET_GracefulServerShutdown_RequestCompleteSuccessfullyInsideHostTimeout(HttpProtocols protocol)
+        {
+            // Arrange
+            var requestStartedTcs = new TaskCompletionSource<HttpContext>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestAbortedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var builder = CreateHostBuilder(async context =>
+            {
+                context.RequestAborted.Register(() => requestAbortedTcs.SetResult());
+
+                requestStartedTcs.SetResult(context);
+
+                Logger.LogInformation("Server sending response headers");
+                await context.Response.Body.FlushAsync();
+
+                Logger.LogInformation("Server reading");
+                var data = await context.Request.Body.ReadUntilEndAsync();
+
+                Logger.LogInformation("Server writing");
+                await context.Response.Body.WriteAsync(data);
+            }, protocol: protocol);
+
+            using (var host = builder.Build())
+            using (var client = CreateClient())
+            {
+                await host.StartAsync().DefaultTimeout();
+
+                var requestContent = new StreamingHttpContext();
+
+                var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
+                request.Content = requestContent;
+                request.Version = GetProtocol(protocol);
+                request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                // Act
+                var responseTask = client.SendAsync(request, CancellationToken.None);
+
+                var requestStream = await requestContent.GetStreamAsync().DefaultTimeout();
+
+                // Send headers
+                await requestStream.FlushAsync();
+                // Write content
+                await requestStream.WriteAsync(TestData);
+
+                var response = await responseTask.DefaultTimeout();
+
+                var httpContext = await requestStartedTcs.Task.DefaultTimeout();
+
+                Logger.LogInformation("Stopping host");
+                var stopTask = host.StopAsync();
+
+                // Assert
+                Assert.False(stopTask.IsCompleted, "Waiting for host which is wating for request.");
+
+                Logger.LogInformation("Client completing request stream");
+                requestContent.CompleteStream();
+
+                var data = await response.Content.ReadAsByteArrayAsync();
+                Assert.Equal(TestData, data);
+
+                await stopTask.DefaultTimeout();
+
+                Assert.DoesNotContain(TestSink.Writes, m => m.Message.Contains("Some connections failed to close gracefully during server shutdown."));
             }
         }
 
@@ -1028,7 +1146,19 @@ namespace Interop.FunctionalTests.Http3
                             app.Run(requestDelegate);
                         });
                 })
-                .ConfigureServices(AddTestLogging);
+                .ConfigureServices(AddTestLogging)
+                .ConfigureHostOptions(o =>
+                {
+                    //if (Debugger.IsAttached)
+                    //{
+                    //    // Avoid timeout while debugging.
+                    //    o.ShutdownTimeout = TimeSpan.FromHours(1);
+                    //}
+                    //else
+                    {
+                        o.ShutdownTimeout = TimeSpan.FromSeconds(1);
+                    }
+                });
         }
     }
 }

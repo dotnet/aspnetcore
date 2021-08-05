@@ -100,40 +100,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await Http3Api.WaitForConnectionStopAsync(expectedStreamId, false, expectedErrorCode: Http3ErrorCode.NoError);
         }
 
-        [Fact]
-        public async Task Request_AfterGracefulServerShutdown_Aborted()
-        {
-            await Http3Api.InitializeConnectionAsync(_echoApplication);
-
-            var inboundControlStream = await Http3Api.GetInboundControlStream();
-            await inboundControlStream.ExpectSettingsAsync();
-
-            // Start a request. Graceful shutdown will wait for a time for this request to be complete.
-            var acceptedRequest = await Http3Api.CreateRequestStream();
-            await acceptedRequest.SendHeadersAsync(Headers);
-
-            // Pause AcceptAsync call returning.
-            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            Http3Api.MultiplexedConnectionContext.OnAcceptAsyncCallback = c => tcs.Task;
-
-            // Queue request that will arrive after gracefulshutdown has started.
-            var rejectedRequest = await Http3Api.CreateRequestStream();
-
-            Http3Api.CloseServerGracefully();
-
-            // Server has told client it is shutting down via GOAWAY.
-            await inboundControlStream.WaitForGoAwayAsync(false, expectedLastStreamId: 4);
-
-            // Allow AcceptAsync to be returned.
-            tcs.SetResult();
-
-            // Stream received after GOAWAY is canceled.
-            await rejectedRequest.WaitForStreamErrorAsync(Http3ErrorCode.RequestRejected);
-
-            // Wait for connection to be aborted.
-            await Http3Api.MultiplexedConnectionContext.ToServerAcceptQueue.Reader.Completion.DefaultTimeout();
-        }
-
         [Theory]
         [InlineData(0x0)]
         [InlineData(0x2)]
