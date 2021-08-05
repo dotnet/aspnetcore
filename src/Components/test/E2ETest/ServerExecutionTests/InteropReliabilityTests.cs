@@ -480,10 +480,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
             await Client.ExpectCircuitError(async () =>
             {
-                await Client.HubConnection.InvokeAsync(
-                "DispatchBrowserEvent",
-                JsonSerializer.Serialize(browserDescriptor, TestJsonSerializerOptionsProvider.Options),
-                JsonSerializer.Serialize(mouseEventArgs, TestJsonSerializerOptionsProvider.Options));
+                await Client.DispatchEventAsync(browserDescriptor, mouseEventArgs);
             });
 
             Assert.Contains(
