@@ -437,7 +437,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             // Act
             var browserDescriptor = new WebEventDescriptor()
             {
-                BrowserRendererId = 0,
                 EventHandlerId = 6,
                 EventName = "click",
             };
@@ -475,17 +474,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             };
             var browserDescriptor = new WebEventDescriptor()
             {
-                BrowserRendererId = 0,
                 EventHandlerId = 1,
                 EventName = "click",
             };
 
             await Client.ExpectCircuitError(async () =>
             {
-                await Client.HubConnection.InvokeAsync(
-                "DispatchBrowserEvent",
-                JsonSerializer.Serialize(browserDescriptor, TestJsonSerializerOptionsProvider.Options),
-                JsonSerializer.Serialize(mouseEventArgs, TestJsonSerializerOptionsProvider.Options));
+                await Client.DispatchEventAsync(browserDescriptor, mouseEventArgs);
             });
 
             Assert.Contains(

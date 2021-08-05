@@ -60,7 +60,6 @@ namespace Microsoft.AspNetCore.Components.WebView
             AttachPage,
             BeginInvokeDotNet,
             EndInvokeJS,
-            DispatchBrowserEvent,
             OnRenderCompleted,
             OnLocationChanged,
             ReceiveByteArrayFromJS,
