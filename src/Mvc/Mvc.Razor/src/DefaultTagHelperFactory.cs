@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     /// <summary>
     /// Default implementation for <see cref="ITagHelperFactory"/>.
     /// </summary>
-    internal class DefaultTagHelperFactory : ITagHelperFactory
+    internal sealed class DefaultTagHelperFactory : ITagHelperFactory
     {
         private readonly ITagHelperActivator _activator;
         private readonly ConcurrentDictionary<Type, PropertyActivator<ViewContext>[]> _injectActions;
@@ -43,6 +43,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                     type,
                     typeof(ViewContextAttribute),
                     _createActivateInfo);
+        }
+
+        internal void ClearCache()
+        {
+            _injectActions.Clear();
         }
 
         /// <inheritdoc />

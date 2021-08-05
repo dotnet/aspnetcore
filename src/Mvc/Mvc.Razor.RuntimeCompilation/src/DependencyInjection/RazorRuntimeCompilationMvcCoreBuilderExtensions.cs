@@ -71,7 +71,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var compilerProvider = services.FirstOrDefault(f =>
                 f.ServiceType == typeof(IViewCompilerProvider) &&
                 f.ImplementationType?.Assembly == typeof(IViewCompilerProvider).Assembly &&
-                f.ImplementationType.FullName == "Microsoft.AspNetCore.Mvc.Razor.Compilation.DefaultViewCompilerProvider");
+                f.ImplementationType.FullName == "Microsoft.AspNetCore.Mvc.Razor.Compilation.DefaultViewCompiler");
 
             if (compilerProvider != null)
             {

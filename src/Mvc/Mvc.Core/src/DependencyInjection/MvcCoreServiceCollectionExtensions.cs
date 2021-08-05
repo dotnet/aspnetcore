@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.HotReload;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
@@ -61,12 +60,6 @@ namespace Microsoft.Extensions.DependencyInjection
             ConfigureDefaultFeatureProviders(partManager);
             ConfigureDefaultServices(services);
             AddMvcCoreServices(services);
-
-            if (MetadataUpdater.IsSupported)
-            {
-                services.TryAddEnumerable(
-                    ServiceDescriptor.Singleton<IActionDescriptorChangeProvider, HotReloadService>());
-            }
 
             var builder = new MvcCoreBuilder(services, partManager);
 
