@@ -12,7 +12,7 @@ function focus(element: HTMLOrSVGElement, preventScroll: boolean): void {
     if (element.hasAttribute('tabindex')) {
       element.focus({ preventScroll });
     } else {
-      throw new Error('Unable to focus an invalid SVG element because it does not have a tabindex.');
+      throw new Error('Unable to focus an SVG element that does not have a tabindex.');
     }
   } else {
     throw new Error('Unable to focus an invalid element.');
