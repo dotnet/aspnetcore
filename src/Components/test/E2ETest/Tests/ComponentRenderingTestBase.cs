@@ -411,6 +411,28 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void CanUseFocusExtensionToFocusSvgElement()
+        {
+            Browser.Manage().Window.Size = new System.Drawing.Size(100, 300);
+            var appElement = Browser.MountTestComponent<SvgFocusComponent>();
+
+            var buttonElement = appElement.FindElement(By.Id("focus-button"));
+
+            // Make sure the input element isn't focused when the test begins; we don't want
+            // the test to pass just because the input started as the focused element
+            Browser.NotEqual("focus-circle", getFocusedElementId);
+
+            // Click the button whose callback focuses the input element
+            buttonElement.Click();
+
+            // Verify that the input element is focused
+            Browser.Equal("focus-circle", getFocusedElementId);
+
+            // A local helper that gets the ID of the focused element.
+            string getFocusedElementId() => Browser.SwitchTo().ActiveElement().GetAttribute("id");
+        }
+
+        [Fact]
         public void CanUseFocusExtensionToFocusElementPreventScroll()
         {
             Browser.Manage().Window.Size = new System.Drawing.Size(100, 300);

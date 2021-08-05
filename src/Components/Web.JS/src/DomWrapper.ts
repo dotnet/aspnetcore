@@ -5,9 +5,15 @@ export const domFunctions = {
   focusBySelector,
 };
 
-function focus(element: HTMLElement, preventScroll: boolean): void {
+function focus(element: HTMLOrSVGElement, preventScroll: boolean): void {
   if (element instanceof HTMLElement) {
     element.focus({ preventScroll });
+  } else if (element instanceof SVGElement) {
+    if (element.hasAttribute('tabindex')) {
+      element.focus({ preventScroll });
+    } else {
+      throw new Error('Unable to focus an invalid SVG element because it does not have a tabindex.');
+    }
   } else {
     throw new Error('Unable to focus an invalid element.');
   }
