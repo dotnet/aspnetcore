@@ -12,11 +12,13 @@ namespace Microsoft.AspNetCore.Builder
     {
         private readonly IEndpointConventionBuilder _hubEndpoint;
         private readonly IEndpointConventionBuilder _disconnectEndpoint;
+        private readonly IEndpointConventionBuilder _jsInitializersEndpoint;
 
-        internal ComponentEndpointConventionBuilder(IEndpointConventionBuilder hubEndpoint, IEndpointConventionBuilder disconnectEndpoint)
+        internal ComponentEndpointConventionBuilder(IEndpointConventionBuilder hubEndpoint, IEndpointConventionBuilder disconnectEndpoint, IEndpointConventionBuilder jsInitializersEndpoint)
         {
             _hubEndpoint = hubEndpoint;
             _disconnectEndpoint = disconnectEndpoint;
+            _jsInitializersEndpoint = jsInitializersEndpoint;
         }
 
         /// <summary>
@@ -27,6 +29,7 @@ namespace Microsoft.AspNetCore.Builder
         {
             _hubEndpoint.Add(convention);
             _disconnectEndpoint.Add(convention);
+            _jsInitializersEndpoint.Add(convention);
         }
     }
 }

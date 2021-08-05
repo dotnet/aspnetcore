@@ -1,12 +1,12 @@
-import { IBlazor } from "../../GlobalExports";
-import { BootConfigResult, BootJsonDataExtension } from "../BootConfig";
-import { WebAssemblyStartOptions } from "../WebAssemblyStartOptions";
+import { IBlazor } from "./GlobalExports";
+import { BootConfigResult, BootJsonDataExtension } from "./Platform/BootConfig";
+import { WebAssemblyStartOptions } from "./Platform/WebAssemblyStartOptions";
 
 type BeforeBlazorStartedCallback = (...args: unknown[]) => Promise<void>;
 export type AfterBlazorStartedCallback = (blazor: IBlazor) => Promise<void>;
 type BlazorInitializer = { beforeStart: BeforeBlazorStartedCallback, afterStarted: AfterBlazorStartedCallback };
 
-export class WebAssemblyJSInitializers {
+export class JSInitializers {
 
   static async invokeInitializersAsync(
     initializerFiles: string[],

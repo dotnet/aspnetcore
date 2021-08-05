@@ -3,9 +3,12 @@
 
 using System;
 using Microsoft.AspNetCore.Components.Server;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -110,7 +113,12 @@ namespace Microsoft.AspNetCore.Builder
                 endpoints.CreateApplicationBuilder().UseMiddleware<CircuitDisconnectMiddleware>().Build())
                 .WithDisplayName("Blazor disconnect");
 
-            return new ComponentEndpointConventionBuilder(hubEndpoint, disconnectEndpoint);
+            var jsInitializersEndpoint = endpoints.Map(
+                (path.EndsWith('/') ? path : path + "/") + "initializers/",
+                endpoints.CreateApplicationBuilder().UseMiddleware<CircuitJavaScriptInitializationMiddleware>().Build())
+                .WithDisplayName("Blazor initializers");
+
+            return new ComponentEndpointConventionBuilder(hubEndpoint, disconnectEndpoint, jsInitializersEndpoint);
         }
     }
 }

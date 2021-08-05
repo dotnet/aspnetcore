@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Server.CircuitOptions.JavaScriptInitializers.get -> System.Collections.Generic.IList<string!>!
 Microsoft.AspNetCore.Components.Server.CircuitOptions.RootComponents.get -> Microsoft.AspNetCore.Components.Server.CircuitRootComponentOptions!
 Microsoft.AspNetCore.Components.Server.CircuitRootComponentOptions
 Microsoft.AspNetCore.Components.Server.CircuitRootComponentOptions.CircuitRootComponentOptions() -> void

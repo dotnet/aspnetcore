@@ -1,8 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Components.Server
 {
@@ -82,5 +81,11 @@ namespace Microsoft.AspNetCore.Components.Server
         /// Gets options for root components within the circuit.
         /// </summary>
         public CircuitRootComponentOptions RootComponents { get; } = new CircuitRootComponentOptions();
+
+        /// <summary>
+        /// Gets the list of JavaScript initializers used by Blazor server. By default this list gets populated by
+        /// the <c><see cref="IHostEnvironment.ApplicationName"/>.modules.json</c> manifest file in the web root if present.
+        /// </summary>
+        public IList<string> JavaScriptInitializers { get; } = new List<string>();
     }
 }
