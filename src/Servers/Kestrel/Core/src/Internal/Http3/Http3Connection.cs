@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private int _stoppedAcceptingStreams;
         private bool _gracefulCloseStarted;
         private int _activeRequestCount;
-        private readonly CancellationTokenSource _serverCloseCts;
+        private readonly CancellationTokenSource _allRequestsCompleted;
         private readonly Http3PeerSettings _serverSettings = new Http3PeerSettings();
         private readonly Http3PeerSettings _clientSettings = new Http3PeerSettings();
         private readonly StreamCloseAwaitable _streamCompletionAwaitable = new StreamCloseAwaitable();
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _multiplexedContext = (MultiplexedConnectionContext)context.ConnectionContext;
             _context = context;
             _streamLifetimeHandler = this;
-            _serverCloseCts = new CancellationTokenSource();
+            _allRequestsCompleted = new CancellationTokenSource();
 
             _errorCodeFeature = context.ConnectionFeatures.Get<IProtocolErrorCodeFeature>()!;
 
@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 while (true)
                 {
-                    var streamContext = await _multiplexedContext.AcceptAsync(_serverCloseCts.Token);
+                    var streamContext = await _multiplexedContext.AcceptAsync(_allRequestsCompleted.Token);
 
                     try
                     {
@@ -378,19 +378,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 }
                 catch
                 {
-                    Abort(ResolveConnectionError(error), Http3ErrorCode.InternalError);
+                    Abort(connectionError, Http3ErrorCode.InternalError);
                     throw;
                 }
                 finally
                 {
                     Log.Http3ConnectionClosed(_context.ConnectionId, GetHighestStreamId());
                 }
-            }
-
-            static ConnectionAbortedException ResolveConnectionError(Exception? error)
-            {
-                return error as ConnectionAbortedException
-                    ?? new ConnectionAbortedException(CoreStrings.Http3ConnectionFaulted, error!);
             }
         }
 
@@ -583,9 +577,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 }
                 _streams.Remove(stream.StreamId);
 
-                if (_gracefulCloseStarted)
+                if (stream.IsRequestStream)
                 {
-                    _serverCloseCts.Cancel();
+                    // Connection is gracefully closing and this is the final request.
+                    // Trigger cancellation token to cause AcceptAsync to exit.
+                    if (_gracefulCloseStarted && _activeRequestCount == 0)
+                    {
+                        _allRequestsCompleted.Cancel();
+                    }
                 }
             }
 

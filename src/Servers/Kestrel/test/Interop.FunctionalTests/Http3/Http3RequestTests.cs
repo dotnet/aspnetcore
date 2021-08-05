@@ -1149,12 +1149,12 @@ namespace Interop.FunctionalTests.Http3
                 .ConfigureServices(AddTestLogging)
                 .ConfigureHostOptions(o =>
                 {
-                    //if (Debugger.IsAttached)
-                    //{
-                    //    // Avoid timeout while debugging.
-                    //    o.ShutdownTimeout = TimeSpan.FromHours(1);
-                    //}
-                    //else
+                    if (Debugger.IsAttached)
+                    {
+                        // Avoid timeout while debugging.
+                        o.ShutdownTimeout = TimeSpan.FromHours(1);
+                    }
+                    else
                     {
                         o.ShutdownTimeout = TimeSpan.FromSeconds(1);
                     }
