@@ -418,14 +418,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             var buttonElement = appElement.FindElement(By.Id("focus-button"));
 
-            // Make sure the input element isn't focused when the test begins; we don't want
-            // the test to pass just because the input started as the focused element
+            // Make sure the circle isn't focused when the test begins; we don't want
+            // the test to pass just because the circle started as the focused element
             Browser.NotEqual("focus-circle", getFocusedElementId);
 
-            // Click the button whose callback focuses the input element
+            // Click the button whose callback focuses the SVG element
             buttonElement.Click();
 
-            // Verify that the input element is focused
+            // Verify that the circle is focused
             Browser.Equal("focus-circle", getFocusedElementId);
 
             // A local helper that gets the ID of the focused element.
