@@ -84,7 +84,6 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
 
   // Get the custom environment setting and blazorBootJson loader if defined
   const environment = candidateOptions.environment;
-  const loadBlazorBootJson = candidateOptions.loadBlazorBootJson ?? BootConfigResult.initAsync;
 
   // Fetch the resources and prepare the Mono runtime
   const bootConfigPromise = loadBlazorBootJson(environment);
@@ -118,8 +117,6 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   type BlazorInitializer = { beforeBlazorStarts: BeforeBlazorStartedCallback, afterBlazorStarted: AfterBlazorStartedCallback };
 
   const bootConfigResult = await bootConfigPromise;
-  const bootConfig = bootConfigResult.bootConfig;
-  const libraryInitializersTimeout = options?.libraryInitializersTimeout ?? 30;
   const afterBlazorStartedCallbacks: AfterBlazorStartedCallback[] = [];
   if (bootConfigResult.bootConfig.libraryInitializers) {
     const initializerFiles = bootConfigResult.bootConfig.libraryInitializers;
@@ -147,17 +144,9 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     if (afterBlazorStarted) {
       afterBlazorStartedCallbacks.push(afterBlazorStarted);
     }
+
     if (beforeBlazorStarts) {
-      const timeout = libraryInitializersTimeout * 1000;
-      await Promise.race([
-        beforeBlazorStarts(candidateOptions, bootConfigResult),
-        // By default we give each library 30 seconds to load and do whatever they have to do, before we continue loading.
-        new Promise<void>((resolve) =>
-          setTimeout(() => {
-            console.log(`Library '${path}' took longer than '${libraryInitializersTimeout}' to initialize.`);
-            resolve();
-          },
-            timeout))]);
+      return beforeBlazorStarts(candidateOptions, bootConfigResult);
     }
   }
 

@@ -13,21 +13,9 @@ export interface WebAssemblyStartOptions {
   loadBootResource(type: WebAssemblyBootResourceType, name: string, defaultUri: string, integrity: string) : string | Promise<Response> | null | undefined;
 
   /**
-   * Overrides the built-in way of loading blazor.boot.json
-   * @param environment The built-in environment setting on start.
-   */
-  loadBlazorBootJson(environment?: string) : BootConfigResult;
-
-  /**
    * Override built-in environment setting on start.
    */
   environment?: string;
-
-  /**
-   * The timeout in seconds before Blazor continues loading after invoking beforeBlazorStarts on a
-   * library initializer.
-   */
-  libraryInitializersTimeout?: number;
 
   /**
    * Gets the application culture. This is a name specified in the BCP 47 format. See https://tools.ietf.org/html/bcp47
@@ -38,4 +26,4 @@ export interface WebAssemblyStartOptions {
 // This type doesn't have to align with anything in BootConfig.
 // Instead, this represents the public API through which certain aspects
 // of boot resource loading can be customized.
-export type WebAssemblyBootResourceType = 'assembly' | 'pdb' | 'dotnetjs' | 'dotnetwasm' | 'globalization';
+export type WebAssemblyBootResourceType = 'assembly' | 'pdb' | 'dotnetjs' | 'dotnetwasm' | 'globalization' | 'manifest';

@@ -1,5 +1,5 @@
 import { toAbsoluteUri } from '../Services/NavigationManager';
-import { BootJsonData, ResourceList } from './BootConfig';
+import { BootConfigResult, BootJsonData, ResourceList } from './BootConfig';
 import { WebAssemblyStartOptions, WebAssemblyBootResourceType } from './WebAssemblyStartOptions';
 const networkFetchCacheMode = 'no-cache';
 
@@ -7,16 +7,20 @@ export class WebAssemblyResourceLoader {
   private usedCacheKeys: { [key: string]: boolean } = {};
   private networkLoads: { [name: string]: LoadLogEntry } = {};
   private cacheLoads: { [name: string]: LoadLogEntry } = {};
+  private cacheIfUsed?: Cache;
+  private bootConfig?: BootJsonData;
 
-  static async initAsync(bootConfig: BootJsonData, startOptions: Partial<WebAssemblyStartOptions>): Promise<WebAssemblyResourceLoader> {
-    const cache = await getCacheToUseIfEnabled(bootConfig);
-    return new WebAssemblyResourceLoader(bootConfig, cache, startOptions);
+  constructor(readonly startOptions: Partial<WebAssemblyStartOptions>) {
   }
 
-  constructor(readonly bootConfig: BootJsonData, readonly cacheIfUsed: Cache | null, readonly startOptions: Partial<WebAssemblyStartOptions>) {
-  }
+  async loadResources(resources: ResourceList, url: (name: string) => string, resourceType: WebAssemblyBootResourceType): Promise<LoadingResource[]> {
+    const bootConfigResult = await BootConfigResult.initAsync(
+      this.startOptions.loadBootResource ?? this.loadResourceWithoutCaching,
+      this.startOptions.environment);
 
-  loadResources(resources: ResourceList, url: (name: string) => string, resourceType: WebAssemblyBootResourceType): LoadingResource[] {
+    this.bootConfig = bootConfigResult.bootConfig;
+    this.cacheIfUsed = await getCacheToUseIfEnabled(bootConfigResult.bootConfig);
+
     return Object.keys(resources)
       .map(name => this.loadResource(name, url(name), resources[name], resourceType));
   }
@@ -24,7 +28,7 @@ export class WebAssemblyResourceLoader {
   loadResource(name: string, url: string, contentHash: string, resourceType: WebAssemblyBootResourceType): LoadingResource {
     const response = this.cacheIfUsed
       ? this.loadResourceWithCaching(this.cacheIfUsed, name, url, contentHash, resourceType)
-      : this.loadResourceWithoutCaching(name, url, contentHash, resourceType);
+      : this.loadResourceWithoutCaching(resourceType, name, url, contentHash);
 
     return { name, url, response };
   }
@@ -40,7 +44,7 @@ export class WebAssemblyResourceLoader {
       return;
     }
 
-    const linkerDisabledWarning = this.bootConfig.linkerEnabled ? '%c' : '\n%cThis application was built with linking (tree shaking) disabled. Published applications will be significantly smaller.';
+    const linkerDisabledWarning = this.bootConfig!.linkerEnabled ? '%c' : '\n%cThis application was built with linking (tree shaking) disabled. Published applications will be significantly smaller.';
     console.groupCollapsed(`%cblazor%c Loaded ${toDataSizeString(totalResponseBytes)} resources${linkerDisabledWarning}`, 'background: purple; color: white; padding: 1px 3px; border-radius: 3px;', 'font-weight: bold;', 'font-weight: normal;');
 
     if (cacheLoadsEntries.length) {
@@ -100,13 +104,13 @@ export class WebAssemblyResourceLoader {
       return cachedResponse;
     } else {
       // It's not in the cache. Fetch from network.
-      const networkResponse = await this.loadResourceWithoutCaching(name, url, contentHash, resourceType);
+      const networkResponse = await this.loadResourceWithoutCaching(resourceType, name, url, contentHash);
       this.addToCacheAsync(cache, name, cacheKey, networkResponse); // Don't await - add to cache in background
       return networkResponse;
     }
   }
 
-  private loadResourceWithoutCaching(name: string, url: string, contentHash: string, resourceType: WebAssemblyBootResourceType): Promise<Response> {
+  private loadResourceWithoutCaching(resourceType: WebAssemblyBootResourceType, name: string, url: string, contentHash: string): Promise<Response> {
     // Allow developers to override how the resource is loaded
     if (this.startOptions.loadBootResource) {
       const customLoadResult = this.startOptions.loadBootResource(resourceType, name, url, contentHash);
@@ -117,6 +121,8 @@ export class WebAssemblyResourceLoader {
         // They are supplying a custom URL, so use that with the default fetch behavior
         url = customLoadResult;
       }
+    }else if(resourceType === 'manifest'){
+      return BootConfigResult.defaultLoadBlazorBootJson(url);
     }
 
     // Note that if cacheBootResources was explicitly disabled, we also bypass hash checking
@@ -124,7 +130,7 @@ export class WebAssemblyResourceLoader {
     // there's anything they don't like about it.
     return fetch(url, {
       cache: networkFetchCacheMode,
-      integrity: this.bootConfig.cacheBootResources ? contentHash : undefined
+      integrity: this.bootConfig?.cacheBootResources ? contentHash : undefined
     });
   }
 
@@ -159,16 +165,16 @@ export class WebAssemblyResourceLoader {
   }
 }
 
-async function getCacheToUseIfEnabled(bootConfig: BootJsonData): Promise<Cache | null> {
+async function getCacheToUseIfEnabled(bootConfig: BootJsonData): Promise<Cache | undefined> {
   // caches will be undefined if we're running on an insecure origin (secure means https or localhost)
   if (!bootConfig.cacheBootResources || typeof caches === 'undefined') {
-    return null;
+    return undefined;
   }
 
   // cache integrity is compromised if the first request has been served over http (except localhost)
   // in this case, we want to disable caching and integrity validation
   if (window.isSecureContext === false) {
-    return null;
+    return undefined;
   }
 
   // Define a separate cache for each base href, so we're isolated from any other
@@ -184,12 +190,12 @@ async function getCacheToUseIfEnabled(bootConfig: BootJsonData): Promise<Cache |
     // However, if the browser was launched with a --user-data-dir param that's "too long" in some sense,
     // then even through the promise resolves as success, the value given is `undefined`.
     // See https://stackoverflow.com/a/46626574 and https://bugs.chromium.org/p/chromium/issues/detail?id=1054541
-    // If we see this happening, return "null" to mean "proceed without caching".
-    return (await caches.open(cacheName)) || null;
+    // If we see this happening, return "undefined" to mean "proceed without caching".
+    return (await caches.open(cacheName)) || undefined;
   } catch {
     // There's no known scenario where we should get an exception here, but considering the
     // Chromium bug above, let's tolerate it and treat as "proceed without caching".
-    return null;
+    return undefined;
   }
 }
 
