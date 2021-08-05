@@ -7,5 +7,6 @@ namespace Microsoft.AspNetCore.Testing
     {
         public const string Windows10Arm64 = "Windows.10.Arm64v8.Open;";
         public const string DebianArm64 = "Debian.9.Arm64.Open;";
+        public const string RedhatAmd64 = "Redhat.7.Amd64.Open;";
     }
 }
