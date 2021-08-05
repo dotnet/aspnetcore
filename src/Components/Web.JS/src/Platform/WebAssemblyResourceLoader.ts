@@ -8,9 +8,8 @@ export class WebAssemblyResourceLoader {
   private networkLoads: { [name: string]: LoadLogEntry } = {};
   private cacheLoads: { [name: string]: LoadLogEntry } = {};
   private cacheIfUsed?: Cache;
-  private bootConfig?: BootJsonData;
 
-  constructor(readonly startOptions: Partial<WebAssemblyStartOptions>) {
+  constructor(public bootConfig: BootJsonData, readonly startOptions: Partial<WebAssemblyStartOptions>) {
   }
 
   async loadResources(resources: ResourceList, url: (name: string) => string, resourceType: WebAssemblyBootResourceType): Promise<LoadingResource[]> {
@@ -110,6 +109,10 @@ export class WebAssemblyResourceLoader {
     }
   }
 
+  private static loadBlazorBootJson(){
+
+  }
+
   private loadResourceWithoutCaching(resourceType: WebAssemblyBootResourceType, name: string, url: string, contentHash: string): Promise<Response> {
     // Allow developers to override how the resource is loaded
     if (this.startOptions.loadBootResource) {
@@ -121,7 +124,8 @@ export class WebAssemblyResourceLoader {
         // They are supplying a custom URL, so use that with the default fetch behavior
         url = customLoadResult;
       }
-    }else if(resourceType === 'manifest'){
+    }
+    else if(resourceType === 'manifest'){
       return BootConfigResult.defaultLoadBlazorBootJson(url);
     }
 

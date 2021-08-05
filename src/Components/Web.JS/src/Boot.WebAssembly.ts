@@ -1,6 +1,6 @@
 /* eslint-disable array-element-newline */
 import { DotNet } from '@microsoft/dotnet-js-interop';
-import { Blazor } from './GlobalExports';
+import { Blazor, IBlazor } from './GlobalExports';
 import * as Environment from './Environment';
 import { byteArrayBeingTransferred, monoPlatform } from './Platform/Mono/MonoPlatform';
 import { renderBatch, getRendererer, attachRootComponentToElement, attachRootComponentToLogicalElement } from './Rendering/Renderer';
@@ -8,12 +8,13 @@ import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRen
 import { shouldAutoStart } from './BootCommon';
 import { WebAssemblyResourceLoader } from './Platform/WebAssemblyResourceLoader';
 import { WebAssemblyConfigLoader } from './Platform/WebAssemblyConfigLoader';
-import { BootConfigResult } from './Platform/BootConfig';
+import { BootConfigResult, BootJsonData, BootJsonDataExtension } from './Platform/BootConfig';
 import { Pointer, System_Array, System_Boolean, System_Byte, System_Int, System_Object, System_String } from './Platform/Platform';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 import { discoverComponents, discoverPersistedState, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { setDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
+import { WebAssemblyJSInitializers } from './Platform/Initialization/WebAssemblyJSInitializers';
 
 declare var Module: EmscriptenModule;
 let started = false;
@@ -86,7 +87,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   const environment = candidateOptions.environment;
 
   // Fetch the resources and prepare the Mono runtime
-  const bootConfigPromise = loadBlazorBootJson(environment);
+  const bootConfigPromise = BootConfigResult.initAsync(candidateOptions.loadBootResource, environment);
 
   // Leverage the time while we are loading boot.config.json from the network to discover any potentially registered component on
   // the document.
@@ -112,43 +113,9 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     }
   };
 
-  type BeforeBlazorStartedCallback = (options: Partial<WebAssemblyStartOptions> | undefined, bootConfigResul: BootConfigResult) => Promise<void>;
-  type AfterBlazorStartedCallback = () => Promise<void>;
-  type BlazorInitializer = { beforeBlazorStarts: BeforeBlazorStartedCallback, afterBlazorStarted: AfterBlazorStartedCallback };
+  const bootConfigResult : BootConfigResult = await bootConfigPromise;
 
-  const bootConfigResult = await bootConfigPromise;
-  const afterBlazorStartedCallbacks: AfterBlazorStartedCallback[] = [];
-  if (bootConfigResult.bootConfig.libraryInitializers) {
-    const initializerFiles = bootConfigResult.bootConfig.libraryInitializers;
-    try {
-      await Promise.all(Object.entries(initializerFiles).map(f => importAndInvokeInitializer(...f)));
-    } catch (error) {
-      console.warn(`A library initializer produced an error: '${error}'`);
-    }
-  }
-
-  function adjustPath(path: string): string {
-    // This is the same we do in JS interop with the import callback
-    const base = document.baseURI;
-    path = base.endsWith('/') ? `${base}${path}` : `${base}/${path}`;
-    return path;
-  }
-
-  async function importAndInvokeInitializer(path: string, signature: string): Promise<void> {
-    const adjustedPath = adjustPath(path);
-    const initializer = await import(/* webpackIgnore: true */ adjustedPath) as Partial<BlazorInitializer>;
-    if (initializer === undefined) {
-      return;
-    }
-    const { beforeBlazorStarts, afterBlazorStarted } = initializer;
-    if (afterBlazorStarted) {
-      afterBlazorStartedCallbacks.push(afterBlazorStarted);
-    }
-
-    if (beforeBlazorStarts) {
-      return beforeBlazorStarts(candidateOptions, bootConfigResult);
-    }
-  }
+  await WebAssemblyJSInitializers.invokeInitializersAsync(bootConfigResult, candidateOptions);
 
   const [resourceLoader] = await Promise.all([
     WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig, options || {}),
@@ -165,7 +132,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
 
   async function invokeBlazorStartedCallbacks(applicationStarted: Promise<void>) {
     await applicationStarted;
-    await Promise.all(afterBlazorStartedCallbacks.map(c => c()));
+    await Promise.all(afterBlazorStartedCallbacks.map(c => c(Blazor)));
   }
 }
 

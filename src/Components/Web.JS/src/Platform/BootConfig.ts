@@ -4,12 +4,14 @@ export class BootConfigResult {
   private constructor(public bootConfig: BootJsonData, public applicationEnvironment: string) {
   }
 
-  static async initAsync(loadBootResource: (type: WebAssemblyBootResourceType, name: string, defaultUri: string, integrity: string) => string | Promise<Response> | null | undefined, environment?: string): Promise<BootConfigResult> {
-    let loaderResponse = loadBootResource('manifest', 'blazor.boot.json', '_framework/blazor.boot.json', '');
+  static async initAsync(loadBootResource?: (type: WebAssemblyBootResourceType, name: string, defaultUri: string, integrity: string) => string | Promise<Response> | null | undefined, environment?: string): Promise<BootConfigResult> {
+    let loaderResponse = loadBootResource !== undefined ?
+      loadBootResource('manifest', 'blazor.boot.json', '_framework/blazor.boot.json', '') :
+      this.defaultLoadBlazorBootJson('_framework/blazor.boot.json');
 
     const bootConfigResponse = loaderResponse instanceof Promise ?
       await loaderResponse :
-      await defaultLoadBlazorBootJson;
+      await BootConfigResult.defaultLoadBlazorBootJson(loaderResponse ?? '_framework/blazor.boot.json');
 
     // While we can expect an ASP.NET Core hosted application to include the environment, other
     // hosts may not. Assume 'Production' in the absence of any specified value.
@@ -41,11 +43,13 @@ export interface BootJsonData {
   readonly config: string[];
   readonly icuDataMode: ICUDataMode;
   readonly libraryInitializers?: ResourceList,
-  readonly extensions?: { [extensionName: string]: ResourceList }
+  readonly extensions?: BootJsonDataExtension
 
   // These properties are tacked on, and not found in the boot.json file
   modifiableAssemblies: string | null;
 }
+
+export type BootJsonDataExtension = { [extensionName: string]: ResourceList };
 
 export interface ResourceGroups {
   readonly assembly: ResourceList;
