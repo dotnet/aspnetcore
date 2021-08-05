@@ -4,39 +4,39 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
-using System.Runtime.InteropServices;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.BrowserTesting;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Testing;
+using PlaywrightSharp;
 using Xunit;
 using Xunit.Abstractions;
-using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
+namespace Microsoft.AspNetCore.BrowserTesting
 {
-    public class PlaywrightTestBase : LoggedTest, IAsyncLifetime
+    public class BrowserTestBase : LoggedTest, IAsyncLifetime
     {
         private static readonly bool _isCIEnvironment =
-            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ContinuousIntegrationBuild"));
+            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ContinuousIntegrationBuild")) ||
+            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("Helix"));
 
-        public PlaywrightTestBase(ITestOutputHelper output) : base(output) { }
+        private static readonly BrowserManagerConfiguration _config = new BrowserManagerConfiguration(CreateConfiguration());
+
+        public BrowserTestBase(ITestOutputHelper output = null) : base(output) { }
 
         protected override async Task InitializeCoreAsync(TestContext context)
         {
-            BrowserManager = await BrowserManager.CreateAsync(CreateConfiguration(), LoggerFactory);
+            BrowserManager = await BrowserManager.CreateAsync(_config, LoggerFactory);
             BrowserContextInfo = new ContextInformation(LoggerFactory);
-            _output = new TestOutputLogger(Logger);
+            _output = new BrowserTestOutputLogger(Logger);
         }
 
         public Task InitializeAsync() => Task.CompletedTask;
 
         private static IConfiguration CreateConfiguration()
         {
-            var basePath = Path.GetDirectoryName(typeof(PlaywrightTestBase).Assembly.Location);
+            var basePath = Path.GetDirectoryName(typeof(BrowserTestBase).Assembly.Location);
             var os = Environment.OSVersion.Platform switch
             {
                 PlatformID.Win32NT => "win",
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
             return builder.Build();
         }
 
-        public Task DisposeAsync() => BrowserManager.DisposeAsync();
+        public virtual Task DisposeAsync() => BrowserManager.DisposeAsync();
 
         private ITestOutputHelper _output;
         public ITestOutputHelper Output
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
             {
                 if (_output == null)
                 {
-                    _output = new TestOutputLogger(Logger);
+                    _output = new BrowserTestOutputLogger(Logger);
                 }
                 return _output;
             }

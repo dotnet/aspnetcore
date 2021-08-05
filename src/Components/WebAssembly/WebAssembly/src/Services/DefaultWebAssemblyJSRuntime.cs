@@ -8,6 +8,7 @@ using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
@@ -98,5 +99,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
         /// <inheritdoc />
         protected override Task<Stream> ReadJSDataAsStreamAsync(IJSStreamReference jsStreamReference, long totalLength, CancellationToken cancellationToken = default)
             => Task.FromResult<Stream>(PullFromJSDataStream.CreateJSDataStream(this, jsStreamReference, totalLength, cancellationToken));
+
+        /// <inheritdoc />
+        protected override Task TransmitStreamAsync(long streamId, DotNetStreamReference dotNetStreamReference)
+        {
+            return TransmitDataStreamToJS.TransmitStreamAsync(this, streamId, dotNetStreamReference);
+        }
     }
 }
