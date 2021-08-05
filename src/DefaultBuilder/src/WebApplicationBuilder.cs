@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Builder
 
         private WebApplication? _builtApplication;
 
-        internal WebApplicationBuilder(Assembly? callingAssembly, WebApplicationOptions options, Action<IHostBuilder>? configureDefaults = null)
+        internal WebApplicationBuilder(WebApplicationOptions options, Action<IHostBuilder>? configureDefaults = null)
         {
             Services = _services;
 
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Builder
 
                 // We need to override the application name since the call to Configure will set it to
                 // be the calling assembly's name.
-                webHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, (callingAssembly ?? Assembly.GetEntryAssembly())?.GetName()?.Name ?? string.Empty);
+                webHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, (Assembly.GetEntryAssembly())?.GetName()?.Name ?? string.Empty);
             });
 
             // Apply the args to host configuration last since ConfigureWebHostDefaults overrides a host specific setting (the application name).
