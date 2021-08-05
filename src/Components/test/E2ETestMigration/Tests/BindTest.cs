@@ -25,14 +25,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         protected override Type TestComponent { get; } = typeof(BindCasesComponent);
 
-        protected override async Task InitializeCoreAsync(TestContext context)
-        {
-            await base.InitializeCoreAsync(context);
-
-            // On WebAssembly, page reloads are expensive so skip if possible
-            //Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
-        }
-
         protected async Task<string> GetInputValue(string selector)
             => await TestPage.EvalOnSelectorAsync<string>(selector, "e => e.value");
 

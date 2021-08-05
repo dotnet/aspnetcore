@@ -28,11 +28,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
             MountUri = _serverFixture.RootUri + "subdir";
         }
 
-        public void Navigate(string relativeUrl, bool noReload = false)
-        {
-            //Browser.Navigate(_serverFixture.RootUri, relativeUrl, noReload);
-        }
-
         protected override async Task InitializeCoreAsync(TestContext context)
         {
             await base.InitializeCoreAsync(context);

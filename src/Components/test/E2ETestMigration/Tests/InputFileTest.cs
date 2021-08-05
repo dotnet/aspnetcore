@@ -39,8 +39,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             _tempDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(_tempDirectory);
-
-            //Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
         }
 
         private async Task VerifyFile(TempFile file)
