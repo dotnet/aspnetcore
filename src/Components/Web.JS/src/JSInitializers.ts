@@ -2,22 +2,21 @@ import { IBlazor } from "../../GlobalExports";
 import { BootConfigResult, BootJsonDataExtension } from "../BootConfig";
 import { WebAssemblyStartOptions } from "../WebAssemblyStartOptions";
 
-type BeforeBlazorStartedCallback = (options: Partial<WebAssemblyStartOptions> | undefined, bootConfigResul?: BootJsonDataExtension) => Promise<void>;
+type BeforeBlazorStartedCallback = (...args: unknown[]) => Promise<void>;
 export type AfterBlazorStartedCallback = (blazor: IBlazor) => Promise<void>;
 type BlazorInitializer = { beforeStart: BeforeBlazorStartedCallback, afterStarted: AfterBlazorStartedCallback };
 
 export class WebAssemblyJSInitializers {
 
-  static async invokeInitializersAsync(bootConfigResult: BootConfigResult, candidateOptions: Partial<WebAssemblyStartOptions>): Promise<AfterBlazorStartedCallback[]> {
+  static async invokeInitializersAsync(
+    initializerFiles: string[],
+    initializerArguments: unknown[]): Promise<AfterBlazorStartedCallback[]> {
 
     const afterBlazorStartedCallbacks: AfterBlazorStartedCallback[] = [];
-    if (bootConfigResult.bootConfig.libraryInitializers) {
-      const initializerFiles = bootConfigResult.bootConfig.libraryInitializers;
-      try {
-        await Promise.all(Object.entries(initializerFiles).map(f => importAndInvokeInitializer(...f)));
-      } catch (error) {
-        console.warn(`A library initializer produced an error: '${error}'`);
-      }
+    try {
+      await Promise.all(Object.entries(initializerFiles).map(f => importAndInvokeInitializer(...f)));
+    } catch (error) {
+      console.warn(`A library initializer produced an error: '${error}'`);
     }
 
     return afterBlazorStartedCallbacks;
@@ -41,7 +40,7 @@ export class WebAssemblyJSInitializers {
       }
 
       if (beforeStart) {
-        return beforeStart(candidateOptions, bootConfigResult.bootConfig.extensions);
+        return beforeStart(...initializerArguments);
       }
     }
   }

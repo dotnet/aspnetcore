@@ -114,8 +114,13 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   };
 
   const bootConfigResult: BootConfigResult = await bootConfigPromise;
-
-  var afterBlazorStartedCallbacks = await WebAssemblyJSInitializers.invokeInitializersAsync(bootConfigResult, candidateOptions);
+  let afterBlazorStartedCallbacks: AfterBlazorStartedCallback[] = [];
+  if (bootConfigResult.bootConfig.libraryInitializers) {
+    const initializerFiles = bootConfigResult.bootConfig.libraryInitializers;
+    afterBlazorStartedCallbacks = await WebAssemblyJSInitializers.invokeInitializersAsync(
+      Object.keys(initializerFiles),
+      [candidateOptions, bootConfigResult.bootConfig.extensions]);
+  }
 
   const [resourceLoader] = await Promise.all([
     WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig, options || {}),
