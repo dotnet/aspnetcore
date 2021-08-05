@@ -76,7 +76,6 @@ namespace Ignitor
 
             var webEventDescriptor = new WebEventDescriptor
             {
-                BrowserRendererId = 0,
                 EventHandlerId = changeEventDescriptor.EventId,
                 EventName = "change",
                 EventFieldInfo = new EventFieldInfo
@@ -103,7 +102,6 @@ namespace Ignitor
             };
             var webEventDescriptor = new WebEventDescriptor
             {
-                BrowserRendererId = 0,
                 EventHandlerId = clickEventDescriptor.EventId,
                 EventName = "click",
             };
