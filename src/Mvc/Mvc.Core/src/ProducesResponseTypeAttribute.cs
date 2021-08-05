@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Net.Http.Headers;
+using Resources = Microsoft.AspNetCore.Mvc.Core.Resources;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -102,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static MediaTypeCollection GetContentTypes(string contentType, string[] additionalContentTypes)
         {
-            List<string> completeContentTypes = new(additionalContentTypes.Length + 1);
+            var completeContentTypes = new List<string>(additionalContentTypes.Length + 1);
             completeContentTypes.Add(contentType);
             completeContentTypes.AddRange(additionalContentTypes);
             MediaTypeCollection contentTypes = new();
@@ -111,7 +112,7 @@ namespace Microsoft.AspNetCore.Mvc
                 var mediaType = new MediaType(type);
                 if (mediaType.HasWildcard)
                 {
-                    throw new InvalidOperationException("Content types with wildcards are not supported.");
+                    throw new InvalidOperationException(Resources.FormatGetContentTypes_WildcardsNotSupported(type));
                 }
 
                 contentTypes.Add(type);

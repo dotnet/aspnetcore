@@ -121,7 +121,9 @@ namespace Microsoft.AspNetCore.Builder
 
         /// <summary>
         /// Sets the <see cref="EndpointNameAttribute"/> for all endpoints produced
-        /// on the target <see cref="IEndpointConventionBuilder"/>.
+        /// on the target <see cref="IEndpointConventionBuilder"/> given the <paramref name="endpointName" />.
+        /// The <see cref="IEndpointNameMetadata" /> on the endpoint is used for link generation and
+        /// is treated as the operation ID in the given endpoint's OpenAPI specification.
         /// </summary>
         /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
         /// <param name="endpointName">The endpoint name.</param>
@@ -134,7 +136,9 @@ namespace Microsoft.AspNetCore.Builder
 
         /// <summary>
         /// Sets the <see cref="EndpointGroupNameAttribute"/> for all endpoints produced
-        /// on the target <see cref="IEndpointConventionBuilder"/>.
+        /// on the target <see cref="IEndpointConventionBuilder"/> given the <paramref name="endpointGroupName" />.
+        /// The <see cref="IEndpointGroupNameMetadata" /> on the endpoint is used to set the endpoint's
+        /// GroupName in the OpenAPI specification.
         /// </summary>
         /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
         /// <param name="endpointGroupName">The endpoint group name.</param>
