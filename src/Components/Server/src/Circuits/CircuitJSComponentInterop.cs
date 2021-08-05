@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.ComponentModel;
-using System.Text.Json;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
-using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
@@ -14,9 +10,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private readonly CircuitOptions _circuitOptions;
         private int _jsRootComponentCount;
 
-        internal CircuitJSComponentInterop(
-            CircuitOptions circuitOptions,
-            JsonSerializerOptions jsonOptions)
+        internal CircuitJSComponentInterop(CircuitOptions circuitOptions)
             : base(circuitOptions.RootComponents.JSComponents)
         {
             _circuitOptions = circuitOptions;

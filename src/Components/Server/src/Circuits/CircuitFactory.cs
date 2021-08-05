@@ -66,8 +66,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var appLifetime = scope.ServiceProvider.GetRequiredService<ComponentApplicationLifetime>();
             await appLifetime.RestoreStateAsync(store);
 
-            var jsonOptions = jsRuntime.ReadJsonSerializerOptions();
-            var jsComponentInterop = new CircuitJSComponentInterop(_options, jsonOptions);
+            var jsComponentInterop = new CircuitJSComponentInterop(_options);
             var renderer = new RemoteRenderer(
                 scope.ServiceProvider,
                 _loggerFactory,

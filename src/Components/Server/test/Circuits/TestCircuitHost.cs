@@ -44,6 +44,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     new CircuitOptions(),
                     clientProxy,
                     NullLogger.Instance,
+                    null,
                     null);
             }
 

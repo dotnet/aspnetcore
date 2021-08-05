@@ -70,24 +70,6 @@ namespace Microsoft.AspNetCore.Components.Server
         }
 
         [Fact]
-        public async Task CannotDispatchBrowserEventsBeforeInitialization()
-        {
-            var (mockClientProxy, hub) = InitializeComponentHub();
-
-            await hub.DispatchBrowserEvent(GetJsonElement());
-
-            var errorMessage = "Circuit not initialized.";
-            mockClientProxy.Verify(m => m.SendCoreAsync("JS.Error", new[] { errorMessage }, It.IsAny<CancellationToken>()), Times.Once());
-
-            static JsonElement GetJsonElement()
-            {
-                var utf8JsonBytes = JsonSerializer.SerializeToUtf8Bytes(new object[2]);
-                var jsonReader = new Utf8JsonReader(utf8JsonBytes);
-                return JsonElement.ParseValue(ref jsonReader);
-            }
-        }
-
-        [Fact]
         public async Task CannotInvokeOnRenderCompletedBeforeInitialization()
         {
             var (mockClientProxy, hub) = InitializeComponentHub();
