@@ -386,7 +386,7 @@ namespace Microsoft.AspNetCore.Tests
         [Fact]
         public void WebApplicationBuilderApplicationNameCanBeOverridden()
         {
-            var assemblyName = Assembly.GetEntryAssembly().GetName().Name;
+            var assemblyName = typeof(WebApplicationTests).Assembly.GetName().Name;
 
             var options = new WebApplicationOptions
             {
