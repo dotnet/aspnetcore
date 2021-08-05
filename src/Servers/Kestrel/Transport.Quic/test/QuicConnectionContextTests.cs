@@ -554,6 +554,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
         [ConditionalFact]
         [MsQuicSupported]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public async Task TlsConnectionFeature_ClientSendsCertificate_PopulatedOnFeature()
         {
             // Arrange
