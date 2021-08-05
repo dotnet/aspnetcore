@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using Moq;
 using Xunit;
@@ -325,8 +326,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         private static TestRemoteRenderer GetRemoteRenderer()
         {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(new Mock<IJSRuntime>().Object);
             return new TestRemoteRenderer(
-                Mock.Of<IServiceProvider>(),
+                serviceCollection.BuildServiceProvider(),
                 Mock.Of<IClientProxy>());
         }
 
@@ -339,8 +342,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                       new CircuitOptions(),
                       new CircuitClientProxy(client, "connection"),
                       NullLogger.Instance,
-                      null,
-                      null)
+                      CreateJSRuntime(new CircuitOptions()),
+                      new CircuitJSComponentInterop(new CircuitOptions()))
             {
             }
 
@@ -348,6 +351,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 base.Dispose(disposing);
             }
+
+            private static RemoteJSRuntime CreateJSRuntime(CircuitOptions options)
+                => new RemoteJSRuntime(Options.Create(options), Options.Create(new HubOptions()), null);
         }
 
         private class DispatcherComponent : ComponentBase, IDisposable

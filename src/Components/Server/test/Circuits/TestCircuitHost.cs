@@ -44,8 +44,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     new CircuitOptions(),
                     clientProxy,
                     NullLogger.Instance,
-                    null,
-                    null);
+                    jsRuntime,
+                    new CircuitJSComponentInterop(new CircuitOptions()));
             }
 
             handlers ??= Array.Empty<CircuitHandler>();
