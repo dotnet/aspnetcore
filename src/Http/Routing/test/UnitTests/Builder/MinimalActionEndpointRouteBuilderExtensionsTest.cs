@@ -359,6 +359,55 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal(int.MaxValue, routeEndpointBuilder.Order);
         }
 
+        [Fact]
+        // This test scenario simulates methods defined in a top-level program
+        // which are compiler generated.
+        public void MapMethod_SetsEndpointNameForInnerMethod()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            string InnerGetString() => "TestString";
+            _ = builder.MapDelete("/", InnerGetString);
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var endpointName = endpoint.Metadata.GetMetadata<IEndpointNameMetadata>();
+            Assert.NotNull(endpointName);
+            Assert.Equal("InnerGetString", endpointName?.EndpointName);
+        }
+
+        [Fact]
+        public void MapMethod_SetsEndpointNameForMethodGroup()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            _ = builder.MapDelete("/", GetString);
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var endpointName = endpoint.Metadata.GetMetadata<IEndpointNameMetadata>();
+            Assert.NotNull(endpointName);
+            Assert.Equal("GetString", endpointName?.EndpointName);
+        }
+
+        private string GetString() => "TestString";
+
+        [Fact]
+        public void MapMethod_DoesNotSetEndpointNameForLambda()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            _ = builder.MapDelete("/", () => { });
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var endpointName = endpoint.Metadata.GetMetadata<IEndpointNameMetadata>();
+            Assert.Null(endpointName);
+        }
+
         class FromRoute : Attribute, IFromRouteMetadata
         {
             public string? Name { get; set; }

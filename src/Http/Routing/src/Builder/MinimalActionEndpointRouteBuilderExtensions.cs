@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -183,6 +184,14 @@ namespace Microsoft.AspNetCore.Builder
 
             // Add MethodInfo as metadata to assist with OpenAPI generation for the endpoint.
             builder.Metadata.Add(action.Method);
+
+            // Methods defined in a top-level program are generated as statics so the delegate
+            // target will be null. Inline lambdas are compiler generated properties so they can
+            // be filtered that way.
+            if (action.Target == null || !TypeHelper.IsCompilerGenerated(action.Method.Name))
+            {
+                builder.Metadata.Add(new EndpointNameMetadata(action.Method.Name));
+            }
 
             // Add delegate attributes as metadata
             var attributes = action.Method.GetCustomAttributes();

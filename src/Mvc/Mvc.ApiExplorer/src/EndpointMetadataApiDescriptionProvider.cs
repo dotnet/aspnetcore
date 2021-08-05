@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             // For now, put all methods defined the same declaring type together.
             string controllerName;
 
-            if (methodInfo.DeclaringType is not null && !IsCompilerGenerated(methodInfo.DeclaringType))
+            if (methodInfo.DeclaringType is not null && !TypeHelper.IsCompilerGenerated(methodInfo.DeclaringType.Name, methodInfo.DeclaringType))
             {
                 controllerName = methodInfo.DeclaringType.Name;
             }
@@ -363,11 +363,5 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 actionDescriptor.EndpointMetadata = new List<object>(endpointMetadata);
             }
         }
-
-        // The CompilerGeneratedAttribute doesn't always get added so we also check if the type name starts with "<"
-        // For example, "<>c" is a "declaring" type the C# compiler will generate without the attribute for a top-level lambda
-        // REVIEW: Is there a better way to do this?
-        private static bool IsCompilerGenerated(Type type) =>
-            Attribute.IsDefined(type, typeof(CompilerGeneratedAttribute)) || type.Name.StartsWith('<');
     }
 }

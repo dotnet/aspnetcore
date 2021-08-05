@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)TryParseMethodCache.cs" />
+    <Compile Include="$(SharedSourceRoot)TypeHelper.cs" />
   </ItemGroup>
 
   <ItemGroup>
