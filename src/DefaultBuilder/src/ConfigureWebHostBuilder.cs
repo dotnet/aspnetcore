@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,7 +15,7 @@ namespace Microsoft.AspNetCore.Builder
     /// A non-buildable <see cref="IWebHostBuilder"/> for <see cref="WebApplicationBuilder"/>.
     /// Use <see cref="WebApplicationBuilder.Build"/> to build the <see cref="WebApplicationBuilder"/>.
     /// </summary>
-    public sealed class ConfigureWebHostBuilder : IWebHostBuilder
+    public sealed class ConfigureWebHostBuilder : IWebHostBuilder, ISupportsStartup
     {
         private readonly IWebHostEnvironment _environment;
         private readonly ConfigurationManager _configuration;
@@ -146,6 +148,21 @@ namespace Microsoft.AspNetCore.Builder
             _configuration[key] = value;
 
             return this;
+        }
+
+        IWebHostBuilder ISupportsStartup.Configure(Action<WebHostBuilderContext, IApplicationBuilder> configure)
+        {
+            throw new NotSupportedException($"Configure() is not supported by WebApplicationBuilder.WebHost. Use the WebApplication returned by WebApplicationBuilder.Build() instead.");
+        }
+
+        IWebHostBuilder ISupportsStartup.UseStartup(Type startupType)
+        {
+            throw new NotSupportedException($"UseStartup() is not supported by WebApplicationBuilder.WebHost. Use the WebApplication returned by WebApplicationBuilder.Build() instead.");
+        }
+
+        IWebHostBuilder ISupportsStartup.UseStartup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TStartup>(Func<WebHostBuilderContext, TStartup> startupFactory)
+        {
+            throw new NotSupportedException($"UseStartup() is not supported by WebApplicationBuilder.WebHost. Use the WebApplication returned by WebApplicationBuilder.Build() instead.");
         }
     }
 }

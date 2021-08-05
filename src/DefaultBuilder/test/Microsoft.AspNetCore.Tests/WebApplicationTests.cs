@@ -876,6 +876,20 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Throws<InvalidOperationException>(() => builder.Services[0] = ServiceDescriptor.Singleton(new Service()));
         }
 
+        [Fact]
+        public void WebApplicationBuilder_ThrowsFromExtensionMethodsNotSupportedByHostAndWebHost()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            Assert.Throws<NotSupportedException>(() => builder.WebHost.Configure(app => { }));
+            Assert.Throws<NotSupportedException>(() => builder.WebHost.UseStartup<MyStartup>());
+            Assert.Throws<NotSupportedException>(() => builder.WebHost.UseStartup(typeof(MyStartup)));
+
+            Assert.Throws<NotSupportedException>(() => builder.Host.ConfigureWebHost(webHostBuilder => { }));
+            Assert.Throws<NotSupportedException>(() => builder.Host.ConfigureWebHost(webHostBuilder => { }, options => { }));
+            Assert.Throws<NotSupportedException>(() => builder.Host.ConfigureWebHostDefaults(webHostBuilder => { }));
+        }
+
         private class Service : IService { }
         private interface IService { }
 
@@ -883,6 +897,19 @@ namespace Microsoft.AspNetCore.Tests
         {
             public Service2(Service service)
             {
+            }
+        }
+
+        private class MyStartup : IStartup
+        {
+            public void Configure(IApplicationBuilder app)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IServiceProvider ConfigureServices(IServiceCollection services)
+            {
+                throw new NotImplementedException();
             }
         }
 
