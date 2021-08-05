@@ -38,7 +38,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             MountUri = _devHostServerFixture.RootUri + "subdir";
         }
 
-        [Theory]
+        [QuarantinedTest("New experimental test that need bake time.")]
+        [ConditionalTheory]
         [InlineData(BrowserKind.Chromium)]
         [InlineData(BrowserKind.Firefox)]
         [InlineData(BrowserKind.Webkit)]

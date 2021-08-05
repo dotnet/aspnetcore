@@ -28,7 +28,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         protected override Type TestComponent { get; } = typeof(TestRouter);
 
-        [Theory]
+        [QuarantinedTest("New experimental test that need bake time.")]
+        [ConditionalTheory]
         [InlineData(BrowserKind.Chromium)]
         [InlineData(BrowserKind.Firefox)]
         // NOTE: BrowserKind argument must be first

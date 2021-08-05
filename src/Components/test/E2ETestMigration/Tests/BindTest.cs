@@ -28,7 +28,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         protected async Task<string> GetInputValue(string selector)
             => await TestPage.EvalOnSelectorAsync<string>(selector, "e => e.value");
 
-        [Theory]
+        [QuarantinedTest("New experimental test that need bake time.")]
+        [ConditionalTheory]
         [InlineData(BrowserKind.Chromium)]
         [InlineData(BrowserKind.Firefox)]
         [InlineData(BrowserKind.Webkit)]

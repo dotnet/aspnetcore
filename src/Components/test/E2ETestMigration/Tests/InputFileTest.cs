@@ -100,7 +100,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             }
         }
 
-        [Theory]
+        [QuarantinedTest("New experimental test that need bake time.")]
+        [ConditionalTheory]
         [InlineData(BrowserKind.Chromium)]
         [InlineData(BrowserKind.Firefox)]
         // NOTE: BrowserKind argument must be first
@@ -116,7 +117,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             await VerifyFile(file);
         }
 
-        [Theory]
+        [QuarantinedTest("New experimental test that need bake time.")]
+        [ConditionalTheory]
         [InlineData(BrowserKind.Chromium)]
         [InlineData(BrowserKind.Firefox)]
         // NOTE: BrowserKind argument must be first
@@ -141,7 +143,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             await VerifyFile(file);
         }
 
-        [Theory]
+        [QuarantinedTest("New experimental test that need bake time.")]
+        [ConditionalTheory]
         [InlineData(BrowserKind.Chromium)]
         [InlineData(BrowserKind.Firefox)]
         // NOTE: BrowserKind argument must be first
@@ -160,7 +163,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             await VerifyFiles(files);
         }
 
-        [Theory]
+        [QuarantinedTest("New experimental test that need bake time.")]
+        [ConditionalTheory]
         [InlineData(BrowserKind.Chromium)]
         [InlineData(BrowserKind.Firefox)]
         // NOTE: BrowserKind argument must be first
@@ -207,7 +211,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             await element.TypeAsync(value);
         }
 
-        [Theory]
+        [QuarantinedTest("New experimental test that need bake time.")]
+        [ConditionalTheory]
         [InlineData(BrowserKind.Chromium)]
         [InlineData(BrowserKind.Firefox)]
         // NOTE: BrowserKind argument must be first
@@ -232,7 +237,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("The maximum number of files accepted is 1, but 2 were supplied.", await exceptionMessage.GetTextContentAsync());
         }
 
-        [Theory]
+        [QuarantinedTest("New experimental test that need bake time.")]
+        [ConditionalTheory]
         [InlineData(BrowserKind.Chromium)]
         [InlineData(BrowserKind.Firefox)]
         // NOTE: BrowserKind argument must be first
