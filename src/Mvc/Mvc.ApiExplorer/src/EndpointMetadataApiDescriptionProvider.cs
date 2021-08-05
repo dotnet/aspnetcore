@@ -269,7 +269,9 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     {
                         AddResponseContentTypes(apiResponseType.ApiResponseFormats, contentTypes);
                     }
-                    else if (CreateDefaultApiResponseFormat(apiResponseType.Type) is { } defaultResponseFormat)
+                    // Only set the default response type if it hasn't already been set via a
+                    // ProducesResponseTypeAttribute.
+                    else if (apiResponseType.ApiResponseFormats.Count == 0 && CreateDefaultApiResponseFormat(apiResponseType.Type) is { } defaultResponseFormat)
                     {
                         apiResponseType.ApiResponseFormats.Add(defaultResponseFormat);
                     }

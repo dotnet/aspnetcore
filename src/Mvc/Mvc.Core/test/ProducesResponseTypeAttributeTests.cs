@@ -1,16 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -51,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc
                        () => new ProducesResponseTypeAttribute(typeof(void), StatusCodes.Status200OK, contentTypes[0], contentTypes.Skip(1).ToArray()));
 
             Assert.Equal(
-                $"Content types with wildcards are not supported.",
+                $"Could not parse '{invalidContentType}'. Content types with wildcards are not supported.",
                 ex.Message);
         }
 

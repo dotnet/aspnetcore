@@ -607,7 +607,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Arrange
             var type1 = typeof(ApiExplorerWebSite.Product).FullName;
             var type2 = typeof(SerializableError).FullName;
-            var expectedMediaTypes = new[] { "application/xml", "text/xml", "application/json", "text/json" };
+            var expectedMediaTypes = new[] { "text/xml" };
 
             // Act
             var response = await Client.GetAsync(
@@ -671,7 +671,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Arrange
             var type1 = typeof(ApiExplorerWebSite.Product).FullName;
             var type2 = typeof(SerializableError).FullName;
-            var expectedMediaTypes = new[] { "application/xml", "text/xml", "application/json", "text/json" };
+            var expectedMediaTypes = new[] { "text/xml" };
 
             // Act
             var response = await Client.GetAsync(
@@ -696,14 +696,12 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 expectedMediaTypes,
                 responseType.ResponseFormats.Select(responseFormat => responseFormat.MediaType).ToArray());
         }
-    
         [Fact]
         public async Task ApiExplorer_ResponseType_InheritingFromController()
         {
             // Arrange
             var type = "ApiExplorerWebSite.Product";
             var errorType = "ApiExplorerWebSite.ErrorInfo";
-            var expectedMediaTypes = new[] { "application/json", "application/xml", "text/json", "text/xml" };
 
             // Act
             var response = await Client.GetAsync(
@@ -721,13 +719,15 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 {
                     Assert.Equal(type, responseType.ResponseType);
                     Assert.Equal(200, responseType.StatusCode);
-                    Assert.Equal(expectedMediaTypes, GetSortedMediaTypes(responseType));
+                    var responseFormat = Assert.Single(responseType.ResponseFormats);
+                    Assert.Equal("application/json", responseFormat.MediaType);
                 },
                 responseType =>
                 {
                     Assert.Equal(errorType, responseType.ResponseType);
                     Assert.Equal(500, responseType.StatusCode);
-                    Assert.Equal(expectedMediaTypes, GetSortedMediaTypes(responseType));
+                    var responseFormat = Assert.Single(responseType.ResponseFormats);
+                    Assert.Equal("application/json", responseFormat.MediaType);
                 });
         }
 
@@ -1252,7 +1252,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task ApiConvention_ForMethodWithResponseTypeAttributes()
         {
             // Arrange
-            var expectedMediaTypes = new[] { "application/json", "application/xml", "text/json", "text/xml" };
+            var expectedMediaTypes = new[] { "application/json" };
 
             // Act
             var response = await Client.PostAsync(
@@ -1318,7 +1318,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task ApiConvention_ForPostActionWithProducesAttribute()
         {
             // Arrange
-            var expectedMediaTypes = new[] { "application/json", "application/xml", "text/json", "text/xml" };
+            var expectedMediaTypes = new[] { "application/json", "text/json", };
 
             // Act
             var response = await Client.PostAsync(
