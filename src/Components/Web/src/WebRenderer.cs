@@ -92,13 +92,13 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// make calls in the context of a particular renderer. This object is never exposed to
         /// .NET code so is only reachable via JS.
         /// </summary>
-        private sealed class WebRendererInteropMethods
+        internal sealed class WebRendererInteropMethods
         {
             private readonly WebRenderer _renderer;
             private readonly JsonSerializerOptions _jsonOptions;
             private readonly JSComponentInterop _jsComponentInterop;
 
-            [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, typeof(WebRendererInteropMethods))]
+            [DynamicDependency(nameof(DispatchEventAsync))]
             public WebRendererInteropMethods(WebRenderer renderer, JsonSerializerOptions jsonOptions, JSComponentInterop jsComponentInterop)
             {
                 _renderer = renderer;
@@ -116,15 +116,15 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     webEventData.EventArgs);
             }
 
-            [JSInvokable]
+            [JSInvokable] // Linker preserves this if you call RootComponents.Add
             public int AddRootComponent(string identifier, string domElementSelector)
                 => _jsComponentInterop.AddRootComponent(identifier, domElementSelector);
 
-            [JSInvokable]
+            [JSInvokable] // Linker preserves this if you call RootComponents.Add
             public void SetRootComponentParameters(int componentId, int parameterCount, JsonElement parametersJson)
                 => _jsComponentInterop.SetRootComponentParameters(componentId, parameterCount, parametersJson, _jsonOptions);
 
-            [JSInvokable]
+            [JSInvokable] // Linker preserves this if you call RootComponents.Add
             public void RemoveRootComponent(int componentId)
                 => _jsComponentInterop.RemoveRootComponent(componentId);
         }
