@@ -2,15 +2,15 @@
     <circle tabindex="-1" cx="50" cy="50" r="20" id="focus-circle" @ref="circleReference" @onfocusin="@(() => { didReceiveFocusIn = true; })"></circle>
 </svg>
 
-<button id="focus-button" @onclick="@(() => FocusInput(false))">Click to focus!</button>
+<button id="focus-button" @onclick="@(() => FocusCircle(false))">Click to focus!</button>
 <hr />
 <p>Received focus in: <span id="focus-event-received">@didReceiveFocusIn</span></p>
 
 @code {
-    private ElementReference circleReference;
+    private ElementReference FocusCircle;
     private bool didReceiveFocusIn;
 
-    private async Task FocusInput(bool preventScroll)
+    private async Task FocusCircle(bool preventScroll)
     {
         await circleReference.FocusAsync(preventScroll);
     }
