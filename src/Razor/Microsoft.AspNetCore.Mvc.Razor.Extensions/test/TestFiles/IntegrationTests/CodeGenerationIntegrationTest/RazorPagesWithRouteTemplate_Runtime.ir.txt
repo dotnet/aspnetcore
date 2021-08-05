@@ -11,6 +11,8 @@ Document -
         UsingDirective - (36:3,1 [43] RazorPagesWithRouteTemplate.cshtml) - Microsoft.AspNetCore.Mvc.RazorPages
         RazorCompiledItemMetadataAttribute - 
         RazorSourceChecksumAttribute - 
+        RazorCompiledItemMetadataAttribute - 
+        CreateNewOnMetadataUpdateAttribute - 
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithRouteTemplate - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (16:1,0 [2] RazorPagesWithRouteTemplate.cshtml)

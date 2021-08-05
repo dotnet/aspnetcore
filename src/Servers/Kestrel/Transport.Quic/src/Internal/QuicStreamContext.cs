@@ -159,11 +159,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 // Now wait for both to complete
                 await receiveTask;
                 await sendTask;
-
-                CanReuse = _stream.CanRead && _stream.CanWrite
-                    && _transportPipeReader.IsCompletedSuccessfully
-                    && _transportPipeWriter.IsCompletedSuccessfully
-                    && !_clientAbort;
             }
             catch (Exception ex)
             {
@@ -343,7 +338,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             }
             finally
             {
-                await ShutdownWrite(shutdownReason);
+                ShutdownWrite(shutdownReason);
 
                 // Complete the output after disposing the stream
                 Output.Complete(unexpectedError ?? shutdownReason);
@@ -382,7 +377,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             Output.CancelPendingRead();
         }
 
-        private async ValueTask ShutdownWrite(Exception? shutdownReason)
+        private void ShutdownWrite(Exception? shutdownReason)
         {
             try
             {
@@ -394,17 +389,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
                     _stream.Shutdown();
                 }
-
-                try
-                {
-                    // TODO: Take cancellation token?
-                    await _stream.ShutdownCompleted();
-                }
-                catch (QuicOperationAbortedException)
-                {
-                    // AbortRead or AbortWrite has been called before
-                    // or during ShutdownCompleted.
-                }
             }
             catch (Exception ex)
             {
@@ -415,6 +399,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         public override async ValueTask DisposeAsync()
         {
+            CanReuse = _stream.CanRead && _stream.CanWrite
+                && _transportPipeReader.IsCompletedSuccessfully
+                && _transportPipeWriter.IsCompletedSuccessfully
+                && !_clientAbort
+                && !_serverAborted;
+
             _originalTransport.Input.Complete();
             _originalTransport.Output.Complete();
 

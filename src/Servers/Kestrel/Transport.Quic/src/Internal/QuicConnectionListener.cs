@@ -31,17 +31,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 throw new NotSupportedException("QUIC is not supported or enabled on this platform. See https://aka.ms/aspnet/kestrel/http3reqs for details.");
             }
 
-            if (options.Alpn == null)
-            {
-                throw new InvalidOperationException("QuicTransportOptions.Alpn must be configured with a value.");
-            }
-
             _log = log;
             _context = new QuicTransportContext(_log, options);
             var quicListenerOptions = new QuicListenerOptions();
-
-            // TODO Should HTTP/3 specific ALPN still be global? Revisit whether it can be statically set once HTTP/3 is finalized.
-            sslServerAuthenticationOptions.ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol(options.Alpn) };
 
             quicListenerOptions.ServerAuthenticationOptions = sslServerAuthenticationOptions;
             quicListenerOptions.ListenEndPoint = endpoint as IPEndPoint;

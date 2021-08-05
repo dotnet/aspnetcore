@@ -26,8 +26,6 @@
 *REMOVED*~static Microsoft.AspNetCore.Hosting.WebHostBuilderMsQuicExtensions.UseQuic(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder
 Microsoft.AspNetCore.Hosting.WebHostBuilderQuicExtensions
 Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions
-Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.Alpn.get -> string?
-Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.Alpn.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.IdleTimeout.get -> System.TimeSpan
 Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.IdleTimeout.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.MaxBidirectionalStreamCount.get -> ushort

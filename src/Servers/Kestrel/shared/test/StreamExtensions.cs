@@ -7,11 +7,67 @@ using Xunit;
 
 namespace System.IO
 {
-    public static class StreamFillBufferExtensions
+    public static class StreamExtensions
     {
-        public static async Task<byte[]> ReadUntilEndAsync(this Stream stream, byte[] buffer = null, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Fill the buffer until the end of the stream.
+        /// </summary>
+        public static async Task<int> FillBufferUntilEndAsync(this Stream stream, byte[] buffer, CancellationToken cancellationToken = default)
         {
-            buffer ??= new byte[1024];
+            var offset = 0;
+            int read;
+
+            do
+            {
+                read = await stream.ReadAsync(buffer, offset, buffer.Length - offset, cancellationToken);
+                offset += read;
+            } while (read != 0 && offset < buffer.Length);
+
+            if (read != 0)
+            {
+                Assert.Equal(0, await stream.ReadAsync(new byte[1], 0, 1, cancellationToken));
+            }
+
+            return offset;
+        }
+
+        public static async Task<int> FillEntireBufferAsync(this Stream stream, byte[] buffer, CancellationToken cancellationToken = default)
+        {
+            var offset = 0;
+            int read;
+
+            do
+            {
+                read = await stream.ReadAsync(buffer, offset, buffer.Length - offset, cancellationToken);
+                offset += read;
+            } while (read != 0 && offset < buffer.Length);
+
+            Assert.True(offset >= buffer.Length);
+            return offset;
+        }
+
+        public static async Task<byte[]> ReadAtLeastLengthAsync(this Stream stream, int length, int bufferLength = 1024, CancellationToken cancellationToken = default)
+        {
+            var buffer = new byte[bufferLength];
+            var data = new List<byte>();
+            var offset = 0;
+
+            while (offset < length)
+            {
+                var read = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
+                offset += read;
+
+                Assert.NotEqual(0, read);
+
+                data.AddRange(buffer.AsMemory(0, read).ToArray());
+            }
+
+            return data.ToArray();
+        }
+
+        public static async Task<byte[]> ReadUntilEndAsync(this Stream stream, int bufferLength = 1024, CancellationToken cancellationToken = default)
+        {
+            var buffer = new byte[bufferLength];
             var data = new List<byte>();
             var offset = 0;
 
@@ -29,44 +85,6 @@ namespace System.IO
             }
 
             Assert.Equal(0, await stream.ReadAsync(new byte[1], 0, 1, cancellationToken));
-
-            return data.ToArray();
-        }
-
-        public static async Task<byte[]> ReadUntilLengthAsync(this Stream stream, int length, byte[] buffer = null, CancellationToken cancellationToken = default)
-        {
-            buffer ??= new byte[1024];
-            var data = new List<byte>();
-            var offset = 0;
-
-            while (offset < length)
-            {
-                var read = await stream.ReadAsync(buffer, 0, Math.Min(length - offset, buffer.Length), cancellationToken);
-                offset += read;
-
-                Assert.NotEqual(0, read);
-
-                data.AddRange(buffer.AsMemory(0, read).ToArray());
-            }
-
-            return data.ToArray();
-        }
-
-        public static async Task<byte[]> ReadAtLeastLengthAsync(this Stream stream, int length, byte[] buffer = null, CancellationToken cancellationToken = default)
-        {
-            buffer ??= new byte[1024];
-            var data = new List<byte>();
-            var offset = 0;
-
-            while (offset < length)
-            {
-                var read = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
-                offset += read;
-
-                Assert.NotEqual(0, read);
-
-                data.AddRange(buffer.AsMemory(0, read).ToArray());
-            }
 
             return data.ToArray();
         }

@@ -4,13 +4,14 @@
 using System;
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Matching;
 
 namespace Microsoft.AspNetCore.Routing.Constraints
 {
     /// <summary>
     /// Constrains a route parameter to be a string with a maximum length.
     /// </summary>
-    public class MaxLengthRouteConstraint : IRouteConstraint
+    public class MaxLengthRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MaxLengthRouteConstraint" /> class.
@@ -53,10 +54,20 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             if (values.TryGetValue(routeKey, out var value) && value != null)
             {
                 var valueString = Convert.ToString(value, CultureInfo.InvariantCulture)!;
-                return valueString.Length <= MaxLength;
+                return CheckConstraintCore(valueString);
             }
 
             return false;
+        }
+
+        private bool CheckConstraintCore(string valueString)
+        {
+            return valueString.Length <= MaxLength;
+        }
+
+        bool IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string parameterName, string literal)
+        {
+            return CheckConstraintCore(literal);
         }
     }
 }

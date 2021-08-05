@@ -5,6 +5,8 @@ Document -
         UsingDirective - (51:2,1 [19] ) - System.Linq
         UsingDirective - (71:3,1 [30] ) - System.Threading.Tasks
         UsingDirective - (102:4,1 [37] ) - Microsoft.AspNetCore.Components
+        RazorCompiledItemMetadataAttribute - 
+        CreateNewOnMetadataUpdateAttribute - 
         ClassDeclaration -  - public partial - AspNetCore_d3c3d6059615673cb46fc4974164d61eabadb890 - Microsoft.AspNetCore.Components.ComponentBase - IDisposable
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 MarkupElement - (25:1,0 [91] BasicComponent.cshtml) - div

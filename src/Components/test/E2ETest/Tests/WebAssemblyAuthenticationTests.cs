@@ -156,6 +156,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ValidateFetchData();
         }
 
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34995")]
         [Fact]
         public void AuthenticatedUser_ProfileIncludesDetails_And_AccessToken()
         {

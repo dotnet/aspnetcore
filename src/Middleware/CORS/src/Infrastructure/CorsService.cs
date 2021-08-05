@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Cors.Infrastructure
 {
@@ -84,7 +85,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             }
 
             var requestHeaders = context.Request.Headers;
-            var origin = requestHeaders[CorsConstants.Origin];
+            var origin = requestHeaders.Origin;
 
             var isOptionsRequest = HttpMethods.IsOptions(context.Request.Method);
             var isPreflightRequest = isOptionsRequest && requestHeaders.ContainsKey(CorsConstants.AccessControlRequestMethod);
@@ -122,7 +123,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             }
             else
             {
-                var origin = headers[CorsConstants.Origin];
+                var origin = headers.Origin;
                 result.AllowedOrigin = origin;
                 result.VaryByOrigin = policy.Origins.Count > 1 || !policy.IsDefaultIsOriginAllowed;
             }
@@ -134,7 +135,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             AddHeaderValues(result.AllowedExposedHeaders, policy.ExposedHeaders);
 
             var allowedMethods = policy.AllowAnyMethod ?
-                new[] { result.IsPreflightRequest ? (string)headers[CorsConstants.AccessControlRequestMethod] : context.Request.Method } :
+                new[] { result.IsPreflightRequest ? (string)headers.AccessControlRequestMethod : context.Request.Method } :
                 policy.Methods;
             AddHeaderValues(result.AllowedMethods, allowedMethods);
 
@@ -187,11 +188,11 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             }
 
             var headers = response.Headers;
-            headers[CorsConstants.AccessControlAllowOrigin] = result.AllowedOrigin;
+            headers.AccessControlAllowOrigin = result.AllowedOrigin;
 
             if (result.SupportsCredentials)
             {
-                headers[CorsConstants.AccessControlAllowCredentials] = "true";
+                headers.AccessControlAllowCredentials = "true";
             }
 
             if (result.IsPreflightRequest)
@@ -212,7 +213,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
                 if (result.PreflightMaxAge.HasValue)
                 {
-                    headers[CorsConstants.AccessControlMaxAge] = result.PreflightMaxAge.Value.TotalSeconds.ToString(CultureInfo.InvariantCulture);
+                    headers.AccessControlMaxAge = result.PreflightMaxAge.Value.TotalSeconds.ToString(CultureInfo.InvariantCulture);
                 }
             }
             else
@@ -227,7 +228,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
             if (result.VaryByOrigin)
             {
-                headers.Append("Vary", "Origin");
+                headers.Append(HeaderNames.Vary, "Origin");
             }
         }
 
