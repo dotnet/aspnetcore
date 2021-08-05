@@ -23,6 +23,7 @@ using Xunit;
 
 namespace Interop.FunctionalTests.Http3
 {
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35070")]
     public class Http3RequestTests : LoggedTest
     {
         private class StreamingHttpContext : HttpContent
