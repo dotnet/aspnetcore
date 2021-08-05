@@ -42,12 +42,12 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             jsComponentInterop.AttachToRenderer(this);
             var jsRuntime = _serviceProvider.GetRequiredService<IJSRuntime>();
             var hasJSComponents = jsComponentInterop.Configuration.JsComponentTypesByIdentifier.Count > 0;
-            _ = jsRuntime.InvokeVoidAsync(
+            jsRuntime.InvokeVoidAsync(
                 "Blazor._internal.attachWebRendererInterop",
                 RendererId,
                 _interopMethodsReference,
                 hasJSComponents,
-                jsComponentInterop.Configuration.JSComponentInfoByInitializer);
+                jsComponentInterop.Configuration.JSComponentInfoByInitializer).Preserve();
         }
 
         /// <summary>

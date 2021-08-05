@@ -3,14 +3,12 @@
 
 using System.Collections.Concurrent;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNetCore.Components.Web.Infrastructure
 {
