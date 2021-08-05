@@ -12,5 +12,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         public const string GetText = JsFunctionsPrefix + "getText";
 
         public const string SetText = JsFunctionsPrefix + "setText";
+
+        public const string EnableTextArea = JsFunctionsPrefix + "enableTextArea";
     }
 }

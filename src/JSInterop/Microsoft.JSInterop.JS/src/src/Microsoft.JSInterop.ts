@@ -509,7 +509,20 @@ export module DotNet {
     return value;
   });
 
-  class DotNetStream {
+  export interface IDotNetStreamReference {
+    /**
+    * Supplies a readable stream of data being sent from .NET.
+    */
+    stream(): Promise<ReadableStream>;
+
+    /**
+    * Supplies a array buffer of data being sent from .NET.
+    * Note there is a JavaScript limit on the size of the ArrayBuffer equal to approximately 2GB.
+    */
+    arrayBuffer(): Promise<ArrayBuffer>;
+  }
+
+  class DotNetStream implements IDotNetStreamReference {
     private _streamPromise: Promise<ReadableStream>;
 
     constructor(streamId: number) {
@@ -529,17 +542,10 @@ export module DotNet {
       }
     }
 
-    /**
-    * Supplies a readable stream of data being sent from .NET.
-    */
     stream(): Promise<ReadableStream> {
       return this._streamPromise;
     }
 
-    /**
-    * Supplies a array buffer of data being sent from .NET.
-    * Note there is a JavaScript limit on the size of the ArrayBuffer equal to approximately 2GB.
-    */
     async arrayBuffer(): Promise<ArrayBuffer> {
       return new Response(await this.stream()).arrayBuffer();
     }

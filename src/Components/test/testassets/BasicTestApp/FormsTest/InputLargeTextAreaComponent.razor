@@ -33,13 +33,18 @@ Length: <p id="lastChangedLength">@LastChangedLength</p>
 
   public async Task GetTextAsync()
   {
-      GetTextResult = await TextArea.GetTextAsync();
+      var streamReader = await TextArea.GetTextAsync();
+      GetTextResult = await streamReader.ReadToEndAsync();
       StateHasChanged();
   }
 
   public async Task SetTextAsync()
   {
-      await TextArea.SetTextAsync(new string('c', 25_000));
+      var memoryStream = new MemoryStream();
+      var streamWriter = new StreamWriter(memoryStream);
+      await streamWriter.WriteAsync(new string('c', 50_000));
+      await streamWriter.FlushAsync();
+      await TextArea.SetTextAsync(streamWriter);
   }
 
   public void TextAreaChanged(InputLargeTextAreaChangeEventArgs args)

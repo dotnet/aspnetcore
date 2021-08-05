@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             setTextBtn.Click();
 
             var valueInTextArea = GetTextAreaValueFromBrowser();
-            Assert.Equal(new string('c', 25_000), valueInTextArea);
+            Assert.Equal(new string('c', 50_000), valueInTextArea);
 
             FocusAway();
             AssertLogDoesNotContainMessages(CircuitErrors);
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.NotNull(textResultFromComponent);
             Browser.Equal(string.Empty, () => textResultFromComponent.GetAttribute("innerHTML"));
 
-            var newValue = new string('a', 25_000);
+            var newValue = new string('a', 50_000);
             SetTextAreaValueInBrowser('a');
 
             getTextBtn.Click();
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanEditValue_LargeAmountOfContent_Insert()
         {
-            var newValue = new string('f', 25_000);
+            var newValue = new string('f', 50_000);
             SetTextAreaValueInBrowser('f');
 
             var textArea = Browser.Exists(By.Id("largeTextArea"), TimeSpan.FromSeconds(10));
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 textArea.SendKeys(Keys.Backspace);
             }
 
-            Assert.Equal(new string('g', 24_500), GetTextAreaValueFromBrowser());
+            Assert.Equal(new string('g', 49_500), GetTextAreaValueFromBrowser());
 
             FocusAway();
             AssertLogDoesNotContainMessages(CircuitErrors);
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             return (string)textArea.GetAttribute("value");
         }
 
-        private void SetTextAreaValueInBrowser(char charToRepeat, int numChars = 25_000)
+        private void SetTextAreaValueInBrowser(char charToRepeat, int numChars = 50_000)
         {
             var javascript = (IJavaScriptExecutor)Browser;
             javascript.ExecuteScript($"document.getElementById(\"largeTextArea\").value = '{charToRepeat}'.repeat({numChars});");
