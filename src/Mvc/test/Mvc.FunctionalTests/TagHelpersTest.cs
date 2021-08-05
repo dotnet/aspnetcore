@@ -60,10 +60,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "https://github.com/dotnet/aspnetcore/issues/10423")]
         [InlineData("GlobbingTagHelpers")]
         [InlineData("ViewComponentTagHelpers")]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/10423")]
         public Task CanRenderViewsWithTagHelpersNotReadyForHelix(string action) => CanRenderViewsWithTagHelpers(action);
 
         [Fact]

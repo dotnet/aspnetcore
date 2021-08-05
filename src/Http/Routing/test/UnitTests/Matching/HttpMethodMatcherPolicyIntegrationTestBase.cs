@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             // Arrange
             var endpoint1 = CreateEndpoint("/{x:int}", httpMethods: new string[] { });
-            var endpoint2 = CreateEndpoint("/hello", httpMethods: new string[] { "DELETE" });
+            var endpoint2 = CreateEndpoint("/{hello:regex(hello)}", httpMethods: new string[] { "DELETE" });
 
             var matcher = CreateMatcher(endpoint1, endpoint2);
             var httpContext = CreateContext("/hello", "POST");

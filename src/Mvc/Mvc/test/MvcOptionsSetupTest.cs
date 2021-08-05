@@ -271,7 +271,8 @@ namespace Microsoft.AspNetCore.Mvc
             serviceCollection.AddSingleton<DiagnosticListener>(diagnosticListener);
             serviceCollection.AddMvc();
             serviceCollection
-                .AddTransient<ILoggerFactory, LoggerFactory>();
+                .AddTransient<ILoggerFactory, LoggerFactory>()
+                .AddTransient(typeof(ILogger<>), typeof(Logger<>));
 
             if (action != null)
             {

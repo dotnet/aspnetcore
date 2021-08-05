@@ -1,7 +1,9 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics;
+using System.Threading;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.CodeAnalysis.CSharp;
@@ -44,6 +46,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // The default C# language version for what this Razor configuration supports.
             builder.SetCSharpLanguageVersion(LanguageVersion.CSharp8);
+
+            if (builder.Configuration.LanguageVersion.CompareTo(RazorLanguageVersion.Version_6_0) >= 0)
+            {
+                 builder.Features.Add(new CreateNewOnMetadataUpdateAttributePass());
+            }
         }
     }
 }

@@ -13,6 +13,8 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
     [global::Microsoft.AspNetCore.Razor.Hosting.RazorSourceChecksumAttribute(@"SHA1", @"8dc65110f00eb578a652bdf3554c8eaf408766fa", @"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ViewComponentTagHelperOptionalParam.cshtml")]
+    [global::Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItemMetadataAttribute("Identifier", "/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ViewComponentTagHelperOptionalParam.cshtml")]
+    [global::System.Runtime.CompilerServices.CreateNewOnMetadataUpdateAttribute]
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelperOptionalParam : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
     {
         #line hidden

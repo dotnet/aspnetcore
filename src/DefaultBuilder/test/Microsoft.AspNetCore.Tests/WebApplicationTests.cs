@@ -235,21 +235,143 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
+        public void WebApplicationBuildeSettingInvalidApplicationWillFailAssemblyLoadForUserSecrets()
+        {
+            var options = new WebApplicationOptions
+            {
+                ApplicationName = nameof(WebApplicationTests), // This is not a real assembly
+                EnvironmentName = Environments.Development
+            };
+
+            // Use secrets fails to load an invalid assembly name
+            Assert.Throws<FileNotFoundException>(() => WebApplication.CreateBuilder(options).Build());
+        }
+
+        [Fact]
+        public void WebApplicationBuilderCanConfigureHostSettingsUsingWebApplicationOptions()
+        {
+            var contentRoot = Path.GetTempPath().ToString();
+            var webRoot = Path.GetTempPath().ToString();
+            var envName = $"{nameof(WebApplicationTests)}_ENV";
+
+            var options = new WebApplicationOptions
+            {
+                ApplicationName = nameof(WebApplicationTests),
+                ContentRootPath = contentRoot,
+                EnvironmentName = envName
+            };
+
+            var builder = new WebApplicationBuilder(
+                typeof(WebApplicationTests).Assembly,
+                options,
+                bootstrapBuilder =>
+                {
+                    bootstrapBuilder.ConfigureAppConfiguration((context, config) =>
+                    {
+                        Assert.Equal(nameof(WebApplicationTests), context.HostingEnvironment.ApplicationName);
+                        Assert.Equal(envName, context.HostingEnvironment.EnvironmentName);
+                        Assert.Equal(contentRoot, context.HostingEnvironment.ContentRootPath);
+                    });
+                });
+
+            Assert.Equal(nameof(WebApplicationTests), builder.Environment.ApplicationName);
+            Assert.Equal(envName, builder.Environment.EnvironmentName);
+            Assert.Equal(contentRoot, builder.Environment.ContentRootPath);
+        }
+
+        [Fact]
+        public void WebApplicationBuilderWebApplicationOptionsPropertiesOverridesArgs()
+        {
+            var contentRoot = Path.GetTempPath().ToString();
+            var webRoot = Path.GetTempPath().ToString();
+            var envName = $"{nameof(WebApplicationTests)}_ENV";
+
+            var options = new WebApplicationOptions
+            {
+                Args = new[] {
+                    $"--{WebHostDefaults.ApplicationKey}=testhost",
+                    $"--{WebHostDefaults.ContentRootKey}=c:\foo",
+                    $"--{WebHostDefaults.EnvironmentKey}=Test"
+                },
+                ApplicationName = nameof(WebApplicationTests),
+                ContentRootPath = contentRoot,
+                EnvironmentName = envName,
+            };
+
+            var builder = new WebApplicationBuilder(
+                typeof(WebApplicationTests).Assembly,
+                options,
+                bootstrapBuilder =>
+                {
+                    bootstrapBuilder.ConfigureAppConfiguration((context, config) =>
+                    {
+                        Assert.Equal(nameof(WebApplicationTests), context.HostingEnvironment.ApplicationName);
+                        Assert.Equal(envName, context.HostingEnvironment.EnvironmentName);
+                        Assert.Equal(contentRoot, context.HostingEnvironment.ContentRootPath);
+                    });
+                });
+
+            Assert.Equal(nameof(WebApplicationTests), builder.Environment.ApplicationName);
+            Assert.Equal(envName, builder.Environment.EnvironmentName);
+            Assert.Equal(contentRoot, builder.Environment.ContentRootPath);
+        }
+
+        [Fact]
+        public void WebApplicationBuilderCanConfigureHostSettingsUsingWebApplicationOptionsArgs()
+        {
+            var contentRoot = Path.GetTempPath().ToString();
+            var webRoot = Path.GetTempPath().ToString();
+            var envName = $"{nameof(WebApplicationTests)}_ENV";
+
+            var options = new WebApplicationOptions
+            {
+                Args = new[] {
+                    $"--{WebHostDefaults.ApplicationKey}={nameof(WebApplicationTests)}",
+                    $"--{WebHostDefaults.ContentRootKey}={contentRoot}",
+                    $"--{WebHostDefaults.EnvironmentKey}={envName}"
+                }
+            };
+
+            var builder = new WebApplicationBuilder(
+                typeof(WebApplicationTests).Assembly,
+                options,
+                bootstrapBuilder =>
+                {
+                    bootstrapBuilder.ConfigureAppConfiguration((context, config) =>
+                    {
+                        Assert.Equal(nameof(WebApplicationTests), context.HostingEnvironment.ApplicationName);
+                        Assert.Equal(envName, context.HostingEnvironment.EnvironmentName);
+                        Assert.Equal(contentRoot, context.HostingEnvironment.ContentRootPath);
+                    });
+                });
+
+            Assert.Equal(nameof(WebApplicationTests), builder.Environment.ApplicationName);
+            Assert.Equal(envName, builder.Environment.EnvironmentName);
+            Assert.Equal(contentRoot, builder.Environment.ContentRootPath);
+        }
+
+        [Fact]
         public void WebApplicationBuilderApplicationNameCanBeOverridden()
         {
             var assemblyName = Assembly.GetEntryAssembly().GetName().Name;
 
+            var options = new WebApplicationOptions
+            {
+                ApplicationName = assemblyName
+            };
+
             var builder = new WebApplicationBuilder(
                 typeof(WebApplicationTests).Assembly,
-                new[] { $"--applicationName={assemblyName}" }, bootstrapBuilder =>
-            {
-                // Verify the defaults observed by the boostrap host builder we use internally to populate
-                // the defaults
-                bootstrapBuilder.ConfigureAppConfiguration((context, config) =>
+                options,
+                bootstrapBuilder =>
                 {
-                    Assert.Equal(assemblyName, context.HostingEnvironment.ApplicationName);
+                    // Verify the defaults observed by the boostrap host builder we use internally to populate
+                    // the defaults
+                    bootstrapBuilder.ConfigureAppConfiguration((context, config) =>
+                    {
+                        Assert.Equal(assemblyName, context.HostingEnvironment.ApplicationName);
+                    });
                 });
-            });
 
             Assert.Equal(assemblyName, builder.Environment.ApplicationName);
             builder.Host.ConfigureAppConfiguration((context, config) =>
@@ -754,6 +876,20 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Throws<InvalidOperationException>(() => builder.Services[0] = ServiceDescriptor.Singleton(new Service()));
         }
 
+        [Fact]
+        public void WebApplicationBuilder_ThrowsFromExtensionMethodsNotSupportedByHostAndWebHost()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            Assert.Throws<NotSupportedException>(() => builder.WebHost.Configure(app => { }));
+            Assert.Throws<NotSupportedException>(() => builder.WebHost.UseStartup<MyStartup>());
+            Assert.Throws<NotSupportedException>(() => builder.WebHost.UseStartup(typeof(MyStartup)));
+
+            Assert.Throws<NotSupportedException>(() => builder.Host.ConfigureWebHost(webHostBuilder => { }));
+            Assert.Throws<NotSupportedException>(() => builder.Host.ConfigureWebHost(webHostBuilder => { }, options => { }));
+            Assert.Throws<NotSupportedException>(() => builder.Host.ConfigureWebHostDefaults(webHostBuilder => { }));
+        }
+
         private class Service : IService { }
         private interface IService { }
 
@@ -761,6 +897,19 @@ namespace Microsoft.AspNetCore.Tests
         {
             public Service2(Service service)
             {
+            }
+        }
+
+        private class MyStartup : IStartup
+        {
+            public void Configure(IApplicationBuilder app)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IServiceProvider ConfigureServices(IServiceCollection services)
+            {
+                throw new NotImplementedException();
             }
         }
 
