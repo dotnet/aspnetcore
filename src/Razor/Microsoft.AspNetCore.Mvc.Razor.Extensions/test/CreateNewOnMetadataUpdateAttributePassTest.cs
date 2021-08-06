@@ -56,6 +56,35 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 });
         }
 
+        [Fact]
+        public void Execute_NoOpsForBlazorComponents()
+        {
+            // Arrange
+            var properties = new RazorSourceDocumentProperties(filePath: "ignored", relativePath: "Test.razor");
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("Hello world", properties));
+            codeDocument.SetFileKind(FileKinds.Component);
+
+            var engine = CreateProjectEngine(b =>
+            {
+                PageDirective.Register(b);
+            }).Engine;
+            var irDocument = CreateIRDocument(engine, codeDocument);
+            var pass = new CreateNewOnMetadataUpdateAttributePass
+            {
+                Engine = engine
+            };
+            var documentClassifier = new DefaultDocumentClassifierPass { Engine = engine };
+
+            // Act
+            documentClassifier.Execute(codeDocument, irDocument);
+            pass.Execute(codeDocument, irDocument);
+            var visitor = new Visitor();
+            visitor.Visit(irDocument);
+
+            // Assert
+            Assert.Empty(visitor.ExtensionNodes);
+        }
+
         private static DocumentIntermediateNode CreateIRDocument(RazorEngine engine, RazorCodeDocument codeDocument)
         {
             for (var i = 0; i < engine.Phases.Count; i++)
