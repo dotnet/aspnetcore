@@ -20,7 +20,8 @@ namespace Http2SampleApp
             app.UseTimingMiddleware();
             app.Run(context =>
             {
-                return context.Response.WriteAsync("Hello World! " + context.Request.Protocol);
+                var serverName = context.Features.Get<ITlsServerNameFeature>()?.ServerName;
+                return context.Response.WriteAsync($"Hello {serverName}");
             });
         }
     }

@@ -37,7 +37,6 @@
 *REMOVED*static readonly Microsoft.AspNetCore.Http.Features.FeatureReference<T>.Default -> Microsoft.AspNetCore.Http.Features.FeatureReference<T>
 *REMOVED*virtual Microsoft.AspNetCore.Http.Features.FeatureCollection.Revision.get -> int
 Microsoft.AspNetCore.Http.Features.IServerVariablesFeature.this[string! variableName].get -> string?
-Microsoft.AspNetCore.Http.Features.ITlsConnectionFeature.HostName.get -> string?
 Microsoft.AspNetCore.Http.IHeaderDictionary.Accept.get -> Microsoft.Extensions.Primitives.StringValues
 Microsoft.AspNetCore.Http.IHeaderDictionary.Accept.set -> void
 Microsoft.AspNetCore.Http.IHeaderDictionary.AcceptCharset.get -> Microsoft.Extensions.Primitives.StringValues
@@ -235,6 +234,8 @@ Microsoft.AspNetCore.Http.Features.FeatureCollection.IsReadOnly.get -> bool (for
 Microsoft.AspNetCore.Http.Features.FeatureCollection.Set<TFeature>(TFeature? instance) -> void (forwarded, contained in Microsoft.Extensions.Features)
 Microsoft.AspNetCore.Http.Features.FeatureCollection.this[System.Type! key].get -> object? (forwarded, contained in Microsoft.Extensions.Features)
 Microsoft.AspNetCore.Http.Features.FeatureCollection.this[System.Type! key].set -> void (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.ITlsServerNameFeature
+Microsoft.AspNetCore.Http.ITlsServerNameFeature.ServerName.get -> string?
 Microsoft.AspNetCore.Http.WebSocketAcceptContext.DangerousEnableCompression.get -> bool
 Microsoft.AspNetCore.Http.WebSocketAcceptContext.DangerousEnableCompression.set -> void
 Microsoft.AspNetCore.Http.WebSocketAcceptContext.DisableServerContextTakeover.get -> bool

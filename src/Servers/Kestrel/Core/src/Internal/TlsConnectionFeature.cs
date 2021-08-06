@@ -8,13 +8,14 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    internal class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicationProtocolFeature, ITlsHandshakeFeature
+    internal class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicationProtocolFeature, ITlsHandshakeFeature, ITlsServerNameFeature
     {
         private readonly SslStream _sslStream;
         private X509Certificate2? _clientCert;
@@ -53,8 +54,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
         }
 
-        // Used for event source, not part of any of the feature interfaces.
-        public string? HostName { get; set; }
+        public string? ServerName { get; set; }
 
         public ReadOnlyMemory<byte> ApplicationProtocol
         {

@@ -16,6 +16,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
@@ -94,7 +95,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             else
             {
                 Debug.Assert(_serverCertificate != null);
-
                 EnsureCertificateIsAllowedForServerAuth(_serverCertificate);
 
                 var certificate = _serverCertificate;
@@ -109,6 +109,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 // This might be do blocking IO but it'll resolve the certificate chain up front before any connections are
                 // made to the server
                 _serverCertificateContext = SslStreamCertificateContext.Create(certificate, additionalCertificates: null);
+                _serverCertificateSelector = (_, name) => certificate;
+                _serverCertificate = null;
             }
 
             var remoteCertificateValidationCallback = _options.ClientCertificateMode == ClientCertificateMode.NoCertificate ?
@@ -152,6 +154,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             context.Features.Set<ITlsConnectionFeature>(feature);
             context.Features.Set<ITlsHandshakeFeature>(feature);
             context.Features.Set<ITlsApplicationProtocolFeature>(feature);
+            context.Features.Set<ITlsServerNameFeature>(feature);
 
             try
             {
@@ -306,7 +309,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             {
                 selector = (sender, name) =>
                 {
-                    feature.HostName = name;
+                    feature.ServerName = name;
                     context.Features.Set(sslStream);
                     var cert = _serverCertificateSelector(context, name);
                     if (cert != null)
@@ -316,11 +319,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                     return cert!;
                 };
             }
+            //selector = (sender, name) =>
+            //{
+            //    Console.WriteLine(name);
+            //    throw new Exception();
+            //};
 
             var sslOptions = new SslServerAuthenticationOptions
             {
-                ServerCertificate = _serverCertificate,
-                ServerCertificateContext = _serverCertificateContext,
+                //ServerCertificate = _serverCertificate,
+                //ServerCertificateContext = _serverCertificateContext,
                 ServerCertificateSelectionCallback = selector,
                 ClientCertificateRequired = _options.ClientCertificateMode == ClientCertificateMode.AllowCertificate
                     || _options.ClientCertificateMode == ClientCertificateMode.RequireCertificate,
@@ -423,7 +431,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
         {
             var (middleware, context, feature) = (ValueTuple<HttpsConnectionMiddleware, ConnectionContext, Core.Internal.TlsConnectionFeature>)state!;
 
-            feature.HostName = clientHelloInfo.ServerName;
+            feature.ServerName = clientHelloInfo.ServerName;
             context.Features.Set(sslStream);
             var callbackContext = new TlsHandshakeCallbackContext()
             {
