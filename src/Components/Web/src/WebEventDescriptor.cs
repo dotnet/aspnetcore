@@ -21,11 +21,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <summary>
         /// For framework use only.
         /// </summary>
-        public int BrowserRendererId { get; set; }
-
-        /// <summary>
-        /// For framework use only.
-        /// </summary>
         public ulong EventHandlerId { get; set; }
 
         /// <summary>

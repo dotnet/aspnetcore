@@ -128,6 +128,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("123", () => dynamicRootContainer.FindElement(By.ClassName("increment-amount-value")).Text);
             Browser.Equal("Person is Bert, age 123.456", () => dynamicRootContainer.FindElement(By.ClassName("person-info")).Text);
             Browser.Equal("Value from JS object reference: You've added 1 components.", () => dynamicRootContainer.FindElement(By.ClassName("value-from-js")).Text);
+            Browser.Equal("Value from .NET object reference: This is correct", () => dynamicRootContainer.FindElement(By.ClassName("value-from-dotnetobject")).Text);
+            Browser.Equal("Byte array value: 2,3,5,7,11,13,17", () => dynamicRootContainer.FindElement(By.ClassName("value-from-bytearray")).Text);
         }
 
         [Fact]

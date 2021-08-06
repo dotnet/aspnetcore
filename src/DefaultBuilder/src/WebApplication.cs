@@ -86,14 +86,14 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="args">Command line arguments</param>
         /// <returns>The <see cref="WebApplication"/>.</returns>
         public static WebApplication Create(string[]? args = null) =>
-            new WebApplicationBuilder(Assembly.GetCallingAssembly(), new() { Args = args }).Build();
+            new WebApplicationBuilder(new() { Args = args }).Build();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebApplicationBuilder"/> class with preconfigured defaults.
         /// </summary>
         /// <returns>The <see cref="WebApplicationBuilder"/>.</returns>
         public static WebApplicationBuilder CreateBuilder() =>
-            new WebApplicationBuilder(Assembly.GetCallingAssembly(), new());
+            new(new());
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebApplicationBuilder"/> class with preconfigured defaults.
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="args">Command line arguments</param>
         /// <returns>The <see cref="WebApplicationBuilder"/>.</returns>
         public static WebApplicationBuilder CreateBuilder(string[] args) =>
-            new WebApplicationBuilder(Assembly.GetCallingAssembly(), new() { Args = args });
+            new(new() { Args = args });
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebApplicationBuilder"/> class with preconfigured defaults.
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="options">The <see cref="WebApplicationOptions"/> to configure the <see cref="WebApplicationBuilder"/>.</param>
         /// <returns>The <see cref="WebApplicationBuilder"/>.</returns>
         public static WebApplicationBuilder CreateBuilder(WebApplicationOptions options) =>
-            new WebApplicationBuilder(Assembly.GetCallingAssembly(), options);
+            new(options);
 
         /// <summary>
         /// Start the application.

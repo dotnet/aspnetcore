@@ -16,9 +16,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
     {
         protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
+            if (FileKinds.IsComponent(codeDocument.GetFileKind()))
+            {
+                // Hot reload does not apply to components.
+                return;
+            }
+
             var @namespace = documentNode.FindPrimaryNamespace();
             var @class = documentNode.FindPrimaryClass();
-        
+
             var classIndex = @namespace.Children.IndexOf(@class);
             if (classIndex == -1)
             {
@@ -28,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var identifierFeature = Engine.Features.OfType<IMetadataIdentifierFeature>().First();
             var identifier = identifierFeature.GetIdentifier(codeDocument, codeDocument.Source);
 
-            var metadataAttributeNode = new CreateNewOnMetadataUpdateAttributeIntermediateNode(identifier, documentNode.DocumentKind);
+            var metadataAttributeNode = new CreateNewOnMetadataUpdateAttributeIntermediateNode();
             // Metadata attributes need to be inserted right before the class declaration.
             @namespace.Children.Insert(classIndex, metadataAttributeNode);
 
@@ -43,12 +49,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         internal sealed class CreateNewOnMetadataUpdateAttributeIntermediateNode : ExtensionIntermediateNode
         {
             private const string CreateNewOnMetadataUpdateAttributeName = "global::System.Runtime.CompilerServices.CreateNewOnMetadataUpdateAttribute";
-            private readonly string _identifier;
-
-            public CreateNewOnMetadataUpdateAttributeIntermediateNode(string identifier, string kind)
-            {
-                _identifier = identifier;
-            }
 
             public override IntermediateNodeCollection Children => IntermediateNodeCollection.ReadOnly;
 
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 context.CodeWriter
                     .Write("[")
                     .Write(CreateNewOnMetadataUpdateAttributeName)
-                    .WriteLine("]");;
+                    .WriteLine("]");
             }
         }
     }

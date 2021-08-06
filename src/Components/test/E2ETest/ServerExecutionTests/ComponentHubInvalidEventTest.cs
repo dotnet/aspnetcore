@@ -42,7 +42,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
             var eventDescriptor = Serialize(new WebEventDescriptor()
             {
-                BrowserRendererId = 0,
                 EventHandlerId = 3,
                 EventName = "click",
             });
@@ -69,7 +68,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
             var eventDescriptor = Serialize(new WebEventDescriptor()
             {
-                BrowserRendererId = 0,
                 EventHandlerId = 1990,
                 EventName = "click",
             });

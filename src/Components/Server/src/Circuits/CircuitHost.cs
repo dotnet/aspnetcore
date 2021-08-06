@@ -110,11 +110,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     await OnCircuitOpenedAsync(cancellationToken);
                     await OnConnectionUpAsync(cancellationToken);
 
-                    // From this point onwards, JavaScript code can add root components if configured
-                    await Renderer.InitializeJSComponentSupportAsync(
-                        _options.RootComponents.JSComponents,
-                        JSRuntime.ReadJsonSerializerOptions());
-
                     // Here, we add each root component but don't await the returned tasks so that the
                     // components can be processed in parallel.
                     var count = Descriptors.Count;
@@ -497,49 +492,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, "Unable to locate .NET stream."));
                 UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
                 return default;
-            }
-        }
-
-        // DispatchEvent is used in a fire-and-forget context, so it's responsible for its own
-        // error handling.
-        public async Task DispatchEvent(JsonElement eventDescriptorJson, JsonElement eventArgsJson)
-        {
-            AssertInitialized();
-            AssertNotDisposed();
-
-            WebEventData webEventData;
-            try
-            {
-                // JsonSerializerOptions are tightly bound to the JsonContext. Cache it on first use using a copy
-                // of the serializer settings.
-                webEventData = WebEventData.Parse(Renderer, JSRuntime.ReadJsonSerializerOptions(), eventDescriptorJson, eventArgsJson);
-            }
-            catch (Exception ex)
-            {
-                // Invalid event data is fatal. We expect a well-behaved client to send valid JSON.
-                Log.DispatchEventFailedToParseEventData(_logger, ex);
-                await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, "Bad input data."));
-                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
-                return;
-            }
-
-            try
-            {
-                await Renderer.Dispatcher.InvokeAsync(() =>
-                {
-                    return Renderer.DispatchEventAsync(
-                        webEventData.EventHandlerId,
-                        webEventData.EventFieldInfo,
-                        webEventData.EventArgs);
-                });
-            }
-            catch (Exception ex)
-            {
-                // A failure in dispatching an event means that it was an attempt to use an invalid event id.
-                // A well-behaved client won't do this.
-                Log.DispatchEventFailedToDispatchEvent(_logger, webEventData.EventHandlerId.ToString(CultureInfo.InvariantCulture), ex);
-                await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, "Failed to dispatch event."));
-                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
             }
         }
 
