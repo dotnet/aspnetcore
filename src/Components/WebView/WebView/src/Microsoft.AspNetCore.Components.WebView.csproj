@@ -21,7 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(ComponentsSharedSourceRoot)src\PullFromJSDataStream.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\PullFromJSDataStream.cs" LinkBase="Shared" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\TransmitDataStreamToJS.cs" LinkBase="Shared" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ElementReferenceJsonConverter.cs" LinkBase="Shared" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerializerOptionsProvider.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
