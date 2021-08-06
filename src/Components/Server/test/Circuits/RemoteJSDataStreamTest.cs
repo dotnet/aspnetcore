@@ -151,12 +151,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             // Act & Assert 1
             var ex = await Assert.ThrowsAsync<EndOfStreamException>(async () => await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null).DefaultTimeout());
-            Assert.Equal("The incoming data chunk exceeded permitted length.", ex.Message);
+            Assert.Equal("The incoming data chunk exceeded the permitted length.", ex.Message);
 
             // Act & Assert 2
             using var mem = new MemoryStream();
             ex = await Assert.ThrowsAsync<EndOfStreamException>(async () => await remoteJSDataStream.CopyToAsync(mem).DefaultTimeout());
-            Assert.Equal("The incoming data chunk exceeded permitted length.", ex.Message);
+            Assert.Equal("The incoming data chunk exceeded the permitted length.", ex.Message);
         }
 
         [Fact]

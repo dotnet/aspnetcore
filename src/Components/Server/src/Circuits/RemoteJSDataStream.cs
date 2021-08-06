@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
                 if (chunk.Length > _chunkSize)
                 {
-                    throw new EndOfStreamException("The incoming data chunk exceeded permitted length.");
+                    throw new EndOfStreamException("The incoming data chunk exceeded the permitted length.");
                 }
 
                 _bytesRead += chunk.Length;
