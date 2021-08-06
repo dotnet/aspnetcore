@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 }
 
                 _abortReason = ExceptionDispatchInfo.Capture(abortReason);
-                _log.ConnectionAbort(this, abortReason.Message);
+                _log.ConnectionAbort(this, Error, abortReason.Message);
                 _closeTask = _connection.CloseAsync(errorCode: Error).AsTask();
             }
         }
@@ -127,7 +127,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             catch (QuicConnectionAbortedException ex)
             {
                 // Shutdown initiated by peer, abortive.
-                _log.ConnectionAborted(this, ex);
+                Error = ex.ErrorCode;
+                _log.ConnectionAborted(this, ex.ErrorCode, ex);
 
                 ThreadPool.UnsafeQueueUserWorkItem(state =>
                 {

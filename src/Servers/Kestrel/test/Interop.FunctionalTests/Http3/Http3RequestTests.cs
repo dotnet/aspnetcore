@@ -769,13 +769,30 @@ namespace Interop.FunctionalTests.Http3
         public async Task ConnectionLifetimeNotificationFeature_RequestClose_ConnectionEnds()
         {
             // Arrange
-            var syncPoint = new SyncPoint();
-            var connectionStartedTcs = new TaskCompletionSource<IConnectionLifetimeNotificationFeature>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var syncPoint1 = new SyncPoint();
+            var connectionStartedTcs1 = new TaskCompletionSource<IConnectionLifetimeNotificationFeature>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var connectionStartedTcs2 = new TaskCompletionSource<IConnectionLifetimeNotificationFeature>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var connectionStartedTcs3 = new TaskCompletionSource<IConnectionLifetimeNotificationFeature>(TaskCreationOptions.RunContinuationsAsynchronously);
+
             var builder = CreateHostBuilder(
                 context =>
                 {
-                    connectionStartedTcs.SetResult(context.Features.Get<IConnectionLifetimeNotificationFeature>());
-                    return syncPoint.WaitToContinue();
+                    switch (context.Request.Path.ToString())
+                    {
+                        case "/1":
+                            connectionStartedTcs1.SetResult(context.Features.Get<IConnectionLifetimeNotificationFeature>());
+                            return syncPoint1.WaitToContinue();
+                        case "/2":
+                            connectionStartedTcs2.SetResult(context.Features.Get<IConnectionLifetimeNotificationFeature>());
+                            return Task.CompletedTask;
+                        case "/3":
+                            connectionStartedTcs3.SetResult(context.Features.Get<IConnectionLifetimeNotificationFeature>());
+                            return Task.CompletedTask;
+                        default:
+                            throw new InvalidOperationException();
+                    }
                 });
 
             using (var host = builder.Build())
@@ -786,32 +803,43 @@ namespace Interop.FunctionalTests.Http3
                 var port = host.GetPort();
 
                 // Act
-                var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{port}/");
-                request1.Version = HttpVersion.Version30;
-                request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
-
-                var responseTask = client.SendAsync(request1, CancellationToken.None);
+                var responseTask1 = client.SendAsync(CreateHttp3Request(HttpMethod.Get, $"https://127.0.0.1:{port}/1"), CancellationToken.None);
 
                 // Connection started.
-                var connection = await connectionStartedTcs.Task.DefaultTimeout();
+                var connection = await connectionStartedTcs1.Task.DefaultTimeout();
 
                 // Request in progress.
-                await syncPoint.WaitForSyncPoint();
+                await syncPoint1.WaitForSyncPoint();
 
                 connection.RequestClose();
 
-                // Allow request to finish so connection shutdown can happen.
-                syncPoint.Continue();
-
-                var response = await responseTask.DefaultTimeout();
-                response.EnsureSuccessStatusCode();
-
                 // Assert
+
+                // Server should send a GOAWAY to the client to indicate connection is closing.
                 await WaitForLogAsync(logs =>
                 {
                     return logs.Any(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Http3" &&
-                                         w.Message.Contains("sending GOAWAY frame for stream ID 3"));
-                }, "Check for GO_AWAY frame sent on server initiated shutdown.");
+                                         w.Message.Contains("Highest opened stream ID 4611686018427387903 in GOAWAY."));
+                }, "Check for initial GOAWAY frame sent on server initiated shutdown.");
+
+                // TODO https://github.com/dotnet/runtime/issues/56944
+                //Logger.LogInformation("Sending request after GOAWAY.");
+                //var response2 = await client.SendAsync(CreateHttp3Request(HttpMethod.Get, $"https://127.0.0.1:{port}/2"), CancellationToken.None);
+                //response2.EnsureSuccessStatusCode();
+
+                // Allow request to finish so connection shutdown can happen.
+                syncPoint1.Continue();
+
+                // Request completes successfully on client.
+                var response1 = await responseTask1.DefaultTimeout();
+                response1.EnsureSuccessStatusCode();
+
+                // Server has aborted connection.
+                await WaitForLogAsync(logs =>
+                {
+                    return logs.Any(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Http3" &&
+                                         w.Message.Contains("Highest opened stream ID 0 in GOAWAY."));
+                }, "Check for exact GOAWAY frame sent on server initiated shutdown.");
 
                 await WaitForLogAsync(logs =>
                 {
@@ -820,8 +848,21 @@ namespace Interop.FunctionalTests.Http3
                                          w.EventId == applicationAbortedConnectionId);
                 }, "Wait for connection abort.");
 
+                Logger.LogInformation("Sending request after connection abort.");
+                var response3 = await client.SendAsync(CreateHttp3Request(HttpMethod.Get, $"https://127.0.0.1:{port}/3"), CancellationToken.None);
+                response3.EnsureSuccessStatusCode();
+
                 await host.StopAsync();
             }
+        }
+
+        private HttpRequestMessage CreateHttp3Request(HttpMethod method, string url)
+        {
+            var request = new HttpRequestMessage(method, url);
+            request.Version = HttpVersion.Version30;
+            request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+            return request;
         }
 
         [ConditionalFact]
@@ -894,17 +935,20 @@ namespace Interop.FunctionalTests.Http3
 
         private async Task WaitForLogAsync(Func<IEnumerable<WriteContext>, bool> testLogs, string message)
         {
+            Logger.LogInformation($"Started waiting for logs: {message}");
+
             for (int i = 0; i < 5; i++)
             {
                 if (testLogs(TestSink.Writes))
                 {
+                    Logger.LogInformation($"Successfully received logs: {message}");
                     return;
                 }
 
                 await Task.Delay(100 * (i + 1));
             }
 
-            throw new Exception(message);
+            throw new Exception($"Wait for logs failure: {message}");
         }
 
         [ConditionalFact]

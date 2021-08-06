@@ -252,13 +252,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         Debug.Assert(streamDirectionFeature != null);
                         Debug.Assert(streamIdFeature != null);
 
-                        // TODO race condition between checking this and updating highest stream ID
-                        if (_stoppedAcceptingStreams == 1)
-                        {
-                            streamContext.Abort(new ConnectionAbortedException("Connection is closing and is no longer accepting new stream."));
-                            continue;
-                        }
-
                         if (!streamDirectionFeature.CanWrite)
                         {
                             // Unidirectional stream
@@ -269,6 +262,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         }
                         else
                         {
+                            // TODO race condition between checking this and updating highest stream ID
+                            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-5.2-2
+                            if (_stoppedAcceptingStreams == 1)
+                            {
+                                // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1.2-3
+                                streamContext.Features.Get<IProtocolErrorCodeFeature>()!.Error = (long)Http3ErrorCode.RequestRejected;
+                                streamContext.Abort(new ConnectionAbortedException("HTTP/3 connection is closing and no longer accepts new requests."));
+                                continue;
+                            }
+
                             // Request stream IDs are tracked.
                             UpdateHighestStreamId(streamIdFeature.StreamId);
 
@@ -432,7 +435,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 if (_gracefulCloseInitiator == GracefulCloseInitiator.Server && activeRequestCount > 0)
                 {
-                    TryStopAcceptingStreams();
+                    if (TryStopAcceptingStreams())
+                    {
+                        // Go away with largest streamid to initiate graceful shutdown.
+                        SendGoAwayAsync(VariableLengthIntegerHelper.EightByteLimit).Preserve();
+                    }
                 }
             }
 
