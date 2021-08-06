@@ -141,6 +141,25 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         [Fact]
+        public async Task ReceiveData_WithLargerChunksThanPermitted()
+        {
+            // Arrange
+            var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
+            var remoteJSDataStream = await CreateRemoteJSDataStreamAsync(jsRuntime);
+            var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
+            var chunk = new byte[50_000]; // more than the 32k maximum chunk size
+
+            // Act & Assert 1
+            var ex = await Assert.ThrowsAsync<EndOfStreamException>(async () => await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null).DefaultTimeout());
+            Assert.Equal("The incoming data chunk exceeded permitted length.", ex.Message);
+
+            // Act & Assert 2
+            using var mem = new MemoryStream();
+            ex = await Assert.ThrowsAsync<EndOfStreamException>(async () => await remoteJSDataStream.CopyToAsync(mem).DefaultTimeout());
+            Assert.Equal("The incoming data chunk exceeded permitted length.", ex.Message);
+        }
+
+        [Fact]
         public async Task ReceiveData_ProvidedWithMoreBytesThanRemaining()
         {
             // Arrange
