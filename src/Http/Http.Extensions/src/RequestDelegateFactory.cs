@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Http
 
             if (parameterCustomAttributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
             {
-                if (factoryContext.RouteParameters is { } routeParams && !routeParams.Contains(parameter.Name))
+                if (factoryContext.RouteParameters is { } routeParams && !routeParams.Contains(parameter.Name, StringComparer.OrdinalIgnoreCase))
                 {
                     throw new InvalidOperationException($"{parameter.Name} is not a route paramter.");
                 }
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Http
             {
                 // We're in the fallback case and we have a parameter and route parameter match so don't fallback
                 // to query string in this case
-                if (factoryContext.RouteParameters is { } routeParams && routeParams.Contains(parameter.Name))
+                if (factoryContext.RouteParameters is { } routeParams && routeParams.Contains(parameter.Name, StringComparer.OrdinalIgnoreCase))
                 {
                     return BindParameterFromProperty(parameter, RouteValuesExpr, parameter.Name, factoryContext);
                 }
