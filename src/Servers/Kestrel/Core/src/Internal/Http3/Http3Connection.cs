@@ -33,8 +33,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         // The highest opened request stream ID is sent with GOAWAY. The GOAWAY
         // value will signal to the peer to discard all requests with that value or greater.
         // When this value is sent, 4 will be added. We want 0 to be sent for no requests,
-        // so start highest opened request stream ID at -4 .
-        private long _highestOpenedRequestStreamId = -4;
+        // so start highest opened request stream ID at -4.
+        private const long DefaultHighestOpenedRequestStreamId = -4;
+        private long _highestOpenedRequestStreamId = DefaultHighestOpenedRequestStreamId;
 
         private readonly object _sync = new object();
         private readonly MultiplexedConnectionContext _multiplexedContext;
@@ -78,9 +79,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _highestOpenedRequestStreamId = streamId;
         }
 
-        private long GetHighestStreamId() => Interlocked.Read(ref _highestOpenedRequestStreamId);
         // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-5.2-2
-        private long GetCurrentGoAwayStreamId() => GetHighestStreamId() + 4;
+        private long GetCurrentGoAwayStreamId() => Interlocked.Read(ref _highestOpenedRequestStreamId) + 4;
 
         private IKestrelTrace Log => _context.ServiceContext.Log;
         public KestrelServerLimits Limits => _context.ServiceContext.ServerOptions.Limits;
@@ -391,7 +391,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 }
                 finally
                 {
-                    Log.Http3ConnectionClosed(_context.ConnectionId, GetHighestStreamId());
+                    // Connection can close without processing any request streams.
+                    var streamId = _highestOpenedRequestStreamId != DefaultHighestOpenedRequestStreamId
+                        ? _highestOpenedRequestStreamId
+                        : (long?)null;
+
+                    Log.Http3ConnectionClosed(_context.ConnectionId, streamId);
                 }
             }
         }

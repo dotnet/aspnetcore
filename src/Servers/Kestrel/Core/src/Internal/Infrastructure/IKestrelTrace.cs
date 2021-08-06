@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         void Http3ConnectionClosing(string connectionId);
 
-        void Http3ConnectionClosed(string connectionId, long highestOpenedStreamId);
+        void Http3ConnectionClosed(string connectionId, long? highestOpenedStreamId);
 
         void Http3StreamAbort(string traceIdentifier, Http3ErrorCode error, ConnectionAbortedException abortReason);
 

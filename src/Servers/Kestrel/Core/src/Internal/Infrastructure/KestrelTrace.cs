@@ -323,9 +323,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [LoggerMessage(44, LogLevel.Debug, @"Connection id ""{ConnectionId}"" is closed. The last processed stream ID was {HighestOpenedStreamId}.", EventName = "Http3ConnectionClosed")]
-        private static partial void Http3ConnectionClosed(ILogger logger, string connectionId, long highestOpenedStreamId);
+        private static partial void Http3ConnectionClosed(ILogger logger, string connectionId, long? highestOpenedStreamId);
 
-        public void Http3ConnectionClosed(string connectionId, long highestOpenedStreamId)
+        public void Http3ConnectionClosed(string connectionId, long? highestOpenedStreamId)
         {
             Http3ConnectionClosed(_http3Logger, connectionId, highestOpenedStreamId);
         }
