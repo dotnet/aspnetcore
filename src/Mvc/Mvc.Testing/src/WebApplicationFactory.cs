@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Hosting;
@@ -160,6 +161,16 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             {
                 var deferredHostBuilder = new DeferredHostBuilder();
                 deferredHostBuilder.UseEnvironment(Environments.Development);
+                // There's no helper for UseApplicationName, but we need to 
+                // set the application name to the target entry point 
+                // assembly name.
+                deferredHostBuilder.ConfigureHostConfiguration(config =>
+                {
+                    config.AddInMemoryCollection(new Dictionary<string, string>
+                    {
+                        { HostDefaults.ApplicationKey, typeof(TEntryPoint).Assembly.GetName()?.Name ?? string.Empty }
+                    });
+                });
                 // This helper call does the hard work to determine if we can fallback to diagnostic source events to get the host instance
                 var factory = HostFactoryResolver.ResolveHostFactory(
                     typeof(TEntryPoint).Assembly,
