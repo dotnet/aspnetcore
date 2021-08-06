@@ -263,13 +263,13 @@ namespace Microsoft.AspNetCore.Components.Server
             var circuitHost = await GetActiveCircuitAsync();
             if (circuitHost == null)
             {
-                throw new Exception();
+                yield break;
             }
 
             var dotNetStreamReference = await circuitHost.TryClaimPendingStream(streamId);
-            if (dotNetStreamReference is null)
+            if (dotNetStreamReference == default)
             {
-                throw new Exception();
+                yield break;
             }
 
             var buffer = ArrayPool<byte>.Shared.Rent(32 * 1024);
@@ -277,14 +277,19 @@ namespace Microsoft.AspNetCore.Components.Server
             try
             {
                 int bytesRead;
-                while ((bytesRead = await circuitHost.SendDotNetStreamAsync(dotNetStreamReference, buffer)) > 0)
+                while ((bytesRead = await circuitHost.SendDotNetStreamAsync(dotNetStreamReference, streamId, buffer)) > 0)
                 {
                     yield return new ArraySegment<byte>(buffer, 0, bytesRead);
                 }
             }
             finally
             {
-                ArrayPool<byte>.Shared.Return(buffer);
+                ArrayPool<byte>.Shared.Return(buffer, clearArray: true);
+
+                if (!dotNetStreamReference.LeaveOpen)
+                {
+                    dotNetStreamReference.Stream?.Dispose();
+                }
             }
         }
 
