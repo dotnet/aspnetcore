@@ -13,7 +13,6 @@
 <hr />
 
 <h3>Last Changed:</h3>
-Time:   <p id="lastChangedTime">@LastChangedTime.Ticks</p>
 Length: <p id="lastChangedLength">@LastChangedLength</p>
 
 <hr />
@@ -24,10 +23,13 @@ Length: <p id="lastChangedLength">@LastChangedLength</p>
 
 <hr />
 
+<button id="incrementInteractivityCounterBtn" @onclick="IncrementInteractivityCounter">Increment Interactivity Counter</button>
+<p id="interactivityCounter">@InteractivityCounter</p>
+
 <button id="focusAwayBtn">Focus Away From InputLargeTextArea</button>
 
 @code {
-  public DateTime LastChangedTime { get; set; }
+  public int InteractivityCounter { get; set; }
   public int LastChangedLength { get; set; }
   public string GetTextResult { get; set; }
   public string GetTextError { get; set; }
@@ -67,8 +69,11 @@ Length: <p id="lastChangedLength">@LastChangedLength</p>
 
   public void TextAreaChanged(InputLargeTextAreaChangeEventArgs args)
   {
-      LastChangedTime = DateTime.Now;
       LastChangedLength = args.Length;
-      StateHasChanged();
+  }
+
+  public void IncrementInteractivityCounter()
+  {
+      InteractivityCounter++;
   }
 }

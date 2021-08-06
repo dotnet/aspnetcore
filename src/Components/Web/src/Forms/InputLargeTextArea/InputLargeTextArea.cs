@@ -11,13 +11,13 @@ namespace Microsoft.AspNetCore.Components.Forms
 {
     /// <summary>
     /// A multiline input component for editing large <see cref="string"/> values, supports async
-    /// content access without binding nor validations.
+    /// content access without binding and without validations.
     /// </summary>
-    public class InputLargeTextArea : ComponentBase, IInputLargeTextAreaJsCallbacks, IDisposable
+    public class InputLargeTextArea : ComponentBase, IDisposable
     {
+        private const string JsFunctionsPrefix = "Blazor._internal.InputLargeTextArea.";
         private ElementReference _inputLargeTextAreaElement;
-
-        private InputLargeTextAreaJsCallbacksRelay? _jsCallbacksRelay;
+        private IDisposable? _dotNetReference;
 
         [Inject]
         private IJSRuntime JSRuntime { get; set; } = default!;
@@ -52,8 +52,8 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             if (firstRender)
             {
-                _jsCallbacksRelay = new InputLargeTextAreaJsCallbacksRelay(this);
-                await JSRuntime.InvokeVoidAsync(InputLargeTextAreaInterop.Init, _jsCallbacksRelay.DotNetReference, _inputLargeTextAreaElement);
+                _dotNetReference = DotNetObjectReference.Create(this);
+                await JSRuntime.InvokeVoidAsync(JsFunctionsPrefix + "init", _dotNetReference, _inputLargeTextAreaElement);
             }
         }
 
@@ -66,7 +66,12 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.CloseElement();
         }
 
-        Task IInputLargeTextAreaJsCallbacks.NotifyChange(int length)
+        /// <summary>
+        /// Invoked from the client when the textarea's onchange event occurs.
+        /// </summary>
+        /// <param name="length">The updated length of the textarea.</param>
+        [JSInvokable]
+        public Task NotifyChange(int length)
             => OnChange.InvokeAsync(new InputLargeTextAreaChangeEventArgs(this, length));
 
         /// <summary>
@@ -75,11 +80,11 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <param name="maxLength">The maximum length of content to fetch from the textarea.</param>
         /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken"/> used to relay cancellation of the request.</param>
         /// <returns>A <see cref="System.IO.TextReader"/> which facilitates reading of the textarea value.</returns>
-        public async ValueTask<StreamReader> GetTextAsync(int maxLength = 32_000, CancellationToken cancellationToken = default)
+        public virtual async ValueTask<StreamReader> GetTextAsync(int maxLength = 32_000, CancellationToken cancellationToken = default)
         {
             try
             {
-                var streamRef = await JSRuntime.InvokeAsync<IJSStreamReference>(InputLargeTextAreaInterop.GetText, cancellationToken, _inputLargeTextAreaElement);
+                var streamRef = await JSRuntime.InvokeAsync<IJSStreamReference>(JsFunctionsPrefix + "getText", cancellationToken, _inputLargeTextAreaElement);
                 var stream = await streamRef.OpenReadStreamAsync(maxLength, cancellationToken);
                 var streamReader = new StreamReader(stream);
                 return streamReader;
@@ -88,7 +93,10 @@ namespace Microsoft.AspNetCore.Components.Forms
             {
                 // Special casing support for empty textareas. Due to security considerations
                 // 0 length streams/textareas aren't permitted from JS->.NET Streaming Interop.
-                if (jsException.InnerException is ArgumentOutOfRangeException)
+                if (jsException.InnerException is ArgumentOutOfRangeException outOfRangeException &&
+                    outOfRangeException.ActualValue is not null &&
+                    outOfRangeException.ActualValue is int actualLength &&
+                    actualLength == 0)
                 {
                     return StreamReader.Null;
                 }
@@ -101,49 +109,45 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// Sets the textarea value asyncronously.
         /// </summary>
         /// <param name="streamWriter">A <see cref="System.IO.StreamWriter"/> used to set the value of the textarea.</param>
-        /// <param name="leaveTextAreaEnabled">Don't disable the textarea while settings the new textarea value from the stream.</param>
+        /// <param name="leaveTextAreaEnabled"><see langword="false" /> to disable the textarea while setting new content from the stream, otherwise <see langword="true" /> to allow it to be editable. Defaults to <see langword="false" />.</param>
         /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken"/> used to relay cancellation of the request.</param>
-        public async ValueTask SetTextAsync(StreamWriter streamWriter, bool leaveTextAreaEnabled = false, CancellationToken cancellationToken = default)
+        public virtual async ValueTask SetTextAsync(StreamWriter streamWriter, bool leaveTextAreaEnabled = false, CancellationToken cancellationToken = default)
         {
-            if (streamWriter.Encoding is not UTF8Encoding)
+            if (streamWriter.Encoding.CodePage != Encoding.UTF8.CodePage)
             {
-                throw new FormatException($"Expected {typeof(UTF8Encoding)}, got ${streamWriter.Encoding}");
+                throw new FormatException($"The encoding '{streamWriter.Encoding}' is not supported. SetTextAsync only allows UTF-8 encoded data.");
+            }
+
+            // Ensure we're reading from the beginning of the stream,
+            // the StreamWriter.BaseStream.Position will be at the end by default
+            var stream = streamWriter.BaseStream;
+            if (stream.Position != 0)
+            {
+                stream.Position = 0;
             }
 
             try
             {
                 if (!leaveTextAreaEnabled)
                 {
-                    await JSRuntime.InvokeVoidAsync(InputLargeTextAreaInterop.EnableTextArea, cancellationToken, _inputLargeTextAreaElement, /* disabled: */ true);
-                }
-
-                // Ensure we're reading from the beginning of the stream,
-                // the StreamWriter.BaseStream.Position will be at the end by default
-                var stream = streamWriter.BaseStream;
-                if (stream.Position != 0)
-                {
-                    if (!stream.CanSeek)
-                    {
-                        throw new NotSupportedException("Unable to read from the beginning of the stream.");
-                    }
-                    stream.Seek(0, SeekOrigin.Begin);
+                    await JSRuntime.InvokeVoidAsync(JsFunctionsPrefix + "enableTextArea", cancellationToken, _inputLargeTextAreaElement, /* disabled: */ true);
                 }
 
                 using var streamRef = new DotNetStreamReference(stream);
-                await JSRuntime.InvokeVoidAsync(InputLargeTextAreaInterop.SetText, cancellationToken, _inputLargeTextAreaElement, streamRef);
+                await JSRuntime.InvokeVoidAsync(JsFunctionsPrefix + "setText", cancellationToken, _inputLargeTextAreaElement, streamRef);
             }
             finally
             {
                 if (!leaveTextAreaEnabled)
                 {
-                    await JSRuntime.InvokeVoidAsync(InputLargeTextAreaInterop.EnableTextArea, cancellationToken, _inputLargeTextAreaElement, /* disabled: */ false);
+                    await JSRuntime.InvokeVoidAsync(JsFunctionsPrefix + "enableTextArea", cancellationToken, _inputLargeTextAreaElement, /* disabled: */ false);
                 }
             }
         }
 
         void IDisposable.Dispose()
         {
-            _jsCallbacksRelay?.Dispose();
+            _dotNetReference?.Dispose();
         }
     }
 }

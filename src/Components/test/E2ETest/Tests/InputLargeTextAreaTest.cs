@@ -21,13 +21,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
     public class InputLargeTextAreaTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
     {
-        private static readonly string[] CircuitErrors = new[]
-        {
-            "Connection disconnected with error 'Error: Server returned an error on close: Connection closed with an error.'.",
-            "Cannot send data if the connection is not in the 'Connected' State.",
-            "HubConnection.connectionClosed(Error: Server returned an error on close: Connection closed with an error.) called while in state Connected.",
-        };
-
         public InputLargeTextAreaTest(
             BrowserFixture browserFixture,
             ToggleExecutionModeServerFixture<Program> serverFixture,
@@ -42,6 +35,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.MountTestComponent<InputLargeTextAreaComponent>();
         }
 
+        // public override async Task InitializeAsync()
+        // {
+        //     // Since the tests share interactivity with the same text area, it's easiest for each
+        //     // test to run in its own browser instance.
+        //     await base.InitializeAsync(Guid.NewGuid().ToString());
+        // }
+
         [Fact]
         public void CanSetValue()
         {
@@ -52,8 +52,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var valueInTextArea = GetTextAreaValueFromBrowser();
             Assert.Equal(new string('c', 50_000), valueInTextArea);
 
-            FocusAway();
-            AssertLogDoesNotContainMessages(CircuitErrors);
+            AssertInteractivityIsMaintained();
         }
 
         [Fact]
@@ -72,8 +71,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             getTextBtn.Click();
             Browser.Equal(newValue, () => textResultFromComponent.GetAttribute("innerHTML"));
 
-            FocusAway();
-            AssertLogDoesNotContainMessages(CircuitErrors);
+            AssertInteractivityIsMaintained();
         }
 
         [Fact]
@@ -91,8 +89,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var expectedError = "The incoming data stream of length 50000 exceeds the maximum allowed length 32000.";
             Browser.Contains(expectedError, () => textErrorFromComponent.GetAttribute("innerHTML"));
 
-            FocusAway();
-            AssertLogDoesNotContainMessages(CircuitErrors);
+            AssertInteractivityIsMaintained();
         }
 
         [Fact]
@@ -104,8 +101,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             Assert.Equal("abc", GetTextAreaValueFromBrowser());
 
-            FocusAway();
-            AssertLogDoesNotContainMessages(CircuitErrors);
+            AssertInteractivityIsMaintained();
         }
 
         [Fact]
@@ -120,16 +116,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             Assert.Equal(newValue + "abc", GetTextAreaValueFromBrowser());
 
-            FocusAway();
-            AssertLogDoesNotContainMessages(CircuitErrors);
+            AssertInteractivityIsMaintained();
         }
 
         [Fact]
-        public async Task OnChangeTriggers()
+        public void OnChangeTriggers()
         {
-            var lastChangedTime = Browser.Exists(By.Id("lastChangedTime"));
-            Assert.NotNull(lastChangedTime);
-
             var lastChangedLength = Browser.Exists(By.Id("lastChangedLength"));
             Assert.NotNull(lastChangedLength);
 
@@ -138,24 +130,16 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             textArea.SendKeys("abc");
             FocusAway();
 
-            var firstTick = Convert.ToInt64(lastChangedTime.GetAttribute("innerHTML"));
-            Assert.True(firstTick > 0);
             var firstLength = Convert.ToInt32(lastChangedLength.GetAttribute("innerHTML"));
             Assert.Equal(3, firstLength);
-
-            // Ensure time passes between first and second changes
-            await Task.Delay(1000);
 
             textArea.SendKeys("123");
             FocusAway();
 
-            var secondTick = Convert.ToInt64(lastChangedTime.GetAttribute("innerHTML"));
-            Assert.True(secondTick > firstTick);
             var secondLengthLength = Convert.ToInt32(lastChangedLength.GetAttribute("innerHTML"));
             Assert.Equal(6, secondLengthLength);
 
-            FocusAway();
-            AssertLogDoesNotContainMessages(CircuitErrors);
+            AssertInteractivityIsMaintained();
         }
 
         [Fact]
@@ -173,17 +157,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             Assert.Equal(new string('g', 49_500), GetTextAreaValueFromBrowser());
 
-            FocusAway();
-            AssertLogDoesNotContainMessages(CircuitErrors);
-        }
-
-        private void AssertLogDoesNotContainMessages(params string[] messages)
-        {
-            var log = Browser.Manage().Logs.GetLog(LogType.Browser);
-            foreach (var message in messages)
-            {
-                Assert.DoesNotContain(log, entry => entry.Message.Contains(message));
-            }
+            AssertInteractivityIsMaintained();
         }
 
         private string GetTextAreaValueFromBrowser()
@@ -202,7 +176,23 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         private void FocusAway()
         {
             var focusAwayBtn = Browser.Exists(By.Id("focusAwayBtn"));
+            Assert.NotNull(focusAwayBtn);
             focusAwayBtn.Click();
+        }
+
+        private void AssertInteractivityIsMaintained()
+        {
+            var interactivityCounter = Browser.Exists(By.Id("interactivityCounter"));
+            Assert.NotNull(interactivityCounter);
+            var initialCount = Convert.ToInt32(interactivityCounter.GetAttribute("innerHTML"));
+
+            var incrementInteractivityCounterBtn = Browser.Exists(By.Id("incrementInteractivityCounterBtn"));
+            Assert.NotNull(incrementInteractivityCounterBtn);
+            incrementInteractivityCounterBtn.Click();
+
+            var incrementedCount = Convert.ToInt32(interactivityCounter.GetAttribute("innerHTML"));
+
+            Assert.Equal(initialCount + 1, incrementedCount);
         }
     }
 }
