@@ -346,15 +346,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Determine what compiler and versions of the language to target. For 2.x targeting projects, these are carried by packages referenced by the project. Use this -->
 
-  <!-- Use the 2.x compiler if we're building an application that references Microsoft.AspNetCore.Razor.Design. -->
-  <Import Project="$(RazorCodeGenerationTargetsPath)"
-    Condition="'$(IsRazorCompilerReferenced)' == 'true' AND '$(RazorCodeGenerationTargetsPath)' != '' AND Exists('$(RazorCodeGenerationTargetsPath)')" />
-
   <!-- When targeting 3.x and later projects, we have to infer configuration by inspecting the project. -->
   <Import Project="Microsoft.NET.Sdk.Razor.Configuration.targets" Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true'" />
 
-  <!-- For projects targeting 3.x and later, use the compiler that ships in the SDK -->
-  <Import Project="Microsoft.NET.Sdk.Razor.CodeGeneration.targets" Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true'" />
+  <Import Project="Microsoft.NET.Sdk.Razor.CodeGeneration.targets" />
 
   <Import Project="Microsoft.NET.Sdk.Razor.Component.targets" Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true'" />
 

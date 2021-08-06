@@ -8,7 +8,7 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.Razor.Tasks
 {
-    public class RazorTagHelper : DotNetToolTask
+    public class SdkRazorTagHelper : DotNetToolTask
     {
         private const string Identity = "Identity";
         private const string AssemblyName = "AssemblyName";
