@@ -140,8 +140,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             }
             while (currentTypeInfo != objectTypeInfo);
 
-            // CoreCLR returns IEnumerable<Attribute> from GetCustomAttributes - the OfType<object>
-            // is needed to so that the result of ToArray() is object
             var attributes = typeInfo.GetCustomAttributes(inherit: true);
 
             // This is fairly complicated so that we maintain referential equality between items in
@@ -281,8 +279,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 return null;
             }
 
-            // CoreCLR returns IEnumerable<Attribute> from GetCustomAttributes - the OfType<object>
-            // is needed to so that the result of ToArray() is object
             var attributes = methodInfo.GetCustomAttributes(inherit: true);
 
             var actionModel = new ActionModel(methodInfo, attributes);

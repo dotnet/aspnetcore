@@ -22,13 +22,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
             Dispatcher dispatcher,
             IpcSender ipcSender,
             ILoggerFactory loggerFactory,
-            ElementReferenceContext elementReferenceContext) :
-            base(serviceProvider, loggerFactory)
+            WebViewJSRuntime jsRuntime,
+            JSComponentInterop jsComponentInterop) :
+            base(serviceProvider, loggerFactory, jsRuntime.ReadJsonSerializerOptions(), jsComponentInterop)
         {
             _dispatcher = dispatcher;
             _ipcSender = ipcSender;
 
-            ElementReferenceContext = elementReferenceContext;
+            ElementReferenceContext = jsRuntime.ElementReferenceContext;
         }
 
         public override Dispatcher Dispatcher => _dispatcher;
@@ -69,12 +70,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
 
         public new void RemoveRootComponent(int componentId)
            => base.RemoveRootComponent(componentId);
-
-        public ValueTask InitializeJSComponentSupportAsync(JSComponentConfigurationStore configuration, JsonSerializerOptions jsonOptions)
-        {
-            var interop = new JSComponentInterop(configuration, jsonOptions);
-            return InitializeJSComponentSupportAsync(interop);
-        }
 
         public void NotifyRenderCompleted(long batchId)
         {

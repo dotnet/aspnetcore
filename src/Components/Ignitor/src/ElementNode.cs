@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.SignalR.Client;
 
@@ -62,21 +63,31 @@ namespace Ignitor
             _events[eventName] = descriptor;
         }
 
-        internal Task SelectAsync(HubConnection connection, string value)
+        class TestChangeEventArgs : EventArgs
+        {
+            public object? Value { get; set; }
+        }
+
+        class TestMouseEventArgs : EventArgs
+        {
+            public string? Type { get; set; }
+            public int Detail { get; set; }
+        }
+
+        internal Task SelectAsync(BlazorClient client, string value)
         {
             if (!Events.TryGetValue("change", out var changeEventDescriptor))
             {
                 throw new InvalidOperationException("Element does not have a change event.");
             }
 
-            var args = new
+            var args = new TestChangeEventArgs
             {
                 Value = value
             };
 
             var webEventDescriptor = new WebEventDescriptor
             {
-                BrowserRendererId = 0,
                 EventHandlerId = changeEventDescriptor.EventId,
                 EventName = "change",
                 EventFieldInfo = new EventFieldInfo
@@ -86,36 +97,32 @@ namespace Ignitor
                 }
             };
 
-            return DispatchEventCore(connection, Serialize(webEventDescriptor), Serialize(args));
+            return DispatchEventCore(client, webEventDescriptor, args);
         }
 
-        public Task ClickAsync(HubConnection connection)
+        public Task ClickAsync(BlazorClient client)
         {
             if (!Events.TryGetValue("click", out var clickEventDescriptor))
             {
                 throw new InvalidOperationException("Element does not have a click event.");
             }
 
-            var mouseEventArgs = new
+            var mouseEventArgs = new TestMouseEventArgs
             {
                 Type = clickEventDescriptor.EventName,
                 Detail = 1
             };
             var webEventDescriptor = new WebEventDescriptor
             {
-                BrowserRendererId = 0,
                 EventHandlerId = clickEventDescriptor.EventId,
                 EventName = "click",
             };
 
-            return DispatchEventCore(connection, Serialize(webEventDescriptor), Serialize(mouseEventArgs));
+            return DispatchEventCore(client, webEventDescriptor, mouseEventArgs);
         }
 
-        private static byte[] Serialize<T>(T payload) =>
-             JsonSerializer.SerializeToUtf8Bytes(payload, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-
-        private static Task DispatchEventCore(HubConnection connection, byte[] descriptor, byte[] eventArgs) =>
-            connection.InvokeAsync("DispatchBrowserEvent", descriptor, eventArgs);
+        private static Task DispatchEventCore(BlazorClient client, WebEventDescriptor descriptor, EventArgs eventArgs) =>
+            client.DispatchEventAsync(descriptor, eventArgs);
 
         public class ElementEventDescriptor
         {

@@ -110,11 +110,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     await OnCircuitOpenedAsync(cancellationToken);
                     await OnConnectionUpAsync(cancellationToken);
 
-                    // From this point onwards, JavaScript code can add root components if configured
-                    await Renderer.InitializeJSComponentSupportAsync(
-                        _options.RootComponents.JSComponents,
-                        JSRuntime.ReadJsonSerializerOptions());
-
                     // Here, we add each root component but don't await the returned tasks so that the
                     // components can be processed in parallel.
                     var count = Descriptors.Count;
@@ -450,39 +445,23 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
-        public async Task<int> SendDotNetStreamAsync(DotNetStreamReference dotNetStreamReference, byte[] buffer)
+        public async Task<int> SendDotNetStreamAsync(DotNetStreamReference dotNetStreamReference, long streamId, byte[] buffer)
         {
             AssertInitialized();
             AssertNotDisposed();
 
-            int bytesRead = 0;
-
             try
             {
-                return await Renderer.Dispatcher.InvokeAsync<int>(async () =>
-                {
-
-                    bytesRead = await dotNetStreamReference.Stream.ReadAsync(buffer);
-
-                    Log.SendDotNetStreamSuccess(_logger, 0);
-                    return bytesRead;
-                });
+                return await Renderer.Dispatcher.InvokeAsync<int>(async () => await dotNetStreamReference.Stream.ReadAsync(buffer));
             }
             catch (Exception ex)
             {
                 // An error completing stream interop means that the user sent invalid data, a well-behaved
                 // client won't do this.
-                Log.SendDotNetStreamException(_logger, 0, ex);
+                Log.SendDotNetStreamException(_logger, streamId, ex);
                 await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, "Unable to send .NET stream."));
                 UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
                 return 0;
-            }
-            finally
-            {
-                if (bytesRead == 0 && dotNetStreamReference is not null && !dotNetStreamReference.LeaveOpen)
-                {
-                    dotNetStreamReference.Stream?.Dispose();
-                }
             }
         }
 
@@ -510,52 +489,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 // An error completing stream interop means that the user sent invalid data, a well-behaved
                 // client won't do this.
                 Log.SendDotNetStreamException(_logger, streamId, ex);
-                await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, "Unable to send .NET stream."));
+                await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, "Unable to locate .NET stream."));
                 UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
                 return default;
-            }
-        }
-
-        // DispatchEvent is used in a fire-and-forget context, so it's responsible for its own
-        // error handling.
-        public async Task DispatchEvent(JsonElement eventDescriptorJson, JsonElement eventArgsJson)
-        {
-            AssertInitialized();
-            AssertNotDisposed();
-
-            WebEventData webEventData;
-            try
-            {
-                // JsonSerializerOptions are tightly bound to the JsonContext. Cache it on first use using a copy
-                // of the serializer settings.
-                webEventData = WebEventData.Parse(Renderer, JSRuntime.ReadJsonSerializerOptions(), eventDescriptorJson, eventArgsJson);
-            }
-            catch (Exception ex)
-            {
-                // Invalid event data is fatal. We expect a well-behaved client to send valid JSON.
-                Log.DispatchEventFailedToParseEventData(_logger, ex);
-                await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, "Bad input data."));
-                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
-                return;
-            }
-
-            try
-            {
-                await Renderer.Dispatcher.InvokeAsync(() =>
-                {
-                    return Renderer.DispatchEventAsync(
-                        webEventData.EventHandlerId,
-                        webEventData.EventFieldInfo,
-                        webEventData.EventArgs);
-                });
-            }
-            catch (Exception ex)
-            {
-                // A failure in dispatching an event means that it was an attempt to use an invalid event id.
-                // A well-behaved client won't do this.
-                Log.DispatchEventFailedToDispatchEvent(_logger, webEventData.EventHandlerId.ToString(CultureInfo.InvariantCulture), ex);
-                await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, "Failed to dispatch event."));
-                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
             }
         }
 
@@ -734,7 +670,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             private static readonly Action<ILogger, long, Exception> _receiveByteArraySuccess;
             private static readonly Action<ILogger, long, Exception> _receiveByteArrayException;
             private static readonly Action<ILogger, long, Exception> _receiveJSDataChunkException;
-            private static readonly Action<ILogger, long, Exception> _sendDotNetStreamSuccess;
             private static readonly Action<ILogger, long, Exception> _sendDotNetStreamException;
             private static readonly Action<ILogger, Exception> _dispatchEventFailedToParseEventData;
             private static readonly Action<ILogger, string, Exception> _dispatchEventFailedToDispatchEvent;
@@ -781,8 +716,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 public static readonly EventId ReceiveByteArraySucceeded = new EventId(213, "ReceiveByteArraySucceeded");
                 public static readonly EventId ReceiveByteArrayException = new EventId(214, "ReceiveByteArrayException");
                 public static readonly EventId ReceiveJSDataChunkException = new EventId(215, "ReceiveJSDataChunkException");
-                public static readonly EventId SendDotNetStreamSucceeded = new EventId(216, "SendDotNetStreamSucceeded");
-                public static readonly EventId SendDotNetStreamException = new EventId(217, "SendDotNetStreamException");
+                public static readonly EventId SendDotNetStreamException = new EventId(216, "SendDotNetStreamException");
             }
 
             static Log()
@@ -917,11 +851,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                    EventIds.ReceiveJSDataChunkException,
                    "The ReceiveJSDataChunk call with stream id '{streamId}' failed.");
 
-                _sendDotNetStreamSuccess = LoggerMessage.Define<long>(
-                    LogLevel.Debug,
-                    EventIds.SendDotNetStreamSucceeded,
-                    "The SendDotNetStreamAsync call with id '{id}' succeeded.");
-
                 _sendDotNetStreamException = LoggerMessage.Define<long>(
                     LogLevel.Debug,
                     EventIds.SendDotNetStreamException,
@@ -992,7 +921,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             public static void ReceiveByteArraySuccess(ILogger logger, long id) => _receiveByteArraySuccess(logger, id, null);
             public static void ReceiveByteArrayException(ILogger logger, long id, Exception ex) => _receiveByteArrayException(logger, id, ex);
             public static void ReceiveJSDataChunkException(ILogger logger, long streamId, Exception ex) => _receiveJSDataChunkException(logger, streamId, ex);
-            public static void SendDotNetStreamSuccess(ILogger logger, long id) => _sendDotNetStreamSuccess(logger, id, null);
             public static void SendDotNetStreamException(ILogger logger, long streamId, Exception ex) => _sendDotNetStreamException(logger, streamId, ex);
             public static void DispatchEventFailedToParseEventData(ILogger logger, Exception ex) => _dispatchEventFailedToParseEventData(logger, ex);
             public static void DispatchEventFailedToDispatchEvent(ILogger logger, string eventHandlerId, Exception ex) => _dispatchEventFailedToDispatchEvent(logger, eventHandlerId ?? "", ex);

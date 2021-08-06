@@ -262,7 +262,6 @@ namespace Microsoft.AspNetCore.Tests
             };
 
             var builder = new WebApplicationBuilder(
-                typeof(WebApplicationTests).Assembly,
                 options,
                 bootstrapBuilder =>
                 {
@@ -299,7 +298,6 @@ namespace Microsoft.AspNetCore.Tests
             };
 
             var builder = new WebApplicationBuilder(
-                typeof(WebApplicationTests).Assembly,
                 options,
                 bootstrapBuilder =>
                 {
@@ -333,7 +331,6 @@ namespace Microsoft.AspNetCore.Tests
             };
 
             var builder = new WebApplicationBuilder(
-                typeof(WebApplicationTests).Assembly,
                 options,
                 bootstrapBuilder =>
                 {
@@ -351,9 +348,45 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
-        public void WebApplicationBuilderApplicationNameCanBeOverridden()
+        public void WebApplicationBuilderApplicationNameDefaultsToEntryAssembly()
         {
             var assemblyName = Assembly.GetEntryAssembly().GetName().Name;
+
+            var builder = new WebApplicationBuilder(
+                new(),
+                bootstrapBuilder =>
+                {
+                    // Verify the defaults observed by the boostrap host builder we use internally to populate
+                    // the defaults
+                    bootstrapBuilder.ConfigureAppConfiguration((context, config) =>
+                    {
+                        Assert.Equal(assemblyName, context.HostingEnvironment.ApplicationName);
+                    });
+                });
+
+            Assert.Equal(assemblyName, builder.Environment.ApplicationName);
+            builder.Host.ConfigureAppConfiguration((context, config) =>
+            {
+                Assert.Equal(assemblyName, context.HostingEnvironment.ApplicationName);
+            });
+
+            builder.WebHost.ConfigureAppConfiguration((context, config) =>
+            {
+                Assert.Equal(assemblyName, context.HostingEnvironment.ApplicationName);
+            });
+
+            var app = builder.Build();
+            var hostEnv = app.Services.GetRequiredService<IHostEnvironment>();
+            var webHostEnv = app.Services.GetRequiredService<IWebHostEnvironment>();
+
+            Assert.Equal(assemblyName, hostEnv.ApplicationName);
+            Assert.Equal(assemblyName, webHostEnv.ApplicationName);
+        }
+
+        [Fact]
+        public void WebApplicationBuilderApplicationNameCanBeOverridden()
+        {
+            var assemblyName = typeof(WebApplicationTests).Assembly.GetName().Name;
 
             var options = new WebApplicationOptions
             {
@@ -361,7 +394,6 @@ namespace Microsoft.AspNetCore.Tests
             };
 
             var builder = new WebApplicationBuilder(
-                typeof(WebApplicationTests).Assembly,
                 options,
                 bootstrapBuilder =>
                 {

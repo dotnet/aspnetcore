@@ -37,8 +37,9 @@ Microsoft.AspNetCore.Components.Forms.InputTextArea.Element.set -> void
 *REMOVED*static Microsoft.AspNetCore.Components.Forms.BrowserFileExtensions.RequestImageFileAsync(this Microsoft.AspNetCore.Components.Forms.IBrowserFile! browserFile, string! format, int maxWith, int maxHeight) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Forms.IBrowserFile!>
 Microsoft.AspNetCore.Components.RenderTree.WebRenderer
 Microsoft.AspNetCore.Components.RenderTree.WebRenderer.AddRootComponent(System.Type! componentType, string! domElementSelector) -> int
-Microsoft.AspNetCore.Components.RenderTree.WebRenderer.InitializeJSComponentSupportAsync(Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop! interop) -> System.Threading.Tasks.ValueTask
-Microsoft.AspNetCore.Components.RenderTree.WebRenderer.WebRenderer(System.IServiceProvider! serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.Components.RenderTree.WebRenderer.RendererId.get -> int
+Microsoft.AspNetCore.Components.RenderTree.WebRenderer.RendererId.init -> void
+Microsoft.AspNetCore.Components.RenderTree.WebRenderer.WebRenderer(System.IServiceProvider! serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, System.Text.Json.JsonSerializerOptions! jsonOptions, Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop! jsComponentInterop) -> void
 Microsoft.AspNetCore.Components.Routing.FocusOnNavigate
 Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.FocusOnNavigate() -> void
 Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.RouteData.get -> Microsoft.AspNetCore.Components.RouteData?
@@ -55,6 +56,8 @@ Microsoft.AspNetCore.Components.Web.HeadOutlet
 Microsoft.AspNetCore.Components.Web.HeadOutlet.HeadOutlet() -> void
 Microsoft.AspNetCore.Components.Web.IErrorBoundaryLogger
 Microsoft.AspNetCore.Components.Web.IErrorBoundaryLogger.LogErrorAsync(System.Exception! exception) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.JSComponentInterop(Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore! configuration) -> void
+Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.SetRootComponentParameters(int componentId, int parameterCount, System.Text.Json.JsonElement parametersJson, System.Text.Json.JsonSerializerOptions! jsonOptions) -> void
 Microsoft.AspNetCore.Components.Web.JSComponentConfigurationExtensions
 Microsoft.AspNetCore.Components.Web.MouseEventArgs.PageX.get -> double
 Microsoft.AspNetCore.Components.Web.MouseEventArgs.PageX.set -> void
@@ -63,9 +66,6 @@ Microsoft.AspNetCore.Components.Web.MouseEventArgs.PageY.set -> void
 Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration
 Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration.JSComponents.get -> Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore!
 Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop
-Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.Dispose() -> void
-Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.JSComponentInterop(Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore! configuration, System.Text.Json.JsonSerializerOptions! jsonOptions) -> void
-Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.SetRootComponentParameters(int componentId, int parameterCount, byte[]! parametersJsonUtf8) -> void
 Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore
 Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore.JSComponentConfigurationStore() -> void
 Microsoft.AspNetCore.Components.Web.PageTitle
@@ -76,6 +76,7 @@ override Microsoft.AspNetCore.Components.Forms.InputDate<TValue>.OnParametersSet
 abstract Microsoft.AspNetCore.Components.RenderTree.WebRenderer.AttachRootComponentToBrowser(int componentId, string! domElementSelector) -> void
 override Microsoft.AspNetCore.Components.Forms.InputLargeTextArea.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 override Microsoft.AspNetCore.Components.Forms.InputLargeTextArea.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Microsoft.AspNetCore.Components.RenderTree.WebRenderer.Dispose(bool disposing) -> void
 override Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.Routing.FocusOnNavigate.OnParametersSet() -> void
 override Microsoft.AspNetCore.Components.Web.ErrorBoundary.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
@@ -92,3 +93,5 @@ static Microsoft.AspNetCore.Components.Web.JSComponentConfigurationExtensions.Re
 static Microsoft.AspNetCore.Components.Web.JSComponentConfigurationExtensions.RegisterForJavaScript<TComponent>(this Microsoft.AspNetCore.Components.Web.IJSComponentConfiguration! configuration, string! identifier, string! javaScriptInitializer) -> void
 virtual Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.AddRootComponent(string! identifier, string! domElementSelector) -> int
 virtual Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.RemoveRootComponent(int componentId) -> void
+*REMOVED*Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.BrowserRendererId.get -> int
+*REMOVED*Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.BrowserRendererId.set -> void
