@@ -73,11 +73,7 @@
     "NoHttps": {
       "longName": "no-https",
       "shortName": ""
-    },
-    "RazorRuntimeCompilation": {
-      "longName": "razor-runtime-compilation",
-      "shortName": "rrc"
-    },
+    },,
     "CalledApiUrl": {
         "longName": "called-api-url",
         "shortName": ""
