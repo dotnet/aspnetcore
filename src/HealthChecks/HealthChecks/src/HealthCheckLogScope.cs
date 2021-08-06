@@ -7,11 +7,11 @@ using System.Collections.Generic;
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks
 {
-    internal class HealthCheckLogScope : IReadOnlyList<KeyValuePair<string, object>>
+    internal readonly struct HealthCheckLogScope : IReadOnlyList<KeyValuePair<string, object>>
     {
-        public string HealthCheckName { get; }
+        private readonly string _healthCheckName;
 
-        int IReadOnlyCollection<KeyValuePair<string, object>>.Count { get; } = 1;
+        int IReadOnlyCollection<KeyValuePair<string, object>>.Count => 1;
 
         KeyValuePair<string, object> IReadOnlyList<KeyValuePair<string, object>>.this[int index]
         {
@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             {
                 if (index == 0)
                 {
-                    return new KeyValuePair<string, object>(nameof(HealthCheckName), HealthCheckName);
+                    return new KeyValuePair<string, object>("HealthCheckName", _healthCheckName);
                 }
 
                 throw new ArgumentOutOfRangeException(nameof(index));
@@ -32,12 +32,12 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         /// <param name="healthCheckName">The name of the health check being executed.</param>
         public HealthCheckLogScope(string healthCheckName)
         {
-            HealthCheckName = healthCheckName;
+            _healthCheckName = healthCheckName;
         }
 
         IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()
         {
-            yield return new KeyValuePair<string, object>(nameof(HealthCheckName), HealthCheckName);
+            yield return new KeyValuePair<string, object>("HealthCheckName", _healthCheckName);
         }
 
         IEnumerator IEnumerable.GetEnumerator()

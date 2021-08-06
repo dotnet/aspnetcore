@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             _notMostEffectiveFilter(logger, policyType, null);
         }
 
-        private class ViewComponentLogScope : IReadOnlyList<KeyValuePair<string, object>>
+        private readonly struct ViewComponentLogScope : IReadOnlyList<KeyValuePair<string, object>>
         {
             private readonly ViewComponentDescriptor _descriptor;
 
