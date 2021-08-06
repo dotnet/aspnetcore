@@ -74,7 +74,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
             Assert.Equal("hello, world", await responseMessage.Content.ReadAsStringAsync());
 
             Assert.NotNull(connectionIdFromFeature);
-            Assert.NotNull(mockScopeLoggerProvider.ConnectionLogScope);
             Assert.Equal(connectionIdFromFeature, mockScopeLoggerProvider.ConnectionLogScope[0].Value);
         }
 
@@ -133,7 +132,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
                     _loggerProvider._scopeProvider?.ForEachScope(
                         (scopeObject, loggerPovider) =>
                         {
-                             loggerPovider.ConnectionLogScope ??= scopeObject as ConnectionLogScope;
+                            if (scopeObject is ConnectionLogScope connectionLogScope)
+                            {
+                                loggerPovider.ConnectionLogScope = connectionLogScope;
+                            }
                         },
                         _loggerProvider);
                 }
