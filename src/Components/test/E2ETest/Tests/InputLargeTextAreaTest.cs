@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var textErrorFromComponent = Browser.Exists(By.Id("getTextError"), TimeSpan.FromSeconds(10));
             Assert.NotNull(textErrorFromComponent);
 
-            var expectedError = "The incoming data stream of length 50000 exceeds the maximum allowed length 32000. (Parameter 'maxAllowedSize')";
+            var expectedError = "The incoming data stream of length 50000 exceeds the maximum allowed length 32000.";
             Browser.Contains(expectedError, () => textErrorFromComponent.GetAttribute("innerHTML"));
 
             FocusAway();
