@@ -11,7 +11,9 @@ namespace Microsoft.AspNetCore.Builder
     {
         private readonly IList<string> _initializers;
 
-        public CircuitJavaScriptInitializationMiddleware(IOptions<CircuitOptions> options)
+        // We don't need the request delegate for anything, however we need to inject it to satisfy the middleware
+        // contract.
+        public CircuitJavaScriptInitializationMiddleware(IOptions<CircuitOptions> options, RequestDelegate _)
         {
             _initializers = options.Value.JavaScriptInitializers;
         }

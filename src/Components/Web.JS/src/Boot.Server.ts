@@ -13,7 +13,7 @@ import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnect
 import { attachRootComponentToLogicalElement } from './Rendering/Renderer';
 import { discoverComponents, discoverPersistedState, ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { sendJSDataStream } from './Platform/Circuits/CircuitStreamingInterop';
-import { JSInitializers } from './JSInitializers';
+import { JSInitializer } from './JSInitializers';
 
 let renderingFailed = false;
 let started = false;
@@ -33,7 +33,8 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
   });
 
   const initializers: string[] = await jsInitializersResponse.json();
-  const afterStartedCallbacks = await JSInitializers.invokeInitializersAsync(initializers, [options]);
+  const jsInitializer = new JSInitializer();
+  await jsInitializer.importInitializersAsync(initializers, [options]);
 
   const logger = new ConsoleLogger(options.logLevel);
   Blazor.defaultReconnectionHandler = new DefaultReconnectionHandler(logger);
@@ -66,8 +67,6 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
 
     options.reconnectionHandler!.onConnectionUp();
 
-    Promise.all(afterStartedCallbacks.map(c => c(Blazor)));
-
     return true;
   };
 
@@ -88,6 +87,8 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
   Blazor.reconnect = reconnect;
 
   logger.log(LogLevel.Information, 'Blazor server-side application started.');
+
+  jsInitializer.invokeAfterStartedCallbacks(Blazor);
 }
 
 async function initializeConnection(options: CircuitStartOptions, logger: Logger, circuit: CircuitDescriptor): Promise<HubConnection> {
