@@ -124,6 +124,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             }
         }
 
+        [Fact]
         [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "All.OSX")]
         public void EnsureCreateHttpsCertificate_DoesNotCreateACertificate_WhenThereIsAnExistingHttpsCertificates()
         {
@@ -156,7 +157,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "All.OSX")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720")]
         public void EnsureCreateHttpsCertificate_CanExportTheCertInPemFormat()
         {
             // Arrange
@@ -190,8 +191,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             Assert.Equal(httpsCertificate.GetCertHashString(), exportedCertificate.GetCertHashString());
         }
 
-        [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "All.OSX")]
+        [Fact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720")]
         public void EnsureCreateHttpsCertificate_CanExportTheCertInPemFormat_WithoutKey()
         {
             // Arrange
