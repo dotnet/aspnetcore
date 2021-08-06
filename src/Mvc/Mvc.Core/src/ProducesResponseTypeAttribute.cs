@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public class ProducesResponseTypeAttribute : Attribute, IApiResponseMetadataProvider
     {
-        private readonly MediaTypeCollection _contentTypes = new();
+        private readonly MediaTypeCollection? _contentTypes;
 
         /// <summary>
         /// Initializes an instance of <see cref="ProducesResponseTypeAttribute"/>.
@@ -89,15 +89,18 @@ namespace Microsoft.AspNetCore.Mvc
         internal bool IsResponseTypeSetByDefault { get; }
 
         // Internal for testing
-        internal MediaTypeCollection ContentTypes => _contentTypes;
+        internal MediaTypeCollection? ContentTypes => _contentTypes;
 
         /// <inheritdoc />
         void IApiResponseMetadataProvider.SetContentTypes(MediaTypeCollection contentTypes)
         {
-            contentTypes.Clear();
-            foreach (var contentType in _contentTypes)
+            if (_contentTypes is not null)
             {
-                contentTypes.Add(contentType);
+                contentTypes.Clear();
+                foreach (var contentType in _contentTypes)
+                {
+                    contentTypes.Add(contentType);
+                }
             }
         }
 

@@ -468,7 +468,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 {
                     Assert.Equal(typeof(HttpValidationProblemDetails), responseType.Type);
                     Assert.Equal(400, responseType.StatusCode);
-                    Assert.Equal(new[] { "application/problem+json" }, GetSortedMediaTypes(responseType));
+                    Assert.Equal(new[] { "application/validationproblem+json" }, GetSortedMediaTypes(responseType));
                 },
                 responseType =>
                 {

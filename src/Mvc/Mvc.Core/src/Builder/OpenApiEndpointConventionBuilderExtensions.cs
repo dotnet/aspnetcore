@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Http
 
         /// <summary>
         /// Adds the <see cref="ProducesResponseTypeAttribute"/> with a <see cref="ProblemDetails"/> type
-        /// to <see cref="EndpointBuilder.Metadata"/> for all builders produced by <paramref name="builder"/>. 
+        /// to <see cref="EndpointBuilder.Metadata"/> for all builders produced by <paramref name="builder"/>.
         /// </summary>
         /// <param name="builder">The <see cref="MinimalActionEndpointConventionBuilder"/>.</param>
         /// <param name="statusCode">The response status code.</param>
@@ -91,23 +91,33 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>A <see cref="MinimalActionEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static MinimalActionEndpointConventionBuilder ProducesProblem(this MinimalActionEndpointConventionBuilder builder,
             int statusCode,
-            string contentType = "application/problem+json")
+            string? contentType = null)
         {
+            if (string.IsNullOrEmpty(contentType))
+            {
+                contentType = "application/problem+json";
+            }
+
             return Produces<ProblemDetails>(builder, statusCode, contentType);
         }
 
         /// <summary>
         /// Adds the <see cref="ProducesResponseTypeAttribute"/> with a <see cref="HttpValidationProblemDetails"/> type
-        /// to <see cref="EndpointBuilder.Metadata"/> for all builders produced by <paramref name="builder"/>. 
+        /// to <see cref="EndpointBuilder.Metadata"/> for all builders produced by <paramref name="builder"/>.
         /// </summary>
         /// <param name="builder">The <see cref="MinimalActionEndpointConventionBuilder"/>.</param>
         /// <param name="statusCode">The response status code. Defaults to StatusCodes.Status400BadRequest.</param>
-        /// <param name="contentType">The response content type. Defaults to "application/problem+json".</param>
+        /// <param name="contentType">The response content type. Defaults to "application/validationproblem+json".</param>
         /// <returns>A <see cref="MinimalActionEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static MinimalActionEndpointConventionBuilder ProducesValidationProblem(this MinimalActionEndpointConventionBuilder builder,
             int statusCode = StatusCodes.Status400BadRequest,
-            string contentType = "application/problem+json")
+            string? contentType = null)
         {
+            if (string.IsNullOrEmpty(contentType))
+            {
+                contentType = "application/validationproblem+json";
+            }
+
             return Produces<HttpValidationProblemDetails>(builder, statusCode, contentType);
         }
     }

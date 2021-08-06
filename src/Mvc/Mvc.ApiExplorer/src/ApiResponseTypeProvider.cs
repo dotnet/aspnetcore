@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 contentTypes.Add((string)null!);
             }
 
-            foreach(var apiResponse in responseTypes)
+            foreach (var apiResponse in responseTypes)
             {
                 CalculateResponseFormatForType(apiResponse, contentTypes, responseTypeMetadataProviders, _modelMetadataProvider);
             }
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Type defaultErrorType,
             MediaTypeCollection contentTypes,
             IEnumerable<IApiResponseTypeMetadataProvider>? responseTypeMetadataProviders = null,
-            IModelMetadataProvider? _modelMetadataProvider = null)
+            IModelMetadataProvider? modelMetadataProvider = null)
         {
             var results = new Dictionary<int, ApiResponseType>();
 
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     {
                         var attributeContentTypes = new MediaTypeCollection();
                         metadataAttribute.SetContentTypes(attributeContentTypes);
-                        CalculateResponseFormatForType(apiResponseType, attributeContentTypes, responseTypeMetadataProviders, _modelMetadataProvider);
+                        CalculateResponseFormatForType(apiResponseType, attributeContentTypes, responseTypeMetadataProviders, modelMetadataProvider);
                     }
 
                     if (apiResponseType.Type != null)
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             return results.Values.ToList();
         }
 
-        private static void CalculateResponseFormatForType(ApiResponseType apiResponse, MediaTypeCollection declaredContentTypes, IEnumerable<IApiResponseTypeMetadataProvider>? responseTypeMetadataProviders, IModelMetadataProvider? _modelMetadataProvider)
+        private static void CalculateResponseFormatForType(ApiResponseType apiResponse, MediaTypeCollection declaredContentTypes, IEnumerable<IApiResponseTypeMetadataProvider>? responseTypeMetadataProviders, IModelMetadataProvider? modelMetadataProvider)
         {
             // If response formats have already been calculate for this type,
             // then exit early. This avoids populating the ApiResponseFormat for
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 return;
             }
 
-            apiResponse.ModelMetadata = _modelMetadataProvider?.GetMetadataForType(responseType);
+            apiResponse.ModelMetadata = modelMetadataProvider?.GetMetadataForType(responseType);
 
             foreach (var contentType in declaredContentTypes)
             {

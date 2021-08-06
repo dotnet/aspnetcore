@@ -65,8 +65,7 @@ namespace Microsoft.AspNetCore.Mvc
             var producesResponseTypeAttribute = new ProducesResponseTypeAttribute(typeof(Person), StatusCodes.Status200OK);
 
             // Act and Assert
-            Assert.NotNull(producesResponseTypeAttribute.ContentTypes);
-            Assert.Empty(producesResponseTypeAttribute.ContentTypes);
+            Assert.Null(producesResponseTypeAttribute.ContentTypes);
         }
 
         private class Person

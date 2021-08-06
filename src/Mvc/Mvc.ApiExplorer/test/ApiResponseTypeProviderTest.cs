@@ -710,7 +710,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
-        public void ApiAction_HandlesContentTypesAndStatusCodes()
+        public void GetApiResponseTypes_HandlesActionWithMultipleContentTypesAndProduces()
         {
             // Arrange
             var actionDescriptor = GetControllerActionDescriptor(typeof(TestController), nameof(TestController.GetUser));
