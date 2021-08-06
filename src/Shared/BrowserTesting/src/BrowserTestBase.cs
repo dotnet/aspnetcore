@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.BrowserTesting
             return builder.Build();
         }
 
-        public virtual Task DisposeAsync() => BrowserManager.DisposeAsync();
+        public virtual Task DisposeAsync() => BrowserManager?.DisposeAsync();
 
         private ITestOutputHelper _output;
         public ITestOutputHelper Output
