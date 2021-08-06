@@ -30,7 +30,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         internal readonly Dictionary<long, IHttp3Stream> _streams = new Dictionary<long, IHttp3Stream>();
         internal IHttp3StreamLifetimeHandler _streamLifetimeHandler;
 
-        private long _highestOpenedStreamId;
+        // The highest opened request stream ID is sent with GOAWAY. The GOAWAY
+        // value will signal to the peer to discard all requests with that value or greater.
+        // When this value is sent, 4 will be added. We want 0 to be sent for no requests,
+        // so start highest opened request stream ID at -4 .
+        private long _highestOpenedRequestStreamId = -4;
+
         private readonly object _sync = new object();
         private readonly MultiplexedConnectionContext _multiplexedContext;
         private readonly HttpMultiplexedConnectionContext _context;
@@ -40,7 +45,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private int _stoppedAcceptingStreams;
         private bool _gracefulCloseStarted;
         private int _activeRequestCount;
-        private readonly CancellationTokenSource _allRequestsCompleted;
         private readonly Http3PeerSettings _serverSettings = new Http3PeerSettings();
         private readonly Http3PeerSettings _clientSettings = new Http3PeerSettings();
         private readonly StreamCloseAwaitable _streamCompletionAwaitable = new StreamCloseAwaitable();
@@ -51,7 +55,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _multiplexedContext = (MultiplexedConnectionContext)context.ConnectionContext;
             _context = context;
             _streamLifetimeHandler = this;
-            _allRequestsCompleted = new CancellationTokenSource();
 
             _errorCodeFeature = context.ConnectionFeatures.Get<IProtocolErrorCodeFeature>()!;
 
@@ -61,21 +64,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _serverSettings.MaxRequestHeaderFieldSectionSize = (uint)httpLimits.MaxRequestHeadersTotalSize;
         }
 
-        private void UpdateHighestStreamId(long streamId)
+        private void UpdateHighestOpenedRequestStreamId(long streamId)
         {
             // Only one thread will update the highest stream ID value at a time.
             // Additional thread safty not required.
 
-            if (_highestOpenedStreamId >= streamId)
+            if (_highestOpenedRequestStreamId >= streamId)
             {
                 // Double check here incase the streams are received out of order.
                 return;
             }
 
-            _highestOpenedStreamId = streamId;
+            _highestOpenedRequestStreamId = streamId;
         }
 
-        private long GetHighestStreamId() => Interlocked.Read(ref _highestOpenedStreamId);
+        private long GetHighestStreamId() => Interlocked.Read(ref _highestOpenedRequestStreamId);
+        // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-5.2-2
+        private long GetCurrentGoAwayStreamId() => GetHighestStreamId() + 4;
 
         private IKestrelTrace Log => _context.ServiceContext.Log;
         public KestrelServerLimits Limits => _context.ServiceContext.ServerOptions.Limits;
@@ -153,7 +158,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 if (TryStopAcceptingStreams())
                 {
-                    SendGoAwayAsync(GetHighestStreamId()).Preserve();
+                    SendGoAwayAsync(GetCurrentGoAwayStreamId()).Preserve();
                 }
 
                 _multiplexedContext.Abort(ex);
@@ -237,7 +242,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 while (true)
                 {
-                    var streamContext = await _multiplexedContext.AcceptAsync(_allRequestsCompleted.Token);
+                    var streamContext = await _multiplexedContext.AcceptAsync();
 
                     try
                     {
@@ -273,7 +278,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                             }
 
                             // Request stream IDs are tracked.
-                            UpdateHighestStreamId(streamIdFeature.StreamId);
+                            UpdateHighestOpenedRequestStreamId(streamIdFeature.StreamId);
 
                             // Request stream
                             var persistentStateFeature = streamContext.Features.Get<IPersistentStateFeature>();
@@ -348,7 +353,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     // Only send goaway if the connection close was initiated on the server.
                     if (!clientAbort)
                     {
-                        await SendGoAwayAsync(GetHighestStreamId());
+                        await SendGoAwayAsync(GetCurrentGoAwayStreamId());
                     }
 
                     // Abort active request streams.
@@ -449,7 +454,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 {
                     if (TryStopAcceptingStreams())
                     {
-                        SendGoAwayAsync(_highestOpenedStreamId).Preserve();
+                        SendGoAwayAsync(GetCurrentGoAwayStreamId()).Preserve();
                     }
                 }
             }
@@ -583,16 +588,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     _activeRequestCount--;
                 }
                 _streams.Remove(stream.StreamId);
-
-                if (stream.IsRequestStream)
-                {
-                    // Connection is gracefully closing and this is the final request.
-                    // Trigger cancellation token to cause AcceptAsync to exit.
-                    if (_gracefulCloseStarted && _activeRequestCount == 0)
-                    {
-                        _allRequestsCompleted.Cancel();
-                    }
-                }
             }
 
             if (stream.IsRequestStream)

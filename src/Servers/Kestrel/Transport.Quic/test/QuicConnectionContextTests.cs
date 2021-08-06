@@ -196,6 +196,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
         [ConditionalFact]
         [MsQuicSupported]
+        public async Task AcceptAsync_ClientClosesConnection_ExceptionThrown()
+        {
+            // Arrange
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
+
+            var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+            using var quicConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+            await quicConnection.ConnectAsync().DefaultTimeout();
+
+            var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+
+            // Act
+            var acceptTask = serverConnection.AcceptAsync().AsTask();
+
+            await quicConnection.CloseAsync((long)Http3ErrorCode.NoError).DefaultTimeout();
+
+            // Assert
+            var ex = Assert.ThrowsAsync<ConnectionResetException>(() => acceptTask).DefaultTimeout();
+            Assert.Equal((long)Http3ErrorCode.NoError, serverConnection.Features.Get<IProtocolErrorCodeFeature>().Error);
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
         public async Task StreamPool_StreamAbortedOnServer_NotPooled()
         {
             // Arrange

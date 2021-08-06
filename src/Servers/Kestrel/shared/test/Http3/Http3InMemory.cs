@@ -383,7 +383,7 @@ namespace Microsoft.AspNetCore.Testing
         internal async ValueTask<Http3ControlStream> CreateControlStream(int? id)
         {
             var testStreamContext = new TestStreamContext(canRead: true, canWrite: false, this);
-            testStreamContext.Initialize(GetStreamId(0x02));
+            testStreamContext.Initialize(streamId: 2);
 
             var stream = new Http3ControlStream(this, testStreamContext);
             _runningStreams[stream.StreamId] = stream;
@@ -969,7 +969,7 @@ namespace Microsoft.AspNetCore.Testing
         public override ValueTask<ConnectionContext> ConnectAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default)
         {
             var testStreamContext = new TestStreamContext(canRead: true, canWrite: false, _testBase);
-            testStreamContext.Initialize(_testBase.GetStreamId(0x03));
+            testStreamContext.Initialize(streamId: 3);
 
             var stream = _testBase.OnCreateServerControlStream?.Invoke(testStreamContext) ?? new Http3ControlStream(_testBase, testStreamContext);
             ToClientAcceptQueue.Writer.WriteAsync(stream);

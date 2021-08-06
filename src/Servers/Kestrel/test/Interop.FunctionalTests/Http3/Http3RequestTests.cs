@@ -819,7 +819,7 @@ namespace Interop.FunctionalTests.Http3
                 await WaitForLogAsync(logs =>
                 {
                     return logs.Any(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Http3" &&
-                                         w.Message.Contains("Highest opened stream ID 4611686018427387903 in GOAWAY."));
+                                         w.Message.Contains("GOAWAY stream ID 4611686018427387903."));
                 }, "Check for initial GOAWAY frame sent on server initiated shutdown.");
 
                 // TODO https://github.com/dotnet/runtime/issues/56944
@@ -838,7 +838,7 @@ namespace Interop.FunctionalTests.Http3
                 await WaitForLogAsync(logs =>
                 {
                     return logs.Any(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Http3" &&
-                                         w.Message.Contains("Highest opened stream ID 0 in GOAWAY."));
+                                         w.Message.Contains("GOAWAY stream ID 4."));
                 }, "Check for exact GOAWAY frame sent on server initiated shutdown.");
 
                 await WaitForLogAsync(logs =>

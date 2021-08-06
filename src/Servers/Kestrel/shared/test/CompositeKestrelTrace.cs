@@ -300,10 +300,10 @@ namespace Microsoft.AspNetCore.Testing
             _trace2.Http3OutboundControlStreamError(connectionId, ex);
         }
 
-        public void Http3GoAwayHighestOpenedStreamId(string connectionId, long highestStreamId)
+        public void Http3GoAwayStreamId(string connectionId, long goAwayStreamId)
         {
-            _trace1.Http3GoAwayHighestOpenedStreamId(connectionId, highestStreamId);
-            _trace2.Http3GoAwayHighestOpenedStreamId(connectionId, highestStreamId);
+            _trace1.Http3GoAwayStreamId(connectionId, goAwayStreamId);
+            _trace2.Http3GoAwayStreamId(connectionId, goAwayStreamId);
         }
     }
 }
