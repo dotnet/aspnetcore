@@ -1,15 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Security.Claims;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
@@ -168,7 +162,7 @@ namespace Microsoft.AspNetCore.Http
 
             var arguments = CreateArguments(methodInfo.GetParameters(), factoryContext);
 
-            var responseWritingMethodCall = factoryContext.CheckParams.Count > 0 ?
+            var responseWritingMethodCall = factoryContext.ParamCheckExpressions.Count > 0 ?
                 CreateParamCheckingResponseWritingMethodCall(methodInfo, targetExpression, arguments, factoryContext) :
                 CreateResponseWritingMethodCall(methodInfo, targetExpression, arguments);
 
@@ -325,15 +319,21 @@ namespace Microsoft.AspNetCore.Http
             //         };
             // }
 
-            var localVariables = new ParameterExpression[factoryContext.CheckParams.Count + 1];
-            var checkParamAndCallMethod = new Expression[factoryContext.CheckParams.Count + 1];
+            var localVariables = new ParameterExpression[factoryContext.ExtraLocals.Count + 1];
+            var checkParamAndCallMethod = new Expression[factoryContext.ParamCheckExpressions.Count + 1];
 
-            for (var i = 0; i < factoryContext.CheckParams.Count; i++)
+
+            for (var i = 0; i < factoryContext.ExtraLocals.Count; i++)
             {
-                (localVariables[i], checkParamAndCallMethod[i]) = factoryContext.CheckParams[i];
+                localVariables[i] = factoryContext.ExtraLocals[i];
             }
 
-            localVariables[factoryContext.CheckParams.Count] = WasParamCheckFailureExpr;
+            for (var i = 0; i < factoryContext.ParamCheckExpressions.Count; i++)
+            {
+                checkParamAndCallMethod[i] = factoryContext.ParamCheckExpressions[i];
+            }
+
+            localVariables[factoryContext.ExtraLocals.Count] = WasParamCheckFailureExpr;
 
             var set400StatusAndReturnCompletedTask = Expression.Block(
                     Expression.Assign(StatusCodeExpr, Expression.Constant(400)),
@@ -345,7 +345,7 @@ namespace Microsoft.AspNetCore.Http
                 set400StatusAndReturnCompletedTask,
                 AddResponseWritingToMethodCall(methodCall, methodInfo.ReturnType));
 
-            checkParamAndCallMethod[factoryContext.CheckParams.Count] = checkWasParamCheckFailure;
+            checkParamAndCallMethod[factoryContext.ParamCheckExpressions.Count] = checkWasParamCheckFailure;
 
             return Expression.Block(localVariables, checkParamAndCallMethod);
         }
@@ -561,7 +561,8 @@ namespace Microsoft.AspNetCore.Http
                         )
                     );
 
-                    factoryContext.CheckParams.Add((argument, checkRequiredStringParameterBlock));
+                    factoryContext.ExtraLocals.Add(argument);
+                    factoryContext.ParamCheckExpressions.Add(checkRequiredStringParameterBlock);
                     return argument;
                 }
 
@@ -652,7 +653,7 @@ namespace Microsoft.AspNetCore.Http
             // if (tempSourceString == null)
             // {
             //      wasParamCheckFailure = true;
-            //      Log.RequiredParameterNotProvided(httpContext, "Int32", "param1");    
+            //      Log.RequiredParameterNotProvided(httpContext, "Int32", "param1");
             // }
             var checkRequiredParaseableParameterBlock = Expression.Block(
                 Expression.IfThen(TempSourceStringNullExpr,
@@ -692,7 +693,8 @@ namespace Microsoft.AspNetCore.Http
                     // if (tempSourceString != null) { ... }
                     ifNotNullTryParse);
 
-            factoryContext.CheckParams.Add((argument, fullParamCheckBlock));
+            factoryContext.ExtraLocals.Add(argument);
+            factoryContext.ParamCheckExpressions.Add(fullParamCheckBlock);
 
             return argument;
         }
@@ -720,24 +722,19 @@ namespace Microsoft.AspNetCore.Http
             factoryContext.JsonRequestBodyType = parameter.ParameterType;
             factoryContext.AllowEmptyRequestBody = allowEmpty || isOptional;
 
-            var convertedBodyValue = Expression.Convert(BodyValueExpr, parameter.ParameterType);
-            var argument = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
-
             if (!factoryContext.AllowEmptyRequestBody)
             {
                 // If the parameter is required or the user has not explicitly
                 // set allowBody to be empty then validate that it is required.
                 //
-                // Todo body_local = Convert(bodyValue, ToDo);
-                // if (body_local == null)
+                // if (bodyValue == null)
                 // {
                 //      wasParamCheckFailure = true;
                 //      Log.RequiredParameterNotProvided(httpContext, "Todo", "body");
                 // }
                 var checkRequiredBodyBlock = Expression.Block(
-                    Expression.Assign(argument, convertedBodyValue),
                     Expression.IfThen(
-                    Expression.Equal(argument, Expression.Constant(null)),
+                    Expression.Equal(BodyValueExpr, Expression.Constant(null)),
                         Expression.Block(
                             Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
                             Expression.Call(LogRequiredParameterNotProvidedMethod, 
@@ -745,11 +742,10 @@ namespace Microsoft.AspNetCore.Http
                         )
                     )
                 );
-                factoryContext.CheckParams.Add((argument, checkRequiredBodyBlock));
-                return argument;
-            }
 
-            if (parameter.HasDefaultValue)
+                factoryContext.ParamCheckExpressions.Add(checkRequiredBodyBlock);
+            }
+            else if (parameter.HasDefaultValue)
             {
                 // Convert(bodyValue ?? SomeDefault, Todo)
                 return Expression.Convert(
@@ -758,7 +754,7 @@ namespace Microsoft.AspNetCore.Http
             }
 
             // Convert(bodyValue, Todo)
-            return convertedBodyValue;
+            return Expression.Convert(BodyValueExpr, parameter.ParameterType);
         }
 
         private static MethodInfo GetMethodInfo<T>(Expression<T> expr)
@@ -953,7 +949,8 @@ namespace Microsoft.AspNetCore.Http
             public List<string>? RouteParameters { get; set; }
 
             public bool UsingTempSourceString { get; set; }
-            public List<(ParameterExpression, Expression)> CheckParams { get; } = new();
+            public List<ParameterExpression> ExtraLocals { get; } = new();
+            public List<Expression> ParamCheckExpressions { get; } = new();
         }
 
         private static partial class Log
