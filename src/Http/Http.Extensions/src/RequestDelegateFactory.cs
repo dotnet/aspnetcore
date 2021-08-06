@@ -55,6 +55,7 @@ namespace Microsoft.AspNetCore.Http
         private static readonly MemberExpression HttpResponseExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.Response));
         private static readonly MemberExpression RequestAbortedExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.RequestAborted));
         private static readonly MemberExpression UserExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.User));
+        private static readonly MemberExpression FormFileExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.Request.Form.Files));
         private static readonly MemberExpression RouteValuesExpr = Expression.Property(HttpRequestExpr, nameof(HttpRequest.RouteValues));
         private static readonly MemberExpression QueryExpr = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Query));
         private static readonly MemberExpression HeadersExpr = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Headers));
@@ -250,6 +251,10 @@ namespace Microsoft.AspNetCore.Http
             else if (parameter.ParameterType == typeof(CancellationToken))
             {
                 return RequestAbortedExpr;
+            }
+            else if (parameter.ParameterType == typeof(IFormFileCollection))
+            {
+                return FormFileExpr;
             }
             else if (parameter.ParameterType == typeof(string) || TryParseMethodCache.HasTryParseMethod(parameter))
             {
@@ -555,7 +560,7 @@ namespace Microsoft.AspNetCore.Http
                         Expression.IfThen(Expression.Equal(argument, Expression.Constant(null)),
                             Expression.Block(
                                 Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
-                                Expression.Call(LogRequiredParameterNotProvidedMethod, 
+                                Expression.Call(LogRequiredParameterNotProvidedMethod,
                                     HttpContextExpr, Expression.Constant(parameter.ParameterType.Name), Expression.Constant(parameter.Name))
                             )
                         )
@@ -652,7 +657,7 @@ namespace Microsoft.AspNetCore.Http
             // if (tempSourceString == null)
             // {
             //      wasParamCheckFailure = true;
-            //      Log.RequiredParameterNotProvided(httpContext, "Int32", "param1");    
+            //      Log.RequiredParameterNotProvided(httpContext, "Int32", "param1");
             // }
             var checkRequiredParaseableParameterBlock = Expression.Block(
                 Expression.IfThen(TempSourceStringNullExpr,
@@ -685,7 +690,7 @@ namespace Microsoft.AspNetCore.Http
                     // if (tempSourceString == null) { ... } only produced when parameter is required
                     checkRequiredParaseableParameterBlock,
                     // if (tempSourceString != null) { ... }
-                    ifNotNullTryParse) 
+                    ifNotNullTryParse)
                 : Expression.Block(
                     // tempSourceString = httpContext.RequestValue["id"];
                     Expression.Assign(TempSourceStringExpr, valueExpression),
@@ -740,7 +745,7 @@ namespace Microsoft.AspNetCore.Http
                     Expression.Equal(argument, Expression.Constant(null)),
                         Expression.Block(
                             Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
-                            Expression.Call(LogRequiredParameterNotProvidedMethod, 
+                            Expression.Call(LogRequiredParameterNotProvidedMethod,
                                     HttpContextExpr, Expression.Constant(parameter.ParameterType.Name), Expression.Constant(parameter.Name))
                         )
                     )
