@@ -745,7 +745,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             // Use a random host name to avoid the TLS session resumption cache.
             var stream = OpenSslStreamWithCert(connection.Stream);
             await stream.AuthenticateAsClientAsync(Guid.NewGuid().ToString());
-            await AssertConnectionResult(stream, false, expectedBody);
+            await AssertConnectionResult(stream, true, expectedBody);
         }
 
         [ConditionalFact]
