@@ -77,8 +77,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         }
 
         /// <summary>
-        /// Gets or sets the maximum buffer size for data written from the transport before it is
-        /// throttled.
+        /// Gets or sets the maximum buffer size for data read by the application before backpressure is applied.
         /// </summary>
         /// <remarks>
         /// The default value is 1MB.
@@ -86,8 +85,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         public long TransportMaxBufferSize { get; set; }
 
         /// <summary>
-        /// Gets or sets the maximum buffer size for data written from the application before it is
-        /// throttled.
+        /// Gets or sets the maximum buffer size for data written by the application before backpressure is applied.
         /// </summary>
         /// <remarks>
         /// The default value is 1MB.

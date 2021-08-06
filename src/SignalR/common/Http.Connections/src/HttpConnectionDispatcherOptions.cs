@@ -58,8 +58,7 @@ namespace Microsoft.AspNetCore.Http.Connections
         public LongPollingOptions LongPolling { get; }
 
         /// <summary>
-        /// Gets or sets the maximum buffer size for data written from the transport before it is
-        /// throttled.
+        /// Gets or sets the maximum buffer size for data read by the application before backpressure is applied.
         /// </summary>
         /// <remarks>
         /// The default value is 65KB.
@@ -67,8 +66,7 @@ namespace Microsoft.AspNetCore.Http.Connections
         public long TransportMaxBufferSize { get; set; }
 
         /// <summary>
-        /// Gets or sets the maximum buffer size for data written from the application before it is
-        /// throttled.
+        /// Gets or sets the maximum buffer size for data written by the application before backpressure is applied.
         /// </summary>
         /// <remarks>
         /// The default value is 65KB.
