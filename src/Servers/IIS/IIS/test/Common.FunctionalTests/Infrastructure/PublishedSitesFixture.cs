@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var publisher = hostingModel == HostingModel.InProcess ? InProcessTestSite : OutOfProcessTestSite;
             var directory = TempDirectory.Create();
             var deploymentParameters = GetBaseDeploymentParameters(publisher, hostingModel); ;
-            deploymentParameters.HandlerSettings["experimentalEnableShadowCopy"] = "false";
+            deploymentParameters.HandlerSettings["experimentalEnableShadowCopy"] = "true";
             deploymentParameters.HandlerSettings["shadowCopyDirectory"] = directory.DirectoryPath;
             return deploymentParameters;
         }
