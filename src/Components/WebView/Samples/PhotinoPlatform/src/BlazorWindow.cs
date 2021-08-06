@@ -4,11 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
-using PhotinoNET;
-
-namespace Microsoft.AspNetCore.Components.WebView.Photino
 {
     /// <summary>
     /// A window containing a Blazor web view.

@@ -4,12 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.JSInterop;
+using Microsoft.AspNetCore.StaticWebAssets;
 
 namespace Microsoft.AspNetCore.Components.WebView
 {
@@ -243,6 +245,39 @@ namespace Microsoft.AspNetCore.Components.WebView
             // Do not change this code. Put cleanup code in 'DisposeAsync(bool disposing)' method
             GC.SuppressFinalize(this);
             await DisposeAsyncCore();
+        }
+
+        private class StaticWebAssetsLoader
+        {
+            internal static IFileProvider UseStaticWebAssets(IFileProvider fileProvider)
+            {
+                var manifestPath = ResolveRelativeToAssembly();
+                if (File.Exists(manifestPath))
+                {
+                    using var manifestStream = File.OpenRead(manifestPath);
+                    var manifest = ManifestStaticWebAssetFileProvider.StaticWebAssetManifest.Parse(manifestStream);
+                    if (manifest.ContentRoots.Length > 0)
+                    {
+                        var manifestProvider = new ManifestStaticWebAssetFileProvider(manifest, (path) => new PhysicalFileProvider(path));
+                        return new CompositeFileProvider(manifestProvider, fileProvider);
+                    }
+                }
+
+                return fileProvider;
+            }
+
+            private static string? ResolveRelativeToAssembly()
+            {
+                var assembly = Assembly.GetEntryAssembly();
+                if (string.IsNullOrEmpty(assembly?.Location))
+                {
+                    return null;
+                }
+
+                var name = Path.GetFileNameWithoutExtension(assembly.Location);
+
+                return Path.Combine(Path.GetDirectoryName(assembly.Location)!, $"{name}.staticwebassets.runtime.json");
+            }
         }
     }
 }
