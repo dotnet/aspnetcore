@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.StaticWebAssets;
 
 namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
 {
@@ -16,8 +17,6 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
     /// </summary>
     public class StaticWebAssetsLoader
     {
-        internal const string StaticWebAssetsManifestName = "Microsoft.AspNetCore.StaticWebAssets.xml";
-
         /// <summary>
         /// Configure the <see cref="IWebHostEnvironment"/> to use static web assets.
         /// </summary>
@@ -25,61 +24,34 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
         /// <param name="configuration">The host <see cref="IConfiguration"/>.</param>
         public static void UseStaticWebAssets(IWebHostEnvironment environment, IConfiguration configuration)
         {
-            var (manifest, isJson) = ResolveManifest(environment, configuration);
-            using (manifest)
+            var manifest = ResolveManifest(environment, configuration);
+            if (manifest != null)
             {
-                if (manifest != null)
+                using (manifest)
                 {
-                    UseStaticWebAssetsCore(environment, manifest, isJson);
+                    UseStaticWebAssetsCore(environment, manifest);
                 }
             }
         }
 
-        internal static void UseStaticWebAssetsCore(IWebHostEnvironment environment, Stream manifest, bool isJson)
+        internal static void UseStaticWebAssetsCore(IWebHostEnvironment environment, Stream manifest)
         {
-            if (isJson)
-            {
-                var staticWebAssetManifest = ManifestStaticWebAssetFileProvider.StaticWebAssetManifest.Parse(manifest);
-                var provider = new ManifestStaticWebAssetFileProvider(
-                    staticWebAssetManifest,
-                    (contentRoot) => new PhysicalFileProvider(contentRoot));
+            var staticWebAssetManifest = ManifestStaticWebAssetFileProvider.StaticWebAssetManifest.Parse(manifest);
+            var provider = new ManifestStaticWebAssetFileProvider(
+                staticWebAssetManifest,
+                (contentRoot) => new PhysicalFileProvider(contentRoot));
 
-                environment.WebRootFileProvider = new CompositeFileProvider(new[] { environment.WebRootFileProvider, provider });
-                return;
-            }
-
-            var webRootFileProvider = environment.WebRootFileProvider;
-
-            var additionalFiles = StaticWebAssetsReader.Parse(manifest)
-                .Select(cr => new StaticWebAssetsFileProvider(cr.BasePath, cr.Path))
-                .OfType<IFileProvider>() // Upcast so we can insert on the resulting list.
-                .ToList();
-
-            if (additionalFiles.Count == 0)
-            {
-                return;
-            }
-            else
-            {
-                additionalFiles.Insert(0, webRootFileProvider);
-                environment.WebRootFileProvider = new CompositeFileProvider(additionalFiles);
-            }
+            environment.WebRootFileProvider = new CompositeFileProvider(new[] { provider, environment.WebRootFileProvider });
         }
 
-        internal static (Stream, bool) ResolveManifest(IWebHostEnvironment environment, IConfiguration configuration)
+        internal static Stream? ResolveManifest(IWebHostEnvironment environment, IConfiguration configuration)
         {
             try
             {
-                var manifestPath = configuration.GetValue<string>(WebHostDefaults.StaticWebAssetsKey);
-                var isJson = manifestPath != null && Path.GetExtension(manifestPath).EndsWith(".json", OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
-                var candidates = manifestPath != null ? new[] { (manifestPath, isJson) } : ResolveRelativeToAssembly(environment);
-
-                foreach (var (candidate, json) in candidates)
+                var candidate = configuration.GetValue<string>(WebHostDefaults.StaticWebAssetsKey) ?? ResolveRelativeToAssembly(environment);
+                if (candidate != null && File.Exists(candidate))
                 {
-                    if (candidate != null && File.Exists(candidate))
-                    {
-                        return (File.OpenRead(candidate), json);
-                    }
+                    return File.OpenRead(candidate);
                 }
 
                 // A missing manifest might simply mean that the feature is not enabled, so we simply
@@ -93,12 +65,11 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
             }
         }
 
-        private static IEnumerable<(string candidatePath, bool isJson)> ResolveRelativeToAssembly(IWebHostEnvironment environment)
+        private static string ResolveRelativeToAssembly(IWebHostEnvironment environment)
         {
             var assembly = Assembly.Load(environment.ApplicationName);
             var basePath = string.IsNullOrEmpty(assembly.Location) ? AppContext.BaseDirectory : Path.GetDirectoryName(assembly.Location);
-            yield return (Path.Combine(basePath!, $"{environment.ApplicationName}.staticwebassets.runtime.json"), isJson: true);
-            yield return (Path.Combine(basePath!, $"{environment.ApplicationName}.StaticWebAssets.xml"), isJson: false);
+            return Path.Combine(basePath!, $"{environment.ApplicationName}.staticwebassets.runtime.json");
         }
     }
 }
