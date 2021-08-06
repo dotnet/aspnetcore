@@ -29,6 +29,32 @@ namespace Microsoft.AspNetCore.Builder
             return Assert.IsType<RouteEndpointBuilder>(Assert.Single(GetBuilderEndpointDataSource(endpointRouteBuilder).EndpointBuilders));
         }
 
+        public static object[][] MapMethods
+        {
+            get
+            {
+                void MapGet(IEndpointRouteBuilder routes, string template, Delegate action) =>
+                    routes.MapGet(template, action);
+
+                void MapPost(IEndpointRouteBuilder routes, string template, Delegate action) =>
+                    routes.MapPost(template, action);
+
+                void MapPut(IEndpointRouteBuilder routes, string template, Delegate action) =>
+                    routes.MapPut(template, action);
+
+                void MapDelete(IEndpointRouteBuilder routes, string template, Delegate action) =>
+                    routes.MapDelete(template, action);
+
+                return new object[][]
+                {
+                    new object[] { (Action<IEndpointRouteBuilder, string, Delegate>)MapGet, "GET" },
+                    new object[] { (Action<IEndpointRouteBuilder, string, Delegate>)MapPost, "POST" },
+                    new object[] { (Action<IEndpointRouteBuilder, string, Delegate>)MapPut, "PUT" },
+                    new object[] { (Action<IEndpointRouteBuilder, string, Delegate>)MapDelete, "DELETE" },
+                };
+            }
+        }
+
         [Fact]
         public void MapEndpoint_PrecedenceOfMetadata_BuilderMetadataReturned()
         {
@@ -101,6 +127,82 @@ namespace Microsoft.AspNetCore.Builder
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
             Assert.Equal("/{id} HTTP: GET", routeEndpointBuilder.DisplayName);
             Assert.Equal("/{id}", routeEndpointBuilder.RoutePattern.RawText);
+
+            // Assert that we don't fallback to the query string
+            var httpContext = new DefaultHttpContext();
+
+            httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["id"] = "42"
+            });
+
+            await endpoint.RequestDelegate!(httpContext);
+
+            Assert.Null(httpContext.Items["input"]);
+        }
+
+        [Theory]
+        [MemberData(nameof(MapMethods))]
+        public async Task MapVerbWithExplicitRouteParameterIsCaseInsensitive(Action<IEndpointRouteBuilder, string, Delegate> map, string expectedMethod)
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+
+            map(builder, "/{ID}", ([FromRoute] int? id, HttpContext httpContext) =>
+            {
+                if (id is not null)
+                {
+                    httpContext.Items["input"] = id;
+                }
+            });
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+            Assert.NotNull(methodMetadata);
+            var method = Assert.Single(methodMetadata!.HttpMethods);
+            Assert.Equal(expectedMethod, method);
+
+            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+            Assert.Equal($"/{{ID}} HTTP: {expectedMethod}", routeEndpointBuilder.DisplayName);
+            Assert.Equal($"/{{ID}}", routeEndpointBuilder.RoutePattern.RawText);
+
+            var httpContext = new DefaultHttpContext();
+
+            httpContext.Request.RouteValues["id"] = "13";
+
+            await endpoint.RequestDelegate!(httpContext);
+
+            Assert.Equal(13, httpContext.Items["input"]);
+        }
+
+        [Theory]
+        [MemberData(nameof(MapMethods))]
+        public async Task MapVerbWithRouteParameterDoesNotFallbackToQuery(Action<IEndpointRouteBuilder, string, Delegate> map, string expectedMethod)
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+
+            map(builder, "/{ID}", (int? id, HttpContext httpContext) =>
+            {
+                if (id is not null)
+                {
+                    httpContext.Items["input"] = id;
+                }
+            });
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+            Assert.NotNull(methodMetadata);
+            var method = Assert.Single(methodMetadata!.HttpMethods);
+            Assert.Equal(expectedMethod, method);
+
+            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+            Assert.Equal($"/{{ID}} HTTP: {expectedMethod}", routeEndpointBuilder.DisplayName);
+            Assert.Equal($"/{{ID}}", routeEndpointBuilder.RoutePattern.RawText);
 
             // Assert that we don't fallback to the query string
             var httpContext = new DefaultHttpContext();
