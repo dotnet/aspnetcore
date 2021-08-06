@@ -77,6 +77,25 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void CanGetValue_ThrowsIfTextAreaHasMoreContentThanMaxAllowed()
+        {
+            // Prime the textarea with 50k chars (more than 32k default limit)
+            SetTextAreaValueInBrowser('a');
+
+            var getLimitedTextBtn = Browser.Exists(By.Id("getLimitedTextBtn"));
+            getLimitedTextBtn.Click();
+
+            var textErrorFromComponent = Browser.Exists(By.Id("getTextError"), TimeSpan.FromSeconds(10));
+            Assert.NotNull(textErrorFromComponent);
+
+            var expectedError = "The incoming data stream of length 50000 exceeds the maximum allowed length 32000. (Parameter 'maxAllowedSize')";
+            Browser.Contains(expectedError, () => textErrorFromComponent.GetAttribute("innerHTML"));
+
+            FocusAway();
+            AssertLogDoesNotContainMessages(CircuitErrors);
+        }
+
+        [Fact]
         public void CanEditValue_MinimalContent()
         {
             var textArea = Browser.Exists(By.Id("largeTextArea"), TimeSpan.FromSeconds(10));

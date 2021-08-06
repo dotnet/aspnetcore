@@ -8,6 +8,7 @@
 
 <button id="setTextBtn" @onclick="SetTextAsync">SetTextAsync</button>
 <button id="getTextBtn" @onclick="GetTextAsync">GetTextAsync</button>
+<button id="getLimitedTextBtn" @onclick="GetLimitedTextAsync">GetLimitedTextAsync</button>
 
 <hr />
 
@@ -19,6 +20,7 @@ Length: <p id="lastChangedLength">@LastChangedLength</p>
 
 <h3>Get Text Result:</h3>
 <p id="getTextResult">@GetTextResult</p>
+<p id="getTextError">@GetTextError</p>
 
 <hr />
 
@@ -28,13 +30,29 @@ Length: <p id="lastChangedLength">@LastChangedLength</p>
   public DateTime LastChangedTime { get; set; }
   public int LastChangedLength { get; set; }
   public string GetTextResult { get; set; }
+  public string GetTextError { get; set; }
 
   InputLargeTextArea TextArea;
 
   public async Task GetTextAsync()
   {
-      var streamReader = await TextArea.GetTextAsync();
+      var streamReader = await TextArea.GetTextAsync(maxLength: 50_000);
       GetTextResult = await streamReader.ReadToEndAsync();
+      StateHasChanged();
+  }
+
+  public async Task GetLimitedTextAsync()
+  {
+      try
+      {
+          var streamReader = await TextArea.GetTextAsync(maxLength: 32_000);
+          _ = await streamReader.ReadToEndAsync();
+      }
+      catch (System.ArgumentOutOfRangeException ex)
+      {
+          GetTextError = ex.Message;
+      }
+
       StateHasChanged();
   }
 
