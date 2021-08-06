@@ -14,7 +14,7 @@ import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 import { discoverComponents, discoverPersistedState, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { setDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
-import { AfterBlazorStartedCallback, JSInitializers } from './JSInitializers';
+import { AfterBlazorStartedCallback, JSInitializer } from './JSInitializers';
 
 declare var Module: EmscriptenModule;
 let started = false;
@@ -114,12 +114,12 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   };
 
   const bootConfigResult: BootConfigResult = await bootConfigPromise;
-  let afterBlazorStartedCallbacks: AfterBlazorStartedCallback[] = [];
-  if (bootConfigResult.bootConfig.libraryInitializers) {
-    const initializerFiles = bootConfigResult.bootConfig.libraryInitializers;
-    afterBlazorStartedCallbacks = await JSInitializers.invokeInitializersAsync(
-      Object.keys(initializerFiles),
-      [candidateOptions, bootConfigResult.bootConfig.extensions]);
+  const initializers = bootConfigResult.bootConfig.resources.libraryInitializers;
+  const jsInitializer = new JSInitializer();
+  if (initializers) {
+    await jsInitializer.importInitializersAsync(
+      Object.keys(initializers),
+      [candidateOptions, bootConfigResult.bootConfig.resources.extensions]);
   }
 
   const [resourceLoader] = await Promise.all([
@@ -133,12 +133,10 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   }
 
   // Start up the application
-  invokeBlazorStartedCallbacks(platform.callEntryPoint(resourceLoader.bootConfig.entryAssembly), afterBlazorStartedCallbacks);
-
-  async function invokeBlazorStartedCallbacks(applicationStarted: Promise<void>, afterBlazorStartedCallbacks: AfterBlazorStartedCallback[]) {
-    await applicationStarted;
-    await Promise.all(afterBlazorStartedCallbacks.map(c => c(Blazor)));
-  }
+  platform.callEntryPoint(resourceLoader.bootConfig.entryAssembly);
+  // At this point .NET has been initialized (and has yielded), we can't await the promise becasue it will
+  // only end when the app finishes running
+  jsInitializer.invokeAfterStartedCallbacks(Blazor);
 }
 
 function invokeJSFromDotNet(callInfo: Pointer, arg0: any, arg1: any, arg2: any): any {
