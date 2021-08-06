@@ -104,8 +104,15 @@ namespace Microsoft.AspNetCore.Session
 
             try
             {
-                using var scope = _logger.BeginScope(new SessionLogScope(feature.Session.Id));
-                await _next(context);
+                if (_logger.IsEnabled(LogLevel.Critical))
+                {
+                    using var scope = _logger.BeginScope(new SessionLogScope(feature.Session.Id));
+                    await _next(context);
+                }
+                else
+                {
+                    await _next(context);
+                }
             }
             finally
             {
