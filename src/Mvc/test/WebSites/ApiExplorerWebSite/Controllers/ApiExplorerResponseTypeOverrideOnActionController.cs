@@ -22,6 +22,13 @@ namespace ApiExplorerWebSite
         {
             return null;
         }
+
+        [HttpGet("Action2")]
+        [ProducesResponseType(typeof(Customer), 200, "text/plain")]
+        public object GetActionWithContentTypeOverride()
+        {
+            return null;
+        }
     }
 
     public class ErrorInfo
