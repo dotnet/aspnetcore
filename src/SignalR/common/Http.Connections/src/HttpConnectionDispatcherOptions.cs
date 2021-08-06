@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Http.Connections
     {
         // Selected because this is the default value of PipeWriter.PauseWriterThreshold.
         // There maybe the opportunity for performance gains by tuning this default.
-        private const int DefaultPipeBufferSize = 32768;
+        private const int DefaultBufferSize = 65536;
 
         private PipeOptions? _transportPipeOptions;
         private PipeOptions? _appPipeOptions;
@@ -32,8 +32,8 @@ namespace Microsoft.AspNetCore.Http.Connections
             Transports = HttpTransports.All;
             WebSockets = new WebSocketOptions();
             LongPolling = new LongPollingOptions();
-            TransportMaxBufferSize = DefaultPipeBufferSize;
-            ApplicationMaxBufferSize = DefaultPipeBufferSize;
+            TransportMaxBufferSize = DefaultBufferSize;
+            ApplicationMaxBufferSize = DefaultBufferSize;
             TransportSendTimeout = TimeSpan.FromSeconds(10);
         }
 
@@ -58,13 +58,21 @@ namespace Microsoft.AspNetCore.Http.Connections
         public LongPollingOptions LongPolling { get; }
 
         /// <summary>
-        /// Gets or sets the maximum buffer size of the transport writer.
+        /// Gets or sets the maximum buffer size for data written from the transport before it is
+        /// throttled.
         /// </summary>
+        /// <remarks>
+        /// The default value is 65KB.
+        /// </remarks>
         public long TransportMaxBufferSize { get; set; }
 
         /// <summary>
-        /// Gets or sets the maximum buffer size of the application writer.
+        /// Gets or sets the maximum buffer size for data written from the application before it is
+        /// throttled.
         /// </summary>
+        /// <remarks>
+        /// The default value is 65KB.
+        /// </remarks>
         public long ApplicationMaxBufferSize { get; set; }
 
         /// <summary>

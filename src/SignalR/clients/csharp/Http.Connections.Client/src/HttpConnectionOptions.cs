@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO.Pipelines;
 using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
@@ -26,6 +27,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private IWebProxy? _proxy;
         private bool? _useDefaultCredentials;
         private Action<ClientWebSocketOptions>? _webSocketConfiguration;
+        private PipeOptions? _transportPipeOptions;
+        private PipeOptions? _appPipeOptions;
+
+        // Selected because of the number of client connections is usually much lower than
+        // server connections and therefore willing to use more memory. We'll default
+        // to a maximum of 1MB buffer;
+        private const int DefaultBufferSize = 1 * 1024 * 1024;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpConnectionOptions"/> class.
@@ -43,6 +51,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             _cookies = new CookieContainer();
 
             Transports = HttpTransports.All;
+            TransportMaxBufferSize = DefaultBufferSize;
+            ApplicationMaxBufferSize = DefaultBufferSize;
         }
 
         /// <summary>
@@ -65,6 +75,31 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             get => _headers;
             set => _headers = value ?? throw new ArgumentNullException(nameof(value));
         }
+
+        /// <summary>
+        /// Gets or sets the maximum buffer size for data written from the transport before it is
+        /// throttled.
+        /// </summary>
+        /// <remarks>
+        /// The default value is 1MB.
+        /// </remarks>
+        public long TransportMaxBufferSize { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum buffer size for data written from the application before it is
+        /// throttled.
+        /// </summary>
+        /// <remarks>
+        /// The default value is 1MB.
+        /// </remarks>
+        public long ApplicationMaxBufferSize { get; set; }
+
+        // We initialize these lazily based on the state of the options specified here.
+        // Though these are mutable it's extremely rare that they would be mutated past the
+        // call to initialize the routerware.
+        internal PipeOptions TransportPipeOptions => _transportPipeOptions ??= new PipeOptions(pauseWriterThreshold: TransportMaxBufferSize, resumeWriterThreshold: TransportMaxBufferSize / 2, readerScheduler: PipeScheduler.ThreadPool, useSynchronizationContext: false);
+
+        internal PipeOptions AppPipeOptions => _appPipeOptions ??= new PipeOptions(pauseWriterThreshold: ApplicationMaxBufferSize, resumeWriterThreshold: ApplicationMaxBufferSize / 2, readerScheduler: PipeScheduler.ThreadPool, useSynchronizationContext: false);
 
         /// <summary>
         /// Gets or sets a collection of client certificates that will be sent with HTTP requests.
