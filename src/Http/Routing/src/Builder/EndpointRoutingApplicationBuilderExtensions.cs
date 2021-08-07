@@ -99,7 +99,10 @@ namespace Microsoft.AspNetCore.Builder
             var routeOptions = builder.ApplicationServices.GetRequiredService<IOptions<RouteOptions>>();
             foreach (var dataSource in endpointRouteBuilder.DataSources)
             {
-                routeOptions.Value.EndpointDataSources.Add(dataSource);
+                if (!routeOptions.Value.EndpointDataSources.Contains(dataSource))
+                {
+                    routeOptions.Value.EndpointDataSources.Add(dataSource);
+                }
             }
 
             return builder.UseMiddleware<EndpointMiddleware>();

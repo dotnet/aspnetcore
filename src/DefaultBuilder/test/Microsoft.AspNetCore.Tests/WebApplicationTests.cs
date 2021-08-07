@@ -394,6 +394,30 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Equal(fullWebRootPath, app.Environment.WebRootPath);
         }
 
+        [Fact]
+        public async Task EndpointDataSourceOnlyAddsOnce()
+        {
+            var builder = WebApplication.CreateBuilder();
+            var app = builder.Build();
+
+            app.UseRouting();
+
+            app.MapGet("/", () => "Hello World!");
+
+            app.UseEndpoints(routes =>
+            {
+                routes.MapGet("/hi", () => "Hi World");
+                routes.MapGet("/heyo", () => "Heyo World");
+            });
+
+            app.Start();
+
+            var ds = app.Services.GetRequiredService<EndpointDataSource>();
+            Assert.Equal(3, ds.Endpoints.Count);
+
+            await app.DisposeAsync();
+        }
+
         private class CustomHostLifetime : IHostLifetime
         {
             public Task StopAsync(CancellationToken cancellationToken)
