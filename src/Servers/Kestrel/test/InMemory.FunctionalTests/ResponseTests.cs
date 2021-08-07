@@ -4128,7 +4128,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         IsTls = true
                     });
                 },
-                services => { }))
+                services =>
+                {
+                    services.AddSingleton<IMultiplexedConnectionListenerFactory>(new MockMultiplexedConnectionListenerFactory());
+                }))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -4142,6 +4145,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Content-Length: 0",
                         $"Date: {server.Context.DateHeaderValue}",
                         @"Alt-Svc: h3="":0""; ma=86400",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task AltSvc_Http1And2And3EndpointConfigured_NoMultiplexedFactory_NoAltSvcInResponseHeaders()
+        {
+            await using (var server = new TestServer(
+                httpContext => Task.CompletedTask,
+                new TestServiceContext(LoggerFactory),
+                options =>
+                {
+                    options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+                    {
+                        Protocols = HttpProtocols.Http1AndHttp2AndHttp3,
+                        IsTls = true
+                    });
+                },
+                services => {}))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -4191,7 +4227,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         IsTls = true
                     });
                 },
-                services => { }))
+                services =>
+                {
+                    services.AddSingleton<IMultiplexedConnectionListenerFactory>(new MockMultiplexedConnectionListenerFactory());
+                }))
             {
                 using (var connection = server.CreateConnection())
                 {
