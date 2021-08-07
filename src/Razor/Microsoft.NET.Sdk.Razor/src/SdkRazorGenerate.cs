@@ -7,7 +7,7 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.Razor.Tasks
 {
-    public class RazorGenerate : DotNetToolTask
+    public class SdkRazorGenerate : DotNetToolTask
     {
         private static readonly string[] SourceRequiredMetadata = new string[]
         {
@@ -169,16 +169,16 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     builder.AppendLine(RootNamespace);
                 }
 
-                if (!string.IsNullOrEmpty(CSharpLanguageVersion))
-                {
-                    builder.AppendLine("--csharp-language-version");
-                    builder.AppendLine(CSharpLanguageVersion);
-                }
-
                 if (GenerateDeclaration)
                 {
                     builder.AppendLine("--generate-declaration");
                 }
+            }
+
+             if (!string.IsNullOrEmpty(CSharpLanguageVersion))
+            {
+                builder.AppendLine("--csharp-language-version");
+                builder.AppendLine(CSharpLanguageVersion);
             }
 
             for (var i = 0; i < Extensions.Length; i++)
