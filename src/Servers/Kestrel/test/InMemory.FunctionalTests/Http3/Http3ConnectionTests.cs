@@ -100,6 +100,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await Http3Api.WaitForConnectionStopAsync(expectedStreamId, false, expectedErrorCode: Http3ErrorCode.NoError);
         }
 
+        [Fact]
+        public async Task GOAWAY_GracefulServerShutdownWithActiveRequest_SendsMultipleGoAways()
+        {
+            await Http3Api.InitializeConnectionAsync(_echoApplication);
+
+            var inboundControlStream = await Http3Api.GetInboundControlStream();
+            await inboundControlStream.ExpectSettingsAsync();
+
+            var activeRequest = await Http3Api.CreateRequestStream();
+            await activeRequest.SendHeadersAsync(Headers);
+
+            // Trigger server shutdown.
+            Http3Api.CloseServerGracefully();
+
+            await Http3Api.WaitForGoAwayAsync(false, VariableLengthIntegerHelper.EightByteLimit);
+
+            // Request made while shutting down is rejected.
+            var rejectedRequest = await Http3Api.CreateRequestStream();
+            await rejectedRequest.SendHeadersAsync(Headers);
+            await rejectedRequest.EndStreamAsync();
+            await rejectedRequest.WaitForStreamErrorAsync(Http3ErrorCode.RequestRejected);
+
+            // End active request.
+            await activeRequest.EndStreamAsync();
+            await activeRequest.ExpectReceiveEndOfStream();
+
+            // Client aborts the connection.
+            Http3Api.MultiplexedConnectionContext.Abort();
+
+            await Http3Api.WaitForConnectionStopAsync(4, false, expectedErrorCode: Http3ErrorCode.NoError);
+        }
+
         [Theory]
         [InlineData(0x0)]
         [InlineData(0x2)]

@@ -282,6 +282,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                                 // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1.2-3
                                 streamContext.Features.Get<IProtocolErrorCodeFeature>()!.Error = (long)Http3ErrorCode.RequestRejected;
                                 streamContext.Abort(new ConnectionAbortedException("HTTP/3 connection is closing and no longer accepts new requests."));
+                                await streamContext.DisposeAsync();
+
                                 continue;
                             }
 

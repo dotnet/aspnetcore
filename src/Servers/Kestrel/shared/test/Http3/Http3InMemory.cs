@@ -1107,9 +1107,14 @@ namespace Microsoft.AspNetCore.Testing
             Disposed = true;
             _disposedTcs.TrySetResult();
 
-            if (!_isAborted &&
+            var canReuse = !_isAborted &&
                 _transportPipeReader.IsCompletedSuccessfully &&
-                _transportPipeWriter.IsCompletedSuccessfully)
+                _transportPipeWriter.IsCompletedSuccessfully;
+
+            _pair.Transport.Input.Complete();
+            _pair.Transport.Output.Complete();
+
+            if (canReuse)
             {
                 _testBase._streamContextPool.Enqueue(this);
             }
