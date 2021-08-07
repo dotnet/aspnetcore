@@ -879,12 +879,6 @@ namespace Interop.FunctionalTests.Http3
                 // Server has aborted connection.
                 await WaitForLogAsync(logs =>
                 {
-                    return logs.Any(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Http3" &&
-                                         w.Message.Contains("GOAWAY stream ID 4."));
-                }, "Check for exact GOAWAY frame sent on server initiated shutdown.");
-
-                await WaitForLogAsync(logs =>
-                {
                     const int applicationAbortedConnectionId = 6;
                     return logs.Any(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" &&
                                          w.EventId == applicationAbortedConnectionId);
@@ -1101,6 +1095,15 @@ namespace Interop.FunctionalTests.Http3
                 Logger.LogInformation("Stopping host");
                 var stopTask = host.StopAsync();
 
+                if (protocol == HttpProtocols.Http3)
+                {
+                    await WaitForLogAsync(logs =>
+                    {
+                        return logs.Any(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Http3" &&
+                                             w.Message.Contains("GOAWAY stream ID 4611686018427387903."));
+                    }, "Check for initial GOAWAY frame sent on server initiated shutdown.");
+                }
+
                 var readTask = await readAsyncTask.Task.DefaultTimeout();
 
                 // Assert
@@ -1116,6 +1119,16 @@ namespace Interop.FunctionalTests.Http3
                 await requestAbortedTcs.Task.DefaultTimeout();
 
                 await stopTask.DefaultTimeout();
+
+                if (protocol == HttpProtocols.Http3)
+                {
+                    // Server has aborted connection.
+                    await WaitForLogAsync(logs =>
+                    {
+                        return logs.Any(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Http3" &&
+                                             w.Message.Contains("GOAWAY stream ID 4."));
+                    }, "Check for exact GOAWAY frame sent on server initiated shutdown.");
+                }
 
                 Assert.Contains(TestSink.Writes, m => m.Message.Contains("Some connections failed to close gracefully during server shutdown."));
             }

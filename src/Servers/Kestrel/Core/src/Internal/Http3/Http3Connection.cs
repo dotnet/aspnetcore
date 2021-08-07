@@ -248,6 +248,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                     try
                     {
+                        // Return null on server close or cancellation.
                         if (streamContext == null)
                         {
                             if (_acceptStreamsCts.Token.IsCancellationRequested)
@@ -255,6 +256,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                                 _acceptStreamsCts = new CancellationTokenSource();
                             }
 
+                            // There is no stream so run UpdateConnectionState in finally.
+                            // It may update state to stop accepting streams.
                             continue;
                         }
 
@@ -330,6 +333,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     }
                 }
                 error = ex;
+                clientAbort = true;
             }
             catch (IOException ex)
             {
@@ -359,7 +363,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 try
                 {
-                    // Only send goaway if the connection close was initiated on the server.
+                    // Don't try to send GOAWAY if the client has already closed the connection.
                     if (!clientAbort)
                     {
                         if (TryStopAcceptingStreams() || _gracefulCloseStarted)
@@ -651,7 +655,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         public void OnInputOrOutputCompleted()
         {
             TryStopAcceptingStreams();
-            Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient), Http3ErrorCode.InternalError);
+
+            Debug.Assert(Enum.IsDefined((Http3ErrorCode)_errorCodeFeature.Error), "Known HTTP/3 error code should be set.");
+
+            Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient), (Http3ErrorCode)_errorCodeFeature.Error);
         }
 
         private static class GracefulCloseInitiator

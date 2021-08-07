@@ -162,11 +162,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             }
             catch (Exception ex)
             {
-                _log.LogWarning(0, ex, $"Unexpected exception in {nameof(QuicConnectionContext)}.{nameof(AcceptAsync)}.");
+                Debug.Fail($"Unexpected exception in {nameof(QuicConnectionContext)}.{nameof(AcceptAsync)}: {ex}");
                 throw;
             }
 
-            // Return null for graceful closure.
+            // Return null for graceful closure or cancellation.
             return null;
         }
 
