@@ -256,8 +256,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                                 _acceptStreamsCts = new CancellationTokenSource();
                             }
 
-                            // There is no stream so run UpdateConnectionState in finally.
-                            // It may update state to stop accepting streams.
+                            // There is no stream so continue to skip to UpdateConnectionState in finally.
+                            // UpdateConnectionState is responsible for updating connection to
+                            // stop accepting streams and break out of accept loop.
                             continue;
                         }
 
