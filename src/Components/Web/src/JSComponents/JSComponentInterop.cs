@@ -9,6 +9,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Web.Infrastructure
 {
@@ -93,11 +94,20 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
                 object? parameterValue;
                 if (TryGetComponentParameterType(componentType, parameterName, out var parameterType))
                 {
-                    // It's a statically-declared parameter, so we can parse it into a known .NET type
-                    parameterValue = JsonSerializer.Deserialize(
-                        parameterJsonValue,
-                        parameterType,
-                        jsonOptions);
+                    if (parameterType == typeof(EventCallback))
+                    {
+                        var jsObjectReference = JsonSerializer.Deserialize<IJSObjectReference>(parameterJsonValue, jsonOptions)!;
+                        var eventCallbackRelay = new JSEventCallbackRelay(jsObjectReference);
+                        parameterValue = eventCallbackRelay.Callback;
+                    }
+                    else
+                    {
+                        // It's a statically-declared parameter, so we can parse it into a known .NET type
+                        parameterValue = JsonSerializer.Deserialize(
+                            parameterJsonValue,
+                            parameterType,
+                            jsonOptions);
+                    }
                 }
                 else
                 {

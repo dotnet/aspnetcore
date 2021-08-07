@@ -64,7 +64,10 @@
             containerElement.id = 'ShadowDOM';
         }
 
-        const component = await Blazor.rootComponents.add(containerElement, 'my-dynamic-root-component', { incrementAmount: 1 });
+        const component = await Blazor.rootComponents.add(containerElement, 'my-dynamic-root-component', {
+            incrementAmount: 1,
+            onButtonClickedCallback: () => console.log('Hello, world!')
+        });
         addedComponents.push({ component, containerElement });
         setMessage(`Added component in ${containerElement.id}`);
     }

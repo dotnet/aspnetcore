@@ -11,6 +11,7 @@
     </p>
 
     <button class="increment" @onclick="Increment">Increment</button>
+    <button class="callback" @onclick="OnButtonClickedCallback">JavaScript callback</button>
 
     @if (ShowComplexParameters)
     {
@@ -57,6 +58,7 @@
     [Parameter] public IJSObjectReference SomeJSObject { get; set; }
     [Parameter] public DotNetObjectReference<JavaScriptRootComponents.DotNetType> SomeDotNetObject { get; set; }
     [Parameter] public byte[] ByteArray { get; set; }
+    [Parameter] public EventCallback OnButtonClickedCallback { get; set;}
 
     [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> UnmatchedValues { get; set; }
 
