@@ -118,8 +118,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             // Request made while shutting down is rejected.
             var rejectedRequest = await Http3Api.CreateRequestStream();
-            await rejectedRequest.SendHeadersAsync(Headers);
-            await rejectedRequest.EndStreamAsync();
             await rejectedRequest.WaitForStreamErrorAsync(Http3ErrorCode.RequestRejected);
 
             // End active request.

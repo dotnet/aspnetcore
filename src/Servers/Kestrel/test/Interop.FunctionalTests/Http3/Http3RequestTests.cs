@@ -742,7 +742,7 @@ namespace Interop.FunctionalTests.Http3
             }
         }
 
-        [ConditionalFact(Skip = "https://github.com/dotnet/runtime/issues/56766")]
+        [ConditionalFact]
         [MsQuicSupported]
         public async Task GET_ClientDisconnected_ConnectionAbortRaised()
         {
