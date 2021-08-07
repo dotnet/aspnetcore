@@ -255,7 +255,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             await quicConnection.CloseAsync((long)Http3ErrorCode.NoError).DefaultTimeout();
 
             // Assert
-            var ex = Assert.ThrowsAsync<ConnectionResetException>(() => acceptTask).DefaultTimeout();
+            var ex = await Assert.ThrowsAsync<ConnectionResetException>(() => acceptTask).DefaultTimeout();
+            var innerEx = Assert.IsType<QuicConnectionAbortedException>(ex.InnerException);
+            Assert.Equal((long)Http3ErrorCode.NoError, innerEx.ErrorCode);
+
             Assert.Equal((long)Http3ErrorCode.NoError, serverConnection.Features.Get<IProtocolErrorCodeFeature>().Error);
         }
 
