@@ -1,4 +1,12 @@
-﻿<div class="special-style">
+﻿@using Microsoft.JSInterop
+@inject IJSRuntime JS
+
+<div>
+    The behavior for this button was imported from a JS module shipping with the component.
+    <button @onclick="TriggerPrompt">Trigger promp</button>
+</div>
+
+<div class="special-style">
     This component, including the CSS and image required to produce its
     elegant styling, is in an external NuGet package.
     <button @onclick="ChangeLabel">@buttonLabel </button>
@@ -6,6 +14,17 @@
 
 @code {
     string buttonLabel = "Click me";
+    private IJSObjectReference _module = null;
+
+    protected async override Task OnInitializedAsync()
+    {
+        _module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/TestContentPackage/ComponentFromPackage.razor.js");
+    }
+
+    async Task TriggerPrompt()
+    {
+        await _module.InvokeVoidAsync("showPrompt", "Hello from module");
+    }
 
     void ChangeLabel()
     {
