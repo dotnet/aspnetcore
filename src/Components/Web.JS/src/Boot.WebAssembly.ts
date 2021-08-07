@@ -123,7 +123,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   }
 
   const [resourceLoader] = await Promise.all([
-    WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig, options || {}),
+    WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig, candidateOptions || {}),
     WebAssemblyConfigLoader.initAsync(bootConfigResult)]);
 
   try {
