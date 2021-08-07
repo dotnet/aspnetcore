@@ -19,6 +19,9 @@ namespace Microsoft.AspNetCore.Connections
         private IDictionary<object, object?>? _items;
         private string? _connectionId;
 
+        // Will only have a value if the transport is created from a multiplexed transport.
+        public IFeatureCollection? MultiplexedConnectionFeatures { get; protected set; }
+
         public TransportConnection()
         {
             FastReset();

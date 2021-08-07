@@ -20,6 +20,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class Http3ConnectionTests : Http3TestBase
     {
+        private static readonly KeyValuePair<string, string>[] Headers = new[]
+        {
+            new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
+            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+        };
+
         [Fact]
         public async Task CreateRequestStream_RequestCompleted_Disposed()
         {
@@ -64,20 +72,62 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(requestStream.Disposed);
         }
 
-        [Fact]
-        public async Task GracefulServerShutdownClosesConnection()
+        [Theory]
+        [InlineData(0, 0)]
+        [InlineData(1, 4)]
+        [InlineData(111, 444)]
+        [InlineData(512, 2048)]
+        public async Task GOAWAY_GracefulServerShutdown_SendsGoAway(int connectionRequests, int expectedStreamId)
         {
             await Http3Api.InitializeConnectionAsync(_echoApplication);
 
             var inboundControlStream = await Http3Api.GetInboundControlStream();
             await inboundControlStream.ExpectSettingsAsync();
 
+            for (var i = 0; i < connectionRequests; i++)
+            {
+                var request = await Http3Api.CreateRequestStream();
+                await request.SendHeadersAsync(Headers);
+                await request.EndStreamAsync();
+                await request.ExpectReceiveEndOfStream();
+            }
+
             // Trigger server shutdown.
-            Http3Api.CloseConnectionGracefully();
+            Http3Api.CloseServerGracefully();
 
             Assert.Null(await Http3Api.MultiplexedConnectionContext.AcceptAsync().DefaultTimeout());
 
-            await Http3Api.WaitForConnectionStopAsync(0, false, expectedErrorCode: Http3ErrorCode.NoError);
+            await Http3Api.WaitForConnectionStopAsync(expectedStreamId, false, expectedErrorCode: Http3ErrorCode.NoError);
+        }
+
+        [Fact]
+        public async Task GOAWAY_GracefulServerShutdownWithActiveRequest_SendsMultipleGoAways()
+        {
+            await Http3Api.InitializeConnectionAsync(_echoApplication);
+
+            var inboundControlStream = await Http3Api.GetInboundControlStream();
+            await inboundControlStream.ExpectSettingsAsync();
+
+            var activeRequest = await Http3Api.CreateRequestStream();
+            await activeRequest.SendHeadersAsync(Headers);
+
+            // Trigger server shutdown.
+            Http3Api.CloseServerGracefully();
+
+            await Http3Api.WaitForGoAwayAsync(false, VariableLengthIntegerHelper.EightByteLimit);
+
+            // Request made while shutting down is rejected.
+            var rejectedRequest = await Http3Api.CreateRequestStream();
+            await rejectedRequest.WaitForStreamErrorAsync(Http3ErrorCode.RequestRejected);
+
+            // End active request.
+            await activeRequest.EndStreamAsync();
+            await activeRequest.ExpectReceiveEndOfStream();
+
+            // Client aborts the connection.
+            Http3Api.MultiplexedConnectionContext.Abort();
+
+            await Http3Api.WaitForConnectionStopAsync(4, false, expectedErrorCode: Http3ErrorCode.NoError);
         }
 
         [Theory]

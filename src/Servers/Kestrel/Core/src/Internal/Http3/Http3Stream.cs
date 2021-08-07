@@ -371,9 +371,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private void CompleteStream(bool errored)
         {
-            Debug.Assert(_appCompleted != null);
-            _appCompleted.SetResult();
-
             if (!EndStreamReceived)
             {
                 if (!errored)
@@ -395,6 +392,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 TryClose();
             }
+
+            // Stream will be pooled after app completed.
+            // Wait to signal app completed after any potential aborts on the stream.
+            Debug.Assert(_appCompleted != null);
+            _appCompleted.SetResult();
         }
 
         private bool TryClose()
