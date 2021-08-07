@@ -26,6 +26,48 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
         [ConditionalFact]
         [MsQuicSupported]
+        public async Task AcceptAsync_CancellationThenAccept_AcceptStreamAfterCancellation()
+        {
+            // Arrange
+            var connectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
+
+            // Act
+            var acceptTask = connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+
+            var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+
+            using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+            await clientConnection.ConnectAsync().DefaultTimeout();
+
+            await using var serverConnection = await acceptTask.DefaultTimeout();
+
+            // Wait for stream and then cancel
+            var cts = new CancellationTokenSource();
+            var acceptStreamTask = serverConnection.AcceptAsync(cts.Token);
+            cts.Cancel();
+
+            var serverStream = await acceptStreamTask.DefaultTimeout();
+            Assert.Null(serverStream);
+
+            // Wait for stream after cancellation
+            acceptStreamTask = serverConnection.AcceptAsync();
+
+            await using var clientStream = clientConnection.OpenBidirectionalStream();
+            await clientStream.WriteAsync(TestData);
+
+            // Assert
+            serverStream = await acceptStreamTask.DefaultTimeout();
+            Assert.NotNull(serverStream);
+
+            var read = await serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
+            Assert.Equal(TestData, read.Buffer.ToArray());
+            serverStream.Transport.Input.AdvanceTo(read.Buffer.End);
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
         public async Task AcceptAsync_ClientClosesConnection_ServerNotified()
         {
             // Arrange
@@ -495,10 +537,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             const int StreamsSent = 101;
             for (var i = 0; i < StreamsSent; i++)
             {
-                // TODO: Race condition in QUIC library.
-                // Delay between sending streams to avoid
-                // https://github.com/dotnet/runtime/issues/55249
-                await Task.Delay(100);
                 streamTasks.Add(SendStream(requestState));
             }
 

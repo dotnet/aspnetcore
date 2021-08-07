@@ -46,6 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private int _stoppedAcceptingStreams;
         private bool _gracefulCloseStarted;
         private int _activeRequestCount;
+        private CancellationTokenSource _acceptStreamsCts = new CancellationTokenSource();
         private readonly Http3PeerSettings _serverSettings = new Http3PeerSettings();
         private readonly Http3PeerSettings _clientSettings = new Http3PeerSettings();
         private readonly StreamCloseAwaitable _streamCompletionAwaitable = new StreamCloseAwaitable();
@@ -107,7 +108,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 if (Interlocked.CompareExchange(ref _gracefulCloseInitiator, initiator, GracefulCloseInitiator.None) == GracefulCloseInitiator.None)
                 {
-                    UpdateConnectionState();
+                    // Break out of AcceptStreams so connection state can be updated.
+                    _acceptStreamsCts.Cancel();
                 }
             }
         }
@@ -240,15 +242,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 // Don't delay on waiting to send outbound control stream settings.
                 outboundControlStreamTask = ProcessOutboundControlStreamAsync(outboundControlStream);
 
-                while (true)
+                while (_stoppedAcceptingStreams == 0)
                 {
-                    var streamContext = await _multiplexedContext.AcceptAsync();
+                    var streamContext = await _multiplexedContext.AcceptAsync(_acceptStreamsCts.Token);
 
                     try
                     {
                         if (streamContext == null)
                         {
-                            break;
+                            if (_acceptStreamsCts.Token.IsCancellationRequested)
+                            {
+                                _acceptStreamsCts = new CancellationTokenSource();
+                            }
+
+                            continue;
                         }
 
                         var streamDirectionFeature = streamContext.Features.Get<IStreamDirectionFeature>();
@@ -267,9 +274,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         }
                         else
                         {
-                            // TODO race condition between checking this and updating highest stream ID
+                            // Request stream
+
                             // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-5.2-2
-                            if (_stoppedAcceptingStreams == 1)
+                            if (_gracefulCloseStarted)
                             {
                                 // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1.2-3
                                 streamContext.Features.Get<IProtocolErrorCodeFeature>()!.Error = (long)Http3ErrorCode.RequestRejected;
@@ -280,7 +288,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                             // Request stream IDs are tracked.
                             UpdateHighestOpenedRequestStreamId(streamIdFeature.StreamId);
 
-                            // Request stream
                             var persistentStateFeature = streamContext.Features.Get<IPersistentStateFeature>();
                             Debug.Assert(persistentStateFeature != null, $"Required {nameof(IPersistentStateFeature)} not on stream context.");
 
@@ -353,7 +360,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     // Only send goaway if the connection close was initiated on the server.
                     if (!clientAbort)
                     {
-                        await SendGoAwayAsync(GetCurrentGoAwayStreamId());
+                        if (TryStopAcceptingStreams() || _gracefulCloseStarted)
+                        {
+                            await SendGoAwayAsync(GetCurrentGoAwayStreamId());
+                        }
                     }
 
                     // Abort active request streams.
@@ -430,37 +440,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 return;
             }
 
-            int activeRequestCount;
-            lock (_streams)
+            if (_gracefulCloseInitiator != GracefulCloseInitiator.None)
             {
-                activeRequestCount = _activeRequestCount;
-            }
-
-            if (_gracefulCloseInitiator != GracefulCloseInitiator.None && !_gracefulCloseStarted)
-            {
-                _gracefulCloseStarted = true;
-
-                _errorCodeFeature.Error = (long)Http3ErrorCode.NoError;
-                Log.Http3ConnectionClosing(_context.ConnectionId);
-
-                if (_gracefulCloseInitiator == GracefulCloseInitiator.Server && activeRequestCount > 0)
+                int activeRequestCount;
+                lock (_streams)
                 {
-                    if (TryStopAcceptingStreams())
+                    activeRequestCount = _activeRequestCount;
+                }
+
+                if (!_gracefulCloseStarted)
+                {
+                    _gracefulCloseStarted = true;
+
+                    _errorCodeFeature.Error = (long)Http3ErrorCode.NoError;
+                    Log.Http3ConnectionClosing(_context.ConnectionId);
+
+                    if (_gracefulCloseInitiator == GracefulCloseInitiator.Server && activeRequestCount > 0)
                     {
                         // Go away with largest streamid to initiate graceful shutdown.
                         SendGoAwayAsync(VariableLengthIntegerHelper.EightByteLimit).Preserve();
                     }
                 }
-            }
 
-            if (_activeRequestCount == 0)
-            {
-                if (_gracefulCloseStarted)
+                if (activeRequestCount == 0)
                 {
-                    if (TryStopAcceptingStreams())
-                    {
-                        SendGoAwayAsync(GetCurrentGoAwayStreamId()).Preserve();
-                    }
+                    TryStopAcceptingStreams();
                 }
             }
         }

@@ -219,6 +219,48 @@ namespace Interop.FunctionalTests.Http3
             }
         }
 
+        [ConditionalTheory]
+        [MsQuicSupported]
+        [InlineData(HttpProtocols.Http3, Skip = "https://github.com/dotnet/runtime/issues/56969")]
+        [InlineData(HttpProtocols.Http2)]
+        public async Task POST_ClientSendsOnlyHeaders_RequestReceivedOnServer(HttpProtocols protocol)
+        {
+            // Arrange
+            var builder = CreateHostBuilder(context =>
+            {
+                return Task.CompletedTask;
+            }, protocol: protocol);
+
+            using (var host = builder.Build())
+            using (var client = CreateClient())
+            {
+                await host.StartAsync();
+
+                var requestContent = new StreamingHttpContext();
+
+                var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
+                request.Content = requestContent;
+                request.Version = GetProtocol(protocol);
+                request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                // Act
+                var responseTask = client.SendAsync(request, CancellationToken.None).DefaultTimeout();
+
+                var requestStream = await requestContent.GetStreamAsync().DefaultTimeout();
+
+                // Send headers
+                await requestStream.FlushAsync().DefaultTimeout();
+
+                var response = await responseTask.DefaultTimeout();
+
+                // Assert
+                response.EnsureSuccessStatusCode();
+                Assert.Equal(GetProtocol(protocol), response.Version);
+
+                await host.StopAsync();
+            }
+        }
+
         [ConditionalFact]
         [MsQuicSupported]
         public async Task POST_ServerCompletesWithoutReadingRequestBody_ClientGetsResponse()
@@ -937,7 +979,8 @@ namespace Interop.FunctionalTests.Http3
         {
             Logger.LogInformation($"Started waiting for logs: {message}");
 
-            for (int i = 0; i < 5; i++)
+            var retryCount = !Debugger.IsAttached ? 5 : int.MaxValue;
+            for (var i = 0; i < retryCount; i++)
             {
                 if (testLogs(TestSink.Writes))
                 {

@@ -327,6 +327,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
                 _clientAbort = true;
             }
+            catch (QuicConnectionAbortedException ex)
+            {
+                // Abort from peer.
+                Error = ex.ErrorCode;
+                _log.StreamAborted(this, ex.ErrorCode, ex);
+
+                // This could be ignored if _shutdownReason is already set.
+                shutdownReason = new ConnectionResetException(ex.Message, ex);
+
+                _clientAbort = true;
+            }
             catch (QuicOperationAbortedException ex)
             {
                 // AbortWrite has been called for the stream.
