@@ -84,14 +84,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
                 {
                     configureServices(services);
 
-                    // Ensure there is at least one multiplexed connection lister factory if none was added to services.
-                    if (!services.Any(d => d.ServiceType == typeof(IMultiplexedConnectionListenerFactory)))
-                    {
-                        // Mock multiplexed connection listner is added so Kestrel doesn't error
-                        // when a HTTP/3 endpoint is configured.
-                        services.AddSingleton<IMultiplexedConnectionListenerFactory>(new MockMultiplexedConnectionListenerFactory());
-                    }
-
                     services.AddSingleton<IStartup>(this);
                     services.AddSingleton(context.LoggerFactory);
 
