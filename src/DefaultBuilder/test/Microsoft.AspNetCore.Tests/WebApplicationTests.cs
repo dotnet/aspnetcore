@@ -398,7 +398,7 @@ namespace Microsoft.AspNetCore.Tests
         public async Task EndpointDataSourceOnlyAddsOnce()
         {
             var builder = WebApplication.CreateBuilder();
-            var app = builder.Build();
+            await using var app = builder.Build();
 
             app.UseRouting();
 
@@ -414,8 +414,9 @@ namespace Microsoft.AspNetCore.Tests
 
             var ds = app.Services.GetRequiredService<EndpointDataSource>();
             Assert.Equal(3, ds.Endpoints.Count);
-
-            await app.DisposeAsync();
+            Assert.Equal("/hi HTTP: GET", ds.Endpoints[0].DisplayName);
+            Assert.Equal("/heyo HTTP: GET", ds.Endpoints[1].DisplayName);
+            Assert.Equal("/ HTTP: GET", ds.Endpoints[2].DisplayName);
         }
 
         private class CustomHostLifetime : IHostLifetime
