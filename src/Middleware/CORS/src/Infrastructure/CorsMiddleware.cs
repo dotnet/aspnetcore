@@ -213,23 +213,43 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             }
             else
             {
-                context.Response.OnStarting(OnResponseStartingDelegate, Tuple.Create(this, context, corsResult));
+                context.Response.OnStarting(OnResponseStartingDelegate, new CorsState(this, context, corsResult));
                 return _next(context);
             }
         }
 
         private static Task OnResponseStarting(object state)
         {
-            var (middleware, context, result) = (Tuple<CorsMiddleware, HttpContext, CorsResult>)state;
+            var corsState = (CorsState)state;
             try
             {
-                middleware.CorsService.ApplyResult(result, context.Response);
+                corsState.Middleware.CorsService.ApplyResult(corsState.Result, corsState.HttpContext.Response);
             }
             catch (Exception exception)
             {
-                middleware.Logger.FailedToSetCorsHeaders(exception);
+                corsState.Middleware.Logger.FailedToSetCorsHeaders(exception);
             }
             return Task.CompletedTask;
+        }
+
+        private readonly struct CorsState
+        {
+            private readonly CorsMiddleware _middleware;
+            private readonly HttpContext _httpContext;
+            private readonly CorsResult _result;
+
+            public CorsState(CorsMiddleware middleware, HttpContext httpContext, CorsResult result)
+            {
+                _middleware = middleware;
+                _httpContext = httpContext;
+                _result = result;
+            }
+
+            public CorsMiddleware Middleware => _middleware;
+
+            public HttpContext HttpContext => _httpContext;
+
+            public CorsResult Result => _result;
         }
     }
 }
