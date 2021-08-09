@@ -158,8 +158,8 @@ namespace Microsoft.AspNetCore.Http
 
             if (genericCandidate is null && nonGenericCandidate is null)
             {
-                Debug.Fail("No suitable System.Enum.TryParse method not found.");
-                throw new Exception("No suitable System.Enum.TryParse method not found.");
+                Debug.Fail("No suitable System.Enum.TryParse method found.");
+                throw new Exception("No suitable System.Enum.TryParse method found.");
             }
 
             if (preferNonGenericEnumParseOverload)
