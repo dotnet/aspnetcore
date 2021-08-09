@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 using Http3SettingType = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.Http3SettingType;
@@ -90,6 +91,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 await request.SendHeadersAsync(Headers);
                 await request.EndStreamAsync();
                 await request.ExpectReceiveEndOfStream();
+
+                await request.OnStreamCompletedTask.DefaultTimeout();
             }
 
             // Trigger server shutdown.
@@ -299,13 +302,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             ConnectionContext last = null;
             for (var i = 0; i < count; i++)
             {
+                Logger.LogInformation($"Interation {i}");
+
                 var streamContext = await MakeRequestAsync(i, headers);
 
                 first ??= streamContext;
                 last = streamContext;
-            }
 
-            Assert.Same(first, last);
+                Assert.Same(first, last);
+            }
         }
 
         private async Task<ConnectionContext> MakeRequestAsync(int index, KeyValuePair<string, string>[] headers)
