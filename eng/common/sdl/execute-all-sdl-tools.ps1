@@ -29,7 +29,7 @@ Param(
 
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version 2.0
-$LASTEXITCODE = 0
+$global:LASTEXITCODE = 0
 
 #Replace repo names to the format of org/repo
 if (!($Repository.contains('/'))) {
