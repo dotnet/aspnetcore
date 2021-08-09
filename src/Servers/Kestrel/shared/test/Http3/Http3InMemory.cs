@@ -1114,9 +1114,6 @@ namespace Microsoft.AspNetCore.Testing
         {
             _testBase.Logger.LogDebug($"Disposing stream {StreamId}");
 
-            Disposed = true;
-            _disposedTcs.TrySetResult();
-
             var readerCompletedSuccessfully = _transportPipeReader.IsCompletedSuccessfully;
             var writerCompletedSuccessfully = _transportPipeWriter.IsCompletedSuccessfully;
             var canReuse = !_isAborted &&
@@ -1135,6 +1132,9 @@ namespace Microsoft.AspNetCore.Testing
             {
                 _testBase.Logger.LogDebug($"Can't reuse stream {StreamId}. Aborted: {_isAborted}, Reader completed successfully: {readerCompletedSuccessfully}, Writer completed successfully: {writerCompletedSuccessfully}.");
             }
+
+            Disposed = true;
+            _disposedTcs.TrySetResult();
 
             return ValueTask.CompletedTask;
         }
