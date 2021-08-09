@@ -15,7 +15,7 @@ using System.Reflection;
 
 namespace Microsoft.AspNetCore.Http
 {
-    internal class TryParseMethodCache
+    internal sealed class TryParseMethodCache
     {
         private readonly MethodInfo _enumTryParseMethod;
 
@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Http
         {
         }
 
+        // This is for testing
         public TryParseMethodCache(bool preferNonGenericEnumParseOverload)
         {
             _enumTryParseMethod = GetEnumTryParseMethod(preferNonGenericEnumParseOverload);
@@ -159,7 +160,7 @@ namespace Microsoft.AspNetCore.Http
             if (genericCandidate is null && nonGenericCandidate is null)
             {
                 Debug.Fail("No suitable System.Enum.TryParse method found.");
-                throw new Exception("No suitable System.Enum.TryParse method found.");
+                throw new MissingMethodException("No suitable System.Enum.TryParse method found.");
             }
 
             if (preferNonGenericEnumParseOverload)
