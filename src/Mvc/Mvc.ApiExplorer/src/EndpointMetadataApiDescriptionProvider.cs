@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         private readonly EndpointDataSource _endpointDataSource;
         private readonly IHostEnvironment _environment;
         private readonly IServiceProviderIsService? _serviceProviderIsService;
+        private readonly TryParseMethodCache TryParseMethodCache = new();
 
         // Executes before MVC's DefaultApiDescriptionProvider and GrpcHttpApiDescriptionProvider for no particular reason.
         public int Order => -1100;
