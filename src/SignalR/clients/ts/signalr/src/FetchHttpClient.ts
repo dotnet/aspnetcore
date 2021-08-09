@@ -20,11 +20,11 @@ export class FetchHttpClient extends HttpClient {
         super();
         this._logger = logger;
 
-        // In order to ignore the dynamic require in webpack builds we need to do this magic
-        // @ts-ignore: TS doesn't know about these names
-        const requireFunc = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
-
         if (typeof fetch === "undefined") {
+            // In order to ignore the dynamic require in webpack builds we need to do this magic
+            // @ts-ignore: TS doesn't know about these names
+            const requireFunc = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
+
             // Cookies aren't automatically handled in Node so we need to add a CookieJar to preserve cookies across requests
             this._jar = new (requireFunc("tough-cookie")).CookieJar();
             this._fetchType = requireFunc("node-fetch");
@@ -36,6 +36,10 @@ export class FetchHttpClient extends HttpClient {
             this._fetchType = fetch.bind(globalThis);
         }
         if (typeof AbortController === "undefined") {
+            // In order to ignore the dynamic require in webpack builds we need to do this magic
+            // @ts-ignore: TS doesn't know about these names
+            const requireFunc = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
+
             // Node needs EventListener methods on AbortController which our custom polyfill doesn't provide
             this._abortControllerType = requireFunc("abort-controller");
         } else {
