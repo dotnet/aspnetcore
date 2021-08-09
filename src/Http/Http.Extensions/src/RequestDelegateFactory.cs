@@ -732,9 +732,7 @@ namespace Microsoft.AspNetCore.Http
             if (factoryContext.JsonRequestBodyType is not null)
             {
                 factoryContext.HasAnotherBodyParameter = true;
-#pragma warning disable CS8604 // Possible null reference argument.
-                factoryContext.TrackedParameters.Add(parameter.Name, "We failed to infer this parameter. Did you forget to inject it as a Service?");
-#pragma warning restore CS8604 // Possible null reference argument.
+                factoryContext.TrackedParameters.Add(parameter.Name!, "We failed to infer this parameter. Did you forget to inject it as a Service?");
             }
 
             var nullability = NullabilityContext.Create(parameter);
