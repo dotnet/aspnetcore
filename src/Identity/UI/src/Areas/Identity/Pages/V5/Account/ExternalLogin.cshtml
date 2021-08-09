@@ -18,8 +18,8 @@
     <div class="col-md-4">
         <form asp-page-handler="Confirmation" asp-route-returnUrl="@Model.ReturnUrl" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Input.Email"></label>
+            <div>
+                <label asp-for="Input.Email" class="form-label"></label>
                 <input asp-for="Input.Email" class="form-control" autocomplete="email" />
                 <span asp-validation-for="Input.Email" class="text-danger"></span>
             </div>
