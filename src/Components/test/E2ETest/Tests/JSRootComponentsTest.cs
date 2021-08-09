@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Interactions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -198,6 +199,32 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                     Assert.Equal("nullVal", param.FindElement(By.ClassName("unmatched-value-name")).Text);
                     Assert.Equal("null", param.FindElement(By.ClassName("unmatched-value-type")).Text);
                 });
+        }
+
+        [Fact]
+        public void CanSupplyAndInvokeFunctionParameters()
+        {
+            var containerId = "root-container-1";
+
+            app.FindElement(By.Id("add-root-component")).Click();
+            app.FindElement(By.Id("set-function-params")).Click();
+            Browser.Equal($"Finished setting function parameters on component in {containerId}", () => app.FindElement(By.Id("message")).Text);
+
+            var container = Browser.FindElement(By.Id(containerId));
+
+            // Invoke callback without params.
+            container.FindElement(By.ClassName("js-callback")).Click();
+            Browser.Equal($"JavaScript button callback invoked", () => app.FindElement(By.Id("message")).Text);
+
+            // Invoke callback with params.
+            container.FindElement(By.ClassName("js-callback-with-params")).Click();
+            Browser.Equal($"JavaScript button callback received mouse event args (ctrlKey=false)", () => app.FindElement(By.Id("message")).Text);
+
+            // Invoke callback with params (with ctrl key pressed).
+            new Actions(Browser).KeyDown(Keys.Control).Perform();
+            container.FindElement(By.ClassName("js-callback-with-params")).Click();
+            Browser.Equal($"JavaScript button callback received mouse event args (ctrlKey=true)", () => app.FindElement(By.Id("message")).Text);
+            new Actions(Browser).KeyUp(Keys.Control).Perform();
         }
 
         [Fact]

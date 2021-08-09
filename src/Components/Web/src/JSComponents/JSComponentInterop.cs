@@ -21,6 +21,8 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
     [EditorBrowsable(EditorBrowsableState.Never)]
     public class JSComponentInterop
     {
+        private const string JSFunctionPropertyName = "func";
+
         private static readonly ConcurrentDictionary<Type, ParameterTypeCache> ParameterTypeCaches = new();
 
         static JSComponentInterop()
@@ -94,15 +96,25 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
                 object? parameterValue;
                 if (TryGetComponentParameterType(componentType, parameterName, out var parameterType))
                 {
-                    if (parameterType == typeof(EventCallback))
+                    // It's a statically-declared parameter, so we can parse it into a known .NET type.
+
+                    if (parameterType == typeof(Func<Task>))
                     {
-                        var jsObjectReference = JsonSerializer.Deserialize<IJSObjectReference>(parameterJsonValue, jsonOptions)!;
-                        var eventCallbackRelay = new JSEventCallbackRelay(jsObjectReference);
-                        parameterValue = eventCallbackRelay.Callback;
+                        // If we are assigning to a Func<Task> parameter, we expect a reference to a JS object
+                        // wrapping the JS function.
+                        var jsObject = JsonSerializer.Deserialize<IJSObjectReference>(parameterJsonValue, jsonOptions)!;
+                        parameterValue = new Func<Task>(() => jsObject.InvokeVoidAsync(JSFunctionPropertyName).AsTask());
+                    }
+                    else if (parameterType.IsAssignableFrom(typeof(Func<object, Task>)))
+                    {
+                        // The Func<object, Task> scenario is similar to the Func<Task> one, only we pass a parameter to the JS function.
+                        // The main benefit from this is that it enables passing event args from .NET to JS.
+                        var jsObject = JsonSerializer.Deserialize<IJSObjectReference>(parameterJsonValue, jsonOptions)!;
+                        parameterValue = new Func<object, Task>(value => jsObject.InvokeVoidAsync(JSFunctionPropertyName, value).AsTask());
                     }
                     else
                     {
-                        // It's a statically-declared parameter, so we can parse it into a known .NET type
+                        // Other parameter types do not require special treatment, so we deserialize them directly.
                         parameterValue = JsonSerializer.Deserialize(
                             parameterJsonValue,
                             parameterType,

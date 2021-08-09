@@ -39,6 +39,8 @@ export function getAndRemovePendingRootComponentContainer(containerIdentifier: s
 class DynamicRootComponent {
   private _componentId: number | null;
 
+  private _jsFunctionObjectReferences = new Map<any, any>();
+
   constructor(componentId: number) {
     this._componentId = componentId;
   }
@@ -49,11 +51,22 @@ class DynamicRootComponent {
     const keys = Object.keys(parameters);
     const parameterCount = keys.length;
 
+    // Wrap parameters of function type in JSObjectReference instances so they can be invoked from .NET
     for (const key of keys) {
       const value = parameters[key];
-      if (typeof value === 'function') {
-        parameters[key] = DotNet.createJSObjectReference({ callback: value });
+
+      if (typeof value !== 'function') {
+        continue;
       }
+
+      let existingJsObjectReference = this._jsFunctionObjectReferences.get(value);
+
+      if (!existingJsObjectReference) {
+        existingJsObjectReference = DotNet.createJSObjectReference({ func: value });
+        this._jsFunctionObjectReferences.set(value, existingJsObjectReference);
+      }
+
+      parameters[key] = existingJsObjectReference;
     }
 
     return getRequiredManager().invokeMethodAsync('SetRootComponentParameters', this._componentId, parameterCount, parameters);
@@ -63,6 +76,10 @@ class DynamicRootComponent {
     if (this._componentId !== null) {
       await getRequiredManager().invokeMethodAsync('RemoveRootComponent', this._componentId);
       this._componentId = null; // Ensure it can't be used again
+
+      for (const jsObjectReference of this._jsFunctionObjectReferences.values()) {
+        jsObjectReference.dispose();
+      }
     }
   }
 }

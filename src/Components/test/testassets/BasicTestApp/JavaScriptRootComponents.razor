@@ -32,6 +32,7 @@
     <button id="set-complex-params" onclick="setComplexParameters()">Set complex parameters</button>
     <button id="set-invalid-params" onclick="setInvalidParameters()">Set invalid parameters</button>
     <button id="set-catchall-params" onclick="setCatchAllParameters()">Set catch-all parameters</button>
+    <button id="set-function-params" onclick="setFunctionParameters()">Set function parameters</button>
 </p>
 
 <script suppress-error="BL9992">
@@ -64,10 +65,7 @@
             containerElement.id = 'ShadowDOM';
         }
 
-        const component = await Blazor.rootComponents.add(containerElement, 'my-dynamic-root-component', {
-            incrementAmount: 1,
-            onButtonClickedCallback: () => console.log('Hello, world!')
-        });
+        const component = await Blazor.rootComponents.add(containerElement, 'my-dynamic-root-component', { incrementAmount: 1 });
         addedComponents.push({ component, containerElement });
         setMessage(`Added component in ${containerElement.id}`);
     }
@@ -121,11 +119,28 @@
         setMessage(`Finished setting catchall parameters on component in ${containerElement.id}`);
     }
 
+    async function setFunctionParameters() {
+        const { component, containerElement } = addedComponents[addedComponents.length - 1];
+        await component.setParameters({
+            onJSCallbackButtonClick,
+            onJSCallbackWithParamsButtonClick,
+        });
+        setMessage(`Finished setting function parameters on component in ${containerElement.id}`);
+    }
+
     function removeRootComponent() {
         // Treat it like a FIFO queue
         const { component, containerElement } = addedComponents.shift();
         setMessage(`Disposed component in ${containerElement.id}`);
         component.dispose();
+    }
+
+    function onJSCallbackButtonClick() {
+        setMessage('JavaScript button callback invoked');
+    }
+
+    function onJSCallbackWithParamsButtonClick(mouseEventArgs) {
+        setMessage(`JavaScript button callback received mouse event args (ctrlKey=${mouseEventArgs.ctrlKey})`);
     }
 
     function showInitializerCallLog() {

@@ -44,9 +44,6 @@ Microsoft.AspNetCore.Components.Web.IErrorBoundaryLogger
 Microsoft.AspNetCore.Components.Web.IErrorBoundaryLogger.LogErrorAsync(System.Exception! exception) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.JSComponentInterop(Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore! configuration) -> void
 Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.SetRootComponentParameters(int componentId, int parameterCount, System.Text.Json.JsonElement parametersJson, System.Text.Json.JsonSerializerOptions! jsonOptions) -> void
-Microsoft.AspNetCore.Components.Web.Infrastructure.JSEventCallbackRelay
-Microsoft.AspNetCore.Components.Web.Infrastructure.JSEventCallbackRelay.Callback.get -> Microsoft.AspNetCore.Components.EventCallback
-Microsoft.AspNetCore.Components.Web.Infrastructure.JSEventCallbackRelay.JSEventCallbackRelay(Microsoft.JSInterop.IJSObjectReference! jsObjectReference) -> void
 Microsoft.AspNetCore.Components.Web.JSComponentConfigurationExtensions
 Microsoft.AspNetCore.Components.Web.MouseEventArgs.PageX.get -> double
 Microsoft.AspNetCore.Components.Web.MouseEventArgs.PageX.set -> void

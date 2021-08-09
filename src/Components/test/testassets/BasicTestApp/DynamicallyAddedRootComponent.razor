@@ -11,7 +11,8 @@
     </p>
 
     <button class="increment" @onclick="Increment">Increment</button>
-    <button class="callback" @onclick="OnButtonClickedCallback">JavaScript callback</button>
+    <button class="js-callback" @onclick="OnJSCallbackButtonClick">JavaScript callback</button>
+    <button class="js-callback-with-params" @onclick="OnJSCallbackWithParamsButtonClick">JavaScript callback with params</button>
 
     @if (ShowComplexParameters)
     {
@@ -58,7 +59,8 @@
     [Parameter] public IJSObjectReference SomeJSObject { get; set; }
     [Parameter] public DotNetObjectReference<JavaScriptRootComponents.DotNetType> SomeDotNetObject { get; set; }
     [Parameter] public byte[] ByteArray { get; set; }
-    [Parameter] public EventCallback OnButtonClickedCallback { get; set;}
+    [Parameter] public Func<Task> OnJSCallbackButtonClick { get; set; }
+    [Parameter] public Func<MouseEventArgs, Task> OnJSCallbackWithParamsButtonClick { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> UnmatchedValues { get; set; }
 
