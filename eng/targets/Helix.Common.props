@@ -37,7 +37,7 @@
     <!-- <HelixAvailableTargetQueue Include="Windows.7.Amd64.Open" Platform="Windows" /> -->
     <HelixAvailableTargetQueue Include="Windows.81.Amd64.Open" Platform="Windows" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetArchitecture)' == 'x64' AND '$(IsHelixDaily)' == 'true'">
+  <ItemGroup Condition="'$(TargetArchitecture)' == 'x64' AND '$(IsHelixDaily)' == 'true' AND '$(_UseHelixOpenQueues)' != 'true'">
     <HelixAvailableTargetQueue Include="Windows.10.Amd64.ClientPre.VS2019.Pre" Platform="Windows" />
   </ItemGroup>
 
