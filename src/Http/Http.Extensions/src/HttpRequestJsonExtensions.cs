@@ -4,10 +4,12 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -59,7 +61,7 @@ namespace Microsoft.AspNetCore.Http
 
             if (!request.HasJsonContentType(out var charset))
             {
-                throw CreateContentTypeError(request);
+                throw CreateContentTypeError(request, null);
             }
 
             options ??= ResolveSerializerOptions(request.HttpContext);
@@ -124,7 +126,7 @@ namespace Microsoft.AspNetCore.Http
 
             if (!request.HasJsonContentType(out var charset))
             {
-                throw CreateContentTypeError(request);
+                throw CreateContentTypeError(request, type);
             }
 
             options ??= ResolveSerializerOptions(request.HttpContext);
@@ -135,7 +137,7 @@ namespace Microsoft.AspNetCore.Http
             try
             {
                 return await JsonSerializer.DeserializeAsync(inputStream, type, options, cancellationToken);
-            }
+            } 
             finally
             {
                 if (usesTranscodingStream)
@@ -192,8 +194,15 @@ namespace Microsoft.AspNetCore.Http
             return httpContext.RequestServices?.GetService<IOptions<JsonOptions>>()?.Value?.SerializerOptions ?? JsonOptions.DefaultSerializerOptions;
         }
 
-        private static InvalidOperationException CreateContentTypeError(HttpRequest request)
-        {
+        private static InvalidOperationException CreateContentTypeError(HttpRequest request, Type? type)
+        {         
+            var feature = request.HttpContext.Features.Get<IHttpRequestBodyDetectionFeature>();
+
+            //if there is no content-type and the content-length is zero, it might be safe to assume that the parameter is a service that the user forgot to register with the DI
+            if (feature?.CanHaveBody == false)
+            {
+                return new InvalidOperationException($"We failed to infer or bind '{type?.FullName}' parameter. Was this a Service parameter that you forgot to register ?");
+            }
             return new InvalidOperationException($"Unable to read the request as JSON because the request content type '{request.ContentType}' is not a known JSON content type.");
         }
 
