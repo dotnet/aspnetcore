@@ -200,6 +200,8 @@ namespace Microsoft.AspNetCore.Testing
 
         public void AdvanceClock(TimeSpan timeSpan)
         {
+            Logger.LogDebug($"Advancing clock {timeSpan}.");
+
             var clock = _mockSystemClock;
             var endTime = clock.UtcNow + timeSpan;
 
