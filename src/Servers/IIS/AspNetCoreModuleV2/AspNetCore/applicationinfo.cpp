@@ -251,7 +251,8 @@ APPLICATION_INFO::ShutDownApplication(const bool fServerInitiated)
     }
 }
 
-/* See https://github.com/dotnet/aspnetcore/pull/28357 for more context
+/* Overview of shadow copy logic when enabled. See https://github.com/dotnet/aspnetcore/pull/28357 for more context
+
  * On first request, ANCM goes through it's startup sequence, starting dotnet and sending the request into managed code. During this sequence, 
  * ANCM will copy the contents of the app directory to another directory which is user specified. The path to this directory can be absolute or relative.
 
