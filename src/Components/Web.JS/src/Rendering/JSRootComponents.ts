@@ -2,6 +2,7 @@ import { DotNet } from '@microsoft/dotnet-js-interop';
 
 const pendingRootComponentContainerNamePrefix = '__bl-dynamic-root:';
 const pendingRootComponentContainers = new Map<string, Element>();
+const jsFunctionPropertyName = 'func';
 let nextPendingDynamicRootComponentIdentifier = 0;
 
 type ComponentParameters = object | null | undefined;
@@ -62,7 +63,7 @@ class DynamicRootComponent {
       let existingJsObjectReference = this._jsFunctionObjectReferences.get(value);
 
       if (!existingJsObjectReference) {
-        existingJsObjectReference = DotNet.createJSObjectReference({ func: value });
+        existingJsObjectReference = DotNet.createJSObjectReference({ [jsFunctionPropertyName]: value });
         this._jsFunctionObjectReferences.set(value, existingJsObjectReference);
       }
 
