@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             ConnectionContext last = null;
             for (var i = 0; i < count; i++)
             {
-                Logger.LogInformation($"Interation {i}");
+                Logger.LogInformation($"Iteration {i}");
 
                 var streamContext = await MakeRequestAsync(i, headers);
 
