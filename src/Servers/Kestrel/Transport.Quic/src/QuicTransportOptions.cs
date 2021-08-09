@@ -24,11 +24,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
         public ushort MaxUnidirectionalStreamCount { get; set; } = 10;
 
         /// <summary>
-        /// Sets the idle timeout for connections and streams.
-        /// </summary>
-        public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromSeconds(130); // Matches KestrelServerLimits.KeepAliveTimeout.
-
-        /// <summary>
         /// The maximum read size.
         /// </summary>
         public long? MaxReadBufferSize { get; set; } = 1024 * 1024;

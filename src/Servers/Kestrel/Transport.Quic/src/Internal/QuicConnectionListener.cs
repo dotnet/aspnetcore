@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         private readonly QuicTransportContext _context;
         private readonly QuicListener _listener;
 
-        public QuicConnectionListener(QuicTransportOptions options, IQuicTrace log, EndPoint endpoint, SslServerAuthenticationOptions sslServerAuthenticationOptions)
+        public QuicConnectionListener(QuicTransportOptions options, IQuicTrace log, EndPoint endpoint, SslServerAuthenticationOptions sslServerAuthenticationOptions, KestrelServerLimitsFeature kestrelServerLimitsFeature)
         {
             if (!QuicImplementationProviders.Default.IsSupported)
             {
@@ -37,9 +37,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
             quicListenerOptions.ServerAuthenticationOptions = sslServerAuthenticationOptions;
             quicListenerOptions.ListenEndPoint = endpoint as IPEndPoint;
-            quicListenerOptions.IdleTimeout = options.IdleTimeout;
             quicListenerOptions.MaxBidirectionalStreams = options.MaxBidirectionalStreamCount;
             quicListenerOptions.MaxUnidirectionalStreams = options.MaxUnidirectionalStreamCount;
+            quicListenerOptions.IdleTimeout = kestrelServerLimitsFeature.KeepAliveTimeout;
 
             _listener = new QuicListener(quicListenerOptions);
 

@@ -60,7 +60,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
                 throw new InvalidOperationException(message);
             }
 
-            var transport = new QuicConnectionListener(_options, _log, endpoint, sslServerAuthenticationOptions);
+            var kestrelServerLimitsFeature = features?.Get<KestrelServerLimitsFeature>();
+
+            if (kestrelServerLimitsFeature == null)
+            {
+                throw new InvalidOperationException("Couldn't find server limits configuration for QUIC transport.");
+            }
+
+            var transport = new QuicConnectionListener(_options, _log, endpoint, sslServerAuthenticationOptions, kestrelServerLimitsFeature);
             return new ValueTask<IMultiplexedConnectionListener>(transport);
         }
     }
