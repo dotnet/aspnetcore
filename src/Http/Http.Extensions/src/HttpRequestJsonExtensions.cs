@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Http
 
             if (!request.HasJsonContentType(out var charset))
             {
-                throw CreateContentTypeError(request, null);
+                throw CreateContentTypeError(request, typeof(TValue));
             }
 
             options ??= ResolveSerializerOptions(request.HttpContext);
