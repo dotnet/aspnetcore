@@ -21,18 +21,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
     internal class WebAssemblyRenderer : WebRenderer
     {
         private readonly ILogger _logger;
-        private readonly int _webAssemblyRendererId;
 
-        /// <summary>
-        /// Constructs an instance of <see cref="WebAssemblyRenderer"/>.
-        /// </summary>
-        /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to use when initializing components.</param>
-        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        public WebAssemblyRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
-            : base(serviceProvider, loggerFactory)
+        public WebAssemblyRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
+            : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)
         {
             // The WebAssembly renderer registers and unregisters itself with the static registry
-            _webAssemblyRendererId = RendererRegistry.Add(this);
+            RendererId = RendererRegistry.Add(this);
             _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
 
             ElementReferenceContext = DefaultWebAssemblyJSRuntime.Instance.ElementReferenceContext;
@@ -52,20 +46,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
                 "Blazor._internal.attachRootComponentToElement",
                 domElementSelector,
                 componentId,
-                _webAssemblyRendererId);
-        }
-
-        public ValueTask InitializeJSComponentSupportAsync(JSComponentConfigurationStore configuration, JsonSerializerOptions jsonOptions)
-        {
-            var interop = new JSComponentInterop(configuration, jsonOptions);
-            return InitializeJSComponentSupportAsync(interop);
+                RendererId);
         }
 
         /// <inheritdoc />
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            RendererRegistry.TryRemove(_webAssemblyRendererId);
+            RendererRegistry.TryRemove(RendererId);
         }
 
         /// <inheritdoc />
@@ -99,7 +87,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         {
             DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<int, RenderBatch, object>(
                 "Blazor._internal.renderBatch",
-                _webAssemblyRendererId,
+                RendererId,
                 batch);
 
             if (WebAssemblyCallQueue.HasUnstartedWork)

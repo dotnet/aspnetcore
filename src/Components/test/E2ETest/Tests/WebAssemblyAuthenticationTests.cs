@@ -90,6 +90,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34995")]
         public void CanPreserveApplicationState_DuringLogIn()
         {
             var originalAppState = Browser.Exists(By.Id("app-state")).Text;

@@ -5,7 +5,6 @@ const pendingRootComponentContainers = new Map<string, Element>();
 let nextPendingDynamicRootComponentIdentifier = 0;
 
 type ComponentParameters = object | null | undefined;
-const textEncoder = new TextEncoder();
 
 let manager: DotNet.DotNetObject | undefined;
 
@@ -47,13 +46,7 @@ class DynamicRootComponent {
     setParameters(parameters: ComponentParameters) {
         parameters = parameters || {};
         const parameterCount = Object.keys(parameters).length;
-
-        // TODO: Need to use the JSInterop serializer here so that special objects like JSObjectReference
-        // get serialized properly.
-        const parametersJson = JSON.stringify(parameters);
-        const parametersUtf8 = textEncoder.encode(parametersJson);
-
-        return getRequiredManager().invokeMethodAsync('SetRootComponentParameters', this._componentId, parameterCount, parametersUtf8);
+        return getRequiredManager().invokeMethodAsync('SetRootComponentParameters', this._componentId, parameterCount, parameters);
     }
 
     async dispose() {

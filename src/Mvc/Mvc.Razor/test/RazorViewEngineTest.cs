@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -51,8 +51,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 yield return new[] { "/foo/bar.txt" };
             }
         }
-
-
 
         [Theory]
         [InlineData(null)]
@@ -1977,6 +1975,55 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             // Assert
             pageFactory.Verify();
+        }
+
+        [Fact]
+        public void FindView_Succeeds_AfterClearCache()
+        {
+            // Arrange
+            var pageFactory = new Mock<IRazorPageFactoryProvider>();
+            var page = Mock.Of<IRazorPage>();
+            var hotReloadedPage = Mock.Of<IRazorPage>();
+
+            pageFactory
+                .Setup(p => p.CreateFactory("/Views/bar/Index.cshtml"))
+                .Returns(GetPageFactoryResult(() => page));
+
+            var viewEngine = CreateViewEngine(pageFactory.Object);
+            var context = GetActionContext(_controllerTestContext);
+
+            // Act - 1
+            // First verify results are typically cached
+            for (var i = 0; i < 3; i++)
+            {
+
+                var result = viewEngine.FindView(context, "Index", isMainPage: false);
+
+                // Assert - 1
+                Assert.True(result.Success);
+                var view = Assert.IsType<RazorView>(result.View);
+                Assert.Same(page, view.RazorPage);
+
+                pageFactory.Verify(p => p.CreateFactory("/Views/bar/Index.cshtml"), Times.Once());
+            }
+
+            // Now verify that the page factory is re-invoked after cache clear
+            viewEngine.ClearCache();
+            pageFactory
+                .Setup(p => p.CreateFactory("/Views/bar/Index.cshtml"))
+                .Returns(GetPageFactoryResult(() => hotReloadedPage));
+
+            {
+                // Act - 2
+                var result = viewEngine.FindView(context, "Index", isMainPage: false);
+
+                // Assert - 2
+                Assert.True(result.Success);
+                var view = Assert.IsType<RazorView>(result.View);
+                Assert.Same(hotReloadedPage, view.RazorPage);
+
+                pageFactory.Verify(p => p.CreateFactory("/Views/bar/Index.cshtml"), Times.Exactly(2));
+            }
         }
 
         // Return RazorViewEngine with a page factory provider that is always successful.

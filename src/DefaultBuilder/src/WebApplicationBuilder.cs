@@ -25,9 +25,11 @@ namespace Microsoft.AspNetCore.Builder
 
         private WebApplication? _builtApplication;
 
-        internal WebApplicationBuilder(Assembly? callingAssembly, string[]? args = null, Action<IHostBuilder>? configureDefaults = null)
+        internal WebApplicationBuilder(WebApplicationOptions options, Action<IHostBuilder>? configureDefaults = null)
         {
             Services = _services;
+
+            var args = options.Args;
 
             // Run methods to configure both generic and web host defaults early to populate config from appsettings.json
             // environment variables (both DOTNET_ and ASPNETCORE_ prefixed) and other possible default sources to prepopulate
@@ -59,17 +61,22 @@ namespace Microsoft.AspNetCore.Builder
 
                 // We need to override the application name since the call to Configure will set it to
                 // be the calling assembly's name.
-                webHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, (callingAssembly ?? Assembly.GetEntryAssembly())?.GetName()?.Name ?? string.Empty);
+                webHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, (Assembly.GetEntryAssembly())?.GetName()?.Name ?? string.Empty);
             });
 
             // Apply the args to host configuration last since ConfigureWebHostDefaults overrides a host specific setting (the application name).
-            if (args is { Length: > 0 })
+
+            _bootstrapHostBuilder.ConfigureHostConfiguration(config =>
             {
-                _bootstrapHostBuilder.ConfigureHostConfiguration(config =>
+                if (args is { Length: > 0 })
                 {
                     config.AddCommandLine(args);
-                });
-            }
+                }
+
+                // Apply the options after the args
+                options.ApplyHostConfiguration(config);
+            });
+
 
             Configuration = new();
 
@@ -77,7 +84,7 @@ namespace Microsoft.AspNetCore.Builder
             var hostContext = _bootstrapHostBuilder.RunDefaultCallbacks(Configuration, _hostBuilder);
 
             // Grab the WebHostBuilderContext from the property bag to use in the ConfigureWebHostBuilder
-            var webHostContext = (WebHostBuilderContext)_hostBuilder.Properties[typeof(WebHostBuilderContext)];
+            var webHostContext = (WebHostBuilderContext)hostContext.Properties[typeof(WebHostBuilderContext)];
 
             // Grab the IWebHostEnvironment from the webHostContext. This also matches the instance in the IServiceCollection.
             Environment = webHostContext.HostingEnvironment;

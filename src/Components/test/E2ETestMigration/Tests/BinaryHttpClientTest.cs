@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using BasicTestApp.HttpClientTest;
 using Microsoft.AspNetCore.BrowserTesting;
@@ -16,19 +17,17 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
-    public class BinaryHttpClientTest : PlaywrightTestBase,
+    public class BinaryHttpClientTest : ComponentBrowserTestBase,
         IClassFixture<BasicTestAppServerSiteFixture<CorsStartup>>,
-        IClassFixture<DevHostServerFixture<BasicTestApp.Program>>
+        IClassFixture<BlazorWasmTestAppFixture<BasicTestApp.Program>>
     {
-        private readonly DevHostServerFixture<BasicTestApp.Program> _devHostServerFixture;
+        private readonly BlazorWasmTestAppFixture<BasicTestApp.Program> _devHostServerFixture;
         readonly ServerFixture _apiServerFixture;
-        //IWebElement _appElement;
-        //IWebElement _responseStatus;
-        //IWebElement _responseStatusText;
-        //IWebElement _testOutcome;
+
+        protected override Type TestComponent { get; } = typeof(BinaryHttpRequestsComponent);
 
         public BinaryHttpClientTest(
-            DevHostServerFixture<BasicTestApp.Program> devHostServerFixture,
+            BlazorWasmTestAppFixture<BasicTestApp.Program> devHostServerFixture,
             BasicTestAppServerSiteFixture<CorsStartup> apiServerFixture,
             ITestOutputHelper output)
             : base(output)
@@ -36,57 +35,33 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             _devHostServerFixture = devHostServerFixture;
             _devHostServerFixture.PathBase = "/subdir";
             _apiServerFixture = apiServerFixture;
+            MountUri = _devHostServerFixture.RootUri + "subdir";
         }
 
-        //protected override void InitializeAsyncCore()
-        //{
-        //    //Browser.Navigate(_devHostServerFixture.RootUri, "/subdir", noReload: true);
-        //    //_appElement = Browser.MountTestComponent<BinaryHttpRequestsComponent>();
-        //}
-
-        [Fact]
-        public async Task CanSendAndReceiveBytes()
+        [QuarantinedTest("New experimental test that need bake time.")]
+        [ConditionalTheory]
+        [InlineData(BrowserKind.Chromium)]
+        [InlineData(BrowserKind.Firefox)]
+        [InlineData(BrowserKind.Webkit)]
+        // NOTE: BrowserKind argument must be first
+        public async Task CanSendAndReceiveBytes(BrowserKind browserKind)
         {
-            if (BrowserManager.IsAvailable(BrowserKind.Chromium))
+            if (ShouldSkip(browserKind)) 
             {
-                await using var browser = await BrowserManager.GetBrowserInstance(BrowserKind.Chromium, BrowserContextInfo);
-                var page = await browser.NewPageAsync();
-                await page.GoToAsync(_devHostServerFixture.RootUri + "/subdir/api/data");
-
-/*                var socket = BrowserContextInfo.Pages[page].WebSockets.SingleOrDefault() ??
-                    (await page.WaitForEventAsync(PageEvent.WebSocket)).WebSocket;
-
-                // Receive render batch
-                await socket.WaitForEventAsync(WebSocketEvent.FrameReceived);
-                await socket.WaitForEventAsync(WebSocketEvent.FrameSent);
-
-                // JS interop call to intercept navigation
-                await socket.WaitForEventAsync(WebSocketEvent.FrameReceived);
-                await socket.WaitForEventAsync(WebSocketEvent.FrameSent);
-
-                await page.WaitForSelectorAsync("ul");*/
-
-                await page.CloseAsync();
+                return;
             }
 
+            var targetUri = new Uri(_apiServerFixture.RootUri, "/subdir/api/data");
+            await TestPage.TypeAsync("#request-uri", targetUri.AbsoluteUri);
+            await TestPage.ClickAsync("#send-request");
 
-            //IssueRequest("/subdir/api/data");
-            //Assert.Equal("OK", _responseStatus.Text);
-            //Assert.Equal("OK", _responseStatusText.Text);
-            //Assert.Equal("", _testOutcome.Text);
-        }
+            var status = await TestPage.GetTextContentAsync("#response-status");
+            var statusText = await TestPage.GetTextContentAsync("#response-status-text");
+            var testOutcome = await TestPage.GetTextContentAsync("#test-outcome");
 
-        private void IssueRequest()
-        {
-            //var targetUri = new Uri(_apiServerFixture.RootUri, relativeUri);
-            //SetValue("request-uri", targetUri.AbsoluteUri);
-
-            //_appElement.FindElement(By.Id("send-request")).Click();
-
-            //_responseStatus = Browser.Exists(By.Id("response-status"));
-            //_responseStatusText = _appElement.FindElement(By.Id("response-status-text"));
-            //_testOutcome = _appElement.FindElement(By.Id("test-outcome"));
-
+            Assert.Equal("OK", status);
+            Assert.Equal("OK", statusText);
+            Assert.Equal("", testOutcome);
         }
     }
 }

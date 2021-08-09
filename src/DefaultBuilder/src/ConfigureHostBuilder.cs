@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.Builder
     /// A non-buildable <see cref="IHostBuilder"/> for <see cref="WebApplicationBuilder"/>.
     /// Use <see cref="WebApplicationBuilder.Build"/> to build the <see cref="WebApplicationBuilder"/>.
     /// </summary>
-    public sealed class ConfigureHostBuilder : IHostBuilder
+    public sealed class ConfigureHostBuilder : IHostBuilder, ISupportsConfigureWebHost
     {
         private readonly ConfigurationManager _configuration;
         private readonly IServiceCollection _services;
@@ -123,6 +124,11 @@ namespace Microsoft.AspNetCore.Builder
             {
                 operation(hostBuilder);
             }
+        }
+
+        IHostBuilder ISupportsConfigureWebHost.ConfigureWebHost(Action<IWebHostBuilder> configure, Action<WebHostBuilderOptions> configureOptions)
+        {
+            throw new NotSupportedException($"ConfigureWebHost() is not supported by WebApplicationBuilder.Host. Use the WebApplication returned by WebApplicationBuilder.Build() instead.");
         }
     }
 }

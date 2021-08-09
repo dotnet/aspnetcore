@@ -5,6 +5,7 @@ using System.Reflection.Metadata;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Lifetime;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.HotReload;
 using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
@@ -150,9 +151,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             using (cancellationToken.Register(() => tcs.TrySetResult()))
             {
                 var loggerFactory = Services.GetRequiredService<ILoggerFactory>();
-                _renderer = new WebAssemblyRenderer(Services, loggerFactory);
-
-                await _renderer.InitializeJSComponentSupportAsync(_rootComponents.JSComponents, _jsonOptions);
+                var jsComponentInterop = new JSComponentInterop(_rootComponents.JSComponents);
+                _renderer = new WebAssemblyRenderer(Services, loggerFactory, jsComponentInterop);
 
                 var initializationTcs = new TaskCompletionSource();
                 WebAssemblyCallQueue.Schedule((_rootComponents, _renderer, initializationTcs), static async state =>

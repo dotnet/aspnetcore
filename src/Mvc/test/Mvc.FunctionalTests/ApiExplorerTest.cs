@@ -766,6 +766,41 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 });
         }
 
+        [Fact]
+        public async Task ApiExplorer_ResponseTypeWithContentType_OverrideOnAction()
+        {
+            // This test scenario validates that a ProducesResponseType attribute will overide
+            // content-type given by a Produces attribute with a lower-specificity.
+            // Arrange
+            var type = "ApiExplorerWebSite.Customer";
+            var errorType = "ApiExplorerWebSite.ErrorInfo";
+
+            // Act
+            var response = await Client.GetAsync(
+                "http://localhost/ApiExplorerResponseTypeOverrideOnAction/Action2");
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+
+            Assert.Collection(
+                description.SupportedResponseTypes.OrderBy(responseType => responseType.StatusCode),
+                responseType =>
+                {
+                    Assert.Equal(type, responseType.ResponseType);
+                    Assert.Equal(200, responseType.StatusCode);
+                    Assert.Equal(new[] { "text/plain" }, GetSortedMediaTypes(responseType));
+                },
+                responseType =>
+                {
+                    Assert.Equal(errorType, responseType.ResponseType);
+                    Assert.Equal(500, responseType.StatusCode);
+                    Assert.Equal(new[] { "application/json" }, GetSortedMediaTypes(responseType));
+                });
+        }
+
         [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]

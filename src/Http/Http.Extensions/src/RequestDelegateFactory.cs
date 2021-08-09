@@ -199,11 +199,11 @@ namespace Microsoft.AspNetCore.Http
             {
                 var errorMessage = new StringBuilder();
                 errorMessage.Append($"Failure to infer one or more parameters. Below is the list of parameters we found: \n\n");
-                errorMessage.Append(String.Format("{0,6} {1,15}\n\n", "Parameter", "Source"));
+                errorMessage.Append(string.Format("{0,6} {1,15}\n\n", "Parameter", "Source"));
 
                 foreach (KeyValuePair<string, string> kv in factoryContext.TrackedParameters)
                 {
-                    errorMessage.Append(String.Format("{0,6} {1,15:N0}\n", kv.Key, kv.Value));
+                    errorMessage.Append(string.Format("{0,6} {1,15:N0}\n", kv.Key, kv.Value));
                 }
                 //Could also throw a custom exception message if needed.
                 throw new InvalidOperationException(errorMessage.ToString());
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Http
             if (parameterCustomAttributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
             {
                 factoryContext.TrackedParameters.Add(parameter.Name, "Route Attribute");
-                if (factoryContext.RouteParameters is { } routeParams && !routeParams.Contains(parameter.Name))
+                if (factoryContext.RouteParameters is { } routeParams && !routeParams.Contains(parameter.Name, StringComparer.OrdinalIgnoreCase))
                 {
                     throw new InvalidOperationException($"{parameter.Name} is not a route paramter.");
                 }
@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.Http
             {
                 // We're in the fallback case and we have a parameter and route parameter match so don't fallback
                 // to query string in this case
-                if (factoryContext.RouteParameters is { } routeParams && routeParams.Contains(parameter.Name))
+                if (factoryContext.RouteParameters is { } routeParams && routeParams.Contains(parameter.Name, StringComparer.OrdinalIgnoreCase))
                 {
                     factoryContext.TrackedParameters.Add(parameter.Name, "Route Parameter");
                     return BindParameterFromProperty(parameter, RouteValuesExpr, parameter.Name, factoryContext);

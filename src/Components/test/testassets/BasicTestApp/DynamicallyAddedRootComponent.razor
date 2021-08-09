@@ -16,6 +16,8 @@
     {
         <p class="person-info">Person is @SomePerson.Name, age @SomePerson.Age</p>
         <p class="value-from-js">Value from JS object reference: @valueFromJS</p>
+        <p class="value-from-dotnetobject">Value from .NET object reference: @SomeDotNetObject?.Value.Property</p>
+        <p class="value-from-bytearray">Byte array value: @(string.Join(',', ByteArray))</p>
     }
 
     @if (UnmatchedValues is not null)
@@ -53,6 +55,8 @@
     [Parameter] public bool ShowComplexParameters { get; set; }
     [Parameter] public Person SomePerson { get; set; }
     [Parameter] public IJSObjectReference SomeJSObject { get; set; }
+    [Parameter] public DotNetObjectReference<JavaScriptRootComponents.DotNetType> SomeDotNetObject { get; set; }
+    [Parameter] public byte[] ByteArray { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> UnmatchedValues { get; set; }
 

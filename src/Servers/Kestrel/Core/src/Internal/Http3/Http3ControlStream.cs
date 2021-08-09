@@ -108,6 +108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         internal ValueTask<FlushResult> SendGoAway(long id)
         {
+            Log.Http3GoAwayStreamId(_context.ConnectionId, id);
             return _frameWriter.WriteGoAway(id);
         }
 
@@ -341,6 +342,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-7.2.4
                     break;
             }
+        }
+
+        internal ValueTask CompleteAsync()
+        {
+            return _frameWriter.CompleteAsync();
         }
 
         private ValueTask ProcessGoAwayFrameAsync()

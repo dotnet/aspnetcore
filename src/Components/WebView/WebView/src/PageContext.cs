@@ -3,6 +3,8 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.WebView.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -30,6 +32,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             Dispatcher dispatcher,
             AsyncServiceScope serviceScope,
             IpcSender ipcSender,
+            JSComponentConfigurationStore jsComponentsConfiguration,
             string baseUrl,
             string startUrl)
         {
@@ -43,7 +46,8 @@ namespace Microsoft.AspNetCore.Components.WebView
             JSRuntime.AttachToWebView(ipcSender);
 
             var loggerFactory = services.GetRequiredService<ILoggerFactory>();
-            Renderer = new WebViewRenderer(services, dispatcher, ipcSender, loggerFactory, JSRuntime.ElementReferenceContext);
+            var jsComponents = new JSComponentInterop(jsComponentsConfiguration);
+            Renderer = new WebViewRenderer(services, dispatcher, ipcSender, loggerFactory, JSRuntime, jsComponents);
         }
 
         public ValueTask DisposeAsync()

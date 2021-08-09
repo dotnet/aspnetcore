@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await Http3Api.WaitForConnectionErrorAsync<ConnectionAbortedException>(
                 ignoreNonGoAwayFrames: false,
-                expectedLastStreamId: 8,
+                expectedLastStreamId: 4,
                 Http3ErrorCode.InternalError,
                 null);
 

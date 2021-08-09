@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -86,6 +87,38 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             Assert.Same(compiledView, result);
         }
 
+        [Fact]
+        public async Task CompileAsync_DiscoversHotReloadedTypes()
+        {
+            // Arrange
+            var path = "/Views/Home/Index.cshtml";
+            var compiledView = new CompiledViewDescriptor
+            {
+                RelativePath = path,
+            };
+            var compiledViews = new List<CompiledViewDescriptor>
+            {
+                compiledView,
+            };
+            var viewCompiler = GetViewCompiler(compiledViews);
+
+            // Act - 1
+            var result = await viewCompiler.CompileAsync(path);
+
+            // Assert - 1
+            Assert.Same(compiledView, result);
+
+            // Act - 2
+            var hotReloaded = new CompiledViewDescriptor { RelativePath = path };
+            compiledViews[0] = hotReloaded;
+            viewCompiler.ClearCache();
+
+            result = await viewCompiler.CompileAsync(path);
+
+            // Assert - 2
+            Assert.Same(hotReloaded, result);
+        }
+
         private static TestRazorViewCompiler GetViewCompiler(IList<CompiledViewDescriptor> compiledViews = null)
         {
             compiledViews = compiledViews ?? Array.Empty<CompiledViewDescriptor>();
@@ -97,8 +130,34 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
         private class TestRazorViewCompiler : DefaultViewCompiler
         {
             public TestRazorViewCompiler(IList<CompiledViewDescriptor> compiledViews) :
-                base(compiledViews, NullLogger.Instance)
+                base(GetApplicationPartManager(new TestViewsFeatureProvider { CompiledViews = compiledViews }), NullLogger<DefaultViewCompiler>.Instance)
             {
+            }
+
+            public TestRazorViewCompiler(TestViewsFeatureProvider featureProvider) :
+               base(GetApplicationPartManager(featureProvider), NullLogger<DefaultViewCompiler>.Instance)
+            {
+            }
+
+            private static ApplicationPartManager GetApplicationPartManager(TestViewsFeatureProvider featureProvider)
+            {
+                var manager = new ApplicationPartManager();
+                manager.FeatureProviders.Add(featureProvider);
+
+                return manager;
+            }
+        }
+
+        private class TestViewsFeatureProvider : IApplicationFeatureProvider<ViewsFeature>
+        {
+            public IList<CompiledViewDescriptor> CompiledViews { get; init; }
+
+            public void PopulateFeature(IEnumerable<ApplicationPart> parts, ViewsFeature feature)
+            {
+                foreach (var item in CompiledViews)
+                {
+                    feature.ViewDescriptors.Add(item);
+                }
             }
         }
     }
