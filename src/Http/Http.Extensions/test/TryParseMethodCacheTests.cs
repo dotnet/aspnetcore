@@ -27,12 +27,13 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         [InlineData(typeof(ulong))]
         public void FindTryParseMethod_ReturnsTheExpectedTryParseMethodWithInvariantCulture(Type @type)
         {
-            var methodFound = TryParseMethodCache.FindTryParseMethod(@type);
+            var methodFound = new TryParseMethodCache().FindTryParseMethod(@type);
 
             Assert.NotNull(methodFound);
 
-            var call = methodFound!(Expression.Variable(type, "parsedValue"));
-            var parameters = call.Method.GetParameters();
+            var call = methodFound!(Expression.Variable(type, "parsedValue")) as MethodCallExpression;
+            Assert.NotNull(call);
+            var parameters = call!.Method.GetParameters();
 
             Assert.Equal(4, parameters.Length);
             Assert.Equal(typeof(string), parameters[0].ParameterType);
@@ -49,12 +50,13 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         [InlineData(typeof(TimeSpan))]
         public void FindTryParseMethod_ReturnsTheExpectedTryParseMethodWithInvariantCultureDateType(Type @type)
         {
-            var methodFound = TryParseMethodCache.FindTryParseMethod(@type);
+            var methodFound = new TryParseMethodCache().FindTryParseMethod(@type);
 
             Assert.NotNull(methodFound);
 
-            var call = methodFound!(Expression.Variable(type, "parsedValue"));
-            var parameters = call.Method.GetParameters();
+            var call = methodFound!(Expression.Variable(type, "parsedValue")) as MethodCallExpression;
+            Assert.NotNull(call);
+            var parameters = call!.Method.GetParameters();
 
             if (@type == typeof(TimeSpan))
             {
@@ -77,18 +79,69 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         [InlineData(typeof(TryParsableInvariantRecord))]
         public void FindTryParseMethod_ReturnsTheExpectedTryParseMethodWithInvariantCultureCustomType(Type @type)
         {
-            var methodFound = TryParseMethodCache.FindTryParseMethod(@type);
+            var methodFound = new TryParseMethodCache().FindTryParseMethod(@type);
 
             Assert.NotNull(methodFound);
 
-            var call = methodFound!(Expression.Variable(type, "parsedValue"));
-            var parameters = call.Method.GetParameters();
+            var call = methodFound!(Expression.Variable(type, "parsedValue")) as MethodCallExpression;
+            Assert.NotNull(call);
+            var parameters = call!.Method.GetParameters();
 
             Assert.Equal(3, parameters.Length);
             Assert.Equal(typeof(string), parameters[0].ParameterType);
             Assert.Equal(typeof(IFormatProvider), parameters[1].ParameterType);
             Assert.True(parameters[2].IsOut);
             Assert.True(((call.Arguments[1] as ConstantExpression)!.Value as CultureInfo)!.Equals(CultureInfo.InvariantCulture));
+        }
+
+        [Fact]
+        public void FindTryParseMethodForEnums()
+        {
+            var type = typeof(Choice);
+            var methodFound = new TryParseMethodCache().FindTryParseMethod(type);
+
+            Assert.NotNull(methodFound);
+
+            var call = methodFound!(Expression.Variable(type, "parsedValue")) as MethodCallExpression;
+            Assert.NotNull(call);
+            var method = call!.Method;
+            var parameters = method.GetParameters();
+
+            // By default, we use Enum.TryParse<T>
+            Assert.True(method.IsGenericMethod);
+            Assert.Equal(2, parameters.Length);
+            Assert.Equal(typeof(string), parameters[0].ParameterType);
+            Assert.True(parameters[1].IsOut);
+        }
+
+        [Fact]
+        public void FindTryParseMethodForEnumsWhenNonGenericEnumParseIsUsed()
+        {
+            var type = typeof(Choice);
+            var cache = new TryParseMethodCache(preferNonGenericEnumParseOverload: true);
+            var methodFound = cache.FindTryParseMethod(type);
+
+            Assert.NotNull(methodFound);
+
+            var parsedValue = Expression.Variable(type, "parsedValue");
+            var block = methodFound!(parsedValue) as BlockExpression;
+            Assert.NotNull(block);
+            Assert.Equal(typeof(bool), block!.Type);
+
+            var parseEnum = Expression.Lambda<Func<string, Choice>>(Expression.Block(new[] { parsedValue },
+                block,
+                parsedValue), cache.TempSourceStringExpr).Compile();
+
+            Assert.Equal(Choice.One, parseEnum("One"));
+            Assert.Equal(Choice.Two, parseEnum("Two"));
+            Assert.Equal(Choice.Three, parseEnum("Three"));
+        }
+
+        enum Choice
+        {
+            One,
+            Two,
+            Three
         }
 
         private record TryParsableInvariantRecord(int value)
