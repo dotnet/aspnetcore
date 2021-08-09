@@ -275,8 +275,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await Http3Api.InitializeConnectionAsync(_echoApplication);
 
-            var streamContext1 = await MakeRequestAsync(0, headers);
-            var streamContext2 = await MakeRequestAsync(1, headers);
+            var streamContext1 = await MakeRequestAsync(0, headers, sendData: true, waitForServerDispose: true);
+            var streamContext2 = await MakeRequestAsync(1, headers, sendData: true, waitForServerDispose: true);
 
             Assert.Same(streamContext1, streamContext2);
         }
@@ -284,7 +284,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Theory]
         [InlineData(10)]
         [InlineData(100)]
-        [InlineData(1000)]
+        [InlineData(500)]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34685")]
         public async Task StreamPool_VariableMultipleStreamsInSequence_PooledStreamReused(int count)
         {
@@ -304,7 +304,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 Logger.LogInformation($"Iteration {i}");
 
-                var streamContext = await MakeRequestAsync(i, headers);
+                var streamContext = await MakeRequestAsync(i, headers, sendData: true, waitForServerDispose: true);
 
                 first ??= streamContext;
                 last = streamContext;
@@ -313,31 +313,71 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
         }
 
-        private async Task<ConnectionContext> MakeRequestAsync(int index, KeyValuePair<string, string>[] headers)
+        [Theory]
+        [InlineData(10, false)]
+        [InlineData(10, true)]
+        [InlineData(100, false)]
+        [InlineData(100, true)]
+        [InlineData(500, false)]
+        [InlineData(500, true)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34685")]
+        public async Task VariableMultipleStreamsInSequence_Success(int count, bool sendData)
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            var requestDelegate = sendData ? _echoApplication : _noopApplication;
+
+            await Http3Api.InitializeConnectionAsync(requestDelegate);
+
+            for (var i = 0; i < count; i++)
+            {
+                Logger.LogInformation($"Iteration {i}");
+
+                await MakeRequestAsync(i, headers, sendData, waitForServerDispose: false);
+            }
+        }
+
+        private async Task<ConnectionContext> MakeRequestAsync(int index, KeyValuePair<string, string>[] headers, bool sendData, bool waitForServerDispose)
         {
             var requestStream = await Http3Api.CreateRequestStream();
             var streamContext = requestStream.StreamContext;
 
-            await requestStream.SendHeadersAsync(headers);
+            await requestStream.SendHeadersAsync(headers, endStream: !sendData);
 
-            await requestStream.SendDataAsync(Encoding.ASCII.GetBytes($"Hello world {index}"));
+            if (sendData)
+            {
+                await requestStream.SendDataAsync(Encoding.ASCII.GetBytes($"Hello world {index}"));
+            }
 
             await requestStream.ExpectHeadersAsync();
-            var responseData = await requestStream.ExpectDataAsync();
-            Assert.Equal($"Hello world {index}", Encoding.ASCII.GetString(responseData.ToArray()));
 
-            Assert.False(requestStream.Disposed, "Request is in progress and shouldn't be disposed.");
+            if (sendData)
+            {
+                var responseData = await requestStream.ExpectDataAsync();
+                Assert.Equal($"Hello world {index}", Encoding.ASCII.GetString(responseData.ToArray()));
 
-            await requestStream.SendDataAsync(Encoding.ASCII.GetBytes($"End {index}"), endStream: true);
-            responseData = await requestStream.ExpectDataAsync();
-            Assert.Equal($"End {index}", Encoding.ASCII.GetString(responseData.ToArray()));
+                Assert.False(requestStream.Disposed, "Request is in progress and shouldn't be disposed.");
+
+                await requestStream.SendDataAsync(Encoding.ASCII.GetBytes($"End {index}"), endStream: true);
+                responseData = await requestStream.ExpectDataAsync();
+                Assert.Equal($"End {index}", Encoding.ASCII.GetString(responseData.ToArray()));
+            }
 
             await requestStream.ExpectReceiveEndOfStream();
 
-            await requestStream.OnStreamCompletedTask.DefaultTimeout();
+            if (waitForServerDispose)
+            {
+                await requestStream.OnDisposedTask.DefaultTimeout();
+                Assert.True(requestStream.Disposed, "Request is complete and should be disposed.");
 
-            await requestStream.OnDisposedTask.DefaultTimeout();
-            Assert.True(requestStream.Disposed, "Request is complete and should be disposed.");
+                Logger.LogInformation($"Received notification that stream {index} disposed.");
+            }
 
             return streamContext;
         }
