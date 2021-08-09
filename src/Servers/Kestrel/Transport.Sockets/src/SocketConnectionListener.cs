@@ -23,20 +23,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         private Socket? _listenSocket;
         private int _settingsIndex;
         private readonly SocketTransportOptions _options;
-        private readonly SocketConnectionContextFactory _contextFactory;
 
         public EndPoint EndPoint { get; private set; }
 
         internal SocketConnectionListener(
             EndPoint endpoint,
             SocketTransportOptions options,
-            SocketConnectionContextFactory contextFactory,
             ISocketsTrace trace)
         {
             EndPoint = endpoint;
             _trace = trace;
             _options = options;
-            _contextFactory = contextFactory;
             _memoryPool = _options.MemoryPoolFactory();
             var ioQueueCount = options.IOQueueCount;
 
@@ -142,9 +139,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                         Trace = _trace
                     };
 
+
+                    setting.SocketFactory = new SocketConnectionContextFactory(connectionOptions, loggerfactory: null /* TODO */);
+
                     _settingsIndex = (_settingsIndex + 1) % _settingsCount;
 
-                    return _contextFactory.Create(acceptSocket, connectionOptions);
+                    return setting.SocketFactory.Create(acceptSocket);
                 }
                 catch (ObjectDisposedException)
                 {
@@ -192,6 +192,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             public PipeOptions InputOptions { get; init; } = default!;
             public PipeOptions OutputOptions { get; init; } = default!;
             public SocketSenderPool SocketSenderPool { get; init; } = default!;
+            public SocketConnectionContextFactory SocketFactory { get; set; } = default!;
         }
     }
 }

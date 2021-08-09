@@ -6,8 +6,8 @@
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.ISocketConnectionContextFactory
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.ISocketConnectionContextFactory.Create(System.Net.Sockets.Socket! socket, Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions! options) -> Microsoft.AspNetCore.Connections.ConnectionContext!
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFactory
-Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFactory.Create(System.Net.Sockets.Socket! socket, Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions! options) -> Microsoft.AspNetCore.Connections.ConnectionContext!
-Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFactory.SocketConnectionContextFactory() -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFactory.Create(System.Net.Sockets.Socket! socket) -> Microsoft.AspNetCore.Connections.ConnectionContext!
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFactory.SocketConnectionContextFactory(Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerfactory) -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions.DeferFirstOperation.get -> bool
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions.DeferFirstOperation.set -> void
