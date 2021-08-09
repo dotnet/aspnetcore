@@ -36,7 +36,12 @@ module.exports = function (modulePath, browserBaseName, options) {
                     ],
                     exclude: /node_modules/,
                 }
-            ]
+            ],
+            parser: {
+                javascript: {
+                    commonjsMagicComments: true,
+                },
+            },
         },
         resolve: {
             extensions: [".ts", ".js"],

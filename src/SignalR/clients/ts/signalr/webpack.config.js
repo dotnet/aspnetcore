@@ -12,5 +12,6 @@ module.exports = env => baseConfig(__dirname, "signalr", {
         "node-fetch",
         "abort-controller",
         "fetch-cookie",
+        "tough-cookie",
     ]
 });
