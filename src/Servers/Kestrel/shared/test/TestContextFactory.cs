@@ -84,10 +84,10 @@ namespace Microsoft.AspNetCore.Testing
             ITimeoutControl timeoutControl = null)
         {
             var http3ConnectionContext = new HttpMultiplexedConnectionContext(
-                "TestConnectionId",
+                "TEST",
                 HttpProtocols.Http3,
                 altSvcHeader: null,
-                connectionContext ?? new TestMultiplexedConnectionContext(),
+                connectionContext ?? new TestMultiplexedConnectionContext { ConnectionId = "TEST" },
                 serviceContext ?? CreateServiceContext(new KestrelServerOptions()),
                 connectionFeatures ?? new FeatureCollection(),
                 memoryPool ?? PinnedBlockMemoryPoolFactory.Create(),
