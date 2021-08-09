@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Http
                         var success = Expression.Variable(typeof(bool), "success");
 
                         // object enumAsObject;
-                        // bool canParse;
+                        // bool success;
                         // success = Enum.TryParse(type, tempSourceString, out enumAsObject);
                         // parsedValue = success ? (Type)enumAsObject : default;
                         // return success;
