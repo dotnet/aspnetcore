@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.Extensions.Internal;
 
@@ -69,7 +70,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 }
             }
 
-            foreach (var metadata in descriptor.Metadata)
+            Debug.Assert(descriptor.MetadataImpl is not null, "We expect MetadataImpl to be configured in the default code path.");
+            foreach (var metadata in descriptor.MetadataImpl)
             {
                 hash.Add(metadata.Key);
                 hash.Add(metadata.Value);

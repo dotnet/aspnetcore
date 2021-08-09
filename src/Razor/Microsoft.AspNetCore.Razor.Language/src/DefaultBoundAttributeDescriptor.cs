@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    internal class DefaultBoundAttributeDescriptor : BoundAttributeDescriptor
+    internal sealed class DefaultBoundAttributeDescriptor : BoundAttributeDescriptor
     {
         public DefaultBoundAttributeDescriptor(
             string kind,
@@ -35,6 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             BoundAttributeParameters = parameterDescriptors;
 
             Metadata = metadata;
+            MetadataImpl = metadata;
             Diagnostics = diagnostics;
 
             IsIndexerStringProperty = indexerTypeName == typeof(string).FullName || indexerTypeName == "string";
