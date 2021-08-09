@@ -110,16 +110,15 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 }
 
                 var group = searchResponse.Entries[0]; //Get the object that was found on ldap
-                string name = group.DistinguishedName;
-                retrievedClaims.Add(name);
+                retrievedClaims.Add(groupCN);
 
                 var memberof = group.Attributes["memberof"]; // You can access ldap Attributes with Attributes property
                 if (memberof != null)
                 {
                     foreach (var member in memberof)
                     {
-                        var groupDN = $"{Encoding.UTF8.GetString((byte[])member)}";
-                        var nestedGroupCN = groupDN.Split(',')[0].Substring("CN=".Length);
+                        var nestedGroupDN = $"{Encoding.UTF8.GetString((byte[])member)}";
+                        var nestedGroupCN = nestedGroupDN.Split(',')[0].Substring("CN=".Length);
                         GetNestedGroups(connection, principal, distinguishedName, nestedGroupCN, logger, retrievedClaims);
                     }
                 }
