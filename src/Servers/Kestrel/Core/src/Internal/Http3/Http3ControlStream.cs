@@ -344,11 +344,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        internal ValueTask CompleteAsync()
-        {
-            return _frameWriter.CompleteAsync();
-        }
-
         private ValueTask ProcessGoAwayFrameAsync()
         {
             EnsureSettingsFrame(Http3FrameType.GoAway);

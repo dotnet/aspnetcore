@@ -357,11 +357,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
             finally
             {
-                // TODO should this message say the connection is shutting down or closing rather than faulted?
-                // Faulted has a negative meaning and we can get here by the host stopping or ConnectionLifeTimeNotification.RequestClose.
-                var connectionError = error as ConnectionAbortedException
-                    ?? new ConnectionAbortedException(CoreStrings.Http3ConnectionFaulted, error!);
-
                 try
                 {
                     // Don't try to send GOAWAY if the client has already closed the connection.
@@ -378,19 +373,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     {
                         foreach (var stream in _streams.Values)
                         {
-                            stream.Abort(connectionError, (Http3ErrorCode)_errorCodeFeature.Error);
+                            stream.Abort(CreateConnectionAbortError(error, clientAbort), (Http3ErrorCode)_errorCodeFeature.Error);
                         }
                     }
 
-                    // Complete outbound control stream.
                     if (outboundControlStream != null)
                     {
-                        await outboundControlStream.CompleteAsync();
+                        // Don't gracefully close the outbound control stream. If the peer detects
+                        // the control stream closes it will close with a procotol error.
+                        // Instead, allow control stream to be automatically aborted when the
+                        // connection is aborted.
                         await outboundControlStreamTask;
                     }
 
                     // Complete
-                    Abort(connectionError, (Http3ErrorCode)_errorCodeFeature.Error);
+                    Abort(CreateConnectionAbortError(error, clientAbort), (Http3ErrorCode)_errorCodeFeature.Error);
 
                     // Wait for active requests to complete.
                     while (_activeRequestCount > 0)
@@ -403,7 +400,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 }
                 catch
                 {
-                    Abort(connectionError, Http3ErrorCode.InternalError);
+                    Abort(CreateConnectionAbortError(error, clientAbort), Http3ErrorCode.InternalError);
                     throw;
                 }
                 finally
@@ -416,6 +413,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     Log.Http3ConnectionClosed(_context.ConnectionId, streamId);
                 }
             }
+        }
+
+        private ConnectionAbortedException CreateConnectionAbortError(Exception? error, bool clientAbort)
+        {
+            if (error is ConnectionAbortedException abortedException)
+            {
+                return abortedException;
+            }
+
+            // The client gracefully closes a connection by aborting it with NO_ERROR.
+            if (clientAbort && _errorCodeFeature.Error == (long)Http3ErrorCode.NoError)
+            {
+                return new ConnectionAbortedException("The client closed the HTTP/3 connection.", error!);
+            }
+
+            return new ConnectionAbortedException(CoreStrings.Http3ConnectionFaulted, error!);
         }
 
         private Http3StreamContext CreateHttpStreamContext(ConnectionContext streamContext)

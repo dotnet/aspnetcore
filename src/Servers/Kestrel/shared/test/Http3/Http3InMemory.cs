@@ -150,9 +150,6 @@ namespace Microsoft.AspNetCore.Testing
 #else
             await _connectionTask;
 #endif
-
-            // Verify server-to-client control stream has completed.
-            await _inboundControlStream.ReceiveEndAsync();
         }
 
         internal async Task WaitForGoAwayAsync(bool ignoreNonGoAwayFrames, long? expectedLastStreamId)
@@ -944,6 +941,11 @@ namespace Microsoft.AspNetCore.Testing
         {
             ToServerAcceptQueue.Writer.TryComplete();
             ToClientAcceptQueue.Writer.TryComplete();
+
+            foreach (var stream in _testBase._runningStreams)
+            {
+                stream.Value.StreamContext.Abort(abortReason);
+            }
         }
 
         public override async ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
@@ -1098,6 +1100,7 @@ namespace Microsoft.AspNetCore.Testing
         {
             _isAborted = true;
             _pair.Application.Output.Complete(abortReason);
+            //_pair.Application.Output.Complete(abortReason);
         }
 
         public override ValueTask DisposeAsync()
