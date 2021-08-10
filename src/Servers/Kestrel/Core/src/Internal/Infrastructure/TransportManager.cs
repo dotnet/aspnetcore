@@ -66,6 +66,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol("h3"), new SslApplicationProtocol("h3-29") }
                 };
 
+                if (listenOptions.HttpsOptions.ServerCertificateSelector != null)
+                {
+                    // We can't set both
+                    sslServerAuthenticationOptions.ServerCertificate = null;
+                    sslServerAuthenticationOptions.ServerCertificateSelectionCallback = (sender, host) =>
+                    {
+                        // There is no ConnectionContext available durring the handshake.
+                        return listenOptions.HttpsOptions.ServerCertificateSelector(null!, host)!;
+                    };
+                }
+
                 features.Set(sslServerAuthenticationOptions);
             }
 
