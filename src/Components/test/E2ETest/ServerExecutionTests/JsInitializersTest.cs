@@ -20,17 +20,5 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             : base(browserFixture, serverFixture.WithServerExecution(), output)
         {
         }
-
-        protected override void InitializeAsyncCore()
-        {
-            Navigate(ServerPathBase + "#initializer");
-        }
-
-        [Fact]
-        public void InitializersWork()
-        {
-            Browser.Exists(By.Id("initializer-start"));
-            Browser.Exists(By.Id("initializer-end"));
-        }
     }
 }
