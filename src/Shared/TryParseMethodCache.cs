@@ -133,23 +133,10 @@ namespace Microsoft.AspNetCore.Http
             }
             else
             {
-                foreach (var method in typeof(Enum).GetMethods(BindingFlags.Public | BindingFlags.Static))
-                {
-                    if (!method.IsGenericMethod || method.Name != nameof(Enum.TryParse) || method.ReturnType != typeof(bool))
-                    {
-                        continue;
-                    }
-
-                    var tryParseParameters = method.GetParameters();
-
-                    // Enum.TryParse<T>(string, out object)
-                    if (tryParseParameters.Length == 2 &&
-                        tryParseParameters[0].ParameterType == typeof(string) &&
-                        tryParseParameters[1].IsOut)
-                    {
-                        methodInfo = method;
-                    }
-                }
+                methodInfo = typeof(Enum).GetMethod(
+                               nameof(Enum.TryParse),
+                               genericParameterCount: 1,
+                               new[] { typeof(string), Type.MakeGenericMethodParameter(0).MakeByRefType() });
             }
 
             if (methodInfo is null)
@@ -163,6 +150,8 @@ namespace Microsoft.AspNetCore.Http
 
         private static bool TryGetDateTimeTryParseMethod(Type type, [NotNullWhen(true)] out MethodInfo? methodInfo)
         {
+            methodInfo = null;
+
             if (type == typeof(DateTime))
             {
                 methodInfo = typeof(DateTime).GetMethod(
@@ -191,10 +180,6 @@ namespace Microsoft.AspNetCore.Http
                      BindingFlags.Public | BindingFlags.Static,
                      new[] { typeof(string), typeof(IFormatProvider), typeof(DateTimeStyles), typeof(TimeOnly).MakeByRefType() });
             }
-            else
-            {
-                methodInfo = null;
-            }
 
             return methodInfo != null;
         }
@@ -211,7 +196,7 @@ namespace Microsoft.AspNetCore.Http
                           BindingFlags.Public | BindingFlags.Static,
                           new[] { typeof(string), typeof(NumberStyles), typeof(IFormatProvider), typeof(long).MakeByRefType() });
             }
-            if (type == typeof(ulong))
+            else if (type == typeof(ulong))
             {
                 method = typeof(ulong).GetMethod(
                           nameof(ulong.TryParse),
@@ -309,10 +294,6 @@ namespace Microsoft.AspNetCore.Http
                           nameof(BigInteger.TryParse),
                           BindingFlags.Public | BindingFlags.Static,
                           new[] { typeof(string), typeof(NumberStyles), typeof(IFormatProvider), typeof(BigInteger).MakeByRefType() });
-            }
-            else
-            {
-                method = null;
             }
 
             return method != null;
