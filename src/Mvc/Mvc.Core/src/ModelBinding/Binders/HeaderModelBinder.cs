@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Property name can be null if the model metadata represents a type (rather than a property or parameter).
             var headerName = bindingContext.FieldName;
 
-            // Do not set ModelBindingResult to Failed on not finding the value in the header as we want the inner 
+            // Do not set ModelBindingResult to Failed on not finding the value in the header as we want the inner
             // ModelBinder to do that. This would give a chance to the inner binder to add more useful information.
             // For example, SimpleTypeModelBinder adds a model error when binding to let's say an integer and the
             // model is null.

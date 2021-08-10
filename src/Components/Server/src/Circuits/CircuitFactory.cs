@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -66,13 +66,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var appLifetime = scope.ServiceProvider.GetRequiredService<ComponentApplicationLifetime>();
             await appLifetime.RestoreStateAsync(store);
 
+            var jsComponentInterop = new CircuitJSComponentInterop(_options);
             var renderer = new RemoteRenderer(
                 scope.ServiceProvider,
                 _loggerFactory,
                 _options,
                 client,
                 _loggerFactory.CreateLogger<RemoteRenderer>(),
-                jsRuntime.ElementReferenceContext);
+                jsRuntime,
+                jsComponentInterop);
 
             var circuitHandlers = scope.ServiceProvider.GetServices<CircuitHandler>()
                 .OrderBy(h => h.Order)

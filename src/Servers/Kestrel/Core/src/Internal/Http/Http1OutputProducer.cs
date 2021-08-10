@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -91,7 +91,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _minResponseDataRateFeature = minResponseDataRateFeature;
             _outputAborter = outputAborter;
 
-            _flusher = new TimingPipeFlusher(_pipeWriter, timeoutControl, log);
+            _flusher = new TimingPipeFlusher(timeoutControl, log);
+            _flusher.Initialize(_pipeWriter);
         }
 
         public Task WriteDataAsync(ReadOnlySpan<byte> buffer, CancellationToken cancellationToken = default)
@@ -523,7 +524,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             Debug.Assert(_currentSegmentOwner == null);
             Debug.Assert(_completedSegments == null || _completedSegments.Count == 0);
-            // Cleared in sequential address ascending order 
+            // Cleared in sequential address ascending order
             _currentMemoryPrefixBytes = 0;
             _autoChunk = false;
             _writeStreamSuffixCalled = false;
@@ -593,13 +594,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // Calculating ChunkWriter.GetBeginChunkByteCount isn't free, so instead, we can add
                 // the max length for the prefix and suffix and add it to the sizeHint.
                 // This still guarantees that the memory passed in will be larger than the sizeHint.
-                sizeHint += MaxBeginChunkLength + EndChunkLength; 
+                sizeHint += MaxBeginChunkLength + EndChunkLength;
                 UpdateCurrentChunkMemory(sizeHint);
             }
             // Check if we need to allocate a new memory.
             else if (_advancedBytesForChunk >= _currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength - sizeHint && _advancedBytesForChunk > 0)
             {
-                sizeHint += MaxBeginChunkLength + EndChunkLength; 
+                sizeHint += MaxBeginChunkLength + EndChunkLength;
                 var writer = new BufferWriter<PipeWriter>(_pipeWriter);
                 WriteCurrentChunkMemoryToPipeWriter(ref writer);
                 writer.Commit();
@@ -625,7 +626,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             _currentChunkMemoryUpdated = true;
         }
-       
+
         private void WriteCurrentChunkMemoryToPipeWriter(ref BufferWriter<PipeWriter> writer)
         {
             Debug.Assert(_advancedBytesForChunk <= _currentChunkMemory.Length);
@@ -701,7 +702,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 // Get a new buffer using the minimum segment size, unless the size hint is larger than a single segment.
                 // Also, the size cannot be larger than the MaxBufferSize of the MemoryPool
-                var owner = _memoryPool.Rent(Math.Min(sizeHint, _memoryPool.MaxBufferSize));
+                var owner = _memoryPool.Rent(sizeHint);
                 _currentSegment = owner.Memory;
                 _currentSegmentOwner = owner;
             }

@@ -1,12 +1,15 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.WebView
 {
@@ -54,6 +57,13 @@ namespace Microsoft.AspNetCore.Components.WebView
         /// Gets the <see cref="Dispatcher"/> used by this <see cref="WebViewManager"/> instance.
         /// </summary>
         public Dispatcher Dispatcher => _dispatcher;
+
+        /// <summary>
+        /// Gets an object that can be used to configure support for adding, updating, and removing
+        /// components from JavaScript code. This object should be made available to application code
+        /// during the host building phase so that it can be populated.
+        /// </summary>
+        public JSComponentConfigurationStore JSComponentConfiguration { get; } = new();
 
         /// <summary>
         /// Instructs the web view to navigate to the specified location, bypassing any
@@ -187,16 +197,22 @@ namespace Microsoft.AspNetCore.Components.WebView
             }
 
             var serviceScope = _provider.CreateAsyncScope();
-            _currentPageContext = new PageContext(_dispatcher, serviceScope, _ipcSender, baseUrl, startUrl);
 
-            // Add any root components that were registered before the page attached
+            _currentPageContext = new PageContext(_dispatcher, serviceScope, _ipcSender, JSComponentConfiguration, baseUrl, startUrl);
+
+            // Add any root components that were registered before the page attached. We don't await any of the
+            // returned render tasks so that the components can be processed in parallel.
+            var pendingRenders = new List<Task>(_rootComponentsBySelector.Count);
             foreach (var (selector, rootComponent) in _rootComponentsBySelector)
             {
                 rootComponent.ComponentId = _currentPageContext.Renderer.AddRootComponent(
                     rootComponent.ComponentType, selector);
-                await _currentPageContext.Renderer.RenderRootComponentAsync(
-                    rootComponent.ComponentId.Value, rootComponent.Parameters);
+                pendingRenders.Add(_currentPageContext.Renderer.RenderRootComponentAsync(
+                    rootComponent.ComponentId.Value, rootComponent.Parameters));
             }
+
+            // Now we wait for all components to finish rendering.
+            await Task.WhenAll(pendingRenders);
         }
 
         private static Uri EnsureTrailingSlash(Uri uri)

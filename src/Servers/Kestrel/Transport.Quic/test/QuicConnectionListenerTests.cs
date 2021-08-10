@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Net.Quic;
@@ -10,6 +10,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 {
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35070")]
     public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
     {
         [ConditionalFact]
@@ -38,17 +39,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
             var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
 
-            using var quicConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
-            await quicConnection.ConnectAsync().DefaultTimeout();
+            using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+            await clientConnection.ConnectAsync().DefaultTimeout();
 
             // Assert
-            await using var connection = await acceptTask.DefaultTimeout();
-            Assert.False(connection.ConnectionClosed.IsCancellationRequested);
+            await using var serverConnection = await acceptTask.DefaultTimeout();
+            Assert.False(serverConnection.ConnectionClosed.IsCancellationRequested);
 
-            await connection.DisposeAsync().AsTask().DefaultTimeout();
+            await serverConnection.DisposeAsync().AsTask().DefaultTimeout();
 
             // ConnectionClosed isn't triggered because the server initiated close.
-            Assert.False(connection.ConnectionClosed.IsCancellationRequested);
+            Assert.False(serverConnection.ConnectionClosed.IsCancellationRequested);
         }
     }
 }

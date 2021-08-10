@@ -1,11 +1,12 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
@@ -13,24 +14,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     {
         private readonly ServiceContext _serviceContext;
         private readonly IHttpApplication<TContext> _application;
+        private readonly HttpProtocols _protocols;
+        private readonly bool _addAltSvcHeader;
 
-        public HttpMultiplexedConnectionMiddleware(ServiceContext serviceContext, IHttpApplication<TContext> application)
+        public HttpMultiplexedConnectionMiddleware(ServiceContext serviceContext, IHttpApplication<TContext> application, HttpProtocols protocols, bool addAltSvcHeader)
         {
             _serviceContext = serviceContext;
             _application = application;
+            _protocols = protocols;
+            _addAltSvcHeader = addAltSvcHeader;
         }
 
         public Task OnConnectionAsync(MultiplexedConnectionContext connectionContext)
         {
             var memoryPoolFeature = connectionContext.Features.Get<IMemoryPoolFeature>();
+            var localEndPoint = connectionContext.LocalEndPoint as IPEndPoint;
+            var altSvcHeader = _addAltSvcHeader && localEndPoint != null ? HttpUtilities.GetEndpointAltSvc(localEndPoint, _protocols) : null;
 
             var httpConnectionContext = new HttpMultiplexedConnectionContext(
                 connectionContext.ConnectionId,
+                _protocols,
+                altSvcHeader,
                 connectionContext,
                 _serviceContext,
                 connectionContext.Features,
                 memoryPoolFeature?.MemoryPool ?? System.Buffers.MemoryPool<byte>.Shared,
-                connectionContext.LocalEndPoint as IPEndPoint,
+                localEndPoint,
                 connectionContext.RemoteEndPoint as IPEndPoint);
 
             var connection = new HttpConnection(httpConnectionContext);

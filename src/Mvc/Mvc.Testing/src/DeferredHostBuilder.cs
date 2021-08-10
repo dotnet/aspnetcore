@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -18,6 +18,8 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
         private Action<IHostBuilder> _configure;
         private Func<string[], object>? _hostFactory;
+
+        private readonly ConfigurationManager _hostConfiguration = new();
 
         // This task represents a call to IHost.Start, we create it here preemptively in case the application
         // exits due to an exception or because it didn't wait for the shutdown signal
@@ -38,8 +40,18 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
         public IHost Build()
         {
+            // Hosting configuration is being provided by args so that
+            // we can impact WebApplicationBuilder based applications.
+            var args = new List<string>();
+
+            // Transform the host configuration into command line arguments
+            foreach (var (key, value) in _hostConfiguration.AsEnumerable())
+            {
+                args.Add($"--{key}={value}");
+            }
+
             // This will never be null if the case where Build is being called
-            var host = (IHost)_hostFactory!(Array.Empty<string>());
+            var host = (IHost)_hostFactory!(args.ToArray());
 
             // We can't return the host directly since we need to defer the call to StartAsync
             return new DeferredHost(host, _hostStartTcs);
@@ -59,7 +71,10 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
         public IHostBuilder ConfigureHostConfiguration(Action<IConfigurationBuilder> configureDelegate)
         {
-            _configure += b => b.ConfigureHostConfiguration(configureDelegate);
+            // Run this immediately so that we can capture the host configuration
+            // before we pass it to the application. We can do this for app configuration
+            // as well if it becomes necessary.
+            configureDelegate(_hostConfiguration);
             return this;
         }
 

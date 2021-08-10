@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -195,13 +195,15 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
                 (RequestBody, ResponseBody) = _streams.Start();
 
-                var pipe = new Pipe(
-                    new PipeOptions(
-                        _memoryPool,
-                        readerScheduler: PipeScheduler.ThreadPool,
-                        pauseWriterThreshold: PauseWriterThreshold,
-                        resumeWriterThreshold: ResumeWriterTheshold,
-                        minimumSegmentSize: MinAllocBufferSize));
+                var pipe = new Pipe(new PipeOptions(
+                    _memoryPool,
+                    // The readerScheduler schedules internal non-blocking logic, so there's no reason to dispatch.
+                    // The writerScheduler is PipeScheduler.ThreadPool by default which is correct because it
+                    // schedules app code when backpressure is relieved which may block.
+                    readerScheduler: PipeScheduler.Inline,
+                    pauseWriterThreshold: PauseWriterThreshold,
+                    resumeWriterThreshold: ResumeWriterTheshold,
+                    minimumSegmentSize: MinAllocBufferSize));
                 _bodyOutput = new OutputProducer(pipe);
             }
 

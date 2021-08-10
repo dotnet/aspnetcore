@@ -1,9 +1,17 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.AspNetCore.Mvc;
 
 using static Microsoft.AspNetCore.Http.Results;
 
-var app = WebApplication.Create(args);
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
+
+var app = builder.Build();
+
+app.MapControllers();
 
 app.MapGet("/", () => "Hello World");
 
@@ -25,6 +33,16 @@ app.MapGet("/many-results", (int id) =>
 
 app.MapGet("/problem", () => Results.Problem("Some problem"));
 
+app.MapGet("/environment", (IHostEnvironment environment) => environment.EnvironmentName);
+
+app.MapGet("/greeting", (IConfiguration config) => config["Greeting"]);
+
 app.Run();
 
 record Person(string Name, int Age);
+
+public class MyController : ControllerBase
+{
+    [HttpGet("/greet")]
+    public string Greet() => $"Hello human";
+}

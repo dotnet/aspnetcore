@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.Http;
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <summary>
         /// Flag for logging properties that are part of the <see cref="HttpRequest"/>
         /// Includes <see cref="UriStem"/>, <see cref="UriQuery"/>, <see cref="ProtocolVersion"/>,
-        /// <see cref="Method"/>, <see cref="Host"/>, <see cref="Referer"/>, 
+        /// <see cref="Method"/>, <see cref="Host"/>, <see cref="Referer"/>,
         /// and <see cref="UserAgent"/>.
         /// </summary>
         Request = UriStem | UriQuery | ProtocolVersion | Method | RequestHeaders,

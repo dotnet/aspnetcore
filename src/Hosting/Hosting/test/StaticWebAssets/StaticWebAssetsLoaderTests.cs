@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
             };
 
             // Act
-            StaticWebAssetsLoader.UseStaticWebAssetsCore(environment, manifest);
+            StaticWebAssetsLoader.UseStaticWebAssetsCore(environment, manifest, false);
 
             // Assert
             var composite = Assert.IsType<CompositeFileProvider>(environment.WebRootFileProvider);
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
             };
 
             // Act
-            StaticWebAssetsLoader.UseStaticWebAssetsCore(environment, manifest);
+            StaticWebAssetsLoader.UseStaticWebAssetsCore(environment, manifest, false);
 
             // Assert
             Assert.Equal(originalRoot, environment.WebRootFileProvider);
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
             };
 
             // Act
-            var manifest = StaticWebAssetsLoader.ResolveManifest(environment, new ConfigurationBuilder().Build());
+            var (manifest,_) = StaticWebAssetsLoader.ResolveManifest(environment, new ConfigurationBuilder().Build());
 
             // Assert
             Assert.Equal(expectedManifest, new StreamReader(manifest).ReadToEnd());
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
                 }).Build();
 
             // Act
-            var manifest = StaticWebAssetsLoader.ResolveManifest(environment, configuration);
+            var (manifest,_) = StaticWebAssetsLoader.ResolveManifest(environment, configuration);
 
             // Assert
             Assert.Equal(expectedManifest, new StreamReader(manifest).ReadToEnd());

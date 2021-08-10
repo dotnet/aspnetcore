@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             ClientOptions.BaseAddress = new Uri("https://localhost");
         }
 
-        public string BootstrapFrameworkVersion { get; set; } = "V4";
+        public string BootstrapFrameworkVersion { get; set; } = "V5";
 
         protected override IHostBuilder CreateHostBuilder()
         {
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         }
 
         private void UpdateApplicationParts(IWebHostBuilder builder) =>
-            builder.ConfigureServices(services => services.AddMvc());
+            builder.ConfigureServices(services => AddRelatedParts(services, BootstrapFrameworkVersion));
 
         private void UpdateStaticAssets(IWebHostBuilder builder)
         {
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
                 {
                     typeof(StaticWebAssetsLoader)
                         .GetMethod("UseStaticWebAssetsCore", BindingFlags.NonPublic | BindingFlags.Static)
-                        .Invoke(null, new object[] { context.HostingEnvironment, manifest });
+                        .Invoke(null, new object[] { context.HostingEnvironment, manifest, false });
                 }
             });
         }
@@ -149,6 +149,73 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             _connection.Dispose();
 
             base.Dispose(disposing);
+        }
+
+        private static void AddRelatedParts(IServiceCollection services, string framework)
+        {
+            var _assemblyMap =
+                new Dictionary<UIFramework, string>()
+                {
+                    [UIFramework.Bootstrap5] = "Microsoft.AspNetCore.Identity.UI.Views.V5",
+                    [UIFramework.Bootstrap4] = "Microsoft.AspNetCore.Identity.UI.Views.V4",
+                };
+
+            var mvcBuilder = services
+                .AddMvc()
+                .ConfigureApplicationPartManager(partManager =>
+                {
+                    var thisAssembly = typeof(IdentityBuilderUIExtensions).Assembly;
+                    var relatedAssemblies = RelatedAssemblyAttribute.GetRelatedAssemblies(thisAssembly, throwOnError: true);
+                    var relatedParts = relatedAssemblies.ToDictionary(
+                        ra => ra,
+                        CompiledRazorAssemblyApplicationPartFactory.GetDefaultApplicationParts);
+
+                    var selectedFrameworkAssembly = _assemblyMap[framework == "V4" ? UIFramework.Bootstrap4 : UIFramework.Bootstrap5];
+
+                    foreach (var kvp in relatedParts)
+                    {
+                        var assemblyName = kvp.Key.GetName().Name;
+                        if (!IsAssemblyForFramework(selectedFrameworkAssembly, assemblyName))
+                        {
+                            RemoveParts(partManager, kvp.Value);
+                        }
+                        else
+                        {
+                            AddParts(partManager, kvp.Value);
+                        }
+                    }
+                    bool IsAssemblyForFramework(string frameworkAssembly, string assemblyName) =>
+                        string.Equals(assemblyName, frameworkAssembly, StringComparison.OrdinalIgnoreCase);
+                    void RemoveParts(
+                        ApplicationPartManager manager,
+                        IEnumerable<ApplicationPart> partsToRemove)
+                    {
+                        for (var i = 0; i < manager.ApplicationParts.Count; i++)
+                        {
+                            var part = manager.ApplicationParts[i];
+                            if (partsToRemove.Any(p => string.Equals(
+                                    p.Name,
+                                    part.Name,
+                                    StringComparison.OrdinalIgnoreCase)))
+                            {
+                                manager.ApplicationParts.Remove(part);
+                            }
+                        }
+                    }
+                    void AddParts(
+                        ApplicationPartManager manager,
+                        IEnumerable<ApplicationPart> partsToAdd)
+                    {
+                        foreach (var part in partsToAdd)
+                        {
+                            if (!manager.ApplicationParts.Any(p => p.GetType() == part.GetType() &&
+                                string.Equals(p.Name, part.Name, StringComparison.OrdinalIgnoreCase)))
+                            {
+                                manager.ApplicationParts.Add(part);
+                            }
+                        }
+                    }
+                });
         }
     }
 }

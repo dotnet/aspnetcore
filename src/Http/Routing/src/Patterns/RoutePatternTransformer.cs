@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.Routing.Patterns
 {
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         /// <remarks>
         /// <para>
         /// Substituting required values into a route pattern is intended for us with a general-purpose
-        /// parameterize route specification that can match many logical endpoints. Calling 
+        /// parameterize route specification that can match many logical endpoints. Calling
         /// <see cref="SubstituteRequiredValues(RoutePattern, object)"/> can produce a derived route pattern
         /// for each set of route values that corresponds to an endpoint.
         /// </para>

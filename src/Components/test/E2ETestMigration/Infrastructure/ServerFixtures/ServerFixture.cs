@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -13,8 +13,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
 {
     public abstract class ServerFixture : IDisposable
     {
-        private static readonly Lazy<Dictionary<string, string>> _projects = new Lazy<Dictionary<string, string>>(FindProjects);
-
         public Uri RootUri => _rootUriInitializer.Value;
 
         private readonly Lazy<Uri> _rootUriInitializer;
@@ -33,43 +31,24 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
 
         protected abstract string StartAndGetRootUri();
 
-        private static Dictionary<string, string> FindProjects()
-        {
-            return typeof(ServerFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-                .Where(m => m.Key.StartsWith("TestAssemblyApplication[", StringComparison.Ordinal))
-                .ToDictionary(m =>
-                    m.Key.Replace("TestAssemblyApplication", "").TrimStart('[').TrimEnd(']'),
-                    m => m.Value);
-        }
-
         public static string FindSampleOrTestSitePath(string projectName)
         {
-            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
+            var comma = projectName.IndexOf(",", StringComparison.Ordinal);
+            if (comma != -1)
             {
-                var comma = projectName.IndexOf(",", StringComparison.Ordinal);
-                if (comma != -1)
-                {
-                     projectName = projectName.Substring(0, comma);
-                }
-                if (string.Equals(projectName, "Components.TestServer", StringComparison.Ordinal))
-                {
-                     projectName = "TestServer"; // This testasset doesn't match the folder name for some reason
-                }
-                var path = Path.Combine(AppContext.BaseDirectory, "testassets", projectName);
-                if (!Directory.Exists(path))
-                {
-                    throw new ArgumentException($"Cannot find a sample or test site directory: '{path}'.");
-                }
-                return path;
-            }
-            
-            var projects = _projects.Value;
-            if (projects.TryGetValue(projectName, out var dir))
-            {
-                return dir;
+                projectName = projectName.Substring(0, comma);
             }
 
-            throw new ArgumentException($"Cannot find a sample or test site with name '{projectName}'.");
+            if (string.Equals(projectName, "Components.TestServer", StringComparison.Ordinal))
+            {
+                projectName = "TestServer"; // This testasset doesn't match the folder name for some reason
+            }
+            var path = Path.Combine(AppContext.BaseDirectory, "testassets", projectName);
+            if (!Directory.Exists(path))
+            {
+                throw new ArgumentException($"Cannot find a sample or test site directory: '{path}'.");
+            }
+            return path;
         }
 
         protected static void RunInBackgroundThread(Action action)

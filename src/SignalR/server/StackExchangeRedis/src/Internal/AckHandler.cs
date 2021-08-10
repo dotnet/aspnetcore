@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
     {
         private readonly ConcurrentDictionary<int, AckInfo> _acks = new ConcurrentDictionary<int, AckInfo>();
         private readonly Timer _timer;
-        private readonly TimeSpan _ackThreshold = TimeSpan.FromSeconds(30);
+        private readonly long _ackThreshold = (long)TimeSpan.FromSeconds(30).TotalMilliseconds;
         private readonly TimeSpan _ackInterval = TimeSpan.FromSeconds(5);
         private readonly object _lock = new object();
         private bool _disposed;
@@ -51,11 +51,11 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
                 return;
             }
 
-            var utcNow = DateTime.UtcNow;
+            var currentTick = Environment.TickCount64;
 
             foreach (var pair in _acks)
             {
-                var elapsed = utcNow - pair.Value.Created;
+                var elapsed = currentTick - pair.Value.CreatedTick;
                 if (elapsed > _ackThreshold)
                 {
                     if (_acks.TryRemove(pair.Key, out var ack))
@@ -87,11 +87,11 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
         private class AckInfo
         {
             public TaskCompletionSource Tcs { get; private set; }
-            public DateTime Created { get; private set; }
+            public long CreatedTick { get; private set; }
 
             public AckInfo()
             {
-                Created = DateTime.UtcNow;
+                CreatedTick = Environment.TickCount64;
                 Tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             }
         }

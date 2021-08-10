@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -138,6 +138,25 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             using var mem = new MemoryStream();
             ex = await Assert.ThrowsAsync<EndOfStreamException>(async () => await remoteJSDataStream.CopyToAsync(mem).DefaultTimeout());
             Assert.Equal("The incoming data chunk cannot be empty.", ex.Message);
+        }
+
+        [Fact]
+        public async Task ReceiveData_WithLargerChunksThanPermitted()
+        {
+            // Arrange
+            var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
+            var remoteJSDataStream = await CreateRemoteJSDataStreamAsync(jsRuntime);
+            var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
+            var chunk = new byte[50_000]; // more than the 32k maximum chunk size
+
+            // Act & Assert 1
+            var ex = await Assert.ThrowsAsync<EndOfStreamException>(async () => await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null).DefaultTimeout());
+            Assert.Equal("The incoming data chunk exceeded the permitted length.", ex.Message);
+
+            // Act & Assert 2
+            using var mem = new MemoryStream();
+            ex = await Assert.ThrowsAsync<EndOfStreamException>(async () => await remoteJSDataStream.CopyToAsync(mem).DefaultTimeout());
+            Assert.Equal("The incoming data chunk exceeded the permitted length.", ex.Message);
         }
 
         [Fact]

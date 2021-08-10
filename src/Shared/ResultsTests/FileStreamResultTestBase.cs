@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
 using Microsoft.AspNetCore.Http;
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Internal
         [InlineData("bytes = 1-4, 5-11")]
         public async Task WriteFileAsync_PreconditionStateUnspecified_RangeRequestIgnored(string rangeString)
         {
-            // Arrange            
+            // Arrange
             var contentType = "text/plain";
             var lastModified = new DateTimeOffset();
             var entityTag = new EntityTagHeaderValue("\"Etag\"");
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Internal
         [InlineData("bytes = -0")]
         public async Task WriteFileAsync_PreconditionStateUnspecified_RangeRequestedNotSatisfiable(string rangeString)
         {
-            // Arrange            
+            // Arrange
             var contentType = "text/plain";
             var lastModified = new DateTimeOffset();
             var entityTag = new EntityTagHeaderValue("\"Etag\"");
@@ -292,7 +292,7 @@ namespace Microsoft.AspNetCore.Internal
         [Fact]
         public async Task WriteFileAsync_NotModified_RangeRequestedIgnored()
         {
-            // Arrange       
+            // Arrange
             var contentType = "text/plain";
             var lastModified = new DateTimeOffset();
             var entityTag = new EntityTagHeaderValue("\"Etag\"");
@@ -339,7 +339,7 @@ namespace Microsoft.AspNetCore.Internal
             var readStream = new MemoryStream(byteArray);
             fileLength = fileLength ?? 0L;
             readStream.SetLength(fileLength.Value);
-            
+
             var httpContext = GetHttpContext();
             var requestHeaders = httpContext.Request.GetTypedHeaders();
             requestHeaders.Range = new RangeHeaderValue(0, 5);

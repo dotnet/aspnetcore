@@ -1,4 +1,4 @@
-﻿namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._INPUT_
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._INPUT_
 {
     [ApiController]
     [Route("[controller]/[action]")]

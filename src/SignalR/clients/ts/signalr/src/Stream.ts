@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 // This is an API that is similar to Observable, but we don't want users to confuse it for that so we rename things. Someone could
 // easily adapt it into the Rx interface if they wanted to. Unlike in C#, we can't just implement an "interface" and get extension

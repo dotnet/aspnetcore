@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -98,6 +98,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 { $"{nameof(HttpConnectionOptions.DefaultTransferFormat)}", TransferFormat.Text },
                 { $"{nameof(HttpConnectionOptions.WebSocketConfiguration)}", webSocketConfig },
                 { $"{nameof(HttpConnectionOptions.WebSocketFactory)}", webSocketFactory },
+                { $"{nameof(HttpConnectionOptions.ApplicationMaxBufferSize)}", 1L * 1024 * 1024 },
+                { $"{nameof(HttpConnectionOptions.TransportMaxBufferSize)}", 1L * 1024 * 1024 },
             };
 
             var options = new HttpConnectionOptions();

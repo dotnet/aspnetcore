@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO.Pipelines;
@@ -17,6 +17,25 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
     public class HttpConnectionManagerTests : VerifiableLoggedTest
     {
         [Fact]
+        public void HttpConnectionDispatcherOptionsDefaults()
+        {
+            var options = new HttpConnectionDispatcherOptions();
+            Assert.Equal(TimeSpan.FromSeconds(10), options.TransportSendTimeout);
+            Assert.Equal(65536, options.TransportMaxBufferSize);
+            Assert.Equal(65536, options.ApplicationMaxBufferSize);
+            Assert.Equal(HttpTransports.All, options.Transports);
+            Assert.False(options.CloseOnAuthenticationExpiration);
+        }
+
+        [Fact]
+        public void HttpConnectionDispatcherOptionsNegativeBufferSizeThrows()
+        {
+            var httpOptions = new HttpConnectionDispatcherOptions();
+            Assert.Throws<ArgumentOutOfRangeException>(() => httpOptions.TransportMaxBufferSize = -1);
+            Assert.Throws<ArgumentOutOfRangeException>(() => httpOptions.ApplicationMaxBufferSize = -1);
+        }
+
+        [Fact]
         public void NewConnectionsHaveConnectionId()
         {
             using (StartVerifiableLog())
@@ -29,7 +48,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 Assert.Null(connection.ApplicationTask);
                 Assert.Null(connection.TransportTask);
                 Assert.Null(connection.Cancellation);
-                Assert.NotEqual(default, connection.LastSeenUtc);
+                Assert.NotEqual(default, connection.LastSeenTicks);
                 Assert.NotNull(connection.Transport);
                 Assert.NotNull(connection.Application);
             }

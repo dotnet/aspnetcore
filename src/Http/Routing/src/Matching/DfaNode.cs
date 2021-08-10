@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         // Just for diagnostics and debugging
         public string Label { get; set; }
-        
+
         public List<Endpoint> Matches { get; private set; }
 
         public Dictionary<string, DfaNode> Literals { get; private set; }
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 builder.AppendJoin(", ", Literals.Select(kvp => $"{kvp.Key}->({FormatNode(kvp.Value)})"));
             }
             return builder.ToString();
-            
+
             // DfaNodes can be self-referential, don't traverse cycles.
             string FormatNode(DfaNode other)
             {

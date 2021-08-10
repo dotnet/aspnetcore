@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -234,7 +234,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     Assert.False(feature.IsUpgradableRequest);
                     Assert.Equal("chunked", context.Request.Headers.TransferEncoding);
-                    Assert.Equal(11, await context.Request.Body.ReadUntilEndAsync(new byte[100]));
+
+                    var length = await context.Request.Body.FillBufferUntilEndAsync(new byte[100]);
+                    Assert.Equal(11, length);
                 }
                 else
                 {

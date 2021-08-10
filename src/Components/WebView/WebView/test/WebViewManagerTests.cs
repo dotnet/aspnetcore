@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 
             // Assert
             Assert.Collection(webViewManager.SentIpcMessages,
+                m => AssertHelpers.IsAttachWebRendererInteropMessage(m),
                 m => AssertHelpers.IsAttachToDocumentMessage(m, 0, "#app"),
                 m => AssertHelpers.IsRenderBatch(m));
         }
@@ -42,11 +43,12 @@ namespace Microsoft.AspNetCore.Components.WebView
             webViewManager.ReceiveAttachPageMessage();
 
             // Act
-            Assert.Empty(webViewManager.SentIpcMessages);
+            Assert.Collection(webViewManager.SentIpcMessages,
+                m => AssertHelpers.IsAttachWebRendererInteropMessage(m));
             await webViewManager.AddRootComponentAsync(typeof(MyComponent), "#app", ParameterView.Empty);
 
             // Assert
-            Assert.Collection(webViewManager.SentIpcMessages,
+            Assert.Collection(webViewManager.SentIpcMessages.Skip(1),
                 m => AssertHelpers.IsAttachToDocumentMessage(m, 0, "#app"),
                 m => AssertHelpers.IsRenderBatch(m));
         }
@@ -68,8 +70,10 @@ namespace Microsoft.AspNetCore.Components.WebView
 
             // Assert
             Assert.Collection(webViewManager.SentIpcMessages,
+                m => AssertHelpers.IsAttachWebRendererInteropMessage(m),
                 m => AssertHelpers.IsAttachToDocumentMessage(m, 0, "#app"),
                 m => AssertHelpers.IsRenderBatch(m),
+                m => AssertHelpers.IsAttachWebRendererInteropMessage(m),
                 m => AssertHelpers.IsAttachToDocumentMessage(m, 0, "#app"),
                 m => AssertHelpers.IsRenderBatch(m));
 

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -553,6 +553,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         [InlineData("http1", HttpProtocols.Http1)]
         [InlineData("http2", HttpProtocols.Http2)]
         [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)]
+        [InlineData("http1AndHttp2andHttp3", HttpProtocols.Http1AndHttp2AndHttp3)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81)]
         public void DefaultConfigSectionCanSetProtocols_NonMacAndWin7(string input, HttpProtocols expected)

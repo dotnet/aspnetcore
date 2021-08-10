@@ -1,11 +1,10 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading.Tasks;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
@@ -14,53 +13,73 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
     /// <summary>
     /// Caches the result of runtime compilation of Razor files for the duration of the application lifetime.
     /// </summary>
-    internal class DefaultViewCompiler : IViewCompiler
+    // This name is hardcoded in RazorRuntimeCompilationMvcCoreBuilderExtensions. Make sure it's updated if this is ever renamed.
+    internal class DefaultViewCompiler : IViewCompilerProvider, IViewCompiler
     {
-        private readonly Dictionary<string, Task<CompiledViewDescriptor>> _compiledViews;
+        private readonly ApplicationPartManager _applicationPartManager;
         private readonly ConcurrentDictionary<string, string> _normalizedPathCache;
+        private Dictionary<string, Task<CompiledViewDescriptor>>? _compiledViews;
         private readonly ILogger _logger;
 
         public DefaultViewCompiler(
-            IList<CompiledViewDescriptor> compiledViews,
-            ILogger logger)
+            ApplicationPartManager applicationPartManager,
+            ILogger<DefaultViewCompiler> logger)
         {
-            if (compiledViews == null)
-            {
-                throw new ArgumentNullException(nameof(compiledViews));
-            }
-
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
+            _applicationPartManager = applicationPartManager;
             _logger = logger;
             _normalizedPathCache = new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
 
-            // We need to validate that the all of the precompiled views are unique by path (case-insensitive).
+            EnsureCompiledViews(logger);
+        }
+
+        IViewCompiler IViewCompilerProvider.GetCompiler() => this;
+
+        [MemberNotNull(nameof(_compiledViews))]
+        private void EnsureCompiledViews(ILogger logger)
+        {
+            if (_compiledViews is not null)
+            {
+                return;
+            }
+
+            var viewsFeature = new ViewsFeature();
+            _applicationPartManager.PopulateFeature(viewsFeature);
+
+            // We need to validate that the all compiled views are unique by path (case-insensitive).
             // We do this because there's no good way to canonicalize paths on windows, and it will create
             // problems when deploying to linux. Rather than deal with these issues, we just don't support
             // views that differ only by case.
-            _compiledViews = new Dictionary<string, Task<CompiledViewDescriptor>>(
-                compiledViews.Count,
+            var compiledViews = new Dictionary<string, Task<CompiledViewDescriptor>>(
+                viewsFeature.ViewDescriptors.Count,
                 StringComparer.OrdinalIgnoreCase);
 
-            foreach (var compiledView in compiledViews)
+            foreach (var compiledView in viewsFeature.ViewDescriptors)
             {
                 logger.ViewCompilerLocatedCompiledView(compiledView.RelativePath);
 
-                if (!_compiledViews.ContainsKey(compiledView.RelativePath))
+                if (!compiledViews.ContainsKey(compiledView.RelativePath))
                 {
                     // View ordering has precedence semantics, a view with a higher precedence was not
                     // already added to the list.
-                    _compiledViews.Add(compiledView.RelativePath, Task.FromResult(compiledView));
+                    compiledViews.TryAdd(compiledView.RelativePath, Task.FromResult(compiledView));
                 }
             }
 
-            if (_compiledViews.Count == 0)
+            if (compiledViews.Count == 0)
             {
                 logger.ViewCompilerNoCompiledViewsFound();
             }
+
+            // Safe races should be ok. We would end up logging multiple times
+            // if this is invoked concurrently, but since this is primarily a dev-scenario, we don't think
+            // this will happen often. We could always re-consider the logging if we get feedback.
+            _compiledViews = compiledViews;
+        }
+
+        // Invoked as part of a hot reload event.
+        internal void ClearCache()
+        {
+            _compiledViews = null;
         }
 
         /// <inheritdoc />
@@ -70,6 +89,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             {
                 throw new ArgumentNullException(nameof(relativePath));
             }
+
+            EnsureCompiledViews(_logger);
 
             // Attempt to lookup the cache entry using the passed in path. This will succeed if the path is already
             // normalized and a cache entry exists.

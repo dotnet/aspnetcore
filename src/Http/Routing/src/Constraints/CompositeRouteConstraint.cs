@@ -1,16 +1,17 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Matching;
 
 namespace Microsoft.AspNetCore.Routing.Constraints
 {
     /// <summary>
     /// Constrains a route by several child constraints.
     /// </summary>
-    public class CompositeRouteConstraint : IRouteConstraint
+    public class CompositeRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CompositeRouteConstraint" /> class.
@@ -52,6 +53,19 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             foreach (var constraint in Constraints)
             {
                 if (!constraint.Match(httpContext, route, routeKey, values, routeDirection))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        bool IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string parameterName, string literal)
+        {
+            foreach (var constraint in Constraints)
+            {
+                if (constraint is IParameterLiteralNodeMatchingPolicy literalConstraint && !literalConstraint.MatchesLiteral(parameterName, literal))
                 {
                     return false;
                 }

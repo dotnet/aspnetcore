@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
 {
     /// <summary>
     /// Implements an <see cref="IAuthorizationHandler"/> and <see cref="IAuthorizationRequirement"/>
-    /// which requires at least one instance of the specified claim type, and, if allowed values are specified, 
+    /// which requires at least one instance of the specified claim type, and, if allowed values are specified,
     /// the claim value must be any of the allowed values.
     /// </summary>
     public class ClaimsAuthorizationRequirement : AuthorizationHandler<ClaimsAuthorizationRequirement>, IAuthorizationRequirement
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
         /// Creates a new instance of <see cref="ClaimsAuthorizationRequirement"/>.
         /// </summary>
         /// <param name="claimType">The claim type that must be present.</param>
-        /// <param name="allowedValues">The optional list of claim values, which, if present, 
+        /// <param name="allowedValues">The optional list of claim values, which, if present,
         /// the claim must match.</param>
         public ClaimsAuthorizationRequirement(string claimType, IEnumerable<string>? allowedValues)
         {
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
         public string ClaimType { get; }
 
         /// <summary>
-        /// Gets the optional list of claim values, which, if present, 
+        /// Gets the optional list of claim values, which, if present,
         /// the claim must match.
         /// </summary>
         public IEnumerable<string>? AllowedValues { get; }

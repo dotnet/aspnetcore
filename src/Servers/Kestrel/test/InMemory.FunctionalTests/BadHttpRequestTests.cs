@@ -1,15 +1,13 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Diagnostics;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
 using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
@@ -195,6 +193,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
+        private class BadRequestEventListener : IObserver<KeyValuePair<string, object>>, IDisposable
+        {
+            private IDisposable _subscription;
+            private Action<KeyValuePair<string, object>> _callback;
+
+            public bool EventFired { get; set; }
+
+            public BadRequestEventListener(DiagnosticListener diagnosticListener, Action<KeyValuePair<string, object>> callback)
+            {
+                _subscription = diagnosticListener.Subscribe(this, IsEnabled);
+                _callback = callback;
+            }
+            private static readonly Predicate<string> IsEnabled = (provider) => provider switch
+            {
+                "Microsoft.AspNetCore.Server.Kestrel.BadRequest" => true,
+                _ => false
+            };
+            public void OnNext(KeyValuePair<string, object> pair)
+            {
+                EventFired = true;
+                _callback(pair);
+            }
+            public void OnError(Exception error) { }
+            public void OnCompleted() { }
+            public virtual void Dispose() => _subscription.Dispose();
+        }
+
         private async Task TestBadRequest(string request, string expectedResponseStatusCode, string expectedExceptionMessage, string expectedAllowHeader = null)
         {
             BadHttpRequestException loggedException = null;
@@ -207,7 +232,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 .Setup(trace => trace.ConnectionBadRequest(It.IsAny<string>(), It.IsAny<BadHttpRequestException>()))
                 .Callback<string, BadHttpRequestException>((connectionId, exception) => loggedException = exception);
 
-            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)))
+            // Set up a listener to catch the BadRequest event
+            var diagListener = new DiagnosticListener("BadRequestTestsDiagListener");
+            string eventProviderName = "";
+            string exceptionString = "";
+            var badRequestEventListener = new BadRequestEventListener(diagListener, (pair) => {
+                eventProviderName = pair.Key;
+                var featureCollection = pair.Value as IFeatureCollection;
+                if (featureCollection is not null)
+                {
+                    var badRequestFeature = featureCollection.Get<IBadRequestExceptionFeature>();
+                    exceptionString = badRequestFeature.Error.ToString();
+                }
+            });
+
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory, mockKestrelTrace.Object) { DiagnosticSource = diagListener }))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -218,6 +257,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             mockKestrelTrace.Verify(trace => trace.ConnectionBadRequest(It.IsAny<string>(), It.IsAny<BadHttpRequestException>()));
             Assert.Equal(expectedExceptionMessage, loggedException.Message);
+
+            // Verify DiagnosticSource event for bad request
+            Assert.True(badRequestEventListener.EventFired);
+            Assert.Equal("Microsoft.AspNetCore.Server.Kestrel.BadRequest", eventProviderName);
+            Assert.Contains(expectedExceptionMessage, exceptionString);
         }
 
         private async Task ReceiveBadRequestResponse(InMemoryConnection connection, string expectedResponseStatusCode, string expectedDateHeaderValue, string expectedAllowHeader = null)

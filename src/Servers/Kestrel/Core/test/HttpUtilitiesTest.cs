@@ -1,10 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
@@ -54,6 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Theory]
         [InlineData("HTTP/1.0\r", true, "HTTP/1.0", (int)HttpVersion.Http10)]
         [InlineData("HTTP/1.1\r", true, "HTTP/1.1", (int)HttpVersion.Http11)]
+        [InlineData("HTTP/1.1\rmoretext", true, "HTTP/1.1", (int)HttpVersion.Http11)]
         [InlineData("HTTP/3.0\r", false, null, (int)HttpVersion.Unknown)]
         [InlineData("http/1.0\r", false, null, (int)HttpVersion.Unknown)]
         [InlineData("http/1.1\r", false, null, (int)HttpVersion.Unknown)]
@@ -226,6 +228,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void InvalidHostHeadersRejected(string host)
         {
             Assert.False(HttpUtilities.IsHostHeaderValid(host));
+        }
+
+        public static TheoryData<Func<string, Encoding>> ExceptionThrownForCRLFData
+        {
+            get
+            {
+                return new TheoryData<Func<string, Encoding>> {
+                    KestrelServerOptions.DefaultHeaderEncodingSelector,
+                    str => null,
+                    str => Encoding.Latin1
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ExceptionThrownForCRLFData))]
+        private void ExceptionThrownForCRLF(Func<string, Encoding> selector)
+        {
+            byte[] encodedBytes = { 0x01, 0x0A, 0x0D };
+            Assert.Throws<InvalidOperationException>(() =>
+                HttpUtilities.GetRequestHeaderString(encodedBytes.AsSpan(), HeaderNames.Accept, selector, checkForNewlineChars : true));
+        }
+
+        [Theory]
+        [MemberData(nameof(ExceptionThrownForCRLFData))]
+        private void ExceptionNotThrownForCRLF(Func<string, Encoding> selector)
+        {
+            byte[] encodedBytes = { 0x01, 0x0A, 0x0D };
+            HttpUtilities.GetRequestHeaderString(encodedBytes.AsSpan(), HeaderNames.Accept, selector, checkForNewlineChars : false);
         }
     }
 }

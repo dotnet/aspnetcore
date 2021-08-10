@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Net.Quic;
@@ -16,14 +16,15 @@ namespace Microsoft.AspNetCore.Hosting
     {
         public static IWebHostBuilder UseQuic(this IWebHostBuilder hostBuilder)
         {
-            if (!QuicImplementationProviders.Default.IsSupported)
+            if (QuicImplementationProviders.Default.IsSupported)
             {
-                throw new NotSupportedException("QUIC is not supported or enabled on this platform. See https://aka.ms/aspnet/kestrel/http3reqs for details.");
+                return hostBuilder.ConfigureServices(services =>
+                {
+                    services.AddSingleton<IMultiplexedConnectionListenerFactory, QuicTransportFactory>();
+                });
             }
-            return hostBuilder.ConfigureServices(services =>
-            {
-                services.AddSingleton<IMultiplexedConnectionListenerFactory, QuicTransportFactory>();
-            });
+
+            return hostBuilder;
         }
 
         public static IWebHostBuilder UseQuic(this IWebHostBuilder hostBuilder, Action<QuicTransportOptions> configureOptions)

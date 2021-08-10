@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -27,6 +27,8 @@ namespace Microsoft.AspNetCore.Connections
 
         // Other reserved feature slots
         internal protected IConnectionTransportFeature? _currentIConnectionTransportFeature;
+        internal protected IProtocolErrorCodeFeature? _currentIProtocolErrorCodeFeature;
+        internal protected ITlsConnectionFeature? _currentITlsConnectionFeature;
 
         private int _featureRevision;
 
@@ -40,6 +42,8 @@ namespace Microsoft.AspNetCore.Connections
             _currentIConnectionLifetimeFeature = this;
 
             _currentIConnectionTransportFeature = null;
+            _currentIProtocolErrorCodeFeature = null;
+            _currentITlsConnectionFeature = null;
         }
 
         // Internal for testing
@@ -131,6 +135,14 @@ namespace Microsoft.AspNetCore.Connections
                 {
                     feature = _currentIConnectionLifetimeFeature;
                 }
+                else if (key == typeof(IProtocolErrorCodeFeature))
+                {
+                    feature = _currentIProtocolErrorCodeFeature;
+                }
+                else if (key == typeof(ITlsConnectionFeature))
+                {
+                    feature = _currentITlsConnectionFeature;
+                }
                 else if (MaybeExtra != null)
                 {
                     feature = ExtraFeatureGet(key);
@@ -162,6 +174,14 @@ namespace Microsoft.AspNetCore.Connections
                 else if (key == typeof(IConnectionLifetimeFeature))
                 {
                     _currentIConnectionLifetimeFeature = (IConnectionLifetimeFeature?)value;
+                }
+                else if (key == typeof(IProtocolErrorCodeFeature))
+                {
+                    _currentIProtocolErrorCodeFeature = (IProtocolErrorCodeFeature?)value;
+                }
+                else if (key == typeof(ITlsConnectionFeature))
+                {
+                    _currentITlsConnectionFeature = (ITlsConnectionFeature?)value;
                 }
                 else
                 {
@@ -196,6 +216,14 @@ namespace Microsoft.AspNetCore.Connections
             else if (typeof(TFeature) == typeof(IConnectionLifetimeFeature))
             {
                 feature = Unsafe.As<IConnectionLifetimeFeature?, TFeature?>(ref _currentIConnectionLifetimeFeature);
+            }
+            else if (typeof(TFeature) == typeof(IProtocolErrorCodeFeature))
+            {
+                feature = Unsafe.As<IProtocolErrorCodeFeature?, TFeature?>(ref _currentIProtocolErrorCodeFeature);
+            }
+            else if (typeof(TFeature) == typeof(ITlsConnectionFeature))
+            {
+                feature = Unsafe.As<ITlsConnectionFeature?, TFeature?>(ref _currentITlsConnectionFeature);
             }
             else if (MaybeExtra != null)
             {
@@ -232,6 +260,14 @@ namespace Microsoft.AspNetCore.Connections
             {
                 _currentIConnectionLifetimeFeature = Unsafe.As<TFeature?, IConnectionLifetimeFeature?>(ref feature);
             }
+            else if (typeof(TFeature) == typeof(IProtocolErrorCodeFeature))
+            {
+                _currentIProtocolErrorCodeFeature = Unsafe.As<TFeature?, IProtocolErrorCodeFeature?>(ref feature);
+            }
+            else if (typeof(TFeature) == typeof(ITlsConnectionFeature))
+            {
+                _currentITlsConnectionFeature = Unsafe.As<TFeature?, ITlsConnectionFeature?>(ref feature);
+            }
             else
             {
                 ExtraFeatureSet(typeof(TFeature), feature);
@@ -259,6 +295,14 @@ namespace Microsoft.AspNetCore.Connections
             if (_currentIConnectionLifetimeFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(typeof(IConnectionLifetimeFeature), _currentIConnectionLifetimeFeature);
+            }
+            if (_currentIProtocolErrorCodeFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IProtocolErrorCodeFeature), _currentIProtocolErrorCodeFeature);
+            }
+            if (_currentITlsConnectionFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(ITlsConnectionFeature), _currentITlsConnectionFeature);
             }
 
             if (MaybeExtra != null)

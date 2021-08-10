@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -18,10 +18,10 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// Constructs an instance of <see cref="ParameterViewBuilder" />.
         /// </summary>
-        /// <param name="count">The maximum number of parameters that can be held.</param>
-        public ParameterViewBuilder(int count)
+        /// <param name="maxCapacity">The maximum number of parameters that can be held.</param>
+        public ParameterViewBuilder(int maxCapacity)
         {
-            _frames = new RenderTreeFrame[count + 1];
+            _frames = new RenderTreeFrame[maxCapacity + 1];
             _frames[0] = RenderTreeFrame
                 .Element(0, GeneratedParameterViewElementName)
                 .WithElementSubtreeLength(1);
@@ -44,10 +44,6 @@ namespace Microsoft.AspNetCore.Components
         /// <returns>The <see cref="ParameterView" />.</returns>
         public ParameterView ToParameterView()
         {
-            // Since this is internal, we should expect the usage to always be correct,
-            // i.e. the given count should match the number of 'Add' calls.
-            Debug.Assert(_frames[0].ElementSubtreeLengthField == _frames.Length);
-
             return new ParameterView(ParameterViewLifetime.Unbound, _frames, 0);
         }
     }

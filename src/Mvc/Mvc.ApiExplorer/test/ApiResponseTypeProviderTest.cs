@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -709,6 +709,51 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 });
         }
 
+        [Fact]
+        public void GetApiResponseTypes_HandlesActionWithMultipleContentTypesAndProduces()
+        {
+            // Arrange
+            var actionDescriptor = GetControllerActionDescriptor(typeof(TestController), nameof(TestController.GetUser));
+            actionDescriptor.FilterDescriptors.Add(new FilterDescriptor(new ProducesAttribute("text/xml") { Type = typeof(BaseModel) }, FilterScope.Action));
+            actionDescriptor.FilterDescriptors.Add(new FilterDescriptor(new ProducesResponseTypeAttribute(typeof(ValidationProblemDetails), 400, "application/validationproblem+json"), FilterScope.Action));
+            actionDescriptor.FilterDescriptors.Add(new FilterDescriptor(new ProducesResponseTypeAttribute(typeof(ProblemDetails), 404, "application/problem+json"), FilterScope.Action));
+            actionDescriptor.FilterDescriptors.Add(new FilterDescriptor(new ProducesResponseTypeAttribute(409), FilterScope.Action));
+
+            var provider = new ApiResponseTypeProvider(new EmptyModelMetadataProvider(), new ActionResultTypeMapper(), new MvcOptions());
+
+            // Act
+            var result = provider.GetApiResponseTypes(actionDescriptor);
+
+            // Assert
+            Assert.Collection(
+                result.OrderBy(r => r.StatusCode),
+                responseType =>
+                {
+                    Assert.Equal(typeof(BaseModel), responseType.Type);
+                    Assert.Equal(200, responseType.StatusCode);
+                    Assert.Equal(new[] { "text/xml" }, GetSortedMediaTypes(responseType));
+
+                },
+                responseType =>
+                {
+                    Assert.Equal(typeof(ValidationProblemDetails), responseType.Type);
+                    Assert.Equal(400, responseType.StatusCode);
+                    Assert.Equal(new[] { "application/validationproblem+json" }, GetSortedMediaTypes(responseType));
+                },
+                responseType =>
+                {
+                    Assert.Equal(typeof(ProblemDetails), responseType.Type);
+                    Assert.Equal(404, responseType.StatusCode);
+                    Assert.Equal(new[] { "application/problem+json" }, GetSortedMediaTypes(responseType));
+                },
+                responseType =>
+                {
+                    Assert.Equal(typeof(void), responseType.Type);
+                    Assert.Equal(409, responseType.StatusCode);
+                    Assert.Empty(GetSortedMediaTypes(responseType));
+                });
+        }
+
         private static ApiResponseTypeProvider GetProvider()
         {
             var mvcOptions = new MvcOptions
@@ -717,6 +762,13 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             };
             var provider = new ApiResponseTypeProvider(new EmptyModelMetadataProvider(), new ActionResultTypeMapper(), mvcOptions);
             return provider;
+        }
+
+        private static IEnumerable<string> GetSortedMediaTypes(ApiResponseType apiResponseType)
+        {
+            return apiResponseType.ApiResponseFormats
+                .OrderBy(format => format.MediaType)
+                .Select(format => format.MediaType);
         }
 
         private static ControllerActionDescriptor GetControllerActionDescriptor(Type type, string name)

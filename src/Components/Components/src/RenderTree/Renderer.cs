@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable warnings
 
@@ -43,6 +43,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         private ulong _lastEventHandlerId;
         private List<Task>? _pendingTasks;
         private Task? _disposeTask;
+        private bool _rendererIsDisposed;
 
         /// <summary>
         /// Allows the caller to handle exceptions from the SynchronizationContext when one is available.
@@ -128,7 +129,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <summary>
         /// Gets whether the renderer has been disposed.
         /// </summary>
-        internal bool Disposed { get; private set; }
+        internal bool Disposed => _rendererIsDisposed;
 
         private async void RenderRootComponentsOnHotReload()
         {
@@ -299,7 +300,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             }
             finally
             {
-                Debug.Assert(_pendingTasks.Count == 0);
+                Debug.Assert(_pendingTasks is null || _pendingTasks.Count == 0);
                 _pendingTasks = null;
                 _ongoingQuiescenceTask = null;
             }
@@ -308,7 +309,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 // Child components SetParametersAsync are stored in the queue of pending tasks,
                 // which might trigger further renders.
-                while (_pendingTasks.Count > 0)
+                while (_pendingTasks?.Count > 0)
                 {
                     // Create a Task that represents the remaining ongoing work for the rendering process
                     var pendingWork = Task.WhenAll(_pendingTasks);
@@ -582,9 +583,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// </summary>
         protected virtual void ProcessPendingRender()
         {
-            if (Disposed)
+            if (_rendererIsDisposed)
             {
-                throw new ObjectDisposedException(nameof(Renderer), "Cannot process pending renders after the renderer has been disposed.");
+                // Once we're disposed, we'll disregard further attempts to render anything
+                return;
             }
 
             ProcessRenderQueue();
@@ -974,8 +976,18 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <param name="disposing"><see langword="true"/> if this method is being invoked by <see cref="IDisposable.Dispose"/>, otherwise <see langword="false"/>.</param>
         protected virtual void Dispose(bool disposing)
         {
-            Disposed = true;
-            
+            if (!Dispatcher.CheckAccess())
+            {
+                // It's important that we only call the components' Dispose/DisposeAsync lifecycle methods
+                // on the sync context, like other lifecycle methods. In almost all cases we'd already be
+                // on the sync context here since DisposeAsync dispatches, but just in case someone is using
+                // Dispose directly, we'll dispatch and block.
+                Dispatcher.InvokeAsync(() => Dispose(disposing)).Wait();
+                return;
+            }
+
+            _rendererIsDisposed = true;
+
             if (TestableMetadataUpdate.IsSupported)
             {
                 HotReloadManager.OnDeltaApplied -= RenderRootComponentsOnHotReload;
@@ -1079,7 +1091,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <inheritdoc />
         public async ValueTask DisposeAsync()
         {
-            if (Disposed)
+            if (_rendererIsDisposed)
             {
                 return;
             }
@@ -1090,7 +1102,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             }
             else
             {
-                Dispose();
+                await Dispatcher.InvokeAsync(Dispose);
+
                 if (_disposeTask != null)
                 {
                     await _disposeTask;

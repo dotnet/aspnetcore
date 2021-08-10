@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             var item1 = Mock.Of<RazorCompiledItem>(i => i.Identifier == "Item1" && i.Type == typeof(TestView));
             var item2 = Mock.Of<RazorCompiledItem>(i => i.Identifier == "Item2" && i.Type == typeof(TestPage));
 
-            var assembly = new TestAssembly(new[] 
+            var assembly = new TestAssembly(new[]
             {
                 new RazorCompiledItemAttribute(typeof(TestView), "mvc.1.0.razor-page", "Item1"),
                 new RazorCompiledItemAttribute(typeof(TestView), "mvc.1.0.razor-view", "Item1"),
@@ -111,6 +111,55 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             Assert.Equal(expected, ex.Message);
         }
 
+        [Fact]
+        public void PopulateFeature_ReplacesWithHotRelaodedItems()
+        {
+            // Arrange
+            var item1 = Mock.Of<RazorCompiledItem>(i => i.Identifier == "Item1" && i.Type == typeof(TestView));
+            var item2 = Mock.Of<RazorCompiledItem>(i => i.Identifier == "Item2" && i.Type == typeof(TestPage) && i.Kind == "mvc.1.0.razor-page");
+
+            var applicationPart = new TestRazorCompiledItemProvider
+            {
+                CompiledItems = new[] { item1, item2 }
+            };
+            var featureProvider = new RazorCompiledItemFeatureProvider();
+
+            // Act - 1
+            var feature = new ViewsFeature();
+            featureProvider.PopulateFeature(new[] { applicationPart }, feature);
+
+            // Assert - 1
+            Assert.Equal(new[] { item1, item2 }, feature.ViewDescriptors.Select(d => d.Item));
+
+            // Act - 2
+            featureProvider.UpdateCache(new[] { typeof(object), typeof(TestReloadedPage) });
+
+            // Assert - 2
+            feature = new ViewsFeature();
+            featureProvider.PopulateFeature(new[] { applicationPart }, feature);
+            Assert.Collection(
+                feature.ViewDescriptors,
+                item =>
+                {
+                    Assert.Same(item.Item, item1);
+                },
+                item =>
+                {
+                    Assert.Same(typeof(TestReloadedPage), item.Item.Type);
+                    Assert.Same("Item2", item.Item.Identifier);
+                    Assert.Equal("mvc.1.0.razor-page", item.Item.Kind);
+                    Assert.Contains(typeof(RouteAttribute), item.Item.Metadata.Select(m => m.GetType())); // Verify we pick up new attributes
+                });
+
+        }
+
+        private class TestRazorCompiledItemProvider : ApplicationPart, IRazorCompiledItemProvider
+        {
+            public IEnumerable<RazorCompiledItem> CompiledItems { get; set; }
+
+            public override string Name => "Test";
+        }
+
         private class TestAssembly : Assembly
         {
             private readonly object[] _attributes;
@@ -129,5 +178,10 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         private class TestView { }
 
         private class TestPage { }
+
+        [Route("some-route")]
+        [RazorCompiledItemMetadata("RouteTemplate", "new-route")]
+        [RazorCompiledItemMetadata("Identifier", "Item2")]
+        private class TestReloadedPage { }
     }
 }

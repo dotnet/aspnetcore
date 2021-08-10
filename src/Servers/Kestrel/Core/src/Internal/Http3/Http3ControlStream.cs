@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -48,16 +48,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _headerType = -1;
 
             _frameWriter = new Http3FrameWriter(
-                context.Transport.Output,
                 context.StreamContext,
                 context.TimeoutControl,
                 httpLimits.MinResponseDataRate,
-                context.ConnectionId,
                 context.MemoryPool,
                 context.ServiceContext.Log,
                 _streamIdFeature,
                 context.ClientPeerSettings,
                 this);
+            _frameWriter.Reset(context.Transport.Output, context.ConnectionId);
         }
 
         private void OnStreamClosed()
@@ -109,6 +108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         internal ValueTask<FlushResult> SendGoAway(long id)
         {
+            Log.Http3GoAwayStreamId(_context.ConnectionId, id);
             return _frameWriter.WriteGoAway(id);
         }
 
@@ -342,6 +342,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-7.2.4
                     break;
             }
+        }
+
+        internal ValueTask CompleteAsync()
+        {
+            return _frameWriter.CompleteAsync();
         }
 
         private ValueTask ProcessGoAwayFrameAsync()

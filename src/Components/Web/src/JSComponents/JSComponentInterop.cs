@@ -1,16 +1,14 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Web.Infrastructure
 {
@@ -20,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
     /// directly from application code.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public class JSComponentInterop : IDisposable
+    public class JSComponentInterop
     {
         private static readonly ConcurrentDictionary<Type, ParameterTypeCache> ParameterTypeCaches = new();
 
@@ -33,10 +31,9 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
         }
 
         private const int MaxParameters = 100;
-        private readonly DotNetObjectReference<JSComponentInterop> _selfReference;
-        private readonly Dictionary<string, Type> _allowedComponentTypes;
-        private readonly JsonSerializerOptions _jsonOptions;
         private WebRenderer? _renderer;
+
+        internal JSComponentConfigurationStore Configuration { get; }
 
         private WebRenderer Renderer => _renderer
             ?? throw new InvalidOperationException("This instance is not initialized.");
@@ -46,43 +43,26 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
         /// for use from framework code and should not be used directly from application code.
         /// </summary>
         /// <param name="configuration">The <see cref="JSComponentConfigurationStore" /></param>
-        /// <param name="jsonOptions">The <see cref="JsonSerializerOptions" /></param>
-        public JSComponentInterop(
-            JSComponentConfigurationStore configuration,
-            JsonSerializerOptions jsonOptions)
+        public JSComponentInterop(JSComponentConfigurationStore configuration)
         {
-            _selfReference = DotNetObjectReference.Create(this);
-            _jsonOptions = jsonOptions;
-
-            // Snapshot the config to ensure it's not mutated later
-            _allowedComponentTypes = new(configuration.JsComponentTypesByIdentifier, StringComparer.Ordinal);
+            Configuration = configuration;
         }
 
         // This has to be internal and only called by WebRenderer (through a protected API) because,
         // by attaching a WebRenderer instance, you become able to call its protected internal APIs
         // such as AddRootComponent etc. and hence bypass the encapsulation. There should not be any
         // other way to attach a renderer to this instance.
-        internal async ValueTask InitializeAsync(IJSRuntime jsRuntime, WebRenderer renderer)
+        internal void AttachToRenderer(WebRenderer renderer)
         {
-            if (_allowedComponentTypes.Count == 0)
-            {
-                return;
-            }
-
             _renderer = renderer;
-
-            await jsRuntime.InvokeVoidAsync(
-                "Blazor._internal.setDynamicRootComponentManager",
-                _selfReference);
         }
 
         /// <summary>
         /// For framework use only.
         /// </summary>
-        [JSInvokable]
-        public int AddRootComponent(string identifier, string domElementSelector)
+        protected internal virtual int AddRootComponent(string identifier, string domElementSelector)
         {
-            if (!_allowedComponentTypes.TryGetValue(identifier, out var componentType))
+            if (!Configuration.JsComponentTypesByIdentifier.TryGetValue(identifier, out var componentType))
             {
                 throw new ArgumentException($"There is no registered JS component with identifier '{identifier}'.");
             }
@@ -93,8 +73,7 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
         /// <summary>
         /// For framework use only.
         /// </summary>
-        [JSInvokable]
-        public void SetRootComponentParameters(int componentId, int parameterCount, byte[] parametersJsonUtf8)
+        protected internal void SetRootComponentParameters(int componentId, int parameterCount, JsonElement parametersJson, JsonSerializerOptions jsonOptions)
         {
             // In case the client misreports the number of parameters, impose bounds so we know the amount
             // of work done is limited to a fixed, low amount.
@@ -106,42 +85,38 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
             var componentType = Renderer.GetRootComponentType(componentId);
             var parameterViewBuilder = new ParameterViewBuilder(parameterCount);
 
-            var parametersReader = new Utf8JsonReader(parametersJsonUtf8);
-
-            parametersReader.Read();
-            Debug.Assert(parametersReader.TokenType == JsonTokenType.StartObject);
-
-            parametersReader.Read();
-            while (parametersReader.TokenType == JsonTokenType.PropertyName)
+            var parametersJsonEnumerator = parametersJson.EnumerateObject();
+            foreach (var jsonProperty in parametersJsonEnumerator)
             {
-                var parameterName = parametersReader.GetString()!;
+                var parameterName = jsonProperty.Name;
+                var parameterJsonValue = jsonProperty.Value;
                 object? parameterValue;
                 if (TryGetComponentParameterType(componentType, parameterName, out var parameterType))
                 {
                     // It's a statically-declared parameter, so we can parse it into a known .NET type
                     parameterValue = JsonSerializer.Deserialize(
-                        ref parametersReader,
+                        parameterJsonValue,
                         parameterType,
-                        _jsonOptions);
+                        jsonOptions);
                 }
                 else
                 {
                     // Unknown parameter - possibly valid as "catch-all". Use whatever type appears
                     // to be present in the JSON data.
-                    parametersReader.Read();
-                    switch (parametersReader.TokenType)
+                    switch (parameterJsonValue.ValueKind)
                     {
-                        case JsonTokenType.Number:
-                            parameterValue = parametersReader.GetDouble();
+                        case JsonValueKind.Number:
+                            parameterValue = parameterJsonValue.GetDouble();
                             break;
-                        case JsonTokenType.String:
-                            parameterValue = parametersReader.GetString();
+                        case JsonValueKind.String:
+                            parameterValue = parameterJsonValue.GetString();
                             break;
-                        case JsonTokenType.True:
-                        case JsonTokenType.False:
-                            parameterValue = parametersReader.GetBoolean();
+                        case JsonValueKind.True:
+                        case JsonValueKind.False:
+                            parameterValue = parameterJsonValue.GetBoolean();
                             break;
-                        case JsonTokenType.Null:
+                        case JsonValueKind.Null:
+                        case JsonValueKind.Undefined:
                             parameterValue = null;
                             break;
                         default:
@@ -150,7 +125,6 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
                 }
 
                 parameterViewBuilder.Add(parameterName, parameterValue);
-                parametersReader.Read();
             }
 
             // This call gets back a task that represents the renderer reaching quiescence, but is not
@@ -164,21 +138,19 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
         /// <summary>
         /// For framework use only.
         /// </summary>
-        [JSInvokable]
-        public void RemoveRootComponent(int componentId)
+        protected internal virtual void RemoveRootComponent(int componentId)
             => Renderer.RemoveRootComponent(componentId);
 
-        /// <inheritdoc />
-        public void Dispose()
-            => _selfReference.Dispose();
+        internal static ParameterTypeCache GetComponentParameters(Type componentType)
+            => ParameterTypeCaches.GetOrAdd(componentType, static type => new ParameterTypeCache(type));
 
-        private bool TryGetComponentParameterType(Type componentType, string parameterName, out Type parameterType)
+        private static bool TryGetComponentParameterType(Type componentType, string parameterName, out Type parameterType)
         {
-            var cacheForComponent = ParameterTypeCaches.GetOrAdd(componentType, static type => new ParameterTypeCache(type));
+            var cacheForComponent = GetComponentParameters(componentType);
             return cacheForComponent.ParameterTypes.TryGetValue(parameterName, out parameterType!);
         }
 
-        private readonly struct ParameterTypeCache
+        internal readonly struct ParameterTypeCache
         {
             public readonly Dictionary<string, Type> ParameterTypes;
 

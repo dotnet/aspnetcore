@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <Import Project="eng\Common.props" />
 
   <PropertyGroup>
@@ -95,7 +95,7 @@
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
 
     <!-- The SPDX name for the source license. See https://spdx.org/licenses/. -->
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
     <!-- Contact email address for NuGet packages and Linux installers. -->
     <MaintainerEmail>nugetaspnet@microsoft.com</MaintainerEmail>

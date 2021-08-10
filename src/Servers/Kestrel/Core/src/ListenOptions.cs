@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -83,6 +83,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </summary>
         /// <remarks>Defaults to HTTP/1.x and HTTP/2.</remarks>
         public HttpProtocols Protocols { get; set; } = DefaultHttpProtocols;
+
+        /// <summary>
+        /// Gets or sets a value that controls whether the "Alt-Svc" header is included with response headers.
+        /// The "Alt-Svc" header is used by clients to upgrade HTTP/1.1 and HTTP/2 connections to HTTP/3.
+        /// <para>
+        /// The "Alt-Svc" header is automatically included with a response if <see cref="Protocols"/> has either
+        /// HTTP/1.1 or HTTP/2 enabled, and HTTP/3 is enabled. If an "Alt-Svc" header value has already been set
+        /// by the app then it isn't changed.
+        /// </para>
+        /// </summary>
+        /// <remarks>
+        /// Defaults to false.
+        /// </remarks>
+        public bool DisableAltSvcHeader { get; set; }
 
         /// <summary>
         /// Gets the application <see cref="IServiceProvider"/>.

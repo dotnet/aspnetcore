@@ -1,14 +1,12 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Constraints;
-using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -27,7 +25,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return EndpointFactory.CreateRouteEndpoint(template, defaults, policies, requiredValues, order, displayName: template);
         }
 
-        private Matcher CreateDfaMatcher(
+        private DataSourceDependentMatcher CreateDfaMatcher(
             EndpointDataSource dataSource,
             MatcherPolicy[] policies = null,
             EndpointSelector endpointSelector = null,
@@ -327,6 +325,227 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     Assert.Equal("controller", kvp.Key);
                     Assert.Equal("ConventionalTransformer", kvp.Value);
                 });
+        }
+
+        [Fact]
+        public void MatchAsync_ConstrainedParameter_EndpointMatched()
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint("a/c", 0);
+            var endpoint2 = CreateEndpoint("{param:length(2)}/b/c", 0);
+
+            var dataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                endpoint1,
+                endpoint2
+            });
+
+            var matcher = (DfaMatcher)CreateDfaMatcher(dataSource).CurrentMatcher;
+            var buffer = new PathSegment[3];
+            var (context, path, count) = CreateMatchingContext("/aa/b/c", buffer);
+
+            // Act
+            var set = matcher.FindCandidateSet(context, path, buffer.AsSpan().Slice(0, count));
+
+            // Assert
+            // We expect endpoint2 to match here since we trimmed the branch for the parameter based on `a` not meeting
+            // the constraints.
+            var candidate = Assert.Single(set.candidates);
+            Assert.Same(endpoint2, candidate.Endpoint);
+        }
+
+        [Fact]
+        public void MatchAsync_ConstrainedParameter_EndpointNotMatched()
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint("a/c", 0);
+            var endpoint2 = CreateEndpoint("{param:length(2)}/b/c", 0);
+
+            var dataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                endpoint1,
+                endpoint2
+            });
+
+            var matcher = (DfaMatcher)CreateDfaMatcher(dataSource).CurrentMatcher;
+            var buffer = new PathSegment[3];
+            var (context, path, count) = CreateMatchingContext("/a/b/c", buffer);
+
+            // Act
+            var set = matcher.FindCandidateSet(context, path, buffer.AsSpan().Slice(0, count));
+
+            // Assert
+            // We expect no candidates here, since the path on the tree (a -> b -> c = ({param:length(2)}/b/c)) for not meeting the length(2) constraint.
+            Assert.Empty(set.candidates);
+        }
+
+        [Fact]
+        public void MatchAsync_ConstrainedParameter_EndpointMatched_WhenExplicitRouteExists()
+        {
+            // Arrange
+            // Note that there is now an explicit branch created by the first endpoint, however endpoint 2 will
+            // be filtered out of the candidates list because it didn't meet the constraint.
+            var endpoint1 = CreateEndpoint("a/b/c", 0);
+            var endpoint2 = CreateEndpoint("{param:length(2)}/b/c", 0);
+
+            var dataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                endpoint1,
+                endpoint2
+            });
+
+            var matcher = (DfaMatcher)CreateDfaMatcher(dataSource).CurrentMatcher;
+            var buffer = new PathSegment[3];
+            var (context, path, count) = CreateMatchingContext("/a/b/c", buffer);
+
+            // Act
+            var set = matcher.FindCandidateSet(context, path, buffer.AsSpan().Slice(0, count));
+
+            // Assert
+            // We expect only one candidate, since the path on the tree (a -> b -> c = ({param:length(2)}/b/c)) does not meet the length(2) constraint.
+            var candidate = Assert.Single(set.candidates);
+            Assert.Same(endpoint1, candidate.Endpoint);
+        }
+
+        [Fact]
+        public void MatchAsync_ConstrainedParameter_EndpointMatchedWithTwoCandidates_WhenLiteralMeetsConstraint()
+        {
+            // Arrange
+            // Note that the literal now meets the constraint, so there will be an explicit branch and two candidates
+            var endpoint1 = CreateEndpoint("aa/b/c", 0);
+            var endpoint2 = CreateEndpoint("{param:length(2)}/b/c", 0);
+            var endpoints = new List<Endpoint>
+            {
+                endpoint2,
+                endpoint1,
+            };
+            var dataSource = new DefaultEndpointDataSource(endpoints);
+
+            var matcher = (DfaMatcher)CreateDfaMatcher(dataSource).CurrentMatcher;
+            var buffer = new PathSegment[3];
+            var (context, path, count) = CreateMatchingContext("/aa/b/c", buffer);
+
+            // Act
+            var set = matcher.FindCandidateSet(context, path, buffer.AsSpan().Slice(0, count));
+
+            // Assert
+            // We expect 2 candidates, since the path on the tree (aa -> b -> c = ({param:length(2)}/b/c)) meets the length(2) constraint.
+            Assert.Equal(endpoints.ToArray(), set.candidates.Select(e => e.Endpoint).OrderBy(e => ((RouteEndpoint)e).RoutePattern.RawText).ToArray());
+        }
+
+        [Fact]
+        public void MatchAsync_ConstrainedParameter_MiddleSegment_EndpointMatched()
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint("a/b/c", 0);
+            var endpoint2 = CreateEndpoint("a/{param:length(2)}/c", 0);
+
+            var dataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                endpoint1,
+                endpoint2
+            });
+
+            var matcher = (DfaMatcher)CreateDfaMatcher(dataSource).CurrentMatcher;
+            var buffer = new PathSegment[3];
+            var (context, path, count) = CreateMatchingContext("/a/bb/c", buffer);
+
+            // Act
+            var set = matcher.FindCandidateSet(context, path, buffer.AsSpan().Slice(0, count));
+
+            // Assert
+            // We expect endpoint2 to match here since we trimmed the branch (a -> b -> c = (a/{param:length(2)}/c)) for the parameter based on `b` not meeting the length(2) constraint.
+            var candidate = Assert.Single(set.candidates);
+            Assert.Same(endpoint2, candidate.Endpoint);
+        }
+
+        [Fact]
+        public void MatchAsync_ConstrainedParameter_MiddleSegment_EndpointNotMatched()
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint("a/b/d", 0);
+            var endpoint2 = CreateEndpoint("a/{param:length(2)}/c", 0);
+
+            var dataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                endpoint1,
+                endpoint2
+            });
+
+            var matcher = (DfaMatcher)CreateDfaMatcher(dataSource).CurrentMatcher;
+            var buffer = new PathSegment[3];
+            var (context, path, count) = CreateMatchingContext("/a/b/c", buffer);
+
+            // Act
+            var set = matcher.FindCandidateSet(context, path, buffer.AsSpan().Slice(0, count));
+
+            // Assert
+            // We expect no candidates here since we trimmed the branch (a -> b -> c = (a/{param:length(2)}/c)) for the parameter based on `b` not meeting the length(2) constraint.
+            Assert.Empty(set.candidates);
+        }
+
+        [Fact]
+        public void MatchAsync_ConstrainedParameter_MiddleSegment_EndpointMatched_WhenExplicitRouteExists()
+        {
+            // Arrange
+            // Note that there is now an explicit branch created by the first endpoint, however endpoint 2 will
+            // be filtered out of the candidates list because it didn't meet the constraint.
+            var endpoint1 = CreateEndpoint("a/b/c", 0);
+            var endpoint2 = CreateEndpoint("a/{param:length(2)}/c", 0);
+
+            var dataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                endpoint1,
+                endpoint2
+            });
+
+            var matcher = (DfaMatcher)CreateDfaMatcher(dataSource).CurrentMatcher;
+            var buffer = new PathSegment[3];
+            var (context, path, count) = CreateMatchingContext("/a/b/c", buffer);
+
+            // Act
+            var set = matcher.FindCandidateSet(context, path, buffer.AsSpan().Slice(0, count));
+
+            // Assert
+            // We expect only one candidate, since the path on the tree (a -> b -> c = (a/{param:length(2)}/c)) does not meet the length(2) constraint.
+            var candidate = Assert.Single(set.candidates);
+            Assert.Same(endpoint1, candidate.Endpoint);
+        }
+
+        [Fact]
+        public void MatchAsync_ConstrainedParameter_MiddleSegment_EndpointMatchedWithTwoCandidates_WhenLiteralMeetsConstraint()
+        {
+            // Arrange
+            // Note that the literal now meets the constraint, so there will be an explicit branch and two candidates
+            var endpoint1 = CreateEndpoint("a/bb/c", 0);
+            var endpoint2 = CreateEndpoint("a/{param:length(2)}/c", 0);
+            var endpoints = new List<Endpoint>
+            {
+                endpoint2,
+                endpoint1,
+            };
+            var dataSource = new DefaultEndpointDataSource(endpoints);
+
+            var matcher = (DfaMatcher)CreateDfaMatcher(dataSource).CurrentMatcher;
+            var buffer = new PathSegment[3];
+            var (context, path, count) = CreateMatchingContext("/a/bb/c", buffer);
+
+            // Act
+            var set = matcher.FindCandidateSet(context, path, buffer.AsSpan().Slice(0, count));
+
+            // Assert
+            // We expect 2 candidates, since the path on the tree (aa -> b -> c = ({param:length(2)}/b/c)) meets the length(2) constraint.
+            Assert.Equal(endpoints.ToArray(), set.candidates.Select(e => e.Endpoint).OrderBy(e => ((RouteEndpoint)e).RoutePattern.RawText).ToArray());
+        }
+
+        private (HttpContext context, string path, int count) CreateMatchingContext(string requestPath, PathSegment[] buffer)
+        {
+            var context = CreateContext();
+            context.Request.Path = requestPath;
+
+            // First tokenize the path into series of segments.
+            var count = FastPathTokenizer.Tokenize(requestPath, buffer);
+            return (context, requestPath, count);
         }
 
         [Fact]
@@ -648,7 +867,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // Arrange
             var endpointDataSource = new DefaultEndpointDataSource(new List<Endpoint>
             {
-                CreateEndpoint("/One", 0),
+                CreateEndpoint("/{one}", 0),
                 CreateEndpoint("/{p:int}", 1),
                 CreateEndpoint("/x-{id}-y", 2),
             });
@@ -675,7 +894,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 (log) =>
                 {
                     Assert.Equal(1005, log.EventId);
-                    Assert.Equal("Endpoint '/One' with route pattern '/One' is valid for the request path '/One'", log.Message);
+                    Assert.Equal("Endpoint '/{one}' with route pattern '/{one}' is valid for the request path '/One'", log.Message);
                 },
                 (log) =>
                 {

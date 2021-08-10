@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.WebSockets
     /// Enables accepting WebSocket requests by adding a <see cref="IHttpWebSocketFeature"/>
     /// to the <see cref="HttpContext"/> if the request is a valid WebSocket request.
     /// </summary>
-    public class WebSocketMiddleware
+    public partial class WebSocketMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly WebSocketOptions _options;
@@ -275,23 +275,13 @@ namespace Microsoft.AspNetCore.WebSockets
             }
         }
 
-        private static class Log
+        private static partial class Log
         {
-            private static readonly Action<ILogger, string, Exception?> _compressionAccepted =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, "CompressionAccepted"), "WebSocket compression negotiation accepted with values '{CompressionResponse}'.");
+            [LoggerMessage(1, LogLevel.Debug, "WebSocket compression negotiation accepted with values '{CompressionResponse}'.", EventName = "CompressionAccepted")]
+            public static partial void CompressionAccepted(ILogger logger, string compressionResponse);
 
-            private static readonly Action<ILogger, Exception?> _compressionNotAccepted =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(2, "CompressionNotAccepted"), "Compression negotiation not accepted by server.");
-
-            public static void CompressionAccepted(ILogger logger, string response)
-            {
-                _compressionAccepted(logger, response, null);
-            }
-
-            public static void CompressionNotAccepted(ILogger logger)
-            {
-                _compressionNotAccepted(logger, null);
-            }
+            [LoggerMessage(2, LogLevel.Debug, "Compression negotiation not accepted by server.", EventName = "CompressionNotAccepted")]
+            public static partial void CompressionNotAccepted(ILogger logger);
         }
     }
 }

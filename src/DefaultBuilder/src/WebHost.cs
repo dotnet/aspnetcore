@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -243,20 +243,8 @@ namespace Microsoft.AspNetCore
                             new ConfigurationChangeTokenSource<HostFilteringOptions>(hostingContext.Configuration));
 
                 services.AddTransient<IStartupFilter, HostFilteringStartupFilter>();
-
-                if (string.Equals("true", hostingContext.Configuration["ForwardedHeaders_Enabled"], StringComparison.OrdinalIgnoreCase))
-                {
-                    services.Configure<ForwardedHeadersOptions>(options =>
-                    {
-                        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-                        // Only loopback proxies are allowed by default. Clear that restriction because forwarders are
-                        // being enabled by explicit configuration.
-                        options.KnownNetworks.Clear();
-                        options.KnownProxies.Clear();
-                    });
-
-                    services.AddTransient<IStartupFilter, ForwardedHeadersStartupFilter>();
-                }
+                services.AddTransient<IStartupFilter, ForwardedHeadersStartupFilter>();
+                services.AddTransient<IConfigureOptions<ForwardedHeadersOptions>, ForwardedHeadersOptionsSetup>();
 
                 services.AddRouting();
             })

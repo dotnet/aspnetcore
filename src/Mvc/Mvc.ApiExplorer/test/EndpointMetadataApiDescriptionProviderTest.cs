@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -358,6 +359,177 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.True(apiExplorerSettings.IgnoreApi);
         }
 
+        [Fact]
+        public void RespectsProducesProblemExtensionMethod()
+        {
+            // Arrange
+            var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(null));
+            builder.MapGet("/api/todos", () => "").ProducesProblem(StatusCodes.Status400BadRequest);
+            var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+            var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+            var hostEnvironment = new HostEnvironment
+            {
+                ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+            };
+            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var apiDescription = Assert.Single(context.Results);
+            var responseTypes = Assert.Single(apiDescription.SupportedResponseTypes);
+            Assert.Equal(typeof(ProblemDetails), responseTypes.Type);
+        }
+
+        [Fact]
+        public void RespectsProducesWithGroupNameExtensionMethod()
+        {
+            // Arrange
+            var endpointGroupName = "SomeEndpointGroupName";
+            var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(null));
+            builder.MapGet("/api/todos", () => "").Produces<InferredJsonClass>().WithGroupName(endpointGroupName);
+            var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+            var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+            var hostEnvironment = new HostEnvironment
+            {
+                ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+            };
+            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var apiDescription = Assert.Single(context.Results);
+            var responseTypes = Assert.Single(apiDescription.SupportedResponseTypes);
+            Assert.Equal(typeof(InferredJsonClass), responseTypes.Type);
+            Assert.Equal(endpointGroupName, apiDescription.GroupName);
+        }
+
+        [Fact]
+        public void RespectsExcludeFromDescription()
+        {
+            // Arrange
+            var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(null));
+            builder.MapGet("/api/todos", () => "").Produces<InferredJsonClass>().ExcludeFromDescription();
+            var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+            var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+            var hostEnvironment = new HostEnvironment
+            {
+                ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+            };
+            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            Assert.Empty(context.Results);
+        }
+
+        [Fact]
+        public void HandlesProducesWithProducesProblem()
+        {
+            // Arrange
+            var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(null));
+            builder.MapGet("/api/todos", () => "")
+                .Produces<InferredJsonClass>(StatusCodes.Status200OK)
+                .ProducesValidationProblem()
+                .ProducesProblem(StatusCodes.Status404NotFound)
+                .ProducesProblem(StatusCodes.Status409Conflict);
+            var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+            var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+            var hostEnvironment = new HostEnvironment
+            {
+                ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+            };
+            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+
+            // Act
+            provider.OnProvidersExecuting(context);
+            provider.OnProvidersExecuted(context);
+
+            // Assert
+            Assert.Collection(
+                context.Results.SelectMany(r => r.SupportedResponseTypes).OrderBy(r => r.StatusCode),
+                responseType =>
+                {
+                    Assert.Equal(typeof(InferredJsonClass), responseType.Type);
+                    Assert.Equal(200, responseType.StatusCode);
+                    Assert.Equal(new[] { "application/json" }, GetSortedMediaTypes(responseType));
+
+                },
+                responseType =>
+                {
+                    Assert.Equal(typeof(HttpValidationProblemDetails), responseType.Type);
+                    Assert.Equal(400, responseType.StatusCode);
+                    Assert.Equal(new[] { "application/validationproblem+json" }, GetSortedMediaTypes(responseType));
+                },
+                responseType =>
+                {
+                    Assert.Equal(typeof(ProblemDetails), responseType.Type);
+                    Assert.Equal(404, responseType.StatusCode);
+                    Assert.Equal(new[] { "application/problem+json" }, GetSortedMediaTypes(responseType));
+                },
+                responseType =>
+                {
+                    Assert.Equal(typeof(ProblemDetails), responseType.Type);
+                    Assert.Equal(409, responseType.StatusCode);
+                    Assert.Equal(new[] { "application/problem+json" }, GetSortedMediaTypes(responseType));
+                });
+        }
+
+        [Fact]
+        public void HandleMultipleProduces()
+        {
+            // Arrange
+            var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(null));
+            builder.MapGet("/api/todos", () => "")
+                .Produces<InferredJsonClass>(StatusCodes.Status200OK)
+                .Produces<InferredJsonClass>(StatusCodes.Status201Created);
+            var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+            var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+            var hostEnvironment = new HostEnvironment
+            {
+                ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+            };
+            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+
+            // Act
+            provider.OnProvidersExecuting(context);
+            provider.OnProvidersExecuted(context);
+
+            // Assert
+            Assert.Collection(
+                context.Results.SelectMany(r => r.SupportedResponseTypes).OrderBy(r => r.StatusCode),
+                responseType =>
+                {
+                    Assert.Equal(typeof(InferredJsonClass), responseType.Type);
+                    Assert.Equal(200, responseType.StatusCode);
+                    Assert.Equal(new[] { "application/json" }, GetSortedMediaTypes(responseType));
+
+                },
+                responseType =>
+                {
+                    Assert.Equal(typeof(InferredJsonClass), responseType.Type);
+                    Assert.Equal(201, responseType.StatusCode);
+                    Assert.Equal(new[] { "application/json" }, GetSortedMediaTypes(responseType));
+                });
+        }
+
+        private static IEnumerable<string> GetSortedMediaTypes(ApiResponseType apiResponseType)
+        {
+            return apiResponseType.ApiResponseFormats
+                .OrderBy(format => format.MediaType)
+                .Select(format => format.MediaType);
+        }
+
         private IList<ApiDescription> GetApiDescriptions(
             Delegate action,
             string pattern = null,
@@ -422,6 +594,23 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             public string ApplicationName { get; set; }
             public string ContentRootPath { get; set; }
             public IFileProvider ContentRootFileProvider { get; set; }
+        }
+
+        private class TestEndpointRouteBuilder : IEndpointRouteBuilder
+        {
+            public TestEndpointRouteBuilder(IApplicationBuilder applicationBuilder)
+            {
+                ApplicationBuilder = applicationBuilder ?? throw new ArgumentNullException(nameof(applicationBuilder));
+                DataSources = new List<EndpointDataSource>();
+            }
+
+            public IApplicationBuilder ApplicationBuilder { get; }
+
+            public IApplicationBuilder CreateApplicationBuilder() => ApplicationBuilder.New();
+
+            public ICollection<EndpointDataSource> DataSources { get; }
+
+            public IServiceProvider ServiceProvider => ApplicationBuilder.ApplicationServices;
         }
     }
 }

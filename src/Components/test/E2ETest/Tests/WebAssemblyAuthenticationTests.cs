@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -66,6 +67,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34886")]
         public void WasmAuthentication_Loads()
         {
             Browser.Equal("Wasm.Authentication.Client", () => Browser.Title);
@@ -88,6 +90,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34995")]
         public void CanPreserveApplicationState_DuringLogIn()
         {
             var originalAppState = Browser.Exists(By.Id("app-state")).Text;
@@ -154,6 +157,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ValidateFetchData();
         }
 
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34995")]
         [Fact]
         public void AuthenticatedUser_ProfileIncludesDetails_And_AccessToken()
         {

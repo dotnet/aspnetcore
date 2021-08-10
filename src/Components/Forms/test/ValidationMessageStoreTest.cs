@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Xunit;
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             var field1 = new FieldIdentifier(new object(), "field1");
             var field2 = new FieldIdentifier(new object(), "field2");
             var field3 = new FieldIdentifier(new object(), "field3");
-            
+
             // Act
             messages.Add(field1, "Field 1 message 1");
             messages.Add(field1, "Field 1 message 2");

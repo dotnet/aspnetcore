@@ -1,12 +1,13 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Microsoft.AspNetCore.Components.Server
 {
     /// <summary>
-    /// Options to configure circuit handler for server-side Blazor 
+    /// Options to configure circuit handler for server-side Blazor
     /// </summary>
     public sealed class CircuitOptions
     {
@@ -76,5 +77,10 @@ namespace Microsoft.AspNetCore.Components.Server
         /// <value>
         /// Defaults to <c>10</c>.</value>
         public int MaxBufferedUnacknowledgedRenderBatches { get; set; } = 10;
+
+        /// <summary>
+        /// Gets options for root components within the circuit.
+        /// </summary>
+        public CircuitRootComponentOptions RootComponents { get; } = new CircuitRootComponentOptions();
     }
 }

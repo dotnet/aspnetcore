@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// This value is <value>true</value> when the user fulfills the policy; otherwise <value>false</value>.
         /// </returns>
         /// <remarks>
-        /// Resource is an optional parameter and may be null. Please ensure that you check it is not 
+        /// Resource is an optional parameter and may be null. Please ensure that you check it is not
         /// null before acting upon it.
         /// </remarks>
         Task<AuthorizationResult> AuthorizeAsync(ClaimsPrincipal user, object? resource, IEnumerable<IAuthorizationRequirement> requirements);
@@ -42,11 +42,11 @@ namespace Microsoft.AspNetCore.Authorization
         /// <param name="policyName">The name of the policy to check against a specific context.</param>
         /// <returns>
         /// A flag indicating whether authorization has succeeded.
-        /// Returns a flag indicating whether the user, and optional resource has fulfilled the policy.    
+        /// Returns a flag indicating whether the user, and optional resource has fulfilled the policy.
         /// <value>true</value> when the policy has been fulfilled; otherwise <value>false</value>.
         /// </returns>
         /// <remarks>
-        /// Resource is an optional parameter and may be null. Please ensure that you check it is not 
+        /// Resource is an optional parameter and may be null. Please ensure that you check it is not
         /// null before acting upon it.
         /// </remarks>
         Task<AuthorizationResult> AuthorizeAsync(ClaimsPrincipal user, object? resource, string policyName);

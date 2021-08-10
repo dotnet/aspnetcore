@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -4058,7 +4058,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Assert.Equal(2, httpContext.Response.Body.Length);
 
                 httpContext.Response.Body = oldBody;
-
             }, new TestServiceContext(LoggerFactory)))
             {
                 using (var connection = server.CreateConnection())
@@ -4078,19 +4077,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Theory]
-        [InlineData(HttpProtocols.Http1AndHttp2AndHttp3)]
-        [InlineData(HttpProtocols.Http3)]
-        public async Task EnableAltSvc_Http3EndpointConfigured_AltSvcInResponseHeaders(HttpProtocols protocols)
+        [Fact]
+        public async Task AltSvc_HeaderSetInAppCode_AltSvcNotOverwritten()
         {
             await using (var server = new TestServer(
-                context => Task.CompletedTask,
-                new TestServiceContext(),
+                httpContext =>
+                {
+                    httpContext.Response.Headers.AltSvc = "Custom";
+                    return Task.CompletedTask;
+                },
+                new TestServiceContext(LoggerFactory),
                 options =>
                 {
-                    options.EnableAltSvc = true;
-                    options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)));
-                    options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 1)) { Protocols = protocols });
+                    options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+                    {
+                        Protocols = HttpProtocols.Http1AndHttp2AndHttp3
+                    });
                 },
                 services => { }))
             {
@@ -4101,12 +4103,179 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Host:",
                         "",
                         "");
-
                     await connection.Receive(
-                        $"HTTP/1.1 200 OK",
+                        "HTTP/1.1 200 OK",
                         "Content-Length: 0",
                         $"Date: {server.Context.DateHeaderValue}",
-                        @"Alt-Svc: h3="":1""; ma=84600",
+                        @"Alt-Svc: Custom",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task AltSvc_Http1And2And3EndpointConfigured_AltSvcInResponseHeaders()
+        {
+            await using (var server = new TestServer(
+                httpContext => Task.CompletedTask,
+                new TestServiceContext(LoggerFactory),
+                options =>
+                {
+                    options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+                    {
+                        Protocols = HttpProtocols.Http1AndHttp2AndHttp3,
+                        IsTls = true
+                    });
+                },
+                services =>
+                {
+                    services.AddSingleton<IMultiplexedConnectionListenerFactory>(new MockMultiplexedConnectionListenerFactory());
+                }))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        @"Alt-Svc: h3="":0""; ma=86400",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task AltSvc_Http1And2And3EndpointConfigured_NoMultiplexedFactory_NoAltSvcInResponseHeaders()
+        {
+            await using (var server = new TestServer(
+                httpContext => Task.CompletedTask,
+                new TestServiceContext(LoggerFactory),
+                options =>
+                {
+                    options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+                    {
+                        Protocols = HttpProtocols.Http1AndHttp2AndHttp3,
+                        IsTls = true
+                    });
+                },
+                services => {}))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task AltSvc_Http1_NoAltSvcInResponseHeaders()
+        {
+            await using (var server = new TestServer(
+                httpContext => Task.CompletedTask,
+                new TestServiceContext(LoggerFactory),
+                new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)) { Protocols = HttpProtocols.Http1 }))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task AltSvc_Http3ConfiguredDifferentEndpoint_NoAltSvcInResponseHeaders()
+        {
+            await using (var server = new TestServer(
+                httpContext => Task.CompletedTask,
+                new TestServiceContext(LoggerFactory),
+                options =>
+                {
+                    options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+                    {
+                        Protocols = HttpProtocols.Http1
+                    });
+                    options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 1))
+                    {
+                        Protocols = HttpProtocols.Http3,
+                        IsTls = true
+                    });
+                },
+                services =>
+                {
+                    services.AddSingleton<IMultiplexedConnectionListenerFactory>(new MockMultiplexedConnectionListenerFactory());
+                }))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task AltSvc_DisableAltSvcHeaderIsTrue_Http1And2And3EndpointConfigured_NoAltSvcInResponseHeaders()
+        {
+            await using (var server = new TestServer(
+                httpContext => Task.CompletedTask,
+                new TestServiceContext(LoggerFactory),
+                options =>
+                {
+                    options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+                    {
+                        Protocols = HttpProtocols.Http1AndHttp2AndHttp3,
+                        DisableAltSvcHeader = true
+                    });
+                },
+                services => { }))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
                 }

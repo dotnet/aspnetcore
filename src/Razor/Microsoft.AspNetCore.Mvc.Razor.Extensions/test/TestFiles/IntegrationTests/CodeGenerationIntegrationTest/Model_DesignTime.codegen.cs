@@ -11,6 +11,8 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
+    [global::Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItemMetadataAttribute("Identifier", "/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Model.cshtml")]
+    [global::System.Runtime.CompilerServices.CreateNewOnMetadataUpdateAttribute]
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Model : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<System.Collections.IEnumerable>
     {
         #pragma warning disable 219

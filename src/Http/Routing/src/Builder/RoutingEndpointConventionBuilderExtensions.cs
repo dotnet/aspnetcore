@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.Routing;
@@ -116,6 +116,36 @@ namespace Microsoft.AspNetCore.Builder
                 }
             });
 
+            return builder;
+        }
+
+        /// <summary>
+        /// Sets the <see cref="EndpointNameAttribute"/> for all endpoints produced
+        /// on the target <see cref="IEndpointConventionBuilder"/> given the <paramref name="endpointName" />.
+        /// The <see cref="IEndpointNameMetadata" /> on the endpoint is used for link generation and
+        /// is treated as the operation ID in the given endpoint's OpenAPI specification.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
+        /// <param name="endpointName">The endpoint name.</param>
+        /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
+        public static TBuilder WithName<TBuilder>(this TBuilder builder, string endpointName) where TBuilder : IEndpointConventionBuilder
+        {
+            builder.WithMetadata(new EndpointNameAttribute(endpointName));
+            return builder;
+        }
+
+        /// <summary>
+        /// Sets the <see cref="EndpointGroupNameAttribute"/> for all endpoints produced
+        /// on the target <see cref="IEndpointConventionBuilder"/> given the <paramref name="endpointGroupName" />.
+        /// The <see cref="IEndpointGroupNameMetadata" /> on the endpoint is used to set the endpoint's
+        /// GroupName in the OpenAPI specification.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
+        /// <param name="endpointGroupName">The endpoint group name.</param>
+        /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
+        public static TBuilder WithGroupName<TBuilder>(this TBuilder builder, string endpointGroupName) where TBuilder : IEndpointConventionBuilder
+        {
+            builder.WithMetadata(new EndpointGroupNameAttribute(endpointGroupName));
             return builder;
         }
     }

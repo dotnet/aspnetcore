@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="manager">The <see cref="UserManager{TUser}"/> that can be used to retrieve user properties.</param>
         /// <param name="user">The user a token should be generated for.</param>
         /// <returns>
-        /// The <see cref="Task"/> that represents the asynchronous operation, containing a constant modifier for the specified 
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing a constant modifier for the specified
         /// <paramref name="user"/> and <paramref name="purpose"/>.
         /// </returns>
         public override async Task<string> GetUserModifierAsync(string purpose, UserManager<TUser> manager, TUser user)

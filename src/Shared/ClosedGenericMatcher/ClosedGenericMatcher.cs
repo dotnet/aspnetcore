@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -51,7 +51,7 @@ namespace Microsoft.Extensions.Internal
             // - If multiple different generic instantiations exists, we want the most derived one.
             // - If that doesn't break the tie, then we sort alphabetically so that it's deterministic.
             //
-            // We do this by looking at interfaces on the type, and recursing to the base type 
+            // We do this by looking at interfaces on the type, and recursing to the base type
             // if we don't find any matches.
             return GetGenericInstantiation(queryType, interfaceType);
         }

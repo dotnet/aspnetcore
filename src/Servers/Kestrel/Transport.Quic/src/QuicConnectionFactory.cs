@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -40,13 +40,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
             {
                 throw new NotSupportedException($"{endPoint} is not supported");
             }
-            if (_transportContext.Options.Alpn == null)
-            {
-                throw new InvalidOperationException("QuicTransportOptions.Alpn must be configured with a value.");
-            }
 
-            var sslOptions = new SslClientAuthenticationOptions();
-            sslOptions.ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol(_transportContext.Options.Alpn) };
+            var sslOptions = features?.Get<SslClientAuthenticationOptions>();
             var connection = new QuicConnection(QuicImplementationProviders.MsQuic, (IPEndPoint)endPoint, sslOptions);
 
             await connection.ConnectAsync(cancellationToken);

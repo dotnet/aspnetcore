@@ -1,7 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
@@ -20,6 +21,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private readonly CircuitOptions _options;
         private readonly ILogger<RemoteJSRuntime> _logger;
         private CircuitClientProxy _clientProxy;
+        private readonly ConcurrentDictionary<long, DotNetStreamReference> _pendingDotNetToJSStreams = new();
         private bool _permanentlyDisconnected;
         private readonly long _maximumIncomingBytes;
         private int _byteArraysToBeRevivedTotalBytes;
@@ -149,6 +151,40 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _byteArraysToBeRevivedTotalBytes += Math.Max(4, data.Length);
 
             base.ReceiveByteArray(id, data);
+        }
+
+        protected override async Task TransmitStreamAsync(long streamId, DotNetStreamReference dotNetStreamReference)
+        {
+            if (!_pendingDotNetToJSStreams.TryAdd(streamId, dotNetStreamReference))
+            {
+                throw new ArgumentException($"The stream {streamId} is already pending.");
+            }
+
+            // SignalR only supports streaming being initiated from the JS side, so we have to ask it to
+            // start the stream. We'll give it a maximum of 10 seconds to do so, after which we give up
+            // and discard it.
+            var cancellationToken = new CancellationTokenSource(TimeSpan.FromSeconds(10)).Token;
+            cancellationToken.Register(() =>
+            {
+                // If by now the stream hasn't been claimed for sending, stop tracking it
+                if (_pendingDotNetToJSStreams.TryRemove(streamId, out var timedOutStream) && !timedOutStream.LeaveOpen)
+                {
+                    timedOutStream.Stream.Dispose();
+                }
+            });
+
+            await _clientProxy.SendAsync("JS.BeginTransmitStream", streamId);
+        }
+
+        public bool TryClaimPendingStreamForSending(long streamId, out DotNetStreamReference pendingStream)
+        {
+            if (_pendingDotNetToJSStreams.TryRemove(streamId, out pendingStream))
+            {
+                return true;
+            }
+
+            pendingStream = default;
+            return false;
         }
 
         public void MarkPermanentlyDisconnected()

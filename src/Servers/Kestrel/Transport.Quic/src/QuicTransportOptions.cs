@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -24,14 +24,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
         public ushort MaxUnidirectionalStreamCount { get; set; } = 10;
 
         /// <summary>
-        /// The Application Layer Protocol Negotiation string.
-        /// </summary>
-        public string? Alpn { get; set; }
-
-        /// <summary>
         /// Sets the idle timeout for connections and streams.
         /// </summary>
-        public TimeSpan IdleTimeout { get; set; }
+        public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromSeconds(130); // Matches KestrelServerLimits.KeepAliveTimeout.
 
         /// <summary>
         /// The maximum read size.

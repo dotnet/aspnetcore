@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -1213,7 +1213,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public override void VisitMarkupStartTag(MarkupStartTagSyntax node)
             {
-                // We want to skip over the other misc tokens that make up a start tag, and 
+                // We want to skip over the other misc tokens that make up a start tag, and
                 // just process the attributes.
                 //
                 // Visit the attributes
@@ -1232,7 +1232,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public override void VisitMarkupEndTag(MarkupEndTagSyntax node)
             {
-                // We want to skip over the other misc tokens that make up a start tag, and 
+                // We want to skip over the other misc tokens that make up a start tag, and
                 // just process the attributes.
                 //
                 // Nothing to do here
@@ -1350,7 +1350,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 if (_builder.Current is HtmlAttributeIntermediateNode)
                 {
-                    // This can happen inside a data- attribute 
+                    // This can happen inside a data- attribute
                     _builder.Push(new HtmlAttributeValueIntermediateNode()
                     {
                         Prefix = string.Empty,

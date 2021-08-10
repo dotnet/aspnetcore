@@ -1,10 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection.Metadata;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Lifetime;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.HotReload;
 using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
@@ -150,9 +151,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             using (cancellationToken.Register(() => tcs.TrySetResult()))
             {
                 var loggerFactory = Services.GetRequiredService<ILoggerFactory>();
-                _renderer = new WebAssemblyRenderer(Services, loggerFactory);
-
-                await _renderer.InitializeJSComponentSupportAsync(_rootComponents.JSComponents, _jsonOptions);
+                var jsComponentInterop = new JSComponentInterop(_rootComponents.JSComponents);
+                _renderer = new WebAssemblyRenderer(Services, loggerFactory, jsComponentInterop);
 
                 var initializationTcs = new TaskCompletionSource();
                 WebAssemblyCallQueue.Schedule((_rootComponents, _renderer, initializationTcs), static async state =>
@@ -161,10 +161,21 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
                     try
                     {
-                        foreach (var rootComponent in rootComponents)
+                        // Here, we add each root component but don't await the returned tasks so that the
+                        // components can be processed in parallel.
+                        var count = rootComponents.Count;
+                        var pendingRenders = new Task[count];
+                        for (var i = 0; i < count; i++)
                         {
-                            await renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Parameters, rootComponent.Selector);
+                            var rootComponent = rootComponents[i];
+                            pendingRenders[i] = renderer.AddComponentAsync(
+                                rootComponent.ComponentType,
+                                rootComponent.Parameters,
+                                rootComponent.Selector);
                         }
+
+                        // Now we wait for all components to finish rendering.
+                        await Task.WhenAll(pendingRenders);
 
                         initializationTcs.SetResult();
                     }

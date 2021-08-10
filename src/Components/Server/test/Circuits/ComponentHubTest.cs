@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -67,24 +67,6 @@ namespace Microsoft.AspNetCore.Components.Server
 
             var errorMessage = "Circuit not initialized.";
             mockClientProxy.Verify(m => m.SendCoreAsync("JS.Error", new[] { errorMessage }, It.IsAny<CancellationToken>()), Times.Once());
-        }
-
-        [Fact]
-        public async Task CannotDispatchBrowserEventsBeforeInitialization()
-        {
-            var (mockClientProxy, hub) = InitializeComponentHub();
-
-            await hub.DispatchBrowserEvent(GetJsonElement());
-
-            var errorMessage = "Circuit not initialized.";
-            mockClientProxy.Verify(m => m.SendCoreAsync("JS.Error", new[] { errorMessage }, It.IsAny<CancellationToken>()), Times.Once());
-
-            static JsonElement GetJsonElement()
-            {
-                var utf8JsonBytes = JsonSerializer.SerializeToUtf8Bytes(new object[2]);
-                var jsonReader = new Utf8JsonReader(utf8JsonBytes);
-                return JsonElement.ParseValue(ref jsonReader);
-            }
         }
 
         [Fact]

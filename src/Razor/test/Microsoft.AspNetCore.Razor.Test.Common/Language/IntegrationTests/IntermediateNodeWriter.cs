@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -332,7 +332,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                     _writer.Write(diagnostic.Id);
                     _writer.Write(": ");
 
-                    // Purposefully not writing out the entire message to ensure readable IR and because messages 
+                    // Purposefully not writing out the entire message to ensure readable IR and because messages
                     // can span multiple lines. Not using string.GetHashCode because we can't have any collisions.
                     using (var md5 = MD5.Create())
                     {

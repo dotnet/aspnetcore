@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -390,7 +390,7 @@ namespace Microsoft.AspNetCore.Routing
             };
 
             var linkGenerator = CreateLinkGenerator(
-                configure, 
+                configure,
                 endpoints: new[] { endpoint, });
             var httpContext = CreateHttpContext(ambientValues: new { controller = "Home" });
 
@@ -967,7 +967,7 @@ namespace Microsoft.AspNetCore.Routing
                 ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
                 options: null,
                 result: out var result);
-            
+
             // Assert
             Assert.False(success);
         }

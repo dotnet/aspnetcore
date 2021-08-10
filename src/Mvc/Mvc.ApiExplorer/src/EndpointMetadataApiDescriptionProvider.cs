@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         private readonly EndpointDataSource _endpointDataSource;
         private readonly IHostEnvironment _environment;
         private readonly IServiceProviderIsService? _serviceProviderIsService;
+        private readonly TryParseMethodCache TryParseMethodCache = new();
 
         // Executes before MVC's DefaultApiDescriptionProvider and GrpcHttpApiDescriptionProvider for no particular reason.
         public int Order => -1100;
@@ -52,7 +53,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 if (endpoint is RouteEndpoint routeEndpoint &&
                     routeEndpoint.Metadata.GetMetadata<MethodInfo>() is { } methodInfo &&
-                    routeEndpoint.Metadata.GetMetadata<IHttpMethodMetadata>() is { } httpMethodMetadata)
+                    routeEndpoint.Metadata.GetMetadata<IHttpMethodMetadata>() is { } httpMethodMetadata &&
+                    routeEndpoint.Metadata.GetMetadata<IExcludeFromDescriptionMetadata>() is null or { ExcludeFromDescription: false })
                 {
                     // REVIEW: Should we add an ApiDescription for endpoints without IHttpMethodMetadata? Swagger doesn't handle
                     // a null HttpMethod even though it's nullable on ApiDescription, so we'd need to define "default" HTTP methods.
@@ -89,6 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var apiDescription = new ApiDescription
             {
                 HttpMethod = httpMethod,
+                GroupName = routeEndpoint.Metadata.GetMetadata<IEndpointGroupNameMetadata>()?.EndpointGroupName,
                 RelativePath = routeEndpoint.RoutePattern.RawText?.TrimStart('/'),
                 ActionDescriptor = new ActionDescriptor
                 {
@@ -267,7 +270,9 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     {
                         AddResponseContentTypes(apiResponseType.ApiResponseFormats, contentTypes);
                     }
-                    else if (CreateDefaultApiResponseFormat(apiResponseType.Type) is { } defaultResponseFormat)
+                    // Only set the default response type if it hasn't already been set via a
+                    // ProducesResponseTypeAttribute.
+                    else if (apiResponseType.ApiResponseFormats.Count == 0 && CreateDefaultApiResponseFormat(apiResponseType.Type) is { } defaultResponseFormat)
                     {
                         apiResponseType.ApiResponseFormats.Add(defaultResponseFormat);
                     }

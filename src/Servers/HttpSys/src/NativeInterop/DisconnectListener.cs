@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private CancellationToken GetOrCreateDisconnectToken(ulong connectionId)
         {
-            // Read case is performance sensitive 
+            // Read case is performance sensitive
             if (!_connectionCancellationTokens.TryGetValue(connectionId, out var cancellation))
             {
                 cancellation = GetCreatedConnectionCancellation(connectionId);
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private ConnectionCancellation GetCreatedConnectionCancellation(ulong connectionId)
         {
-            // Race condition on creation has no side effects 
+            // Race condition on creation has no side effects
             var cancellation = new ConnectionCancellation(this);
             return _connectionCancellationTokens.GetOrAdd(connectionId, cancellation);
         }

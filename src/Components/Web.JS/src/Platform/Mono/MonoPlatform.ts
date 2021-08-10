@@ -279,6 +279,14 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     return []; // No exports
   };
 
+  // Environment variables could be set via mono only after the runtime is ready.
+  module.onRuntimeInitialized = () => {
+    if (!icuDataResource) {
+      // Use invariant culture if the app does not carry icu data.
+      MONO.mono_wasm_setenv('DOTNET_SYSTEM_GLOBALIZATION_INVARIANT', '1');
+    }
+  };
+
   module.preRun.push(() => {
     // By now, emscripten should be initialised enough that we can capture these methods for later use
     mono_wasm_add_assembly = cwrap('mono_wasm_add_assembly', null, ['string', 'number', 'number']);
@@ -290,9 +298,6 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
 
     if (icuDataResource) {
       loadICUData(icuDataResource);
-    } else {
-      // Use invariant culture if the app does not carry icu data.
-      MONO.mono_wasm_setenv('DOTNET_SYSTEM_GLOBALIZATION_INVARIANT', '1');
     }
 
     // Fetch the assemblies and PDBs in the background, telling Mono to wait until they are loaded

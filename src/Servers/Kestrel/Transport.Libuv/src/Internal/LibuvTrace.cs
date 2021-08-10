@@ -1,37 +1,13 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
-    internal class LibuvTrace : ILibuvTrace
+    internal partial class LibuvTrace : ILibuvTrace
     {
-        // ConnectionRead: Reserved: 3
-
-        private static readonly Action<ILogger, string, Exception> _connectionPause =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(4, nameof(ConnectionPause)), @"Connection id ""{ConnectionId}"" paused.");
-
-        private static readonly Action<ILogger, string, Exception> _connectionResume =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, nameof(ConnectionResume)), @"Connection id ""{ConnectionId}"" resumed.");
-
-        private static readonly Action<ILogger, string, Exception> _connectionReadFin =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, nameof(ConnectionReadFin)), @"Connection id ""{ConnectionId}"" received FIN.");
-
-        private static readonly Action<ILogger, string, string, Exception> _connectionWriteFin =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(7, nameof(ConnectionWriteFin)), @"Connection id ""{ConnectionId}"" sending FIN because: ""{Reason}""");
-
-        // ConnectionWrite: Reserved: 11
-
-        // ConnectionWriteCallback: Reserved: 12
-
-        private static readonly Action<ILogger, string, Exception> _connectionError =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(14, nameof(ConnectionError)), @"Connection id ""{ConnectionId}"" communication error.");
-
-        private static readonly Action<ILogger, string, Exception> _connectionReset =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(19, nameof(ConnectionReset)), @"Connection id ""{ConnectionId}"" reset.");
-
         private readonly ILogger _logger;
 
         public LibuvTrace(ILogger logger)
@@ -45,15 +21,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             // Reserved: Event ID 3
         }
 
-        public void ConnectionReadFin(string connectionId)
-        {
-            _connectionReadFin(_logger, connectionId, null);
-        }
+        [LoggerMessage(6, LogLevel.Debug, @"Connection id ""{ConnectionId}"" received FIN.", EventName = nameof(ConnectionReadFin))]
+        public partial void ConnectionReadFin(string connectionId);
 
-        public void ConnectionWriteFin(string connectionId, string reason)
-        {
-            _connectionWriteFin(_logger, connectionId, reason, null);
-        }
+        [LoggerMessage(7, LogLevel.Debug, @"Connection id ""{ConnectionId}"" sending FIN because: ""{Reason}""", EventName = nameof(ConnectionWriteFin))]
+        public partial void ConnectionWriteFin(string connectionId, string reason);
 
         public void ConnectionWrite(string connectionId, int count)
         {
@@ -67,25 +39,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             // Reserved: Event ID 12
         }
 
-        public void ConnectionError(string connectionId, Exception ex)
-        {
-            _connectionError(_logger, connectionId, ex);
-        }
+        [LoggerMessage(14, LogLevel.Debug, @"Connection id ""{ConnectionId}"" communication error.", EventName = nameof(ConnectionError))]
+        public partial void ConnectionError(string connectionId, Exception ex);
 
-        public void ConnectionReset(string connectionId)
-        {
-            _connectionReset(_logger, connectionId, null);
-        }
+        [LoggerMessage(19, LogLevel.Debug, @"Connection id ""{ConnectionId}"" reset.", EventName = nameof(ConnectionReset))]
+        public partial void ConnectionReset(string connectionId);
 
-        public void ConnectionPause(string connectionId)
-        {
-            _connectionPause(_logger, connectionId, null);
-        }
+        [LoggerMessage(4, LogLevel.Debug, @"Connection id ""{ConnectionId}"" paused.", EventName = nameof(ConnectionPause))]
+        public partial void ConnectionPause(string connectionId);
 
-        public void ConnectionResume(string connectionId)
-        {
-            _connectionResume(_logger, connectionId, null);
-        }
+        [LoggerMessage(5, LogLevel.Debug, @"Connection id ""{ConnectionId}"" resumed.", EventName = nameof(ConnectionResume))]
+        public partial void ConnectionResume(string connectionId);
 
         public IDisposable BeginScope<TState>(TState state) => _logger.BeginScope(state);
 

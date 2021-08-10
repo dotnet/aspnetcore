@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 return Task.FromResult(0);
             }))
             {
-#pragma warning disable SYSLIB0014 // HttpClient would merge the headers no matter what 
+#pragma warning disable SYSLIB0014 // HttpClient would merge the headers no matter what
                 WebRequest request = WebRequest.Create(address);
 #pragma warning restore SYSLIB0014
                 HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 return Task.FromResult(0);
             }))
             {
-#pragma warning disable SYSLIB0014 // HttpClient would merge the headers no matter what 
+#pragma warning disable SYSLIB0014 // HttpClient would merge the headers no matter what
                 WebRequest request = WebRequest.Create(address);
 #pragma warning restore SYSLIB0014
                 HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();

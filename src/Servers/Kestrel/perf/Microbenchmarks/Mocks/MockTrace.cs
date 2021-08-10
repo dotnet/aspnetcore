@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Net.Http;
@@ -63,12 +63,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
         public void InvalidResponseHeaderRemoved() { }
         public void Http3ConnectionError(string connectionId, Http3ConnectionErrorException ex) { }
         public void Http3ConnectionClosing(string connectionId) { }
-        public void Http3ConnectionClosed(string connectionId, long highestOpenedStreamId) { }
+        public void Http3ConnectionClosed(string connectionId, long? highestOpenedStreamId) { }
         public void Http3StreamAbort(string traceIdentifier, Http3ErrorCode error, ConnectionAbortedException abortReason) { }
         public void Http3FrameReceived(string connectionId, long streamId, Http3RawFrame frame) { }
         public void Http3FrameSending(string connectionId, long streamId, Http3RawFrame frame) { }
         public void QPackDecodingError(string connectionId, long streamId, Exception ex) { }
         public void QPackEncodingError(string connectionId, long streamId, Exception ex) { }
         public void Http3OutboundControlStreamError(string connectionId, Exception ex) { }
+        public void Http3GoAwayStreamId(string connectionId, long goAwayStreamId) { }
     }
 }

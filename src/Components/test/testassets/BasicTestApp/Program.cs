@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Globalization;
@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
 using BasicTestApp.AuthTest;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
@@ -31,6 +30,9 @@ namespace BasicTestApp
             builder.RootComponents.Add<HeadOutlet>("head::after");
             builder.RootComponents.Add<Index>("root");
             builder.RootComponents.RegisterForJavaScript<DynamicallyAddedRootComponent>("my-dynamic-root-component");
+            builder.RootComponents.RegisterForJavaScript<JavaScriptRootComponentParameterTypes>(
+                "component-with-many-parameters",
+                javaScriptInitializer: "myJsRootComponentInitializers.testInitializer");
 
             builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
             builder.Services.AddSingleton<AuthenticationStateProvider, ServerAuthenticationStateProvider>();

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -140,8 +140,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             }
             while (currentTypeInfo != objectTypeInfo);
 
-            // CoreCLR returns IEnumerable<Attribute> from GetCustomAttributes - the OfType<object>
-            // is needed to so that the result of ToArray() is object
             var attributes = typeInfo.GetCustomAttributes(inherit: true);
 
             // This is fairly complicated so that we maintain referential equality between items in
@@ -281,8 +279,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 return null;
             }
 
-            // CoreCLR returns IEnumerable<Attribute> from GetCustomAttributes - the OfType<object>
-            // is needed to so that the result of ToArray() is object
             var attributes = methodInfo.GetCustomAttributes(inherit: true);
 
             var actionModel = new ActionModel(methodInfo, attributes);

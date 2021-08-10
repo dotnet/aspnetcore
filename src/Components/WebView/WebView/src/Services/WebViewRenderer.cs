@@ -1,8 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.ExceptionServices;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.WebView.Services
@@ -19,13 +22,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
             Dispatcher dispatcher,
             IpcSender ipcSender,
             ILoggerFactory loggerFactory,
-            ElementReferenceContext elementReferenceContext) :
-            base(serviceProvider, loggerFactory)
+            WebViewJSRuntime jsRuntime,
+            JSComponentInterop jsComponentInterop) :
+            base(serviceProvider, loggerFactory, jsRuntime.ReadJsonSerializerOptions(), jsComponentInterop)
         {
             _dispatcher = dispatcher;
             _ipcSender = ipcSender;
 
-            ElementReferenceContext = elementReferenceContext;
+            ElementReferenceContext = jsRuntime.ElementReferenceContext;
         }
 
         public override Dispatcher Dispatcher => _dispatcher;

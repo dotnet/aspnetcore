@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.IO;
@@ -28,7 +28,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server
                 {
                     var applicationPath = args.SkipWhile(a => a != "--applicationpath").Skip(1).First();
                     var applicationDirectory = Path.GetDirectoryName(applicationPath)!;
-                    var name = Path.ChangeExtension(applicationPath, ".StaticWebAssets.xml");
+                    var name = Path.ChangeExtension(applicationPath, ".staticwebassets.runtime.json");
+                    name = !File.Exists(name) ? Path.ChangeExtension(applicationPath, ".StaticWebAssets.xml") : name;
 
                     var inMemoryConfiguration = new Dictionary<string, string>
                     {

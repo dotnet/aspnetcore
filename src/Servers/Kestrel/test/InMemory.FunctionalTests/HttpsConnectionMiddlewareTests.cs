@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -733,7 +733,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Assert.Null(context.Connection.ClientCertificate);
 
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.Connection.GetClientCertificateAsync());
-                Assert.Equal("Received data during renegotiation.", ex.Message);
+                Assert.Equal("Client stream needs to be drained before renegotiation.", ex.Message);
                 Assert.Null(tlsFeature.ClientCertificate);
                 Assert.Null(context.Connection.ClientCertificate);
             }, new TestServiceContext(LoggerFactory), ConfigureListenOptions);
@@ -745,7 +745,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             // Use a random host name to avoid the TLS session resumption cache.
             var stream = OpenSslStreamWithCert(connection.Stream);
             await stream.AuthenticateAsClientAsync(Guid.NewGuid().ToString());
-            await AssertConnectionResult(stream, false, expectedBody);
+            await AssertConnectionResult(stream, true, expectedBody);
         }
 
         [ConditionalFact]
@@ -778,7 +778,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Assert.Null(context.Connection.ClientCertificate);
 
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.Connection.GetClientCertificateAsync());
-                Assert.Equal("Received data during renegotiation.", ex.Message);
+                Assert.Equal("Client stream needs to be drained before renegotiation.", ex.Message);
                 Assert.Null(tlsFeature.ClientCertificate);
                 Assert.Null(context.Connection.ClientCertificate);
             }, new TestServiceContext(LoggerFactory), ConfigureListenOptions);

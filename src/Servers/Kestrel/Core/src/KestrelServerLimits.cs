@@ -1,7 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Text.Json;
 using System.Threading;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
@@ -255,6 +256,86 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 }
                 _maxConcurrentUpgradedConnections = value;
             }
+        }
+
+        internal void Serialize(Utf8JsonWriter writer)
+        {
+            writer.WriteString(nameof(KeepAliveTimeout), KeepAliveTimeout.ToString());
+
+            writer.WritePropertyName(nameof(MaxConcurrentConnections));
+            if (MaxConcurrentConnections is null)
+            {
+                writer.WriteNullValue();
+            }
+            else
+            {
+                writer.WriteNumberValue(MaxConcurrentConnections.Value);
+            }
+
+            writer.WritePropertyName(nameof(MaxConcurrentUpgradedConnections));
+            if (MaxConcurrentUpgradedConnections is null)
+            {
+                writer.WriteNullValue();
+            }
+            else
+            {
+                writer.WriteNumberValue(MaxConcurrentUpgradedConnections.Value);
+            }
+
+            writer.WritePropertyName(nameof(MaxRequestBodySize));
+            if (MaxRequestBodySize is null)
+            {
+                writer.WriteNullValue();
+            }
+            else
+            {
+                writer.WriteNumberValue(MaxRequestBodySize.Value);
+            }
+
+            writer.WritePropertyName(nameof(MaxRequestBufferSize));
+            if (MaxRequestBufferSize is null)
+            {
+                writer.WriteNullValue();
+            }
+            else
+            {
+                writer.WriteNumberValue(MaxRequestBufferSize.Value);
+            }
+
+            writer.WritePropertyName(nameof(MaxRequestHeaderCount));
+            writer.WriteNumberValue(MaxRequestHeaderCount);
+
+            writer.WritePropertyName(nameof(MaxRequestHeadersTotalSize));
+            writer.WriteNumberValue(MaxRequestHeadersTotalSize);
+
+            writer.WritePropertyName(nameof(MaxRequestLineSize));
+            writer.WriteNumberValue(MaxRequestLineSize);
+
+            writer.WritePropertyName(nameof(MaxResponseBufferSize));
+            if (MaxResponseBufferSize is null)
+            {
+                writer.WriteNullValue();
+            }
+            else
+            {
+                writer.WriteNumberValue(MaxResponseBufferSize.Value);
+            }
+
+            writer.WriteString(nameof(MinRequestBodyDataRate), MinRequestBodyDataRate?.ToString());
+            writer.WriteString(nameof(MinResponseDataRate), MinResponseDataRate?.ToString());
+            writer.WriteString(nameof(RequestHeadersTimeout), RequestHeadersTimeout.ToString());
+
+            // HTTP2
+            writer.WritePropertyName(nameof(Http2));
+            writer.WriteStartObject();
+            Http2.Serialize(writer);
+            writer.WriteEndObject();
+
+            // HTTP3
+            writer.WritePropertyName(nameof(Http3));
+            writer.WriteStartObject();
+            Http3.Serialize(writer);
+            writer.WriteEndObject();
         }
 
         /// <summary>

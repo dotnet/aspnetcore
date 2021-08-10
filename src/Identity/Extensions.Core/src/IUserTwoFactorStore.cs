@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="user">The user whose two factor authentication enabled status should be set.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>
-        /// The <see cref="Task"/> that represents the asynchronous operation, containing a flag indicating whether the specified 
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing a flag indicating whether the specified
         /// <paramref name="user"/> has two factor authentication enabled or not.
         /// </returns>
         Task<bool> GetTwoFactorEnabledAsync(TUser user, CancellationToken cancellationToken);
