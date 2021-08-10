@@ -49,13 +49,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             if ((availableServerTransports & HttpTransportType.ServerSentEvents & _requestedTransportType) == HttpTransportType.ServerSentEvents)
             {
                 // We don't need to give the transport the accessTokenProvider because the HttpClient has a message handler that does the work for us.
-                return new ServerSentEventsTransport(_httpClient!, _loggerFactory);
+                return new ServerSentEventsTransport(_httpClient!, _httpConnectionOptions, _loggerFactory);
             }
 
             if ((availableServerTransports & HttpTransportType.LongPolling & _requestedTransportType) == HttpTransportType.LongPolling)
             {
                 // We don't need to give the transport the accessTokenProvider because the HttpClient has a message handler that does the work for us.
-                return new LongPollingTransport(_httpClient!, _loggerFactory);
+                return new LongPollingTransport(_httpClient!, _httpConnectionOptions, _loggerFactory);
             }
 
             throw new InvalidOperationException("No requested transports available on the server.");

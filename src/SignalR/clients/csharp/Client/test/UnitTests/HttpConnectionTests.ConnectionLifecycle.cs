@@ -337,7 +337,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.InternalServerError));
                     });
 
-                    var sse = new ServerSentEventsTransport(new HttpClient(httpHandler), LoggerFactory);
+                    var sse = new ServerSentEventsTransport(new HttpClient(httpHandler), loggerFactory: LoggerFactory);
 
                     await WithConnectionAsync(
                         CreateConnection(httpHandler, loggerFactory: LoggerFactory, transport: sse),
@@ -363,7 +363,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         return ResponseUtils.CreateResponse(HttpStatusCode.Accepted);
                     });
 
-                    var sse = new ServerSentEventsTransport(new HttpClient(httpHandler), LoggerFactory);
+                    var sse = new ServerSentEventsTransport(new HttpClient(httpHandler), loggerFactory: LoggerFactory);
 
                     await WithConnectionAsync(
                         CreateConnection(httpHandler, loggerFactory: LoggerFactory, transport: sse),
@@ -434,7 +434,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     await WithConnectionAsync(
                         CreateConnection(httpHandler,
-                        transport: new TestTransport(onTransportStart: () => {
+                        transport: new TestTransport(onTransportStart: () =>
+                        {
                             // Cancel the token when the transport is starting  which will fail the startTask.
                             cts.Cancel();
                             return Task.CompletedTask;
@@ -462,7 +463,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     await WithConnectionAsync(
                         CreateConnection(httpHandler,
-                        transport: new TestTransport(onTransportStart: () => {
+                        transport: new TestTransport(onTransportStart: () =>
+                        {
                             transportStartCalled = true;
                             return Task.CompletedTask;
                         })),
@@ -493,7 +495,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         throw new OperationCanceledException("Cancel SSE Start.");
                     });
 
-                    var sse = new ServerSentEventsTransport(new HttpClient(httpHandler), LoggerFactory);
+                    var sse = new ServerSentEventsTransport(new HttpClient(httpHandler), loggerFactory: LoggerFactory);
 
                     await WithConnectionAsync(
                         CreateConnection(httpHandler, loggerFactory: LoggerFactory, transport: sse, transportType: HttpTransportType.ServerSentEvents),
