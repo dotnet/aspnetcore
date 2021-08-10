@@ -418,7 +418,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // First, signal to code parser that whitespace is significant to us.
             var old = Context.WhiteSpaceIsSignificantToAncestorBlock;
             Context.WhiteSpaceIsSignificantToAncestorBlock = true;
-            SpanContext.EditHandler = new SpanEditHandler(Language.TokenizeString);
+            SpanContext.EditHandler = new SpanEditHandler(LanguageTokenizeString);
 
             // Now parse until a new line.
             do
@@ -2151,7 +2151,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private void DefaultMarkupSpanContext(SpanContextBuilder spanContext)
         {
             spanContext.ChunkGenerator = new MarkupChunkGenerator();
-            spanContext.EditHandler = new SpanEditHandler(Language.TokenizeString, AcceptedCharactersInternal.Any);
+            spanContext.EditHandler = new SpanEditHandler(LanguageTokenizeString, AcceptedCharactersInternal.Any);
         }
 
         private Syntax.GreenNode GetLastSpan(RazorSyntaxNode node)

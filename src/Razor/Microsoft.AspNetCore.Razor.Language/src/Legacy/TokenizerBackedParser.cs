@@ -41,6 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             : base(context)
         {
             Language = language;
+            LanguageTokenizeString = Language.TokenizeString;
 
             var languageTokenizer = Language.CreateTokenizer(Context.Source);
             _tokenizer = new TokenizerView<TTokenizer>(languageTokenizer);
@@ -82,6 +83,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         protected LanguageCharacteristics<TTokenizer> Language { get; }
+        protected Func<string, IEnumerable<SyntaxToken>> LanguageTokenizeString { get; }
 
         protected SyntaxToken Lookahead(int count)
         {
@@ -381,7 +383,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private void CommentSpanContextConfig(SpanContextBuilder spanContext)
         {
             spanContext.ChunkGenerator = SpanChunkGenerator.Null;
-            spanContext.EditHandler = SpanEditHandler.CreateDefault(Language.TokenizeString);
+            spanContext.EditHandler = SpanEditHandler.CreateDefault(LanguageTokenizeString);
         }
 
         protected SyntaxToken EatCurrentToken()
