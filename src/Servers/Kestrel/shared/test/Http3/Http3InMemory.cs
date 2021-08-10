@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Testing
             return _inboundControlStream;
         }
 
-        internal void CloseConnectionGracefully()
+        internal void CloseServerGracefully()
         {
             MultiplexedConnectionContext.ConnectionClosingCts.Cancel();
         }
@@ -139,6 +139,23 @@ namespace Microsoft.AspNetCore.Testing
 
         internal async Task WaitForConnectionErrorAsync<TException>(bool ignoreNonGoAwayFrames, long? expectedLastStreamId, Http3ErrorCode expectedErrorCode, Action<Type, string[]> matchExpectedErrorMessage = null, params string[] expectedErrorMessage)
             where TException : Exception
+        {
+            await WaitForGoAwayAsync(ignoreNonGoAwayFrames, expectedLastStreamId);
+
+            AssertConnectionError<TException>(expectedErrorCode, matchExpectedErrorMessage, expectedErrorMessage);
+
+            // Verify HttpConnection.ProcessRequestsAsync has exited.
+#if IS_FUNCTIONAL_TESTS
+            await _connectionTask.DefaultTimeout();
+#else
+            await _connectionTask;
+#endif
+
+            // Verify server-to-client control stream has completed.
+            await _inboundControlStream.ReceiveEndAsync();
+        }
+
+        internal async Task WaitForGoAwayAsync(bool ignoreNonGoAwayFrames, long? expectedLastStreamId)
         {
             var frame = await _inboundControlStream.ReceiveFrameAsync();
 
@@ -154,18 +171,6 @@ namespace Microsoft.AspNetCore.Testing
             {
                 VerifyGoAway(frame, expectedLastStreamId.GetValueOrDefault());
             }
-
-            AssertConnectionError<TException>(expectedErrorCode, matchExpectedErrorMessage, expectedErrorMessage);
-
-            // Verify HttpConnection.ProcessRequestsAsync has exited.
-#if IS_FUNCTIONAL_TESTS
-            await _connectionTask.DefaultTimeout();
-#else
-            await _connectionTask;
-#endif
-
-            // Verify server-to-client control stream has completed.
-            await _inboundControlStream.ReceiveEndAsync();
         }
 
         internal void AssertConnectionError<TException>(Http3ErrorCode expectedErrorCode, Action<Type, string[]> matchExpectedErrorMessage = null, params string[] expectedErrorMessage) where TException : Exception
@@ -195,6 +200,8 @@ namespace Microsoft.AspNetCore.Testing
 
         public void AdvanceClock(TimeSpan timeSpan)
         {
+            Logger.LogDebug($"Advancing clock {timeSpan}.");
+
             var clock = _mockSystemClock;
             var endTime = clock.UtcNow + timeSpan;
 
@@ -216,10 +223,13 @@ namespace Microsoft.AspNetCore.Testing
 
         public async Task InitializeConnectionAsync(RequestDelegate application)
         {
-            MultiplexedConnectionContext = new TestMultiplexedConnectionContext(this);
+            MultiplexedConnectionContext = new TestMultiplexedConnectionContext(this)
+            {
+                ConnectionId = "TEST"
+            };
 
             var httpConnectionContext = new HttpMultiplexedConnectionContext(
-                connectionId: "TestConnectionId",
+                connectionId: MultiplexedConnectionContext.ConnectionId,
                 HttpProtocols.Http3,
                 altSvcHeader: null,
                 connectionContext: MultiplexedConnectionContext,
@@ -378,7 +388,7 @@ namespace Microsoft.AspNetCore.Testing
         internal async ValueTask<Http3ControlStream> CreateControlStream(int? id)
         {
             var testStreamContext = new TestStreamContext(canRead: true, canWrite: false, this);
-            testStreamContext.Initialize(GetStreamId(0x02));
+            testStreamContext.Initialize(streamId: 2);
 
             var stream = new Http3ControlStream(this, testStreamContext);
             _runningStreams[stream.StreamId] = stream;
@@ -393,11 +403,16 @@ namespace Microsoft.AspNetCore.Testing
 
         internal ValueTask<Http3RequestStream> CreateRequestStream(Http3RequestHeaderHandler headerHandler = null)
         {
+            var requestStreamId = GetStreamId(0x00);
             if (!_streamContextPool.TryDequeue(out var testStreamContext))
             {
                 testStreamContext = new TestStreamContext(canRead: true, canWrite: true, this);
             }
-            testStreamContext.Initialize(GetStreamId(0x00));
+            else
+            {
+                Logger.LogDebug($"Reusing context for request stream {requestStreamId}.");
+            }
+            testStreamContext.Initialize(requestStreamId);
 
             var stream = new Http3RequestStream(this, Connection, testStreamContext, headerHandler ?? new Http3RequestHeaderHandler());
             _runningStreams[stream.StreamId] = stream;
@@ -853,6 +868,38 @@ namespace Microsoft.AspNetCore.Testing
                 }
             }
         }
+
+        internal async Task WaitForGoAwayAsync(bool ignoreNonGoAwayFrames, long? expectedLastStreamId)
+        {
+            var frame = await ReceiveFrameAsync();
+
+            if (ignoreNonGoAwayFrames)
+            {
+                while (frame.Type != Http3FrameType.GoAway)
+                {
+                    frame = await ReceiveFrameAsync();
+                }
+            }
+
+            if (expectedLastStreamId != null)
+            {
+                VerifyGoAway(frame, expectedLastStreamId.GetValueOrDefault());
+            }
+        }
+
+        internal void VerifyGoAway(Http3FrameWithPayload frame, long expectedLastStreamId)
+        {
+            Http3InMemory.AssertFrameType(frame.Type, Http3FrameType.GoAway);
+            var payload = frame.Payload;
+            if (!VariableLengthIntegerHelper.TryRead(payload.Span, out var streamId, out var _))
+            {
+                throw new InvalidOperationException("Failed to read GO_AWAY stream ID.");
+            }
+            if (streamId != expectedLastStreamId)
+            {
+                throw new InvalidOperationException($"Expected stream ID {expectedLastStreamId}, got {streamId}.");
+            }
+        }
     }
 
     internal class TestMultiplexedConnectionContext : MultiplexedConnectionContext, IConnectionLifetimeNotificationFeature, IConnectionLifetimeFeature, IConnectionHeartbeatFeature, IProtocolErrorCodeFeature
@@ -911,12 +958,19 @@ namespace Microsoft.AspNetCore.Testing
 
         public override async ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
         {
-            while (await ToServerAcceptQueue.Reader.WaitToReadAsync())
+            try
             {
-                while (ToServerAcceptQueue.Reader.TryRead(out var connection))
+                while (await ToServerAcceptQueue.Reader.WaitToReadAsync(cancellationToken))
                 {
-                    return connection;
+                    while (ToServerAcceptQueue.Reader.TryRead(out var connection))
+                    {
+                        return connection;
+                    }
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                // Cancellation token. Graceful server abort.
             }
 
             return null;
@@ -925,7 +979,7 @@ namespace Microsoft.AspNetCore.Testing
         public override ValueTask<ConnectionContext> ConnectAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default)
         {
             var testStreamContext = new TestStreamContext(canRead: true, canWrite: false, _testBase);
-            testStreamContext.Initialize(_testBase.GetStreamId(0x03));
+            testStreamContext.Initialize(streamId: 3);
 
             var stream = _testBase.OnCreateServerControlStream?.Invoke(testStreamContext) ?? new Http3ControlStream(_testBase, testStreamContext);
             ToClientAcceptQueue.Writer.WriteAsync(stream);
@@ -1058,17 +1112,29 @@ namespace Microsoft.AspNetCore.Testing
 
         public override ValueTask DisposeAsync()
         {
-            _testBase.Logger.LogInformation($"Disposing stream {StreamId}");
+            _testBase.Logger.LogDebug($"Disposing stream {StreamId}");
+
+            var readerCompletedSuccessfully = _transportPipeReader.IsCompletedSuccessfully;
+            var writerCompletedSuccessfully = _transportPipeWriter.IsCompletedSuccessfully;
+            var canReuse = !_isAborted &&
+                readerCompletedSuccessfully &&
+                writerCompletedSuccessfully;
+
+            _pair.Transport.Input.Complete();
+            _pair.Transport.Output.Complete();
+
+            if (canReuse)
+            {
+                _testBase.Logger.LogDebug($"Pooling stream {StreamId} for reuse.");
+                _testBase._streamContextPool.Enqueue(this);
+            }
+            else
+            {
+                _testBase.Logger.LogDebug($"Can't reuse stream {StreamId}. Aborted: {_isAborted}, Reader completed successfully: {readerCompletedSuccessfully}, Writer completed successfully: {writerCompletedSuccessfully}.");
+            }
 
             Disposed = true;
             _disposedTcs.TrySetResult();
-
-            if (!_isAborted &&
-                _transportPipeReader.IsCompletedSuccessfully &&
-                _transportPipeWriter.IsCompletedSuccessfully)
-            {
-                _testBase._streamContextPool.Enqueue(this);
-            }
 
             return ValueTask.CompletedTask;
         }

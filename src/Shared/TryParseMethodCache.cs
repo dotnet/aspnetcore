@@ -15,35 +15,64 @@ using System.Reflection;
 
 namespace Microsoft.AspNetCore.Http
 {
-    internal static class TryParseMethodCache
+    internal sealed class TryParseMethodCache
     {
-        private static readonly MethodInfo EnumTryParseMethod = GetEnumTryParseMethod();
+        private readonly MethodInfo _enumTryParseMethod;
 
         // Since this is shared source, the cache won't be shared between RequestDelegateFactory and the ApiDescriptionProvider sadly :(
-        private static readonly ConcurrentDictionary<Type, Func<Expression, MethodCallExpression>?> MethodCallCache = new();
-        internal static readonly ParameterExpression TempSourceStringExpr = Expression.Variable(typeof(string), "tempSourceString");
+        private readonly ConcurrentDictionary<Type, Func<Expression, Expression>?> _methodCallCache = new();
 
-        public static bool HasTryParseMethod(ParameterInfo parameter)
+        internal readonly ParameterExpression TempSourceStringExpr = Expression.Variable(typeof(string), "tempSourceString");
+
+        public TryParseMethodCache() : this(preferNonGenericEnumParseOverload: false)
+        {
+        }
+
+        // This is for testing
+        public TryParseMethodCache(bool preferNonGenericEnumParseOverload)
+        {
+            _enumTryParseMethod = GetEnumTryParseMethod(preferNonGenericEnumParseOverload);
+        }
+
+        public bool HasTryParseMethod(ParameterInfo parameter)
         {
             var nonNullableParameterType = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
             return FindTryParseMethod(nonNullableParameterType) is not null;
         }
 
-        public static Func<Expression, MethodCallExpression>? FindTryParseMethod(Type type)
+        public Func<Expression, Expression>? FindTryParseMethod(Type type)
         {
-            static Func<Expression, MethodCallExpression>? Finder(Type type)
+            Func<Expression, Expression>? Finder(Type type)
             {
                 MethodInfo? methodInfo;
 
                 if (type.IsEnum)
                 {
-                    methodInfo = EnumTryParseMethod.MakeGenericMethod(type);
-                    if (methodInfo != null)
+                    if (_enumTryParseMethod.IsGenericMethod)
                     {
+                        methodInfo = _enumTryParseMethod.MakeGenericMethod(type);
+
                         return (expression) => Expression.Call(methodInfo!, TempSourceStringExpr, expression);
                     }
 
-                    return null;
+                    return (expression) =>
+                    {
+                        var enumAsObject = Expression.Variable(typeof(object), "enumAsObject");
+                        var success = Expression.Variable(typeof(bool), "success");
+
+                        // object enumAsObject;
+                        // bool success;
+                        // success = Enum.TryParse(type, tempSourceString, out enumAsObject);
+                        // parsedValue = success ? (Type)enumAsObject : default;
+                        // return success;
+
+                        return Expression.Block(new[] { success, enumAsObject },
+                            Expression.Assign(success, Expression.Call(_enumTryParseMethod, Expression.Constant(type), TempSourceStringExpr, enumAsObject)),
+                            Expression.Assign(expression,
+                                Expression.Condition(success, Expression.Convert(enumAsObject, type), Expression.Default(type))),
+                            success);
+                    };
+
                 }
 
                 if (TryGetDateTimeTryParseMethod(type, out methodInfo))
@@ -87,32 +116,59 @@ namespace Microsoft.AspNetCore.Http
                 return null;
             }
 
-            return MethodCallCache.GetOrAdd(type, Finder);
+            return _methodCallCache.GetOrAdd(type, Finder);
         }
 
-        private static MethodInfo GetEnumTryParseMethod()
+        private static MethodInfo GetEnumTryParseMethod(bool preferNonGenericEnumParseOverload)
         {
             var staticEnumMethods = typeof(Enum).GetMethods(BindingFlags.Public | BindingFlags.Static);
 
+            // With NativeAOT, if there's no static usage of Enum.TryParse<T>, it will be removed
+            // we fallback to the non-generic version if that is the case
+            MethodInfo? genericCandidate = null;
+            MethodInfo? nonGenericCandidate = null;
+
             foreach (var method in staticEnumMethods)
             {
-                if (!method.IsGenericMethod || method.Name != nameof(Enum.TryParse) || method.ReturnType != typeof(bool))
+                if (method.Name != nameof(Enum.TryParse) || method.ReturnType != typeof(bool))
                 {
                     continue;
                 }
 
                 var tryParseParameters = method.GetParameters();
 
-                if (tryParseParameters.Length == 2 &&
+                // Enum.TryParse<T>(string, out object)
+                if (method.IsGenericMethod &&
+                    tryParseParameters.Length == 2 &&
                     tryParseParameters[0].ParameterType == typeof(string) &&
                     tryParseParameters[1].IsOut)
                 {
-                    return method;
+                    genericCandidate = method;
+                }
+
+                // Enum.TryParse(type, string, out object)
+                if (!method.IsGenericMethod &&
+                    tryParseParameters.Length == 3 &&
+                    tryParseParameters[0].ParameterType == typeof(Type) &&
+                    tryParseParameters[1].ParameterType == typeof(string) &&
+                    tryParseParameters[2].IsOut)
+                {
+                    nonGenericCandidate = method;
                 }
             }
 
-            Debug.Fail("static bool System.Enum.TryParse<TEnum>(string? value, out TEnum result) not found.");
-            throw new Exception("static bool System.Enum.TryParse<TEnum>(string? value, out TEnum result) not found.");
+            if (genericCandidate is null && nonGenericCandidate is null)
+            {
+                Debug.Fail("No suitable System.Enum.TryParse method found.");
+                throw new MissingMethodException("No suitable System.Enum.TryParse method found.");
+            }
+
+            if (preferNonGenericEnumParseOverload)
+            {
+                return nonGenericCandidate!;
+            }
+
+            return genericCandidate ?? nonGenericCandidate!;
         }
 
         private static bool TryGetDateTimeTryParseMethod(Type type, [NotNullWhen(true)] out MethodInfo? methodInfo)

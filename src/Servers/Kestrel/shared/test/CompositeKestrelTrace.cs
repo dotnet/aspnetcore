@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Testing
             _trace2.Http3ConnectionClosing(connectionId);
         }
 
-        public void Http3ConnectionClosed(string connectionId, long highestOpenedStreamId)
+        public void Http3ConnectionClosed(string connectionId, long? highestOpenedStreamId)
         {
             _trace1.Http3ConnectionClosed(connectionId, highestOpenedStreamId);
             _trace2.Http3ConnectionClosed(connectionId, highestOpenedStreamId);
@@ -298,6 +298,12 @@ namespace Microsoft.AspNetCore.Testing
         {
             _trace1.Http3OutboundControlStreamError(connectionId, ex);
             _trace2.Http3OutboundControlStreamError(connectionId, ex);
+        }
+
+        public void Http3GoAwayStreamId(string connectionId, long goAwayStreamId)
+        {
+            _trace1.Http3GoAwayStreamId(connectionId, goAwayStreamId);
+            _trace2.Http3GoAwayStreamId(connectionId, goAwayStreamId);
         }
     }
 }
