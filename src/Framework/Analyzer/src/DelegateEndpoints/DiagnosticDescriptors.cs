@@ -25,5 +25,23 @@ namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints
             DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
             helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+        internal static readonly DiagnosticDescriptor RouteValueIsUnused = new(
+            "ASP0005",
+            "Route value is unused",
+            "The route value '{0}' does not get bound and can be removed",
+            "Usage",
+            DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
+            helpLinkUri: "https://aka.ms/minimal-action/analyzer");
+
+        internal static readonly DiagnosticDescriptor RouteParameterCannotBeBound = new(
+            "ASP0006",
+            "Route parameter is not bound",
+            "Route parameter does not have a corresponding route token and cannot be bound",
+            "Usage",
+            DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
+            helpLinkUri: "https://aka.ms/minimal-action/analyzer");
     }
 }

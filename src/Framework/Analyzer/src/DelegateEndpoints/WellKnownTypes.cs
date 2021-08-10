@@ -49,6 +49,12 @@ internal sealed class WellKnownTypes
             return false;
         }
 
+        const string IFromRouteMetadata = "Microsoft.AspNetCore.Http.Metadata.IFromRouteMetadata";
+        if (compilation.GetTypeByMetadataName(IFromRouteMetadata) is not { } iFromRouteMetadata)
+        {
+            return false;
+        }
+
         wellKnownTypes = new WellKnownTypes
         {
             DelegateEndpointRouteBuilderExtensions = delegateEndpointRouteBuilderExtensions,
@@ -57,6 +63,7 @@ internal sealed class WellKnownTypes
             IResult = iResult,
             IActionResult = iActionResult,
             IConvertToActionResult = iConvertToActionResult,
+            IFromRouteMetadata = iFromRouteMetadata,
         };
 
         return true;
@@ -68,4 +75,5 @@ internal sealed class WellKnownTypes
     public INamedTypeSymbol IResult { get; private init; }
     public INamedTypeSymbol IActionResult { get; private init; }
     public INamedTypeSymbol IConvertToActionResult { get; private init; }
+    public INamedTypeSymbol IFromRouteMetadata { get; private init; }
 }
