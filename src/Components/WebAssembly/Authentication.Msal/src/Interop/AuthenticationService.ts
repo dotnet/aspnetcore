@@ -195,7 +195,7 @@ class MsalAuthorizeService implements AuthorizeService {
     }
 
     async signInCore(request: Msal.AuthorizationUrlRequest): Promise<Msal.AuthenticationResult | Msal.AuthError | undefined> {
-        const loginMode = this._settings.loginMode.toLowerCase();
+        const loginMode = this._settings.loginMode?.toLowerCase();
         if (loginMode === 'redirect') {
             return this.signInWithRedirect(<Msal.RedirectRequest> request);
         } else {
