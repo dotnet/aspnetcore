@@ -70,11 +70,13 @@ namespace Microsoft.AspNetCore.Razor.Language
                 }
             }
 
-            Debug.Assert(descriptor.MetadataImpl is not null, "We expect MetadataImpl to be configured in the default code path.");
-            foreach (var metadata in descriptor.MetadataImpl)
+            // In the ordinary case descriptor.Metadata is always a Dictionary<string, string>.
+            // Avoid boxing the enumerator by calling it using the interface.
+            var metadata = (Dictionary<string, string>)descriptor.Metadata;
+            foreach (var kvp in metadata)
             {
-                hash.Add(metadata.Key);
-                hash.Add(metadata.Value);
+                hash.Add(kvp.Key);
+                hash.Add(kvp.Value);
             }
 
             return hash.CombinedHash;

@@ -51,8 +51,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public IReadOnlyDictionary<string, string> Metadata { get; protected set; }
 
-        internal Dictionary<string, string> MetadataImpl { get; set; }
-
         public virtual IReadOnlyList<BoundAttributeParameterDescriptor> BoundAttributeParameters { get; protected set; }
 
         public bool HasErrors

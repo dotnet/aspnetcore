@@ -35,7 +35,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             BoundAttributeParameters = parameterDescriptors;
 
             Metadata = metadata;
-            MetadataImpl = metadata;
             Diagnostics = diagnostics;
 
             IsIndexerStringProperty = indexerTypeName == typeof(string).FullName || indexerTypeName == "string";
