@@ -29,6 +29,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private Action<ClientWebSocketOptions>? _webSocketConfiguration;
         private PipeOptions? _transportPipeOptions;
         private PipeOptions? _appPipeOptions;
+        private long _transportMaxBufferSize;
+        private long _applicationMaxBufferSize;
 
         // Selected because of the number of client connections is usually much lower than
         // server connections and therefore willing to use more memory. We'll default
@@ -82,7 +84,22 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// <remarks>
         /// The default value is 1MB.
         /// </remarks>
-        public long TransportMaxBufferSize { get; set; }
+        /// <value>
+        /// The default value is 1MB.
+        /// </value>
+        public long TransportMaxBufferSize
+        {
+            get => _transportMaxBufferSize;
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                _transportMaxBufferSize = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the maximum buffer size for data written by the application before backpressure is applied.
@@ -90,7 +107,22 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// <remarks>
         /// The default value is 1MB.
         /// </remarks>
-        public long ApplicationMaxBufferSize { get; set; }
+        /// <value>
+        /// The default value is 1MB.
+        /// </value>
+        public long ApplicationMaxBufferSize
+        {
+            get => _applicationMaxBufferSize;
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                _applicationMaxBufferSize = value;
+            }
+        }
 
         // We initialize these lazily based on the state of the options specified here.
         // Though these are mutable it's extremely rare that they would be mutated past the

@@ -22,6 +22,8 @@ namespace Microsoft.AspNetCore.Http.Connections
         private PipeOptions? _transportPipeOptions;
         private PipeOptions? _appPipeOptions;
         private TimeSpan _transportSendTimeout;
+        private long _transportMaxBufferSize;
+        private long _applicationMaxBufferSize;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpConnectionDispatcherOptions"/> class.
@@ -63,7 +65,19 @@ namespace Microsoft.AspNetCore.Http.Connections
         /// <remarks>
         /// The default value is 65KB.
         /// </remarks>
-        public long TransportMaxBufferSize { get; set; }
+        public long TransportMaxBufferSize
+        {
+            get => _transportMaxBufferSize;
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                _transportMaxBufferSize = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the maximum buffer size for data written by the application before backpressure is applied.
@@ -71,7 +85,19 @@ namespace Microsoft.AspNetCore.Http.Connections
         /// <remarks>
         /// The default value is 65KB.
         /// </remarks>
-        public long ApplicationMaxBufferSize { get; set; }
+        public long ApplicationMaxBufferSize
+        {
+            get => _applicationMaxBufferSize;
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                _applicationMaxBufferSize = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the minimum protocol verison supported by the server.
