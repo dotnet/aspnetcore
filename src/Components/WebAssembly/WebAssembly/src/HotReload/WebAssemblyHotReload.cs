@@ -1,11 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.HotReload;
 using Microsoft.JSInterop;
@@ -27,18 +25,20 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload
 
         internal static async Task InitializeAsync()
         {
-            // Determine if we're running under a hot reload environment (e.g. dotnet-watch).
-            // It's insufficient to know it the app can be hot reloaded (HotReloadFeature.IsSupported),
-            // since the hot-reload agent might be unavailable.
-            if (Environment.GetEnvironmentVariable("DOTNET_MODIFIABLE_ASSEMBLIES") != "debug")
-            {
-                return;
-            }
-
             _hotReloadAgent = new HotReloadAgent(m => Debug.WriteLine(m));
 
-            var jsObjectReference = (IJSUnmarshalledObjectReference)(await DefaultWebAssemblyJSRuntime.Instance.InvokeAsync<IJSObjectReference>("import", "./_framework/blazor-hotreload.js"));
-            await jsObjectReference.InvokeUnmarshalled<Task<int>>("receiveHotReload");
+            try
+            {
+                // Attempt to read previously applied hot reload deltas. dotnet-watch and VS will serve the script that can provide results from local-storage and
+                // the injected middleware if present.
+                var jsObjectReference = (IJSUnmarshalledObjectReference)(await DefaultWebAssemblyJSRuntime.Instance.InvokeAsync<IJSObjectReference>("import", "./_framework/blazor-hotreload.js"));
+                await jsObjectReference.InvokeUnmarshalled<Task<int>>("receiveHotReload");
+            }
+            catch (Exception ex)
+            {
+                // The middleware may be unavailable in some cases - https://github.com/dotnet/aspnetcore/issues/34962. This is not a reason to fail, so swallow the exception and continue.
+                Debug.WriteLine(ex);
+            }
         }
 
         /// <summary>
