@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Components
         [InlineData("scheme://host/?full%20name=Sally%20Smith&age=42&full%20name=Emily", "scheme://host/?full%20name=John%20Doe&age=42&full%20name=John%20Doe")]
         [InlineData("scheme://host/?full%20name=&age=42", "scheme://host/?full%20name=John%20Doe&age=42")]
         [InlineData("scheme://host/?full%20name=", "scheme://host/?full%20name=John%20Doe")]
-        public void UriWithQueryParameter_ReplacesWhenParameterExists(string baseUri, string expectedUri)
+        public void GetUriWithQueryParameter_ReplacesWhenParameterExists(string baseUri, string expectedUri)
         {
             var navigationManager = new TestNavigationManager(baseUri);
             var actualUri = navigationManager.GetUriWithQueryParameter("full name", "John Doe");
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Components
         [InlineData("scheme://host/?age=42", "scheme://host/?age=42&name=John%20Doe")]
         [InlineData("scheme://host/", "scheme://host/?name=John%20Doe")]
         [InlineData("scheme://host/?", "scheme://host/?name=John%20Doe")]
-        public void UriWithQueryParameter_AppendsWhenParameterDoesNotExist(string baseUri, string expectedUri)
+        public void GetUriWithQueryParameter_AppendsWhenParameterDoesNotExist(string baseUri, string expectedUri)
         {
             var navigationManager = new TestNavigationManager(baseUri);
             var actualUri = navigationManager.GetUriWithQueryParameter("name", "John Doe");
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Components
         [InlineData("scheme://host/?full%20name=&age=42", "scheme://host/?age=42")]
         [InlineData("scheme://host/?full%20name=", "scheme://host/")]
         [InlineData("scheme://host/", "scheme://host/")]
-        public void UriWithQueryParameter_RemovesWhenParameterValueIsNull(string baseUri, string expectedUri)
+        public void GetUriWithQueryParameter_RemovesWhenParameterValueIsNull(string baseUri, string expectedUri)
         {
             var navigationManager = new TestNavigationManager(baseUri);
             var actualUri = navigationManager.GetUriWithQueryParameter("full name", (string)null);
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Components
         [Theory]
         [InlineData("")]
         [InlineData((string)null)]
-        public void UriWithQueryParameter_ThrowsWhenNameIsNullOrEmpty(string name)
+        public void GetUriWithQueryParameter_ThrowsWhenNameIsNullOrEmpty(string name)
         {
             var baseUri = "scheme://host/";
             var navigationManager = new TestNavigationManager(baseUri);
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Components
         [InlineData("scheme://host/?age=42&eye%20color=87", "scheme://host/?age=25&eye%20color=green")]
         [InlineData("scheme://host/?", "scheme://host/?age=25&eye%20color=green")]
         [InlineData("scheme://host/", "scheme://host/?age=25&eye%20color=green")]
-        public void UriWithQueryParameters_CanAddUpdateAndRemove(string baseUri, string expectedUri)
+        public void GetUriWithQueryParameters_CanAddUpdateAndRemove(string baseUri, string expectedUri)
         {
             var navigationManager = new TestNavigationManager(baseUri);
             var actualUri = navigationManager.GetUriWithQueryParameters(new Dictionary<string, object>
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Components
         [InlineData("scheme://host/?full%20name=Bob%20Joe&ping=8&ping=300", "scheme://host/?full%20name=John%20Doe&ping=35&ping=16&ping=87&ping=240")]
         [InlineData("scheme://host/?ping=8&full%20name=Bob%20Joe&ping=300", "scheme://host/?ping=35&full%20name=John%20Doe&ping=16&ping=87&ping=240")]
         [InlineData("scheme://host/?ping=8&ping=300&ping=50&ping=68&ping=42", "scheme://host/?ping=35&ping=16&ping=87&ping=240&full%20name=John%20Doe")]
-        public void UriWithQueryParameters_SupportsEnumerableValues(string baseUri, string expectedUri)
+        public void GetUriWithQueryParameters_SupportsEnumerableValues(string baseUri, string expectedUri)
         {
             var navigationManager = new TestNavigationManager(baseUri);
             var actualUri = navigationManager.GetUriWithQueryParameters(new Dictionary<string, object>
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
-        public void UriWithQueryParameters_ThrowsWhenParameterValueTypeIsUnsupported()
+        public void GetUriWithQueryParameters_ThrowsWhenParameterValueTypeIsUnsupported()
         {
             var baseUri = "scheme://host/";
             var navigationManager = new TestNavigationManager(baseUri);
@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Components
         [Theory]
         [InlineData("scheme://host/")]
         [InlineData("scheme://host/?existing-param=test")]
-        public void UriWithQueryParameters_ThrowsWhenAnyParameterNameIsEmpty(string baseUri)
+        public void GetUriWithQueryParameters_ThrowsWhenAnyParameterNameIsEmpty(string baseUri)
         {
             var navigationManager = new TestNavigationManager(baseUri);
             var values = new Dictionary<string, object>
