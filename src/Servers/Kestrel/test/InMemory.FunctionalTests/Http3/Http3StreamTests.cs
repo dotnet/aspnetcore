@@ -20,7 +20,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class Http3StreamTests : Http3TestBase
     {

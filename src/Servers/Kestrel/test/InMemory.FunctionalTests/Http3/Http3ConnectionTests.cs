@@ -17,7 +17,7 @@ using Microsoft.Net.Http.Headers;
 using Xunit;
 using Http3SettingType = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.Http3SettingType;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class Http3ConnectionTests : Http3TestBase
     {

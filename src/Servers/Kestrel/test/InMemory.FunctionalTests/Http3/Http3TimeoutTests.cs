@@ -17,7 +17,7 @@ using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class Http3TimeoutTests : Http3TestBase
     {
