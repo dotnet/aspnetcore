@@ -4710,6 +4710,29 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.True(wasOnSyncContext);
         }
 
+        [Fact]
+        public async Task DisposeAsyncCallsComponentDisposeAsyncOnSyncContext()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var wasOnSyncContext = false;
+            var component = new AsyncDisposableComponent
+            {
+                AsyncDisposeAction = () =>
+                {
+                    wasOnSyncContext = renderer.Dispatcher.CheckAccess();
+                    return ValueTask.CompletedTask;
+                }
+            };
+
+            // Act
+            var componentId = renderer.AssignRootComponentId(component);
+            await renderer.DisposeAsync();
+
+            // Assert
+            Assert.True(wasOnSyncContext);
+        }
+
         private class TestComponentActivator<TResult> : IComponentActivator where TResult : IComponent, new()
         {
             public List<Type> RequestedComponentTypes { get; } = new List<Type>();

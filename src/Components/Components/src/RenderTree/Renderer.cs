@@ -976,13 +976,12 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <param name="disposing"><see langword="true"/> if this method is being invoked by <see cref="IDisposable.Dispose"/>, otherwise <see langword="false"/>.</param>
         protected virtual void Dispose(bool disposing)
         {
-            // We're going to call the Dispose methods on all remaining components. Like any other
-            // lifecycle method, that has to be on the sync context. We don't mind blocking here because
-            // this wouldn't happen on WebAssembly (you're always on the sync context) and even on Server
-            // we'd only be waiting for the call to be dispatched to the sync context, not for any
-            // DisposeAsync tasks to complete.
             if (!Dispatcher.CheckAccess())
             {
+                // It's important that we only call the components' Dispose/DisposeAsync lifecycle methods
+                // on the sync context, like other lifecycle methods. In almost all cases we'd already be
+                // on the sync context here since InvokeAsync dispatches, but just in case someone is using
+                // Dispose directly, we'll dispatch and block.
                 Dispatcher.InvokeAsync(() => Dispose(disposing)).Wait();
                 return;
             }
@@ -1103,7 +1102,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             }
             else
             {
-                Dispose();
+                await Dispatcher.InvokeAsync(Dispose);
+
                 if (_disposeTask != null)
                 {
                     await _disposeTask;
