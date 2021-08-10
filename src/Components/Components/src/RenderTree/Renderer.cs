@@ -980,7 +980,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 // It's important that we only call the components' Dispose/DisposeAsync lifecycle methods
                 // on the sync context, like other lifecycle methods. In almost all cases we'd already be
-                // on the sync context here since InvokeAsync dispatches, but just in case someone is using
+                // on the sync context here since DisposeAsync dispatches, but just in case someone is using
                 // Dispose directly, we'll dispatch and block.
                 Dispatcher.InvokeAsync(() => Dispose(disposing)).Wait();
                 return;

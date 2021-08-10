@@ -3930,7 +3930,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void DisposingRenderer_DiscardsAttemptsToStartMoreRenderBatches()
+        public void DisposingRenderer_DisregardsAttemptsToStartMoreRenderBatches()
         {
             // Arrange
             var renderer = new TestRenderer();
