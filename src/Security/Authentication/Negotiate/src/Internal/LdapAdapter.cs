@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
                     if (!settings.IgnoreNestedGroups)
                     {
-                        GetNestedGroups(settings.LdapConnection, identity, distinguishedName, groupCN, logger, retrievedClaims);
+                        GetNestedGroups(settings.LdapConnection, identity, distinguishedName, groupCN, logger, retrievedClaims, new HashSet<string>());
                     }
                     else
                     {
@@ -96,8 +96,10 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             }
         }
 
-        private static void GetNestedGroups(LdapConnection connection, ClaimsIdentity principal, string distinguishedName, string groupCN, ILogger logger, IList<string> retrievedClaims)
+        private static void GetNestedGroups(LdapConnection connection, ClaimsIdentity principal, string distinguishedName, string groupCN, ILogger logger, IList<string> retrievedClaims, HashSet<string> processedGroups)
         {
+            retrievedClaims.Add(groupCN);
+
             var filter = $"(&(objectClass=group)(sAMAccountName={groupCN}))"; // This is using ldap search query language, it is looking on the server for someUser
             var searchRequest = new SearchRequest(distinguishedName, filter, SearchScope.Subtree, null);
             var searchResponse = (SearchResponse)connection.SendRequest(searchRequest);
@@ -109,8 +111,10 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     logger.LogWarning($"More than one response received for query: {filter} with distinguished name: {distinguishedName}");
                 }
 
-                var group = searchResponse.Entries[0]; //Get the object that was found on ldap
-                retrievedClaims.Add(groupCN);
+                var group = searchResponse.Entries[0]; // Get the object that was found on ldap
+                var groupDN = group.DistinguishedName;
+
+                processedGroups.Add(groupDN);
 
                 var memberof = group.Attributes["memberof"]; // You can access ldap Attributes with Attributes property
                 if (memberof != null)
@@ -119,7 +123,14 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     {
                         var nestedGroupDN = $"{Encoding.UTF8.GetString((byte[])member)}";
                         var nestedGroupCN = nestedGroupDN.Split(',')[0].Substring("CN=".Length);
-                        GetNestedGroups(connection, principal, distinguishedName, nestedGroupCN, logger, retrievedClaims);
+
+                        if (processedGroups.Contains(nestedGroupDN))
+                        {
+                            // We need to keep track of already processed groups because circular references are possible with AD groups
+                            return;
+                        }
+
+                        GetNestedGroups(connection, principal, distinguishedName, nestedGroupCN, logger, retrievedClaims, processedGroups);
                     }
                 }
             }
