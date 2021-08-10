@@ -15,13 +15,22 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
+#if INMEMORY
+namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
+#elif LIBUV
+namespace Microsoft.AspNetCore.Server.Kestrel.Libuv.FunctionalTests
+#elif SOCKETS
+namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests
+#else
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
+#endif
 {
     public class UnixDomainSocketsTest : TestApplicationErrorLoggerLoggedTest
     {

@@ -5,7 +5,7 @@
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <TestGroupName>InMemory.FunctionalTests</TestGroupName>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DefineConstants>$(DefineConstants);IS_FUNCTIONAL_TESTS</DefineConstants>
+    <DefineConstants>$(DefineConstants);IS_FUNCTIONAL_TESTS;INMEMORY</DefineConstants>
    </PropertyGroup>
 
   <ItemGroup>

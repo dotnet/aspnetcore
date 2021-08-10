@@ -35,7 +35,7 @@ using Xunit.Abstractions;
 using static System.IO.Pipelines.DuplexPipe;
 using static Microsoft.AspNetCore.Server.Kestrel.Core.Tests.Http2TestBase;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
+namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
     public abstract class Http3TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable
     {
