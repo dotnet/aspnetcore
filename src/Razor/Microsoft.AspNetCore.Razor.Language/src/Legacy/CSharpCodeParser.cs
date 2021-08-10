@@ -795,7 +795,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             while (!EndOfFile)
             {
                 var bookmark = CurrentStart.AbsoluteIndex;
-                var read = ReadWhile(token =>
+                var read = ReadWhile(static token =>
                     token.Kind != SyntaxKind.Semicolon &&
                     token.Kind != SyntaxKind.RazorCommentTransition &&
                     token.Kind != SyntaxKind.Transition &&
@@ -2448,7 +2448,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 !Context.DesignTimeMode &&
                 !IsNested)
             {
-                var whitespace = ReadWhile(token => token.Kind == SyntaxKind.Whitespace);
+                var whitespace = ReadWhile(static token => token.Kind == SyntaxKind.Whitespace);
                 if (At(SyntaxKind.NewLine))
                 {
                     Accept(whitespace);
