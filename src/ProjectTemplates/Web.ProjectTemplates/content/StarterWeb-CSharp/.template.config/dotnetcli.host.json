@@ -73,7 +73,7 @@
     "NoHttps": {
       "longName": "no-https",
       "shortName": ""
-    },,
+    },
     "CalledApiUrl": {
         "longName": "called-api-url",
         "shortName": ""
