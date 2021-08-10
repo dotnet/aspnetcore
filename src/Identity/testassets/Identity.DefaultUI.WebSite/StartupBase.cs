@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -115,10 +114,8 @@ namespace Identity.DefaultUI.WebSite
                             pendingProviders.Push(childFileProvider);
                         }
                         break;
-                    case NullFileProvider:
-                        break;
                     default:
-                        throw new InvalidOperationException($"Unknown provider '{currentProvider.GetType().Name}'");
+                        throw new InvalidOperationException("Unknown provider");
                 }
             }
         }

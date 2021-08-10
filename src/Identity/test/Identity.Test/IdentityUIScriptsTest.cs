@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         [MemberData(nameof(ScriptWithFallbackSrcData))]
         public async Task IdentityUI_ScriptTags_FallbackSourceContent_Matches_CDNContent(ScriptTag scriptTag)
         {
-            var wwwrootDir = Path.Combine(GetProjectBasePath(), "wwwroot");
+            var wwwrootDir = Path.Combine(GetProjectBasePath(), "wwwroot", scriptTag.Version);
 
             var cdnContent = await _httpClient.GetStringAsync(scriptTag.Src);
             var fallbackSrcContent = File.ReadAllText(
