@@ -102,15 +102,22 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
                     {
                         // If we are assigning to a Func<Task> parameter, we expect a reference to a JS object
                         // wrapping the JS function.
-                        var jsObject = JsonSerializer.Deserialize<IJSObjectReference>(parameterJsonValue, jsonOptions)!;
-                        parameterValue = new Func<Task>(() => jsObject.InvokeVoidAsync(JSFunctionPropertyName).AsTask());
+                        var jsObject = JsonSerializer.Deserialize<IJSObjectReference>(
+                            parameterJsonValue,
+                            jsonOptions)!;
+                        parameterValue = new Func<Task>(
+                            () => jsObject.InvokeVoidAsync(JSFunctionPropertyName).AsTask());
                     }
                     else if (parameterType.IsAssignableFrom(typeof(Func<object, Task>)))
                     {
-                        // The Func<object, Task> scenario is similar to the Func<Task> one, only we pass a parameter to the JS function.
+                        // The Func<object, Task> scenario is similar to the Func<Task> one, only we pass a
+                        // parameter to the JS function.
                         // The main benefit from this is that it enables passing event args from .NET to JS.
-                        var jsObject = JsonSerializer.Deserialize<IJSObjectReference>(parameterJsonValue, jsonOptions)!;
-                        parameterValue = new Func<object, Task>(value => jsObject.InvokeVoidAsync(JSFunctionPropertyName, value).AsTask());
+                        var jsObject = JsonSerializer.Deserialize<IJSObjectReference>(
+                            parameterJsonValue,
+                            jsonOptions)!;
+                        parameterValue = new Func<object, Task>(
+                            value => jsObject.InvokeVoidAsync(JSFunctionPropertyName, value).AsTask());
                     }
                     else
                     {
