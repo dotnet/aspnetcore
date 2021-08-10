@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.IISExpress
 {
     [Collection(PublishedSitesCollection.Name)]
     public class IISExpressShutdownTests : IISFunctionalTestBase

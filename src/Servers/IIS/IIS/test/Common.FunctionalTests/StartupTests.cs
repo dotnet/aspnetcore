@@ -21,7 +21,20 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Win32;
 using Xunit;
 
+#if !IIS_FUNCTIONALS
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
+
+#if IISEXPRESS_FUNCTIONALS
+namespace Microsoft.AspNetCore.Server.FunctionalTests.IISExpress
+#elif NEWHANDLER_FUNCTIONALS
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.NewHandler
+#elif NEWSHIM_FUNCTIONALS
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.NewShim
+#endif
+
+#else
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
+#endif
 {
     // Contains all tests related to Startup, requiring starting ANCM/IIS every time.
     [Collection(PublishedSitesCollection.Name)]
