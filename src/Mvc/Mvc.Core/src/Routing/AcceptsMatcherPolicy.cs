@@ -7,13 +7,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matching;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
-    internal class ConsumesMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, INodeBuilderPolicy, IEndpointSelectorPolicy
+    internal class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, INodeBuilderPolicy, IEndpointSelectorPolicy
     {
         internal const string Http415EndpointDisplayName = "415 HTTP Unsupported Media Type";
         internal const string AnyContentType = "*/*";
@@ -51,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         private bool AppliesToEndpointsCore(IReadOnlyList<Endpoint> endpoints)
         {
-            return endpoints.Any(e => e.Metadata.GetMetadata<IConsumesMetadata>()?.ContentTypes.Count > 0);
+            return endpoints.Any(e => e.Metadata.GetMetadata<IAcceptsMetadata>()?.ContentTypes.Count > 0);
         }
 
         public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
@@ -75,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 // We do this check first for consistency with how 415 is implemented for the graph version
                 // of this code. We still want to know if any endpoints in this set require an a ContentType
                 // even if those endpoints are already invalid - hence the null check.
-                var metadata = candidates[i].Endpoint?.Metadata.GetMetadata<IConsumesMetadata>();
+                var metadata = candidates[i].Endpoint?.Metadata.GetMetadata<IAcceptsMetadata>();
                 if (metadata == null || metadata.ContentTypes.Count == 0)
                 {
                     // Can match any content type.
@@ -107,7 +108,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 }
 
                 var contentType = httpContext.Request.ContentType;
-                var mediaType = string.IsNullOrEmpty(contentType) ? (MediaType?)null : new MediaType(contentType);
+                var mediaType = string.IsNullOrEmpty(contentType) ? null : new MediaType(contentType);
 
                 var matched = false;
                 for (var j = 0; j < metadata.ContentTypes.Count; j++)
@@ -171,7 +172,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             for (var i = 0; i < endpoints.Count; i++)
             {
                 var endpoint = endpoints[i];
-                var contentTypes = endpoint.Metadata.GetMetadata<IConsumesMetadata>()?.ContentTypes;
+                var contentTypes = endpoint.Metadata.GetMetadata<IAcceptsMetadata>()?.ContentTypes;
                 if (contentTypes == null || contentTypes.Count == 0)
                 {
                     contentTypes = new string[] { AnyContentType, };
@@ -193,7 +194,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             for (var i = 0; i < endpoints.Count; i++)
             {
                 var endpoint = endpoints[i];
-                var contentTypes = endpoint.Metadata.GetMetadata<IConsumesMetadata>()?.ContentTypes ?? Array.Empty<string>();
+                var contentTypes = endpoint.Metadata.GetMetadata<IAcceptsMetadata>()?.ContentTypes ?? Array.Empty<string>();
                 if (contentTypes.Count == 0)
                 {
                     // OK this means that this endpoint matches *all* content methods.
@@ -344,9 +345,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
         }
 
-        private class ConsumesMetadataEndpointComparer : EndpointMetadataComparer<IConsumesMetadata>
+        private class ConsumesMetadataEndpointComparer : EndpointMetadataComparer<IAcceptsMetadata>
         {
-            protected override int CompareMetadata(IConsumesMetadata? x, IConsumesMetadata? y)
+            protected override int CompareMetadata(IAcceptsMetadata? x, IAcceptsMetadata? y)
             {
                 // Ignore the metadata if it has an empty list of content types.
                 return base.CompareMetadata(

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -378,9 +379,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                         builder.Metadata.Add(new HttpMethodMetadata(httpMethodActionConstraint.HttpMethods));
                     }
                     else if (actionConstraint is ConsumesAttribute consumesAttribute &&
-                        !builder.Metadata.OfType<ConsumesMetadata>().Any())
+                        !builder.Metadata.OfType<AcceptsMetadata>().Any())
                     {
-                        builder.Metadata.Add(new ConsumesMetadata(consumesAttribute.ContentTypes.ToArray()));
+                        builder.Metadata.Add(new AcceptsMetadata(consumesAttribute.ContentTypes.ToArray()));
                     }
                     else if (!builder.Metadata.Contains(actionConstraint))
                     {
