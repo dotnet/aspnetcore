@@ -26,9 +26,15 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
             for (var i = 0; i < lines.Length; i++)
             {
                 var line = lines[i];
-                var markerStartIndex = line.IndexOf(MarkerStart, StringComparison.Ordinal);
-                if (markerStartIndex != -1)
+
+                while (true)
                 {
+                    var markerStartIndex = line.IndexOf(MarkerStart, StringComparison.Ordinal);
+                    if (markerStartIndex == -1)
+                    {
+                        break;
+                    }
+
                     var markerEndIndex = line.IndexOf(MarkerEnd, markerStartIndex, StringComparison.Ordinal);
                     var markerName = line.Substring(markerStartIndex + 2, markerEndIndex - markerStartIndex - 2);
                     var markerLocation = new DiagnosticLocation(i + 1, markerStartIndex + 1);

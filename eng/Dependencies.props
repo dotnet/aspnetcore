@@ -191,6 +191,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Serilog.Extensions.Logging" />
     <LatestPackageReference Include="Serilog.Sinks.File" />
     <LatestPackageReference Include="StackExchange.Redis" />
+    <LatestPackageReference Include="System.Memory" />
     <LatestPackageReference Include="System.Reactive.Linq" />
     <LatestPackageReference Include="xunit.abstractions" />
     <LatestPackageReference Include="xunit.analyzers" />

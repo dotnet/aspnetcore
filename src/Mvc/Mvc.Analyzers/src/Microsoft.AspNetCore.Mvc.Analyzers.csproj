@@ -20,4 +20,8 @@
     <NuspecProperty Include="OutputSymbol=$(OutputPath)$(AssemblyName).pdb" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)Roslyn\CodeAnalysisExtensions.cs" LinkBase="Shared" />
+  </ItemGroup>
+
 </Project>

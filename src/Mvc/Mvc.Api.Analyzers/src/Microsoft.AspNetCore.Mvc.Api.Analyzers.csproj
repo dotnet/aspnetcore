@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Mvc.Analyzers\src\CodeAnalysisExtensions.cs" />
+    <Compile Include="$(SharedSourceRoot)Roslyn\CodeAnalysisExtensions.cs" LinkBase="Shared" />
     <Compile Include="..\..\Mvc.Analyzers\src\MvcFacts.cs" />
   </ItemGroup>
 
