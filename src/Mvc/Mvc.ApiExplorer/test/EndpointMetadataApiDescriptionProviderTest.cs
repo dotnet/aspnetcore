@@ -76,20 +76,22 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         [Fact]
         public void AddsRequestFormatFromMetadata()
         {
-            static void AssertustomRequestFormat(ApiDescription apiDescription)
+            static void AssertCustomRequestFormat(ApiDescription apiDescription)
             {
                 var requestFormat = Assert.Single(apiDescription.SupportedRequestFormats);
                 Assert.Equal("application/custom", requestFormat.MediaType);
                 Assert.Null(requestFormat.Formatter);
             }
 
-            AssertustomRequestFormat(GetApiDescription(
+            AssertCustomRequestFormat(GetApiDescription(
                 [Consumes("application/custom")]
-                (InferredJsonClass fromBody) => { }));
+            (InferredJsonClass fromBody) =>
+                { }));
 
-            AssertustomRequestFormat(GetApiDescription(
+            AssertCustomRequestFormat(GetApiDescription(
                 [Consumes("application/custom")]
-                ([FromBody] int fromBody) => { }));
+            ([FromBody] int fromBody) =>
+                { }));
         }
 
         [Fact]
@@ -97,7 +99,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         {
             var apiDescription = GetApiDescription(
                 [Consumes("application/custom0", "application/custom1")]
-                (InferredJsonClass fromBody) => { });
+            (InferredJsonClass fromBody) =>
+                { });
 
             Assert.Equal(2, apiDescription.SupportedRequestFormats.Count);
 
@@ -167,8 +170,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         {
             var apiDescription = GetApiDescription(
                 [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created)]
-                [Produces("application/custom")]
-                () => new InferredJsonClass());
+            [Produces("application/custom")]
+            () => new InferredJsonClass());
 
             var responseType = Assert.Single(apiDescription.SupportedResponseTypes);
 
@@ -185,8 +188,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         {
             var apiDescription = GetApiDescription(
                 [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created)]
-                [ProducesResponseType(StatusCodes.Status400BadRequest)]
-                () => new InferredJsonClass());
+            [ProducesResponseType(StatusCodes.Status400BadRequest)]
+            () => new InferredJsonClass());
 
             Assert.Equal(2, apiDescription.SupportedResponseTypes.Count);
 
@@ -214,8 +217,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         {
             var apiDescription = GetApiDescription(
                 [ProducesResponseType(typeof(InferredJsonClass), StatusCodes.Status201Created)]
-                [ProducesResponseType(StatusCodes.Status400BadRequest)]
-                () => Results.Ok(new InferredJsonClass()));
+            [ProducesResponseType(StatusCodes.Status400BadRequest)]
+            () => Results.Ok(new InferredJsonClass()));
 
             Assert.Equal(2, apiDescription.SupportedResponseTypes.Count);
 
@@ -324,17 +327,64 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.Equal(typeof(int), fooParam.Type);
             Assert.Equal(typeof(int), fooParam.ModelMetadata.ModelType);
             Assert.Equal(BindingSource.Path, fooParam.Source);
+            Assert.True(fooParam.IsRequired);
 
             var barParam = apiDescription.ParameterDescriptions[1];
             Assert.Equal(typeof(int), barParam.Type);
             Assert.Equal(typeof(int), barParam.ModelMetadata.ModelType);
             Assert.Equal(BindingSource.Query, barParam.Source);
+            Assert.True(barParam.IsRequired);
 
             var fromBodyParam = apiDescription.ParameterDescriptions[2];
             Assert.Equal(typeof(InferredJsonClass), fromBodyParam.Type);
             Assert.Equal(typeof(InferredJsonClass), fromBodyParam.ModelMetadata.ModelType);
             Assert.Equal(BindingSource.Body, fromBodyParam.Source);
+            Assert.True(fromBodyParam.IsRequired);
         }
+
+        [Fact]
+        public void TestParameterIsRequired()
+        {
+            var apiDescription = GetApiDescription(([FromRoute] int foo, int? bar) => { });
+            Assert.Equal(2, apiDescription.ParameterDescriptions.Count);
+
+            var fooParam = apiDescription.ParameterDescriptions[0];
+            Assert.Equal(typeof(int), fooParam.Type);
+            Assert.Equal(typeof(int), fooParam.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.Path, fooParam.Source);
+            Assert.True(fooParam.IsRequired);
+
+            var barParam = apiDescription.ParameterDescriptions[1];
+            Assert.Equal(typeof(int?), barParam.Type);
+            Assert.Equal(typeof(int?), barParam.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.Query, barParam.Source);
+            Assert.False(barParam.IsRequired);
+        }
+
+#nullable enable
+
+        [Fact]
+        public void TestIsRequiredFromBody()
+        {
+            var apiDescription0 = GetApiDescription(([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] InferredJsonClass fromBody) => { });
+            var apiDescription1 = GetApiDescription((InferredJsonClass? fromBody) => { });
+            Assert.Equal(1, apiDescription0.ParameterDescriptions.Count);
+            Assert.Equal(1, apiDescription1.ParameterDescriptions.Count);
+
+            var fromBodyParam0 = apiDescription0.ParameterDescriptions[0];
+            Assert.Equal(typeof(InferredJsonClass), fromBodyParam0.Type);
+            Assert.Equal(typeof(InferredJsonClass), fromBodyParam0.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.Body, fromBodyParam0.Source);
+            Assert.False(fromBodyParam0.IsRequired);
+
+            var fromBodyParam1 = apiDescription1.ParameterDescriptions[0];
+            Assert.Equal(typeof(InferredJsonClass), fromBodyParam1.Type);
+            Assert.Equal(typeof(InferredJsonClass), fromBodyParam1.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.Body, fromBodyParam1.Source);
+            Assert.False(fromBodyParam1.IsRequired);
+        }
+
+#nullable disable
 
         [Fact]
         public void AddsDisplayNameFromRouteEndpoint()
