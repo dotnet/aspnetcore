@@ -150,9 +150,6 @@ namespace Microsoft.AspNetCore.Testing
 #else
             await _connectionTask;
 #endif
-
-            // Verify server-to-client control stream has completed.
-            await _inboundControlStream.ReceiveEndAsync();
         }
 
         internal async Task WaitForGoAwayAsync(bool ignoreNonGoAwayFrames, long? expectedLastStreamId)

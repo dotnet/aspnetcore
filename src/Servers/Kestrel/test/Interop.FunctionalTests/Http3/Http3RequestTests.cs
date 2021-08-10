@@ -880,8 +880,18 @@ namespace Interop.FunctionalTests.Http3
                 await WaitForLogAsync(logs =>
                 {
                     const int applicationAbortedConnectionId = 6;
-                    return logs.Any(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" &&
-                                         w.EventId == applicationAbortedConnectionId);
+                    var connectionAbortLog = logs.FirstOrDefault(
+                        w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" &&
+                            w.EventId == applicationAbortedConnectionId);
+                    if (connectionAbortLog == null)
+                    {
+                        return false;
+                    }
+
+                    // This message says the client closed the connection because the server
+                    // sends a GOAWAY and the client then closes the connection once all requests are finished.
+                    Assert.Contains("The client closed the connection.", connectionAbortLog.Message);
+                    return true;
                 }, "Wait for connection abort.");
 
                 Logger.LogInformation("Sending request after connection abort.");
