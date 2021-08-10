@@ -42,13 +42,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         /// <summary>
         /// <para>
         /// A callback that will be invoked to dynamically select a server certificate. This is higher priority than ServerCertificate.
-        /// If SNI is not available then the name parameter will be null.
+        /// If SNI is not available then the name parameter will be null. The <see cref="ConnectionContext"/> will be null for HTTP/3 connections.
         /// </para>
         /// <para>
         /// If the server certificate has an Extended Key Usage extension, the usages must include Server Authentication (OID 1.3.6.1.5.5.7.3.1).
         /// </para>
         /// </summary>
-        public Func<ConnectionContext, string?, X509Certificate2?>? ServerCertificateSelector { get; set; }
+        public Func<ConnectionContext?, string?, X509Certificate2?>? ServerCertificateSelector { get; set; }
 
         /// <summary>
         /// Specifies the client certificate requirements for a HTTPS connection. Defaults to <see cref="ClientCertificateMode.NoCertificate"/>.
