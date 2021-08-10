@@ -422,8 +422,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 return abortedException;
             }
 
-            // The client gracefully closes a connection by aborting it with NO_ERROR.
-            if (clientAbort && _errorCodeFeature.Error == (long)Http3ErrorCode.NoError)
+            if (clientAbort)
             {
                 return new ConnectionAbortedException("The client closed the HTTP/3 connection.", error!);
             }
@@ -670,8 +669,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             TryStopAcceptingStreams();
 
-            Debug.Assert(Enum.IsDefined((Http3ErrorCode)_errorCodeFeature.Error), "Known HTTP/3 error code should be set.");
-
+            // Abort the connection using the error code the client used. For a graceful close, this should be H3_NO_ERROR.
             Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient), (Http3ErrorCode)_errorCodeFeature.Error);
         }
 
