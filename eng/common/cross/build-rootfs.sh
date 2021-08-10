@@ -6,10 +6,10 @@ usage()
 {
     echo "Usage: $0 [BuildArch] [CodeName] [lldbx.y] [--skipunmount] --rootfsdir <directory>]"
     echo "BuildArch can be: arm(default), armel, arm64, x86"
-    echo "CodeName - optional, Code name for Linux, can be: trusty, xenial(default), zesty, bionic, alpine, alpine3.9 or alpine3.13. If BuildArch is armel, LinuxCodeName is jessie(default) or tizen."
-    echo "                              for FreeBSD can be: freebsd11 or freebsd12."
+    echo "CodeName - optional, Code name for Linux, can be: xenial(default), zesty, bionic, alpine, alpine3.9 or alpine3.13. If BuildArch is armel, LinuxCodeName is jessie(default) or tizen."
+    echo "                              for FreeBSD can be: freebsd11, freebsd12, freebsd13"
     echo "                              for illumos can be: illumos."
-    echo "lldbx.y - optional, LLDB version, can be: lldb3.9(default), lldb4.0, lldb5.0, lldb6.0 no-lldb. Ignored for alpine and FReeBSD"
+    echo "lldbx.y - optional, LLDB version, can be: lldb3.9(default), lldb4.0, lldb5.0, lldb6.0 no-lldb. Ignored for alpine and FreeBSD"
     echo "--skipunmount - optional, will skip the unmount of rootfs folder."
     echo "--use-mirror - optional, use mirror URL to fetch resources, when available."
     exit 1
@@ -60,13 +60,15 @@ __AlpinePackages+=" krb5-dev"
 __AlpinePackages+=" openssl-dev"
 __AlpinePackages+=" zlib-dev"
 
-__FreeBSDBase="12.1-RELEASE"
+__FreeBSDBase="12.2-RELEASE"
 __FreeBSDPkg="1.12.0"
+__FreeBSDABI="12"
 __FreeBSDPackages="libunwind"
 __FreeBSDPackages+=" icu"
 __FreeBSDPackages+=" libinotify"
 __FreeBSDPackages+=" lttng-ust"
 __FreeBSDPackages+=" krb5"
+__FreeBSDPackages+=" terminfo-db"
 
 __IllumosPackages="icu-64.2nb2"
 __IllumosPackages+=" mit-krb5-1.16.2nb4"
@@ -144,11 +146,6 @@ while :; do
         no-lldb)
             unset __LLDB_Package
             ;;
-        trusty) # Ubuntu 14.04
-            if [ "$__CodeName" != "jessie" ]; then
-                __CodeName=trusty
-            fi
-            ;;
         xenial) # Ubuntu 16.04
             if [ "$__CodeName" != "jessie" ]; then
                 __CodeName=xenial
@@ -208,9 +205,17 @@ while :; do
             ;;
         freebsd11)
             __FreeBSDBase="11.3-RELEASE"
+            __FreeBSDABI="11"
             ;&
         freebsd12)
             __CodeName=freebsd
+            __BuildArch=x64
+            __SkipUnmount=1
+            ;;
+        freebsd13)
+            __CodeName=freebsd
+            __FreeBSDBase="13.0-RELEASE"
+            __FreeBSDABI="13"
             __BuildArch=x64
             __SkipUnmount=1
             ;;
@@ -291,9 +296,9 @@ if [[ "$__CodeName" == "alpine" ]]; then
     rm -r $__ApkToolsDir
 elif [[ "$__CodeName" == "freebsd" ]]; then
     mkdir -p $__RootfsDir/usr/local/etc
+    JOBS="$(getconf _NPROCESSORS_ONLN)"
     wget -O - https://download.freebsd.org/ftp/releases/amd64/${__FreeBSDBase}/base.txz | tar -C $__RootfsDir -Jxf - ./lib ./usr/lib ./usr/libdata ./usr/include ./usr/share/keys ./etc ./bin/freebsd-version
-    # For now, ask for 11 ABI even on 12. This can be revisited later.
-    echo "ABI = \"FreeBSD:11:amd64\"; FINGERPRINTS = \"${__RootfsDir}/usr/share/keys\"; REPOS_DIR = [\"${__RootfsDir}/etc/pkg\"]; REPO_AUTOUPDATE = NO; RUN_SCRIPTS = NO;" > ${__RootfsDir}/usr/local/etc/pkg.conf
+    echo "ABI = \"FreeBSD:${__FreeBSDABI}:amd64\"; FINGERPRINTS = \"${__RootfsDir}/usr/share/keys\"; REPOS_DIR = [\"${__RootfsDir}/etc/pkg\"]; REPO_AUTOUPDATE = NO; RUN_SCRIPTS = NO;" > ${__RootfsDir}/usr/local/etc/pkg.conf
     echo "FreeBSD: { url: "pkg+http://pkg.FreeBSD.org/\${ABI}/quarterly", mirror_type: \"srv\", signature_type: \"fingerprints\", fingerprints: \"${__RootfsDir}/usr/share/keys/pkg\", enabled: yes }" > ${__RootfsDir}/etc/pkg/FreeBSD.conf
     mkdir -p $__RootfsDir/tmp
     # get and build package manager
@@ -301,7 +306,7 @@ elif [[ "$__CodeName" == "freebsd" ]]; then
     cd $__RootfsDir/tmp/pkg-${__FreeBSDPkg}
     # needed for install to succeed
     mkdir -p $__RootfsDir/host/etc
-    ./autogen.sh && ./configure --prefix=$__RootfsDir/host && make && make install
+    ./autogen.sh && ./configure --prefix=$__RootfsDir/host && make -j "$JOBS" && make install
     rm -rf $__RootfsDir/tmp/pkg-${__FreeBSDPkg}
     # install packages we need.
     INSTALL_AS_USER=$(whoami) $__RootfsDir/host/sbin/pkg -r $__RootfsDir -C $__RootfsDir/usr/local/etc/pkg.conf update
@@ -362,13 +367,6 @@ elif [[ -n $__CodeName ]]; then
 
     if [ $__SkipUnmount == 0 ]; then
         umount $__RootfsDir/* || true
-    fi
-
-    if [[ "$__BuildArch" == "arm" && "$__CodeName" == "trusty" ]]; then
-        pushd $__RootfsDir
-        patch -p1 < $__CrossDir/$__BuildArch/trusty.patch
-        patch -p1 < $__CrossDir/$__BuildArch/trusty-lttng-2.4.patch
-        popd
     fi
 
     if [[ "$__BuildArch" == "armel" && "$__CodeName" == "jessie" ]]; then
