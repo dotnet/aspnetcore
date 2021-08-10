@@ -3930,15 +3930,24 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void DisposingRenderer_RejectsAttemptsToStartMoreRenderBatches()
+        public void DisposingRenderer_DiscardsAttemptsToStartMoreRenderBatches()
         {
             // Arrange
             var renderer = new TestRenderer();
-            renderer.Dispose();
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenElement(0, "my element");
+                builder.AddContent(1, "some text");
+                builder.CloseElement();
+            });
 
-            // Act/Assert
-            var ex = Assert.Throws<ObjectDisposedException>(() => renderer.ProcessPendingRender());
-            Assert.Contains("Cannot process pending renders after the renderer has been disposed.", ex.Message);
+            // Act
+            renderer.AssignRootComponentId(component);
+            renderer.Dispose();
+            component.TriggerRender();
+
+            // Assert
+            Assert.Empty(renderer.Batches);
         }
 
         [Fact]
@@ -4677,6 +4686,28 @@ namespace Microsoft.AspNetCore.Components.Test
             autoResetEvent.WaitOne();
             Assert.Equal(2, renderer.HandledExceptions.Count);
             Assert.Same(exception2, renderer.HandledExceptions[1]);
+        }
+
+        [Fact]
+        public void DisposeCallsComponentDisposeOnSyncContext()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var wasOnSyncContext = false;
+            var component = new DisposableComponent
+            {
+                DisposeAction = () =>
+                {
+                    wasOnSyncContext = renderer.Dispatcher.CheckAccess();
+                }
+            };
+
+            // Act
+            var componentId = renderer.AssignRootComponentId(component);
+            renderer.Dispose();
+
+            // Assert
+            Assert.True(wasOnSyncContext);
         }
 
         private class TestComponentActivator<TResult> : IComponentActivator where TResult : IComponent, new()

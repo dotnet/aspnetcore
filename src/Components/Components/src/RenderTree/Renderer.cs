@@ -43,6 +43,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         private ulong _lastEventHandlerId;
         private List<Task>? _pendingTasks;
         private Task? _disposeTask;
+        private bool _rendererIsDisposed;
 
         /// <summary>
         /// Allows the caller to handle exceptions from the SynchronizationContext when one is available.
@@ -128,7 +129,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <summary>
         /// Gets whether the renderer has been disposed.
         /// </summary>
-        internal bool Disposed { get; private set; }
+        internal bool Disposed => _rendererIsDisposed;
 
         private async void RenderRootComponentsOnHotReload()
         {
@@ -582,9 +583,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// </summary>
         protected virtual void ProcessPendingRender()
         {
-            if (Disposed)
+            if (_rendererIsDisposed)
             {
-                throw new ObjectDisposedException(nameof(Renderer), "Cannot process pending renders after the renderer has been disposed.");
+                // Once we're disposed, we'll disregard further attempts to render anything
+                return;
             }
 
             ProcessRenderQueue();
@@ -974,7 +976,18 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <param name="disposing"><see langword="true"/> if this method is being invoked by <see cref="IDisposable.Dispose"/>, otherwise <see langword="false"/>.</param>
         protected virtual void Dispose(bool disposing)
         {
-            Disposed = true;
+            // We're going to call the Dispose methods on all remaining components. Like any other
+            // lifecycle method, that has to be on the sync context. We don't mind blocking here because
+            // this wouldn't happen on WebAssembly (you're always on the sync context) and even on Server
+            // we'd only be waiting for the call to be dispatched to the sync context, not for any
+            // DisposeAsync tasks to complete.
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.InvokeAsync(() => Dispose(disposing)).Wait();
+                return;
+            }
+
+            _rendererIsDisposed = true;
 
             if (TestableMetadataUpdate.IsSupported)
             {
@@ -1079,7 +1092,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <inheritdoc />
         public async ValueTask DisposeAsync()
         {
-            if (Disposed)
+            if (_rendererIsDisposed)
             {
                 return;
             }
