@@ -263,7 +263,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.True(badRequestEventListener.EventFired);
             Assert.Equal("Microsoft.AspNetCore.Server.Kestrel.BadRequest", eventProviderName);
             Assert.Contains(expectedExceptionMessage, exceptionString);
-
         }
 
         private async Task ReceiveBadRequestResponse(InMemoryConnection connection, string expectedResponseStatusCode, string expectedDateHeaderValue, string expectedAllowHeader = null)
