@@ -1,5 +1,3 @@
-import { BootConfigResult, BootJsonData } from "./BootConfig";
-
 export interface WebAssemblyStartOptions {
   /**
    * Overrides the built-in boot resource loading mechanism so that boot resources can be fetched

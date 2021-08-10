@@ -4,7 +4,7 @@ import { shouldAutoStart } from './BootCommon';
 import { internalFunctions as navigationManagerFunctions } from './Services/NavigationManager';
 import { startIpcReceiver } from './Platform/WebView/WebViewIpcReceiver';
 import { sendAttachPage, sendBeginInvokeDotNetFromJS, sendEndInvokeJSFromDotNet, sendByteArray, sendLocationChanged } from './Platform/WebView/WebViewIpcSender';
-import { JSInitializer as JSInitializer } from './JSInitializers';
+import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.WebView';
 
 let started = false;
 
@@ -14,15 +14,7 @@ async function boot(): Promise<void> {
   }
   started = true;
 
-  const jsInitializersResponse = await fetch('_framework/blazor.modules.json', {
-    method: 'GET',
-    credentials: 'include',
-    cache: 'no-cache'
-  });
-
-  const initializers: string[] = await jsInitializersResponse.json();
-  const jsInitializer = new JSInitializer();
-  await jsInitializer.importInitializersAsync(initializers, []);
+  const jsInitializer = await fetchAndInvokeInitializers();
 
   startIpcReceiver();
 

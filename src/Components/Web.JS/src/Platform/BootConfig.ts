@@ -1,11 +1,14 @@
-import { WebAssemblyBootResourceType } from "./WebAssemblyStartOptions";
+import { WebAssemblyBootResourceType } from './WebAssemblyStartOptions';
+
+type LoadBootResourceCallback = (type: WebAssemblyBootResourceType, name: string, defaultUri: string, integrity: string) =>
+  string | Promise<Response> | null | undefined;
 
 export class BootConfigResult {
   private constructor(public bootConfig: BootJsonData, public applicationEnvironment: string) {
   }
 
-  static async initAsync(loadBootResource?: (type: WebAssemblyBootResourceType, name: string, defaultUri: string, integrity: string) => string | Promise<Response> | null | undefined, environment?: string): Promise<BootConfigResult> {
-    let loaderResponse = loadBootResource !== undefined ?
+  static async initAsync(loadBootResource?: LoadBootResourceCallback, environment?: string): Promise<BootConfigResult> {
+    const loaderResponse = loadBootResource !== undefined ?
       loadBootResource('manifest', 'blazor.boot.json', '_framework/blazor.boot.json', '') :
       this.defaultLoadBlazorBootJson('_framework/blazor.boot.json');
 

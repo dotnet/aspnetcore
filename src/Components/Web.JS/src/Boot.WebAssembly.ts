@@ -14,7 +14,8 @@ import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 import { discoverComponents, discoverPersistedState, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { setDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
-import { AfterBlazorStartedCallback, JSInitializer } from './JSInitializers';
+import { AfterBlazorStartedCallback, JSInitializer } from './JSInitializers/JSInitializers';
+import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.WebAssembly';
 
 declare var Module: EmscriptenModule;
 let started = false;
@@ -114,13 +115,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   };
 
   const bootConfigResult: BootConfigResult = await bootConfigPromise;
-  const initializers = bootConfigResult.bootConfig.resources.libraryInitializers;
-  const jsInitializer = new JSInitializer();
-  if (initializers) {
-    await jsInitializer.importInitializersAsync(
-      Object.keys(initializers),
-      [candidateOptions, bootConfigResult.bootConfig.resources.extensions]);
-  }
+  const jsInitializer = await fetchAndInvokeInitializers(bootConfigResult.bootConfig, candidateOptions);
 
   const [resourceLoader] = await Promise.all([
     WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig, candidateOptions || {}),

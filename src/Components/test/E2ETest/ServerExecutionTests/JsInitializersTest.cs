@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using BasicTestApp;
-using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.Components.E2ETest.Tests;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using Xunit;
@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
-    public class ServerJsInitializersTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
+    public class ServerJsInitializersTest : JsInitializersTest
     {
         public ServerJsInitializersTest(
             BrowserFixture browserFixture,

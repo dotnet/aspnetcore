@@ -13,7 +13,7 @@ import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnect
 import { attachRootComponentToLogicalElement } from './Rendering/Renderer';
 import { discoverComponents, discoverPersistedState, ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { sendJSDataStream } from './Platform/Circuits/CircuitStreamingInterop';
-import { JSInitializer } from './JSInitializers';
+import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Server';
 
 let renderingFailed = false;
 let started = false;
@@ -26,15 +26,7 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
 
   // Establish options to be used
   const options = resolveOptions(userOptions);
-  const jsInitializersResponse = await fetch('_blazor/initializers', {
-    method: 'GET',
-    credentials: 'include',
-    cache: 'no-cache'
-  });
-
-  const initializers: string[] = await jsInitializersResponse.json();
-  const jsInitializer = new JSInitializer();
-  await jsInitializer.importInitializersAsync(initializers, [options]);
+  const jsInitializer = await fetchAndInvokeInitializers(options);
 
   const logger = new ConsoleLogger(options.logLevel);
   Blazor.defaultReconnectionHandler = new DefaultReconnectionHandler(logger);
