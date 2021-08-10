@@ -6,7 +6,6 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Quic;
 using System.Text;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
@@ -91,7 +90,7 @@ namespace Interop.FunctionalTests.Http3
             }, protocol: protocol);
 
             using (var host = builder.Build())
-            using (var client = CreateClient())
+            using (var client = Http3Helpers.CreateClient())
             {
                 await host.StartAsync().DefaultTimeout();
 
@@ -193,7 +192,7 @@ namespace Interop.FunctionalTests.Http3
             }, protocol: protocol);
 
             using (var host = builder.Build())
-            using (var client = CreateClient())
+            using (var client = Http3Helpers.CreateClient())
             {
                 await host.StartAsync();
 
@@ -232,7 +231,7 @@ namespace Interop.FunctionalTests.Http3
             }, protocol: protocol);
 
             using (var host = builder.Build())
-            using (var client = CreateClient())
+            using (var client = Http3Helpers.CreateClient())
             {
                 await host.StartAsync();
 
@@ -276,7 +275,7 @@ namespace Interop.FunctionalTests.Http3
             });
 
             using (var host = builder.Build())
-            using (var client = CreateClient())
+            using (var client = Http3Helpers.CreateClient())
             {
                 await host.StartAsync();
 
@@ -344,7 +343,7 @@ namespace Interop.FunctionalTests.Http3
             }, protocol: protocol);
 
             using (var host = builder.Build())
-            using (var client = CreateClient())
+            using (var client = Http3Helpers.CreateClient())
             {
                 await host.StartAsync().DefaultTimeout();
 
@@ -415,7 +414,7 @@ namespace Interop.FunctionalTests.Http3
             }, protocol: protocol);
 
             using (var host = builder.Build())
-            using (var client = CreateClient())
+            using (var client = Http3Helpers.CreateClient())
             {
                 await host.StartAsync().DefaultTimeout();
 
@@ -481,7 +480,7 @@ namespace Interop.FunctionalTests.Http3
             });
 
             using (var host = builder.Build())
-            using (var client = CreateClient())
+            using (var client = Http3Helpers.CreateClient())
             {
                 await host.StartAsync();
 
@@ -533,7 +532,7 @@ namespace Interop.FunctionalTests.Http3
             });
 
             using (var host = builder.Build())
-            using (var client = CreateClient())
+            using (var client = Http3Helpers.CreateClient())
             {
                 await host.StartAsync();
 
@@ -599,7 +598,7 @@ namespace Interop.FunctionalTests.Http3
             });
 
             using (var host = builder.Build())
-            using (var client = CreateClient())
+            using (var client = Http3Helpers.CreateClient())
             {
                 await host.StartAsync();
 
@@ -652,7 +651,7 @@ namespace Interop.FunctionalTests.Http3
             });
 
             using (var host = builder.Build())
-            using (var client = CreateClient())
+            using (var client = Http3Helpers.CreateClient())
             {
                 await host.StartAsync();
 
@@ -713,7 +712,7 @@ namespace Interop.FunctionalTests.Http3
                 });
 
             using (var host = builder.Build())
-            using (var client = CreateClient())
+            using (var client = Http3Helpers.CreateClient())
             {
                 await host.StartAsync();
 
@@ -778,7 +777,7 @@ namespace Interop.FunctionalTests.Http3
             {
                 await host.StartAsync();
 
-                var client = CreateClient();
+                var client = Http3Helpers.CreateClient();
                 try
                 {
                     var port = host.GetPort();
@@ -838,7 +837,7 @@ namespace Interop.FunctionalTests.Http3
                 });
 
             using (var host = builder.Build())
-            using (var client = CreateClient())
+            using (var client = Http3Helpers.CreateClient())
             {
                 await host.StartAsync();
 
@@ -933,7 +932,7 @@ namespace Interop.FunctionalTests.Http3
                 });
 
             using (var host = builder.Build())
-            using (var client = CreateClient())
+            using (var client = Http3Helpers.CreateClient())
             {
                 await host.StartAsync();
 
@@ -1010,7 +1009,7 @@ namespace Interop.FunctionalTests.Http3
             });
 
             using (var host = builder.Build())
-            using (var client = CreateClient())
+            using (var client = Http3Helpers.CreateClient())
             {
                 await host.StartAsync();
 
@@ -1067,7 +1066,7 @@ namespace Interop.FunctionalTests.Http3
             }, protocol: protocol);
 
             using (var host = builder.Build())
-            using (var client = CreateClient())
+            using (var client = Http3Helpers.CreateClient())
             {
                 await host.StartAsync().DefaultTimeout();
 
@@ -1162,7 +1161,7 @@ namespace Interop.FunctionalTests.Http3
             }, protocol: protocol);
 
             using (var host = builder.Build())
-            using (var client = CreateClient())
+            using (var client = Http3Helpers.CreateClient())
             {
                 await host.StartAsync().DefaultTimeout();
 
@@ -1205,60 +1204,9 @@ namespace Interop.FunctionalTests.Http3
             }
         }
 
-        private static HttpMessageInvoker CreateClient(TimeSpan? idleTimeout = null)
-        {
-            var handler = new SocketsHttpHandler();
-            handler.SslOptions = new System.Net.Security.SslClientAuthenticationOptions
-            {
-                RemoteCertificateValidationCallback = (_, __, ___, ____) => true
-            };
-            if (idleTimeout != null)
-            {
-                handler.PooledConnectionIdleTimeout = idleTimeout.Value;
-            }
-
-            return new HttpMessageInvoker(handler);
-        }
-
         private IHostBuilder CreateHostBuilder(RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null)
         {
-            return new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
-                {
-                    webHostBuilder
-                        .UseKestrel(o =>
-                        {
-                            if (configureKestrel == null)
-                            {
-                                o.Listen(IPAddress.Parse("127.0.0.1"), 0, listenOptions =>
-                                {
-                                    listenOptions.Protocols = protocol ?? HttpProtocols.Http3;
-                                    listenOptions.UseHttps();
-                                });
-                            }
-                            else
-                            {
-                                configureKestrel(o);
-                            }
-                        })
-                        .Configure(app =>
-                        {
-                            app.Run(requestDelegate);
-                        });
-                })
-                .ConfigureServices(AddTestLogging)
-                .ConfigureHostOptions(o =>
-                {
-                    if (Debugger.IsAttached)
-                    {
-                        // Avoid timeout while debugging.
-                        o.ShutdownTimeout = TimeSpan.FromHours(1);
-                    }
-                    else
-                    {
-                        o.ShutdownTimeout = TimeSpan.FromSeconds(1);
-                    }
-                });
+            return Http3Helpers.CreateHostBuilder(AddTestLogging, requestDelegate, protocol, configureKestrel);
         }
     }
 }

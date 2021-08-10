@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
@@ -72,8 +73,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     sslServerAuthenticationOptions.ServerCertificate = null;
                     sslServerAuthenticationOptions.ServerCertificateSelectionCallback = (sender, host) =>
                     {
-                        // There is no ConnectionContext available durring the handshake.
-                        return listenOptions.HttpsOptions.ServerCertificateSelector(null!, host)!;
+                        // There is no ConnectionContext available durring the QUIC handshake.
+                        var cert = listenOptions.HttpsOptions.ServerCertificateSelector(null, host);
+                        if (cert != null)
+                        {
+                            HttpsConnectionMiddleware.EnsureCertificateIsAllowedForServerAuth(cert);
+                        }
+                        return cert!;
                     };
                 }
 

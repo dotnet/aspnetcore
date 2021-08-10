@@ -1,19 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Interop.FunctionalTests.Http3
@@ -46,7 +41,7 @@ namespace Interop.FunctionalTests.Http3
             });
 
             using var host = builder.Build();
-            using var client = CreateClient();
+            using var client = Http3Helpers.CreateClient();
 
             await host.StartAsync().DefaultTimeout();
 
@@ -66,61 +61,9 @@ namespace Interop.FunctionalTests.Http3
             await host.StopAsync().DefaultTimeout();
         }
 
-        private static HttpMessageInvoker CreateClient(TimeSpan? idleTimeout = null)
-        {
-            var handler = new SocketsHttpHandler();
-            handler.SslOptions = new System.Net.Security.SslClientAuthenticationOptions
-            {
-                RemoteCertificateValidationCallback = (_, __, ___, ____) => true,
-                TargetHost = "targethost"
-            };
-            if (idleTimeout != null)
-            {
-                handler.PooledConnectionIdleTimeout = idleTimeout.Value;
-            }
-
-            return new HttpMessageInvoker(handler);
-        }
-
         private IHostBuilder CreateHostBuilder(RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null)
         {
-            return new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
-                {
-                    webHostBuilder
-                        .UseKestrel(o =>
-                        {
-                            if (configureKestrel == null)
-                            {
-                                o.Listen(IPAddress.Parse("127.0.0.1"), 0, listenOptions =>
-                                {
-                                    listenOptions.Protocols = protocol ?? HttpProtocols.Http3;
-                                    listenOptions.UseHttps();
-                                });
-                            }
-                            else
-                            {
-                                configureKestrel(o);
-                            }
-                        })
-                        .Configure(app =>
-                        {
-                            app.Run(requestDelegate);
-                        });
-                })
-                .ConfigureServices(AddTestLogging)
-                .ConfigureHostOptions(o =>
-                {
-                    if (Debugger.IsAttached)
-                    {
-                        // Avoid timeout while debugging.
-                        o.ShutdownTimeout = TimeSpan.FromHours(1);
-                    }
-                    else
-                    {
-                        o.ShutdownTimeout = TimeSpan.FromSeconds(1);
-                    }
-                });
+            return Http3Helpers.CreateHostBuilder(AddTestLogging, requestDelegate, protocol, configureKestrel);
         }
     }
 }
