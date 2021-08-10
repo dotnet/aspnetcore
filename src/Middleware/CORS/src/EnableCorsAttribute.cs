@@ -30,5 +30,11 @@ namespace Microsoft.AspNetCore.Cors
 
         /// <inheritdoc />
         public string? PolicyName { get; set; }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return $"Policy: {PolicyName ?? "null"}";
+        }
     }
 }

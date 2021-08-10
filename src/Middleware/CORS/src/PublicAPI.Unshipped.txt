@@ -41,6 +41,8 @@ Microsoft.AspNetCore.Cors.Infrastructure.CorsResult.AllowedHeaders.get -> System
 Microsoft.AspNetCore.Cors.Infrastructure.CorsResult.AllowedMethods.get -> System.Collections.Generic.IList<string!>!
 Microsoft.AspNetCore.Cors.Infrastructure.CorsResult.AllowedOrigin.get -> string?
 Microsoft.AspNetCore.Cors.Infrastructure.CorsResult.AllowedOrigin.set -> void
+override Microsoft.AspNetCore.Cors.CorsPolicyMetadata.ToString() -> string!
+override Microsoft.AspNetCore.Cors.EnableCorsAttribute.ToString() -> string!
 ~Microsoft.AspNetCore.Cors.Infrastructure.CorsService.CorsService(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.Cors.Infrastructure.CorsService.EvaluatePolicy(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicy! policy) -> Microsoft.AspNetCore.Cors.Infrastructure.CorsResult!
 Microsoft.AspNetCore.Cors.Infrastructure.CorsService.EvaluatePolicy(Microsoft.AspNetCore.Http.HttpContext! context, string! policyName) -> Microsoft.AspNetCore.Cors.Infrastructure.CorsResult!

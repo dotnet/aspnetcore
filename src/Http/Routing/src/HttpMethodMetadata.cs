@@ -61,5 +61,11 @@ namespace Microsoft.AspNetCore.Routing
         {
             return $"HttpMethods: {string.Join(",", HttpMethods)} - Cors: {AcceptCorsPreflight}";
         }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return $"HttpMethods: {string.Join(",", HttpMethods)} - Cors: {AcceptCorsPreflight}";
+        }
     }
 }

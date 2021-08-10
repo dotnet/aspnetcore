@@ -30,5 +30,11 @@ namespace Microsoft.AspNetCore.Routing
         {
             return $"Name: {RouteName}";
         }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return $"Name: {RouteName}";
+        }
     }
 }

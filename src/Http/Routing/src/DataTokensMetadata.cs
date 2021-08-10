@@ -29,5 +29,11 @@ namespace Microsoft.AspNetCore.Routing
         /// Get the data tokens.
         /// </summary>
         public IReadOnlyDictionary<string, object?> DataTokens { get; }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return $"Data: {string.Join(",", DataTokens.Select(token => $"{token.Key}={token.Value}"))}";
+        }
     }
 }

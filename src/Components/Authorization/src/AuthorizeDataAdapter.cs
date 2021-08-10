@@ -35,5 +35,11 @@ namespace Microsoft.AspNetCore.Components.Authorization
             get => null;
             set => throw new NotSupportedException();
         }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return $"Policy: {Policy ?? "null"}, Roles: {Roles ?? "null"}, AuthenticationSchemes: null";
+        }
     }
 }

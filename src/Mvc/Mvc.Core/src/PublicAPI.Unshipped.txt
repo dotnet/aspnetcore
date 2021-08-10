@@ -544,6 +544,7 @@ Microsoft.AspNetCore.Mvc.Infrastructure.ActionDescriptorCollection.Items.get -> 
 Microsoft.AspNetCore.Mvc.Infrastructure.AmbiguousActionException.AmbiguousActionException(System.Runtime.Serialization.SerializationInfo! info, System.Runtime.Serialization.StreamingContext context) -> void
 Microsoft.AspNetCore.Mvc.Infrastructure.AmbiguousActionException.AmbiguousActionException(string? message) -> void
 Microsoft.AspNetCore.Mvc.Infrastructure.ContentResultExecutor.ContentResultExecutor(Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Mvc.Infrastructure.ContentResultExecutor!>! logger, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory! httpResponseStreamWriterFactory) -> void
+override Microsoft.AspNetCore.Mvc.ProducesErrorResponseTypeAttribute.ToString() -> string!
 ~Microsoft.AspNetCore.Mvc.Infrastructure.DefaultOutputFormatterSelector.DefaultOutputFormatterSelector(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.Mvc.Infrastructure.FileContentResultExecutor.FileContentResultExecutor(Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.Mvc.Infrastructure.FileResultExecutorBase.FileResultExecutorBase(Microsoft.Extensions.Logging.ILogger! logger) -> void
@@ -3219,4 +3220,3 @@ virtual Microsoft.AspNetCore.Mvc.ProducesAttribute.OnResultExecuted(Microsoft.As
 virtual Microsoft.AspNetCore.Mvc.ProducesAttribute.OnResultExecuting(Microsoft.AspNetCore.Mvc.Filters.ResultExecutingContext! context) -> void
 virtual Microsoft.AspNetCore.Mvc.RequireHttpsAttribute.HandleNonHttpsRequest(Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext! filterContext) -> void
 virtual Microsoft.AspNetCore.Mvc.RequireHttpsAttribute.OnAuthorization(Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext! filterContext) -> void
-

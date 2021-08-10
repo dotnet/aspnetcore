@@ -20,5 +20,12 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         public IReadOnlyList<string> ContentTypes { get; }
+
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return $"ContentTypes: {string.Join(",", ContentTypes)}";
+        }
     }
 }

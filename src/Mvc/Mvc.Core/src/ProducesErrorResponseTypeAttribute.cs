@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -34,5 +34,11 @@ namespace Microsoft.AspNetCore.Mvc
         /// Gets the default error type.
         /// </summary>
         public Type Type { get; }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return $"Type: {Type}";
+        }
     }
 }

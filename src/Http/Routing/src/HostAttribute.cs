@@ -63,5 +63,15 @@ namespace Microsoft.AspNetCore.Routing
 
             return $"Hosts: {hostsDisplay}";
         }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            var hostsDisplay = (Hosts.Count == 0)
+            ? "*:*"
+            : string.Join(",", Hosts.Select(h => h.Contains(':') ? h : h + ":*"));
+
+            return $"Hosts: {hostsDisplay}";
+        }
     }
 }

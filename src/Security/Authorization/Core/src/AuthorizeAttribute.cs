@@ -39,5 +39,11 @@ namespace Microsoft.AspNetCore.Authorization
         /// Gets or sets a comma delimited list of schemes from which user information is constructed.
         /// </summary>
         public string? AuthenticationSchemes { get; set; }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return $"Policy: {Policy ?? "null"}, Roles: {Roles ?? "null"}, AuthenticationSchemes: {AuthenticationSchemes ?? "null"}";
+        }
     }
 }

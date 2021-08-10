@@ -23,5 +23,11 @@ namespace Microsoft.AspNetCore.Cors
         /// The policy which needs to be applied.
         /// </summary>
         public CorsPolicy Policy { get; }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return $"Policy: {Policy}";
+        }
     }
 }

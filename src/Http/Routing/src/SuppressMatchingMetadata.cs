@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.AspNetCore.Routing
@@ -13,5 +13,11 @@ namespace Microsoft.AspNetCore.Routing
         /// Gets a value indicating whether the associated endpoint should be used for URL matching.
         /// </summary>
         public bool SuppressMatching => true;
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return "SuppressMatching: true";
+        }
     }
 }
