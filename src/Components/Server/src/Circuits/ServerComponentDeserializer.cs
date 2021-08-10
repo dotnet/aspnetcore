@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 LoggerMessage.Define<string>(
                     LogLevel.Debug,
                     new EventId(4, "InvalidMarkerType"),
-                    "Invalid component marker type '{}'.");
+                    "Invalid component marker type '{MarkerType}'.");
 
             private static readonly Action<ILogger, Exception> _missingMarkerDescriptor =
                 LoggerMessage.Define(

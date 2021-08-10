@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.QPack;
 using System.Text;

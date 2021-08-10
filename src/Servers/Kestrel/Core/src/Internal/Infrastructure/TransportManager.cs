@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.Linq;
 using System.Net;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;

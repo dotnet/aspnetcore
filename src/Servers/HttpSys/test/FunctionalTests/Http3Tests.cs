@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+using System.Net.Http;
 using System.Net.Quic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
