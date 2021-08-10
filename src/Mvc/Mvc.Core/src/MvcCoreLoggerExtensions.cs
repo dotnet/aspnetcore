@@ -1740,7 +1740,7 @@ namespace Microsoft.AspNetCore.Mvc
             return filterList.ToArray();
         }
 
-        private class ActionLogScope : IReadOnlyList<KeyValuePair<string, object>>
+        private readonly struct ActionLogScope : IReadOnlyList<KeyValuePair<string, object>>
         {
             private readonly ActionDescriptor _action;
 
