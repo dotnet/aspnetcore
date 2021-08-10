@@ -2,13 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.IISExpress
+namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests
 {
     [Collection(PublishedSitesCollection.Name)]
     public class AppOfflineIISExpressTests : IISFunctionalTestBase

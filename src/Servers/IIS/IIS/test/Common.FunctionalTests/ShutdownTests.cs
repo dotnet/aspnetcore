@@ -20,11 +20,11 @@ using Xunit;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 #if IISEXPRESS_FUNCTIONALS
-namespace Microsoft.AspNetCore.Server.FunctionalTests.IISExpress
+namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests
 #elif NEWHANDLER_FUNCTIONALS
-namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.NewHandler
+namespace Microsoft.AspNetCore.Server.IIS.NewHandler.FunctionalTests
 #elif NEWSHIM_FUNCTIONALS
-namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.NewShim
+namespace Microsoft.AspNetCore.Server.IIS.NewShim.FunctionalTests
 #endif
 
 #else

@@ -4,13 +4,14 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.IISExpress
+namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests
 {
     [Collection(PublishedSitesCollection.Name)]
     public class UpgradeFeatureDetectionTests : IISFunctionalTestBase
