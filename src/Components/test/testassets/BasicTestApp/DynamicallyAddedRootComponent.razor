@@ -59,8 +59,8 @@
     [Parameter] public IJSObjectReference SomeJSObject { get; set; }
     [Parameter] public DotNetObjectReference<JavaScriptRootComponents.DotNetType> SomeDotNetObject { get; set; }
     [Parameter] public byte[] ByteArray { get; set; }
-    [Parameter] public Func<Task> OnJSCallbackButtonClick { get; set; }
-    [Parameter] public Func<MouseEventArgs, Task> OnJSCallbackWithParamsButtonClick { get; set; }
+    [Parameter] public EventCallback OnJSCallbackButtonClick { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnJSCallbackWithParamsButtonClick { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> UnmatchedValues { get; set; }
 

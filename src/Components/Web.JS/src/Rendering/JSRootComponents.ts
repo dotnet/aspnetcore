@@ -79,7 +79,7 @@ class DynamicRootComponent {
       this._componentId = null; // Ensure it can't be used again
 
       for (const jsObjectReference of this._jsFunctionObjectReferences.values()) {
-        jsObjectReference.dispose();
+        DotNet.disposeJSObjectReference(jsObjectReference);
       }
     }
   }
