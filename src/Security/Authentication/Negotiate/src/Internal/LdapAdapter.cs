@@ -7,6 +7,7 @@ using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -100,7 +101,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         {
             retrievedClaims.Add(groupCN);
 
-            var filter = $"(&(objectClass=group)(sAMAccountName={groupCN}))"; // This is using ldap search query language, it is looking on the server for someUser
+            var filter = $"(&(objectClass=group)(sAMAccountName={EscapeLdapFilterArgument(groupCN)}))"; // This is using ldap search query language, it is looking on the server for someUser
             var searchRequest = new SearchRequest(distinguishedName, filter, SearchScope.Subtree, null);
             var searchResponse = (SearchResponse)connection.SendRequest(searchRequest);
 
@@ -127,13 +128,38 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                         if (processedGroups.Contains(nestedGroupDN))
                         {
                             // We need to keep track of already processed groups because circular references are possible with AD groups
-                            return;
+                            continue;
                         }
 
                         GetNestedGroups(connection, principal, distinguishedName, nestedGroupCN, logger, retrievedClaims, processedGroups);
                     }
                 }
             }
+        }
+
+        private static string EscapeLdapFilterArgument(string filterArgument)
+        {
+            // LDAP filter arguments must be escaped according to RFC 4515:
+            // https://tools.ietf.org/search/rfc4515#section-3
+            // This is important because AD groups can have characters like '(' or ')' in their names,
+            // and openldap will fail to parse the filter expression if they are not escaped.
+            var charactersToEscape = new Dictionary<string, string>
+            {
+                {@"\", @"\5c" },
+                {"*", @"\2a" },
+                {"(", @"\28" },
+                {")", @"\29" },
+                {"\0", @"\00" },
+            };
+
+            var result = filterArgument;
+
+            foreach (var (source, target) in charactersToEscape)
+            {
+                result = Regex.Replace(result, @$"(?<!(?<!\\)\\(?:\\\\)*)({Regex.Escape(source)})", target);
+            };
+
+            return result;
         }
     }
 }
