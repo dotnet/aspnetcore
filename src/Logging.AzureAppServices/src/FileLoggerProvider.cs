@@ -49,12 +49,10 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
                     return;
                 }
 
-                using (var streamWriter = File.AppendText(fullName))
+                await using var streamWriter = File.AppendText(fullName);
+                foreach (var item in group)
                 {
-                    foreach (var item in group)
-                    {
-                        await streamWriter.WriteAsync(item.Message);
-                    }
+                    await streamWriter.WriteAsync(item.Message);
                 }
             }
 
