@@ -26,14 +26,14 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
                 return null;
             }
 
-            var problemDetails = (ProblemDetails)existingValue ?? new ProblemDetails();
+            var problemDetails = (ProblemDetails?)existingValue ?? new ProblemDetails();
             annotatedProblemDetails.CopyTo(problemDetails);
 
             return problemDetails;
         }
 
         /// <inheritdoc />
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
         {
             if (value == null)
             {

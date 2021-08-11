@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Internal
             return (JObject)token;
         }
 
-        public static T GetRequiredProperty<T>(JObject json, string property, JTokenType expectedType = JTokenType.None)
+        public static T? GetRequiredProperty<T>(JObject json, string property, JTokenType expectedType = JTokenType.None)
         {
             var prop = json[property];
 
@@ -194,6 +194,11 @@ namespace Microsoft.AspNetCore.Internal
 
             public void Return(T[]? array)
             {
+                if (array is null)
+                {
+                    return;
+                }
+
                 _inner.Return(array);
             }
         }
