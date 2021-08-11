@@ -11,11 +11,18 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
+using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
+#if LIBUV
+namespace Microsoft.AspNetCore.Server.Kestrel.Libuv.FunctionalTests.Http2
+#elif SOCKETS
+namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests.Http2
+#else
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
+#endif
 {
     public class HandshakeTests : LoggedTest
     {
