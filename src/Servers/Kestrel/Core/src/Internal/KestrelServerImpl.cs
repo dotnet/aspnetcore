@@ -204,8 +204,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     // multiplexed transport factory, which happens if QUIC isn't supported.
                     var addAltSvcHeader = !options.DisableAltSvcHeader && _multiplexedTransportFactory != null;
 
-                    var originalEndPoint = options.EndPoint;
-
                     // Add the HTTP middleware as the terminal connection middleware
                     if (hasHttp1 || hasHttp2
                         || options.Protocols == HttpProtocols.None) // TODO a test fails because it doesn't throw an exception in the right place
@@ -222,7 +220,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                         // Add the connection limit middleware
                         connectionDelegate = EnforceConnectionLimit(connectionDelegate, Options.Limits.MaxConcurrentConnections, Trace);
 
-                        options.EndPoint = await _transportManager.BindAsync(ResolveEndPoint(originalEndPoint, options.EndPoint), connectionDelegate, options.EndpointConfig, onBindCancellationToken).ConfigureAwait(false);
+                        options.EndPoint = await _transportManager.BindAsync(options.EndPoint, connectionDelegate, options.EndpointConfig, onBindCancellationToken).ConfigureAwait(false);
                     }
 
                     if (hasHttp3 && _multiplexedTransportFactory is not null)
@@ -233,7 +231,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                         // Add the connection limit middleware
                         multiplexedConnectionDelegate = EnforceConnectionLimit(multiplexedConnectionDelegate, Options.Limits.MaxConcurrentConnections, Trace);
 
-                        options.EndPoint = await _transportManager.BindAsync(ResolveEndPoint(originalEndPoint, options.EndPoint), multiplexedConnectionDelegate, options, onBindCancellationToken).ConfigureAwait(false);
+                        options.EndPoint = await _transportManager.BindAsync(options.EndPoint, multiplexedConnectionDelegate, options, onBindCancellationToken).ConfigureAwait(false);
                     }
                 }
 
@@ -250,25 +248,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
             // Register the options with the event source so it can be logged (if necessary)
             KestrelEventSource.Log.AddServerOptions(Options);
-
-            static EndPoint ResolveEndPoint(EndPoint originalEndPoint, EndPoint currentEndPoint)
-            {
-                // From the original endpoint we want the address. This address could be a constant.
-                // For example, IPAddress.IPv4Any or IPAddress.IPv6Any. QUIC connection listener
-                // has logic that special cases these constants.
-                //
-                // However, from the current endpoint we want to get the port. If there is a port of 0
-                // then the first listener will resolve it to an actual port number. We want additional
-                // listeners to use that port number instead of each using 0 and resolving to different
-                // port numbers.
-                if (originalEndPoint is IPEndPoint originalIP && originalIP.Port == 0 &&
-                    currentEndPoint is IPEndPoint currentIP && currentIP.Port != 0)
-                {
-                    return new IPEndPoint(originalIP.Address, currentIP.Port);
-                }
-
-                return originalEndPoint;
-            }
         }
 
         // Graceful shutdown if possible

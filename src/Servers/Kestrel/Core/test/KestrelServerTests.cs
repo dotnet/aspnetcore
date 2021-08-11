@@ -277,8 +277,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var multiplexedTransportEndPoint = Assert.Single(mockMultiplexedTransportFactory.BoundEndPoints);
 
             // Both transports should get the IPv6Any
-            Assert.Same(IPAddress.IPv6Any, ((IPEndPoint)transportEndPoint.OriginalEndPoint).Address);
-            Assert.Same(IPAddress.IPv6Any, ((IPEndPoint)multiplexedTransportEndPoint.OriginalEndPoint).Address);
+            Assert.Equal(IPAddress.IPv6Any, ((IPEndPoint)transportEndPoint.OriginalEndPoint).Address);
+            Assert.Equal(IPAddress.IPv6Any, ((IPEndPoint)multiplexedTransportEndPoint.OriginalEndPoint).Address);
 
             Assert.Equal(5000, ((IPEndPoint)transportEndPoint.OriginalEndPoint).Port);
             Assert.Equal(5000, ((IPEndPoint)multiplexedTransportEndPoint.OriginalEndPoint).Port);
@@ -311,8 +311,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var transportEndPoint = Assert.Single(mockTransportFactory.BoundEndPoints);
             var multiplexedTransportEndPoint = Assert.Single(mockMultiplexedTransportFactory.BoundEndPoints);
 
-            Assert.Same(IPAddress.IPv6Any, ((IPEndPoint)transportEndPoint.OriginalEndPoint).Address);
-            Assert.Same(IPAddress.IPv6Any, ((IPEndPoint)multiplexedTransportEndPoint.OriginalEndPoint).Address);
+            Assert.Equal(IPAddress.IPv6Any, ((IPEndPoint)transportEndPoint.OriginalEndPoint).Address);
+            Assert.Equal(IPAddress.IPv6Any, ((IPEndPoint)multiplexedTransportEndPoint.OriginalEndPoint).Address);
 
             // Should have been assigned a random value.
             Assert.NotEqual(0, ((IPEndPoint)transportEndPoint.BoundEndPoint).Port);
