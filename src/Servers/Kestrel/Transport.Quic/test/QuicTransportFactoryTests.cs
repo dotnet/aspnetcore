@@ -51,27 +51,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             // Assert
             Assert.Equal("SslServerAuthenticationOptions.ServerCertificate must be configured with a value.", ex.Message);
         }
-
-        [ConditionalFact]
-        [MsQuicSupported]
-        public async Task BindAsync_NoKestrelServerLimits_Error()
-        {
-            // Arrange
-            var quicTransportOptions = new QuicTransportOptions();
-            var quicTransportFactory = new QuicTransportFactory(NullLoggerFactory.Instance, Options.Create(quicTransportOptions));
-            var features = new FeatureCollection();
-
-            var cert = TestResources.GetTestCertificate();
-
-            var sslServerAuthenticationOptions = new SslServerAuthenticationOptions();
-            sslServerAuthenticationOptions.ServerCertificate = cert;
-            features.Set(sslServerAuthenticationOptions);
-
-            // Act
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => quicTransportFactory.BindAsync(new IPEndPoint(0, 0), features: features, cancellationToken: CancellationToken.None).AsTask()).DefaultTimeout();
-
-            // Assert
-            Assert.Equal("Couldn't find server limits configuration for QUIC transport.", ex.Message);
-        }
     }
 }

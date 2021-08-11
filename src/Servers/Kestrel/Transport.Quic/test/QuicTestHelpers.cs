@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
 using Microsoft.AspNetCore.Testing;
@@ -63,12 +62,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             sslServerAuthenticationOptions.RemoteCertificateValidationCallback = RemoteCertificateValidationCallback;
             sslServerAuthenticationOptions.ClientCertificateRequired = clientCertificateRequired;
 
-            var kestrelServerLimitsFeature = new KestrelServerLimitsFeature();
-            kestrelServerLimitsFeature.KeepAliveTimeout = new KestrelServerLimits().KeepAliveTimeout;
-
             var features = new FeatureCollection();
             features.Set(sslServerAuthenticationOptions);
-            features.Set(kestrelServerLimitsFeature);
 
             return features;
         }
