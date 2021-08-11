@@ -9,8 +9,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
@@ -245,6 +247,78 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new LoggerFactory(new[] { new KestrelTestLoggerProvider() }));
 
             StartDummyApplication(server);
+        }
+
+        [Fact]
+        public async Task ListenIPWithStaticPort_TransportsGetIPv6Any()
+        {
+            var options = new KestrelServerOptions();
+            options.ApplicationServices = new ServiceCollection()
+               .AddLogging()
+               .BuildServiceProvider();
+            options.ListenAnyIP(5000, options =>
+            {
+                options.UseHttps();
+                options.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
+            });
+
+            var mockTransportFactory = new MockTransportFactory();
+            var mockMultiplexedTransportFactory = new MockMultiplexedTransportFactory();
+
+            using var server = new KestrelServerImpl(
+                Options.Create(options),
+                new List<IConnectionListenerFactory>() { mockTransportFactory },
+                new List<IMultiplexedConnectionListenerFactory>() { mockMultiplexedTransportFactory },
+                new LoggerFactory(new[] { new KestrelTestLoggerProvider() }));
+
+            await server.StartAsync(new DummyApplication(context => Task.CompletedTask), CancellationToken.None);
+
+            var transportEndPoint = Assert.Single(mockTransportFactory.BoundEndPoints);
+            var multiplexedTransportEndPoint = Assert.Single(mockMultiplexedTransportFactory.BoundEndPoints);
+
+            // Both transports should get the IPv6Any
+            Assert.Same(IPAddress.IPv6Any, ((IPEndPoint)transportEndPoint.OriginalEndPoint).Address);
+            Assert.Same(IPAddress.IPv6Any, ((IPEndPoint)multiplexedTransportEndPoint.OriginalEndPoint).Address);
+
+            Assert.Equal(5000, ((IPEndPoint)transportEndPoint.OriginalEndPoint).Port);
+            Assert.Equal(5000, ((IPEndPoint)multiplexedTransportEndPoint.OriginalEndPoint).Port);
+        }
+
+        [Fact]
+        public async Task ListenIPWithEphemeralPort_TransportsGetIPv6Any()
+        {
+            var options = new KestrelServerOptions();
+            options.ApplicationServices = new ServiceCollection()
+               .AddLogging()
+               .BuildServiceProvider();
+            options.ListenAnyIP(0, options =>
+            {
+                options.UseHttps();
+                options.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
+            });
+
+            var mockTransportFactory = new MockTransportFactory();
+            var mockMultiplexedTransportFactory = new MockMultiplexedTransportFactory();
+
+            using var server = new KestrelServerImpl(
+                Options.Create(options),
+                new List<IConnectionListenerFactory>() { mockTransportFactory },
+                new List<IMultiplexedConnectionListenerFactory>() { mockMultiplexedTransportFactory },
+                new LoggerFactory(new[] { new KestrelTestLoggerProvider() }));
+
+            await server.StartAsync(new DummyApplication(context => Task.CompletedTask), CancellationToken.None);
+
+            var transportEndPoint = Assert.Single(mockTransportFactory.BoundEndPoints);
+            var multiplexedTransportEndPoint = Assert.Single(mockMultiplexedTransportFactory.BoundEndPoints);
+
+            Assert.Same(IPAddress.IPv6Any, ((IPEndPoint)transportEndPoint.OriginalEndPoint).Address);
+            Assert.Same(IPAddress.IPv6Any, ((IPEndPoint)multiplexedTransportEndPoint.OriginalEndPoint).Address);
+
+            // Should have been assigned a random value.
+            Assert.NotEqual(0, ((IPEndPoint)transportEndPoint.BoundEndPoint).Port);
+
+            // Same random value should be used for both transports.
+            Assert.Equal(((IPEndPoint)transportEndPoint.BoundEndPoint).Port, ((IPEndPoint)multiplexedTransportEndPoint.BoundEndPoint).Port);
         }
 
         [Fact]
@@ -692,10 +766,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private class MockTransportFactory : IConnectionListenerFactory
         {
+            public List<BindDetail> BoundEndPoints { get; } = new List<BindDetail>();
+
             public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
             {
+                EndPoint resolvedEndPoint = endpoint;
+                if (resolvedEndPoint is IPEndPoint ipEndPoint)
+                {
+                    var port = ipEndPoint.Port == 0
+                        ? Random.Shared.Next(IPEndPoint.MinPort, IPEndPoint.MaxPort)
+                        : ipEndPoint.Port;
+
+                    resolvedEndPoint = new IPEndPoint(new IPAddress(ipEndPoint.Address.GetAddressBytes()), port);
+                }
+
+                BoundEndPoints.Add(new BindDetail(endpoint, resolvedEndPoint));
+
                 var mock = new Mock<IConnectionListener>();
-                mock.Setup(m => m.EndPoint).Returns(endpoint);
+                mock.Setup(m => m.EndPoint).Returns(resolvedEndPoint);
                 return new ValueTask<IConnectionListener>(mock.Object);
             }
         }
@@ -707,5 +795,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 throw new InvalidOperationException();
             }
         }
+
+        private class MockMultiplexedTransportFactory : IMultiplexedConnectionListenerFactory
+        {
+            public List<BindDetail> BoundEndPoints { get; } = new List<BindDetail>();
+
+            public ValueTask<IMultiplexedConnectionListener> BindAsync(EndPoint endpoint, IFeatureCollection features = null, CancellationToken cancellationToken = default)
+            {
+                EndPoint resolvedEndPoint = endpoint;
+                if (resolvedEndPoint is IPEndPoint ipEndPoint)
+                {
+                    var port = ipEndPoint.Port == 0
+                        ? Random.Shared.Next(IPEndPoint.MinPort, IPEndPoint.MaxPort)
+                        : ipEndPoint.Port;
+
+                    resolvedEndPoint = new IPEndPoint(new IPAddress(ipEndPoint.Address.GetAddressBytes()), port);
+                }
+
+                BoundEndPoints.Add(new BindDetail(endpoint, resolvedEndPoint));
+
+                var mock = new Mock<IMultiplexedConnectionListener>();
+                mock.Setup(m => m.EndPoint).Returns(resolvedEndPoint);
+                return new ValueTask<IMultiplexedConnectionListener>(mock.Object);
+            }
+        }
+
+        private record BindDetail(EndPoint OriginalEndPoint, EndPoint BoundEndPoint);
     }
 }
