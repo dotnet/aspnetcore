@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.IO;
+using System.Net;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Channels;
@@ -711,6 +712,47 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 Assert.Same(resolvedOptions.Headers, originalOptions.Headers);
                 Assert.Contains(fakeHeader, resolvedOptions.Headers);
             }
+        }
+
+        [Fact]
+        public async Task HubConnectionIsMockable()
+        {
+            var mockConnection = new Mock<HubConnection>(new Mock<IConnectionFactory>().Object, new Mock<IHubProtocol>().Object, new Mock<EndPoint>().Object,
+                new Mock<IServiceProvider>().Object, new Mock<ILoggerFactory>().Object, new Mock<IRetryPolicy>().Object);
+
+            mockConnection.Setup(c => c.StartAsync(default)).Returns(() => Task.CompletedTask);
+            mockConnection.Setup(c => c.StopAsync(default)).Returns(() => Task.CompletedTask);
+            mockConnection.Setup(c => c.DisposeAsync()).Returns(() => ValueTask.CompletedTask);
+            mockConnection.Setup(c => c.On(It.IsAny<string>(), It.IsAny<Type[]>(), It.IsAny<Func<object[], object, Task>>(), It.IsAny<object>()));
+            mockConnection.Setup(c => c.Remove(It.IsAny<string>()));
+            mockConnection.Setup(c => c.StreamAsChannelCoreAsync(It.IsAny<string>(), It.IsAny<Type>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult(It.IsAny<ChannelReader<object>>()));
+            mockConnection.Setup(c => c.InvokeCoreAsync(It.IsAny<string>(), It.IsAny<Type>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>())).Returns(() => Task.FromResult(It.IsAny<object>()));
+            mockConnection.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>())).Returns(() => Task.CompletedTask);
+            mockConnection.Setup(c => c.StreamAsyncCore<object>(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>())).Returns(() => It.IsAny<IAsyncEnumerable<object>>());
+
+            var hubConnection = mockConnection.Object;
+            // .On extension method
+            _ = hubConnection.On("someMethod", () => { });
+            // .On non-extension method
+            _ = hubConnection.On("someMethod2", new Type[] { typeof(int) }, (args, obj) => Task.CompletedTask, 2);
+            hubConnection.Remove("someMethod");
+            await hubConnection.StartAsync();
+            _ = await hubConnection.StreamAsChannelCoreAsync("stream", typeof(int), Array.Empty<object>(), default);
+            _ = await hubConnection.InvokeCoreAsync("test", typeof(int), Array.Empty<object>(), default);
+            await hubConnection.SendCoreAsync("test2", Array.Empty<object>(), default);
+            _ = hubConnection.StreamAsyncCore<int>("stream2", Array.Empty<object>(), default);
+            await hubConnection.StopAsync();
+
+            mockConnection.Verify(c => c.On("someMethod", It.IsAny<Type[]>(), It.IsAny<Func<object[], object, Task>>(), It.IsAny<object>()), Times.Once);
+            mockConnection.Verify(c => c.On("someMethod2", It.IsAny<Type[]>(), It.IsAny<Func<object[], object, Task>>(), 2), Times.Once);
+            mockConnection.Verify(c => c.Remove("someMethod"), Times.Once);
+            mockConnection.Verify(c => c.StreamAsChannelCoreAsync("stream", It.IsAny<Type>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()), Times.Once);
+            mockConnection.Verify(c => c.InvokeCoreAsync("test", typeof(int), Array.Empty<object>(), It.IsAny<CancellationToken>()), Times.Once);
+            mockConnection.Verify(c => c.SendCoreAsync("test2", Array.Empty<object>(), It.IsAny<CancellationToken>()), Times.Once);
+            mockConnection.Verify(c => c.StreamAsyncCore<int>("stream2", Array.Empty<object>(), It.IsAny<CancellationToken>()), Times.Once);
+            mockConnection.Verify(c => c.StartAsync(It.IsAny<CancellationToken>()), Times.Once);
+            mockConnection.Verify(c => c.StopAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         private class SampleObject
