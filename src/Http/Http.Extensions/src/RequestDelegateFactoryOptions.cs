@@ -17,5 +17,12 @@ namespace Microsoft.AspNetCore.Http
         /// The list of route parameter names that are specified for this handler.
         /// </summary>
         public IEnumerable<string>? RouteParameterNames { get; init; }
+
+        /// <summary>
+        /// Check if the reques has a body
+        /// </summary>
+#pragma warning disable RS0016 // Add public types and members to the declared API
+        public bool HasBodyParameter { get; set; }
+#pragma warning restore RS0016 // Add public types and members to the declared API
     }
 }

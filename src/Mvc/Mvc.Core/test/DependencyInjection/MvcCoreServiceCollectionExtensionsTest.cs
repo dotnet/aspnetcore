@@ -325,7 +325,6 @@ namespace Microsoft.AspNetCore.Mvc
                         typeof(MatcherPolicy),
                         new Type[]
                         {
-                            typeof(AcceptsMatcherPolicy),
                             typeof(ActionConstraintMatcherPolicy),
                             typeof(DynamicControllerEndpointMatcherPolicy),
                         }

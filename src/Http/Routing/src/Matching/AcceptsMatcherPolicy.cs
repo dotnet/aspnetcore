@@ -292,9 +292,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // always happen because we insert a 415 endpoint.
             for (var i = 0; i < ordered.Length; i++)
             {
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-                if (ordered[i].mediaType is not null && ordered[i].mediaType.MatchesAllTypes)
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
+
+                if (ordered[i].mediaType is { MatchesAllTypes: true })
                 {
                     exitDestination = ordered[i].destination;
                     break;
@@ -310,9 +309,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             for (var i = 0; i < destinations.Length; i++)
             {
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-                if (destinations[i].mediaType is not null && !destinations[i].mediaType.Type.HasValue)
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
+                var mediaType = destinations[i].mediaType;
+
+                if (mediaType is not null && !mediaType.Type.HasValue)
                 {
                     return destinations[i].destination;
                 }
@@ -386,9 +385,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 var destinations = _destinations;
                 for (var i = 0; i < destinations.Length; i++)
                 {
-#pragma warning disable CS8604 // Possible null reference argument.
-                    if (destinations[i].mediaType is not null && requestMediaType.IsSubsetOf(destinations[i].mediaType))
-#pragma warning restore CS8604 // Possible null reference argument.
+
+                    var destination = destinations[i].mediaType;
+                    if (destination is not null && requestMediaType.IsSubsetOf(destination))
                     {
                         return destinations[i].destination;
                     }

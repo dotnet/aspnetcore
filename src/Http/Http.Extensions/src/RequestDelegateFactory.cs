@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Http
                 factoryContext.RouteParameters = new(routeParameterNames);
             }
 
-            var arguments = CreateArguments(methodInfo.GetParameters(), factoryContext);
+            var arguments = CreateArguments(methodInfo.GetParameters(), factoryContext, options);
 
             var responseWritingMethodCall = factoryContext.ParamCheckExpressions.Count > 0 ?
                 CreateParamCheckingResponseWritingMethodCall(methodInfo, targetExpression, arguments, factoryContext) :
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Http
             return HandleRequestBodyAndCompileRequestDelegate(responseWritingMethodCall, factoryContext);
         }
 
-        private static Expression[] CreateArguments(ParameterInfo[]? parameters, FactoryContext factoryContext)
+        private static Expression[] CreateArguments(ParameterInfo[]? parameters, FactoryContext factoryContext, RequestDelegateFactoryOptions? options)
         {
             if (parameters is null || parameters.Length == 0)
             {
@@ -185,13 +185,13 @@ namespace Microsoft.AspNetCore.Http
 
             for (var i = 0; i < parameters.Length; i++)
             {
-                args[i] = CreateArgument(parameters[i], factoryContext);
+                args[i] = CreateArgument(parameters[i], factoryContext, options);
             }
 
             return args;
         }
 
-        private static Expression CreateArgument(ParameterInfo parameter, FactoryContext factoryContext)
+        private static Expression CreateArgument(ParameterInfo parameter, FactoryContext factoryContext, RequestDelegateFactoryOptions? options)
         {
             if (parameter.Name is null)
             {
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Http
             }
             else if (parameterCustomAttributes.OfType<IFromBodyMetadata>().FirstOrDefault() is { } bodyAttribute)
             {
-                return BindParameterFromBody(parameter, bodyAttribute.AllowEmpty, factoryContext);
+                return BindParameterFromBody(parameter, bodyAttribute.AllowEmpty, factoryContext, options);
             }
             else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)))
             {
@@ -266,7 +266,7 @@ namespace Microsoft.AspNetCore.Http
                     }
                 }
 
-                return BindParameterFromBody(parameter, allowEmpty: false, factoryContext);
+                return BindParameterFromBody(parameter, allowEmpty: false, factoryContext, options);
             }
         }
 
@@ -709,11 +709,16 @@ namespace Microsoft.AspNetCore.Http
             return BindParameterFromValue(parameter, Expression.Coalesce(routeValue, queryValue), factoryContext);
         }
 
-        private static Expression BindParameterFromBody(ParameterInfo parameter, bool allowEmpty, FactoryContext factoryContext)
+        private static Expression BindParameterFromBody(ParameterInfo parameter, bool allowEmpty, FactoryContext factoryContext, RequestDelegateFactoryOptions? options)
         {
             if (factoryContext.JsonRequestBodyType is not null)
             {
                 throw new InvalidOperationException("Action cannot have more than one FromBody attribute.");
+            }
+
+            if(options is not null)
+            {
+                options.HasBodyParameter = true;
             }
 
             var nullability = NullabilityContext.Create(parameter);

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 
@@ -186,6 +187,14 @@ namespace Microsoft.AspNetCore.Builder
 
             // Add delegate attributes as metadata
             var attributes = action.Method.GetCustomAttributes();
+
+            //Add accepts metadata - Adding two mime types for testing. N
+
+            if(options.HasBodyParameter)
+            {
+                builder.Metadata.Add(action.Method);
+                builder.Metadata.Add(new AcceptsMetadata(new string[] { "application/json" }));
+            }
 
             // This can be null if the delegate is a dynamic method or compiled from an expression tree
             if (attributes is not null)
