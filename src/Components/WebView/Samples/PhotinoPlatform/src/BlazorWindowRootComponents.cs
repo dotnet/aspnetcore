@@ -12,13 +12,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Photino
     {
         private readonly PhotinoWebViewManager _manager;
 
-        internal BlazorWindowRootComponents(PhotinoWebViewManager manager)
+        internal BlazorWindowRootComponents(PhotinoWebViewManager manager, JSComponentConfigurationStore jsComponents)
         {
             _manager = manager;
-            JSComponents = manager.JSComponentConfiguration;
+            JSComponents = jsComponents;
         }
 
-        /// <inheritdoc />
         public JSComponentConfigurationStore JSComponents { get; }
 
         /// <summary>
