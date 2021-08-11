@@ -173,6 +173,42 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        public async Task ShadowCopyE2EWorksWithOldFoldersPresent()
+        {
+            using var directory = TempDirectory.Create();
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+            deploymentParameters.HandlerSettings["experimentalEnableShadowCopy"] = "true";
+            deploymentParameters.HandlerSettings["shadowCopyDirectory"] = directory.DirectoryPath;
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            // Start with 1 to exercise the incremental logic
+            DirectoryCopy(deploymentResult.ContentRoot, Path.Combine(directory.DirectoryPath, "1"), copySubDirs: true);
+
+            var response = await deploymentResult.HttpClient.GetAsync("Wow!");
+            Assert.True(response.IsSuccessStatusCode);
+
+            using var secondTempDir = TempDirectory.Create();
+
+            // copy back and forth to cause file change notifications.
+            DirectoryCopy(deploymentResult.ContentRoot, secondTempDir.DirectoryPath, copySubDirs: true);
+            DirectoryCopy(secondTempDir.DirectoryPath, deploymentResult.ContentRoot, copySubDirs: true);
+
+            response = await deploymentResult.HttpClient.GetAsync("Wow!");
+            Assert.False(Directory.Exists(Path.Combine(directory.DirectoryPath, "0")), "Expected 0 shadow copy directory to be skipped");
+
+            Assert.False(response.IsSuccessStatusCode);
+            Assert.Equal("Application Shutting Down", response.ReasonPhrase);
+
+            // This shutdown should trigger a copy to the next highest directory, which will be 2
+            await deploymentResult.AssertRecycledAsync();
+
+            Assert.True(Directory.Exists(Path.Combine(directory.DirectoryPath, "2")), "Expected 2 shadow copy directory");
+
+            response = await deploymentResult.HttpClient.GetAsync("Wow!");
+            Assert.True(response.IsSuccessStatusCode);
+        }
+
+        [ConditionalFact]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task ShadowCopyIgnoresItsOwnDirectoryWithRelativePathSegmentWhenCopying()
         {
