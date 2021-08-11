@@ -8,11 +8,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Matching;
+using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Mvc.Routing
+namespace Microsoft.AspNetCore.Routing.Matching
 {
     internal class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, INodeBuilderPolicy, IEndpointSelectorPolicy
     {
@@ -108,12 +107,12 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 }
 
                 var contentType = httpContext.Request.ContentType;
-                var mediaType = string.IsNullOrEmpty(contentType) ? null : new MediaType(contentType);
+                var mediaType = string.IsNullOrEmpty(contentType) ? null : new MediaTypeHeaderValue(contentType);
 
                 var matched = false;
                 for (var j = 0; j < metadata.ContentTypes.Count; j++)
                 {
-                    var candidateMediaType = new MediaType(metadata.ContentTypes[j]);
+                    var candidateMediaType = new MediaTypeHeaderValue(metadata.ContentTypes[j]);
                     if (candidateMediaType.MatchesAllTypes)
                     {
                         // We don't need a 415 response because there's an endpoint that would accept any type.
@@ -127,7 +126,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     }
 
                     // We have a ContentType but it's not a match.
-                    else if (mediaType != null && !mediaType.Value.IsSubsetOf(candidateMediaType))
+                    else if (mediaType != null && !mediaType.IsSubsetOf(candidateMediaType))
                     {
                         continue;
                     }
@@ -213,13 +212,13 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     foreach (var kvp in edges)
                     {
                         // The edgeKey maps to a possible request header value
-                        var edgeKey = new MediaType(kvp.Key);
+                        var edgeKey = new MediaTypeHeaderValue(kvp.Key);
 
                         for (var j = 0; j < contentTypes.Count; j++)
                         {
                             var contentType = contentTypes[j];
 
-                            var mediaType = new MediaType(contentType);
+                            var mediaType = new MediaTypeHeaderValue(contentType);
 
                             // Example: 'application/json' is subset of 'application/*'
                             //
@@ -293,7 +292,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             // always happen because we insert a 415 endpoint.
             for (var i = 0; i < ordered.Length; i++)
             {
-                if (ordered[i].mediaType.MatchesAllTypes)
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+                if (ordered[i].mediaType is not null && ordered[i].mediaType.MatchesAllTypes)
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
                 {
                     exitDestination = ordered[i].destination;
                     break;
@@ -305,11 +306,13 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return new ConsumesPolicyJumpTable(exitDestination, noContentTypeDestination, ordered);
         }
 
-        private static int GetNoContentTypeDestination((MediaType mediaType, int destination)[] destinations)
+        private static int GetNoContentTypeDestination((MediaTypeHeaderValue? mediaType, int destination)[] destinations)
         {
             for (var i = 0; i < destinations.Length; i++)
             {
-                if (!destinations[i].mediaType.Type.HasValue)
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+                if (destinations[i].mediaType is not null && !destinations[i].mediaType.Type.HasValue)
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
                 {
                     return destinations[i].destination;
                 }
@@ -318,24 +321,25 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             throw new InvalidOperationException("Could not find destination for no content type.");
         }
 
-        private static MediaType CreateEdgeMediaType(ref PolicyJumpTableEdge e)
+        private static MediaTypeHeaderValue? CreateEdgeMediaType(ref PolicyJumpTableEdge e)
         {
             var mediaType = (string)e.State;
-            return !string.IsNullOrEmpty(mediaType) ? new MediaType(mediaType) : default;
+            return !string.IsNullOrEmpty(mediaType) ? new MediaTypeHeaderValue(mediaType) : default;
         }
 
-        private int GetScore(in MediaType mediaType)
+        private int GetScore(MediaTypeHeaderValue? mediaType)
         {
+                 
             // Higher score == lower priority - see comments on MediaType.
-            if (mediaType.MatchesAllTypes)
+            if (mediaType is not null && mediaType.MatchesAllTypes)
             {
                 return 4;
             }
-            else if (mediaType.MatchesAllSubTypes)
+            else if (mediaType is not null &&  mediaType.MatchesAllSubTypes)
             {
                 return 3;
             }
-            else if (mediaType.MatchesAllSubTypesWithoutSuffix)
+            else if (mediaType is not null &&  mediaType.MatchesAllSubTypesWithoutSuffix)
             {
                 return 2;
             }
@@ -358,11 +362,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         private class ConsumesPolicyJumpTable : PolicyJumpTable
         {
-            private readonly (MediaType mediaType, int destination)[] _destinations;
+            private readonly (MediaTypeHeaderValue? mediaType, int destination)[] _destinations;
             private readonly int _exitDestination;
             private readonly int _noContentTypeDestination;
 
-            public ConsumesPolicyJumpTable(int exitDestination, int noContentTypeDestination, (MediaType mediaType, int destination)[] destinations)
+            public ConsumesPolicyJumpTable(int exitDestination, int noContentTypeDestination, (MediaTypeHeaderValue? mediaType, int destination)[] destinations)
             {
                 _exitDestination = exitDestination;
                 _noContentTypeDestination = noContentTypeDestination;
@@ -378,11 +382,13 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     return _noContentTypeDestination;
                 }
 
-                var requestMediaType = new MediaType(contentType);
+                var requestMediaType = new MediaTypeHeaderValue(contentType);
                 var destinations = _destinations;
                 for (var i = 0; i < destinations.Length; i++)
                 {
-                    if (requestMediaType.IsSubsetOf(destinations[i].mediaType))
+#pragma warning disable CS8604 // Possible null reference argument.
+                    if (destinations[i].mediaType is not null && requestMediaType.IsSubsetOf(destinations[i].mediaType))
+#pragma warning restore CS8604 // Possible null reference argument.
                     {
                         return destinations[i].destination;
                     }
