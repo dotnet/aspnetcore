@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             return _inner.Rent(minimumLength);
         }
 
-        public void Return(T[] array)
+        public void Return(T[]? array)
         {
             if (array == null)
             {
