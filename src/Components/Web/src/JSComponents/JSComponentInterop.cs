@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
                 var parameterName = jsonProperty.Name;
                 var parameterJsonValue = jsonProperty.Value;
                 object? parameterValue;
-                if (TryGetComponentParameterTypeInfo(componentType, parameterName, out var parameterInfo))
+                if (TryGetComponentParameterInfo(componentType, parameterName, out var parameterInfo))
                 {
                     // It's a statically-declared parameter, so we can parse it into a known .NET type.
                     parameterValue = parameterInfo.Kind switch
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
             return Activator.CreateInstance(eventCallbackType, null, callback)!;
         }
 
-        private static bool TryGetComponentParameterTypeInfo(Type componentType, string parameterName, out ParameterInfo parameterInfo)
+        private static bool TryGetComponentParameterInfo(Type componentType, string parameterName, out ParameterInfo parameterInfo)
         {
             var cacheForComponent = GetComponentParameters(componentType);
             return cacheForComponent.ParameterInfoByName.TryGetValue(parameterName, out parameterInfo);
