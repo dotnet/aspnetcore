@@ -21,14 +21,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         public PipeOptions OutputOptions { get; init; } = new PipeOptions();
 
         /// <summary>
-        /// Delay socket read/write operations until the transport pipe is read from or written to.
-        /// </summary>
-        /// <remarks>
-        /// Defaults to false.
-        /// </remarks>
-        public bool DeferFirstOperation { get; set; }
-
-        /// <summary>
         /// Wait until there is data available to allocate a buffer. Setting this to false can increase throughput at the cost of increased memory usage.
         /// </summary>
         /// <remarks>

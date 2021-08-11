@@ -8,8 +8,6 @@ Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFac
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFactory.Dispose() -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFactory.SocketConnectionContextFactory(Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions
-Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions.DeferFirstOperation.get -> bool
-Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions.DeferFirstOperation.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions.InputOptions.get -> System.IO.Pipelines.PipeOptions!
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions.InputOptions.init -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions.OutputOptions.get -> System.IO.Pipelines.PipeOptions!
