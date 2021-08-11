@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
 
             if (!string.IsNullOrEmpty(VaryByHeader))
             {
-                headers[HeaderNames.Vary] = VaryByHeader;
+                headers.Vary = VaryByHeader;
             }
 
             if (VaryByQueryKeys != null)
@@ -95,13 +95,13 @@ namespace Microsoft.AspNetCore.Mvc.Filters
 
             if (NoStore)
             {
-                headers[HeaderNames.CacheControl] = "no-store";
+                headers.CacheControl = "no-store";
 
                 // Cache-control: no-store, no-cache is valid.
                 if (Location == ResponseCacheLocation.None)
                 {
                     headers.AppendCommaSeparatedValues(HeaderNames.CacheControl, "no-cache");
-                    headers[HeaderNames.Pragma] = "no-cache";
+                    headers.Pragma = "no-cache";
                 }
             }
             else
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
                         break;
                     case ResponseCacheLocation.None:
                         cacheControlValue = "no-cache,";
-                        headers[HeaderNames.Pragma] = "no-cache";
+                        headers.Pragma = "no-cache";
                         break;
                     default:
                         cacheControlValue = null;
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
                 }
 
                 cacheControlValue = $"{cacheControlValue}max-age={Duration}";
-                headers[HeaderNames.CacheControl] = cacheControlValue;
+                headers.CacheControl = cacheControlValue;
             }
         }
     }
