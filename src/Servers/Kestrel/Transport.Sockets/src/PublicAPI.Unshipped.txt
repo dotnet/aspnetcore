@@ -3,11 +3,10 @@
 *REMOVED*Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.SocketTransportFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions> options, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) -> void
 *REMOVED*static Microsoft.AspNetCore.Hosting.WebHostBuilderSocketExtensions.UseSockets(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder
 *REMOVED*static Microsoft.AspNetCore.Hosting.WebHostBuilderSocketExtensions.UseSockets(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder, System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions> configureOptions) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder
-Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.ISocketConnectionContextFactory
-Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.ISocketConnectionContextFactory.Create(System.Net.Sockets.Socket! socket, Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions! options) -> Microsoft.AspNetCore.Connections.ConnectionContext!
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFactory
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFactory.Create(System.Net.Sockets.Socket! socket) -> Microsoft.AspNetCore.Connections.ConnectionContext!
-Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFactory.SocketConnectionContextFactory(Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerfactory) -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFactory.Dispose() -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFactory.SocketConnectionContextFactory(Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions.DeferFirstOperation.get -> bool
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions.DeferFirstOperation.set -> void
@@ -24,4 +23,3 @@ static Microsoft.AspNetCore.Hosting.WebHostBuilderSocketExtensions.UseSockets(th
 static Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.CreateDefaultBoundListenSocket(System.Net.EndPoint! endpoint) -> System.Net.Sockets.Socket!
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.CreateBoundListenSocket.get -> System.Func<System.Net.EndPoint!, System.Net.Sockets.Socket!>!
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.CreateBoundListenSocket.set -> void
-~Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.SocketTransportFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFactory! contextFactory) -> void

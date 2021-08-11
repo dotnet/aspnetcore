@@ -1,27 +1,25 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
     internal sealed class SocketConnectionListener : IConnectionListener
     {
         private readonly MemoryPool<byte> _memoryPool;
-        private readonly int _settingsCount;
-        private readonly Settings[] _settings;
+        private readonly int _factoryCount;
+        private readonly SocketConnectionContextFactory[] _factories;
         private readonly ISocketsTrace _trace;
         private Socket? _listenSocket;
-        private int _settingsIndex;
+        private int _factoryIndex;
         private readonly SocketTransportOptions _options;
 
         public EndPoint EndPoint { get; private set; }
@@ -29,10 +27,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         internal SocketConnectionListener(
             EndPoint endpoint,
             SocketTransportOptions options,
-            ISocketsTrace trace)
+            ILoggerFactory loggerFactory)
         {
             EndPoint = endpoint;
-            _trace = trace;
             _options = options;
             _memoryPool = _options.MemoryPoolFactory();
             var ioQueueCount = options.IOQueueCount;
@@ -41,45 +38,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             var maxWriteBufferSize = _options.MaxWriteBufferSize ?? 0;
             var applicationScheduler = options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : PipeScheduler.ThreadPool;
 
+            var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets");
+            _trace = new SocketsTrace(logger);
+
             if (ioQueueCount > 0)
             {
-                _settingsCount = ioQueueCount;
-                _settings = new Settings[_settingsCount];
+                _factoryCount = ioQueueCount;
+                _factories = new SocketConnectionContextFactory[_factoryCount];
 
-                for (var i = 0; i < _settingsCount; i++)
+                for (var i = 0; i < _factoryCount; i++)
                 {
                     var transportScheduler = options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : new IOQueue();
-                    // https://github.com/aspnet/KestrelHttpServer/issues/2573
-                    var awaiterScheduler = OperatingSystem.IsWindows() ? transportScheduler : PipeScheduler.Inline;
-
-                    _settings[i] = new Settings
+                    _factories[i] = new SocketConnectionContextFactory(new SocketConnectionOptions
                     {
-                        Scheduler = transportScheduler,
                         InputOptions = new PipeOptions(_memoryPool, applicationScheduler, transportScheduler, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false),
                         OutputOptions = new PipeOptions(_memoryPool, transportScheduler, applicationScheduler, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false),
-                        SocketSenderPool = new SocketSenderPool(awaiterScheduler)
-                    };
+
+                    }, loggerFactory);
                 }
             }
             else
             {
                 var transportScheduler = options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : PipeScheduler.ThreadPool;
-                // https://github.com/aspnet/KestrelHttpServer/issues/2573
-                var awaiterScheduler = OperatingSystem.IsWindows() ? transportScheduler : PipeScheduler.Inline;
-
-                var directScheduler = new Settings[]
+                _factories = new SocketConnectionContextFactory[]
                 {
-                    new Settings
+                    new SocketConnectionContextFactory(new SocketConnectionOptions
                     {
-                        Scheduler = transportScheduler,
                         InputOptions = new PipeOptions(_memoryPool, applicationScheduler, transportScheduler, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false),
                         OutputOptions = new PipeOptions(_memoryPool, transportScheduler, applicationScheduler, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false),
-                        SocketSenderPool = new SocketSenderPool(awaiterScheduler)
-                    }
+                    }, loggerFactory)
                 };
-
-                _settingsCount = directScheduler.Length;
-                _settings = directScheduler;
+                _factoryCount = _factories.Length;
             }
         }
 
@@ -124,27 +113,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                         acceptSocket.NoDelay = _options.NoDelay;
                     }
 
-                    var setting = _settings[_settingsIndex];
+                    var factory = _factories[_factoryIndex];
 
-                    var connectionOptions = new SocketConnectionOptions()
-                    {
-                        Scheduler = setting.Scheduler,
-//TODO: once https://github.com/dotnet/aspnetcore/pull/34639 is merged
-                        // DeferFirstOperation = _options.DeferFirstOperation,
-                        InputOptions = setting.InputOptions,
-                        OutputOptions = setting.OutputOptions,
-                        WaitForDataBeforeAllocatingBuffer = _options.WaitForDataBeforeAllocatingBuffer,
-                        MemoryPool = _memoryPool,
-                        SenderPool = setting.SocketSenderPool,
-                        Trace = _trace
-                    };
+                    _factoryIndex = (_factoryIndex + 1) % _factoryCount;
 
-
-                    setting.SocketFactory = new SocketConnectionContextFactory(connectionOptions, loggerfactory: null /* TODO */);
-
-                    _settingsIndex = (_settingsIndex + 1) % _settingsCount;
-
-                    return setting.SocketFactory.Create(acceptSocket);
+                    return factory.Create(acceptSocket);
                 }
                 catch (ObjectDisposedException)
                 {
@@ -177,22 +150,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             // Dispose the memory pool
             _memoryPool.Dispose();
 
-            // Dispose any pooled senders
-            foreach (var setting in _settings)
+            // Dispose any pooled senders in the factories
+            foreach (var factory in _factories)
             {
-                setting.SocketSenderPool.Dispose();
+                factory.Dispose();
             }
 
             return default;
-        }
-
-        private class Settings
-        {
-            public PipeScheduler Scheduler { get; init; } = default!;
-            public PipeOptions InputOptions { get; init; } = default!;
-            public PipeOptions OutputOptions { get; init; } = default!;
-            public SocketSenderPool SocketSenderPool { get; init; } = default!;
-            public SocketConnectionContextFactory SocketFactory { get; set; } = default!;
         }
     }
 }

@@ -35,6 +35,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private readonly bool _waitForData;
 
         internal SocketConnection(Socket socket,
+            SocketConnectionOptions options,
+            PipeScheduler transportScheduler,
+            SocketSenderPool socketSenderPool,
+            ISocketsTrace trace)
+            : this(socket, options.InputOptions.Pool, transportScheduler, trace, socketSenderPool, options.InputOptions, options.OutputOptions, options.WaitForDataBeforeAllocatingBuffer)
+        {
+            if (options.InputOptions.Pool != options.OutputOptions.Pool)
+            {
+                throw new InvalidOperationException("SocketConnection expects options.InputOptions.Pool to be the same as options.OutputOptions.Pool");
+            }
+        }
+
+        internal SocketConnection(Socket socket,
                                   MemoryPool<byte> memoryPool,
                                   PipeScheduler transportScheduler,
                                   ISocketsTrace trace,
