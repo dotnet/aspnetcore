@@ -41,12 +41,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // Supply a DotNetObjectReference to JS that it can use to call us back for events etc.
             jsComponentInterop.AttachToRenderer(this);
             var jsRuntime = _serviceProvider.GetRequiredService<IJSRuntime>();
-            var hasJSComponents = jsComponentInterop.Configuration.JSComponentTypesByIdentifier.Count > 0;
             jsRuntime.InvokeVoidAsync(
                 "Blazor._internal.attachWebRendererInterop",
                 RendererId,
                 _interopMethodsReference,
-                hasJSComponents,
                 jsComponentInterop.Configuration.JSComponentParametersByIdentifier,
                 jsComponentInterop.Configuration.JSComponentIdentifiersByInitializer).Preserve();
         }

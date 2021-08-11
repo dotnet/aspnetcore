@@ -7,7 +7,6 @@ const interopMethodsByRenderer = new Map<number, DotNet.DotNetObject>();
 export function attachWebRendererInterop(
   rendererId: number,
   interopMethods: DotNet.DotNetObject,
-  hasJSComponents: boolean,
   jsComponentParameters: JSComponentParametersByIdentifier,
   jsComponentInitializers: JSComponentIdentifiersByInitializer,
 ): void {
@@ -17,7 +16,7 @@ export function attachWebRendererInterop(
 
   interopMethodsByRenderer.set(rendererId, interopMethods);
 
-  if (hasJSComponents) {
+  if (Object.keys(jsComponentParameters).length > 0) {
     const manager = getInteropMethods(rendererId);
     enableJSRootComponents(manager, jsComponentParameters, jsComponentInitializers);
   }
