@@ -35,7 +35,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             _context = new QuicTransportContext(_log, options);
             var quicListenerOptions = new QuicListenerOptions();
 
-            var listenEndPoint = (IPEndPoint)endpoint;
+            var listenEndPoint = endpoint as IPEndPoint;
+
+            if (listenEndPoint == null)
+            {
+                throw new InvalidOperationException($"QUIC doesn't support listening on the configured endpoint type. Expected {nameof(IPEndPoint)} but got {endpoint.GetType().Name}.");
+            }
 
             // Workaround for issue in System.Net.Quic
             // https://github.com/dotnet/runtime/issues/57241
