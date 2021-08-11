@@ -384,6 +384,9 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.False(fromBodyParam1.IsRequired);
         }
 
+        // This is necessary for TestIsRequiredFromBody to pass until https://github.com/dotnet/roslyn/issues/55254 is resolved.
+        private object RandomMethod() => throw new NotImplementedException();
+
 #nullable disable
 
         [Fact]
