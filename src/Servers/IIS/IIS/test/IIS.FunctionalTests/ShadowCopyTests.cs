@@ -196,8 +196,11 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             response = await deploymentResult.HttpClient.GetAsync("Wow!");
             Assert.False(Directory.Exists(Path.Combine(directory.DirectoryPath, "0")), "Expected 0 shadow copy directory to be skipped");
 
-            Assert.False(response.IsSuccessStatusCode);
-            Assert.Equal("Application Shutting Down", response.ReasonPhrase);
+            // Depending on timing, this could result in a shutdown failure, but sometimes it succeeds, handle both situations
+            if (!response.IsSuccessStatusCode)
+            {
+                Assert.Equal("Application Shutting Down", response.ReasonPhrase);
+            }
 
             // This shutdown should trigger a copy to the next highest directory, which will be 2
             await deploymentResult.AssertRecycledAsync();
@@ -234,8 +237,11 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             response = await deploymentResult.HttpClient.GetAsync("Wow!");
             Assert.False(Directory.Exists(Path.Combine(directory.DirectoryPath, "0")), "Expected 0 shadow copy directory to be skipped");
 
-            Assert.False(response.IsSuccessStatusCode);
-            Assert.Equal("Application Shutting Down", response.ReasonPhrase);
+            // Depending on timing, this could result in a shutdown failure, but sometimes it succeeds, handle both situations
+            if (!response.IsSuccessStatusCode)
+            {
+                Assert.Equal("Application Shutting Down", response.ReasonPhrase);
+            }
 
             // This shutdown should trigger a copy to the next highest directory, which will be 11
             await deploymentResult.AssertRecycledAsync();
