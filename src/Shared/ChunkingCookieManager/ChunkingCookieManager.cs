@@ -284,7 +284,7 @@ namespace Microsoft.AspNetCore.Internal
             }
 
             var responseHeaders = context.Response.Headers;
-            var existingValues = responseHeaders[HeaderNames.SetCookie];
+            var existingValues = responseHeaders.SetCookie;
 
             if (!StringValues.IsNullOrEmpty(existingValues))
             {
@@ -299,7 +299,7 @@ namespace Microsoft.AspNetCore.Internal
                     }
                 }
 
-                responseHeaders[HeaderNames.SetCookie] = new StringValues(newValues.ToArray());
+                responseHeaders.SetCookie = new StringValues(newValues.ToArray());
             }
 
             var responseCookies = context.Response.Cookies;

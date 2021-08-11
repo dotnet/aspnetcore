@@ -461,8 +461,8 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 }
 
                 EntityTagHeaderValue eTag;
-                if (!StringValues.IsNullOrEmpty(cachedResponseHeaders[HeaderNames.ETag])
-                    && EntityTagHeaderValue.TryParse(cachedResponseHeaders[HeaderNames.ETag].ToString(), out eTag)
+                if (!StringValues.IsNullOrEmpty(cachedResponseHeaders.ETag)
+                    && EntityTagHeaderValue.TryParse(cachedResponseHeaders.ETag.ToString(), out eTag)
                     && EntityTagHeaderValue.TryParseList(ifNoneMatchHeader, out var ifNoneMatchEtags))
                 {
                     for (var i = 0; i < ifNoneMatchEtags.Count; i++)
@@ -482,8 +482,8 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 if (!StringValues.IsNullOrEmpty(ifModifiedSince))
                 {
                     DateTimeOffset modified;
-                    if (!HeaderUtilities.TryParseDate(cachedResponseHeaders[HeaderNames.LastModified].ToString(), out modified) &&
-                        !HeaderUtilities.TryParseDate(cachedResponseHeaders[HeaderNames.Date].ToString(), out modified))
+                    if (!HeaderUtilities.TryParseDate(cachedResponseHeaders.LastModified.ToString(), out modified) &&
+                        !HeaderUtilities.TryParseDate(cachedResponseHeaders.Date.ToString(), out modified))
                     {
                         return false;
                     }
