@@ -13,9 +13,7 @@ using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-#if INMEMORY
-namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
-#elif LIBUV
+#if LIBUV
 namespace Microsoft.AspNetCore.Server.Kestrel.Libuv.FunctionalTests
 #elif SOCKETS
 namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests

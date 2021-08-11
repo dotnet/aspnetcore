@@ -16,9 +16,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
-#if INMEMORY
-namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
-#elif LIBUV
+#if LIBUV
 namespace Microsoft.AspNetCore.Server.Kestrel.Libuv.FunctionalTests.Http2
 #elif SOCKETS
 namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests.Http2
