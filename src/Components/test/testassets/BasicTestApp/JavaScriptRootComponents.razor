@@ -33,6 +33,7 @@
     <button id="set-invalid-params" onclick="setInvalidParameters()">Set invalid parameters</button>
     <button id="set-catchall-params" onclick="setCatchAllParameters()">Set catch-all parameters</button>
     <button id="set-function-params" onclick="setFunctionParameters()">Set function parameters</button>
+    <button id="remove-function-params" onclick="removeFunctionParameters()">Remove function parameters</button>
 </p>
 
 <script suppress-error="BL9992">
@@ -126,6 +127,15 @@
             onJSCallbackWithParamsButtonClick,
         });
         setMessage(`Finished setting function parameters on component in ${containerElement.id}`);
+    }
+
+    async function removeFunctionParameters() {
+        const { component, containerElement } = addedComponents[addedComponents.length - 1];
+        await component.setParameters({
+            onJSCallbackButtonClick: null,
+            onJSCallbackWithParamsButtonClick: null,
+        });
+        setMessage(`Finished removing function parameters on component in ${containerElement.id}`);
     }
 
     function removeRootComponent() {

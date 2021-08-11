@@ -8,8 +8,8 @@ export function attachWebRendererInterop(
   rendererId: number,
   interopMethods: DotNet.DotNetObject,
   hasJSComponents: boolean,
-  parameterInfo: JSComponentParametersByIdentifier,
-  initializerInfo: JSComponentIdentifiersByInitializer,
+  jsComponentParameters: JSComponentParametersByIdentifier,
+  jsComponentInitializers: JSComponentIdentifiersByInitializer,
 ): void {
   if (interopMethodsByRenderer.has(rendererId)) {
     throw new Error(`Interop methods are already registered for renderer ${rendererId}`);
@@ -19,7 +19,7 @@ export function attachWebRendererInterop(
 
   if (hasJSComponents) {
     const manager = getInteropMethods(rendererId);
-    enableJSRootComponents(manager, parameterInfo, initializerInfo);
+    enableJSRootComponents(manager, jsComponentParameters, jsComponentInitializers);
   }
 }
 

@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
     [EditorBrowsable(EditorBrowsableState.Never)]
     public class JSComponentInterop
     {
-        private const string JSFunctionPropertyName = "func";
+        private const string JSFunctionPropertyName = "invoke";
 
         private static readonly ConcurrentDictionary<Type, ParameterTypeCache> ParameterTypeCaches = new();
 
@@ -104,10 +104,10 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
                             parameterInfo.Type,
                             jsonOptions),
                         ParameterKind.EventCallbackWithNoParameters => CreateEventCallbackWithNoParameters(
-                            JsonSerializer.Deserialize<IJSObjectReference>(parameterJsonValue, jsonOptions)!),
+                            JsonSerializer.Deserialize<IJSObjectReference>(parameterJsonValue, jsonOptions)),
                         ParameterKind.EventCallbackWithSingleParameter => CreateEventCallbackWithSingleParameter(
                             parameterInfo.Type,
-                            JsonSerializer.Deserialize<IJSObjectReference>(parameterJsonValue, jsonOptions)!),
+                            JsonSerializer.Deserialize<IJSObjectReference>(parameterJsonValue, jsonOptions)),
                         var x => throw new InvalidOperationException($"Invalid {nameof(ParameterKind)} '{x}'.")
                     };
                 }
@@ -169,16 +169,16 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
                 _   => ParameterKind.Value,
             };
 
-        private static EventCallback CreateEventCallbackWithNoParameters(IJSObjectReference jsObjectReference)
+        private static EventCallback CreateEventCallbackWithNoParameters(IJSObjectReference? jsObjectReference)
         {
-            var callback = new Func<Task>(
+            var callback = jsObjectReference is null ? null : new Func<Task>(
                 () => jsObjectReference.InvokeVoidAsync(JSFunctionPropertyName).AsTask());
             return new(null, callback);
         }
 
-        private static object CreateEventCallbackWithSingleParameter(Type eventCallbackType, IJSObjectReference jsObjectReference)
+        private static object CreateEventCallbackWithSingleParameter(Type eventCallbackType, IJSObjectReference? jsObjectReference)
         {
-            var callback = new Func<object, Task>(
+            var callback = jsObjectReference is null ? null : new Func<object, Task>(
                 value => jsObjectReference.InvokeVoidAsync(JSFunctionPropertyName, value).AsTask());
             return Activator.CreateInstance(eventCallbackType, null, callback)!;
         }

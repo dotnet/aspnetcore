@@ -38,75 +38,66 @@ export function getAndRemovePendingRootComponentContainer(containerIdentifier: s
 }
 
 class EventCallbackWrapper {
-  private _wrapper: { func: any };
+  private _callback: any;
 
-  private readonly _jsObjectReference: any;
+  private _selfJSObjectReference: any;
 
-  constructor(eventCallback: any) {
-    this._wrapper = { func: eventCallback };
-    this._jsObjectReference = DotNet.createJSObjectReference(this._wrapper);
+  invoke(arg: any) {
+    return this._callback(arg);
   }
 
-  setCallback(eventCallback: any) {
-    this._wrapper.func = eventCallback;
+  setCallback(callback: any): void {
+    if (!this._selfJSObjectReference) {
+      this._selfJSObjectReference = DotNet.createJSObjectReference(this);
+    }
+
+    this._callback = callback;
   }
 
   getJSObjectReference() {
-    return this._jsObjectReference;
+    return this._selfJSObjectReference;
   }
 
   dispose() {
-    DotNet.disposeJSObjectReference(this._jsObjectReference);
+    if (this._selfJSObjectReference) {
+      DotNet.disposeJSObjectReference(this._selfJSObjectReference);
+    }
   }
 }
 
 class DynamicRootComponent {
   private _componentId: number | null;
 
-  private _jsEventCallbackWrappers = new Map<string, EventCallbackWrapper | null>();
+  private readonly _jsEventCallbackWrappers = new Map<string, EventCallbackWrapper>();
 
   constructor(componentId: number, parameters: JSComponentParameter[]) {
     this._componentId = componentId;
 
     for (const parameter of parameters) {
       if (parameter.type === 'eventcallback') {
-        // We lazily initialize event callback wrappers, so null entries are added for now.
-        this._jsEventCallbackWrappers.set(parameter.name.toLowerCase(), null);
+        this._jsEventCallbackWrappers.set(parameter.name.toLowerCase(), new EventCallbackWrapper());
       }
     }
   }
 
   setParameters(parameters: ComponentParameters) {
-    parameters = parameters || {};
+    const mappedParameters = {};
+    const entries = Object.entries(parameters || {});
+    const parameterCount = entries.length;
 
-    const keys = Object.keys(parameters);
-    const parameterCount = keys.length;
+    for (const [key, value] of entries) {
+      const callbackWrapper = this._jsEventCallbackWrappers.get(key.toLowerCase());
 
-    // We iterate over the provided parameters to modify event callback values.
-    for (const key of keys) {
-      const keyLowerCase = key.toLowerCase();
-      let callbackWrapper = this._jsEventCallbackWrappers.get(keyLowerCase);
-      if (callbackWrapper === undefined) {
-        // Not an event callback.
+      if (!callbackWrapper || !value) {
+        mappedParameters[key] = value;
         continue;
       }
 
-      const callback = parameters[key];
-      if (callbackWrapper === null) {
-        // This is the first time this parameter has been provided.
-        // Create the wrapper, then replace the existing parameter value with the JS object reference.
-        callbackWrapper = new EventCallbackWrapper(callback);
-        this._jsEventCallbackWrappers.set(keyLowerCase, callbackWrapper);
-        parameters[key] = callbackWrapper.getJSObjectReference();
-      } else {
-        // This parameter has been seen before. Since the existing JS object reference is still valid in .NET,
-        // we can update the callback on the JS side and skip this parameter.
-        callbackWrapper.setCallback(callback);
-        delete parameters[key];
-      }
+      callbackWrapper.setCallback(value);
+      mappedParameters[key] = callbackWrapper.getJSObjectReference();
     }
 
-    return getRequiredManager().invokeMethodAsync('SetRootComponentParameters', this._componentId, parameterCount, parameters);
+    return getRequiredManager().invokeMethodAsync('SetRootComponentParameters', this._componentId, parameterCount, mappedParameters);
   }
 
   async dispose() {
@@ -115,7 +106,7 @@ class DynamicRootComponent {
       this._componentId = null; // Ensure it can't be used again
 
       for (const jsEventCallbackWrapper of this._jsEventCallbackWrappers.values()) {
-        jsEventCallbackWrapper?.dispose();
+        jsEventCallbackWrapper.dispose();
       }
     }
   }
@@ -124,8 +115,8 @@ class DynamicRootComponent {
 // Called by the framework
 export function enableJSRootComponents(
   managerInstance: DotNet.DotNetObject,
-  parameterInfo: JSComponentParametersByIdentifier,
-  initializerInfo: JSComponentIdentifiersByInitializer
+  jsComponentParameters: JSComponentParametersByIdentifier,
+  jsComponentInitializers: JSComponentIdentifiersByInitializer
 ): void {
   if (manager) {
     // This will only happen in very nonstandard cases where someone has multiple hosts.
@@ -134,15 +125,15 @@ export function enableJSRootComponents(
   }
 
   manager = managerInstance;
-  jsComponentParametersByIdentifier = parameterInfo;
+  jsComponentParametersByIdentifier = jsComponentParameters;
 
   // Call the registered initializers. This is an arbitrary subset of the JS component types that are registered
   // on the .NET side - just those of them that require some JS-side initialization (e.g., to register them
   // as custom elements).
-  for (const [initializerIdentifier, componentIdentifiers] of Object.entries(initializerInfo)) {
+  for (const [initializerIdentifier, componentIdentifiers] of Object.entries(jsComponentInitializers)) {
     const initializerFunc = DotNet.jsCallDispatcher.findJSFunction(initializerIdentifier, 0) as JSComponentInitializerCallback;
     for (const componentIdentifier of componentIdentifiers) {
-      const parameters = parameterInfo[componentIdentifier];
+      const parameters = jsComponentParameters[componentIdentifier];
       initializerFunc(componentIdentifier, parameters);
     }
   }
