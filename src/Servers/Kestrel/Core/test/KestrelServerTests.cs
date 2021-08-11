@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                .BuildServiceProvider();
             options.ListenAnyIP(5000, options =>
             {
-                options.UseHttps();
+                options.UseHttps(TestResources.GetTestCertificate());
                 options.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
             });
 
@@ -293,7 +293,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                .BuildServiceProvider();
             options.ListenAnyIP(0, options =>
             {
-                options.UseHttps();
+                options.UseHttps(TestResources.GetTestCertificate());
                 options.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
             });
 
