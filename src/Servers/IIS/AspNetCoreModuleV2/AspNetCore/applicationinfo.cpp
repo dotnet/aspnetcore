@@ -253,7 +253,7 @@ APPLICATION_INFO::ShutDownApplication(const bool fServerInitiated)
 
 /* Overview of shadow copy logic when enabled. See https://github.com/dotnet/aspnetcore/pull/28357 for more context
 
- * On first request, ANCM goes through it's startup sequence, starting dotnet and sending the request into managed code. During this sequence, 
+ * On first request, ANCM goes through its startup sequence, starting dotnet and sending the request into managed code. During this sequence, 
  * ANCM will copy the contents of the app directory to another directory which is user specified. The path to this directory can be absolute or relative.
 
  * Logs and log files will be written to the app directory rather than the shadow copy directory. app_offline will also only be watched in the app directory. 
@@ -266,7 +266,7 @@ APPLICATION_INFO::ShutDownApplication(const bool fServerInitiated)
  * Subfolders are created under the user specified shadowCopyDirectory, where the highest int value directory name will be used each time. 
  * It will start at subdirectory with name '0' and increment from there. On shutdown, because dlls are still locked by the running process, 
  * we need to copy dlls to a different directory than what is currently running in the app. So in the case where the directory name is '0', 
- * we will create a directory name '1' and write the contents there. Then on app start, it will pick the directory name '1' as its the highest value.
+ * we will create a directory name '1' and write the contents there. Then on app start, it will pick the directory name '1' as it's the highest value.
 
  * Other directories in the shadow copy directory will be cleaned up as well. Following the example, after '1' has been selected as the directory to use, 
  * we will start a thread that deletes all other folders in that directory.
