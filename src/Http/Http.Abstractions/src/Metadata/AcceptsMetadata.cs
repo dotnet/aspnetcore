@@ -28,6 +28,6 @@ namespace Microsoft.AspNetCore.Http.Metadata
         /// <summary>
         /// Gets the supported request content types. 
         /// </summary>
-        public IReadOnlyList<string> ContentTypes { get; }
+        public IEnumerable<string> ContentTypes { get; }
     }
 }

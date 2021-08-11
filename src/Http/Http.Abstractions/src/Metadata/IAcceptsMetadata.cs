@@ -14,6 +14,6 @@ namespace Microsoft.AspNetCore.Http.Metadata
         /// <summary>
         /// Gets a list of request content types.
         /// </summary>
-        IReadOnlyList<string> ContentTypes { get; }
+        IEnumerable<string> ContentTypes { get; }
     }
 }

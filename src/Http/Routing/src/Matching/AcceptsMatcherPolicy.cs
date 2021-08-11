@@ -13,7 +13,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
-    internal class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, INodeBuilderPolicy, IEndpointSelectorPolicy
+    internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, INodeBuilderPolicy, IEndpointSelectorPolicy
     {
         internal const string Http415EndpointDisplayName = "415 HTTP Unsupported Media Type";
         internal const string AnyContentType = "*/*";
@@ -311,7 +311,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             {
                 var mediaType = destinations[i].mediaType;
 
-                if (mediaType is not null && !mediaType.Type.HasValue)
+                if (mediaType is null || !mediaType.Type.HasValue)
                 {
                     return destinations[i].destination;
                 }
