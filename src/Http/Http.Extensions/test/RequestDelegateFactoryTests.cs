@@ -3,11 +3,7 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
 using System.Net.Sockets;
@@ -18,9 +14,6 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Json;
@@ -645,14 +638,19 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     httpContext.Items.Add("body", todo);
                 }
 
-                void TestImpliedFromBody(HttpContext httpContext, Todo myService)
+                void TestImpliedFromBody(HttpContext httpContext, Todo todo)
                 {
-                    httpContext.Items.Add("body", myService);
+                    httpContext.Items.Add("body", todo);
                 }
 
-                void TestImpliedFromBodyInterface(HttpContext httpContext, ITodo myService)
+                void TestImpliedFromBodyInterface(HttpContext httpContext, ITodo todo)
                 {
-                    httpContext.Items.Add("body", myService);
+                    httpContext.Items.Add("body", todo);
+                }
+
+                void TestImpliedFromBodyStruct(HttpContext httpContext, TodoStruct todo)
+                {
+                    httpContext.Items.Add("body", todo);
                 }
 
                 return new[]
@@ -660,6 +658,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     new[] { (Action<HttpContext, Todo>)TestExplicitFromBody },
                     new[] { (Action<HttpContext, Todo>)TestImpliedFromBody },
                     new[] { (Action<HttpContext, ITodo>)TestImpliedFromBodyInterface },
+                    new object[] { (Action<HttpContext, TodoStruct>)TestImpliedFromBodyStruct },
                 };
             }
         }
@@ -703,7 +702,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var deserializedRequestBody = httpContext.Items["body"];
             Assert.NotNull(deserializedRequestBody);
-            Assert.Equal(originalTodo.Name, ((Todo)deserializedRequestBody!).Name);
+            Assert.Equal(originalTodo.Name, ((ITodo)deserializedRequestBody!).Name);
         }
 
         [Theory]
@@ -1784,6 +1783,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             public string? Name { get; set; } = "Todo";
             public bool IsComplete { get; set; }
         }
+
+        private record struct TodoStruct(int Id, string? Name, bool IsComplete) : ITodo;
 
         private interface ITodo
         {

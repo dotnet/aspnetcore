@@ -24,8 +24,7 @@ namespace CodeGenerator
                 "IProtocolErrorCodeFeature",
                 "IStreamDirectionFeature",
                 "IStreamIdFeature",
-                "IStreamAbortFeature",
-                "ITlsConnectionFeature"
+                "IStreamAbortFeature"
             };
 
             var implementedFeatures = new[]
@@ -47,7 +46,7 @@ using Microsoft.AspNetCore.Http.Features;";
                 allFeatures: allFeatures,
                 implementedFeatures: implementedFeatures,
                 extraUsings: usings,
-                fallbackFeatures: null);
+                fallbackFeatures: "MultiplexedConnectionFeatures");
         }
     }
 }

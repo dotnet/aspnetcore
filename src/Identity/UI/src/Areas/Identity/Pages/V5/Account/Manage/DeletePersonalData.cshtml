@@ -14,17 +14,17 @@
 </div>
 
 <div>
-    <form id="delete-user" method="post" class="form-group">
+    <form id="delete-user" method="post">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         @if (Model.RequirePassword)
         {
-            <div class="form-group">
-                <label asp-for="Input.Password"></label>
+            <div class="form-floating">
+                <label asp-for="Input.Password" class="form-label"></label>
                 <input asp-for="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" />
                 <span asp-validation-for="Input.Password" class="text-danger"></span>
             </div>
         }
-        <button class="btn btn-danger" type="submit">Delete data and close my account</button>
+        <button class="w-100 btn btn-lg btn-danger" type="submit">Delete data and close my account</button>
     </form>
 </div>
 

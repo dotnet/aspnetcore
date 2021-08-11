@@ -50,6 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             _context = context;
             _log = context.Log;
             MemoryPool = connection.MemoryPool;
+            MultiplexedConnectionFeatures = connection.Features;
 
             RemoteEndPoint = connection.RemoteEndPoint;
             LocalEndPoint = connection.LocalEndPoint;
@@ -213,7 +214,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             {
                 // Abort from peer.
                 Error = ex.ErrorCode;
-                _log.StreamAborted(this, ex);
+                _log.StreamAborted(this, ex.ErrorCode, ex);
 
                 // This could be ignored if _shutdownReason is already set.
                 error = new ConnectionResetException(ex.Message, ex);
@@ -223,8 +224,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             catch (QuicOperationAbortedException ex)
             {
                 // AbortRead has been called for the stream.
-                // Possibily might also get here from connection closing.
-                // System.Net.Quic exception handling not finalized.
+                error = new ConnectionAbortedException(ex.Message, ex);
+            }
+            catch (QuicConnectionAbortedException ex)
+            {
+                // Connection has aborted.
                 error = ex;
             }
             catch (Exception ex)
@@ -316,7 +320,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             {
                 // Abort from peer.
                 Error = ex.ErrorCode;
-                _log.StreamAborted(this, ex);
+                _log.StreamAborted(this, ex.ErrorCode, ex);
+
+                // This could be ignored if _shutdownReason is already set.
+                shutdownReason = new ConnectionResetException(ex.Message, ex);
+
+                _clientAbort = true;
+            }
+            catch (QuicConnectionAbortedException ex)
+            {
+                // Abort from peer.
+                Error = ex.ErrorCode;
+                _log.StreamAborted(this, ex.ErrorCode, ex);
 
                 // This could be ignored if _shutdownReason is already set.
                 shutdownReason = new ConnectionResetException(ex.Message, ex);
@@ -338,7 +353,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             }
             finally
             {
-                ShutdownWrite(shutdownReason);
+                ShutdownWrite(_shutdownWriteReason ?? _shutdownReason ?? shutdownReason);
 
                 // Complete the output after disposing the stream
                 Output.Complete(unexpectedError ?? shutdownReason);
@@ -358,8 +373,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             }
 
             _serverAborted = true;
+            _shutdownReason = abortReason;
 
-            _log.StreamAbort(this, abortReason.Message);
+            _log.StreamAbort(this, Error, abortReason.Message);
 
             lock (_shutdownLock)
             {

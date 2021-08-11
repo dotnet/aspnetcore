@@ -1,15 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Security.Claims;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,7 +17,8 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     public static partial class RequestDelegateFactory
     {
-        private static readonly NullabilityInfoContext NullabilityContext = new NullabilityInfoContext();
+        private static readonly NullabilityInfoContext NullabilityContext = new();
+        private static readonly TryParseMethodCache TryParseMethodCache = new();
 
         private static readonly MethodInfo ExecuteTaskOfTMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTask), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo ExecuteTaskOfStringMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskOfString), BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -48,21 +43,20 @@ namespace Microsoft.AspNetCore.Http
         private static readonly ParameterExpression HttpContextExpr = Expression.Parameter(typeof(HttpContext), "httpContext");
         private static readonly ParameterExpression BodyValueExpr = Expression.Parameter(typeof(object), "bodyValue");
         private static readonly ParameterExpression WasParamCheckFailureExpr = Expression.Variable(typeof(bool), "wasParamCheckFailure");
-        private static readonly ParameterExpression TempSourceStringExpr = TryParseMethodCache.TempSourceStringExpr;
 
-        private static readonly MemberExpression RequestServicesExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.RequestServices));
-        private static readonly MemberExpression HttpRequestExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.Request));
-        private static readonly MemberExpression HttpResponseExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.Response));
-        private static readonly MemberExpression RequestAbortedExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.RequestAborted));
-        private static readonly MemberExpression UserExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.User));
-        private static readonly MemberExpression RouteValuesExpr = Expression.Property(HttpRequestExpr, nameof(HttpRequest.RouteValues));
-        private static readonly MemberExpression QueryExpr = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Query));
-        private static readonly MemberExpression HeadersExpr = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Headers));
-        private static readonly MemberExpression StatusCodeExpr = Expression.Property(HttpResponseExpr, nameof(HttpResponse.StatusCode));
+        private static readonly MemberExpression RequestServicesExpr = Expression.Property(HttpContextExpr, typeof(HttpContext).GetProperty(nameof(HttpContext.RequestServices))!);
+        private static readonly MemberExpression HttpRequestExpr = Expression.Property(HttpContextExpr, typeof(HttpContext).GetProperty(nameof(HttpContext.Request))!);
+        private static readonly MemberExpression HttpResponseExpr = Expression.Property(HttpContextExpr, typeof(HttpContext).GetProperty(nameof(HttpContext.Response))!);
+        private static readonly MemberExpression RequestAbortedExpr = Expression.Property(HttpContextExpr, typeof(HttpContext).GetProperty(nameof(HttpContext.RequestAborted))!);
+        private static readonly MemberExpression UserExpr = Expression.Property(HttpContextExpr, typeof(HttpContext).GetProperty(nameof(HttpContext.User))!);
+        private static readonly MemberExpression RouteValuesExpr = Expression.Property(HttpRequestExpr, typeof(HttpRequest).GetProperty(nameof(HttpRequest.RouteValues))!);
+        private static readonly MemberExpression QueryExpr = Expression.Property(HttpRequestExpr, typeof(HttpRequest).GetProperty(nameof(HttpRequest.Query))!);
+        private static readonly MemberExpression HeadersExpr = Expression.Property(HttpRequestExpr, typeof(HttpRequest).GetProperty(nameof(HttpRequest.Headers))!);
+        private static readonly MemberExpression StatusCodeExpr = Expression.Property(HttpResponseExpr, typeof(HttpResponse).GetProperty(nameof(HttpResponse.StatusCode))!);
         private static readonly MemberExpression CompletedTaskExpr = Expression.Property(null, (PropertyInfo)GetMemberInfo<Func<Task>>(() => Task.CompletedTask));
 
-        private static readonly BinaryExpression TempSourceStringNotNullExpr = Expression.NotEqual(TempSourceStringExpr, Expression.Constant(null));
-        private static readonly BinaryExpression TempSourceStringNullExpr = Expression.Equal(TempSourceStringExpr, Expression.Constant(null));
+        private static readonly BinaryExpression TempSourceStringNotNullExpr = Expression.NotEqual(TryParseMethodCache.TempSourceStringExpr, Expression.Constant(null));
+        private static readonly BinaryExpression TempSourceStringNullExpr = Expression.Equal(TryParseMethodCache.TempSourceStringExpr, Expression.Constant(null));
 
         /// <summary>
         /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="action"/>.
@@ -168,13 +162,13 @@ namespace Microsoft.AspNetCore.Http
 
             var arguments = CreateArguments(methodInfo.GetParameters(), factoryContext);
 
-            var responseWritingMethodCall = factoryContext.CheckParams.Count > 0 ?
+            var responseWritingMethodCall = factoryContext.ParamCheckExpressions.Count > 0 ?
                 CreateParamCheckingResponseWritingMethodCall(methodInfo, targetExpression, arguments, factoryContext) :
                 CreateResponseWritingMethodCall(methodInfo, targetExpression, arguments);
 
             if (factoryContext.UsingTempSourceString)
             {
-                responseWritingMethodCall = Expression.Block(new[] { TempSourceStringExpr }, responseWritingMethodCall);
+                responseWritingMethodCall = Expression.Block(new[] { TryParseMethodCache.TempSourceStringExpr }, responseWritingMethodCall);
             }
 
             return HandleRequestBodyAndCompileRequestDelegate(responseWritingMethodCall, factoryContext);
@@ -325,15 +319,21 @@ namespace Microsoft.AspNetCore.Http
             //         };
             // }
 
-            var localVariables = new ParameterExpression[factoryContext.CheckParams.Count + 1];
-            var checkParamAndCallMethod = new Expression[factoryContext.CheckParams.Count + 1];
+            var localVariables = new ParameterExpression[factoryContext.ExtraLocals.Count + 1];
+            var checkParamAndCallMethod = new Expression[factoryContext.ParamCheckExpressions.Count + 1];
 
-            for (var i = 0; i < factoryContext.CheckParams.Count; i++)
+
+            for (var i = 0; i < factoryContext.ExtraLocals.Count; i++)
             {
-                (localVariables[i], checkParamAndCallMethod[i]) = factoryContext.CheckParams[i];
+                localVariables[i] = factoryContext.ExtraLocals[i];
             }
 
-            localVariables[factoryContext.CheckParams.Count] = WasParamCheckFailureExpr;
+            for (var i = 0; i < factoryContext.ParamCheckExpressions.Count; i++)
+            {
+                checkParamAndCallMethod[i] = factoryContext.ParamCheckExpressions[i];
+            }
+
+            localVariables[factoryContext.ExtraLocals.Count] = WasParamCheckFailureExpr;
 
             var set400StatusAndReturnCompletedTask = Expression.Block(
                     Expression.Assign(StatusCodeExpr, Expression.Constant(400)),
@@ -345,7 +345,7 @@ namespace Microsoft.AspNetCore.Http
                 set400StatusAndReturnCompletedTask,
                 AddResponseWritingToMethodCall(methodCall, methodInfo.ReturnType));
 
-            checkParamAndCallMethod[factoryContext.CheckParams.Count] = checkWasParamCheckFailure;
+            checkParamAndCallMethod[factoryContext.ParamCheckExpressions.Count] = checkWasParamCheckFailure;
 
             return Expression.Block(localVariables, checkParamAndCallMethod);
         }
@@ -555,13 +555,14 @@ namespace Microsoft.AspNetCore.Http
                         Expression.IfThen(Expression.Equal(argument, Expression.Constant(null)),
                             Expression.Block(
                                 Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
-                                Expression.Call(LogRequiredParameterNotProvidedMethod, 
+                                Expression.Call(LogRequiredParameterNotProvidedMethod,
                                     HttpContextExpr, Expression.Constant(parameter.ParameterType.Name), Expression.Constant(parameter.Name))
                             )
                         )
                     );
 
-                    factoryContext.CheckParams.Add((argument, checkRequiredStringParameterBlock));
+                    factoryContext.ExtraLocals.Add(argument);
+                    factoryContext.ParamCheckExpressions.Add(checkRequiredStringParameterBlock);
                     return argument;
                 }
 
@@ -642,7 +643,7 @@ namespace Microsoft.AspNetCore.Http
             var failBlock = Expression.Block(
                 Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
                 Expression.Call(LogParameterBindingFailureMethod,
-                    HttpContextExpr, parameterTypeNameConstant, parameterNameConstant, TempSourceStringExpr));
+                    HttpContextExpr, parameterTypeNameConstant, parameterNameConstant, TryParseMethodCache.TempSourceStringExpr));
 
             var tryParseCall = tryParseMethodCall(parsedValue);
 
@@ -652,7 +653,7 @@ namespace Microsoft.AspNetCore.Http
             // if (tempSourceString == null)
             // {
             //      wasParamCheckFailure = true;
-            //      Log.RequiredParameterNotProvided(httpContext, "Int32", "param1");    
+            //      Log.RequiredParameterNotProvided(httpContext, "Int32", "param1");
             // }
             var checkRequiredParaseableParameterBlock = Expression.Block(
                 Expression.IfThen(TempSourceStringNullExpr,
@@ -681,18 +682,19 @@ namespace Microsoft.AspNetCore.Http
             var fullParamCheckBlock = !isOptional
                 ? Expression.Block(
                     // tempSourceString = httpContext.RequestValue["id"];
-                    Expression.Assign(TempSourceStringExpr, valueExpression),
+                    Expression.Assign(TryParseMethodCache.TempSourceStringExpr, valueExpression),
                     // if (tempSourceString == null) { ... } only produced when parameter is required
                     checkRequiredParaseableParameterBlock,
                     // if (tempSourceString != null) { ... }
-                    ifNotNullTryParse) 
+                    ifNotNullTryParse)
                 : Expression.Block(
                     // tempSourceString = httpContext.RequestValue["id"];
-                    Expression.Assign(TempSourceStringExpr, valueExpression),
+                    Expression.Assign(TryParseMethodCache.TempSourceStringExpr, valueExpression),
                     // if (tempSourceString != null) { ... }
                     ifNotNullTryParse);
 
-            factoryContext.CheckParams.Add((argument, fullParamCheckBlock));
+            factoryContext.ExtraLocals.Add(argument);
+            factoryContext.ParamCheckExpressions.Add(fullParamCheckBlock);
 
             return argument;
         }
@@ -720,36 +722,30 @@ namespace Microsoft.AspNetCore.Http
             factoryContext.JsonRequestBodyType = parameter.ParameterType;
             factoryContext.AllowEmptyRequestBody = allowEmpty || isOptional;
 
-            var convertedBodyValue = Expression.Convert(BodyValueExpr, parameter.ParameterType);
-            var argument = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
-
             if (!factoryContext.AllowEmptyRequestBody)
             {
                 // If the parameter is required or the user has not explicitly
                 // set allowBody to be empty then validate that it is required.
                 //
-                // Todo body_local = Convert(bodyValue, ToDo);
-                // if (body_local == null)
+                // if (bodyValue == null)
                 // {
                 //      wasParamCheckFailure = true;
                 //      Log.RequiredParameterNotProvided(httpContext, "Todo", "body");
                 // }
                 var checkRequiredBodyBlock = Expression.Block(
-                    Expression.Assign(argument, convertedBodyValue),
                     Expression.IfThen(
-                    Expression.Equal(argument, Expression.Constant(null)),
+                    Expression.Equal(BodyValueExpr, Expression.Constant(null)),
                         Expression.Block(
                             Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
-                            Expression.Call(LogRequiredParameterNotProvidedMethod, 
+                            Expression.Call(LogRequiredParameterNotProvidedMethod,
                                     HttpContextExpr, Expression.Constant(parameter.ParameterType.Name), Expression.Constant(parameter.Name))
                         )
                     )
                 );
-                factoryContext.CheckParams.Add((argument, checkRequiredBodyBlock));
-                return argument;
-            }
 
-            if (parameter.HasDefaultValue)
+                factoryContext.ParamCheckExpressions.Add(checkRequiredBodyBlock);
+            }
+            else if (parameter.HasDefaultValue)
             {
                 // Convert(bodyValue ?? SomeDefault, Todo)
                 return Expression.Convert(
@@ -758,7 +754,7 @@ namespace Microsoft.AspNetCore.Http
             }
 
             // Convert(bodyValue, Todo)
-            return convertedBodyValue;
+            return Expression.Convert(BodyValueExpr, parameter.ParameterType);
         }
 
         private static MethodInfo GetMethodInfo<T>(Expression<T> expr)
@@ -867,8 +863,8 @@ namespace Microsoft.AspNetCore.Http
 
         private static Task ExecuteWriteStringResponseAsync(HttpContext httpContext, string text)
         {
-             SetPlaintextContentType(httpContext);
-             return httpContext.Response.WriteAsync(text);
+            SetPlaintextContentType(httpContext);
+            return httpContext.Response.WriteAsync(text);
         }
 
         private static Task ExecuteValueTask(ValueTask task)
@@ -953,7 +949,8 @@ namespace Microsoft.AspNetCore.Http
             public List<string>? RouteParameters { get; set; }
 
             public bool UsingTempSourceString { get; set; }
-            public List<(ParameterExpression, Expression)> CheckParams { get; } = new();
+            public List<ParameterExpression> ExtraLocals { get; } = new();
+            public List<Expression> ParamCheckExpressions { get; } = new();
         }
 
         private static partial class Log

@@ -553,7 +553,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             });
 
             Assert.False(bindCalled);
-            Assert.Equal("HTTP/3 requires https.", ex.InnerException.InnerException.Message);
+            Assert.Equal("HTTP/3 requires HTTPS.", ex.InnerException.InnerException.Message);
         }
 
         [Fact]
@@ -589,7 +589,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             });
 
             Assert.False(bindCalled);
-            Assert.Equal("HTTP/3 requires https.", ex.InnerException.InnerException.Message);
+            Assert.Equal("HTTP/3 requires HTTPS.", ex.InnerException.InnerException.Message);
         }
 
         [Fact]

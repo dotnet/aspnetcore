@@ -98,6 +98,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 { $"{nameof(HttpConnectionOptions.DefaultTransferFormat)}", TransferFormat.Text },
                 { $"{nameof(HttpConnectionOptions.WebSocketConfiguration)}", webSocketConfig },
                 { $"{nameof(HttpConnectionOptions.WebSocketFactory)}", webSocketFactory },
+                { $"{nameof(HttpConnectionOptions.ApplicationMaxBufferSize)}", 1L * 1024 * 1024 },
+                { $"{nameof(HttpConnectionOptions.TransportMaxBufferSize)}", 1L * 1024 * 1024 },
             };
 
             var options = new HttpConnectionOptions();

@@ -71,9 +71,9 @@ namespace System.IO
             var data = new List<byte>();
             var offset = 0;
 
-            while (offset < buffer.Length)
+            while (true)
             {
-                var read = await stream.ReadAsync(buffer, 0, buffer.Length - offset, cancellationToken);
+                var read = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
                 offset += read;
 
                 if (read == 0)
@@ -83,10 +83,6 @@ namespace System.IO
 
                 data.AddRange(buffer.AsMemory(0, read).ToArray());
             }
-
-            Assert.Equal(0, await stream.ReadAsync(new byte[1], 0, 1, cancellationToken));
-
-            return data.ToArray();
         }
     }
 }

@@ -241,6 +241,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         Stream IHttpResponseBodyFeature.Stream => ResponseBody;
 
+        Exception? IBadRequestExceptionFeature.Error
+        {
+            get => _requestRejectedException;
+        }
+
         void IHttpResponseFeature.OnStarting(Func<object, Task> callback, object state)
         {
             OnStarting(callback, state);

@@ -1,10 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Reflection.Metadata;
-using System.Text.Json;
 using Microsoft.AspNetCore.Components.Lifetime;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.HotReload;
 using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
@@ -12,7 +11,6 @@ using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
@@ -27,7 +25,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         private readonly IConfiguration _configuration;
         private readonly RootComponentMappingCollection _rootComponents;
         private readonly string? _persistedState;
-        private readonly JsonSerializerOptions _jsonOptions;
 
         // NOTE: the host is disposable because it OWNs references to disposable things.
         //
@@ -46,8 +43,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             WebAssemblyHostBuilder builder,
             IServiceProvider services,
             AsyncServiceScope scope,
-            string? persistedState,
-            JsonSerializerOptions jsonOptions)
+            string? persistedState)
         {
             // To ensure JS-invoked methods don't get linked out, have a reference to their enclosing types
             GC.KeepAlive(typeof(JSInteropMethods));
@@ -57,7 +53,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             _configuration = builder.Configuration;
             _rootComponents = builder.RootComponents;
             _persistedState = persistedState;
-            _jsonOptions = jsonOptions;
         }
 
         /// <summary>

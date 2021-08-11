@@ -129,17 +129,17 @@
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <MicrosoftNETCorePlatformsVersion>6.0.0-rc.1.21405.12</MicrosoftNETCorePlatformsVersion>
     <!-- Packages from dotnet/efcore -->
-    <dotnetefVersion>6.0.0-rc.1.21406.1</dotnetefVersion>
-    <MicrosoftEntityFrameworkCoreInMemoryVersion>6.0.0-rc.1.21406.1</MicrosoftEntityFrameworkCoreInMemoryVersion>
-    <MicrosoftEntityFrameworkCoreRelationalVersion>6.0.0-rc.1.21406.1</MicrosoftEntityFrameworkCoreRelationalVersion>
-    <MicrosoftEntityFrameworkCoreSqliteVersion>6.0.0-rc.1.21406.1</MicrosoftEntityFrameworkCoreSqliteVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerVersion>6.0.0-rc.1.21406.1</MicrosoftEntityFrameworkCoreSqlServerVersion>
-    <MicrosoftEntityFrameworkCoreToolsVersion>6.0.0-rc.1.21406.1</MicrosoftEntityFrameworkCoreToolsVersion>
-    <MicrosoftEntityFrameworkCoreVersion>6.0.0-rc.1.21406.1</MicrosoftEntityFrameworkCoreVersion>
-    <MicrosoftEntityFrameworkCoreDesignVersion>6.0.0-rc.1.21406.1</MicrosoftEntityFrameworkCoreDesignVersion>
+    <dotnetefVersion>6.0.0-rc.1.21406.2</dotnetefVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryVersion>6.0.0-rc.1.21406.2</MicrosoftEntityFrameworkCoreInMemoryVersion>
+    <MicrosoftEntityFrameworkCoreRelationalVersion>6.0.0-rc.1.21406.2</MicrosoftEntityFrameworkCoreRelationalVersion>
+    <MicrosoftEntityFrameworkCoreSqliteVersion>6.0.0-rc.1.21406.2</MicrosoftEntityFrameworkCoreSqliteVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerVersion>6.0.0-rc.1.21406.2</MicrosoftEntityFrameworkCoreSqlServerVersion>
+    <MicrosoftEntityFrameworkCoreToolsVersion>6.0.0-rc.1.21406.2</MicrosoftEntityFrameworkCoreToolsVersion>
+    <MicrosoftEntityFrameworkCoreVersion>6.0.0-rc.1.21406.2</MicrosoftEntityFrameworkCoreVersion>
+    <MicrosoftEntityFrameworkCoreDesignVersion>6.0.0-rc.1.21406.2</MicrosoftEntityFrameworkCoreDesignVersion>
     <!-- Packages from dotnet/arcade -->
-    <MicrosoftDotNetBuildTasksInstallersVersion>6.0.0-beta.21379.2</MicrosoftDotNetBuildTasksInstallersVersion>
-    <MicrosoftDotNetBuildTasksTemplatingVersion>6.0.0-beta.21379.2</MicrosoftDotNetBuildTasksTemplatingVersion>
+    <MicrosoftDotNetBuildTasksInstallersVersion>6.0.0-beta.21406.6</MicrosoftDotNetBuildTasksInstallersVersion>
+    <MicrosoftDotNetBuildTasksTemplatingVersion>6.0.0-beta.21406.6</MicrosoftDotNetBuildTasksTemplatingVersion>
   </PropertyGroup>
   <!--
 
@@ -212,10 +212,10 @@
     <!-- Packages from 2.1, 3.1, and 5.0 branches used for site extension build. -->
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension21Version>2.1.1</MicrosoftAspNetCoreAzureAppServicesSiteExtension21Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension22Version>2.2.0</MicrosoftAspNetCoreAzureAppServicesSiteExtension22Version>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension31Version>3.1.17-servicing-21318-8</MicrosoftAspNetCoreAzureAppServicesSiteExtension31Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension31Version>3.1.18-servicing-21365-4</MicrosoftAspNetCoreAzureAppServicesSiteExtension31Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension31x64Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension31Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension31x64Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension31x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension31Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension31x86Version>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension50Version>5.0.8-servicing-21318-5</MicrosoftAspNetCoreAzureAppServicesSiteExtension50Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension50Version>5.0.9-servicing-21365-3</MicrosoftAspNetCoreAzureAppServicesSiteExtension50Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension50x64Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension50Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension50x64Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension50x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension50Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension50x86Version>
     <!-- 3rd party dependencies -->
@@ -242,7 +242,7 @@
     <MoqVersion>4.10.0</MoqVersion>
     <MonoCecilVersion>0.11.2</MonoCecilVersion>
     <NewtonsoftJsonBsonVersion>1.0.2</NewtonsoftJsonBsonVersion>
-    <NewtonsoftJsonVersion>12.0.2</NewtonsoftJsonVersion>
+    <NewtonsoftJsonVersion>13.0.1</NewtonsoftJsonVersion>
     <NSwagApiDescriptionClientVersion>13.0.4</NSwagApiDescriptionClientVersion>
     <PhotinoNETVersion>1.1.6</PhotinoNETVersion>
     <PlaywrightSharpVersion>0.192.0</PlaywrightSharpVersion>
@@ -255,7 +255,7 @@
     <SerilogSinksFileVersion>4.0.0</SerilogSinksFileVersion>
     <StackExchangeRedisVersion>2.2.4</StackExchangeRedisVersion>
     <SystemReactiveLinqVersion>3.1.1</SystemReactiveLinqVersion>
-    <SwashbuckleAspNetCoreVersion>5.6.3</SwashbuckleAspNetCoreVersion>
+    <SwashbuckleAspNetCoreVersion>6.1.5</SwashbuckleAspNetCoreVersion>
     <XunitAbstractionsVersion>2.0.3</XunitAbstractionsVersion>
     <XunitAnalyzersVersion>0.10.0</XunitAnalyzersVersion>
     <XunitVersion>2.4.1</XunitVersion>

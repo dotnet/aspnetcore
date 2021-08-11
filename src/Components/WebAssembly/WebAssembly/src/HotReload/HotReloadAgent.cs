@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-// Based on the implementation in https://raw.githubusercontent.com/dotnet/sdk/4eaeb44f850903af2e0da8d74b7796f9df11c29d/src/BuiltInTools/DotNetDeltaApplier/HotReloadAgent.cs
+// Based on the implementation in https://raw.githubusercontent.com/dotnet/sdk/4a0473b29bfd4c7bdda6080d821788ee6d50c86b/src/BuiltInTools/DotNetDeltaApplier/HotReloadAgent.cs
 
 using System;
 using System.Collections.Concurrent;
@@ -187,8 +187,6 @@ namespace Microsoft.Extensions.HotReload
                 _handlerActions ??= GetMetadataUpdateHandlerActions();
                 var handlerActions = _handlerActions;
 
-                // TODO: Get types to pass in
-                Type[]? updatedTypes = null;
 
                 for (var i = 0; i < deltas.Count; i++)
                 {
@@ -206,6 +204,8 @@ namespace Microsoft.Extensions.HotReload
                     cachedDeltas.Add(item);
                 }
 
+                Type[]? updatedTypes = GetMetadataUpdateTypes(deltas);
+
                 handlerActions.ClearCache.ForEach(a => a(updatedTypes));
                 handlerActions.UpdateApplication.ForEach(a => a(updatedTypes));
 
@@ -215,6 +215,34 @@ namespace Microsoft.Extensions.HotReload
             {
                 _log(ex.ToString());
             }
+        }
+
+        private Type[] GetMetadataUpdateTypes(IReadOnlyList<UpdateDelta> deltas)
+        {
+            List<Type>? types = null;
+
+            foreach (var delta in deltas)
+            {
+                var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(assembly => TryGetModuleId(assembly) is Guid moduleId && moduleId == delta.ModuleId);
+                if (assembly is null)
+                {
+                    continue;
+                }
+
+                var assemblyTypes = assembly.GetTypes();
+
+                foreach (var updatedType in delta.UpdatedTypes ?? Array.Empty<int>())
+                {
+                    var type = assemblyTypes.FirstOrDefault(t => t.MetadataToken == updatedType);
+                    if (type != null)
+                    {
+                        types ??= new();
+                        types.Add(type);
+                    }
+                }
+            }
+
+            return types?.ToArray() ?? Type.EmptyTypes;
         }
 
         public void ApplyDeltas(Assembly assembly, IReadOnlyList<UpdateDelta> deltas)

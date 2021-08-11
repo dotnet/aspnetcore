@@ -46,6 +46,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             var quicConnectionContext = Assert.IsType<QuicConnectionContext>(serverConnection);
 
             Assert.Equal(1, quicConnectionContext.StreamPool.Count);
+
+            Assert.Contains(TestSink.Writes, m => m.Message.Contains(@"shutting down writes because: ""The QUIC transport's send loop completed gracefully.""."));
         }
 
         [ConditionalTheory]
@@ -103,6 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
             Logger.LogInformation("Client reading until end of stream.");
             var data = await clientStream.ReadUntilEndAsync().DefaultTimeout();
+            Assert.Equal(testData.Length, data.Length);
             Assert.Equal(testData, data);
 
             var quicConnectionContext = Assert.IsType<QuicConnectionContext>(serverConnection);
@@ -291,6 +294,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
             // Both send and receive loops have exited.
             await quicStreamContext._processingTask.DefaultTimeout();
+
+            Assert.Contains(TestSink.Writes, m => m.Message.Contains(@"shutting down writes because: ""The QUIC transport's send loop completed gracefully.""."));
         }
 
         [ConditionalFact]
@@ -332,6 +337,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
             // Both send and receive loops have exited.
             await quicStreamContext._processingTask.DefaultTimeout();
+
+            Assert.Contains(TestSink.Writes, m => m.Message.Contains(@"shutting down writes because: ""Test message""."));
         }
 
         [ConditionalFact]

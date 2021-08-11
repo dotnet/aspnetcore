@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             IOptions<KestrelServerOptions> options,
             IEnumerable<IConnectionListenerFactory> transportFactories,
             ILoggerFactory loggerFactory)
-            : this(transportFactories, null, CreateServiceContext(options, loggerFactory))
+            : this(transportFactories, null, CreateServiceContext(options, loggerFactory, null))
         {
         }
 
@@ -49,7 +49,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             IEnumerable<IConnectionListenerFactory> transportFactories,
             IEnumerable<IMultiplexedConnectionListenerFactory> multiplexedFactories,
             ILoggerFactory loggerFactory)
-            : this(transportFactories, multiplexedFactories, CreateServiceContext(options, loggerFactory))
+            : this(transportFactories, multiplexedFactories, CreateServiceContext(options, loggerFactory, null))
+        {
+        }
+
+        public KestrelServerImpl(
+            IOptions<KestrelServerOptions> options,
+            IEnumerable<IConnectionListenerFactory> transportFactories,
+            IEnumerable<IMultiplexedConnectionListenerFactory> multiplexedFactories,
+            ILoggerFactory loggerFactory,
+            DiagnosticSource diagnosticSource)
+            : this(transportFactories, multiplexedFactories, CreateServiceContext(options, loggerFactory, diagnosticSource))
         {
         }
 
@@ -89,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             HttpCharacters.Initialize();
         }
 
-        private static ServiceContext CreateServiceContext(IOptions<KestrelServerOptions> options, ILoggerFactory loggerFactory)
+        private static ServiceContext CreateServiceContext(IOptions<KestrelServerOptions> options, ILoggerFactory loggerFactory, DiagnosticSource? diagnosticSource)
         {
             if (options == null)
             {
@@ -124,7 +134,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 DateHeaderValueManager = dateHeaderValueManager,
                 ConnectionManager = connectionManager,
                 Heartbeat = heartbeat,
-                ServerOptions = serverOptions
+                ServerOptions = serverOptions,
+                DiagnosticSource = diagnosticSource
             };
         }
 
@@ -178,7 +189,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                         // Http/3 requires TLS. Note we only let it fall back to HTTP/1, not HTTP/2
                         else if (hasHttp3)
                         {
-                            throw new InvalidOperationException("HTTP/3 requires https.");
+                            throw new InvalidOperationException("HTTP/3 requires HTTPS.");
                         }
                     }
 
@@ -187,6 +198,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     {
                         throw new InvalidOperationException("This platform doesn't support QUIC or HTTP/3.");
                     }
+
+                    // Disable adding alt-svc header if endpoint has configured not to or there is no
+                    // multiplexed transport factory, which happens if QUIC isn't supported.
+                    var addAltSvcHeader = !options.DisableAltSvcHeader && _multiplexedTransportFactory != null;
 
                     // Add the HTTP middleware as the terminal connection middleware
                     if (hasHttp1 || hasHttp2
@@ -198,7 +213,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                             throw new InvalidOperationException($"Cannot start HTTP/1.x or HTTP/2 server if no {nameof(IConnectionListenerFactory)} is registered.");
                         }
 
-                        options.UseHttpServer(ServiceContext, application, options.Protocols, !options.DisableAltSvcHeader);
+                        options.UseHttpServer(ServiceContext, application, options.Protocols, addAltSvcHeader);
                         var connectionDelegate = options.Build();
 
                         // Add the connection limit middleware
@@ -209,7 +224,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                     if (hasHttp3 && _multiplexedTransportFactory is not null)
                     {
-                        options.UseHttp3Server(ServiceContext, application, options.Protocols, !options.DisableAltSvcHeader);
+                        options.UseHttp3Server(ServiceContext, application, options.Protocols, addAltSvcHeader);
                         var multiplexedConnectionDelegate = ((IMultiplexedConnectionBuilder)options).Build();
 
                         // Add the connection limit middleware

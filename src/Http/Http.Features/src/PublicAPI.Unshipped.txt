@@ -36,6 +36,8 @@
 *REMOVED*Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Revision.get -> int
 *REMOVED*static readonly Microsoft.AspNetCore.Http.Features.FeatureReference<T>.Default -> Microsoft.AspNetCore.Http.Features.FeatureReference<T>
 *REMOVED*virtual Microsoft.AspNetCore.Http.Features.FeatureCollection.Revision.get -> int
+Microsoft.AspNetCore.Http.Features.IBadRequestExceptionFeature
+Microsoft.AspNetCore.Http.Features.IBadRequestExceptionFeature.Error.get -> System.Exception?
 Microsoft.AspNetCore.Http.Features.IServerVariablesFeature.this[string! variableName].get -> string?
 Microsoft.AspNetCore.Http.IHeaderDictionary.Accept.get -> Microsoft.Extensions.Primitives.StringValues
 Microsoft.AspNetCore.Http.IHeaderDictionary.Accept.set -> void

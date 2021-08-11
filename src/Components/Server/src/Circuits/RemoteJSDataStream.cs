@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private readonly RemoteJSRuntime _runtime;
         private readonly long _streamId;
         private readonly long _totalLength;
+        private readonly int _chunkSize;
         private readonly TimeSpan _jsInteropDefaultCallTimeout;
         private readonly CancellationToken _streamCancellationToken;
         private readonly Stream _pipeReaderStream;
@@ -49,11 +50,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             // transfer per chunk with a 1 kb message size.
             // Additionally, to maintain interactivity, we put an upper limit of 50 kb on the message size.
             var chunkSize = signalRMaximumIncomingBytes > 1024 ?
-                Math.Min(signalRMaximumIncomingBytes, 50*1024) - 512 :
+                (int)Math.Min(signalRMaximumIncomingBytes, 50*1024) - 512 :
                 throw new ArgumentException($"SignalR MaximumIncomingBytes must be at least 1 kb.");
 
             var streamId = runtime.RemoteJSDataStreamNextInstanceId++;
-            var remoteJSDataStream = new RemoteJSDataStream(runtime, streamId, totalLength, jsInteropDefaultCallTimeout, cancellationToken);
+            var remoteJSDataStream = new RemoteJSDataStream(runtime, streamId, totalLength, chunkSize, jsInteropDefaultCallTimeout, cancellationToken);
             await runtime.InvokeVoidAsync("Blazor._internal.sendJSDataStream", jsStreamReference, streamId, chunkSize);
             return remoteJSDataStream;
         }
@@ -62,12 +63,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             RemoteJSRuntime runtime,
             long streamId,
             long totalLength,
+            int chunkSize,
             TimeSpan jsInteropDefaultCallTimeout,
             CancellationToken cancellationToken)
         {
             _runtime = runtime;
             _streamId = streamId;
             _totalLength = totalLength;
+            _chunkSize = chunkSize;
             _jsInteropDefaultCallTimeout = jsInteropDefaultCallTimeout;
             _streamCancellationToken = cancellationToken;
 
@@ -105,6 +108,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 if (chunk.Length == 0)
                 {
                     throw new EndOfStreamException("The incoming data chunk cannot be empty.");
+                }
+
+                if (chunk.Length > _chunkSize)
+                {
+                    throw new EndOfStreamException("The incoming data chunk exceeded the permitted length.");
                 }
 
                 _bytesRead += chunk.Length;
