@@ -45,6 +45,25 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(options));
             }
 
+            // UseRouting called before this middleware or Minimal
+            if (app.Properties.ContainsKey("__EndpointRouteBuilder") || app.Properties.ContainsKey("__WebApplicationBuilder"))
+            {
+                return app.Use(next =>
+                {
+                    // start a new middleware pipeline
+                    var sub = app.New();
+                    // insert the rewrite middleware before routing so any path changes will be matched correctly
+                    sub.UseMiddleware<RewriteMiddleware>(Options.Create(options));
+                    // use the old routing pipeline if it exists so we preserve all the routes and matching logic
+                    sub.UseRouting(overrideEndpointRouteBuilder: false);
+                    // apply the next middleware
+                    sub.Run(next);
+                    // return the modified middleware
+                    var nextWithRewriteAndRouting = sub.Build();
+                    return nextWithRewriteAndRouting.Invoke;
+                });
+            }
+
             // put middleware in pipeline
             return app.UseMiddleware<RewriteMiddleware>(Options.Create(options));
         }

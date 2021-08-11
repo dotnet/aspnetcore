@@ -73,6 +73,12 @@ namespace Microsoft.AspNetCore.Rewrite
                 Result = RuleResult.ContinueRules
             };
 
+            // TODO: only do this if a rule applies
+            if (context.GetEndpoint() is not null)
+            {
+                context.SetEndpoint(null);
+            }
+
             foreach (var rule in _options.Rules)
             {
                 rule.ApplyRule(rewriteContext);

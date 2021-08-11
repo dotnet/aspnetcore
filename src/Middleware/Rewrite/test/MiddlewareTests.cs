@@ -680,5 +680,46 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
             Assert.Equal(statusCode, (int)response.StatusCode);
         }
 
+        [Fact]
+        public async Task Rewrite_RerunsRouting_WhenConfiguredAfterRouting()
+        {
+            var options = new RewriteOptions().AddRewrite("(.*)", "http://example.com/g", skipRemainingRules: false);
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
+                    {
+                        services.AddRouting();
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.UseRewriter(options);
+
+                        app.UseEndpoints(endpoints =>
+                        {
+                            endpoints.MapGet("/foo", context => context.Response.WriteAsync(
+                                "bad"));
+
+                            endpoints.MapGet("/g", context => context.Response.WriteAsync(
+                                context.Request.Scheme +
+                                "://" +
+                                context.Request.Host +
+                                context.Request.Path +
+                                context.Request.QueryString));
+                        });
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
+
+            var response = await server.CreateClient().GetStringAsync("foo");
+
+            Assert.Equal("http://example.com/g", response);
+        }
     }
 }

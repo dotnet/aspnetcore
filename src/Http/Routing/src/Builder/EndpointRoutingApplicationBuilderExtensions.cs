@@ -75,22 +75,14 @@ namespace Microsoft.AspNetCore.Builder
             VerifyRoutingServicesAreRegistered(builder);
 
             IEndpointRouteBuilder endpointRouteBuilder;
-            if (overrideEndpointRouteBuilder)
+            if (overrideEndpointRouteBuilder || !builder.Properties.TryGetValue(EndpointRouteBuilder, out var routeBuilder))
             {
                 endpointRouteBuilder = new DefaultEndpointRouteBuilder(builder);
                 builder.Properties[EndpointRouteBuilder] = endpointRouteBuilder;
             }
             else
             {
-                if (builder.Properties.TryGetValue(EndpointRouteBuilder, out var routeBuilder))
-                {
-                    endpointRouteBuilder = (IEndpointRouteBuilder)routeBuilder!;
-                }
-                else
-                {
-                    endpointRouteBuilder = new DefaultEndpointRouteBuilder(builder);
-                    builder.Properties[EndpointRouteBuilder] = endpointRouteBuilder;
-                }
+                endpointRouteBuilder = (IEndpointRouteBuilder)routeBuilder!;
             }
 
             return builder.UseMiddleware<EndpointRoutingMiddleware>(endpointRouteBuilder);

@@ -21,6 +21,9 @@ namespace Microsoft.AspNetCore.Builder
         /// Adds a middleware to the pipeline that will catch exceptions, log them, and re-execute the request in an alternate pipeline.
         /// The request will not be re-executed if the response has already started.
         /// </summary>
+        /// <remarks>
+        /// This overload requires you to configure options with <see cref="ExceptionHandlerServiceCollectionExtensions.AddExceptionHandler"/>.
+        /// </remarks>
         /// <param name="app"></param>
         /// <returns></returns>
         public static IApplicationBuilder UseExceptionHandler(this IApplicationBuilder app)
@@ -109,10 +112,14 @@ namespace Microsoft.AspNetCore.Builder
 
                     if (!string.IsNullOrEmpty(options.ExceptionHandlingPath) && options.ExceptionHandler is null)
                     {
-                        var errorBuilder = app.New();
-                        errorBuilder.UseRouting(overrideEndpointRouteBuilder: false);
-                        errorBuilder.Run(next);
-                        options.ExceptionHandler = errorBuilder.Build();
+                        // start a new middleware pipeline
+                        var builder = app.New();
+                        // use the old routing pipeline if it exists so we preserve all the routes and matching logic
+                        builder.UseRouting(overrideEndpointRouteBuilder: false);
+                        // apply the next middleware
+                        builder.Run(next);
+                        // store the pipeline for the error case
+                        options.ExceptionHandler = builder.Build();
                     }
 
                     return new ExceptionHandlerMiddleware(next, loggerFactory, Options.Create(options), diagnosticListener).Invoke;

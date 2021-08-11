@@ -205,16 +205,14 @@ namespace Microsoft.AspNetCore.Builder
                 if (targetRouteBuilder is null)
                 {
                     // The app defined endpoints without calling UseRouting() explicitly, so call UseRouting() implicitly.
-                    app.UseRouting(overrideEndpointRouteBuilder: false);
-
-                    // Copy the endpoint route builder to the built application
-                    foreach (var item in app.Properties)
-                    {
-                        _builtApplication.Properties[item.Key] = item.Value;
-                    }
+                    app.UseRouting();
 
                     // An implicitly created IEndpointRouteBuilder was addeded to app.Properties by the UseRouting() call above.
                     targetRouteBuilder = GetEndpointRouteBuilder(app)!;
+
+                    // Copy the endpoint route builder to the built application
+                    _builtApplication.Properties[EndpointRouteBuilderKey] = targetRouteBuilder;
+
                     implicitRouting = true;
                 }
 
