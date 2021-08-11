@@ -63,6 +63,7 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 var unsupportedAttributes = method.GetCustomAttributes(inherit: true)
                     .Where(attribute => !IsAllowedAttribute(attribute))
+                    .Select(attribute => attribute.GetType().FullName)
                     .ToArray();
 
                 if (unsupportedAttributes.Length == 0)
