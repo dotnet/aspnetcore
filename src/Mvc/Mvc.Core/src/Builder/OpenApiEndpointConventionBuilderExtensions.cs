@@ -1,8 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Http
@@ -119,6 +123,34 @@ namespace Microsoft.AspNetCore.Http
             }
 
             return Produces<HttpValidationProblemDetails>(builder, statusCode, contentType);
+        }
+
+
+        /// <summary>
+        /// Adds the <see cref="Accepts"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+        /// produced by <paramref name="builder"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="MinimalActionEndpointConventionBuilder"/>.</param>
+        /// <param name="contentType">The response content type that the endpoint accepts.</param>
+        /// <param name="additionalContentTypes">Additional response content types the endpoint accepts</param>
+        /// <returns>A <see cref="MinimalActionEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static MinimalActionEndpointConventionBuilder Accepts(this MinimalActionEndpointConventionBuilder builder,
+            string contentType, params string[] additionalContentTypes)
+        {
+
+            if(string.IsNullOrEmpty(contentType))
+            {
+               contentType = "application/json";
+            }
+
+            var allContentTypes = new List<string>()
+            {
+                contentType
+            };
+            allContentTypes.AddRange(additionalContentTypes);
+           
+            builder.WithMetadata(new AcceptsMetadata(allContentTypes.ToArray()));
+            return builder;
         }
     }
 }
