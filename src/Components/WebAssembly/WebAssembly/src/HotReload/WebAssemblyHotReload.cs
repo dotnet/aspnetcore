@@ -27,18 +27,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload
         {
             _hotReloadAgent = new HotReloadAgent(m => Debug.WriteLine(m));
 
-            try
-            {
-                // Attempt to read previously applied hot reload deltas. dotnet-watch and VS will serve the script that can provide results from local-storage and
-                // the injected middleware if present.
-                var jsObjectReference = (IJSUnmarshalledObjectReference)(await DefaultWebAssemblyJSRuntime.Instance.InvokeAsync<IJSObjectReference>("import", "./_framework/blazor-hotreload.js"));
-                await jsObjectReference.InvokeUnmarshalled<Task<int>>("receiveHotReload");
-            }
-            catch (Exception ex)
-            {
-                // The middleware may be unavailable in some cases - https://github.com/dotnet/aspnetcore/issues/34962. This is not a reason to fail, so swallow the exception and continue.
-                Debug.WriteLine(ex);
-            }
+            // Attempt to read previously applied hot reload deltas. dotnet-watch and VS will serve the script that can provide results from local-storage and
+            // the injected middleware if present.
+            var jsObjectReference = (IJSUnmarshalledObjectReference)(await DefaultWebAssemblyJSRuntime.Instance.InvokeAsync<IJSObjectReference>("import", "./_framework/blazor-hotreload.js"));
+            await jsObjectReference.InvokeUnmarshalled<Task<int>>("receiveHotReload");
         }
 
         /// <summary>
