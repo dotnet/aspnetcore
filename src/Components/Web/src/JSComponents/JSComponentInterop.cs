@@ -9,6 +9,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Web.Infrastructure
 {
@@ -20,6 +21,8 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
     [EditorBrowsable(EditorBrowsableState.Never)]
     public class JSComponentInterop
     {
+        private const string JSFunctionPropertyName = "invoke";
+
         private static readonly ConcurrentDictionary<Type, ParameterTypeCache> ParameterTypeCaches = new();
 
         static JSComponentInterop()
@@ -62,7 +65,7 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
         /// </summary>
         protected internal virtual int AddRootComponent(string identifier, string domElementSelector)
         {
-            if (!Configuration.JsComponentTypesByIdentifier.TryGetValue(identifier, out var componentType))
+            if (!Configuration.JSComponentTypesByIdentifier.TryGetValue(identifier, out var componentType))
             {
                 throw new ArgumentException($"There is no registered JS component with identifier '{identifier}'.");
             }
@@ -91,13 +94,22 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
                 var parameterName = jsonProperty.Name;
                 var parameterJsonValue = jsonProperty.Value;
                 object? parameterValue;
-                if (TryGetComponentParameterType(componentType, parameterName, out var parameterType))
+                if (TryGetComponentParameterInfo(componentType, parameterName, out var parameterInfo))
                 {
-                    // It's a statically-declared parameter, so we can parse it into a known .NET type
-                    parameterValue = JsonSerializer.Deserialize(
-                        parameterJsonValue,
-                        parameterType,
-                        jsonOptions);
+                    // It's a statically-declared parameter, so we can parse it into a known .NET type.
+                    parameterValue = parameterInfo.Kind switch
+                    {
+                        ParameterKind.Value => JsonSerializer.Deserialize(
+                            parameterJsonValue,
+                            parameterInfo.Type,
+                            jsonOptions),
+                        ParameterKind.EventCallbackWithNoParameters => CreateEventCallbackWithNoParameters(
+                            JsonSerializer.Deserialize<IJSObjectReference>(parameterJsonValue, jsonOptions)),
+                        ParameterKind.EventCallbackWithSingleParameter => CreateEventCallbackWithSingleParameter(
+                            parameterInfo.Type,
+                            JsonSerializer.Deserialize<IJSObjectReference>(parameterJsonValue, jsonOptions)),
+                        var x => throw new InvalidOperationException($"Invalid {nameof(ParameterKind)} '{x}'.")
+                    };
                 }
                 else
                 {
@@ -144,27 +156,73 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
         internal static ParameterTypeCache GetComponentParameters(Type componentType)
             => ParameterTypeCaches.GetOrAdd(componentType, static type => new ParameterTypeCache(type));
 
-        private static bool TryGetComponentParameterType(Type componentType, string parameterName, out Type parameterType)
+        internal static bool IsEventCallbackType(Type type)
+            => GetParameterKind(type)
+                is ParameterKind.EventCallbackWithNoParameters
+                or ParameterKind.EventCallbackWithSingleParameter;
+
+        private static ParameterKind GetParameterKind(Type type)
+            => type switch
+            {
+                var x when x == typeof(EventCallback) => ParameterKind.EventCallbackWithNoParameters,
+                var x when x.IsGenericType && x.GetGenericTypeDefinition() == typeof(EventCallback<>) => ParameterKind.EventCallbackWithSingleParameter,
+                _   => ParameterKind.Value,
+            };
+
+        private static EventCallback CreateEventCallbackWithNoParameters(IJSObjectReference? jsObjectReference)
+        {
+            var callback = jsObjectReference is null ? null : new Func<Task>(
+                () => jsObjectReference.InvokeVoidAsync(JSFunctionPropertyName).AsTask());
+            return new(null, callback);
+        }
+
+        private static object CreateEventCallbackWithSingleParameter(Type eventCallbackType, IJSObjectReference? jsObjectReference)
+        {
+            var callback = jsObjectReference is null ? null : new Func<object, Task>(
+                value => jsObjectReference.InvokeVoidAsync(JSFunctionPropertyName, value).AsTask());
+            return Activator.CreateInstance(eventCallbackType, null, callback)!;
+        }
+
+        private static bool TryGetComponentParameterInfo(Type componentType, string parameterName, out ParameterInfo parameterInfo)
         {
             var cacheForComponent = GetComponentParameters(componentType);
-            return cacheForComponent.ParameterTypes.TryGetValue(parameterName, out parameterType!);
+            return cacheForComponent.ParameterInfoByName.TryGetValue(parameterName, out parameterInfo);
         }
 
         internal readonly struct ParameterTypeCache
         {
-            public readonly Dictionary<string, Type> ParameterTypes;
+            public readonly Dictionary<string, ParameterInfo> ParameterInfoByName;
 
             public ParameterTypeCache(Type componentType)
             {
-                ParameterTypes = new(StringComparer.OrdinalIgnoreCase);
+                ParameterInfoByName = new(StringComparer.OrdinalIgnoreCase);
                 var candidateProperties = ComponentProperties.GetCandidateBindableProperties(componentType);
                 foreach (var propertyInfo in candidateProperties)
                 {
                     if (propertyInfo.IsDefined(typeof(ParameterAttribute)))
                     {
-                        ParameterTypes.Add(propertyInfo.Name, propertyInfo.PropertyType);
+                        ParameterInfoByName.Add(propertyInfo.Name, new(propertyInfo.PropertyType));
                     }
                 }
+            }
+        }
+
+        internal enum ParameterKind
+        {
+            Value,
+            EventCallbackWithNoParameters,
+            EventCallbackWithSingleParameter
+        }
+
+        internal readonly struct ParameterInfo
+        {
+            public readonly Type Type { get; }
+            public readonly ParameterKind Kind { get; }
+
+            public ParameterInfo(Type parameterType)
+            {
+                Type = parameterType;
+                Kind = GetParameterKind(parameterType);
             }
         }
     }
