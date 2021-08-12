@@ -123,6 +123,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
 
             AddSupportedRequestFormats(apiDescription.SupportedRequestFormats, hasJsonBody, routeEndpoint.Metadata);
+            AddAcceptsRequestFormats(apiDescription.SupportedRequestFormats, routeEndpoint.Metadata);
             AddSupportedResponseTypes(apiDescription.SupportedResponseTypes, methodInfo.ReturnType, routeEndpoint.Metadata);
 
             AddActionDescriptorEndpointMetadata(apiDescription.ActionDescriptor, routeEndpoint.Metadata);
@@ -224,6 +225,25 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 {
                     MediaType = "application/json",
                 });
+            }
+        }
+
+        private static void AddAcceptsRequestFormats(
+            IList<ApiRequestFormat> supportedRequestFormats,
+            EndpointMetadataCollection endpointMetadata)
+        {
+            var requestMetadata = endpointMetadata.GetOrderedMetadata<IAcceptsMetadata>();
+            var declaredContentTypes = DefaultApiDescriptionProvider.GetAcceptsContentTypes(requestMetadata);
+
+            if (declaredContentTypes.Count > 0)
+            {
+                foreach (var contentType in declaredContentTypes)
+                {
+                    supportedRequestFormats.Add(new ApiRequestFormat
+                    {
+                        MediaType = contentType,
+                    });
+                }
             }
         }
 

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -439,6 +440,22 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 foreach (var metadataAttribute in requestMetadataAttributes)
                 {
                     metadataAttribute.SetContentTypes(contentTypes);
+                }
+            }
+
+            return contentTypes;
+        }
+
+        internal static IReadOnlyList<string> GetAcceptsContentTypes(IReadOnlyList<IAcceptsMetadata>? requestMetadataAttributes)
+        {
+            // Walk through all 'filter' attributes in order, and allow each one to see or override
+            // the results of the previous ones. This is similar to the execution path for content-negotiation.
+            var contentTypes = new List<string>();
+            if (requestMetadataAttributes != null)
+            {
+                foreach (var metadataAttribute in requestMetadataAttributes)
+                {
+                    contentTypes.AddRange(metadataAttribute.ContentTypes);
                 }
             }
 

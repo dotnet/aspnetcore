@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -520,6 +521,39 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     Assert.Equal(typeof(InferredJsonClass), responseType.Type);
                     Assert.Equal(201, responseType.StatusCode);
                     Assert.Equal(new[] { "application/json" }, GetSortedMediaTypes(responseType));
+                });
+        }
+
+        [Fact]
+        public void HandleAcceptsMetadata()
+        {
+            // Arrange
+            var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(null));
+            builder.MapPost("/api/todos", () => "")
+                .Accepts("application/json", "application/xml");
+            var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+            var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+            var hostEnvironment = new HostEnvironment
+            {
+                ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+            };
+            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+
+            // Act
+            provider.OnProvidersExecuting(context);
+            provider.OnProvidersExecuted(context);
+
+            // Assert
+            Assert.Collection(
+                context.Results.SelectMany(r => r.SupportedRequestFormats),
+                requestType =>
+                {
+                    Assert.Equal("application/json" , requestType.MediaType);
+                },
+                requestType =>
+                {
+                    Assert.Equal("application/xml", requestType.MediaType);
                 });
         }
 
