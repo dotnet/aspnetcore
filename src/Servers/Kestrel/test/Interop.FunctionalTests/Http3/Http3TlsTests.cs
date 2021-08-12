@@ -109,7 +109,7 @@ namespace Interop.FunctionalTests.Http3
         [InlineData(ClientCertificateMode.NoCertificate)]
         [InlineData(ClientCertificateMode.DelayCertificate)]
         [MsQuicSupported]
-        public async Task ClientCertificate_NoOrDelayed_Available_Ingored(ClientCertificateMode mode)
+        public async Task ClientCertificate_NoOrDelayed_Available_Ignored(ClientCertificateMode mode)
         {
             var builder = CreateHostBuilder(async context =>
             {
@@ -146,7 +146,6 @@ namespace Interop.FunctionalTests.Http3
 
             await host.StopAsync().DefaultTimeout();
         }
-
 
         [ConditionalTheory]
         [InlineData(ClientCertificateMode.RequireCertificate)]
@@ -225,13 +224,6 @@ namespace Interop.FunctionalTests.Http3
             // https://github.com/dotnet/runtime/issues/57308, optional client certs aren't supported.
             var ex = await Assert.ThrowsAsync<HttpRequestException>(() => client.SendAsync(request, CancellationToken.None).DefaultTimeout());
             Assert.StartsWith("Connection has been shutdown by transport. Error Code: 0x80410100", ex.Message);
-            /*
-            var response = await client.SendAsync(request, CancellationToken.None);
-            response.EnsureSuccessStatusCode();
-            var result = await response.Content.ReadAsStringAsync();
-            Assert.Equal(HttpVersion.Version30, response.Version);
-            Assert.Equal("False", result);
-            */
 
             await host.StopAsync().DefaultTimeout();
         }

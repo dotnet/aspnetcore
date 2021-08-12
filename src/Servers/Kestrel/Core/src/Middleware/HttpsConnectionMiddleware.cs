@@ -538,7 +538,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             if (httpsOptions.ClientCertificateMode == ClientCertificateMode.AllowCertificate
                     || httpsOptions.ClientCertificateMode == ClientCertificateMode.RequireCertificate)
             {
-                sslServerAuthenticationOptions.ClientCertificateRequired = true; // This actually means requested, not required.
+                sslServerAuthenticationOptions.ClientCertificateRequired = true; // We have to set this to prompt the client for a cert.
+                // For AllowCertificate we override the missing cert error in RemoteCertificateValidationCallback,
+                // except QuicListener doesn't call the callback for missing certs https://github.com/dotnet/runtime/issues/57308.
                 sslServerAuthenticationOptions.RemoteCertificateValidationCallback
                     = (object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors) =>
                         RemoteCertificateValidationCallback(httpsOptions.ClientCertificateMode, httpsOptions.ClientCertificateValidation, certificate, chain, sslPolicyErrors);
