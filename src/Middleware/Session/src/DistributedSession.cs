@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Session
                     var data = _cache.Get(_sessionKey);
                     if (data != null)
                     {
-                        Deserialize(new MemoryStream(data));
+                        Deserialize(data.AsSpan());
                     }
                     else if (!_isNewSessionKey)
                     {
@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Session
                         var data = await _cache.GetAsync(_sessionKey, cts.Token);
                         if (data != null)
                         {
-                            Deserialize(new MemoryStream(data));
+                            Deserialize(data.AsSpan());
                         }
                         else if (!_isNewSessionKey)
                         {
@@ -368,24 +368,37 @@ namespace Microsoft.AspNetCore.Session
             }
         }
 
-        private void Deserialize(Stream content)
+        private void Deserialize(Span<byte> content)
         {
-            if (content == null || content.ReadByte() != SerializationRevision)
+            var index = 0;
+
+            if (content.IsEmpty || content[index] != SerializationRevision)
             {
                 // Replace the un-readable format.
                 _isModified = true;
                 return;
             }
+            index++;
 
-            var expectedEntries = DeserializeNumFrom3Bytes(content);
-            _sessionIdBytes = ReadBytes(content, IdByteCount);
+            var expectedEntries = DeserializeNumFrom3Bytes(content.Slice(index, 3));
+            index += 3;
+
+            _sessionIdBytes = ReadBytes(content.Slice(index, IdByteCount));
+            index += IdByteCount;
 
             for (var i = 0; i < expectedEntries; i++)
             {
-                var keyLength = DeserializeNumFrom2Bytes(content);
-                var key = new EncodedKey(ReadBytes(content, keyLength));
+                var keyLength = DeserializeNumFrom2Bytes(content.Slice(index, 2));
+                index += 2;
+
+                var key = new EncodedKey(ReadBytes(content.Slice(index, keyLength)));
+                index += keyLength;
+
                 var dataLength = DeserializeNumFrom4Bytes(content);
-                _store.SetValue(key, ReadBytes(content, dataLength));
+                index += 4;
+
+                _store.SetValue(key, ReadBytes(content.Slice(index, dataLength)));
+                index += dataLength;
             }
 
             if (_logger.IsEnabled(LogLevel.Debug))
@@ -405,9 +418,9 @@ namespace Microsoft.AspNetCore.Session
             output.WriteByte((byte)(0xFF & num));
         }
 
-        private static int DeserializeNumFrom2Bytes(Stream content)
+        private static int DeserializeNumFrom2Bytes(Span<byte> content)
         {
-            return content.ReadByte() << 8 | content.ReadByte();
+            return content[0] << 8 | content[1];
         }
 
         private static void SerializeNumAs3Bytes(Stream output, int num)
@@ -421,9 +434,9 @@ namespace Microsoft.AspNetCore.Session
             output.WriteByte((byte)(0xFF & num));
         }
 
-        private static int DeserializeNumFrom3Bytes(Stream content)
+        private static int DeserializeNumFrom3Bytes(Span<byte> content)
         {
-            return content.ReadByte() << 16 | content.ReadByte() << 8 | content.ReadByte();
+            return content[0] << 16 | content[1] << 8 | content[2];
         }
 
         private static void SerializeNumAs4Bytes(Stream output, int num)
@@ -438,25 +451,14 @@ namespace Microsoft.AspNetCore.Session
             output.WriteByte((byte)(0xFF & num));
         }
 
-        private static int DeserializeNumFrom4Bytes(Stream content)
+        private static int DeserializeNumFrom4Bytes(Span<byte> content)
         {
-            return content.ReadByte() << 24 | content.ReadByte() << 16 | content.ReadByte() << 8 | content.ReadByte();
+            return content[0] << 24 | content[1] << 16 | content[2] << 8 | content[3];
         }
 
-        private static byte[] ReadBytes(Stream stream, int count)
+        private static byte[] ReadBytes(Span<byte> stream)
         {
-            var output = new byte[count];
-            var total = 0;
-            while (total < count)
-            {
-                var read = stream.Read(output, total, count - total);
-                if (read == 0)
-                {
-                    throw new EndOfStreamException();
-                }
-                total += read;
-            }
-            return output;
+            return stream.ToArray();
         }
     }
 }
