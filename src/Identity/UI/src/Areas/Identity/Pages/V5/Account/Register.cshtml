@@ -13,18 +13,18 @@
             <hr />
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-floating">
-                <label asp-for="Input.Email"></label>
                 <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" />
+                <label asp-for="Input.Email"></label>
                 <span asp-validation-for="Input.Email" class="text-danger"></span>
             </div>
             <div class="form-floating">
-                <label asp-for="Input.Password"></label>
                 <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" />
+                <label asp-for="Input.Password"></label>
                 <span asp-validation-for="Input.Password" class="text-danger"></span>
             </div>
             <div class="form-floating">
-                <label asp-for="Input.ConfirmPassword"></label>
                 <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" />
+                <label asp-for="Input.ConfirmPassword"></label>
                 <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
             </div>
             <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
