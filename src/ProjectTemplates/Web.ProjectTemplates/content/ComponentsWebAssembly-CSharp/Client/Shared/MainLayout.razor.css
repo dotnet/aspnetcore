@@ -68,6 +68,12 @@ main {
         z-index: 1;
     }
 
+    .top-row.auth ::deep a:first-child {
+        flex: 1;
+        text-align: right;
+        width: 0;
+    }
+
     .top-row, article {
         padding-left: 2rem !important;
         padding-right: 1.5rem !important;
