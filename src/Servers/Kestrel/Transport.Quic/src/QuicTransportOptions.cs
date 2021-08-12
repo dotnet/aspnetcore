@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Runtime.Versioning;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
 
@@ -11,6 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
     /// <summary>
     /// Options for Quic based connections.
     /// </summary>
+    [RequiresPreviewFeatures]
     public class QuicTransportOptions
     {
         /// <summary>
