@@ -113,11 +113,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                         acceptSocket.NoDelay = _options.NoDelay;
                     }
 
-                    var factory = _factories[_factoryIndex];
-
+                    var connection = _factories[_factoryIndex].Create(acceptSocket);
                     _factoryIndex = (_factoryIndex + 1) % _factoryCount;
-
-                    return factory.Create(acceptSocket);
+                    return connection;
                 }
                 catch (ObjectDisposedException)
                 {

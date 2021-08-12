@@ -51,7 +51,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         /// <param name="socket">The socket for the connection.</param>
         /// <returns></returns>
         public ConnectionContext Create(Socket socket)
-            => new SocketConnection(socket, _options, _scheduler, _senderPool, _trace);
+        {
+            var connection = new SocketConnection(socket, _options, _scheduler, _senderPool, _trace);
+            connection.Start();
+            return connection;
+        }
 
         /// <inheritdoc />
         public void Dispose()
