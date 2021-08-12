@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     // Pause for a bit before disposing so logger can finish logging
                     try
                     {
-                        await WaitForFile(fileName).DefaultTimeout();
+                        await WaitForFile(fileName, 11).DefaultTimeout();
                     }
                     catch
                     {
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     // Pause for a bit before disposing so logger can finish logging
                     try
                     {
-                        await WaitForFile(fileName2).DefaultTimeout();
+                        await WaitForFile(fileName2, 11).DefaultTimeout();
                     }
                     catch
                     {
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     // Pause for a bit before disposing so logger can finish logging
                     try
                     {
-                        await WaitForFile(lastFileName).DefaultTimeout();
+                        await WaitForFile(lastFileName, 7).DefaultTimeout();
                         for (int i = 0; i < 6; i++)
                         {
                             await WaitForRoll(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.{i:0000}.txt"))).DefaultTimeout();
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     }
                     var filePath = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0002.txt"));
                     // Pause for a bit before disposing so logger can finish logging
-                    await WaitForFile(filePath).DefaultTimeout();
+                    await WaitForFile(filePath, 7).DefaultTimeout();
                 }
 
                 // Second instance should pick up where first one left off
@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     }
                     var filePath = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0005.txt"));
                     // Pause for a bit before disposing so logger can finish logging
-                    await WaitForFile(filePath).DefaultTimeout();
+                    await WaitForFile(filePath, 7).DefaultTimeout();
                 }
 
                 var actualFiles1 = new DirectoryInfo(path)
@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     logger.EnqueueMessage("Message");
                     // Pause for a bit before disposing so logger can finish logging
-                    await WaitForFile(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0006.txt"))).DefaultTimeout();
+                    await WaitForFile(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0006.txt")), 7).DefaultTimeout();
                     await WaitForRoll(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0000.txt"))).DefaultTimeout();
                     await WaitForRoll(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0001.txt"))).DefaultTimeout();
                 }
@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     logger.EnqueueMessage("Message one");
                     logger.EnqueueMessage("Message two");
                     // Pause for a bit before disposing so logger can finish logging
-                    await WaitForFile(fileName2).DefaultTimeout();
+                    await WaitForFile(fileName2, 11).DefaultTimeout();
                 }
 
                 // Even with a big enough FileSizeLimit, we still won't try to write to files from a previous instance.
@@ -311,7 +311,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     logger.EnqueueMessage("Message three");
                     // Pause for a bit before disposing so logger can finish logging
-                    await WaitForFile(fileName3).DefaultTimeout();
+                    await WaitForFile(fileName3, 13).DefaultTimeout();
                 }
 
                 var actualFiles = new DirectoryInfo(path)
@@ -365,12 +365,12 @@ namespace Microsoft.AspNetCore.HttpLogging
                 await using (var logger = new FileLoggerProcessor(monitor, new HostingEnvironment(), NullLoggerFactory.Instance))
                 {
                     logger.EnqueueMessage("Message one");
-                    await WaitForFile(fileName1).DefaultTimeout();
+                    await WaitForFile(fileName1, 11).DefaultTimeout();
                     options.LoggingFields = W3CLoggingFields.Date;
                     monitor.InvokeChanged();
                     logger.EnqueueMessage("Message two");
                     // Pause for a bit before disposing so logger can finish logging
-                    await WaitForFile(fileName2).DefaultTimeout();
+                    await WaitForFile(fileName2, 11).DefaultTimeout();
                 }
 
                 var actualFiles = new DirectoryInfo(path)
@@ -393,9 +393,9 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
         }
 
-        private async Task WaitForFile(string fileName)
+        private async Task WaitForFile(string fileName, int length)
         {
-            while (!File.Exists(fileName))
+            while (!File.Exists(fileName) || File.ReadAllText(fileName).Length < length)
             {
                 await Task.Delay(100);
             }
