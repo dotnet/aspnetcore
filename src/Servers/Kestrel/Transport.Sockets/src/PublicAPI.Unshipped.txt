@@ -6,15 +6,19 @@
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFactory
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFactory.Create(System.Net.Sockets.Socket! socket) -> Microsoft.AspNetCore.Connections.ConnectionContext!
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFactory.Dispose() -> void
-Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFactory.SocketConnectionContextFactory(Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
-Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions
-Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions.InputOptions.get -> System.IO.Pipelines.PipeOptions!
-Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions.InputOptions.init -> void
-Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions.OutputOptions.get -> System.IO.Pipelines.PipeOptions!
-Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions.OutputOptions.init -> void
-Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions.SocketConnectionOptions() -> void
-Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions.WaitForDataBeforeAllocatingBuffer.get -> bool
-Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionOptions.WaitForDataBeforeAllocatingBuffer.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFactory.SocketConnectionContextFactory(Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionFactoryOptions! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionFactoryOptions
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionFactoryOptions.IOQueueCount.get -> int
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionFactoryOptions.IOQueueCount.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionFactoryOptions.MaxReadBufferSize.get -> long?
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionFactoryOptions.MaxReadBufferSize.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionFactoryOptions.MaxWriteBufferSize.get -> long?
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionFactoryOptions.MaxWriteBufferSize.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionFactoryOptions.SocketConnectionFactoryOptions() -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionFactoryOptions.UnsafePreferInlineScheduling.get -> bool
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionFactoryOptions.UnsafePreferInlineScheduling.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionFactoryOptions.WaitForDataBeforeAllocatingBuffer.get -> bool
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionFactoryOptions.WaitForDataBeforeAllocatingBuffer.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.BindAsync(System.Net.EndPoint! endpoint, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.IConnectionListener!>
 ~Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.SocketTransportFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 static Microsoft.AspNetCore.Hosting.WebHostBuilderSocketExtensions.UseSockets(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!

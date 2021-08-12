@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
 using System.Diagnostics;
-using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Connections;
@@ -14,12 +12,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
     internal sealed class SocketConnectionListener : IConnectionListener
     {
-        private readonly MemoryPool<byte> _memoryPool;
-        private readonly int _factoryCount;
-        private readonly SocketConnectionContextFactory[] _factories;
+        private readonly SocketConnectionContextFactory _factory;
         private readonly ISocketsTrace _trace;
         private Socket? _listenSocket;
-        private int _factoryIndex;
         private readonly SocketTransportOptions _options;
 
         public EndPoint EndPoint { get; private set; }
@@ -31,45 +26,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         {
             EndPoint = endpoint;
             _options = options;
-            _memoryPool = _options.MemoryPoolFactory();
-            var ioQueueCount = options.IOQueueCount;
-
-            var maxReadBufferSize = _options.MaxReadBufferSize ?? 0;
-            var maxWriteBufferSize = _options.MaxWriteBufferSize ?? 0;
-            var applicationScheduler = options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : PipeScheduler.ThreadPool;
-
             var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets");
             _trace = new SocketsTrace(logger);
-
-            if (ioQueueCount > 0)
-            {
-                _factoryCount = ioQueueCount;
-                _factories = new SocketConnectionContextFactory[_factoryCount];
-
-                for (var i = 0; i < _factoryCount; i++)
-                {
-                    var transportScheduler = options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : new IOQueue();
-                    _factories[i] = new SocketConnectionContextFactory(new SocketConnectionOptions
-                    {
-                        InputOptions = new PipeOptions(_memoryPool, applicationScheduler, transportScheduler, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false),
-                        OutputOptions = new PipeOptions(_memoryPool, transportScheduler, applicationScheduler, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false),
-
-                    }, loggerFactory);
-                }
-            }
-            else
-            {
-                var transportScheduler = options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : PipeScheduler.ThreadPool;
-                _factories = new SocketConnectionContextFactory[]
-                {
-                    new SocketConnectionContextFactory(new SocketConnectionOptions
-                    {
-                        InputOptions = new PipeOptions(_memoryPool, applicationScheduler, transportScheduler, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false),
-                        OutputOptions = new PipeOptions(_memoryPool, transportScheduler, applicationScheduler, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false),
-                    }, loggerFactory)
-                };
-                _factoryCount = _factories.Length;
-            }
+            _factory = new SocketConnectionContextFactory(options, loggerFactory);
         }
 
         internal void Bind()
@@ -113,9 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                         acceptSocket.NoDelay = _options.NoDelay;
                     }
 
-                    var connection = _factories[_factoryIndex].Create(acceptSocket);
-                    _factoryIndex = (_factoryIndex + 1) % _factoryCount;
-                    return connection;
+                    return _factory.Create(acceptSocket);
                 }
                 catch (ObjectDisposedException)
                 {
@@ -145,14 +102,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         {
             _listenSocket?.Dispose();
 
-            // Dispose the memory pool
-            _memoryPool.Dispose();
-
-            // Dispose any pooled senders in the factories
-            foreach (var factory in _factories)
-            {
-                factory.Dispose();
-            }
+            _factory.Dispose();
 
             return default;
         }

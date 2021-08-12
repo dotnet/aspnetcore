@@ -1,13 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Sockets;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 
@@ -33,19 +30,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private readonly TaskCompletionSource _waitForConnectionClosedTcs = new TaskCompletionSource();
         private bool _connectionClosed;
         private readonly bool _waitForData;
-
-        internal SocketConnection(Socket socket,
-            SocketConnectionOptions options,
-            PipeScheduler transportScheduler,
-            SocketSenderPool socketSenderPool,
-            ISocketsTrace trace)
-            : this(socket, options.InputOptions.Pool, transportScheduler, trace, socketSenderPool, options.InputOptions, options.OutputOptions, options.WaitForDataBeforeAllocatingBuffer)
-        {
-            if (options.InputOptions.Pool != options.OutputOptions.Pool)
-            {
-                throw new InvalidOperationException("SocketConnection expects options.InputOptions.Pool to be the same as options.OutputOptions.Pool");
-            }
-        }
 
         internal SocketConnection(Socket socket,
                                   MemoryPool<byte> memoryPool,
