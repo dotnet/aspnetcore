@@ -412,6 +412,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     // Continue
                 }
+                await Task.Delay(10);
             }    
         }
 
