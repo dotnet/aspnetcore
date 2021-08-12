@@ -399,6 +399,20 @@ namespace Microsoft.AspNetCore.HttpLogging
             {
                 await Task.Delay(100);
             }
+            while (true)
+            {
+                try
+                {
+                    if (File.ReadAllText(fileName).Length >= length)
+                    {
+                        break;
+                    }
+                }
+                catch
+                {
+                    // Continue
+                }
+            }    
         }
 
         private async Task WaitForRoll(string fileName)
