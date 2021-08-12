@@ -81,6 +81,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 _outputOptions,
                 _options.WaitForDataBeforeAllocatingBuffer);
 
+            socketConnection.Start();
             return socketConnection;
         }
 
