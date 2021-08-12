@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    internal class DefaultBoundAttributeDescriptor : BoundAttributeDescriptor
+    internal sealed class DefaultBoundAttributeDescriptor : BoundAttributeDescriptor
     {
         public DefaultBoundAttributeDescriptor(
             string kind,
