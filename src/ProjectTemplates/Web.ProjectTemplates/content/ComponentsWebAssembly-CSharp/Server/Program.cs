@@ -74,26 +74,24 @@ builder.Services.AddRazorPages();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-#if (IndividualLocalAuth)
 if (app.Environment.IsDevelopment())
 {
+#if (IndividualLocalAuth)
     app.UseMigrationsEndPoint();
+#endif
     app.UseWebAssemblyDebugging();
 }
 else
-#else
-if (!app.Environment.IsDevelopment())
-#endif
 {
     app.UseExceptionHandler("/Error");
 #if (RequiresHttps)
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
+#endif
 }
 
+#if (RequiresHttps)
 app.UseHttpsRedirection();
-#else
-}
 
 #endif
 
