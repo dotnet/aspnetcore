@@ -78,12 +78,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             _logger = loggerFactory.CreateLogger<RazorViewEngine>();
             _diagnosticListener = diagnosticListener;
             ViewLookupCache = new MemoryCache(new MemoryCacheOptions());
+
+        }
+
+        internal void ClearCache()
+        {
+            ViewLookupCache = new MemoryCache(new MemoryCacheOptions());
         }
 
         /// <summary>
         /// A cache for results of view lookups.
         /// </summary>
-        protected IMemoryCache ViewLookupCache { get; }
+        protected IMemoryCache ViewLookupCache { get; private set; }
 
         /// <summary>
         /// Gets the case-normalized route value for the specified route <paramref name="key"/>.

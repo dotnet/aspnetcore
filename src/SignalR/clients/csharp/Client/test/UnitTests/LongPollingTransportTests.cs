@@ -254,7 +254,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 using (var httpClient = new HttpClient(mockHttpHandler.Object))
                 {
-                    var longPollingTransport = new LongPollingTransport(httpClient, LoggerFactory);
+                    var longPollingTransport = new LongPollingTransport(httpClient, loggerFactory: LoggerFactory);
 
                     await longPollingTransport.StartAsync(TestUri, TransferFormat.Binary).DefaultTimeout();
 

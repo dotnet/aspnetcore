@@ -13,13 +13,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         void AcceptedStream(QuicStreamContext streamContext);
         void ConnectedStream(QuicStreamContext streamContext);
         void ConnectionError(BaseConnectionContext connection, Exception ex);
-        void ConnectionAborted(BaseConnectionContext connection, Exception ex);
-        void ConnectionAbort(BaseConnectionContext connection, string reason);
+        void ConnectionAborted(BaseConnectionContext connection, long errorCode, Exception ex);
+        void ConnectionAbort(BaseConnectionContext connection, long errorCode, string reason);
         void StreamError(QuicStreamContext streamContext, Exception ex);
         void StreamPause(QuicStreamContext streamContext);
         void StreamResume(QuicStreamContext streamContext);
         void StreamShutdownWrite(QuicStreamContext streamContext, string reason);
-        void StreamAborted(QuicStreamContext streamContext, Exception ex);
-        void StreamAbort(QuicStreamContext streamContext, string reason);
+        void StreamAborted(QuicStreamContext streamContext, long errorCode, Exception ex);
+        void StreamAbort(QuicStreamContext streamContext, long errorCode, string reason);
+        void StreamAbortRead(QuicStreamContext streamContext, long errorCode, string reason);
+        void StreamAbortWrite(QuicStreamContext streamContext, long errorCode, string reason);
     }
 }

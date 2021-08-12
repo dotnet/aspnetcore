@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -531,5 +532,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 // Check if less than 6 representing chars 'a' - 'f'
                 || (uint)((ch | 32) - 'a') < 6u;
         }
+
+        public static AltSvcHeader? GetEndpointAltSvc(System.Net.IPEndPoint endpoint, HttpProtocols protocols)
+        {
+            var hasHttp1OrHttp2 = protocols.HasFlag(HttpProtocols.Http1) || protocols.HasFlag(HttpProtocols.Http2);
+            var hasHttp3 = protocols.HasFlag(HttpProtocols.Http3);
+
+            if (hasHttp1OrHttp2 && hasHttp3)
+            {
+                // 86400 is a cache of 24 hours.
+                // This is the default cache if none is specified with Alt-Svc, but it appears that all
+                // popular HTTP/3 websites explicitly specifies a cache duration in the header.
+                // Specify a value to be consistent.
+                var text = "h3=\":" + endpoint.Port.ToString(CultureInfo.InvariantCulture) + "\"; ma=86400";
+                var bytes = Encoding.ASCII.GetBytes($"\r\nAlt-Svc: " + text);
+                return new AltSvcHeader(text, bytes);
+            }
+
+            return null;
+        }
     }
+
+    internal record AltSvcHeader(string Value, byte[] RawBytes);
 }

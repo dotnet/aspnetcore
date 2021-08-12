@@ -160,31 +160,6 @@ namespace Templates.Test.Helpers
                 ["ASPNETCORE_Logging__Console__FormatterOptions__IncludeScopes"] = "true",
             };
 
-            var launchSettingsJson = Path.Combine(TemplateOutputDir, "Properties", "launchSettings.json");
-            if (File.Exists(launchSettingsJson))
-            {
-                // When executing "dotnet run", the launch urls specified in the app's launchSettings.json have higher precedence
-                // than ambient environment variables. When present, we have to edit this file to allow the application to pick random ports.
-                var original = File.ReadAllText(launchSettingsJson);
-                var updated = original.Replace(
-                    "\"applicationUrl\": \"https://localhost:5001;http://localhost:5000\"",
-                    $"\"applicationUrl\": \"{_urls}\"");
-
-                if (updated == original)
-                {
-                    Output.WriteLine("applicationUrl is not specified in launchSettings.json");
-                }
-                else
-                {
-                    Output.WriteLine("Updating applicationUrl in launchSettings.json");
-                    File.WriteAllText(launchSettingsJson, updated);
-                }
-            }
-            else
-            {
-                Output.WriteLine("No launchSettings.json found to update.");
-            }
-
             var projectDll = Path.Combine(TemplateBuildDir, $"{ProjectName}.dll");
             return new AspNetProcess(DevCert, Output, TemplateOutputDir, projectDll, environment, published: false, hasListeningUri: hasListeningUri, logger: logger);
         }

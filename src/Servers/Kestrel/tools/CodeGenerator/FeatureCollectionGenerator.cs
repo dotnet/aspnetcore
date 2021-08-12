@@ -130,7 +130,7 @@ namespace {namespaceName}
                     feature = ExtraFeatureGet(key);
                 }}
 
-                return feature{(string.IsNullOrEmpty(fallbackFeatures) ? "" : $" ?? {fallbackFeatures}[key]")};
+                return feature{(string.IsNullOrEmpty(fallbackFeatures) ? "" : $" ?? {fallbackFeatures}?[key]")};
             }}
 
             set
@@ -164,7 +164,7 @@ namespace {namespaceName}
                 feature = (TFeature?)(ExtraFeatureGet(typeof(TFeature)));
             }}{(string.IsNullOrEmpty(fallbackFeatures) ? "" : $@"
 
-            if (feature == null)
+            if (feature == null && {fallbackFeatures} != null)
             {{
                 feature = {fallbackFeatures}.Get<TFeature>();
             }}")}

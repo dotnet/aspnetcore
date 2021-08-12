@@ -4,6 +4,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <TestGroupName>IISNewShim.FunctionalTests</TestGroupName>
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
+    <DefineConstants>NEWSHIM_FUNCTIONALS</DefineConstants>
     <SkipTests Condition=" '$(SkipIISNewShimTests)' == 'true' ">true</SkipTests>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>

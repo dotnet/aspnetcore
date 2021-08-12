@@ -624,7 +624,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             Assert.Equal("Hello World", response);
         }
 
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34003")]
         [ConditionalFact]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason = "Http2 requires Win10")]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "This is last version without Reset support")]

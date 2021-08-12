@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.Web
@@ -19,16 +20,28 @@ namespace Microsoft.AspNetCore.Components.Web
         // without needing any changes on the downstream code that implements IJSComponentConfiguration,
         // and without exposing any of the configuration storage across layers.
 
-        internal Dictionary<string, Type> JsComponentTypesByIdentifier { get; } = new (StringComparer.Ordinal);
-        internal Dictionary<string, List<JSComponentInfo>> JSComponentInfoByInitializer { get; } = new(StringComparer.Ordinal);
+        internal Dictionary<string, Type> JSComponentTypesByIdentifier { get; } = new(StringComparer.Ordinal);
+        internal Dictionary<string, JSComponentParameter[]> JSComponentParametersByIdentifier { get; } = new(StringComparer.Ordinal);
+        internal Dictionary<string, List<string>> JSComponentIdentifiersByInitializer { get; } = new(StringComparer.Ordinal);
 
         internal void Add(Type componentType, string identifier)
         {
-            JsComponentTypesByIdentifier.Add(identifier, componentType);
+            var parameterTypes = JSComponentInterop.GetComponentParameters(componentType).ParameterInfoByName;
+            var parameters = new JSComponentParameter[parameterTypes.Count];
+            var index = 0;
+            foreach (var (name, type) in parameterTypes)
+            {
+                parameters[index++] = new JSComponentParameter(name, type.Type);
+            }
+
+            JSComponentTypesByIdentifier.Add(identifier, componentType);
+            JSComponentParametersByIdentifier.Add(identifier, parameters);
         }
 
-        [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(JSComponentInfo))]
         [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(JSComponentParameter))]
+        [DynamicDependency(nameof(WebRenderer.WebRendererInteropMethods.AddRootComponent), typeof(WebRenderer.WebRendererInteropMethods))]
+        [DynamicDependency(nameof(WebRenderer.WebRendererInteropMethods.SetRootComponentParameters), typeof(WebRenderer.WebRendererInteropMethods))]
+        [DynamicDependency(nameof(WebRenderer.WebRendererInteropMethods.RemoveRootComponent), typeof(WebRenderer.WebRendererInteropMethods))]
         internal void Add(Type componentType, string identifier, string javaScriptInitializer)
         {
             Add(componentType, identifier);
@@ -39,33 +52,13 @@ namespace Microsoft.AspNetCore.Components.Web
             }
 
             // Since it has a JS initializer, prepare the metadata we'll supply to JS code
-            if (!JSComponentInfoByInitializer.TryGetValue(javaScriptInitializer, out var entriesForInitializer))
+            if (!JSComponentIdentifiersByInitializer.TryGetValue(javaScriptInitializer, out var identifiersForInitializer))
             {
-                entriesForInitializer = new();
-                JSComponentInfoByInitializer.Add(javaScriptInitializer, entriesForInitializer);
+                identifiersForInitializer = new();
+                JSComponentIdentifiersByInitializer.Add(javaScriptInitializer, identifiersForInitializer);
             }
 
-            entriesForInitializer.Add(new JSComponentInfo(componentType, identifier));
-        }
-
-        // This is the DTO that we JSON-serialize and send to an internal function on blazor.*.js.
-        internal readonly struct JSComponentInfo
-        {
-            public readonly string Identifier { get; }
-            public readonly JSComponentParameter[] Parameters { get; }
-
-            public JSComponentInfo(Type componentType, string identifier)
-            {
-                Identifier = identifier;
-
-                var parameterTypes = JSComponentInterop.GetComponentParameters(componentType).ParameterTypes;
-                Parameters = new JSComponentParameter[parameterTypes.Count];
-                var index = 0;
-                foreach (var (name, type) in parameterTypes)
-                {
-                    Parameters[index++] = new JSComponentParameter(name, type);
-                }
-            }
+            identifiersForInitializer.Add(identifier);
         }
 
         internal readonly struct JSComponentParameter
@@ -94,6 +87,7 @@ namespace Microsoft.AspNetCore.Components.Web
                 var x when x == typeof(int?) => "number?",
                 var x when x == typeof(long) => "number",
                 var x when x == typeof(long?) => "number?",
+                var x when JSComponentInterop.IsEventCallbackType(x) => "eventcallback",
                 _ => "object"
             };
         }

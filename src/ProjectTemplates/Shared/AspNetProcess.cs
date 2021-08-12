@@ -79,7 +79,11 @@ namespace Templates.Test.Helpers
             else
             {
                 process = DotNetMuxer.MuxerPathOrDefault();
-                arguments = "run --no-build";
+
+                // When executing "dotnet run", the launch urls specified in the app's launchSettings.json have higher precedence
+                // than ambient environment variables. We specify the urls using command line arguments instead to allow us
+                // to continue binding to "port 0" and avoid test flakiness due to port conflicts.
+                arguments = $"run --no-build --urls \"{environmentVariables["ASPNETCORE_URLS"]}\"";
             }
 
             logger?.LogInformation($"AspNetProcess - process: {process} arguments: {arguments}");

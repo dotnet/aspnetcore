@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
 using PhotinoNET;
 
@@ -43,8 +44,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Photino
             var fileProvider = new PhysicalFileProvider(contentRootDir);
 
             var dispatcher = new PhotinoDispatcher(_window);
-            _manager = new PhotinoWebViewManager(_window, services, dispatcher, new Uri(PhotinoWebViewManager.AppBaseUri), fileProvider, hostPageRelativePath);
-            RootComponents = new BlazorWindowRootComponents(_manager);
+            var jsComponents = new JSComponentConfigurationStore();
+            _manager = new PhotinoWebViewManager(_window, services, dispatcher, new Uri(PhotinoWebViewManager.AppBaseUri), fileProvider, jsComponents, hostPageRelativePath);
+            RootComponents = new BlazorWindowRootComponents(_manager, jsComponents);
         }
 
         /// <summary>

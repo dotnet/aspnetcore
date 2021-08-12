@@ -7,10 +7,17 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
+#if LIBUV
+namespace Microsoft.AspNetCore.Server.Kestrel.Libuv.FunctionalTests
+#elif SOCKETS
+namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests
+#else
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
+#endif
 {
     [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Listening to open TCP socket and/or pipe handles is not supported on Windows.")]
     public class ListenHandleTests : LoggedTest

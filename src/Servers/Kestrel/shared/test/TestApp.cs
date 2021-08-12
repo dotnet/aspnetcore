@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Testing
 
             if (buffer.Length > 0)
             {
-                await request.Body.ReadUntilEndAsync(buffer).DefaultTimeout();
+                await request.Body.FillBufferUntilEndAsync(buffer).DefaultTimeout();
                 await response.Body.WriteAsync(buffer, 0, buffer.Length);
             }
         }
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Testing
 
             if (buffer.Length > 0)
             {
-                await request.Body.ReadUntilEndAsync(buffer).DefaultTimeout();
+                await request.Body.FillBufferUntilEndAsync(buffer).DefaultTimeout();
                 await response.StartAsync();
                 var memory = response.BodyWriter.GetMemory(buffer.Length);
                 buffer.CopyTo(memory);

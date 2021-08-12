@@ -1,4 +1,3 @@
-import { EventDescriptor } from '../../Rendering/Events/EventDispatcher';
 import { trySerializeMessage } from './WebViewIpcCommon';
 
 export function sendAttachPage(baseUrl: string, startUrl: string) {
@@ -7,10 +6,6 @@ export function sendAttachPage(baseUrl: string, startUrl: string) {
 
 export function sendRenderCompleted(batchId: number, errorOrNull: string | null) {
   send('OnRenderCompleted', batchId, errorOrNull);
-}
-
-export function sendBrowserEvent(descriptor: EventDescriptor, eventArgs: any) {
-  send('DispatchBrowserEvent', descriptor, eventArgs);
 }
 
 export function sendBeginInvokeDotNetFromJS(callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): void {

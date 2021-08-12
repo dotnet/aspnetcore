@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
         public override IDictionary<string, object?> Deserialize(byte[] value)
         {
-            Dictionary<string, object?> tempDataDictionary;
+            Dictionary<string, object?>? tempDataDictionary;
 
             using (var memoryStream = new MemoryStream(value))
             using (var reader = new BsonDataReader(memoryStream))
@@ -222,14 +222,14 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             return true;
         }
 
-        private static IList<TVal> ConvertArray<TVal>(JArray array)
+        private static IList<TVal?> ConvertArray<TVal>(JArray array)
         {
             return array.Values<TVal>().ToArray();
         }
 
-        private static IDictionary<string, TVal> ConvertDictionary<TVal>(JObject jObject)
+        private static IDictionary<string, TVal?> ConvertDictionary<TVal>(JObject jObject)
         {
-            var convertedDictionary = new Dictionary<string, TVal>(StringComparer.Ordinal);
+            var convertedDictionary = new Dictionary<string, TVal?>(StringComparer.Ordinal);
             foreach (var item in jObject)
             {
                 convertedDictionary.Add(item.Key, jObject.Value<TVal>(item.Key));

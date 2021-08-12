@@ -4,7 +4,7 @@
     <TargetFrameworks>$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <DebugType>portable</DebugType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoWarn>CS0649;CS0436</NoWarn><!-- Not all APIs are called in the shared test project --><!-- Conflicts between internal and public Quic APIs -->
+    <NoWarn>$(NoWarn);CS0649;CS0436</NoWarn><!-- Not all APIs are called in the shared test project --><!-- Conflicts between internal and public Quic APIs -->
     <Nullable>annotations</Nullable>
   </PropertyGroup>
 

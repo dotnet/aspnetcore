@@ -3,14 +3,12 @@
 
 using System.Collections.Concurrent;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.Extensions.Configuration;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Web.Infrastructure
@@ -21,8 +19,10 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
     /// directly from application code.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public class JSComponentInterop : IDisposable
+    public class JSComponentInterop
     {
+        private const string JSFunctionPropertyName = "invoke";
+
         private static readonly ConcurrentDictionary<Type, ParameterTypeCache> ParameterTypeCaches = new();
 
         static JSComponentInterop()
@@ -34,10 +34,9 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
         }
 
         private const int MaxParameters = 100;
-        private readonly DotNetObjectReference<JSComponentInterop> _selfReference;
-        private readonly JSComponentConfigurationStore _configuration;
-        private readonly JsonSerializerOptions _jsonOptions;
         private WebRenderer? _renderer;
+
+        internal JSComponentConfigurationStore Configuration { get; }
 
         private WebRenderer Renderer => _renderer
             ?? throw new InvalidOperationException("This instance is not initialized.");
@@ -47,42 +46,26 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
         /// for use from framework code and should not be used directly from application code.
         /// </summary>
         /// <param name="configuration">The <see cref="JSComponentConfigurationStore" /></param>
-        /// <param name="jsonOptions">The <see cref="JsonSerializerOptions" /></param>
-        public JSComponentInterop(
-            JSComponentConfigurationStore configuration,
-            JsonSerializerOptions jsonOptions)
+        public JSComponentInterop(JSComponentConfigurationStore configuration)
         {
-            _selfReference = DotNetObjectReference.Create(this);
-            _configuration = configuration;
-            _jsonOptions = jsonOptions;
+            Configuration = configuration;
         }
 
         // This has to be internal and only called by WebRenderer (through a protected API) because,
         // by attaching a WebRenderer instance, you become able to call its protected internal APIs
         // such as AddRootComponent etc. and hence bypass the encapsulation. There should not be any
         // other way to attach a renderer to this instance.
-        internal async ValueTask InitializeAsync(IJSRuntime jsRuntime, WebRenderer renderer)
+        internal void AttachToRenderer(WebRenderer renderer)
         {
-            if (_configuration.JsComponentTypesByIdentifier.Count == 0)
-            {
-                return;
-            }
-
             _renderer = renderer;
-
-            await jsRuntime.InvokeVoidAsync(
-                "Blazor._internal.enableJSRootComponents",
-                _selfReference,
-                _configuration.JSComponentInfoByInitializer);
         }
 
         /// <summary>
         /// For framework use only.
         /// </summary>
-        [JSInvokable]
-        public virtual int AddRootComponent(string identifier, string domElementSelector)
+        protected internal virtual int AddRootComponent(string identifier, string domElementSelector)
         {
-            if (!_configuration.JsComponentTypesByIdentifier.TryGetValue(identifier, out var componentType))
+            if (!Configuration.JSComponentTypesByIdentifier.TryGetValue(identifier, out var componentType))
             {
                 throw new ArgumentException($"There is no registered JS component with identifier '{identifier}'.");
             }
@@ -93,8 +76,7 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
         /// <summary>
         /// For framework use only.
         /// </summary>
-        [JSInvokable]
-        public void SetRootComponentParameters(int componentId, int parameterCount, byte[] parametersJsonUtf8)
+        protected internal void SetRootComponentParameters(int componentId, int parameterCount, JsonElement parametersJson, JsonSerializerOptions jsonOptions)
         {
             // In case the client misreports the number of parameters, impose bounds so we know the amount
             // of work done is limited to a fixed, low amount.
@@ -106,42 +88,47 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
             var componentType = Renderer.GetRootComponentType(componentId);
             var parameterViewBuilder = new ParameterViewBuilder(parameterCount);
 
-            var parametersReader = new Utf8JsonReader(parametersJsonUtf8);
-
-            parametersReader.Read();
-            Debug.Assert(parametersReader.TokenType == JsonTokenType.StartObject);
-
-            parametersReader.Read();
-            while (parametersReader.TokenType == JsonTokenType.PropertyName)
+            var parametersJsonEnumerator = parametersJson.EnumerateObject();
+            foreach (var jsonProperty in parametersJsonEnumerator)
             {
-                var parameterName = parametersReader.GetString()!;
+                var parameterName = jsonProperty.Name;
+                var parameterJsonValue = jsonProperty.Value;
                 object? parameterValue;
-                if (TryGetComponentParameterType(componentType, parameterName, out var parameterType))
+                if (TryGetComponentParameterInfo(componentType, parameterName, out var parameterInfo))
                 {
-                    // It's a statically-declared parameter, so we can parse it into a known .NET type
-                    parameterValue = JsonSerializer.Deserialize(
-                        ref parametersReader,
-                        parameterType,
-                        _jsonOptions);
+                    // It's a statically-declared parameter, so we can parse it into a known .NET type.
+                    parameterValue = parameterInfo.Kind switch
+                    {
+                        ParameterKind.Value => JsonSerializer.Deserialize(
+                            parameterJsonValue,
+                            parameterInfo.Type,
+                            jsonOptions),
+                        ParameterKind.EventCallbackWithNoParameters => CreateEventCallbackWithNoParameters(
+                            JsonSerializer.Deserialize<IJSObjectReference>(parameterJsonValue, jsonOptions)),
+                        ParameterKind.EventCallbackWithSingleParameter => CreateEventCallbackWithSingleParameter(
+                            parameterInfo.Type,
+                            JsonSerializer.Deserialize<IJSObjectReference>(parameterJsonValue, jsonOptions)),
+                        var x => throw new InvalidOperationException($"Invalid {nameof(ParameterKind)} '{x}'.")
+                    };
                 }
                 else
                 {
                     // Unknown parameter - possibly valid as "catch-all". Use whatever type appears
                     // to be present in the JSON data.
-                    parametersReader.Read();
-                    switch (parametersReader.TokenType)
+                    switch (parameterJsonValue.ValueKind)
                     {
-                        case JsonTokenType.Number:
-                            parameterValue = parametersReader.GetDouble();
+                        case JsonValueKind.Number:
+                            parameterValue = parameterJsonValue.GetDouble();
                             break;
-                        case JsonTokenType.String:
-                            parameterValue = parametersReader.GetString();
+                        case JsonValueKind.String:
+                            parameterValue = parameterJsonValue.GetString();
                             break;
-                        case JsonTokenType.True:
-                        case JsonTokenType.False:
-                            parameterValue = parametersReader.GetBoolean();
+                        case JsonValueKind.True:
+                        case JsonValueKind.False:
+                            parameterValue = parameterJsonValue.GetBoolean();
                             break;
-                        case JsonTokenType.Null:
+                        case JsonValueKind.Null:
+                        case JsonValueKind.Undefined:
                             parameterValue = null;
                             break;
                         default:
@@ -150,7 +137,6 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
                 }
 
                 parameterViewBuilder.Add(parameterName, parameterValue);
-                parametersReader.Read();
             }
 
             // This call gets back a task that represents the renderer reaching quiescence, but is not
@@ -164,38 +150,79 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
         /// <summary>
         /// For framework use only.
         /// </summary>
-        [JSInvokable]
-        public virtual void RemoveRootComponent(int componentId)
+        protected internal virtual void RemoveRootComponent(int componentId)
             => Renderer.RemoveRootComponent(componentId);
-
-        /// <inheritdoc />
-        public void Dispose()
-            => _selfReference.Dispose();
 
         internal static ParameterTypeCache GetComponentParameters(Type componentType)
             => ParameterTypeCaches.GetOrAdd(componentType, static type => new ParameterTypeCache(type));
 
-        private static bool TryGetComponentParameterType(Type componentType, string parameterName, out Type parameterType)
+        internal static bool IsEventCallbackType(Type type)
+            => GetParameterKind(type)
+                is ParameterKind.EventCallbackWithNoParameters
+                or ParameterKind.EventCallbackWithSingleParameter;
+
+        private static ParameterKind GetParameterKind(Type type)
+            => type switch
+            {
+                var x when x == typeof(EventCallback) => ParameterKind.EventCallbackWithNoParameters,
+                var x when x.IsGenericType && x.GetGenericTypeDefinition() == typeof(EventCallback<>) => ParameterKind.EventCallbackWithSingleParameter,
+                _   => ParameterKind.Value,
+            };
+
+        private static EventCallback CreateEventCallbackWithNoParameters(IJSObjectReference? jsObjectReference)
+        {
+            var callback = jsObjectReference is null ? null : new Func<Task>(
+                () => jsObjectReference.InvokeVoidAsync(JSFunctionPropertyName).AsTask());
+            return new(null, callback);
+        }
+
+        private static object CreateEventCallbackWithSingleParameter(Type eventCallbackType, IJSObjectReference? jsObjectReference)
+        {
+            var callback = jsObjectReference is null ? null : new Func<object, Task>(
+                value => jsObjectReference.InvokeVoidAsync(JSFunctionPropertyName, value).AsTask());
+            return Activator.CreateInstance(eventCallbackType, null, callback)!;
+        }
+
+        private static bool TryGetComponentParameterInfo(Type componentType, string parameterName, out ParameterInfo parameterInfo)
         {
             var cacheForComponent = GetComponentParameters(componentType);
-            return cacheForComponent.ParameterTypes.TryGetValue(parameterName, out parameterType!);
+            return cacheForComponent.ParameterInfoByName.TryGetValue(parameterName, out parameterInfo);
         }
 
         internal readonly struct ParameterTypeCache
         {
-            public readonly Dictionary<string, Type> ParameterTypes;
+            public readonly Dictionary<string, ParameterInfo> ParameterInfoByName;
 
             public ParameterTypeCache(Type componentType)
             {
-                ParameterTypes = new(StringComparer.OrdinalIgnoreCase);
+                ParameterInfoByName = new(StringComparer.OrdinalIgnoreCase);
                 var candidateProperties = ComponentProperties.GetCandidateBindableProperties(componentType);
                 foreach (var propertyInfo in candidateProperties)
                 {
                     if (propertyInfo.IsDefined(typeof(ParameterAttribute)))
                     {
-                        ParameterTypes.Add(propertyInfo.Name, propertyInfo.PropertyType);
+                        ParameterInfoByName.Add(propertyInfo.Name, new(propertyInfo.PropertyType));
                     }
                 }
+            }
+        }
+
+        internal enum ParameterKind
+        {
+            Value,
+            EventCallbackWithNoParameters,
+            EventCallbackWithSingleParameter
+        }
+
+        internal readonly struct ParameterInfo
+        {
+            public readonly Type Type { get; }
+            public readonly ParameterKind Kind { get; }
+
+            public ParameterInfo(Type parameterType)
+            {
+                Type = parameterType;
+                Kind = GetParameterKind(parameterType);
             }
         }
     }

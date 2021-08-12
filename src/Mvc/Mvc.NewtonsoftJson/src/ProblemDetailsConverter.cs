@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
         }
 
         /// <inheritdoc />
-        public override object? ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
         {
             var annotatedProblemDetails = serializer.Deserialize<AnnotatedProblemDetails>(reader);
             if (annotatedProblemDetails == null)
@@ -26,14 +26,14 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
                 return null;
             }
 
-            var problemDetails = (ProblemDetails)existingValue ?? new ProblemDetails();
+            var problemDetails = (ProblemDetails?)existingValue ?? new ProblemDetails();
             annotatedProblemDetails.CopyTo(problemDetails);
 
             return problemDetails;
         }
 
         /// <inheritdoc />
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
         {
             if (value == null)
             {

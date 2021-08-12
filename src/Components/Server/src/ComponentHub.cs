@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.DataProtection;
@@ -242,19 +243,39 @@ namespace Microsoft.AspNetCore.Components.Server
             return await circuitHost.ReceiveJSDataChunk(streamId, chunkId, chunk, error);
         }
 
-        public async ValueTask DispatchBrowserEvent(JsonElement eventInfo)
+        public async IAsyncEnumerable<ArraySegment<byte>> SendDotNetStreamToJS(long streamId)
         {
-            Debug.Assert(eventInfo.GetArrayLength() == 2, "Array length should be 2");
-            var eventDescriptor = eventInfo[0];
-            var eventArgs = eventInfo[1];
-
             var circuitHost = await GetActiveCircuitAsync();
             if (circuitHost == null)
             {
-                return;
+                yield break;
             }
 
-            _ = circuitHost.DispatchEvent(eventDescriptor, eventArgs);
+            var dotNetStreamReference = await circuitHost.TryClaimPendingStream(streamId);
+            if (dotNetStreamReference == default)
+            {
+                yield break;
+            }
+
+            var buffer = ArrayPool<byte>.Shared.Rent(32 * 1024);
+
+            try
+            {
+                int bytesRead;
+                while ((bytesRead = await circuitHost.SendDotNetStreamAsync(dotNetStreamReference, streamId, buffer)) > 0)
+                {
+                    yield return new ArraySegment<byte>(buffer, 0, bytesRead);
+                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer, clearArray: true);
+
+                if (!dotNetStreamReference.LeaveOpen)
+                {
+                    dotNetStreamReference.Stream?.Dispose();
+                }
+            }
         }
 
         public async ValueTask OnRenderCompleted(long renderId, string errorMessageOrNull)

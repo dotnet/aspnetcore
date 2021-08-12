@@ -9,6 +9,8 @@ Document -
         UsingDirective - (135:5,1 [42] ) - Microsoft.AspNetCore.Mvc.Rendering
         UsingDirective - (178:6,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
         RazorSourceChecksumAttribute - 
+        RazorCompiledItemMetadataAttribute - 
+        CreateNewOnMetadataUpdateAttribute - 
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPageWithNoLeadingPageDirective - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [28] RazorPageWithNoLeadingPageDirective.cshtml)

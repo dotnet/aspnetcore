@@ -25,15 +25,35 @@ namespace Microsoft.AspNetCore.Builder
 
         private WebApplication? _builtApplication;
 
-        internal WebApplicationBuilder(Assembly? callingAssembly, string[]? args = null)
+        internal WebApplicationBuilder(WebApplicationOptions options, Action<IHostBuilder>? configureDefaults = null)
         {
             Services = _services;
+
+            var args = options.Args;
 
             // Run methods to configure both generic and web host defaults early to populate config from appsettings.json
             // environment variables (both DOTNET_ and ASPNETCORE_ prefixed) and other possible default sources to prepopulate
             // the correct defaults.
-            _bootstrapHostBuilder = new BootstrapHostBuilder(Configuration, Services, _hostBuilder.Properties);
-            _bootstrapHostBuilder.ConfigureDefaults(args);
+            _bootstrapHostBuilder = new BootstrapHostBuilder(Services, _hostBuilder.Properties);
+
+            // Don't specify the args here since we want to apply them later so that args
+            // can override the defaults specified by ConfigureWebHostDefaults
+            _bootstrapHostBuilder.ConfigureDefaults(args: null);
+
+            // This is for testing purposes
+            configureDefaults?.Invoke(_bootstrapHostBuilder);
+
+            // We specify the command line here last since we skipped the one in the call to ConfigureDefaults.
+            // The args can contain both host and application settings so we want to make sure
+            // we order those configuration providers appropriately without duplicating them
+            if (args is { Length: > 0 })
+            {
+                _bootstrapHostBuilder.ConfigureAppConfiguration(config =>
+                {
+                    config.AddCommandLine(args);
+                });
+            }
+
             _bootstrapHostBuilder.ConfigureWebHostDefaults(webHostBuilder =>
             {
                 // Runs inline.
@@ -41,17 +61,36 @@ namespace Microsoft.AspNetCore.Builder
 
                 // We need to override the application name since the call to Configure will set it to
                 // be the calling assembly's name.
-                webHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, (callingAssembly ?? Assembly.GetEntryAssembly())?.GetName()?.Name ?? string.Empty);
+                webHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, (Assembly.GetEntryAssembly())?.GetName()?.Name ?? string.Empty);
             });
 
-            _bootstrapHostBuilder.RunDefaultCallbacks(_hostBuilder);
+            // Apply the args to host configuration last since ConfigureWebHostDefaults overrides a host specific setting (the application name).
 
-            // Get the IWebHostEnvironment from the WebHostBuilderContext.
-            // This also matches the instance in the IServiceCollection.
-            Environment = ((WebHostBuilderContext)_hostBuilder.Properties[typeof(WebHostBuilderContext)]).HostingEnvironment;
+            _bootstrapHostBuilder.ConfigureHostConfiguration(config =>
+            {
+                if (args is { Length: > 0 })
+                {
+                    config.AddCommandLine(args);
+                }
+
+                // Apply the options after the args
+                options.ApplyHostConfiguration(config);
+            });
+
+
+            Configuration = new();
+
+            // This is the application configuration
+            var hostContext = _bootstrapHostBuilder.RunDefaultCallbacks(Configuration, _hostBuilder);
+
+            // Grab the WebHostBuilderContext from the property bag to use in the ConfigureWebHostBuilder
+            var webHostContext = (WebHostBuilderContext)hostContext.Properties[typeof(WebHostBuilderContext)];
+
+            // Grab the IWebHostEnvironment from the webHostContext. This also matches the instance in the IServiceCollection.
+            Environment = webHostContext.HostingEnvironment;
             Logging = new LoggingBuilder(Services);
-            Host = new ConfigureHostBuilder(Configuration, Environment, Services, _hostBuilder.Properties);
-            WebHost = new ConfigureWebHostBuilder(Configuration, Environment, Services);
+            Host = new ConfigureHostBuilder(hostContext, Configuration, Services);
+            WebHost = new ConfigureWebHostBuilder(webHostContext, Configuration, Services);
         }
 
         /// <summary>
@@ -67,7 +106,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// A collection of configuration providers for the application to compose. This is useful for adding new configuration sources and providers.
         /// </summary>
-        public ConfigurationManager Configuration { get; } = new();
+        public ConfigurationManager Configuration { get; }
 
         /// <summary>
         /// A collection of logging providers for the application to compose. This is useful for adding new logging providers.
@@ -137,6 +176,9 @@ namespace Microsoft.AspNetCore.Builder
             // we clear the sources and add the built configuration as a source
             ((IConfigurationBuilder)Configuration).Sources.Clear();
             Configuration.AddConfiguration(_builtApplication.Configuration);
+
+            // Mark the service collection as read-only to prevent future modifications
+            _services.IsReadOnly = true;
 
             return _builtApplication;
         }

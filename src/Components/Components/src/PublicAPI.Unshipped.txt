@@ -34,6 +34,7 @@ Microsoft.AspNetCore.Components.Lifetime.IComponentApplicationStateStore.Persist
 Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string! uri, Microsoft.AspNetCore.Components.NavigationOptions options) -> void
 Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string! uri, bool forceLoad = false, bool replace = false) -> void
 Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string! uri, bool forceLoad) -> void
+Microsoft.AspNetCore.Components.NavigationManagerExtensions
 Microsoft.AspNetCore.Components.NavigationOptions
 Microsoft.AspNetCore.Components.NavigationOptions.ForceLoad.get -> bool
 Microsoft.AspNetCore.Components.NavigationOptions.ForceLoad.init -> void
@@ -88,6 +89,25 @@ static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.Crea
 static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<System.TimeOnly>! setter, System.TimeOnly existingValue, string! format, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
 static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<System.TimeOnly?>! setter, System.TimeOnly? existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
 static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<System.TimeOnly?>! setter, System.TimeOnly? existingValue, string! format, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
+static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! name, System.DateTime value) -> string!
+static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! name, System.DateTime? value) -> string!
+static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! name, System.Guid value) -> string!
+static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! name, System.Guid? value) -> string!
+static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! name, bool value) -> string!
+static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! name, bool? value) -> string!
+static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! name, decimal value) -> string!
+static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! name, decimal? value) -> string!
+static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! name, double value) -> string!
+static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! name, double? value) -> string!
+static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! name, float value) -> string!
+static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! name, float? value) -> string!
+static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! name, int value) -> string!
+static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! name, int? value) -> string!
+static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! name, long value) -> string!
+static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! name, long? value) -> string!
+static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! name, string? value) -> string!
+static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameters(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, System.Collections.Generic.IReadOnlyDictionary<string!, object?>! parameters) -> string!
+static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameters(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! uri, System.Collections.Generic.IReadOnlyDictionary<string!, object?>! parameters) -> string!
 static Microsoft.AspNetCore.Components.ParameterView.FromDictionary(System.Collections.Generic.IDictionary<string!, object?>! parameters) -> Microsoft.AspNetCore.Components.ParameterView
 virtual Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(string! uri, Microsoft.AspNetCore.Components.NavigationOptions options) -> void
 virtual Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(string! uri, bool forceLoad) -> void

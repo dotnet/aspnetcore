@@ -1,4 +1,7 @@
-﻿<h1>JavaScript root components</h1>
+﻿@using Microsoft.JSInterop
+@inject IJSRuntime JS
+
+<h1>JavaScript root components</h1>
 
 <p>This shows that we can dynamically add root components using JavaScript.</p>
 
@@ -29,10 +32,14 @@
     <button id="set-complex-params" onclick="setComplexParameters()">Set complex parameters</button>
     <button id="set-invalid-params" onclick="setInvalidParameters()">Set invalid parameters</button>
     <button id="set-catchall-params" onclick="setCatchAllParameters()">Set catch-all parameters</button>
+    <button id="set-callback-params" onclick="setCallbackParameters()">Set function parameters</button>
+    <button id="remove-callback-params" onclick="removeCallbackParameters()">Remove function parameters</button>
 </p>
 
 <script suppress-error="BL9992">
+    let dotNetObjectReferenceForJSComponents;
     let numAddedComponents = 0;
+    let nextCallbackParameterId = 0;
     const addedComponents = [];
     const jsObject = DotNet.createJSObjectReference({
         getValue() {
@@ -85,7 +92,10 @@
             incrementAmount: 123,
             showComplexParameters: true,
             somePerson: { name: 'Bert', age: 123.456 },
-            someJSObject: jsObject
+            someJSObject: jsObject,
+            someDotNetObject: dotNetObjectReferenceForJSComponents,
+            byteArray: new Uint8Array([2, 3, 5, 7, 11, 13, 17]),
+            someUndefinedValue: undefined, // Undefined isn't serialized into the JSON. Adding this to show parameter counting still works.
         });
     }
 
@@ -111,11 +121,38 @@
         setMessage(`Finished setting catchall parameters on component in ${containerElement.id}`);
     }
 
+    async function setCallbackParameters() {
+        const { component, containerElement } = addedComponents[addedComponents.length - 1];
+        const id = nextCallbackParameterId++;
+        await component.setParameters({
+            onJSCallbackButtonClick: () => onJSCallbackButtonClick(id),
+            onJSCallbackWithParamsButtonClick: (eventArgs) => onJSCallbackWithParamsButtonClick(id, eventArgs),
+        });
+        setMessage(`Finished setting callback parameters on component in ${containerElement.id}`);
+    }
+
+    async function removeCallbackParameters() {
+        const { component, containerElement } = addedComponents[addedComponents.length - 1];
+        await component.setParameters({
+            onJSCallbackButtonClick: null,
+            onJSCallbackWithParamsButtonClick: null,
+        });
+        setMessage(`Finished removing callback parameters on component in ${containerElement.id}`);
+    }
+
     function removeRootComponent() {
         // Treat it like a FIFO queue
         const { component, containerElement } = addedComponents.shift();
         setMessage(`Disposed component in ${containerElement.id}`);
         component.dispose();
+    }
+
+    function onJSCallbackButtonClick(id) {
+        setMessage(`JavaScript button callback invoked (id=${id})`);
+    }
+
+    function onJSCallbackWithParamsButtonClick(id, mouseEventArgs) {
+        setMessage(`JavaScript button callback received mouse event args (id=${id}, buttons=${mouseEventArgs.buttons})`);
     }
 
     function showInitializerCallLog() {
@@ -126,4 +163,31 @@
     function setMessage(message) {
         document.getElementById('message').textContent = message;
     }
+
+    function setDotNetObjectReferenceForJSComponents(value) {
+        dotNetObjectReferenceForJSComponents = value;
+    }
 </script>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var value = new DotNetType("This is correct");
+            await JS.InvokeVoidAsync("setDotNetObjectReferenceForJSComponents", DotNetObjectReference.Create(value));
+        }
+    }
+
+    public class DotNetType
+    {
+        // Deliberately not creatable through JSON deserialization
+        // since we want to show it's the original .NET object instance
+        public string Property { get; }
+
+        public DotNetType(string propertyValue)
+        {
+            Property = propertyValue;
+        }
+    }
+}

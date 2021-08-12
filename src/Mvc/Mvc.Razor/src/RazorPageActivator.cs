@@ -48,6 +48,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             };
         }
 
+        internal void ClearCache()
+        {
+            _activationInfo.Clear();
+        }
+
         /// <inheritdoc />
         public void Activate(IRazorPage page, ViewContext context)
         {

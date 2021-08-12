@@ -25,13 +25,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 {
     internal static class QuicTestHelpers
     {
-        public const string Alpn = "h3-29";
+        public const string Alpn = "h3";
         private static readonly byte[] TestData = Encoding.UTF8.GetBytes("Hello world");
 
         public static QuicTransportFactory CreateTransportFactory(ILoggerFactory loggerFactory = null, ISystemClock systemClock = null)
         {
             var quicTransportOptions = new QuicTransportOptions();
-            quicTransportOptions.Alpn = Alpn;
             quicTransportOptions.IdleTimeout = TimeSpan.FromMinutes(1);
             quicTransportOptions.MaxBidirectionalStreamCount = 200;
             quicTransportOptions.MaxUnidirectionalStreamCount = 200;
@@ -43,24 +42,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             return new QuicTransportFactory(loggerFactory ?? NullLoggerFactory.Instance, Options.Create(quicTransportOptions));
         }
 
-        public static async Task<QuicConnectionListener> CreateConnectionListenerFactory(ILoggerFactory loggerFactory = null, ISystemClock systemClock = null)
+        public static async Task<QuicConnectionListener> CreateConnectionListenerFactory(ILoggerFactory loggerFactory = null, ISystemClock systemClock = null, bool clientCertificateRequired = false)
         {
             var transportFactory = CreateTransportFactory(loggerFactory, systemClock);
 
             // Use ephemeral port 0. OS will assign unused port.
             var endpoint = new IPEndPoint(IPAddress.Loopback, 0);
 
-            var features = CreateBindAsyncFeatures();
+            var features = CreateBindAsyncFeatures(clientCertificateRequired);
             return (QuicConnectionListener)await transportFactory.BindAsync(endpoint, features, cancellationToken: CancellationToken.None);
         }
 
-        public static FeatureCollection CreateBindAsyncFeatures()
+        public static FeatureCollection CreateBindAsyncFeatures(bool clientCertificateRequired = false)
         {
             var cert = TestResources.GetTestCertificate();
 
             var sslServerAuthenticationOptions = new SslServerAuthenticationOptions();
+            sslServerAuthenticationOptions.ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol(Alpn) };
             sslServerAuthenticationOptions.ServerCertificate = cert;
             sslServerAuthenticationOptions.RemoteCertificateValidationCallback = RemoteCertificateValidationCallback;
+            sslServerAuthenticationOptions.ClientCertificateRequired = clientCertificateRequired;
 
             var features = new FeatureCollection();
             features.Set(sslServerAuthenticationOptions);

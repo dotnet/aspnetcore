@@ -12,7 +12,7 @@ namespace ComponentsApp.Server
         [HttpGet("/rerender")]
         public IActionResult Rerender()
         {
-            HotReloadManager.DeltaApplied();
+            HotReloadManager.UpdateApplication(default);
 
             return Ok();
         }

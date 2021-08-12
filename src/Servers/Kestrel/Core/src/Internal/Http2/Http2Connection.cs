@@ -650,6 +650,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             var streamContext = new Http2StreamContext(
                 ConnectionId,
                 protocols: default,
+                _context.AltSvcHeader,
                 _context.ServiceContext,
                 _context.ConnectionFeatures,
                 _context.MemoryPool,

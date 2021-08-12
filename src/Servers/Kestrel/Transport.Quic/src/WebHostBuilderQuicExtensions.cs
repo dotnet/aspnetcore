@@ -16,14 +16,15 @@ namespace Microsoft.AspNetCore.Hosting
     {
         public static IWebHostBuilder UseQuic(this IWebHostBuilder hostBuilder)
         {
-            if (!QuicImplementationProviders.Default.IsSupported)
+            if (QuicImplementationProviders.Default.IsSupported)
             {
-                throw new NotSupportedException("QUIC is not supported or enabled on this platform. See https://aka.ms/aspnet/kestrel/http3reqs for details.");
+                return hostBuilder.ConfigureServices(services =>
+                {
+                    services.AddSingleton<IMultiplexedConnectionListenerFactory, QuicTransportFactory>();
+                });
             }
-            return hostBuilder.ConfigureServices(services =>
-            {
-                services.AddSingleton<IMultiplexedConnectionListenerFactory, QuicTransportFactory>();
-            });
+
+            return hostBuilder;
         }
 
         public static IWebHostBuilder UseQuic(this IWebHostBuilder hostBuilder, Action<QuicTransportOptions> configureOptions)

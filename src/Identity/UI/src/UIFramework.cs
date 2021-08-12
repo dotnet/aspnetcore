@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Identity.UI
     {
         // The default framework for a given release must be 0.
         // So this needs to be updated in the future if we include more frameworks.
-        Bootstrap4 = 0,
-        Bootstrap3 = 1,
+        Bootstrap5 = 0,
+        Bootstrap4 = 1
     }
 }

@@ -114,6 +114,21 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task MvcControllerActionWorks()
+        {
+            // Arrange
+            using var client = _fixture.CreateDefaultClient();
+
+            // Act
+            var response = await client.GetAsync("/greet");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal("Hello human", content);
+        }
+
+        [Fact]
         public async Task DefaultEnvironment_Is_Development()
         {
             // Arrange

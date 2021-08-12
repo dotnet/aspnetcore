@@ -196,6 +196,12 @@
             await ValidateStreamValuesAsync("jsToDotNetStreamWrapperObjectReturnValueAsync", dataWrapperReferenceStream);
         }
 
+        var dotNetStreamReference = DotNetStreamReferenceInterop.GetDotNetStreamReference();
+        ReturnValues["dotNetToJSReceiveDotNetStreamReferenceAsync"] = await JSRuntime.InvokeAsync<string>("jsInteropTests.receiveDotNetStreamReference", dotNetStreamReference);
+
+        var dotNetStreamReferenceWrapper = DotNetStreamReferenceInterop.GetDotNetStreamWrapperReference();
+        ReturnValues["dotNetToJSReceiveDotNetStreamWrapperReferenceAsync"] = await JSRuntime.InvokeAsync<string>("jsInteropTests.receiveDotNetStreamWrapperReference", dotNetStreamReferenceWrapper);
+
         Invocations = invocations;
         DoneWithInterop = true;
     }

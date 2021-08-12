@@ -702,7 +702,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 // Get a new buffer using the minimum segment size, unless the size hint is larger than a single segment.
                 // Also, the size cannot be larger than the MaxBufferSize of the MemoryPool
-                var owner = _memoryPool.Rent(Math.Min(sizeHint, _memoryPool.MaxBufferSize));
+                var owner = _memoryPool.Rent(sizeHint);
                 _currentSegment = owner.Memory;
                 _currentSegmentOwner = owner;
             }

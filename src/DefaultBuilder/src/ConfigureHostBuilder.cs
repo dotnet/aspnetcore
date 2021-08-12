@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -12,36 +13,23 @@ namespace Microsoft.AspNetCore.Builder
     /// A non-buildable <see cref="IHostBuilder"/> for <see cref="WebApplicationBuilder"/>.
     /// Use <see cref="WebApplicationBuilder.Build"/> to build the <see cref="WebApplicationBuilder"/>.
     /// </summary>
-    public sealed class ConfigureHostBuilder : IHostBuilder
+    public sealed class ConfigureHostBuilder : IHostBuilder, ISupportsConfigureWebHost
     {
         private readonly ConfigurationManager _configuration;
-        private readonly IWebHostEnvironment _environment;
         private readonly IServiceCollection _services;
         private readonly HostBuilderContext _context;
 
         private readonly List<Action<IHostBuilder>> _operations = new();
 
-        internal ConfigureHostBuilder(
-            ConfigurationManager configuration,
-            IWebHostEnvironment environment,
-            IServiceCollection services,
-            IDictionary<object, object> properties)
+        internal ConfigureHostBuilder(HostBuilderContext context, ConfigurationManager configuration, IServiceCollection services)
         {
             _configuration = configuration;
-            _environment = environment;
             _services = services;
-
-            Properties = properties;
-
-            _context = new HostBuilderContext(Properties)
-            {
-                Configuration = _configuration,
-                HostingEnvironment = _environment
-            };
+            _context = context;
         }
 
         /// <inheritdoc />
-        public IDictionary<object, object> Properties { get; }
+        public IDictionary<object, object> Properties => _context.Properties;
 
         IHost IHostBuilder.Build()
         {
@@ -136,6 +124,11 @@ namespace Microsoft.AspNetCore.Builder
             {
                 operation(hostBuilder);
             }
+        }
+
+        IHostBuilder ISupportsConfigureWebHost.ConfigureWebHost(Action<IWebHostBuilder> configure, Action<WebHostBuilderOptions> configureOptions)
+        {
+            throw new NotSupportedException($"ConfigureWebHost() is not supported by WebApplicationBuilder.Host. Use the WebApplication returned by WebApplicationBuilder.Build() instead.");
         }
     }
 }

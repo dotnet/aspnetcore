@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Connections
         internal protected IProtocolErrorCodeFeature? _currentIProtocolErrorCodeFeature;
         internal protected IStreamDirectionFeature? _currentIStreamDirectionFeature;
         internal protected IStreamIdFeature? _currentIStreamIdFeature;
-        internal protected ITlsConnectionFeature? _currentITlsConnectionFeature;
+        internal protected IStreamAbortFeature? _currentIStreamAbortFeature;
 
         private int _featureRevision;
 
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Connections
             _currentIProtocolErrorCodeFeature = null;
             _currentIStreamDirectionFeature = null;
             _currentIStreamIdFeature = null;
-            _currentITlsConnectionFeature = null;
+            _currentIStreamAbortFeature = null;
         }
 
         // Internal for testing
@@ -164,16 +164,16 @@ namespace Microsoft.AspNetCore.Connections
                 {
                     feature = _currentIStreamIdFeature;
                 }
-                else if (key == typeof(ITlsConnectionFeature))
+                else if (key == typeof(IStreamAbortFeature))
                 {
-                    feature = _currentITlsConnectionFeature;
+                    feature = _currentIStreamAbortFeature;
                 }
                 else if (MaybeExtra != null)
                 {
                     feature = ExtraFeatureGet(key);
                 }
 
-                return feature;
+                return feature ?? MultiplexedConnectionFeatures?[key];
             }
 
             set
@@ -220,9 +220,9 @@ namespace Microsoft.AspNetCore.Connections
                 {
                     _currentIStreamIdFeature = (IStreamIdFeature?)value;
                 }
-                else if (key == typeof(ITlsConnectionFeature))
+                else if (key == typeof(IStreamAbortFeature))
                 {
-                    _currentITlsConnectionFeature = (ITlsConnectionFeature?)value;
+                    _currentIStreamAbortFeature = (IStreamAbortFeature?)value;
                 }
                 else
                 {
@@ -278,13 +278,18 @@ namespace Microsoft.AspNetCore.Connections
             {
                 feature = Unsafe.As<IStreamIdFeature?, TFeature?>(ref _currentIStreamIdFeature);
             }
-            else if (typeof(TFeature) == typeof(ITlsConnectionFeature))
+            else if (typeof(TFeature) == typeof(IStreamAbortFeature))
             {
-                feature = Unsafe.As<ITlsConnectionFeature?, TFeature?>(ref _currentITlsConnectionFeature);
+                feature = Unsafe.As<IStreamAbortFeature?, TFeature?>(ref _currentIStreamAbortFeature);
             }
             else if (MaybeExtra != null)
             {
                 feature = (TFeature?)(ExtraFeatureGet(typeof(TFeature)));
+            }
+
+            if (feature == null && MultiplexedConnectionFeatures != null)
+            {
+                feature = MultiplexedConnectionFeatures.Get<TFeature>();
             }
 
             return feature;
@@ -337,9 +342,9 @@ namespace Microsoft.AspNetCore.Connections
             {
                 _currentIStreamIdFeature = Unsafe.As<TFeature?, IStreamIdFeature?>(ref feature);
             }
-            else if (typeof(TFeature) == typeof(ITlsConnectionFeature))
+            else if (typeof(TFeature) == typeof(IStreamAbortFeature))
             {
-                _currentITlsConnectionFeature = Unsafe.As<TFeature?, ITlsConnectionFeature?>(ref feature);
+                _currentIStreamAbortFeature = Unsafe.As<TFeature?, IStreamAbortFeature?>(ref feature);
             }
             else
             {
@@ -389,9 +394,9 @@ namespace Microsoft.AspNetCore.Connections
             {
                 yield return new KeyValuePair<Type, object>(typeof(IStreamIdFeature), _currentIStreamIdFeature);
             }
-            if (_currentITlsConnectionFeature != null)
+            if (_currentIStreamAbortFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(typeof(ITlsConnectionFeature), _currentITlsConnectionFeature);
+                yield return new KeyValuePair<Type, object>(typeof(IStreamAbortFeature), _currentIStreamAbortFeature);
             }
 
             if (MaybeExtra != null)

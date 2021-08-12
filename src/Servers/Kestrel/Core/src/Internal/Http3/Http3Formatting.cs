@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 Http3FrameType.CancelPush => "CANCEL_PUSH",
                 Http3FrameType.Settings => "SETTINGS",
                 Http3FrameType.PushPromise => "PUSH_PROMISE",
-                Http3FrameType.GoAway => "GO_AWAY",
+                Http3FrameType.GoAway => "GOAWAY",
                 Http3FrameType.MaxPushId => "MAX_PUSH_ID",
                 _ => type.ToString()
             };

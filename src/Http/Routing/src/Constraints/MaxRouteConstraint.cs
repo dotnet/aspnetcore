@@ -4,13 +4,14 @@
 using System;
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Matching;
 
 namespace Microsoft.AspNetCore.Routing.Constraints
 {
     /// <summary>
     /// Constrains a route parameter to be an integer with a maximum value.
     /// </summary>
-    public class MaxRouteConstraint : IRouteConstraint
+    public class MaxRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MaxRouteConstraint" /> class.
@@ -47,13 +48,24 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             if (values.TryGetValue(routeKey, out var value) && value != null)
             {
                 var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
-                if (long.TryParse(valueString, NumberStyles.Integer, CultureInfo.InvariantCulture, out var longValue))
-                {
-                    return longValue <= Max;
-                }
+                return CheckConstraintCore(valueString);
             }
 
             return false;
+        }
+
+        private bool CheckConstraintCore(string? valueString)
+        {
+            if (long.TryParse(valueString, NumberStyles.Integer, CultureInfo.InvariantCulture, out var longValue))
+            {
+                return longValue <= Max;
+            }
+            return false;
+        }
+
+        bool IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string parameterName, string literal)
+        {
+            return CheckConstraintCore(literal);
         }
     }
 }

@@ -1,18 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections;
-using System.Globalization;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Net.Quic;
 using System.Text;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
@@ -20,10 +18,12 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Interop.FunctionalTests.Http3
 {
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35070")]
     public class Http3RequestTests : LoggedTest
     {
         private class StreamingHttpContext : HttpContent
@@ -90,7 +90,7 @@ namespace Interop.FunctionalTests.Http3
             }, protocol: protocol);
 
             using (var host = builder.Build())
-            using (var client = CreateClient())
+            using (var client = Http3Helpers.CreateClient())
             {
                 await host.StartAsync().DefaultTimeout();
 
@@ -99,7 +99,7 @@ namespace Interop.FunctionalTests.Http3
                 request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
                 // Act
-                var responseMessage = await client.SendAsync(request).DefaultTimeout();
+                var responseMessage = await client.SendAsync(request, CancellationToken.None).DefaultTimeout();
 
                 // Assert
                 Assert.Equal("hello, world", await responseMessage.Content.ReadAsStringAsync());
@@ -172,6 +172,94 @@ namespace Interop.FunctionalTests.Http3
             }
         }
 
+        [ConditionalTheory]
+        [MsQuicSupported]
+        [InlineData(HttpProtocols.Http3, 11)]
+        [InlineData(HttpProtocols.Http3, 1024, Skip = "HttpClient issue https://github.com/dotnet/runtime/issues/56115")]
+        [InlineData(HttpProtocols.Http2, 11)]
+        [InlineData(HttpProtocols.Http2, 1024)]
+        public async Task GET_ServerStreaming_ClientReadsPartialResponse(HttpProtocols protocol, int clientBufferSize)
+        {
+            // Arrange
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var builder = CreateHostBuilder(async context =>
+            {
+                await context.Response.Body.WriteAsync(TestData);
+
+                await tcs.Task;
+
+                await context.Response.Body.WriteAsync(TestData);
+            }, protocol: protocol);
+
+            using (var host = builder.Build())
+            using (var client = Http3Helpers.CreateClient())
+            {
+                await host.StartAsync();
+
+                var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+                request.Version = GetProtocol(protocol);
+                request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                // Act
+                var response = await client.SendAsync(request, CancellationToken.None);
+
+                // Assert
+                response.EnsureSuccessStatusCode();
+                Assert.Equal(GetProtocol(protocol), response.Version);
+
+                var responseStream = await response.Content.ReadAsStreamAsync().DefaultTimeout();
+
+                await responseStream.ReadAtLeastLengthAsync(TestData.Length, clientBufferSize).DefaultTimeout();
+
+                tcs.SetResult();
+                await responseStream.ReadAtLeastLengthAsync(TestData.Length, clientBufferSize).DefaultTimeout();
+
+                await host.StopAsync();
+            }
+        }
+
+        [ConditionalTheory]
+        [MsQuicSupported]
+        [InlineData(HttpProtocols.Http3, Skip = "https://github.com/dotnet/runtime/issues/56969")]
+        [InlineData(HttpProtocols.Http2)]
+        public async Task POST_ClientSendsOnlyHeaders_RequestReceivedOnServer(HttpProtocols protocol)
+        {
+            // Arrange
+            var builder = CreateHostBuilder(context =>
+            {
+                return Task.CompletedTask;
+            }, protocol: protocol);
+
+            using (var host = builder.Build())
+            using (var client = Http3Helpers.CreateClient())
+            {
+                await host.StartAsync();
+
+                var requestContent = new StreamingHttpContext();
+
+                var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
+                request.Content = requestContent;
+                request.Version = GetProtocol(protocol);
+                request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                // Act
+                var responseTask = client.SendAsync(request, CancellationToken.None).DefaultTimeout();
+
+                var requestStream = await requestContent.GetStreamAsync().DefaultTimeout();
+
+                // Send headers
+                await requestStream.FlushAsync().DefaultTimeout();
+
+                var response = await responseTask.DefaultTimeout();
+
+                // Assert
+                response.EnsureSuccessStatusCode();
+                Assert.Equal(GetProtocol(protocol), response.Version);
+
+                await host.StopAsync();
+            }
+        }
+
         [ConditionalFact]
         [MsQuicSupported]
         public async Task POST_ServerCompletesWithoutReadingRequestBody_ClientGetsResponse()
@@ -181,25 +269,15 @@ namespace Interop.FunctionalTests.Http3
             {
                 var body = context.Request.Body;
 
-                var data = new List<byte>();
-                var buffer = new byte[1024];
-                var readCount = 0;
-                while ((readCount = await body.ReadAsync(buffer).DefaultTimeout()) != -1)
-                {
-                    data.AddRange(buffer.AsMemory(0, readCount).ToArray());
-                    if (data.Count == TestData.Length)
-                    {
-                        break;
-                    }
-                }
+                var data = await body.ReadAtLeastLengthAsync(TestData.Length).DefaultTimeout();
 
-                await context.Response.Body.WriteAsync(buffer.AsMemory(0, TestData.Length));
+                await context.Response.Body.WriteAsync(data);
             });
 
             using (var host = builder.Build())
-            using (var client = CreateClient())
+            using (var client = Http3Helpers.CreateClient())
             {
-                await host.StartAsync();
+                await host.StartAsync().DefaultTimeout();
 
                 var requestContent = new StreamingHttpContext();
 
@@ -209,24 +287,24 @@ namespace Interop.FunctionalTests.Http3
                 request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
                 // Act
-                var responseTask = client.SendAsync(request);
+                var responseTask = client.SendAsync(request, CancellationToken.None);
 
-                var requestStream = await requestContent.GetStreamAsync();
+                var requestStream = await requestContent.GetStreamAsync().DefaultTimeout();
 
                 // Send headers
-                await requestStream.FlushAsync();
+                await requestStream.FlushAsync().DefaultTimeout();
                 // Write content
-                await requestStream.WriteAsync(TestData);
+                await requestStream.WriteAsync(TestData).DefaultTimeout();
 
-                var response = await responseTask;
+                var response = await responseTask.DefaultTimeout();
 
                 // Assert
                 response.EnsureSuccessStatusCode();
                 Assert.Equal(HttpVersion.Version30, response.Version);
-                var responseText = await response.Content.ReadAsStringAsync();
+                var responseText = await response.Content.ReadAsStringAsync().DefaultTimeout();
                 Assert.Equal("Hello world", responseText);
 
-                await host.StopAsync();
+                await host.StopAsync().DefaultTimeout();
             }
         }
 
@@ -244,34 +322,28 @@ namespace Interop.FunctionalTests.Http3
 
             var builder = CreateHostBuilder(async context =>
             {
-                context.RequestAborted.Register(() => cancelledTcs.SetResult());
+                context.RequestAborted.Register(() =>
+                {
+                    Logger.LogInformation("Server received cancellation");
+                    cancelledTcs.SetResult();
+                });
 
                 var body = context.Request.Body;
 
-                // Read content
-                var data = new List<byte>();
-                var buffer = new byte[1024];
-                var readCount = 0;
-                while ((readCount = await body.ReadAsync(buffer).DefaultTimeout()) != -1)
-                {
-                    data.AddRange(buffer.AsMemory(0, readCount).ToArray());
-                    if (data.Count == TestData.Length)
-                    {
-                        break;
-                    }
-                }
+                Logger.LogInformation("Server reading content");
+                await body.ReadAtLeastLengthAsync(TestData.Length).DefaultTimeout();
 
                 // Sync with client
                 await syncPoint.WaitToContinue();
 
-                // Wait for task cancellation
+                Logger.LogInformation("Server waiting for cancellation");
                 await cancelledTcs.Task;
 
-                readAsyncTask.SetResult(body.ReadAsync(buffer).AsTask());
+                readAsyncTask.SetResult(body.ReadAsync(new byte[1024]).AsTask());
             }, protocol: protocol);
 
             using (var host = builder.Build())
-            using (var client = CreateClient())
+            using (var client = Http3Helpers.CreateClient())
             {
                 await host.StartAsync().DefaultTimeout();
 
@@ -288,15 +360,17 @@ namespace Interop.FunctionalTests.Http3
 
                 var requestStream = await requestContent.GetStreamAsync().DefaultTimeout();
 
-                // Send headers
+                Logger.LogInformation("Client sending request headers");
                 await requestStream.FlushAsync().DefaultTimeout();
-                // Write content
-                await requestStream.WriteAsync(TestData).DefaultTimeout();
 
-                // Wait until content is read on server
+                Logger.LogInformation("Client sending request content");
+                await requestStream.WriteAsync(TestData).DefaultTimeout();
+                await requestStream.FlushAsync().DefaultTimeout();
+
+                Logger.LogInformation("Client waiting until content is read on server");
                 await syncPoint.WaitForSyncPoint().DefaultTimeout();
 
-                // Cancel request
+                Logger.LogInformation("Client cancelling");
                 cts.Cancel();
 
                 // Continue on server
@@ -340,7 +414,7 @@ namespace Interop.FunctionalTests.Http3
             }, protocol: protocol);
 
             using (var host = builder.Build())
-            using (var client = CreateClient())
+            using (var client = Http3Helpers.CreateClient())
             {
                 await host.StartAsync().DefaultTimeout();
 
@@ -349,7 +423,7 @@ namespace Interop.FunctionalTests.Http3
                 request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
                 // Act
-                var ex = await Assert.ThrowsAnyAsync<HttpRequestException>(() => client.SendAsync(request)).DefaultTimeout();
+                var ex = await Assert.ThrowsAnyAsync<HttpRequestException>(() => client.SendAsync(request, CancellationToken.None)).DefaultTimeout();
 
                 // Assert
                 if (protocol == HttpProtocols.Http3)
@@ -406,7 +480,7 @@ namespace Interop.FunctionalTests.Http3
             });
 
             using (var host = builder.Build())
-            using (var client = CreateClient())
+            using (var client = Http3Helpers.CreateClient())
             {
                 await host.StartAsync();
 
@@ -415,7 +489,7 @@ namespace Interop.FunctionalTests.Http3
                 request1.Version = HttpVersion.Version30;
                 request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
-                var response1 = await client.SendAsync(request1);
+                var response1 = await client.SendAsync(request1, CancellationToken.None);
                 response1.EnsureSuccessStatusCode();
                 var firstRequestState = persistedState;
 
@@ -426,7 +500,7 @@ namespace Interop.FunctionalTests.Http3
                 request2.Version = HttpVersion.Version30;
                 request2.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
-                var response2 = await client.SendAsync(request2);
+                var response2 = await client.SendAsync(request2, CancellationToken.None);
                 response2.EnsureSuccessStatusCode();
                 var secondRequestState = persistedState;
 
@@ -458,7 +532,7 @@ namespace Interop.FunctionalTests.Http3
             });
 
             using (var host = builder.Build())
-            using (var client = CreateClient())
+            using (var client = Http3Helpers.CreateClient())
             {
                 await host.StartAsync();
 
@@ -467,7 +541,7 @@ namespace Interop.FunctionalTests.Http3
                 request1.Version = HttpVersion.Version30;
                 request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
-                var response1 = await client.SendAsync(request1);
+                var response1 = await client.SendAsync(request1, CancellationToken.None);
                 response1.EnsureSuccessStatusCode();
 
                 var connectionId1 = connectionId;
@@ -477,7 +551,7 @@ namespace Interop.FunctionalTests.Http3
                 request2.Version = HttpVersion.Version30;
                 request2.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
-                var response2 = await client.SendAsync(request2);
+                var response2 = await client.SendAsync(request2, CancellationToken.None);
                 response2.EnsureSuccessStatusCode();
 
                 var connectionId2 = connectionId;
@@ -524,7 +598,7 @@ namespace Interop.FunctionalTests.Http3
             });
 
             using (var host = builder.Build())
-            using (var client = CreateClient())
+            using (var client = Http3Helpers.CreateClient())
             {
                 await host.StartAsync();
 
@@ -534,7 +608,7 @@ namespace Interop.FunctionalTests.Http3
                 request1.Version = HttpVersion.Version30;
                 request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
-                var response1 = await client.SendAsync(request1);
+                var response1 = await client.SendAsync(request1, CancellationToken.None);
                 response1.EnsureSuccessStatusCode();
 
                 // Delay to ensure the stream has enough time to return to pool
@@ -545,7 +619,7 @@ namespace Interop.FunctionalTests.Http3
                 request2.Version = HttpVersion.Version30;
                 request2.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
-                var response2 = await client.SendAsync(request2);
+                var response2 = await client.SendAsync(request2, CancellationToken.None);
                 response2.EnsureSuccessStatusCode();
 
                 // Assert
@@ -554,6 +628,67 @@ namespace Interop.FunctionalTests.Http3
 
                 await host.StopAsync();
             }
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task Get_CompleteAsyncAndReset_StreamNotPooled()
+        {
+            // Arrange
+            var requestCount = 0;
+            var contexts = new List<HttpContext>();
+            var builder = CreateHostBuilder(async context =>
+            {
+                contexts.Add(context);
+                requestCount++;
+                Logger.LogInformation($"Server received request {requestCount}");
+                if (requestCount == 1)
+                {
+                    await context.Response.CompleteAsync();
+
+                    context.Features.Get<IHttpResetFeature>().Reset(256);
+                }
+            });
+
+            using (var host = builder.Build())
+            using (var client = Http3Helpers.CreateClient())
+            {
+                await host.StartAsync();
+
+                // Act
+                var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+                request1.Version = HttpVersion.Version30;
+                request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+
+                // TODO: There is a race between CompleteAsync and Reset.
+                // https://github.com/dotnet/aspnetcore/issues/34915
+                try
+                {
+                    Logger.LogInformation("Client sending request 1");
+                    await client.SendAsync(request1, CancellationToken.None);
+                }
+                catch (HttpRequestException)
+                {
+                }                
+
+                // Delay to ensure the stream has enough time to return to pool
+                await Task.Delay(100);
+
+                var request2 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+                request2.Version = HttpVersion.Version30;
+                request2.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                Logger.LogInformation("Client sending request 2");
+                var response2 = await client.SendAsync(request2, CancellationToken.None);
+
+                // Assert
+                response2.EnsureSuccessStatusCode();
+
+                await host.StopAsync();
+            }
+
+            Assert.NotSame(contexts[0], contexts[1]);
         }
 
         [ConditionalFact]
@@ -577,7 +712,7 @@ namespace Interop.FunctionalTests.Http3
                 });
 
             using (var host = builder.Build())
-            using (var client = CreateClient())
+            using (var client = Http3Helpers.CreateClient())
             {
                 await host.StartAsync();
 
@@ -588,7 +723,7 @@ namespace Interop.FunctionalTests.Http3
                 request1.Version = HttpVersion.Version30;
                 request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
-                var response1 = await client.SendAsync(request1);
+                var response1 = await client.SendAsync(request1, CancellationToken.None);
                 response1.EnsureSuccessStatusCode();
 
                 // Assert
@@ -606,56 +741,482 @@ namespace Interop.FunctionalTests.Http3
             }
         }
 
-        private static HttpClient CreateClient()
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task GET_ClientDisconnected_ConnectionAbortRaised()
         {
-            var httpHandler = new HttpClientHandler();
-            httpHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            // Arrange
+            var connectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var connectionStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var builder = CreateHostBuilder(
+                context =>
+                {
+                    return Task.CompletedTask;
+                },
+                configureKestrel: kestrel =>
+                {
+                    kestrel.Listen(IPAddress.Parse("127.0.0.1"), 0, listenOptions =>
+                    {
+                        listenOptions.Protocols = HttpProtocols.Http3;
+                        listenOptions.UseHttps();
 
-            return new HttpClient(httpHandler);
+                        IMultiplexedConnectionBuilder multiplexedConnectionBuilder = listenOptions;
+                        multiplexedConnectionBuilder.Use(next =>
+                        {
+                            return context =>
+                            {
+                                connectionStartedTcs.SetResult();
+                                context.ConnectionClosed.Register(() => connectionClosedTcs.SetResult());
+                                return next(context);
+                            };
+                        });
+                    });
+                });
+
+            using (var host = builder.Build())
+            {
+                await host.StartAsync();
+
+                var client = Http3Helpers.CreateClient();
+                try
+                {
+                    var port = host.GetPort();
+
+                    // Act
+                    var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{port}/");
+                    request1.Version = HttpVersion.Version30;
+                    request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                    var response1 = await client.SendAsync(request1, CancellationToken.None);
+                    response1.EnsureSuccessStatusCode();
+
+                    await connectionStartedTcs.Task.DefaultTimeout();
+                }
+                finally
+                {
+                    Logger.LogInformation("Disposing client.");
+                    client.Dispose();
+                }
+
+                Logger.LogInformation("Waiting for server to receive connection close.");
+                await connectionClosedTcs.Task.DefaultTimeout();
+
+                await host.StopAsync();
+            }
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task ConnectionLifetimeNotificationFeature_RequestClose_ConnectionEnds()
+        {
+            // Arrange
+            var syncPoint1 = new SyncPoint();
+            var connectionStartedTcs1 = new TaskCompletionSource<IConnectionLifetimeNotificationFeature>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var connectionStartedTcs2 = new TaskCompletionSource<IConnectionLifetimeNotificationFeature>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var connectionStartedTcs3 = new TaskCompletionSource<IConnectionLifetimeNotificationFeature>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var builder = CreateHostBuilder(
+                context =>
+                {
+                    switch (context.Request.Path.ToString())
+                    {
+                        case "/1":
+                            connectionStartedTcs1.SetResult(context.Features.Get<IConnectionLifetimeNotificationFeature>());
+                            return syncPoint1.WaitToContinue();
+                        case "/2":
+                            connectionStartedTcs2.SetResult(context.Features.Get<IConnectionLifetimeNotificationFeature>());
+                            return Task.CompletedTask;
+                        case "/3":
+                            connectionStartedTcs3.SetResult(context.Features.Get<IConnectionLifetimeNotificationFeature>());
+                            return Task.CompletedTask;
+                        default:
+                            throw new InvalidOperationException();
+                    }
+                });
+
+            using (var host = builder.Build())
+            using (var client = Http3Helpers.CreateClient())
+            {
+                await host.StartAsync();
+
+                var port = host.GetPort();
+
+                // Act
+                var responseTask1 = client.SendAsync(CreateHttp3Request(HttpMethod.Get, $"https://127.0.0.1:{port}/1"), CancellationToken.None);
+
+                // Connection started.
+                var connection = await connectionStartedTcs1.Task.DefaultTimeout();
+
+                // Request in progress.
+                await syncPoint1.WaitForSyncPoint();
+
+                connection.RequestClose();
+
+                // Assert
+
+                // Server should send a GOAWAY to the client to indicate connection is closing.
+                await WaitForLogAsync(logs =>
+                {
+                    return logs.Any(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Http3" &&
+                                         w.Message.Contains("GOAWAY stream ID 4611686018427387903."));
+                }, "Check for initial GOAWAY frame sent on server initiated shutdown.");
+
+                // TODO https://github.com/dotnet/runtime/issues/56944
+                //Logger.LogInformation("Sending request after GOAWAY.");
+                //var response2 = await client.SendAsync(CreateHttp3Request(HttpMethod.Get, $"https://127.0.0.1:{port}/2"), CancellationToken.None);
+                //response2.EnsureSuccessStatusCode();
+
+                // Allow request to finish so connection shutdown can happen.
+                syncPoint1.Continue();
+
+                // Request completes successfully on client.
+                var response1 = await responseTask1.DefaultTimeout();
+                response1.EnsureSuccessStatusCode();
+
+                // Server has aborted connection.
+                await WaitForLogAsync(logs =>
+                {
+                    const int applicationAbortedConnectionId = 6;
+                    var connectionAbortLog = logs.FirstOrDefault(
+                        w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" &&
+                            w.EventId == applicationAbortedConnectionId);
+                    if (connectionAbortLog == null)
+                    {
+                        return false;
+                    }
+
+                    // This message says the client closed the connection because the server
+                    // sends a GOAWAY and the client then closes the connection once all requests are finished.
+                    Assert.Contains("The client closed the connection.", connectionAbortLog.Message);
+                    return true;
+                }, "Wait for connection abort.");
+
+                Logger.LogInformation("Sending request after connection abort.");
+                var response3 = await client.SendAsync(CreateHttp3Request(HttpMethod.Get, $"https://127.0.0.1:{port}/3"), CancellationToken.None);
+                response3.EnsureSuccessStatusCode();
+
+                await host.StopAsync();
+            }
+        }
+
+        private HttpRequestMessage CreateHttp3Request(HttpMethod method, string url)
+        {
+            var request = new HttpRequestMessage(method, url);
+            request.Version = HttpVersion.Version30;
+            request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+            return request;
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task GET_ServerAbortTransport_ConnectionAbortRaised()
+        {
+            // Arrange
+            var syncPoint = new SyncPoint();
+            var connectionStartedTcs = new TaskCompletionSource<MultiplexedConnectionContext>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var builder = CreateHostBuilder(
+                context =>
+                {
+                    return syncPoint.WaitToContinue();
+                },
+                configureKestrel: kestrel =>
+                {
+                    kestrel.Listen(IPAddress.Parse("127.0.0.1"), 0, listenOptions =>
+                    {
+                        listenOptions.Protocols = HttpProtocols.Http3;
+                        listenOptions.UseHttps();
+
+                        IMultiplexedConnectionBuilder multiplexedConnectionBuilder = listenOptions;
+                        multiplexedConnectionBuilder.Use(next =>
+                        {
+                            return context =>
+                            {
+                                connectionStartedTcs.SetResult(context);
+                                return next(context);
+                            };
+                        });
+                    });
+                });
+
+            using (var host = builder.Build())
+            using (var client = Http3Helpers.CreateClient())
+            {
+                await host.StartAsync();
+
+                var port = host.GetPort();
+
+                // Act
+                var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{port}/");
+                request1.Version = HttpVersion.Version30;
+                request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                var responseTask = client.SendAsync(request1, CancellationToken.None);
+
+                // Connection started.
+                var connection = await connectionStartedTcs.Task.DefaultTimeout();
+
+                // Request in progress.
+                await syncPoint.WaitForSyncPoint();
+
+                // Server connection middleware triggers close.
+                // Note that this aborts the transport, not the HTTP/3 connection.
+                connection.Abort();
+
+                await Assert.ThrowsAsync<HttpRequestException>(() => responseTask).DefaultTimeout();
+
+                // Assert
+                const int applicationAbortedConnectionId = 6;
+                Assert.Single(TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" &&
+                                                         w.EventId == applicationAbortedConnectionId));
+
+                syncPoint.Continue();
+
+                await host.StopAsync();
+            }
+        }
+
+        private async Task WaitForLogAsync(Func<IEnumerable<WriteContext>, bool> testLogs, string message)
+        {
+            Logger.LogInformation($"Started waiting for logs: {message}");
+
+            var retryCount = !Debugger.IsAttached ? 5 : int.MaxValue;
+            for (var i = 0; i < retryCount; i++)
+            {
+                if (testLogs(TestSink.Writes))
+                {
+                    Logger.LogInformation($"Successfully received logs: {message}");
+                    return;
+                }
+
+                await Task.Delay(100 * (i + 1));
+            }
+
+            throw new Exception($"Wait for logs failure: {message}");
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task GET_ConnectionInfo_PropertiesSet()
+        {
+            string connectionId = null;
+            IPAddress remoteAddress = null;
+            int? remotePort = null;
+            IPAddress localAddress = null;
+            int? localPort = null;
+
+            // Arrange
+            var builder = CreateHostBuilder(context =>
+            {
+                connectionId = context.Connection.Id;
+                remoteAddress = context.Connection.RemoteIpAddress;
+                remotePort = context.Connection.RemotePort;
+                localAddress = context.Connection.LocalIpAddress;
+                localPort = context.Connection.LocalPort;
+                return Task.CompletedTask;
+            });
+
+            using (var host = builder.Build())
+            using (var client = Http3Helpers.CreateClient())
+            {
+                await host.StartAsync();
+
+                var port = host.GetPort();
+
+                // Act
+                var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{port}/");
+                request1.Version = HttpVersion.Version30;
+                request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                var response1 = await client.SendAsync(request1, CancellationToken.None);
+                response1.EnsureSuccessStatusCode();
+
+                // Assert
+                Assert.NotNull(connectionId);
+
+                Assert.NotNull(remoteAddress);
+                Assert.NotNull(remotePort);
+
+                Assert.NotNull(localAddress);
+                Assert.Equal(port, localPort);
+
+                await host.StopAsync();
+            }
+        }
+
+        // Verify HTTP/2 and HTTP/3 match behavior
+        [ConditionalTheory]
+        [MsQuicSupported]
+        [InlineData(HttpProtocols.Http3)]
+        [InlineData(HttpProtocols.Http2)]
+        public async Task GET_GracefulServerShutdown_AbortRequestsAfterHostTimeout(HttpProtocols protocol)
+        {
+            // Arrange
+            var requestStartedTcs = new TaskCompletionSource<HttpContext>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var readAsyncTask = new TaskCompletionSource<Task>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestAbortedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var builder = CreateHostBuilder(async context =>
+            {
+                context.RequestAborted.Register(() => requestAbortedTcs.SetResult());
+
+                requestStartedTcs.SetResult(context);
+
+                Logger.LogInformation("Server sending response headers");
+                await context.Response.Body.FlushAsync();
+
+                Logger.LogInformation("Server reading");
+                var readTask = context.Request.Body.ReadUntilEndAsync();
+
+                readAsyncTask.SetResult(readTask);
+
+                await readTask;
+            }, protocol: protocol);
+
+            using (var host = builder.Build())
+            using (var client = Http3Helpers.CreateClient())
+            {
+                await host.StartAsync().DefaultTimeout();
+
+                var requestContent = new StreamingHttpContext();
+
+                var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
+                request.Content = requestContent;
+                request.Version = GetProtocol(protocol);
+                request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                // Act
+                var responseTask = client.SendAsync(request, CancellationToken.None);
+
+                var requestStream = await requestContent.GetStreamAsync().DefaultTimeout();
+
+                // Send headers
+                await requestStream.FlushAsync();
+                // Write content
+                await requestStream.WriteAsync(TestData);
+
+                var response = await responseTask.DefaultTimeout();
+
+                var httpContext = await requestStartedTcs.Task.DefaultTimeout();
+
+                Logger.LogInformation("Stopping host");
+                var stopTask = host.StopAsync();
+
+                if (protocol == HttpProtocols.Http3)
+                {
+                    await WaitForLogAsync(logs =>
+                    {
+                        return logs.Any(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Http3" &&
+                                             w.Message.Contains("GOAWAY stream ID 4611686018427387903."));
+                    }, "Check for initial GOAWAY frame sent on server initiated shutdown.");
+                }
+
+                var readTask = await readAsyncTask.Task.DefaultTimeout();
+
+                // Assert
+                var ex = await Assert.ThrowsAnyAsync<Exception>(() => readTask).DefaultTimeout();
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                }
+
+                Assert.IsType<ConnectionAbortedException>(ex);
+                Assert.Equal("The connection was aborted because the server is shutting down and request processing didn't complete within the time specified by HostOptions.ShutdownTimeout.", ex.Message);
+
+                await requestAbortedTcs.Task.DefaultTimeout();
+
+                await stopTask.DefaultTimeout();
+
+                if (protocol == HttpProtocols.Http3)
+                {
+                    // Server has aborted connection.
+                    await WaitForLogAsync(logs =>
+                    {
+                        return logs.Any(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Http3" &&
+                                             w.Message.Contains("GOAWAY stream ID 4."));
+                    }, "Check for exact GOAWAY frame sent on server initiated shutdown.");
+                }
+
+                Assert.Contains(TestSink.Writes, m => m.Message.Contains("Some connections failed to close gracefully during server shutdown."));
+            }
+        }
+
+        // Verify HTTP/2 and HTTP/3 match behavior
+        [ConditionalTheory]
+        [MsQuicSupported]
+        [InlineData(HttpProtocols.Http3)]
+        [InlineData(HttpProtocols.Http2)]
+        public async Task GET_GracefulServerShutdown_RequestCompleteSuccessfullyInsideHostTimeout(HttpProtocols protocol)
+        {
+            // Arrange
+            var requestStartedTcs = new TaskCompletionSource<HttpContext>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestAbortedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var builder = CreateHostBuilder(async context =>
+            {
+                context.RequestAborted.Register(() => requestAbortedTcs.SetResult());
+
+                requestStartedTcs.SetResult(context);
+
+                Logger.LogInformation("Server sending response headers");
+                await context.Response.Body.FlushAsync();
+
+                Logger.LogInformation("Server reading");
+                var data = await context.Request.Body.ReadUntilEndAsync();
+
+                Logger.LogInformation("Server writing");
+                await context.Response.Body.WriteAsync(data);
+            }, protocol: protocol);
+
+            using (var host = builder.Build())
+            using (var client = Http3Helpers.CreateClient())
+            {
+                await host.StartAsync().DefaultTimeout();
+
+                var requestContent = new StreamingHttpContext();
+
+                var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
+                request.Content = requestContent;
+                request.Version = GetProtocol(protocol);
+                request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                // Act
+                var responseTask = client.SendAsync(request, CancellationToken.None);
+
+                var requestStream = await requestContent.GetStreamAsync().DefaultTimeout();
+
+                // Send headers
+                await requestStream.FlushAsync();
+                // Write content
+                await requestStream.WriteAsync(TestData);
+
+                var response = await responseTask.DefaultTimeout();
+
+                var httpContext = await requestStartedTcs.Task.DefaultTimeout();
+
+                Logger.LogInformation("Stopping host");
+                var stopTask = host.StopAsync();
+
+                // Assert
+                Assert.False(stopTask.IsCompleted, "Waiting for host which is wating for request.");
+
+                Logger.LogInformation("Client completing request stream");
+                requestContent.CompleteStream();
+
+                var data = await response.Content.ReadAsByteArrayAsync();
+                Assert.Equal(TestData, data);
+
+                await stopTask.DefaultTimeout();
+
+                Assert.DoesNotContain(TestSink.Writes, m => m.Message.Contains("Some connections failed to close gracefully during server shutdown."));
+            }
         }
 
         private IHostBuilder CreateHostBuilder(RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null)
         {
-            return GetHostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
-                {
-                    webHostBuilder
-                        .UseKestrel(o =>
-                        {
-                            if (configureKestrel == null)
-                            {
-                                o.Listen(IPAddress.Parse("127.0.0.1"), 0, listenOptions =>
-                                {
-                                    listenOptions.Protocols = protocol ?? HttpProtocols.Http3;
-                                    listenOptions.UseHttps();
-                                });
-                            }
-                            else
-                            {
-                                configureKestrel(o);
-                            }
-                        })
-                        .Configure(app =>
-                        {
-                            app.Run(requestDelegate);
-                        });
-                })
-                .ConfigureServices(AddTestLogging);
-        }
-
-        public static IHostBuilder GetHostBuilder(long? maxReadBufferSize = null)
-        {
-            return new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
-                {
-                    webHostBuilder
-                        .UseQuic(options =>
-                        {
-                            options.MaxReadBufferSize = maxReadBufferSize;
-                            options.Alpn = "h3-29";
-                            options.IdleTimeout = TimeSpan.FromSeconds(20);
-                        });
-                });
+            return Http3Helpers.CreateHostBuilder(AddTestLogging, requestDelegate, protocol, configureKestrel);
         }
     }
 }

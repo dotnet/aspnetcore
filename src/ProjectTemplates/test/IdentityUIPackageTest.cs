@@ -34,31 +34,55 @@ namespace Templates.Test
             }
         }
 
-        public static string[] Bootstrap4ContentFiles { get; } = new string[]
+        public static string[] Bootstrap5ContentFiles { get; } = new string[]
         {
             "Identity/favicon.ico",
             "Identity/css/site.css",
             "Identity/js/site.js",
-            "Identity/lib/bootstrap/dist/css/bootstrap-grid.css",
-            "Identity/lib/bootstrap/dist/css/bootstrap-grid.css.map",
-            "Identity/lib/bootstrap/dist/css/bootstrap-grid.min.css",
-            "Identity/lib/bootstrap/dist/css/bootstrap-grid.min.css.map",
-            "Identity/lib/bootstrap/dist/css/bootstrap-reboot.css",
-            "Identity/lib/bootstrap/dist/css/bootstrap-reboot.css.map",
-            "Identity/lib/bootstrap/dist/css/bootstrap-reboot.min.css",
-            "Identity/lib/bootstrap/dist/css/bootstrap-reboot.min.css.map",
             "Identity/lib/bootstrap/dist/css/bootstrap.css",
             "Identity/lib/bootstrap/dist/css/bootstrap.css.map",
             "Identity/lib/bootstrap/dist/css/bootstrap.min.css",
             "Identity/lib/bootstrap/dist/css/bootstrap.min.css.map",
-            "Identity/lib/bootstrap/dist/js/bootstrap.bundle.js",
-            "Identity/lib/bootstrap/dist/js/bootstrap.bundle.js.map",
-            "Identity/lib/bootstrap/dist/js/bootstrap.bundle.min.js",
-            "Identity/lib/bootstrap/dist/js/bootstrap.bundle.min.js.map",
+            "Identity/lib/bootstrap/dist/css/bootstrap.rtl.css",
+            "Identity/lib/bootstrap/dist/css/bootstrap.rtl.css.map",
+            "Identity/lib/bootstrap/dist/css/bootstrap.rtl.min.css",
+            "Identity/lib/bootstrap/dist/css/bootstrap.rtl.min.css.map",
+            "Identity/lib/bootstrap/dist/css/bootstrap-grid.css",
+            "Identity/lib/bootstrap/dist/css/bootstrap-grid.css.map",
+            "Identity/lib/bootstrap/dist/css/bootstrap-grid.min.css",
+            "Identity/lib/bootstrap/dist/css/bootstrap-grid.min.css.map",
+            "Identity/lib/bootstrap/dist/css/bootstrap-grid.rtl.css",
+            "Identity/lib/bootstrap/dist/css/bootstrap-grid.rtl.css.map",
+            "Identity/lib/bootstrap/dist/css/bootstrap-grid.rtl.min.css",
+            "Identity/lib/bootstrap/dist/css/bootstrap-grid.rtl.min.css.map",
+            "Identity/lib/bootstrap/dist/css/bootstrap-reboot.css",
+            "Identity/lib/bootstrap/dist/css/bootstrap-reboot.css.map",
+            "Identity/lib/bootstrap/dist/css/bootstrap-reboot.min.css",
+            "Identity/lib/bootstrap/dist/css/bootstrap-reboot.min.css.map",
+            "Identity/lib/bootstrap/dist/css/bootstrap-reboot.rtl.css",
+            "Identity/lib/bootstrap/dist/css/bootstrap-reboot.rtl.css.map",
+            "Identity/lib/bootstrap/dist/css/bootstrap-reboot.rtl.min.css",
+            "Identity/lib/bootstrap/dist/css/bootstrap-reboot.rtl.min.css.map",
+            "Identity/lib/bootstrap/dist/css/bootstrap-utilities.css",
+            "Identity/lib/bootstrap/dist/css/bootstrap-utilities.css.map",
+            "Identity/lib/bootstrap/dist/css/bootstrap-utilities.min.css",
+            "Identity/lib/bootstrap/dist/css/bootstrap-utilities.min.css.map",
+            "Identity/lib/bootstrap/dist/css/bootstrap-utilities.rtl.css",
+            "Identity/lib/bootstrap/dist/css/bootstrap-utilities.rtl.css.map",
+            "Identity/lib/bootstrap/dist/css/bootstrap-utilities.rtl.min.css",
+            "Identity/lib/bootstrap/dist/css/bootstrap-utilities.rtl.min.css.map",
             "Identity/lib/bootstrap/dist/js/bootstrap.js",
             "Identity/lib/bootstrap/dist/js/bootstrap.js.map",
             "Identity/lib/bootstrap/dist/js/bootstrap.min.js",
             "Identity/lib/bootstrap/dist/js/bootstrap.min.js.map",
+            "Identity/lib/bootstrap/dist/js/bootstrap.bundle.js",
+            "Identity/lib/bootstrap/dist/js/bootstrap.bundle.js.map",
+            "Identity/lib/bootstrap/dist/js/bootstrap.bundle.min.js",
+            "Identity/lib/bootstrap/dist/js/bootstrap.bundle.min.js.map",
+            "Identity/lib/bootstrap/dist/js/bootstrap.esm.js",
+            "Identity/lib/bootstrap/dist/js/bootstrap.esm.js.map",
+            "Identity/lib/bootstrap/dist/js/bootstrap.esm.min.js",
+            "Identity/lib/bootstrap/dist/js/bootstrap.esm.min.js.map",
             "Identity/lib/jquery/LICENSE.txt",
             "Identity/lib/jquery/dist/jquery.js",
             "Identity/lib/jquery/dist/jquery.min.js",
@@ -101,7 +125,7 @@ namespace Templates.Test
             Assert.True(0 == migrationsResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", project, migrationsResult));
             project.AssertEmptyMigration("razorpages");
 
-            var versionValidator = "Bootstrap v4.3.1";
+            var versionValidator = "Bootstrap v5.1.0";
             using (var aspNetProcess = project.StartBuiltProjectAsync())
             {
                 Assert.False(
@@ -111,7 +135,7 @@ namespace Templates.Test
                 var response = await aspNetProcess.SendRequest("/Identity/lib/bootstrap/dist/css/bootstrap.css");
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.Contains(versionValidator, await response.Content.ReadAsStringAsync());
-                await ValidatePublishedFiles(aspNetProcess, Bootstrap4ContentFiles);
+                await ValidatePublishedFiles(aspNetProcess, Bootstrap5ContentFiles);
             }
 
             using (var aspNetProcess = project.StartPublishedProjectAsync())
@@ -123,7 +147,7 @@ namespace Templates.Test
                 var response = await aspNetProcess.SendRequest("/Identity/lib/bootstrap/dist/css/bootstrap.css");
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.Contains(versionValidator, await response.Content.ReadAsStringAsync());
-                await ValidatePublishedFiles(aspNetProcess, Bootstrap4ContentFiles);
+                await ValidatePublishedFiles(aspNetProcess, Bootstrap5ContentFiles);
             }
         }
 

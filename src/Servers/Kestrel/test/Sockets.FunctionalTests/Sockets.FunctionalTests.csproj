@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <DefineConstants Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(DefineConstants);MACOS</DefineConstants>
+    <DefineConstants>$(DefineConstants);SOCKETS</DefineConstants>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <TestGroupName>Sockets.FunctionalTests</TestGroupName>
   </PropertyGroup>
