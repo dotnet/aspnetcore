@@ -943,9 +943,9 @@ namespace Microsoft.AspNetCore.Tests
 
             var ds = app.Services.GetRequiredService<EndpointDataSource>();
             Assert.Equal(3, ds.Endpoints.Count);
-            Assert.Equal("Two", ds.Endpoints[0].DisplayName);
-            Assert.Equal("Three", ds.Endpoints[1].DisplayName);
-            Assert.Equal("One", ds.Endpoints[2].DisplayName);
+            Assert.Equal("One", ds.Endpoints[0].DisplayName);
+            Assert.Equal("Two", ds.Endpoints[1].DisplayName);
+            Assert.Equal("Three", ds.Endpoints[2].DisplayName);
         }
 
         [Fact]

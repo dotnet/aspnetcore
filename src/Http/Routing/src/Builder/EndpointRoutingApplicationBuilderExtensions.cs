@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             builder.Properties.Remove(EndpointRouteBuilder);
-            //builder.Properties.Remove("__GlobalEndpointRouteBuilder");
+            builder.Properties.Remove("__GlobalEndpointRouteBuilder");
 
             return builder.UseMiddleware<EndpointMiddleware>();
         }

@@ -23,6 +23,8 @@ namespace Microsoft.AspNetCore.Builder
         private readonly IHost _host;
         private readonly List<EndpointDataSource> _dataSources = new();
 
+        internal static string GlobalEndpointRouteBuilderKey = "__GlobalEndpointRouteBuilder";
+
         internal WebApplication(IHost host)
         {
             _host = host;
@@ -30,7 +32,7 @@ namespace Microsoft.AspNetCore.Builder
             Logger = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger(Environment.ApplicationName);
 
             //Properties.Add("__EndpointRouteBuilder", this);
-            //Properties.Add("__GlobalEndpointRouteBuilder", this);
+            Properties.Add(GlobalEndpointRouteBuilderKey, this);
         }
 
         /// <summary>

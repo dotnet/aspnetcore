@@ -17,8 +17,6 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public sealed class WebApplicationBuilder
     {
-        private const string EndpointRouteBuilderKey = "__EndpointRouteBuilder";
-
         private readonly HostBuilder _hostBuilder = new();
         private readonly BootstrapHostBuilder _bootstrapHostBuilder;
         private readonly WebApplicationServiceCollection _services = new();
@@ -192,45 +190,14 @@ namespace Microsoft.AspNetCore.Builder
                 app.UseDeveloperExceptionPage();
             }
 
-            var implicitRouting = false;
+            // Wrap the entire destination pipeline in UseRouting() and UseEndpoints(), essentially:
+            // destination.UseRouting()
+            // destination.Run(source)
+            // destination.UseEndpoints()
 
-            // The endpoints were already added on the outside
-            if (_builtApplication.DataSources.Count > 0)
-            {
-                // Copy endpoints to the IEndpointRouteBuilder created by an explicit call to UseRouting() if possible.
-                var targetRouteBuilder = GetEndpointRouteBuilder(_builtApplication);
-
-                if (targetRouteBuilder is null)
-                {
-                    // The user did not register the routing middleware so wrap the entire
-                    // destination pipeline in UseRouting() and UseEndpoints(), essentially:
-                    // destination.UseRouting()
-                    // destination.Run(source)
-                    // destination.UseEndpoints()
-
-                    // The app defined endpoints without calling UseRouting() explicitly, so call UseRouting() implicitly.
-                    app.UseRouting();
-
-                    // An implicitly created IEndpointRouteBuilder was addeded to app.Properties by the UseRouting() call above.
-                    targetRouteBuilder = GetEndpointRouteBuilder(app)!;
-                    implicitRouting = true;
-                }
-
-                // Copy the endpoints to the explicitly or implicitly created IEndopintRouteBuilder.
-                foreach (var ds in _builtApplication.DataSources)
-                {
-                    targetRouteBuilder.DataSources.Add(ds);
-                }
-
-                // UseEndpoints consumes the DataSources immediately to populate CompositeEndpointDataSource via RouteOptions,
-                // so it must be called after we copy the endpoints.
-                if (!implicitRouting)
-                {
-                    // UseRouting() was called explicitly, but we may still need to call UseEndpoints() implicitly at
-                    // the end of the pipeline.
-                    _builtApplication.UseEndpoints(_ => { });
-                }
-            }
+            // Set the route builder so we preserve the routing information that may have been set already
+            app.Properties.Add(WebApplication.GlobalEndpointRouteBuilderKey, _builtApplication);
+            app.UseRouting();
 
             // Wire the source pipeline to run in the destination pipeline
             app.Use(next =>
@@ -239,12 +206,17 @@ namespace Microsoft.AspNetCore.Builder
                 return _builtApplication.BuildRequestDelegate();
             });
 
-            // Implicitly call UseEndpoints() at the end of the pipeline if UseRouting() was called implicitly.
-            // We could add this to the end of _buildApplication instead if UseEndpoints() was not so picky about
-            // being called with the same IApplicationBluilder instance as UseRouting().
-            if (implicitRouting)
+            // UseEndpoints() removes the GlobalEndpointRouteBuilderKey, so we can check if UseEndpoints()
+            // was called by the user, if not we should call it to populate the RouteOptions
+            if (_builtApplication.Properties.TryGetValue(WebApplication.GlobalEndpointRouteBuilderKey, out _))
             {
                 app.UseEndpoints(_ => { });
+            }
+            else
+            {
+                // Remove the route builder to clean up the properties, we're done adding routes to the pipeline
+                // REVIEW: This might be unneeded
+                app.Properties.Remove(WebApplication.GlobalEndpointRouteBuilderKey);
             }
 
             // Copy the properties to the destination app builder
@@ -252,12 +224,6 @@ namespace Microsoft.AspNetCore.Builder
             {
                 app.Properties[item.Key] = item.Value;
             }
-        }
-
-        private static IEndpointRouteBuilder? GetEndpointRouteBuilder(IApplicationBuilder app)
-        {
-            app.Properties.TryGetValue(EndpointRouteBuilderKey, out var value);
-            return (IEndpointRouteBuilder?)value;
         }
 
         private class LoggingBuilder : ILoggingBuilder
