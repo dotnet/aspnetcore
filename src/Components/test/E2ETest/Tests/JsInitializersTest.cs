@@ -32,5 +32,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Exists(By.Id("initializer-start"));
             Browser.Exists(By.Id("initializer-end"));
         }
+
+        [Fact]
+        public void CanLoadJsModulePackagesFromLibrary()
+        {
+            Browser.MountTestComponent<ExternalContentPackage>();
+            Browser.Equal<string>("Hello from module", () => Browser.Exists(By.CssSelector(".js-module-message > p")).Text);
+        }
     }
 }
