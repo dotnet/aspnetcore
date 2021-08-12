@@ -4,11 +4,13 @@
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -17,13 +19,14 @@ namespace Interop.FunctionalTests.Http3
 {
     public static class Http3Helpers
     {
-        public static HttpMessageInvoker CreateClient(TimeSpan? idleTimeout = null)
+        public static HttpMessageInvoker CreateClient(TimeSpan? idleTimeout = null, bool includeClientCert = false)
         {
             var handler = new SocketsHttpHandler();
             handler.SslOptions = new System.Net.Security.SslClientAuthenticationOptions
             {
                 RemoteCertificateValidationCallback = (_, __, ___, ____) => true,
-                TargetHost = "targethost"
+                TargetHost = "targethost",
+                ClientCertificates = !includeClientCert ? null : new X509CertificateCollection() { TestResources.GetTestCertificate() },
             };
             if (idleTimeout != null)
             {
