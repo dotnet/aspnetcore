@@ -1,17 +1,14 @@
-import { Blazor } from '../GlobalExports'
-type IBlazor = typeof Blazor;
+import { Blazor } from '../GlobalExports';
 
 type BeforeBlazorStartedCallback = (...args: unknown[]) => Promise<void>;
-export type AfterBlazorStartedCallback = (blazor: IBlazor) => Promise<void>;
+export type AfterBlazorStartedCallback = (blazor: typeof Blazor) => Promise<void>;
 type BlazorInitializer = { beforeStart: BeforeBlazorStartedCallback, afterStarted: AfterBlazorStartedCallback };
 
 export class JSInitializer {
   private afterStartedCallbacks: AfterBlazorStartedCallback[] = [];
 
-  async importInitializersAsync(
-    initializerFiles: string[],
-    initializerArguments: unknown[]): Promise<void> {
-      await Promise.all(initializerFiles.map(f => importAndInvokeInitializer(this, f)));
+  async importInitializersAsync(initializerFiles: string[], initializerArguments: unknown[]): Promise<void> {
+    await Promise.all(initializerFiles.map(f => importAndInvokeInitializer(this, f)));
 
     function adjustPath(path: string): string {
       // This is the same we do in JS interop with the import callback
@@ -37,7 +34,7 @@ export class JSInitializer {
     }
   }
 
-  async invokeAfterStartedCallbacks(blazor: IBlazor) {
+  async invokeAfterStartedCallbacks(blazor: typeof Blazor) {
     await Promise.all(this.afterStartedCallbacks.map(callback => callback(blazor)));
   }
 }

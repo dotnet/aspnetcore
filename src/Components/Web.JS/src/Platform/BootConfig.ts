@@ -10,11 +10,11 @@ export class BootConfigResult {
   static async initAsync(loadBootResource?: LoadBootResourceCallback, environment?: string): Promise<BootConfigResult> {
     const loaderResponse = loadBootResource !== undefined ?
       loadBootResource('manifest', 'blazor.boot.json', '_framework/blazor.boot.json', '') :
-      this.defaultLoadBlazorBootJson('_framework/blazor.boot.json');
+      defaultLoadBlazorBootJson('_framework/blazor.boot.json');
 
     const bootConfigResponse = loaderResponse instanceof Promise ?
       await loaderResponse :
-      await BootConfigResult.defaultLoadBlazorBootJson(loaderResponse ?? '_framework/blazor.boot.json');
+      await defaultLoadBlazorBootJson(loaderResponse ?? '_framework/blazor.boot.json');
 
     // While we can expect an ASP.NET Core hosted application to include the environment, other
     // hosts may not. Assume 'Production' in the absence of any specified value.
@@ -23,17 +23,17 @@ export class BootConfigResult {
     bootConfig.modifiableAssemblies = bootConfigResponse.headers.get('DOTNET-MODIFIABLE-ASSEMBLIES');
 
     return new BootConfigResult(bootConfig, applicationEnvironment);
+
+    async function defaultLoadBlazorBootJson(url: string) : Promise<Response> {
+      return fetch(url, {
+        method: 'GET',
+        credentials: 'include',
+        cache: 'no-cache'
+      });
+    }
   };
 
-  public static async defaultLoadBlazorBootJson(url: string) : Promise<Response> {
-    return fetch(url, {
-      method: 'GET',
-      credentials: 'include',
-      cache: 'no-cache'
-    });
-  }
 }
-
 
 // Keep in sync with bootJsonData from the BlazorWebAssemblySDK
 export interface BootJsonData {
