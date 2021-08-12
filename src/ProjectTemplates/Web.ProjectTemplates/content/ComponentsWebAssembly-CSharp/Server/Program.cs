@@ -94,7 +94,6 @@ else
 app.UseHttpsRedirection();
 
 #endif
-
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
