@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
             else if (typeof(TValue) == typeof(bool?))
             {
-                return value is not null && (bool)(object)(value) ? "true" : "false";
+                return value is not null && (bool)(object)value ? "true" : "false";
             }
 
             return base.FormatValueAsString(value);
