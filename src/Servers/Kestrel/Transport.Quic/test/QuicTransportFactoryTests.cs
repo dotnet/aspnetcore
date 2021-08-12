@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => quicTransportFactory.BindAsync(new IPEndPoint(0, 0), features: features, cancellationToken: CancellationToken.None).AsTask()).DefaultTimeout();
 
             // Assert
-            Assert.Equal("SslServerAuthenticationOptions.ServerCertificate must be configured with a value.", ex.Message);
+            Assert.Equal("SslServerAuthenticationOptions must provide a server certificate using ServerCertificate, ServerCertificateContext, or ServerCertificateSelectionCallback.", ex.Message);
         }
     }
 }
