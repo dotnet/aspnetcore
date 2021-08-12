@@ -395,7 +395,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         private async Task WaitForFile(string fileName, int length)
         {
-            while (!File.Exists(fileName) || File.ReadAllText(fileName).Length < length)
+            while (!File.Exists(fileName))
             {
                 await Task.Delay(100);
             }
