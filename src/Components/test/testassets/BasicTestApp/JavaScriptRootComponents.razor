@@ -150,8 +150,7 @@
     }
 
     function onJSCallbackWithParamsButtonClick(mouseEventArgs) {
-        //setMessage(`JavaScript button callback received mouse event args (button=${mouseEventArgs.button})`);
-        setMessage(`JavaScript button callback received mouse event args (${JSON.stringify(mouseEventArgs)})`);
+        setMessage(`JavaScript button callback received mouse event args (buttons=${mouseEventArgs.buttons})`);
     }
 
     function showInitializerCallLog() {

@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Invoke callback with params.
             container.FindElement(By.ClassName("js-callback-with-params")).Click();
-            Browser.Equal($"JavaScript button callback received mouse event args (button=0)", () => app.FindElement(By.Id("message")).Text);
+            Browser.Equal($"JavaScript button callback received mouse event args (buttons=0)", () => app.FindElement(By.Id("message")).Text);
         }
 
         [Fact]
