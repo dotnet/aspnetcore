@@ -42,11 +42,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             _options = options;
             var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets");
             _trace = new SocketsTrace(logger);
-            //_scheduler = options.InputOptions.WriterScheduler;
-
-            // https://github.com/aspnet/KestrelHttpServer/issues/2573
-            //_senderPool = new SocketSenderPool(OperatingSystem.IsWindows() ? _scheduler : PipeScheduler.Inline);
-
             _memoryPool = _options.MemoryPoolFactory();
             _ioQueueCount = _options.IOQueueCount;
 
