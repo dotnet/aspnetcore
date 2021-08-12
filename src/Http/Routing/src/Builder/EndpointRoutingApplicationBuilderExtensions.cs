@@ -44,8 +44,16 @@ namespace Microsoft.AspNetCore.Builder
 
             VerifyRoutingServicesAreRegistered(builder);
 
-            var endpointRouteBuilder = new DefaultEndpointRouteBuilder(builder);
-            builder.Properties[EndpointRouteBuilder] = endpointRouteBuilder;
+            IEndpointRouteBuilder endpointRouteBuilder;
+            if (builder.Properties.TryGetValue("__GlobalEndpointRouteBuilder", out var obj))
+            {
+                endpointRouteBuilder = (IEndpointRouteBuilder)obj!;
+            }
+            else
+            {
+                endpointRouteBuilder = new DefaultEndpointRouteBuilder(builder);
+                builder.Properties[EndpointRouteBuilder] = endpointRouteBuilder;
+            }
 
             return builder.UseMiddleware<EndpointRoutingMiddleware>(endpointRouteBuilder);
         }
@@ -102,6 +110,9 @@ namespace Microsoft.AspNetCore.Builder
                 routeOptions.Value.EndpointDataSources.Add(dataSource);
             }
 
+            builder.Properties.Remove(EndpointRouteBuilder);
+            //builder.Properties.Remove("__GlobalEndpointRouteBuilder");
+
             return builder.UseMiddleware<EndpointMiddleware>();
         }
 
@@ -118,9 +129,9 @@ namespace Microsoft.AspNetCore.Builder
             }
         }
 
-        private static void VerifyEndpointRoutingMiddlewareIsRegistered(IApplicationBuilder app, out DefaultEndpointRouteBuilder endpointRouteBuilder)
+        private static void VerifyEndpointRoutingMiddlewareIsRegistered(IApplicationBuilder app, out IEndpointRouteBuilder endpointRouteBuilder)
         {
-            if (!app.Properties.TryGetValue(EndpointRouteBuilder, out var obj))
+            if (!app.Properties.TryGetValue(EndpointRouteBuilder, out var obj) && !app.Properties.TryGetValue("__GlobalEndpointRouteBuilder", out obj))
             {
                 var message =
                     $"{nameof(EndpointRoutingMiddleware)} matches endpoints setup by {nameof(EndpointMiddleware)} and so must be added to the request " +
@@ -130,12 +141,11 @@ namespace Microsoft.AspNetCore.Builder
                 throw new InvalidOperationException(message);
             }
 
-            // If someone messes with this, just let it crash.
-            endpointRouteBuilder = (DefaultEndpointRouteBuilder)obj!;
+            endpointRouteBuilder = (IEndpointRouteBuilder)obj!;
 
             // This check handles the case where Map or something else that forks the pipeline is called between the two
             // routing middleware.
-            if (!object.ReferenceEquals(app, endpointRouteBuilder.ApplicationBuilder))
+            if (endpointRouteBuilder is DefaultEndpointRouteBuilder defaultRouteBuilder && !object.ReferenceEquals(app, defaultRouteBuilder.ApplicationBuilder))
             {
                 var message =
                     $"The {nameof(EndpointRoutingMiddleware)} and {nameof(EndpointMiddleware)} must be added to the same {nameof(IApplicationBuilder)} instance. " +

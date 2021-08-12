@@ -197,17 +197,17 @@ namespace Microsoft.AspNetCore.Builder
             // The endpoints were already added on the outside
             if (_builtApplication.DataSources.Count > 0)
             {
-                // The user did not register the routing middleware so wrap the entire
-                // destination pipeline in UseRouting() and UseEndpoints(), essentially:
-                // destination.UseRouting()
-                // destination.Run(source)
-                // destination.UseEndpoints()
-
                 // Copy endpoints to the IEndpointRouteBuilder created by an explicit call to UseRouting() if possible.
                 var targetRouteBuilder = GetEndpointRouteBuilder(_builtApplication);
 
                 if (targetRouteBuilder is null)
                 {
+                    // The user did not register the routing middleware so wrap the entire
+                    // destination pipeline in UseRouting() and UseEndpoints(), essentially:
+                    // destination.UseRouting()
+                    // destination.Run(source)
+                    // destination.UseEndpoints()
+
                     // The app defined endpoints without calling UseRouting() explicitly, so call UseRouting() implicitly.
                     app.UseRouting();
 
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Builder
                 // so it must be called after we copy the endpoints.
                 if (!implicitRouting)
                 {
-                    // UseRouting() was called explicitely, but we may still need to call UseEndpoints() implicitely at
+                    // UseRouting() was called explicitly, but we may still need to call UseEndpoints() implicitly at
                     // the end of the pipeline.
                     _builtApplication.UseEndpoints(_ => { });
                 }

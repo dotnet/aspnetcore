@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
@@ -732,7 +733,7 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
-        public async Task WebApplication_CanCallUseRoutingWithouUseEndpoints()
+        public async Task WebApplication_CanCallUseRoutingWithoutUseEndpoints()
         {
             var builder = WebApplication.CreateBuilder();
             builder.WebHost.UseTestServer();
@@ -920,6 +921,66 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Throws<NotSupportedException>(() => builder.Host.ConfigureWebHost(webHostBuilder => { }));
             Assert.Throws<NotSupportedException>(() => builder.Host.ConfigureWebHost(webHostBuilder => { }, options => { }));
             Assert.Throws<NotSupportedException>(() => builder.Host.ConfigureWebHostDefaults(webHostBuilder => { }));
+        }
+
+        [Fact]
+        public async Task EndpointDataSourceOnlyAddsOnce()
+        {
+            var builder = WebApplication.CreateBuilder();
+            await using var app = builder.Build();
+
+            app.UseRouting();
+
+            app.MapGet("/", () => "Hello World!").WithDisplayName("One");
+
+            app.UseEndpoints(routes =>
+            {
+                routes.MapGet("/hi", () => "Hi World").WithDisplayName("Two");
+                routes.MapGet("/heyo", () => "Heyo World").WithDisplayName("Three");
+            });
+
+            app.Start();
+
+            var ds = app.Services.GetRequiredService<EndpointDataSource>();
+            Assert.Equal(3, ds.Endpoints.Count);
+            Assert.Equal("Two", ds.Endpoints[0].DisplayName);
+            Assert.Equal("Three", ds.Endpoints[1].DisplayName);
+            Assert.Equal("One", ds.Endpoints[2].DisplayName);
+        }
+
+        [Fact]
+        public async Task RoutesAddedToCorrectMatcher()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            app.UseRouting();
+
+            var chosenRoute = string.Empty;
+
+            app.Use((context, next) =>
+            {
+                chosenRoute = context.GetEndpoint()?.DisplayName;
+                return next(context);
+            });
+
+            app.MapGet("/", () => "Hello World").WithDisplayName("One");
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapGet("/hi", () => "Hello Endpoints").WithDisplayName("Two");
+            });
+
+            app.UseRouting();
+            app.UseEndpoints(_ => { });
+
+            await app.StartAsync();
+
+            var client = app.GetTestClient();
+
+            _ = await client.GetAsync("http://localhost/");
+            Assert.Equal("One", chosenRoute);
         }
 
         private class Service : IService { }
