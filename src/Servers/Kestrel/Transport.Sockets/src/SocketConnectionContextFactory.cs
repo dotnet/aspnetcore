@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         private readonly MemoryPool<byte> _memoryPool;
         private readonly SocketConnectionFactoryOptions _options;
         private readonly ISocketsTrace _trace;
-        private readonly int _ioQueueCount;
+        private readonly int _settingsCount;
         private readonly QueueSettings[] _settings;
         private int _settingsIndex;
 
@@ -43,17 +43,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets");
             _trace = new SocketsTrace(logger);
             _memoryPool = _options.MemoryPoolFactory();
-            _ioQueueCount = _options.IOQueueCount;
+            _settingsCount = _options.IOQueueCount;
 
             var maxReadBufferSize = _options.MaxReadBufferSize ?? 0;
             var maxWriteBufferSize = _options.MaxWriteBufferSize ?? 0;
             var applicationScheduler = options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : PipeScheduler.ThreadPool;
 
-            if (_ioQueueCount > 0)
+            if (_settingsCount > 0)
             {
-                _settings = new QueueSettings[_ioQueueCount];
+                _settings = new QueueSettings[_settingsCount];
 
-                for (var i = 0; i < _ioQueueCount; i++)
+                for (var i = 0; i < _settingsCount; i++)
                 {
                     var transportScheduler = options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : new IOQueue();
                     // https://github.com/aspnet/KestrelHttpServer/issues/2573
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                         SocketSenderPool = new SocketSenderPool(awaiterScheduler)
                     }
                 };
-                _ioQueueCount = 1;
+                _settingsCount = 1;
             }
         }
 
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         /// <returns></returns>
         public ConnectionContext Create(Socket socket)
         {
-            var setting = _settings[Interlocked.Increment(ref _settingsIndex) % _ioQueueCount];
+            var setting = _settings[Interlocked.Increment(ref _settingsIndex) % _settingsCount];
 
             var connection = new SocketConnection(socket,
                 _memoryPool,
