@@ -6,7 +6,7 @@
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFactory
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFactory.Create(System.Net.Sockets.Socket! socket) -> Microsoft.AspNetCore.Connections.ConnectionContext!
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFactory.Dispose() -> void
-Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFactory.SocketConnectionContextFactory(Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionFactoryOptions! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionContextFactory.SocketConnectionContextFactory(Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionFactoryOptions! options, Microsoft.Extensions.Logging.ILogger! logger) -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionFactoryOptions
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionFactoryOptions.IOQueueCount.get -> int
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionFactoryOptions.IOQueueCount.set -> void

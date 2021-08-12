@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             _options = options;
             var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets");
             _trace = new SocketsTrace(logger);
-            _factory = new SocketConnectionContextFactory(options, loggerFactory);
+            _factory = new SocketConnectionContextFactory(new SocketConnectionFactoryOptions(options), logger);
         }
 
         internal void Bind()

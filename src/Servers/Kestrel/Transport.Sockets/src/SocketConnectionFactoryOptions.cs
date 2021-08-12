@@ -11,6 +11,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
     public class SocketConnectionFactoryOptions
     {
         /// <summary>
+        /// Create a new instance.
+        /// </summary>
+        public SocketConnectionFactoryOptions() { }
+
+        internal SocketConnectionFactoryOptions(SocketTransportOptions transportOptions)
+        {
+            IOQueueCount = transportOptions.IOQueueCount;
+            WaitForDataBeforeAllocatingBuffer = transportOptions.WaitForDataBeforeAllocatingBuffer;
+            MaxReadBufferSize = transportOptions.MaxReadBufferSize;
+            MaxWriteBufferSize = transportOptions.MaxWriteBufferSize;
+            UnsafePreferInlineScheduling = transportOptions.UnsafePreferInlineScheduling;
+            MemoryPoolFactory = transportOptions.MemoryPoolFactory;
+        }
+
+        /// <summary>
         /// The number of I/O queues used to process requests. Set to 0 to directly schedule I/O to the ThreadPool.
         /// </summary>
         /// <remarks>

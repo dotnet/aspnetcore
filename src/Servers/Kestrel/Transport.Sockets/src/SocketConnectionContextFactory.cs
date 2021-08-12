@@ -26,21 +26,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         /// Creates the <see cref="SocketConnectionContextFactory"/>.
         /// </summary>
         /// <param name="options">The options.</param>
-        /// <param name="loggerFactory">The logger factory.</param>
-        public SocketConnectionContextFactory(SocketConnectionFactoryOptions options, ILoggerFactory loggerFactory)
+        /// <param name="logger">The logger.</param>
+        public SocketConnectionContextFactory(SocketConnectionFactoryOptions options, ILogger logger)
         {
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (loggerFactory == null)
+            if (logger == null)
             {
-                throw new ArgumentNullException(nameof(loggerFactory));
+                throw new ArgumentNullException(nameof(logger));
             }
 
             _options = options;
-            var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets");
             _trace = new SocketsTrace(logger);
             _memoryPool = _options.MemoryPoolFactory();
             _settingsCount = _options.IOQueueCount;
