@@ -92,6 +92,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 AccessTokenProvider = options.AccessTokenProvider,
                 CloseTimeout = options.CloseTimeout,
                 DefaultTransferFormat = options.DefaultTransferFormat,
+                ApplicationMaxBufferSize = options.ApplicationMaxBufferSize,
+                TransportMaxBufferSize = options.TransportMaxBufferSize
             };
 
             if (!OperatingSystem.IsBrowser())

@@ -150,9 +150,6 @@ namespace Microsoft.AspNetCore.Testing
 #else
             await _connectionTask;
 #endif
-
-            // Verify server-to-client control stream has completed.
-            await _inboundControlStream.ReceiveEndAsync();
         }
 
         internal async Task WaitForGoAwayAsync(bool ignoreNonGoAwayFrames, long? expectedLastStreamId)
@@ -200,6 +197,8 @@ namespace Microsoft.AspNetCore.Testing
 
         public void AdvanceClock(TimeSpan timeSpan)
         {
+            Logger.LogDebug($"Advancing clock {timeSpan}.");
+
             var clock = _mockSystemClock;
             var endTime = clock.UtcNow + timeSpan;
 
@@ -221,10 +220,13 @@ namespace Microsoft.AspNetCore.Testing
 
         public async Task InitializeConnectionAsync(RequestDelegate application)
         {
-            MultiplexedConnectionContext = new TestMultiplexedConnectionContext(this);
+            MultiplexedConnectionContext = new TestMultiplexedConnectionContext(this)
+            {
+                ConnectionId = "TEST"
+            };
 
             var httpConnectionContext = new HttpMultiplexedConnectionContext(
-                connectionId: "TestConnectionId",
+                connectionId: MultiplexedConnectionContext.ConnectionId,
                 HttpProtocols.Http3,
                 altSvcHeader: null,
                 connectionContext: MultiplexedConnectionContext,
@@ -398,11 +400,16 @@ namespace Microsoft.AspNetCore.Testing
 
         internal ValueTask<Http3RequestStream> CreateRequestStream(Http3RequestHeaderHandler headerHandler = null)
         {
+            var requestStreamId = GetStreamId(0x00);
             if (!_streamContextPool.TryDequeue(out var testStreamContext))
             {
                 testStreamContext = new TestStreamContext(canRead: true, canWrite: true, this);
             }
-            testStreamContext.Initialize(GetStreamId(0x00));
+            else
+            {
+                Logger.LogDebug($"Reusing context for request stream {requestStreamId}.");
+            }
+            testStreamContext.Initialize(requestStreamId);
 
             var stream = new Http3RequestStream(this, Connection, testStreamContext, headerHandler ?? new Http3RequestHeaderHandler());
             _runningStreams[stream.StreamId] = stream;
@@ -1102,22 +1109,29 @@ namespace Microsoft.AspNetCore.Testing
 
         public override ValueTask DisposeAsync()
         {
-            _testBase.Logger.LogInformation($"Disposing stream {StreamId}");
+            _testBase.Logger.LogDebug($"Disposing stream {StreamId}");
 
-            Disposed = true;
-            _disposedTcs.TrySetResult();
-
+            var readerCompletedSuccessfully = _transportPipeReader.IsCompletedSuccessfully;
+            var writerCompletedSuccessfully = _transportPipeWriter.IsCompletedSuccessfully;
             var canReuse = !_isAborted &&
-                _transportPipeReader.IsCompletedSuccessfully &&
-                _transportPipeWriter.IsCompletedSuccessfully;
+                readerCompletedSuccessfully &&
+                writerCompletedSuccessfully;
 
             _pair.Transport.Input.Complete();
             _pair.Transport.Output.Complete();
 
             if (canReuse)
             {
+                _testBase.Logger.LogDebug($"Pooling stream {StreamId} for reuse.");
                 _testBase._streamContextPool.Enqueue(this);
             }
+            else
+            {
+                _testBase.Logger.LogDebug($"Can't reuse stream {StreamId}. Aborted: {_isAborted}, Reader completed successfully: {readerCompletedSuccessfully}, Writer completed successfully: {writerCompletedSuccessfully}.");
+            }
+
+            Disposed = true;
+            _disposedTcs.TrySetResult();
 
             return ValueTask.CompletedTask;
         }

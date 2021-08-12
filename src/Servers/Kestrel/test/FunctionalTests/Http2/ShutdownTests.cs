@@ -13,11 +13,18 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
 
+#if LIBUV
+namespace Microsoft.AspNetCore.Server.Kestrel.Libuv.FunctionalTests.Http2
+#elif SOCKETS
+namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests.Http2
+#else
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
+#endif
 {
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/runtime/issues/27727")]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]

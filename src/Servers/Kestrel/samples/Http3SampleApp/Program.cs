@@ -25,6 +25,7 @@ namespace Http3SampleApp
                     .ConfigureKestrel((context, options) =>
                     {
                         var cert = CertificateLoader.LoadFromStoreCert("localhost", StoreName.My.ToString(), StoreLocation.CurrentUser, false);
+
                         options.ConfigureHttpsDefaults(httpsOptions =>
                         {
                             httpsOptions.ServerCertificate = cert;
@@ -54,13 +55,41 @@ namespace Http3SampleApp
                         {
                             listenOptions.UseHttps(httpsOptions =>
                             {
-                                httpsOptions.ServerCertificateSelector = (_, _) => cert;
+                                // ConnectionContext is null
+                                httpsOptions.ServerCertificateSelector = (context, host) => cert;
                             });
                             listenOptions.UseConnectionLogging();
-                            listenOptions.Protocols = HttpProtocols.Http1AndHttp2; // TODO: http3
+                            listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
                         });
 
+                        // No SslServerAuthenticationOptions callback is currently supported by QuicListener
                         options.ListenAnyIP(5004, listenOptions =>
+                        {
+                            listenOptions.UseHttps(httpsOptions =>
+                            {
+                                httpsOptions.OnAuthenticate = (_, sslOptions) => sslOptions.ServerCertificate = cert;
+                            });
+                            listenOptions.UseConnectionLogging();
+                            listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                        });
+
+                        // ServerOptionsSelectionCallback isn't currently supported by QuicListener
+                        options.ListenAnyIP(5005, listenOptions =>
+                        {
+                            ServerOptionsSelectionCallback callback = (SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken) =>
+                            {
+                                var options = new SslServerAuthenticationOptions()
+                                {
+                                    ServerCertificate = cert,
+                                };
+                                return new ValueTask<SslServerAuthenticationOptions>(options);
+                            };
+                            listenOptions.UseHttps(callback, state: null);
+                            listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                        });
+
+                        // TlsHandshakeCallbackOptions (ServerOptionsSelectionCallback) isn't currently supported by QuicListener
+                        options.ListenAnyIP(5006, listenOptions =>
                         {
                             listenOptions.UseHttps(new TlsHandshakeCallbackOptions()
                             {
@@ -74,7 +103,7 @@ namespace Http3SampleApp
                                 },
                             });
                             listenOptions.UseConnectionLogging();
-                            listenOptions.Protocols = HttpProtocols.Http1AndHttp2; // TODO: http3
+                            listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
                         });
                     })
                     .UseStartup<Startup>();

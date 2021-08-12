@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Internal
             return (JObject)token;
         }
 
-        public static T GetRequiredProperty<T>(JObject json, string property, JTokenType expectedType = JTokenType.None)
+        public static T? GetRequiredProperty<T>(JObject json, string property, JTokenType expectedType = JTokenType.None)
         {
             var prop = json[property];
 
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Internal
             return GetValue<T>(property, expectedType, prop);
         }
 
-        public static T GetValue<T>(string property, JTokenType expectedType, JToken prop)
+        public static T? GetValue<T>(string property, JTokenType expectedType, JToken prop)
         {
             if (expectedType != JTokenType.None && prop.Type != expectedType)
             {
@@ -192,8 +192,13 @@ namespace Microsoft.AspNetCore.Internal
                 return _inner.Rent(minimumLength);
             }
 
-            public void Return(T[] array)
+            public void Return(T[]? array)
             {
+                if (array is null)
+                {
+                    return;
+                }
+
                 _inner.Return(array);
             }
         }

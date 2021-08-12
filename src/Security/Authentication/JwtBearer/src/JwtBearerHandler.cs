@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                     return AuthenticateResult.Fail(authenticationFailedContext.Exception);
                 }
 
-                return AuthenticateResult.Fail("No SecurityTokenValidator available for token: " + token ?? "[null]");
+                return AuthenticateResult.Fail("No SecurityTokenValidator available for token.");
             }
             catch (Exception ex)
             {

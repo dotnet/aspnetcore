@@ -43,7 +43,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         {
             // We don't use the args for anything right now, but we want to accept them
             // here so that it shows up this way in the project templates.
-            args ??= Array.Empty<string>();
             var jsRuntime = DefaultWebAssemblyJSRuntime.Instance;
             var builder = new WebAssemblyHostBuilder(
                 jsRuntime,
@@ -241,7 +240,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             var services = _createServiceProvider();
             var scope = services.GetRequiredService<IServiceScopeFactory>().CreateAsyncScope();
 
-            return new WebAssemblyHost(this, services, scope, _persistedState, _jsonOptions);
+            return new WebAssemblyHost(this, services, scope, _persistedState);
         }
 
         internal void InitializeDefaultServices()

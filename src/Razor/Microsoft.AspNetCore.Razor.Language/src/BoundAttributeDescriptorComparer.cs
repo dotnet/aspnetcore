@@ -70,13 +70,22 @@ namespace Microsoft.AspNetCore.Razor.Language
                 }
             }
 
-            // In the ordinary case descriptor.Metadata is always a Dictionary<string, string>.
-            // Avoid boxing the enumerator by calling it using the interface.
-            var metadata = (Dictionary<string, string>)descriptor.Metadata;
-            foreach (var kvp in metadata)
+            // 🐇 Avoid enumerator allocations for Dictionary<TKey, TValue>
+            if (descriptor.Metadata is Dictionary<string, string> metadata)
             {
-                hash.Add(kvp.Key);
-                hash.Add(kvp.Value);
+                foreach (var kvp in metadata)
+                {
+                    hash.Add(kvp.Key);
+                    hash.Add(kvp.Value);
+                }
+            }
+            else
+            {
+                foreach (var kvp in descriptor.Metadata)
+                {
+                    hash.Add(kvp.Key);
+                    hash.Add(kvp.Value);
+                }
             }
 
             return hash.CombinedHash;

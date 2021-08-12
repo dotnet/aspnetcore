@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Session
                     throw new InvalidOperationException(Resources.Exception_InvalidSessionEstablishment);
                 }
                 _isModified = true;
-                byte[] copy = new byte[value.Length];
+                var copy = new byte[value.Length];
                 Buffer.BlockCopy(src: value, srcOffset: 0, dst: copy, dstOffset: 0, count: value.Length);
                 _store.SetValue(encodedKey, copy);
             }
@@ -377,14 +377,14 @@ namespace Microsoft.AspNetCore.Session
                 return;
             }
 
-            int expectedEntries = DeserializeNumFrom3Bytes(content);
+            var expectedEntries = DeserializeNumFrom3Bytes(content);
             _sessionIdBytes = ReadBytes(content, IdByteCount);
 
-            for (int i = 0; i < expectedEntries; i++)
+            for (var i = 0; i < expectedEntries; i++)
             {
-                int keyLength = DeserializeNumFrom2Bytes(content);
+                var keyLength = DeserializeNumFrom2Bytes(content);
                 var key = new EncodedKey(ReadBytes(content, keyLength));
-                int dataLength = DeserializeNumFrom4Bytes(content);
+                var dataLength = DeserializeNumFrom4Bytes(content);
                 _store.SetValue(key, ReadBytes(content, dataLength));
             }
 
@@ -395,7 +395,7 @@ namespace Microsoft.AspNetCore.Session
             }
         }
 
-        private void SerializeNumAs2Bytes(Stream output, int num)
+        private static void SerializeNumAs2Bytes(Stream output, int num)
         {
             if (num < 0 || ushort.MaxValue < num)
             {
@@ -405,12 +405,12 @@ namespace Microsoft.AspNetCore.Session
             output.WriteByte((byte)(0xFF & num));
         }
 
-        private int DeserializeNumFrom2Bytes(Stream content)
+        private static int DeserializeNumFrom2Bytes(Stream content)
         {
             return content.ReadByte() << 8 | content.ReadByte();
         }
 
-        private void SerializeNumAs3Bytes(Stream output, int num)
+        private static void SerializeNumAs3Bytes(Stream output, int num)
         {
             if (num < 0 || 0xFFFFFF < num)
             {
@@ -421,12 +421,12 @@ namespace Microsoft.AspNetCore.Session
             output.WriteByte((byte)(0xFF & num));
         }
 
-        private int DeserializeNumFrom3Bytes(Stream content)
+        private static int DeserializeNumFrom3Bytes(Stream content)
         {
             return content.ReadByte() << 16 | content.ReadByte() << 8 | content.ReadByte();
         }
 
-        private void SerializeNumAs4Bytes(Stream output, int num)
+        private static void SerializeNumAs4Bytes(Stream output, int num)
         {
             if (num < 0)
             {
@@ -438,15 +438,15 @@ namespace Microsoft.AspNetCore.Session
             output.WriteByte((byte)(0xFF & num));
         }
 
-        private int DeserializeNumFrom4Bytes(Stream content)
+        private static int DeserializeNumFrom4Bytes(Stream content)
         {
             return content.ReadByte() << 24 | content.ReadByte() << 16 | content.ReadByte() << 8 | content.ReadByte();
         }
 
-        private byte[] ReadBytes(Stream stream, int count)
+        private static byte[] ReadBytes(Stream stream, int count)
         {
             var output = new byte[count];
-            int total = 0;
+            var total = 0;
             while (total < count)
             {
                 var read = stream.Read(output, total, count - total);
