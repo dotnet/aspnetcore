@@ -82,10 +82,6 @@ namespace Microsoft.AspNetCore.Components.Server
         /// </summary>
         public CircuitRootComponentOptions RootComponents { get; } = new CircuitRootComponentOptions();
 
-        /// <summary>
-        /// Gets the list of JavaScript initializers used by Blazor server. By default this list gets populated by
-        /// the <c><see cref="IHostEnvironment.ApplicationName"/>.modules.json</c> manifest file in the web root if present.
-        /// </summary>
-        public IList<string> JavaScriptInitializers { get; } = new List<string>();
+        internal IList<string> JavaScriptInitializers { get; } = new List<string>();
     }
 }
