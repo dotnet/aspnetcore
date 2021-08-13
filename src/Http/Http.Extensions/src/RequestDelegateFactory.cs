@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
+using static System.Collections.Specialized.BitVector32;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -81,18 +82,14 @@ namespace Microsoft.AspNetCore.Http
                 null => null,
             };
 
-            var factoryContext = new FactoryContext()
+            var factoryContext = new FactoryContext
             {
                 ServiceProviderIsService = options?.ServiceProvider?.GetService<IServiceProviderIsService>()
             };
 
             var targetableRequestDelegate = CreateTargetableRequestDelegate(action.Method, options, factoryContext, targetExpression);
 
-            return new RequestDelegateResult()
-            {
-                EndpointMetadata = factoryContext.Metadata,
-                RequestDelegate = httpContext => targetableRequestDelegate(action.Target, httpContext)
-            };
+            return new RequestDelegateResult(httpContext => targetableRequestDelegate(action.Target, httpContext), factoryContext.Metadata);
 
         }
 
@@ -117,7 +114,7 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentException($"{nameof(methodInfo)} does not have a declaring type.");
             }
 
-            var factoryContext = new FactoryContext()
+            var factoryContext = new FactoryContext
             {
                 ServiceProviderIsService = options?.ServiceProvider?.GetService<IServiceProviderIsService>()
             };
@@ -128,11 +125,7 @@ namespace Microsoft.AspNetCore.Http
                 {
                     var untargetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, options, factoryContext, targetExpression: null);
 
-                    return new RequestDelegateResult()
-                    {
-                        EndpointMetadata = factoryContext.Metadata,
-                        RequestDelegate = httpContext => untargetableRequestDelegate(null, httpContext)
-                    };
+                    return new RequestDelegateResult(httpContext => untargetableRequestDelegate(null, httpContext), factoryContext.Metadata);
                 }
 
                 targetFactory = context => Activator.CreateInstance(methodInfo.DeclaringType)!;
@@ -141,12 +134,7 @@ namespace Microsoft.AspNetCore.Http
             var targetExpression = Expression.Convert(TargetExpr, methodInfo.DeclaringType);
             var targetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, options, factoryContext, targetExpression);
 
-            return new RequestDelegateResult()
-            {
-                EndpointMetadata = factoryContext.Metadata,
-                RequestDelegate = httpContext => targetableRequestDelegate(targetFactory(httpContext), httpContext)
-            };
-
+            return new RequestDelegateResult(httpContext => targetableRequestDelegate(targetFactory(httpContext), httpContext), factoryContext.Metadata);
         }
 
         private static Func<object?, HttpContext, Task> CreateTargetableRequestDelegate(MethodInfo methodInfo, RequestDelegateFactoryOptions? options, FactoryContext factoryContext,  Expression? targetExpression)
@@ -728,7 +716,6 @@ namespace Microsoft.AspNetCore.Http
                 throw new InvalidOperationException("Action cannot have more than one FromBody attribute.");
             }
 
-            //TODO: Need to know which mimetypes to add here.
             factoryContext.Metadata.Add(new AcceptsMetadata(new string[] { "application/json" }));
 
             var nullability = NullabilityContext.Create(parameter);

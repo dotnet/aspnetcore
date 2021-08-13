@@ -348,7 +348,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
         }
 
-        private class ConsumesMetadataEndpointComparer : EndpointMetadataComparer<IAcceptsMetadata>
+        private sealed class ConsumesMetadataEndpointComparer : EndpointMetadataComparer<IAcceptsMetadata>
         {
             protected override int CompareMetadata(IAcceptsMetadata? x, IAcceptsMetadata? y)
             {

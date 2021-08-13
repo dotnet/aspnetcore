@@ -160,8 +160,7 @@ namespace Microsoft.AspNetCore.Http
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
 #pragma warning restore CS0419 // Ambiguous reference in cref attribute
             string? contentType = null, params string[] additionalContentTypes)
-        {
-            
+        {           
             builder.WithMetadata(new AcceptsMetadata(requestType, GetAllContentTypes(contentType, additionalContentTypes)));
             return builder;
         }
@@ -179,7 +178,6 @@ namespace Microsoft.AspNetCore.Http
 #pragma warning restore CS0419 // Ambiguous reference in cref attribute
             string contentType, params string[] additionalContentTypes)
         {
-
             var allContentTypes = GetAllContentTypes(contentType, additionalContentTypes);
             builder.WithMetadata(new AcceptsMetadata(allContentTypes));
 
@@ -188,7 +186,6 @@ namespace Microsoft.AspNetCore.Http
 
         private static string[] GetAllContentTypes(string? contentType, string[] additionalContentTypes)
         {
-
             if (string.IsNullOrEmpty(contentType))
             {
                 contentType = "application/json";

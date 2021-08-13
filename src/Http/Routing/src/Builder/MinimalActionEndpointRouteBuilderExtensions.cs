@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Builder
             var requestDelegateResult = RequestDelegateFactory.Create(action, options);
 
             var builder = new RouteEndpointBuilder(
-                requestDelegateResult.RequestDelegate!,
+                requestDelegateResult.RequestDelegate,
                 pattern,
                 defaultOrder)
             {
@@ -190,11 +190,10 @@ namespace Microsoft.AspNetCore.Builder
             // Add delegate attributes as metadata
             var attributes = action.Method.GetCustomAttributes();
 
-            //Add accepts metadata - Adding two mime types for testing. N
-            var acceptsMetadata = requestDelegateResult.EndpointMetadata?.OfType<IAcceptsMetadata>().FirstOrDefault();
-            if (acceptsMetadata is not null)
+            //Add add request delegate metadata 
+            foreach(var metadata in requestDelegateResult.EndpointMetadata)
             {
-                builder.Metadata.Add(new AcceptsMetadata(new string[] { "application/json" }));
+                builder.Metadata.Add(metadata);
             }
 
             // This can be null if the delegate is a dynamic method or compiled from an expression tree
