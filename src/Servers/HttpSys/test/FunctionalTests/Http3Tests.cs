@@ -180,12 +180,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         [ConditionalFact]
         public async Task Http3_ResetAfterHeaders()
         {
+            var headersReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             using var server = Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
             {
                 try
                 {
                     Assert.True(httpContext.Request.IsHttps);
                     await httpContext.Response.Body.FlushAsync();
+                    await headersReceived.Task.DefaultTimeout();
                     httpContext.Features.Get<IHttpResetFeature>().Reset(0x010c); // H3_REQUEST_CANCELLED
                 }
                 catch (Exception ex)
@@ -200,6 +202,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             client.DefaultRequestVersion = HttpVersion.Version30;
             client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
             var response = await client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
+            headersReceived.SetResult();
             response.EnsureSuccessStatusCode();
             var ex = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync());
             var qex = Assert.IsType<QuicStreamAbortedException>(ex.InnerException?.InnerException?.InnerException);
@@ -209,9 +212,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         [ConditionalFact]
         public async Task Http3_AppExceptionAfterHeaders_InternalError()
         {
+            var headersReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             using var server = Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
             {
                 await httpContext.Response.Body.FlushAsync();
+                await headersReceived.Task.DefaultTimeout();
                 throw new Exception("App Exception");
             });
             var handler = new HttpClientHandler();
@@ -220,7 +225,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             using var client = new HttpClient(handler);
             client.DefaultRequestVersion = HttpVersion.Version30;
             client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
             var response = await client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
+            headersReceived.SetResult();
             response.EnsureSuccessStatusCode();
             var ex = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync());
             var qex = Assert.IsType<QuicStreamAbortedException>(ex.InnerException?.InnerException?.InnerException);
@@ -241,10 +248,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             using var client = new HttpClient(handler);
             client.DefaultRequestVersion = HttpVersion.Version30;
             client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
-            var response = await client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
-            response.EnsureSuccessStatusCode();
-            var ex = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync());
-            var qex = Assert.IsType<QuicStreamAbortedException>(ex.InnerException?.InnerException?.InnerException);
+
+            var ex = await Assert.ThrowsAsync<HttpRequestException>(() => client.GetAsync(address));
+            var qex = Assert.IsType<QuicStreamAbortedException>(ex.InnerException);
             Assert.Equal(0x010c, qex.ErrorCode); // H3_REQUEST_CANCELLED
         }
     }
