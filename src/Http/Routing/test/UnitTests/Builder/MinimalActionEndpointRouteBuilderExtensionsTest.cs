@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal("/ HTTP: GET", routeEndpointBuilder.DisplayName);
             Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
 
-            // Assert that we don't fallback to the query string
+            // Assert that we don't fallback to the route values
             var httpContext = new DefaultHttpContext();
 
             httpContext.Request.Query = new QueryCollection();
