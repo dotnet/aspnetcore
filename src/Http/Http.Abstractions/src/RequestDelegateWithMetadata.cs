@@ -16,12 +16,12 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <returns>A task that represents the completion of request processing.</returns>
 
-        public RequestDelegate? RequestDelegate { get; set; }
+        public RequestDelegate? RequestDelegate { get; init; }
 
         /// <summary>
         /// List of request delgate metadata
         /// </summary>
-        public List<object> EndpointMetadata { get; set; } = new();
+        public IReadOnlyList<object>? EndpointMetadata { get; init; }
     }
 
 }

@@ -27,10 +27,10 @@ Microsoft.AspNetCore.Http.Metadata.IFromServiceMetadata
 Microsoft.AspNetCore.Http.Endpoint.Endpoint(Microsoft.AspNetCore.Http.RequestDelegate? requestDelegate, Microsoft.AspNetCore.Http.EndpointMetadataCollection? metadata, string? displayName) -> void
 Microsoft.AspNetCore.Http.Endpoint.RequestDelegate.get -> Microsoft.AspNetCore.Http.RequestDelegate?
 Microsoft.AspNetCore.Http.RequestDelegateResult
-Microsoft.AspNetCore.Http.RequestDelegateResult.EndpointMetadata.get -> System.Collections.Generic.List<object!>!
-Microsoft.AspNetCore.Http.RequestDelegateResult.EndpointMetadata.set -> void
+Microsoft.AspNetCore.Http.RequestDelegateResult.EndpointMetadata.get -> System.Collections.Generic.IReadOnlyList<object!>?
+Microsoft.AspNetCore.Http.RequestDelegateResult.EndpointMetadata.init -> void
 Microsoft.AspNetCore.Http.RequestDelegateResult.RequestDelegate.get -> Microsoft.AspNetCore.Http.RequestDelegate?
-Microsoft.AspNetCore.Http.RequestDelegateResult.RequestDelegate.set -> void
+Microsoft.AspNetCore.Http.RequestDelegateResult.RequestDelegate.init -> void
 Microsoft.AspNetCore.Http.RequestDelegateResult.RequestDelegateResult() -> void
 Microsoft.AspNetCore.Routing.RouteValueDictionary.TryAdd(string! key, object? value) -> bool
 static readonly Microsoft.AspNetCore.Http.HttpProtocol.Http09 -> string!

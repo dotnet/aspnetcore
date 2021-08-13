@@ -191,8 +191,8 @@ namespace Microsoft.AspNetCore.Builder
             var attributes = action.Method.GetCustomAttributes();
 
             //Add accepts metadata - Adding two mime types for testing. N
-            var acceptsMetadata = requestDelegateResult.EndpointMetadata.Any(m => m is IAcceptsMetadata);
-            if (acceptsMetadata)
+            var acceptsMetadata = requestDelegateResult.EndpointMetadata?.OfType<IAcceptsMetadata>().FirstOrDefault();
+            if (acceptsMetadata is not null)
             {
                 builder.Metadata.Add(new AcceptsMetadata(new string[] { "application/json" }));
             }
