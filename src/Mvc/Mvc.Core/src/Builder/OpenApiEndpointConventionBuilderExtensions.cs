@@ -145,8 +145,6 @@ namespace Microsoft.AspNetCore.Http
             return builder;
         }
 
-
-
 #pragma warning disable CS0419 // Ambiguous reference in cref attribute
         /// <summary>
         /// Adds the <see cref="Accepts"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
@@ -167,8 +165,6 @@ namespace Microsoft.AspNetCore.Http
             builder.WithMetadata(new AcceptsMetadata(requestType, GetAllContentTypes(contentType, additionalContentTypes)));
             return builder;
         }
-
-
 
 #pragma warning disable CS0419 // Ambiguous reference in cref attribute
         /// <summary>

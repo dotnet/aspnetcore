@@ -171,8 +171,13 @@ namespace Microsoft.AspNetCore.Builder
                 RouteParameterNames = routeParams
             };
 
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(action, options);
+
+            var requestDelegate = requestDelegateWithMetadata.Item1;
+            var metadata = requestDelegateWithMetadata.Item2;
+
             var builder = new RouteEndpointBuilder(
-                RequestDelegateFactory.Create(action, options),
+                requestDelegate,
                 pattern,
                 defaultOrder)
             {
@@ -189,8 +194,8 @@ namespace Microsoft.AspNetCore.Builder
             var attributes = action.Method.GetCustomAttributes();
 
             //Add accepts metadata - Adding two mime types for testing. N
-
-            if(options.HasBodyParameter)
+            var acceptsMetadata = metadata.EndpointMetadata.Any(m => m is IAcceptsMetadata);
+            if (acceptsMetadata)
             {
                 builder.Metadata.Add(new AcceptsMetadata(new string[] { "application/json" }));
             }

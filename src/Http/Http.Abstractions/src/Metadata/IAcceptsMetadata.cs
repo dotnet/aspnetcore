@@ -19,6 +19,6 @@ namespace Microsoft.AspNetCore.Http.Metadata
         /// <summary>
         /// Accepts request content types of any shape. 
         /// </summary>
-        public Type? Type { get; }
+        Type? RequestType { get; }
     }
 }

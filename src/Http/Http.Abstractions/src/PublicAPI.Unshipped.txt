@@ -11,10 +11,10 @@ Microsoft.AspNetCore.Http.Metadata.AcceptsMetadata
 Microsoft.AspNetCore.Http.Metadata.AcceptsMetadata.AcceptsMetadata(System.Type? type, string![]! contentTypes) -> void
 Microsoft.AspNetCore.Http.Metadata.AcceptsMetadata.AcceptsMetadata(string![]! contentTypes) -> void
 Microsoft.AspNetCore.Http.Metadata.AcceptsMetadata.ContentTypes.get -> System.Collections.Generic.IReadOnlyList<string!>!
-Microsoft.AspNetCore.Http.Metadata.AcceptsMetadata.Type.get -> System.Type?
+Microsoft.AspNetCore.Http.Metadata.AcceptsMetadata.RequestType.get -> System.Type?
 Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata
 Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata.ContentTypes.get -> System.Collections.Generic.IReadOnlyList<string!>!
-Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata.Type.get -> System.Type?
+Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata.RequestType.get -> System.Type?
 Microsoft.AspNetCore.Http.Metadata.IFromBodyMetadata
 Microsoft.AspNetCore.Http.Metadata.IFromBodyMetadata.AllowEmpty.get -> bool
 Microsoft.AspNetCore.Http.Metadata.IFromHeaderMetadata
@@ -26,6 +26,10 @@ Microsoft.AspNetCore.Http.Metadata.IFromRouteMetadata.Name.get -> string?
 Microsoft.AspNetCore.Http.Metadata.IFromServiceMetadata
 Microsoft.AspNetCore.Http.Endpoint.Endpoint(Microsoft.AspNetCore.Http.RequestDelegate? requestDelegate, Microsoft.AspNetCore.Http.EndpointMetadataCollection? metadata, string? displayName) -> void
 Microsoft.AspNetCore.Http.Endpoint.RequestDelegate.get -> Microsoft.AspNetCore.Http.RequestDelegate?
+Microsoft.AspNetCore.Http.RequestDelegateMetadata
+Microsoft.AspNetCore.Http.RequestDelegateMetadata.EndpointMetadata.get -> System.Collections.Generic.List<object!>!
+Microsoft.AspNetCore.Http.RequestDelegateMetadata.EndpointMetadata.set -> void
+Microsoft.AspNetCore.Http.RequestDelegateMetadata.RequestDelegateMetadata() -> void
 Microsoft.AspNetCore.Routing.RouteValueDictionary.TryAdd(string! key, object? value) -> bool
 static readonly Microsoft.AspNetCore.Http.HttpProtocol.Http09 -> string!
 static Microsoft.AspNetCore.Http.HttpProtocol.IsHttp09(string! protocol) -> bool

@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="options">The <see cref="RequestDelegateFactoryOptions"/> used to configure the behavior of the handler.</param>
         /// <returns>The <see cref="RequestDelegate"/>.</returns>
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
-        public static RequestDelegate Create(Delegate action, RequestDelegateFactoryOptions? options = null)
+        public static (RequestDelegate, RequestDelegateMetadata) Create(Delegate action, RequestDelegateFactoryOptions? options = null)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         {
             if (action is null)
@@ -79,12 +79,22 @@ namespace Microsoft.AspNetCore.Http
                 null => null,
             };
 
-            var targetableRequestDelegate = CreateTargetableRequestDelegate(action.Method, options, targetExpression);
+            var factoryContext = new FactoryContext()
+            {
+                ServiceProviderIsService = options?.ServiceProvider?.GetService<IServiceProviderIsService>()
+            };
 
-            return httpContext =>
+            var requestMetadata = new RequestDelegateMetadata()
+            {
+                EndpointMetadata = factoryContext.Metadata
+            };
+
+            var targetableRequestDelegate = CreateTargetableRequestDelegate(action.Method, options, factoryContext, targetExpression);
+
+            return (httpContext =>
             {
                 return targetableRequestDelegate(action.Target, httpContext);
-            };
+            }, requestMetadata);
         }
 
         /// <summary>
@@ -95,7 +105,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="options">The <see cref="RequestDelegateFactoryOptions"/> used to configure the behavior of the handler.</param>
         /// <returns>The <see cref="RequestDelegate"/>.</returns>
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
-        public static RequestDelegate Create(MethodInfo methodInfo, Func<HttpContext, object>? targetFactory = null, RequestDelegateFactoryOptions? options = null)
+        public static (RequestDelegate, RequestDelegateMetadata) Create(MethodInfo methodInfo, Func<HttpContext, object>? targetFactory = null, RequestDelegateFactoryOptions? options = null)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         {
             if (methodInfo is null)
@@ -108,31 +118,45 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentException($"{nameof(methodInfo)} does not have a declaring type.");
             }
 
+            var factoryContext = new FactoryContext()
+            {
+                ServiceProviderIsService = options?.ServiceProvider?.GetService<IServiceProviderIsService>()
+            };
+
             if (targetFactory is null)
             {
                 if (methodInfo.IsStatic)
                 {
-                    var untargetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, options, targetExpression: null);
+                    var untargetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, options, factoryContext, targetExpression: null);
+                    var metadata = new RequestDelegateMetadata()
+                    {
+                        EndpointMetadata = factoryContext.Metadata
+                    };
 
-                    return httpContext =>
+                    return (httpContext =>
                     {
                         return untargetableRequestDelegate(null, httpContext);
-                    };
+                    }, metadata);
                 }
 
                 targetFactory = context => Activator.CreateInstance(methodInfo.DeclaringType)!;
             }
 
             var targetExpression = Expression.Convert(TargetExpr, methodInfo.DeclaringType);
-            var targetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, options, targetExpression);
+            var targetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, options, factoryContext, targetExpression);
 
-            return httpContext =>
+            var requestMetadata = new RequestDelegateMetadata()
+            {
+                EndpointMetadata = factoryContext.Metadata
+            };
+
+            return (httpContext =>
             {
                 return targetableRequestDelegate(targetFactory(httpContext), httpContext);
-            };
+            }, requestMetadata);
         }
 
-        private static Func<object?, HttpContext, Task> CreateTargetableRequestDelegate(MethodInfo methodInfo, RequestDelegateFactoryOptions? options, Expression? targetExpression)
+        private static Func<object?, HttpContext, Task> CreateTargetableRequestDelegate(MethodInfo methodInfo, RequestDelegateFactoryOptions? options, FactoryContext factoryContext,  Expression? targetExpression)
         {
             // Non void return type
 
@@ -149,11 +173,6 @@ namespace Microsoft.AspNetCore.Http
             //     action(...);
             //     return default;
             // }
-
-            var factoryContext = new FactoryContext()
-            {
-                ServiceProviderIsService = options?.ServiceProvider?.GetService<IServiceProviderIsService>()
-            };
 
             if (options?.RouteParameterNames is { } routeParameterNames)
             {
@@ -716,10 +735,8 @@ namespace Microsoft.AspNetCore.Http
                 throw new InvalidOperationException("Action cannot have more than one FromBody attribute.");
             }
 
-            if(options is not null)
-            {
-                options.HasBodyParameter = true;
-            }
+            //TODO: Need to know which mimetypes to add here.
+            factoryContext.Metadata.Add(new AcceptsMetadata(new string[] { "application/json" }));
 
             var nullability = NullabilityContext.Create(parameter);
             var isOptional = parameter.HasDefaultValue || nullability.ReadState == NullabilityState.Nullable;
@@ -956,6 +973,7 @@ namespace Microsoft.AspNetCore.Http
             public bool UsingTempSourceString { get; set; }
             public List<ParameterExpression> ExtraLocals { get; } = new();
             public List<Expression> ParamCheckExpressions { get; } = new();
+            public List<object> Metadata { get; } = new();
         }
 
         private static partial class Log

@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Net;
@@ -25,6 +26,8 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
+using Xunit.Abstractions;
+using static System.Collections.Specialized.BitVector32;
 
 namespace Microsoft.AspNetCore.Routing.Internal
 {
@@ -91,7 +94,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var httpContext = new DefaultHttpContext();
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -111,7 +115,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 BindingFlags.NonPublic | BindingFlags.Static,
                 new[] { typeof(HttpContext) });
 
-            var requestDelegate = RequestDelegateFactory.Create(methodInfo!);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(methodInfo!);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             var httpContext = new DefaultHttpContext();
 
@@ -156,7 +161,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 return new TestNonStaticActionClass(2);
             }
 
-            var requestDelegate = RequestDelegateFactory.Create(methodInfo!, _ => GetTarget());
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(methodInfo!, _ => GetTarget());
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             var httpContext = new DefaultHttpContext();
 
@@ -202,7 +208,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.Request.RouteValues[paramName] = originalRouteParam.ToString(NumberFormatInfo.InvariantInfo);
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -229,7 +236,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var httpContext = new DefaultHttpContext();
 
-            var requestDelegate = RequestDelegateFactory.Create((int? id, HttpContext httpContext) =>
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create((int? id, HttpContext httpContext) =>
             {
                 if (id is not null)
                 {
@@ -237,6 +244,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 }
             },
             new() { RouteParameterNames = new string[] { "id" } });
+
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
             {
@@ -255,7 +264,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             Assert.NotNull(methodInfo);
 
-            var requestDelegate = RequestDelegateFactory.Create(methodInfo!);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(methodInfo!);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
+
             var context = new DefaultHttpContext();
 
             await requestDelegate(context);
@@ -281,7 +292,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var httpContext = new DefaultHttpContext();
 
-            var requestDelegate = RequestDelegateFactory.Create(TestOptional);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(TestOptional);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -293,7 +305,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var httpContext = new DefaultHttpContext();
 
-            var requestDelegate = RequestDelegateFactory.Create(TestOptional);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(TestOptional);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -305,7 +318,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var httpContext = new DefaultHttpContext();
 
-            var requestDelegate = RequestDelegateFactory.Create(TestOptionalString);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(TestOptionalString);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -322,7 +336,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             httpContext.Request.RouteValues[paramName] = originalRouteParam.ToString(NumberFormatInfo.InvariantInfo);
 
-            var requestDelegate = RequestDelegateFactory.Create(TestOptional);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(TestOptional);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -345,7 +360,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.Request.RouteValues[specifiedName] = originalRouteParam.ToString(NumberFormatInfo.InvariantInfo);
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -372,7 +388,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             serviceCollection.AddSingleton(LoggerFactory);
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -454,7 +471,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             serviceCollection.AddSingleton(LoggerFactory);
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create(action);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(action);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -475,7 +493,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             serviceCollection.AddSingleton(LoggerFactory);
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create(action);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(action);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -494,10 +513,12 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 ["tryParsable"] = "invalid!"
             });
 
-            var requestDelegate = RequestDelegateFactory.Create((HttpContext httpContext, int tryParsable) =>
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create((HttpContext httpContext, int tryParsable) =>
             {
                 httpContext.Items["tryParsable"] = tryParsable;
             });
+
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -557,7 +578,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             httpContext.Features.Set<IHttpRequestLifetimeFeature>(new TestHttpRequestLifetimeFeature());
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -599,7 +621,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Query = query;
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -622,7 +645,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Headers[customHeaderName] = originalHeaderParam.ToString(NumberFormatInfo.InvariantInfo);
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -696,7 +720,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             });
             httpContext.RequestServices = mock.Object;
 
-            var requestDelegate = RequestDelegateFactory.Create(action);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(action);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -718,7 +743,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             serviceCollection.AddSingleton(LoggerFactory);
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create(action);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(action);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -739,7 +765,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             httpContext.Request.Headers["Content-Type"] = "application/json";
             httpContext.Request.Headers["Content-Length"] = "0";
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -763,7 +790,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             httpContext.Request.Headers["Content-Type"] = "application/json";
             httpContext.Request.Headers["Content-Length"] = "0";
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -792,7 +820,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -828,7 +857,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -901,7 +931,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.RequestServices = new EmptyServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create(action);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(action);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await Assert.ThrowsAsync<InvalidOperationException>(() => requestDelegate(httpContext));
         }
@@ -923,7 +954,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.RequestServices = requestScoped.ServiceProvider;
 
-            var requestDelegate = RequestDelegateFactory.Create(action, options: new() { ServiceProvider = services });
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(action, options: new() { ServiceProvider = services });
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -942,7 +974,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var httpContext = new DefaultHttpContext();
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -965,7 +998,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 RequestAborted = cts.Token
             };
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -987,7 +1021,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 User = new ClaimsPrincipal()
             };
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -1006,7 +1041,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var httpContext = new DefaultHttpContext();
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -1025,7 +1061,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var httpContext = new DefaultHttpContext();
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -1069,7 +1106,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var responseBodyStream = new MemoryStream();
             httpContext.Response.Body = responseBodyStream;
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -1143,7 +1181,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var responseBodyStream = new MemoryStream();
             httpContext.Response.Body = responseBodyStream;
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -1206,7 +1245,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var responseBodyStream = new MemoryStream();
             httpContext.Response.Body = responseBodyStream;
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -1223,7 +1263,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.Response.ContentType = "application/json; charset=utf-8";
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -1262,7 +1303,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var responseBodyStream = new MemoryStream();
             httpContext.Response.Body = responseBodyStream;
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -1303,7 +1345,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var responseBodyStream = new MemoryStream();
             httpContext.Response.Body = responseBodyStream;
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -1341,7 +1384,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var responseBodyStream = new MemoryStream();
             httpContext.Response.Body = responseBodyStream;
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             var exception = await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await requestDelegate(httpContext));
             Assert.Contains(message, exception.Message);
@@ -1386,7 +1430,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var responseBodyStream = new MemoryStream();
             httpContext.Response.Body = responseBodyStream;
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -1445,7 +1490,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             serviceCollection.AddSingleton(LoggerFactory);
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -1516,7 +1562,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             serviceCollection.AddSingleton(LoggerFactory);
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -1587,7 +1634,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             serviceCollection.AddSingleton(Options.Create(jsonOptions));
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -1650,7 +1698,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             httpContext.RequestServices = services;
             RequestDelegateFactoryOptions options = new() { ServiceProvider = services };
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate, options);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(@delegate, options);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             if (!isInvalid)
             {
@@ -1694,7 +1743,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
             serviceCollection.AddSingleton(LoggerFactory);
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
+
 
             await requestDelegate(httpContext);
 
@@ -1736,7 +1787,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 });
             }
 
-            var requestDelegate = RequestDelegateFactory.Create(optionalQueryParam);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(optionalQueryParam);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
@@ -1765,7 +1817,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 });
             }
 
-            var requestDelegate = RequestDelegateFactory.Create(optionalQueryParam);
+            var requestDelegateWithMetadata = RequestDelegateFactory.Create(optionalQueryParam);
+            var requestDelegate = requestDelegateWithMetadata.Item1;
 
             await requestDelegate(httpContext);
 
