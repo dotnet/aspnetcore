@@ -141,6 +141,43 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Null(httpContext.Items["input"]);
         }
 
+        [Fact]
+        public async Task MapGetWithoutRouteParameter_BuildsEndpointWithQuerySpecificBinding()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            _ = builder.MapGet("/", (int? id, HttpContext httpContext) =>
+            {
+                if (id is not null)
+                {
+                    httpContext.Items["input"] = id;
+                }
+            });
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+            Assert.NotNull(methodMetadata);
+            var method = Assert.Single(methodMetadata!.HttpMethods);
+            Assert.Equal("GET", method);
+
+            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+            Assert.Equal("/ HTTP: GET", routeEndpointBuilder.DisplayName);
+            Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
+
+            // Assert that we don't fallback to the query string
+            var httpContext = new DefaultHttpContext();
+
+            httpContext.Request.Query = new QueryCollection();
+            httpContext.Request.RouteValues = new();
+            httpContext.Request.RouteValues["id"] = "42";
+
+            await endpoint.RequestDelegate!(httpContext);
+
+            Assert.Null(httpContext.Items["input"]);
+        }
+
         [Theory]
         [MemberData(nameof(MapMethods))]
         public async Task MapVerbWithExplicitRouteParameterIsCaseInsensitive(Action<IEndpointRouteBuilder, string, Delegate> map, string expectedMethod)

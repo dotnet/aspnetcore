@@ -247,11 +247,22 @@ namespace Microsoft.AspNetCore.Http
             }
             else if (parameter.ParameterType == typeof(string) || TryParseMethodCache.HasTryParseMethod(parameter))
             {
-                // We're in the fallback case and we have a parameter and route parameter match so don't fallback
-                // to query string in this case
-                if (factoryContext.RouteParameters is { } routeParams && routeParams.Contains(parameter.Name, StringComparer.OrdinalIgnoreCase))
+                // 1. We only bind from routes if the name is specified
+                // 2. We only bind from query if there's no matching route parameter
+                // 3. We fallback to route or query if route paramters is null (it means we don't know). This case only happens
+                // when RDF.Create is manually invoked.
+                if (factoryContext.RouteParameters is { } routeParams)
                 {
-                    return BindParameterFromProperty(parameter, RouteValuesExpr, parameter.Name, factoryContext);
+                    if (routeParams.Contains(parameter.Name, StringComparer.OrdinalIgnoreCase))
+                    {
+                        // We're in the fallback case and we have a parameter and route parameter match so don't fallback
+                        // to query string in this case
+                        return BindParameterFromProperty(parameter, RouteValuesExpr, parameter.Name, factoryContext);
+                    }
+                    else
+                    {
+                        return BindParameterFromProperty(parameter, QueryExpr, parameter.Name, factoryContext);
+                    }
                 }
 
                 return BindParameterFromRouteValueOrQueryString(parameter, parameter.Name, factoryContext);
