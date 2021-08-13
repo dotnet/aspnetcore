@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             if (!defaultValues.TryGetValue(@switch.Name, out var value))
             {
                 _logger.LogDebug(
-                    "Compatibility switch {SwitchName} in type {OptionsType} is using default value {Value} for version {Version}",
+                    "Compatibility switch {SwitchName} in type {OptionsType} is using default value {Value}",
                     @switch.Name,
                     typeof(TOptions).Name,
                     @switch.Value);
