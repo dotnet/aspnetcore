@@ -19,6 +19,11 @@ namespace Microsoft.AspNetCore.HttpLogging
 {
     public class FileLoggerProcessorTests
     {
+
+        private string _messageOne = "Message one";
+        private string _messageTwo = "Message two";
+        private string _messageThree = "Message three";
+
         public FileLoggerProcessorTests()
         {
             TempPath = Path.GetTempFileName() + "_";
@@ -41,12 +46,12 @@ namespace Microsoft.AspNetCore.HttpLogging
                 };
                 await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
                 {
-                    logger.EnqueueMessage("Message one");
+                    logger.EnqueueMessage(_messageOne);
                     fileName = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0000.txt"));
                     // Pause for a bit before disposing so logger can finish logging
                     try
                     {
-                        await WaitForFile(fileName, 11).DefaultTimeout();
+                        await WaitForFile(fileName, _messageOne.Length).DefaultTimeout();
                     }
                     catch
                     {
@@ -60,7 +65,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 }
                 Assert.True(File.Exists(fileName));
 
-                Assert.Equal("Message one" + Environment.NewLine, File.ReadAllText(fileName));
+                Assert.Equal(_messageOne + Environment.NewLine, File.ReadAllText(fileName));
             }
             finally
             {
@@ -86,14 +91,14 @@ namespace Microsoft.AspNetCore.HttpLogging
                 };
                 await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
                 {
-                    logger.EnqueueMessage("Message one");
-                    logger.EnqueueMessage("Message two");
+                    logger.EnqueueMessage(_messageOne);
+                    logger.EnqueueMessage(_messageTwo);
                     fileName1 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0000.txt"));
                     fileName2 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0001.txt"));
                     // Pause for a bit before disposing so logger can finish logging
                     try
                     {
-                        await WaitForFile(fileName2, 11).DefaultTimeout();
+                        await WaitForFile(fileName2, _messageTwo.Length).DefaultTimeout();
                     }
                     catch
                     {
@@ -114,8 +119,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                 Assert.True(File.Exists(fileName1));
                 Assert.True(File.Exists(fileName2));
 
-                Assert.Equal("Message one" + Environment.NewLine, File.ReadAllText(fileName1));
-                Assert.Equal("Message two" + Environment.NewLine, File.ReadAllText(fileName2));
+                Assert.Equal(_messageOne + Environment.NewLine, File.ReadAllText(fileName1));
+                Assert.Equal(_messageTwo + Environment.NewLine, File.ReadAllText(fileName2));
             }
             finally
             {
@@ -145,13 +150,13 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     for (int i = 0; i < 10; i++)
                     {
-                        logger.EnqueueMessage("Message");
+                        logger.EnqueueMessage(_messageOne);
                     }
                     lastFileName = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0009.txt"));
                     // Pause for a bit before disposing so logger can finish logging
                     try
                     {
-                        await WaitForFile(lastFileName, 7).DefaultTimeout();
+                        await WaitForFile(lastFileName, _messageOne.Length).DefaultTimeout();
                         for (int i = 0; i < 6; i++)
                         {
                             await WaitForRoll(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.{i:0000}.txt"))).DefaultTimeout();
@@ -211,11 +216,11 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     for (int i = 0; i < 3; i++)
                     {
-                        logger.EnqueueMessage("Message");
+                        logger.EnqueueMessage(_messageOne);
                     }
                     var filePath = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0002.txt"));
                     // Pause for a bit before disposing so logger can finish logging
-                    await WaitForFile(filePath, 7).DefaultTimeout();
+                    await WaitForFile(filePath, _messageOne.Length).DefaultTimeout();
                 }
 
                 // Second instance should pick up where first one left off
@@ -223,11 +228,11 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     for (int i = 0; i < 3; i++)
                     {
-                        logger.EnqueueMessage("Message");
+                        logger.EnqueueMessage(_messageOne);
                     }
                     var filePath = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0005.txt"));
                     // Pause for a bit before disposing so logger can finish logging
-                    await WaitForFile(filePath, 7).DefaultTimeout();
+                    await WaitForFile(filePath, _messageOne.Length).DefaultTimeout();
                 }
 
                 var actualFiles1 = new DirectoryInfo(path)
@@ -246,9 +251,9 @@ namespace Microsoft.AspNetCore.HttpLogging
                 options.RetainedFileCountLimit = 5;
                 await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
                 {
-                    logger.EnqueueMessage("Message");
+                    logger.EnqueueMessage(_messageOne);
                     // Pause for a bit before disposing so logger can finish logging
-                    await WaitForFile(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0006.txt")), 7).DefaultTimeout();
+                    await WaitForFile(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0006.txt")), _messageOne.Length).DefaultTimeout();
                     await WaitForRoll(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0000.txt"))).DefaultTimeout();
                     await WaitForRoll(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{now.Year:0000}{now.Month:00}{now.Day:00}.0001.txt"))).DefaultTimeout();
                 }
@@ -298,10 +303,10 @@ namespace Microsoft.AspNetCore.HttpLogging
 
                 await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
                 {
-                    logger.EnqueueMessage("Message one");
-                    logger.EnqueueMessage("Message two");
+                    logger.EnqueueMessage(_messageOne);
+                    logger.EnqueueMessage(_messageTwo);
                     // Pause for a bit before disposing so logger can finish logging
-                    await WaitForFile(fileName2, 11).DefaultTimeout();
+                    await WaitForFile(fileName2, _messageTwo.Length).DefaultTimeout();
                 }
 
                 // Even with a big enough FileSizeLimit, we still won't try to write to files from a previous instance.
@@ -309,9 +314,9 @@ namespace Microsoft.AspNetCore.HttpLogging
 
                 await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
                 {
-                    logger.EnqueueMessage("Message three");
+                    logger.EnqueueMessage(_messageThree);
                     // Pause for a bit before disposing so logger can finish logging
-                    await WaitForFile(fileName3, 13).DefaultTimeout();
+                    await WaitForFile(fileName3, _messageThree.Length).DefaultTimeout();
                 }
 
                 var actualFiles = new DirectoryInfo(path)
@@ -326,9 +331,9 @@ namespace Microsoft.AspNetCore.HttpLogging
                 Assert.True(File.Exists(fileName2));
                 Assert.True(File.Exists(fileName3));
 
-                Assert.Equal("Message one" + Environment.NewLine, File.ReadAllText(fileName1));
-                Assert.Equal("Message two" + Environment.NewLine, File.ReadAllText(fileName2));
-                Assert.Equal("Message three" + Environment.NewLine, File.ReadAllText(fileName3));
+                Assert.Equal(_messageOne + Environment.NewLine, File.ReadAllText(fileName1));
+                Assert.Equal(_messageTwo + Environment.NewLine, File.ReadAllText(fileName2));
+                Assert.Equal(_messageThree + Environment.NewLine, File.ReadAllText(fileName3));
             }
             finally
             {
@@ -364,13 +369,13 @@ namespace Microsoft.AspNetCore.HttpLogging
 
                 await using (var logger = new FileLoggerProcessor(monitor, new HostingEnvironment(), NullLoggerFactory.Instance))
                 {
-                    logger.EnqueueMessage("Message one");
-                    await WaitForFile(fileName1, 11).DefaultTimeout();
+                    logger.EnqueueMessage(_messageOne);
+                    await WaitForFile(fileName1, _messageOne.Length).DefaultTimeout();
                     options.LoggingFields = W3CLoggingFields.Date;
                     monitor.InvokeChanged();
-                    logger.EnqueueMessage("Message two");
+                    logger.EnqueueMessage(_messageTwo);
                     // Pause for a bit before disposing so logger can finish logging
-                    await WaitForFile(fileName2, 11).DefaultTimeout();
+                    await WaitForFile(fileName2, _messageTwo.Length).DefaultTimeout();
                 }
 
                 var actualFiles = new DirectoryInfo(path)
@@ -384,8 +389,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                 Assert.True(File.Exists(fileName1));
                 Assert.True(File.Exists(fileName2));
 
-                Assert.Equal("Message one" + Environment.NewLine, File.ReadAllText(fileName1));
-                Assert.Equal("Message two" + Environment.NewLine, File.ReadAllText(fileName2));
+                Assert.Equal(_messageOne + Environment.NewLine, File.ReadAllText(fileName1));
+                Assert.Equal(_messageTwo + Environment.NewLine, File.ReadAllText(fileName2));
             }
             finally
             {
