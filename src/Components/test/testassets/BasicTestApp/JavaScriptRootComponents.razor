@@ -32,11 +32,14 @@
     <button id="set-complex-params" onclick="setComplexParameters()">Set complex parameters</button>
     <button id="set-invalid-params" onclick="setInvalidParameters()">Set invalid parameters</button>
     <button id="set-catchall-params" onclick="setCatchAllParameters()">Set catch-all parameters</button>
+    <button id="set-callback-params" onclick="setCallbackParameters()">Set function parameters</button>
+    <button id="remove-callback-params" onclick="removeCallbackParameters()">Remove function parameters</button>
 </p>
 
 <script suppress-error="BL9992">
     let dotNetObjectReferenceForJSComponents;
     let numAddedComponents = 0;
+    let nextCallbackParameterId = 0;
     const addedComponents = [];
     const jsObject = DotNet.createJSObjectReference({
         getValue() {
@@ -118,11 +121,38 @@
         setMessage(`Finished setting catchall parameters on component in ${containerElement.id}`);
     }
 
+    async function setCallbackParameters() {
+        const { component, containerElement } = addedComponents[addedComponents.length - 1];
+        const id = nextCallbackParameterId++;
+        await component.setParameters({
+            onJSCallbackButtonClick: () => onJSCallbackButtonClick(id),
+            onJSCallbackWithParamsButtonClick: (eventArgs) => onJSCallbackWithParamsButtonClick(id, eventArgs),
+        });
+        setMessage(`Finished setting callback parameters on component in ${containerElement.id}`);
+    }
+
+    async function removeCallbackParameters() {
+        const { component, containerElement } = addedComponents[addedComponents.length - 1];
+        await component.setParameters({
+            onJSCallbackButtonClick: null,
+            onJSCallbackWithParamsButtonClick: null,
+        });
+        setMessage(`Finished removing callback parameters on component in ${containerElement.id}`);
+    }
+
     function removeRootComponent() {
         // Treat it like a FIFO queue
         const { component, containerElement } = addedComponents.shift();
         setMessage(`Disposed component in ${containerElement.id}`);
         component.dispose();
+    }
+
+    function onJSCallbackButtonClick(id) {
+        setMessage(`JavaScript button callback invoked (id=${id})`);
+    }
+
+    function onJSCallbackWithParamsButtonClick(id, mouseEventArgs) {
+        setMessage(`JavaScript button callback received mouse event args (id=${id}, buttons=${mouseEventArgs.buttons})`);
     }
 
     function showInitializerCallLog() {

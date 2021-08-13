@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var successful = true;
             Exception? exception = null;
-            object model;
+            object? model;
 
             using (var streamReader = context.ReaderFactory(readStream, encoding))
             {

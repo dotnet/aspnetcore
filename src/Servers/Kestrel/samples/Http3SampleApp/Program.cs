@@ -29,6 +29,8 @@ namespace Http3SampleApp
                         options.ConfigureHttpsDefaults(httpsOptions =>
                         {
                             httpsOptions.ServerCertificate = cert;
+                            // httpsOptions.ClientCertificateMode = ClientCertificateMode.AllowCertificate;
+                            // httpsOptions.AllowAnyClientCertificate();
                         });
 
                         options.ListenAnyIP(5000, listenOptions =>

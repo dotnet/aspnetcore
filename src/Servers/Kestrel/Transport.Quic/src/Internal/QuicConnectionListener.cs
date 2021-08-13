@@ -35,11 +35,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             _context = new QuicTransportContext(_log, options);
             var quicListenerOptions = new QuicListenerOptions();
 
+            var listenEndPoint = endpoint as IPEndPoint;
+
+            if (listenEndPoint == null)
+            {
+                throw new InvalidOperationException($"QUIC doesn't support listening on the configured endpoint type. Expected {nameof(IPEndPoint)} but got {endpoint.GetType().Name}.");
+            }
+
+            // Workaround for issue in System.Net.Quic
+            // https://github.com/dotnet/runtime/issues/57241
+            if (listenEndPoint.Address.Equals(IPAddress.Any) && listenEndPoint.Address != IPAddress.Any)
+            {
+                listenEndPoint = new IPEndPoint(IPAddress.Any, listenEndPoint.Port);
+            }
+            if (listenEndPoint.Address.Equals(IPAddress.IPv6Any) && listenEndPoint.Address != IPAddress.IPv6Any)
+            {
+                listenEndPoint = new IPEndPoint(IPAddress.IPv6Any, listenEndPoint.Port);
+            }
+
             quicListenerOptions.ServerAuthenticationOptions = sslServerAuthenticationOptions;
-            quicListenerOptions.ListenEndPoint = endpoint as IPEndPoint;
+            quicListenerOptions.ListenEndPoint = listenEndPoint;
             quicListenerOptions.IdleTimeout = options.IdleTimeout;
             quicListenerOptions.MaxBidirectionalStreams = options.MaxBidirectionalStreamCount;
             quicListenerOptions.MaxUnidirectionalStreams = options.MaxUnidirectionalStreamCount;
+            quicListenerOptions.ListenBacklog = options.Backlog;
 
             _listener = new QuicListener(quicListenerOptions);
 

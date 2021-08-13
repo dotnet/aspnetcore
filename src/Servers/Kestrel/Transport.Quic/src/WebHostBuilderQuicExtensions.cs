@@ -3,6 +3,7 @@
 
 using System;
 using System.Net.Quic;
+using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,7 @@ namespace Microsoft.AspNetCore.Hosting
     /// </summary>
     public static class WebHostBuilderQuicExtensions
     {
+        [RequiresPreviewFeatures]
         public static IWebHostBuilder UseQuic(this IWebHostBuilder hostBuilder)
         {
             if (QuicImplementationProviders.Default.IsSupported)
@@ -27,6 +29,7 @@ namespace Microsoft.AspNetCore.Hosting
             return hostBuilder;
         }
 
+        [RequiresPreviewFeatures]
         public static IWebHostBuilder UseQuic(this IWebHostBuilder hostBuilder, Action<QuicTransportOptions> configureOptions)
         {
             return hostBuilder.UseQuic().ConfigureServices(services =>

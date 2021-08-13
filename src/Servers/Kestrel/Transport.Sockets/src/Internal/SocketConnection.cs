@@ -1,13 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Sockets;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 
@@ -33,7 +30,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private readonly TaskCompletionSource _waitForConnectionClosedTcs = new TaskCompletionSource();
         private bool _connectionClosed;
         private readonly bool _waitForData;
-        private int _connectionStarted;
 
         internal SocketConnection(Socket socket,
                                   MemoryPool<byte> memoryPool,
@@ -68,15 +64,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
             var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
 
-            _originalTransport = pair.Transport;
+            // Set the transport and connection id
+            Transport = _originalTransport = pair.Transport;
             Application = pair.Application;
-
-            Transport = new SocketDuplexPipe(this);
 
             InitializeFeatures();
         }
-
-        public IDuplexPipe InnerTransport => _originalTransport;
 
         public PipeWriter Input => Application.Output;
 
@@ -84,16 +77,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         public override MemoryPool<byte> MemoryPool { get; }
 
-        private void EnsureStarted()
+        public void Start()
         {
-            if (_connectionStarted == 1 || Interlocked.CompareExchange(ref _connectionStarted, 1, 0) == 1)
+            try
             {
-                return;
+                // Spawn send and receive logic
+                _receivingTask = DoReceive();
+                _sendingTask = DoSend();
             }
-
-            // Offload these to avoid potentially blocking the first read/write/flush
-            _receivingTask = Task.Run(DoReceive);
-            _sendingTask = Task.Run(DoSend);
+            catch (Exception ex)
+            {
+                _trace.LogError(0, ex, $"Unexpected exception in {nameof(SocketConnection)}.{nameof(Start)}.");
+            }
         }
 
         public override void Abort(ConnectionAbortedException abortReason)
@@ -108,9 +103,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         // Only called after connection middleware is complete which means the ConnectionClosed token has fired.
         public override async ValueTask DisposeAsync()
         {
-            // Just in case we haven't started the connection, start it here so we can clean up properly.
-            EnsureStarted();
-
             _originalTransport.Input.Complete();
             _originalTransport.Output.Complete();
 
@@ -130,7 +122,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             }
             catch (Exception ex)
             {
-                _trace.LogError(0, ex, $"Unexpected exception in {nameof(SocketConnection)}.");
+                _trace.LogError(0, ex, $"Unexpected exception in {nameof(SocketConnection)}.{nameof(Start)}.");
             }
             finally
             {
