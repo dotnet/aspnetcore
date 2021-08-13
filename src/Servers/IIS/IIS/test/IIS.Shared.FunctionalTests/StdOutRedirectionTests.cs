@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             StopServer();
 
             var contents = Helpers.ReadAllTextFromFile(Helpers.GetExpectedLogName(deploymentResult, LogFolderPath), Logger);
-            var expectedString = "TThe framework 'Microsoft.NETCore.App', version '2.9.9' (x64) was not found.";
+            var expectedString = "The framework 'Microsoft.NETCore.App', version '2.9.9' (x64) was not found.";
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, expectedString, Logger);
             Assert.Contains(expectedString, contents);
         }
