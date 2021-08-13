@@ -294,7 +294,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 },
             };
 
-
             var transformer = new Mock<RoutePatternTransformer>();
             transformer
                 .Setup(t => t.SubstituteRequiredValues(It.IsAny<RoutePattern>(), It.IsAny<object>()))
@@ -333,6 +332,29 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             // Assert
             Assert.NotSame(result1, result2);
+        }
+
+        [Fact]
+        public async Task LoadAsync_CompiledPageActionDescriptor_ReturnsSelf()
+        {
+            // Arrange
+            var mvcOptions = Options.Create(new MvcOptions());
+            var endpointFactory = new ActionEndpointFactory(Mock.Of<RoutePatternTransformer>(), Enumerable.Empty<IRequestDelegateFactory>());
+            var loader = new DefaultPageLoader(
+                new[] { Mock.Of<IPageApplicationModelProvider>() },
+                Mock.Of<IViewCompilerProvider>(),
+                endpointFactory,
+                RazorPagesOptions,
+                mvcOptions);
+            var pageDescriptor = new CompiledPageActionDescriptor();
+
+            // Act
+            var result1 = await loader.LoadAsync(pageDescriptor, new EndpointMetadataCollection());
+            var result2 = await loader.LoadAsync(pageDescriptor, new EndpointMetadataCollection());
+
+            // Assert
+            Assert.Same(pageDescriptor, result1);
+            Assert.Same(pageDescriptor, result2);
         }
 
         private static IViewCompilerProvider GetCompilerProvider()
