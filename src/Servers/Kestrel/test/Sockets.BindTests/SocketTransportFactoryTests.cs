@@ -17,7 +17,7 @@ namespace Sockets.BindTests
         [Fact]
         public async Task ThrowsNotImplementedExceptionWhenBindingToUriEndPoint()
         {
-            var socketTransportFactory = new SocketTransportFactory(Options.Create(new SocketTransportOptions()), Mock.Of<ILoggerFactory>());
+            var socketTransportFactory = new SocketTransportFactory(Options.Create(new SocketTransportOptions()), new LoggerFactory());
             await Assert.ThrowsAsync<NotImplementedException>(async () => await socketTransportFactory.BindAsync(new UriEndPoint(new Uri("http://127.0.0.1:5554"))));
         }
     }
