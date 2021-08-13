@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -293,6 +294,109 @@ namespace Microsoft.AspNetCore.Builder
                 e => Assert.Equal("Test endpoint 2", e.DisplayName),
                 e => Assert.Equal("Test endpoint 3", e.DisplayName),
                 e => Assert.Equal("Test endpoint 4", e.DisplayName));
+        }
+
+        [Fact]
+        public void UseEndpoints_WithGlobalEndpointRouteBuilder_CopiesRoutesWhenPropertySet()
+        {
+            // Arrange
+            var services = CreateServices();
+
+            var app = new ApplicationBuilder(services);
+
+            var mockRouteBuilder = new Mock<IEndpointRouteBuilder>();
+            mockRouteBuilder.Setup(m => m.DataSources).Returns(new List<EndpointDataSource>());
+
+            var routeBuilder = mockRouteBuilder.Object;
+            app.Properties.Add("__GlobalEndpointRouteBuilder", routeBuilder);
+            app.UseRouting();
+
+            Assert.False(app.Properties.TryGetValue("__EndpointRouteBuilder", out _));
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.Map("/1", d => Task.CompletedTask).WithDisplayName("Test endpoint 1");
+            });
+            var routeOptions = app.ApplicationServices.GetRequiredService<IOptions<RouteOptions>>();
+            Assert.Empty(routeOptions.Value.EndpointDataSources);
+
+            app.Properties.Add("__GlobalEndpointBuilderShouldCopyRoutes", null);
+
+            app.UseEndpoints(endpoints => { });
+
+            var requestDelegate = app.Build();
+
+            var endpointDataSource = Assert.Single(mockRouteBuilder.Object.DataSources);
+            Assert.Collection(endpointDataSource.Endpoints,
+                e => Assert.Equal("Test endpoint 1", e.DisplayName));
+
+            routeOptions = app.ApplicationServices.GetRequiredService<IOptions<RouteOptions>>();
+            Assert.Equal(mockRouteBuilder.Object.DataSources, routeOptions.Value.EndpointDataSources);
+        }
+
+        [Fact]
+        public void UseEndpoint_WithGlobalEndpointRouteBuilderNoCopyProperty_HasEndpointsNoRoutes()
+        {
+            // Arrange
+            var services = CreateServices();
+
+            var app = new ApplicationBuilder(services);
+
+            var mockRouteBuilder = new Mock<IEndpointRouteBuilder>();
+            mockRouteBuilder.Setup(m => m.DataSources).Returns(new List<EndpointDataSource>());
+
+            var routeBuilder = mockRouteBuilder.Object;
+            app.Properties.Add("__GlobalEndpointRouteBuilder", routeBuilder);
+            app.UseRouting();
+
+            Assert.False(app.Properties.TryGetValue("__EndpointRouteBuilder", out _));
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.Map("/1", d => Task.CompletedTask).WithDisplayName("Test endpoint 1");
+            });
+
+            var requestDelegate = app.Build();
+
+            var endpointDataSource = Assert.Single(mockRouteBuilder.Object.DataSources);
+            Assert.Collection(endpointDataSource.Endpoints,
+                e => Assert.Equal("Test endpoint 1", e.DisplayName));
+
+            var routeOptions = app.ApplicationServices.GetRequiredService<IOptions<RouteOptions>>();
+            Assert.Empty(routeOptions.Value.EndpointDataSources);
+        }
+
+        [Fact]
+        public void UseRouting_DoesNotSetEndpointRouteBuilder_IfGlobalOneExists()
+        {
+            // Arrange
+            var services = CreateServices();
+
+            var app = new ApplicationBuilder(services);
+
+            var routeBuilder = new Mock<IEndpointRouteBuilder>().Object;
+            app.Properties.Add("__GlobalEndpointRouteBuilder", routeBuilder);
+            app.UseRouting();
+
+            Assert.False(app.Properties.TryGetValue("__EndpointRouteBuilder", out _));
+            Assert.True(app.Properties.TryGetValue("__GlobalEndpointRouteBuilder", out _));
+        }
+
+        [Fact]
+        public void UseEndpoints_RemovesEndpointRouteBuilderProperty()
+        {
+            // Arrange
+            var services = CreateServices();
+
+            var app = new ApplicationBuilder(services);
+
+            app.UseRouting();
+
+            Assert.True(app.Properties.TryGetValue("__EndpointRouteBuilder", out _));
+
+            app.UseEndpoints(endpoints => { });
+
+            Assert.False(app.Properties.TryGetValue("__EndpointRouteBuilder", out _));
         }
 
         private IServiceProvider CreateServices()

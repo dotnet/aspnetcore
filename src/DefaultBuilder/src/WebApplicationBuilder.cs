@@ -187,6 +187,7 @@ namespace Microsoft.AspNetCore.Builder
 
             if (context.HostingEnvironment.IsDevelopment())
             {
+                // TODO: add test for this
                 app.UseDeveloperExceptionPage();
             }
 
@@ -206,24 +207,23 @@ namespace Microsoft.AspNetCore.Builder
                 return _builtApplication.BuildRequestDelegate();
             });
 
-            // UseEndpoints() removes the GlobalEndpointRouteBuilderKey, so we can check if UseEndpoints()
-            // was called by the user, if not we should call it to populate the RouteOptions
-            if (_builtApplication.Properties.TryGetValue(WebApplication.GlobalEndpointRouteBuilderKey, out _))
-            {
-                app.UseEndpoints(_ => { });
-            }
-            else
-            {
-                // Remove the route builder to clean up the properties, we're done adding routes to the pipeline
-                // REVIEW: This might be unneeded
-                app.Properties.Remove(WebApplication.GlobalEndpointRouteBuilderKey);
-            }
+            // We don't know if user code called UseEndpoints(), so we will call it just in case, and we will make sure we are the only ones setting
+            // the EndpointDataSource in RouteOptions with this property
+            app.Properties.Add("__GlobalEndpointBuilderShouldCopyRoutes", null);
+            app.UseEndpoints(_ => { });
+            app.Properties.Remove("__GlobalEndpointBuilderShouldCopyRoutes");
 
             // Copy the properties to the destination app builder
             foreach (var item in _builtApplication.Properties)
             {
                 app.Properties[item.Key] = item.Value;
             }
+
+            // Remove the route builder to clean up the properties, we're done adding routes to the pipeline
+            // REVIEW: this makes startup filter with userouting/useendpoints fail unless we don't remove the EndpointRouteBuilder in UseEndpoints if a global one exists
+            // or if we stored the property in this method at the beginning and replaced it at the end.
+            app.Properties.Remove(WebApplication.GlobalEndpointRouteBuilderKey);
+            _builtApplication.Properties.Remove(WebApplication.GlobalEndpointRouteBuilderKey);
         }
 
         private class LoggingBuilder : ILoggingBuilder

@@ -104,14 +104,23 @@ namespace Microsoft.AspNetCore.Builder
             //
             // Each middleware gets its own collection of data sources, and all of those data sources also
             // get added to a global collection.
-            var routeOptions = builder.ApplicationServices.GetRequiredService<IOptions<RouteOptions>>();
-            foreach (var dataSource in endpointRouteBuilder.DataSources)
+            // In the global endpoint route case we only want to copy data sources once, so we wait for a specific key before copying data sources
+            // like in the case of minimal hosting
+            if (builder.Properties.TryGetValue("__GlobalEndpointBuilderShouldCopyRoutes", out _) ||
+                !builder.Properties.TryGetValue("__GlobalEndpointRouteBuilder", out _))
             {
-                routeOptions.Value.EndpointDataSources.Add(dataSource);
+                var routeOptions = builder.ApplicationServices.GetRequiredService<IOptions<RouteOptions>>();
+                foreach (var dataSource in endpointRouteBuilder.DataSources)
+                {
+                    routeOptions.Value.EndpointDataSources.Add(dataSource);
+                }
             }
 
-            builder.Properties.Remove(EndpointRouteBuilder);
-            builder.Properties.Remove("__GlobalEndpointRouteBuilder");
+            // REVIEW: this 'if' could be removed, see comment in WebApplicationBuilder
+            if (!builder.Properties.TryGetValue("__GlobalEndpointRouteBuilder", out _))
+            {
+                builder.Properties.Remove(EndpointRouteBuilder);
+            }
 
             return builder.UseMiddleware<EndpointMiddleware>();
         }

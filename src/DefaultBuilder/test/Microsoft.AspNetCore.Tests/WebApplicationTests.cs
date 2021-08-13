@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
-        public void WebApplicationBuildeSettingInvalidApplicationWillFailAssemblyLoadForUserSecrets()
+        public void WebApplicationBuilderSettingInvalidApplicationWillFailAssemblyLoadForUserSecrets()
         {
             var options = new WebApplicationOptions
             {
@@ -770,6 +770,34 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Equal("new", await oldResult.Content.ReadAsStringAsync());
         }
 
+        // REVIEW: David doesn't like this behavior :)
+        [Fact]
+        public async Task WebApplication_CanCallUseEndpointsWithoutUseRouting()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            app.MapGet("/1", () => "1");
+
+            app.UseEndpoints(endpoints => { });
+
+            await app.StartAsync();
+
+            var endpointDataSource = app.Services.GetRequiredService<EndpointDataSource>();
+
+            var newEndpoint = Assert.Single(endpointDataSource.Endpoints);
+            var newRouteEndpoint = Assert.IsType<RouteEndpoint>(newEndpoint);
+            Assert.Equal("/1", newRouteEndpoint.RoutePattern.RawText);
+
+            var client = app.GetTestClient();
+
+            var oldResult = await client.GetAsync("http://localhost/1");
+            oldResult.EnsureSuccessStatusCode();
+
+            Assert.Equal("1", await oldResult.Content.ReadAsStringAsync());
+        }
+
         [Fact]
         public void WebApplicationCreate_RegistersEventSourceLogger()
         {
@@ -859,6 +887,51 @@ namespace Microsoft.AspNetCore.Tests
 
             var terminalResult = await client.GetAsync("http://localhost/undefined");
             Assert.Equal(418, (int)terminalResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task StartupFilter_WithUseRoutingWorks()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            builder.Services.AddSingleton<IStartupFilter, MyFilter>();
+            await using var app = builder.Build();
+
+            var chosenEndpoint = string.Empty;
+            app.MapGet("/", async c => {
+                chosenEndpoint = c.GetEndpoint().DisplayName;
+                await c.Response.WriteAsync("Hello World");
+            }).WithDisplayName("One");
+
+            await app.StartAsync();
+
+            var client = app.GetTestClient();
+
+            _ = await client.GetAsync("http://localhost/");
+            Assert.Equal("One", chosenEndpoint);
+
+            var response = await client.GetAsync("http://localhost/1");
+            Assert.Equal(203, ((int)response.StatusCode));
+        }
+
+        class MyFilter : IStartupFilter
+        {
+            public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+            {
+                return app =>
+                {
+                    app.UseRouting();
+                    next(app);
+                    app.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapGet("/1", async c =>
+                        {
+                            c.Response.StatusCode = 203;
+                            await c.Response.WriteAsync("Hello Filter");
+                        }).WithDisplayName("Two");
+                    });
+                };
+            }
         }
 
         [Fact]
@@ -981,6 +1054,22 @@ namespace Microsoft.AspNetCore.Tests
 
             _ = await client.GetAsync("http://localhost/");
             Assert.Equal("One", chosenRoute);
+        }
+
+        [Fact]
+        public async Task AppPropertiesDoNotContainARouteBuilder()
+        {
+            var builder = WebApplication.CreateBuilder();
+            await using var app = builder.Build();
+
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints => { });
+
+            app.Start();
+
+            Assert.False(app.Properties.TryGetValue("__EndpointRouteBuilder", out _));
+            Assert.False(app.Properties.TryGetValue("__GlobalEndpointRouteBuilder", out _));
         }
 
         private class Service : IService { }

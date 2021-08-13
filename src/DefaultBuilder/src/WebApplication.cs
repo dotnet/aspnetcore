@@ -31,7 +31,6 @@ namespace Microsoft.AspNetCore.Builder
             ApplicationBuilder = new ApplicationBuilder(host.Services);
             Logger = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger(Environment.ApplicationName);
 
-            //Properties.Add("__EndpointRouteBuilder", this);
             Properties.Add(GlobalEndpointRouteBuilderKey, this);
         }
 
