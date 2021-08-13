@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
@@ -62,9 +63,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     }
                     if (Response.HasStarted)
                     {
-                        // HTTP/2 INTERNAL_ERROR = 0x2 https://tools.ietf.org/html/rfc7540#section-7
-                        // Otherwise the default is Cancel = 0x8.
-                        SetResetCode(2);
+                        // Otherwise the default is Cancel = 0x8 (h2) or 0x010c (h3).
+                        if (Request.ProtocolVersion == HttpVersion.Version20)
+                        {
+                            // HTTP/2 INTERNAL_ERROR = 0x2 https://tools.ietf.org/html/rfc7540#section-7
+                            SetResetCode(2);
+                        }
+                        else if (Request.ProtocolVersion == HttpVersion.Version30)
+                        {
+                            // HTTP/3 H3_INTERNAL_ERROR = 0x0102 https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-8.1
+                            SetResetCode(0x0102);
+                        }
                         Abort();
                     }
                     else

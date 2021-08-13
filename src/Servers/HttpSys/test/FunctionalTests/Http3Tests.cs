@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+using System.Net.Quic;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
@@ -118,6 +120,132 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             // Second request is HTTP/3
             var response3 = await client.GetStringAsync(address);
             Assert.Equal("HTTP/3", response3);
+        }
+
+        [ConditionalFact]
+        public async Task Http3_ResponseTrailers()
+        {
+            using var server = Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
+            {
+                try
+                {
+                    Assert.True(httpContext.Request.IsHttps);
+                    await httpContext.Response.WriteAsync(httpContext.Request.Protocol);
+                    httpContext.Response.AppendTrailer("custom", "value");
+                }
+                catch (Exception ex)
+                {
+                    await httpContext.Response.WriteAsync(ex.ToString());
+                }
+            });
+            var handler = new HttpClientHandler();
+            // Needed on CI, the IIS Express cert we ues isn't trusted there.
+            handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            using var client = new HttpClient(handler);
+            client.DefaultRequestVersion = HttpVersion.Version30;
+            client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+            var response = await client.GetAsync(address);
+            response.EnsureSuccessStatusCode();
+            var result = await response.Content.ReadAsStringAsync();
+            Assert.Equal("HTTP/3", result);
+            Assert.Equal("value", response.TrailingHeaders.GetValues("custom").SingleOrDefault());
+        }
+
+        [ConditionalFact]
+        public async Task Http3_ResetBeforeHeaders()
+        {
+            using var server = Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
+            {
+                try
+                {
+                    Assert.True(httpContext.Request.IsHttps);
+                    httpContext.Features.Get<IHttpResetFeature>().Reset(0x010b); // H3_REQUEST_REJECTED
+                }
+                catch (Exception ex)
+                {
+                    await httpContext.Response.WriteAsync(ex.ToString());
+                }
+            });
+            var handler = new HttpClientHandler();
+            // Needed on CI, the IIS Express cert we ues isn't trusted there.
+            handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            using var client = new HttpClient(handler);
+            client.DefaultRequestVersion = HttpVersion.Version30;
+            client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+            var ex = await Assert.ThrowsAsync<HttpRequestException>(() => client.GetAsync(address));
+            var qex = Assert.IsType<QuicStreamAbortedException>(ex.InnerException);
+            Assert.Equal(0x010b, qex.ErrorCode);
+        }
+
+        [ConditionalFact]
+        public async Task Http3_ResetAfterHeaders()
+        {
+            using var server = Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
+            {
+                try
+                {
+                    Assert.True(httpContext.Request.IsHttps);
+                    await httpContext.Response.Body.FlushAsync();
+                    httpContext.Features.Get<IHttpResetFeature>().Reset(0x010c); // H3_REQUEST_CANCELLED
+                }
+                catch (Exception ex)
+                {
+                    await httpContext.Response.WriteAsync(ex.ToString());
+                }
+            });
+            var handler = new HttpClientHandler();
+            // Needed on CI, the IIS Express cert we ues isn't trusted there.
+            handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            using var client = new HttpClient(handler);
+            client.DefaultRequestVersion = HttpVersion.Version30;
+            client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+            var response = await client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
+            response.EnsureSuccessStatusCode();
+            var ex = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync());
+            var qex = Assert.IsType<QuicStreamAbortedException>(ex.InnerException?.InnerException?.InnerException);
+            Assert.Equal(0x010c, qex.ErrorCode);
+        }
+
+        [ConditionalFact]
+        public async Task Http3_AppExceptionAfterHeaders_InternalError()
+        {
+            using var server = Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
+            {
+                await httpContext.Response.Body.FlushAsync();
+                throw new Exception("App Exception");
+            });
+            var handler = new HttpClientHandler();
+            // Needed on CI, the IIS Express cert we ues isn't trusted there.
+            handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            using var client = new HttpClient(handler);
+            client.DefaultRequestVersion = HttpVersion.Version30;
+            client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+            var response = await client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
+            response.EnsureSuccessStatusCode();
+            var ex = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync());
+            var qex = Assert.IsType<QuicStreamAbortedException>(ex.InnerException?.InnerException?.InnerException);
+            Assert.Equal(0x0102, qex.ErrorCode); // H3_INTERNAL_ERROR
+        }
+
+        [ConditionalFact]
+        public async Task Http3_Abort_Cancel()
+        {
+            using var server = Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
+            {
+                httpContext.Abort();
+                return Task.CompletedTask;
+            });
+            var handler = new HttpClientHandler();
+            // Needed on CI, the IIS Express cert we ues isn't trusted there.
+            handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            using var client = new HttpClient(handler);
+            client.DefaultRequestVersion = HttpVersion.Version30;
+            client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+            var response = await client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
+            response.EnsureSuccessStatusCode();
+            var ex = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync());
+            var qex = Assert.IsType<QuicStreamAbortedException>(ex.InnerException?.InnerException?.InnerException);
+            Assert.Equal(0x010c, qex.ErrorCode); // H3_REQUEST_CANCELLED
         }
     }
 }
