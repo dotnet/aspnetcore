@@ -506,6 +506,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             MoreEntityBodyExists = 1,
             IPRouted = 2,
             Http2 = 4,
+            Http3 = 8,
         }
 
         [StructLayout(LayoutKind.Sequential)]
