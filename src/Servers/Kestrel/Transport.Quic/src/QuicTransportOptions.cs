@@ -40,6 +40,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
         /// </summary>
         public long? MaxWriteBufferSize { get; set; } = 64 * 1024;
 
+        /// <summary>
+        /// The maximum length of the pending connection queue.
+        /// </summary>
+        public int Backlog { get; set; } = 512;
+
         internal ISystemClock SystemClock = new SystemClock();
     }
 }
