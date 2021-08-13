@@ -192,7 +192,6 @@ namespace Microsoft.AspNetCore.Builder
 
             if(options.HasBodyParameter)
             {
-                builder.Metadata.Add(action.Method);
                 builder.Metadata.Add(new AcceptsMetadata(new string[] { "application/json" }));
             }
 

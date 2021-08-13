@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 // of this code. We still want to know if any endpoints in this set require an a ContentType
                 // even if those endpoints are already invalid - hence the null check.
                 var metadata = candidates[i].Endpoint?.Metadata.GetMetadata<IAcceptsMetadata>();
-                if (metadata == null || metadata.ContentTypes.Count == 0)
+                if (metadata == null || metadata.ContentTypes?.Count == 0)
                 {
                     // Can match any content type.
                     needs415Endpoint = false;
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     // We don't want to return a 415 if any content type could be accepted depending on other parameters.
                     if (metadata != null)
                     {
-                        for (var j = 0; j < metadata.ContentTypes.Count; j++)
+                        for (var j = 0; j < metadata.ContentTypes?.Count; j++)
                         {
                             if (string.Equals("*/*", metadata.ContentTypes[j], StringComparison.Ordinal))
                             {
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 var mediaType = string.IsNullOrEmpty(contentType) ? null : new MediaTypeHeaderValue(contentType);
 
                 var matched = false;
-                for (var j = 0; j < metadata.ContentTypes.Count; j++)
+                for (var j = 0; j < metadata.ContentTypes?.Count; j++)
                 {
                     var candidateMediaType = new MediaTypeHeaderValue(metadata.ContentTypes[j]);
                     if (candidateMediaType.MatchesAllTypes)

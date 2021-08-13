@@ -8,10 +8,13 @@
 Microsoft.AspNetCore.Http.IResult
 Microsoft.AspNetCore.Http.IResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.Metadata.AcceptsMetadata
+Microsoft.AspNetCore.Http.Metadata.AcceptsMetadata.AcceptsMetadata(System.Type? type, string![]! contentTypes) -> void
 Microsoft.AspNetCore.Http.Metadata.AcceptsMetadata.AcceptsMetadata(string![]! contentTypes) -> void
 Microsoft.AspNetCore.Http.Metadata.AcceptsMetadata.ContentTypes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.AspNetCore.Http.Metadata.AcceptsMetadata.Type.get -> System.Type?
 Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata
 Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata.ContentTypes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata.Type.get -> System.Type?
 Microsoft.AspNetCore.Http.Metadata.IFromBodyMetadata
 Microsoft.AspNetCore.Http.Metadata.IFromBodyMetadata.AllowEmpty.get -> bool
 Microsoft.AspNetCore.Http.Metadata.IFromHeaderMetadata
