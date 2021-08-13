@@ -22,6 +22,7 @@
     <Compile Remove="$(SharedSourceRoot)ServerInfrastructure\StringUtilities.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestResources.cs" LinkBase="shared" />
     <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\MsQuicSupportedAttribute.cs" LinkBase="shared\" />
   </ItemGroup>
 
   <ItemGroup>
