@@ -1072,6 +1072,32 @@ namespace Microsoft.AspNetCore.Tests
             Assert.False(app.Properties.TryGetValue("__GlobalEndpointRouteBuilder", out _));
         }
 
+        [Fact]
+        public async Task WebApplication_CallsUseRoutingAndUseEndpoints()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            var chosenRoute = string.Empty;
+            app.MapGet("/", async c =>
+            {
+                chosenRoute = c.GetEndpoint()?.DisplayName;
+                await c.Response.WriteAsync("Hello World");
+            }).WithDisplayName("One");
+
+            await app.StartAsync();
+
+            var ds = app.Services.GetRequiredService<EndpointDataSource>();
+            Assert.Equal(1, ds.Endpoints.Count);
+            Assert.Equal("One", ds.Endpoints[0].DisplayName);
+
+            var client = app.GetTestClient();
+
+            _ = await client.GetAsync("http://localhost/");
+            Assert.Equal("One", chosenRoute);
+        }
+
         private class Service : IService { }
         private interface IService { }
 
