@@ -6,11 +6,18 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
-    /// A Class that represents RequestDelegate metadata.
+    /// A Class that represents RequestDelegate with associated metadata.
     /// </summary>
 
-    public sealed class RequestDelegateMetadata
+    public sealed class RequestDelegateResult
     {
+        /// <summary>
+        /// A function that can process an HTTP request.
+        /// </summary>
+        /// <returns>A task that represents the completion of request processing.</returns>
+
+        public RequestDelegate? RequestDelegate { get; set; }
+
         /// <summary>
         /// List of request delgate metadata
         /// </summary>

@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Linq.Expressions;
+using System.Net.Http;
 using System.Reflection;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http.Features;
@@ -63,9 +65,9 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="action">A request handler with any number of custom parameters that often produces a response with its return value.</param>
         /// <param name="options">The <see cref="RequestDelegateFactoryOptions"/> used to configure the behavior of the handler.</param>
-        /// <returns>The <see cref="RequestDelegate"/>.</returns>
+        /// <returns>The <see cref="RequestDelegateResult"/>.</returns>
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
-        public static (RequestDelegate, RequestDelegateMetadata) Create(Delegate action, RequestDelegateFactoryOptions? options = null)
+        public static RequestDelegateResult Create(Delegate action, RequestDelegateFactoryOptions? options = null)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         {
             if (action is null)
@@ -84,17 +86,14 @@ namespace Microsoft.AspNetCore.Http
                 ServiceProviderIsService = options?.ServiceProvider?.GetService<IServiceProviderIsService>()
             };
 
-            var requestMetadata = new RequestDelegateMetadata()
-            {
-                EndpointMetadata = factoryContext.Metadata
-            };
-
             var targetableRequestDelegate = CreateTargetableRequestDelegate(action.Method, options, factoryContext, targetExpression);
 
-            return (httpContext =>
+            return new RequestDelegateResult()
             {
-                return targetableRequestDelegate(action.Target, httpContext);
-            }, requestMetadata);
+                EndpointMetadata = factoryContext.Metadata,
+                RequestDelegate = httpContext => targetableRequestDelegate(action.Target, httpContext)
+            };
+
         }
 
         /// <summary>
@@ -105,7 +104,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="options">The <see cref="RequestDelegateFactoryOptions"/> used to configure the behavior of the handler.</param>
         /// <returns>The <see cref="RequestDelegate"/>.</returns>
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
-        public static (RequestDelegate, RequestDelegateMetadata) Create(MethodInfo methodInfo, Func<HttpContext, object>? targetFactory = null, RequestDelegateFactoryOptions? options = null)
+        public static RequestDelegateResult Create(MethodInfo methodInfo, Func<HttpContext, object>? targetFactory = null, RequestDelegateFactoryOptions? options = null)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         {
             if (methodInfo is null)
@@ -128,15 +127,12 @@ namespace Microsoft.AspNetCore.Http
                 if (methodInfo.IsStatic)
                 {
                     var untargetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, options, factoryContext, targetExpression: null);
-                    var metadata = new RequestDelegateMetadata()
-                    {
-                        EndpointMetadata = factoryContext.Metadata
-                    };
 
-                    return (httpContext =>
+                    return new RequestDelegateResult()
                     {
-                        return untargetableRequestDelegate(null, httpContext);
-                    }, metadata);
+                        EndpointMetadata = factoryContext.Metadata,
+                        RequestDelegate = httpContext => untargetableRequestDelegate(null, httpContext)
+                    };
                 }
 
                 targetFactory = context => Activator.CreateInstance(methodInfo.DeclaringType)!;
@@ -145,15 +141,12 @@ namespace Microsoft.AspNetCore.Http
             var targetExpression = Expression.Convert(TargetExpr, methodInfo.DeclaringType);
             var targetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, options, factoryContext, targetExpression);
 
-            var requestMetadata = new RequestDelegateMetadata()
+            return new RequestDelegateResult()
             {
-                EndpointMetadata = factoryContext.Metadata
+                EndpointMetadata = factoryContext.Metadata,
+                RequestDelegate = httpContext => targetableRequestDelegate(targetFactory(httpContext), httpContext)
             };
 
-            return (httpContext =>
-            {
-                return targetableRequestDelegate(targetFactory(httpContext), httpContext);
-            }, requestMetadata);
         }
 
         private static Func<object?, HttpContext, Task> CreateTargetableRequestDelegate(MethodInfo methodInfo, RequestDelegateFactoryOptions? options, FactoryContext factoryContext,  Expression? targetExpression)
