@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
             });
             var handler = new HttpClientHandler();
-            // Needed on CI, the IIS Express cert we ues isn't trusted there.
+            // Needed on CI, the IIS Express cert we use isn't trusted there.
             handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             using var client = new HttpClient(handler);
             client.DefaultRequestVersion = HttpVersion.Version30;
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             altsvc = $@"h3="":{new Uri(address).Port}""";
             var handler = new HttpClientHandler();
-            // Needed on CI, the IIS Express cert we ues isn't trusted there.
+            // Needed on CI, the IIS Express cert we use isn't trusted there.
             handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             using var client = new HttpClient(handler);
             client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             altsvc = $@"h3="":{new Uri(address).Port}""";
             var handler = new HttpClientHandler();
-            // Needed on CI, the IIS Express cert we ues isn't trusted there.
+            // Needed on CI, the IIS Express cert we use isn't trusted there.
             handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             using var client = new HttpClient(handler);
             client.DefaultRequestVersion = HttpVersion.Version20;
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
             });
             var handler = new HttpClientHandler();
-            // Needed on CI, the IIS Express cert we ues isn't trusted there.
+            // Needed on CI, the IIS Express cert we use isn't trusted there.
             handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             using var client = new HttpClient(handler);
             client.DefaultRequestVersion = HttpVersion.Version30;
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
             });
             var handler = new HttpClientHandler();
-            // Needed on CI, the IIS Express cert we ues isn't trusted there.
+            // Needed on CI, the IIS Express cert we use isn't trusted there.
             handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             using var client = new HttpClient(handler);
             client.DefaultRequestVersion = HttpVersion.Version30;
@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
             });
             var handler = new HttpClientHandler();
-            // Needed on CI, the IIS Express cert we ues isn't trusted there.
+            // Needed on CI, the IIS Express cert we use isn't trusted there.
             handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             using var client = new HttpClient(handler);
             client.DefaultRequestVersion = HttpVersion.Version30;
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 throw new Exception("App Exception");
             });
             var handler = new HttpClientHandler();
-            // Needed on CI, the IIS Express cert we ues isn't trusted there.
+            // Needed on CI, the IIS Express cert we use isn't trusted there.
             handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             using var client = new HttpClient(handler);
             client.DefaultRequestVersion = HttpVersion.Version30;
@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 return Task.CompletedTask;
             });
             var handler = new HttpClientHandler();
-            // Needed on CI, the IIS Express cert we ues isn't trusted there.
+            // Needed on CI, the IIS Express cert we use isn't trusted there.
             handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             using var client = new HttpClient(handler);
             client.DefaultRequestVersion = HttpVersion.Version30;
