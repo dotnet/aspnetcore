@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Builder
             ApplicationBuilder = new ApplicationBuilder(host.Services);
             Logger = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger(Environment.ApplicationName);
 
-            Properties.Add(GlobalEndpointRouteBuilderKey, this);
+            Properties[GlobalEndpointRouteBuilderKey] = this;
         }
 
         /// <summary>
@@ -174,7 +174,12 @@ namespace Microsoft.AspNetCore.Builder
         RequestDelegate IApplicationBuilder.Build() => BuildRequestDelegate();
 
         // REVIEW: Should this be wrapping another type?
-        IApplicationBuilder IApplicationBuilder.New() => ApplicationBuilder.New();
+        IApplicationBuilder IApplicationBuilder.New()
+        {
+            var newBuilder = ApplicationBuilder.New();
+            newBuilder.Properties.Remove(GlobalEndpointRouteBuilderKey);
+            return newBuilder;
+        }
 
         IApplicationBuilder IApplicationBuilder.Use(Func<RequestDelegate, RequestDelegate> middleware)
         {

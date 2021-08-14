@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.Builder
     public static class EndpointRoutingApplicationBuilderExtensions
     {
         private const string EndpointRouteBuilder = "__EndpointRouteBuilder";
+        private const string GlobalEndpointRouteBuilderKey = "__GlobalEndpointRouteBuilder";
+        private const string GlobalEndpointBuilderCopyRoutesKey = "__GlobalEndpointBuilderShouldCopyRoutes";
 
         /// <summary>
         /// Adds a <see cref="EndpointRoutingMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>.
@@ -45,7 +47,7 @@ namespace Microsoft.AspNetCore.Builder
             VerifyRoutingServicesAreRegistered(builder);
 
             IEndpointRouteBuilder endpointRouteBuilder;
-            if (builder.Properties.TryGetValue("__GlobalEndpointRouteBuilder", out var obj))
+            if (builder.Properties.TryGetValue(GlobalEndpointRouteBuilderKey, out var obj))
             {
                 endpointRouteBuilder = (IEndpointRouteBuilder)obj!;
             }
@@ -106,8 +108,8 @@ namespace Microsoft.AspNetCore.Builder
             // get added to a global collection.
             // In the global endpoint route case we only want to copy data sources once, so we wait for a specific key before copying data sources
             // like in the case of minimal hosting
-            if (builder.Properties.TryGetValue("__GlobalEndpointBuilderShouldCopyRoutes", out _) ||
-                !builder.Properties.TryGetValue("__GlobalEndpointRouteBuilder", out _))
+            if (builder.Properties.TryGetValue(GlobalEndpointBuilderCopyRoutesKey, out _) ||
+                !builder.Properties.TryGetValue(GlobalEndpointRouteBuilderKey, out _))
             {
                 var routeOptions = builder.ApplicationServices.GetRequiredService<IOptions<RouteOptions>>();
                 foreach (var dataSource in endpointRouteBuilder.DataSources)
@@ -117,7 +119,7 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             // REVIEW: this 'if' could be removed, see comment in WebApplicationBuilder
-            if (!builder.Properties.TryGetValue("__GlobalEndpointRouteBuilder", out _))
+            if (!builder.Properties.TryGetValue(GlobalEndpointRouteBuilderKey, out _))
             {
                 builder.Properties.Remove(EndpointRouteBuilder);
             }
@@ -140,7 +142,7 @@ namespace Microsoft.AspNetCore.Builder
 
         private static void VerifyEndpointRoutingMiddlewareIsRegistered(IApplicationBuilder app, out IEndpointRouteBuilder endpointRouteBuilder)
         {
-            if (!app.Properties.TryGetValue(EndpointRouteBuilder, out var obj) && !app.Properties.TryGetValue("__GlobalEndpointRouteBuilder", out obj))
+            if (!app.Properties.TryGetValue(EndpointRouteBuilder, out var obj) && !app.Properties.TryGetValue(GlobalEndpointRouteBuilderKey, out obj))
             {
                 var message =
                     $"{nameof(EndpointRoutingMiddleware)} matches endpoints setup by {nameof(EndpointMiddleware)} and so must be added to the request " +

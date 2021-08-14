@@ -894,7 +894,7 @@ namespace Microsoft.AspNetCore.Tests
         {
             var builder = WebApplication.CreateBuilder();
             builder.WebHost.UseTestServer();
-            builder.Services.AddSingleton<IStartupFilter, MyFilter>();
+            builder.Services.AddSingleton<IStartupFilter, UseRoutingStartupFilter>();
             await using var app = builder.Build();
 
             var chosenEndpoint = string.Empty;
@@ -912,26 +912,6 @@ namespace Microsoft.AspNetCore.Tests
 
             var response = await client.GetAsync("http://localhost/1");
             Assert.Equal(203, ((int)response.StatusCode));
-        }
-
-        class MyFilter : IStartupFilter
-        {
-            public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
-            {
-                return app =>
-                {
-                    app.UseRouting();
-                    next(app);
-                    app.UseEndpoints(endpoints =>
-                    {
-                        endpoints.MapGet("/1", async c =>
-                        {
-                            c.Response.StatusCode = 203;
-                            await c.Response.WriteAsync("Hello Filter");
-                        }).WithDisplayName("Two");
-                    });
-                };
-            }
         }
 
         [Fact]
@@ -1096,6 +1076,70 @@ namespace Microsoft.AspNetCore.Tests
 
             _ = await client.GetAsync("http://localhost/");
             Assert.Equal("One", chosenRoute);
+        }
+
+        [Fact]
+        public async Task BranchingPipelineHasOwnRoutes()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            app.UseRouting();
+
+            var chosenRoute = string.Empty;
+            app.MapGet("/", () => "Hello World!").WithDisplayName("One");
+
+            app.UseEndpoints(routes =>
+            {
+                routes.MapGet("/hi", async c =>
+                {
+                    chosenRoute = c.GetEndpoint()?.DisplayName;
+                    await c.Response.WriteAsync("Hello World");
+                }).WithDisplayName("Two");
+                routes.MapGet("/heyo", () => "Heyo World").WithDisplayName("Three");
+            });
+
+            // REVIEW: this cast is strange
+            var newBuilder = ((IApplicationBuilder)app).New();
+            Assert.False(newBuilder.Properties.TryGetValue(WebApplication.GlobalEndpointRouteBuilderKey, out _));
+
+            newBuilder.UseRouting();
+            newBuilder.UseEndpoints(endpoints =>
+            {
+                endpoints.MapGet("/h3", async c =>
+                {
+                    chosenRoute = c.GetEndpoint()?.DisplayName;
+                    await c.Response.WriteAsync("Hello World");
+                }).WithDisplayName("Four");
+                endpoints.MapGet("hi", async c =>
+                {
+                    chosenRoute = c.GetEndpoint()?.DisplayName;
+                    await c.Response.WriteAsync("Hi New");
+                }).WithDisplayName("Five");
+            });
+            var branch = newBuilder.Build();
+            app.Run(c => branch(c));
+
+            app.Start();
+
+            var ds = app.Services.GetRequiredService<EndpointDataSource>();
+            Assert.Equal(5, ds.Endpoints.Count);
+            Assert.Equal("Four", ds.Endpoints[0].DisplayName);
+            Assert.Equal("Five", ds.Endpoints[1].DisplayName);
+            Assert.Equal("One", ds.Endpoints[2].DisplayName);
+            Assert.Equal("Two", ds.Endpoints[3].DisplayName);
+            Assert.Equal("Three", ds.Endpoints[4].DisplayName);
+
+            var client = app.GetTestClient();
+
+            // '/hi' routes don't conflict and the non-branched one is chosen
+            _ = await client.GetAsync("http://localhost/hi");
+            Assert.Equal("Two", chosenRoute);
+
+            // Can access branched routes
+            _ = await client.GetAsync("http://localhost/h3");
+            Assert.Equal("Four", chosenRoute);
         }
 
         private class Service : IService { }
@@ -1303,6 +1347,26 @@ namespace Microsoft.AspNetCore.Tests
                     {
                         context.Response.StatusCode = 418; // I'm a teapot
                         return Task.CompletedTask;
+                    });
+                };
+            }
+        }
+
+        class UseRoutingStartupFilter : IStartupFilter
+        {
+            public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+            {
+                return app =>
+                {
+                    app.UseRouting();
+                    next(app);
+                    app.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapGet("/1", async c =>
+                        {
+                            c.Response.StatusCode = 203;
+                            await c.Response.WriteAsync("Hello Filter");
+                        }).WithDisplayName("Two");
                     });
                 };
             }

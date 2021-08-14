@@ -4,7 +4,6 @@
 using System.Diagnostics;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -20,6 +19,7 @@ namespace Microsoft.AspNetCore.Builder
         private readonly HostBuilder _hostBuilder = new();
         private readonly BootstrapHostBuilder _bootstrapHostBuilder;
         private readonly WebApplicationServiceCollection _services = new();
+        private const string GlobalEndpointBuilderCopyRoutesKey = "__GlobalEndpointBuilderShouldCopyRoutes";
 
         private WebApplication? _builtApplication;
 
@@ -209,9 +209,9 @@ namespace Microsoft.AspNetCore.Builder
 
             // We don't know if user code called UseEndpoints(), so we will call it just in case, and we will make sure we are the only ones setting
             // the EndpointDataSource in RouteOptions with this property
-            app.Properties.Add("__GlobalEndpointBuilderShouldCopyRoutes", null);
+            app.Properties[GlobalEndpointBuilderCopyRoutesKey] = null;
             app.UseEndpoints(_ => { });
-            app.Properties.Remove("__GlobalEndpointBuilderShouldCopyRoutes");
+            app.Properties.Remove(GlobalEndpointBuilderCopyRoutesKey);
 
             // Copy the properties to the destination app builder
             foreach (var item in _builtApplication.Properties)
