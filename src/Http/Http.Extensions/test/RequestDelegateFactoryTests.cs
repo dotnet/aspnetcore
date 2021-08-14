@@ -262,7 +262,10 @@ namespace Microsoft.AspNetCore.Routing.Internal
             },
             new() { RouteParameterNames = new string[] { } });
 
-            httpContext.Request.Query = new QueryCollection();
+            httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["id"] = "41"
+            });
             httpContext.Request.RouteValues = new()
             {
                 ["id"] = "42"
@@ -270,7 +273,35 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             await requestDelegate(httpContext);
 
-            Assert.Null(httpContext.Items["input"]);
+            Assert.Equal(41, httpContext.Items["input"]);
+        }
+
+        [Fact]
+        public async Task NullRouteParametersPrefersRouteOverQueryString()
+        {
+            var httpContext = new DefaultHttpContext();
+
+            var requestDelegate = RequestDelegateFactory.Create((int? id, HttpContext httpContext) =>
+            {
+                if (id is not null)
+                {
+                    httpContext.Items["input"] = id;
+                }
+            },
+            new() { RouteParameterNames = null });
+
+            httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["id"] = "41"
+            });
+            httpContext.Request.RouteValues = new()
+            {
+                ["id"] = "42"
+            };
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(42, httpContext.Items["input"]);
         }
 
         [Fact]

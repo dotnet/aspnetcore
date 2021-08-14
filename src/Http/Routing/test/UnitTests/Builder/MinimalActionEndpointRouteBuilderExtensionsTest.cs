@@ -169,13 +169,16 @@ namespace Microsoft.AspNetCore.Builder
             // Assert that we don't fallback to the route values
             var httpContext = new DefaultHttpContext();
 
-            httpContext.Request.Query = new QueryCollection();
+            httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>()
+            {
+                ["id"] = "41"
+            });
             httpContext.Request.RouteValues = new();
             httpContext.Request.RouteValues["id"] = "42";
 
             await endpoint.RequestDelegate!(httpContext);
 
-            Assert.Null(httpContext.Items["input"]);
+            Assert.Equal(41, httpContext.Items["input"]);
         }
 
         [Theory]
