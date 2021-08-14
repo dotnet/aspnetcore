@@ -21,7 +21,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public SimpleWithWebApplicationBuilderTests(MvcTestFixture<SimpleWebSiteWithWebApplicationBuilder.FakeStartup> fixture)
         {
             _fixture = fixture;
+            Client = _fixture.CreateDefaultClient();
         }
+
+        public HttpClient Client { get; }
 
         [Fact]
         public async Task HelloWorld()
@@ -186,6 +189,46 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(expected, content);
+        }
+
+        [Fact]
+        public async Task Accepts_Json_WhenBindingAComplexType()
+        {
+            // Act
+            var response = await Client.PostAsJsonAsync("accepts-default", new { name = "Test" });
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+        }
+
+        [Fact]
+        public async Task Rejects_NonJson_WhenBindingAComplexType()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Post, "accepts-default");
+            request.Content = new StringContent("<xml />");
+            request.Content.Headers.ContentType = new("application/xml");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.UnsupportedMediaType);
+        }
+
+        [Fact]
+        public async Task Accepts_NonJsonMediaType()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Post, "accepts-xml");
+            request.Content = new StringContent("<xml />");
+            request.Content.Headers.ContentType = new("application/xml");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.Accepted);
         }
     }
 }

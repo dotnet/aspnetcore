@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core middleware for routing requests to application logic and for generating links.
@@ -23,7 +23,9 @@ Microsoft.AspNetCore.Routing.RouteCollection</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" />
+    <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)MediaType\ReadOnlyMediaTypeHeaderValue.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)MediaType\HttpTokenParsingRule.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>

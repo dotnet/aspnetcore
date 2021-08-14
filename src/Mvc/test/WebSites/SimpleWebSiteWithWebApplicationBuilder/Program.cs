@@ -37,6 +37,9 @@ app.MapGet("/environment", (IHostEnvironment environment) => environment.Environ
 
 app.MapGet("/greeting", (IConfiguration config) => config["Greeting"]);
 
+app.MapPost("/accepts-default", (Person person) => Results.Ok(person.Name));
+app.MapPost("/accepts-xml", () => Accepted()).Accepts("application/xml");
+
 app.Run();
 
 record Person(string Name, int Age);
