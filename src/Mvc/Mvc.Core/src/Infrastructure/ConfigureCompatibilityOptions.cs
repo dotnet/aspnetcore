@@ -91,8 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                     "Compatibility switch {SwitchName} in type {OptionsType} is using default value {Value}",
                     @switch.Name,
                     typeof(TOptions).Name,
-                    @switch.Value,
-                    Version);
+                    @switch.Value);
                 return;
             }
 

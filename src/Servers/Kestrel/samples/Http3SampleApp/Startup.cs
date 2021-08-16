@@ -20,7 +20,7 @@ namespace Http3SampleApp
                 var length = await context.Request.Body.ReadAsync(memory);
                 context.Response.Headers["test"] = "foo";
                 // for testing
-                await context.Response.WriteAsync("Hello World! " + context.Request.Protocol);
+                await context.Response.WriteAsync($"Hello World! {context.Request.Protocol} {context.Connection.ClientCertificate?.Subject}");
             });
         }
     }

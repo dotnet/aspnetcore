@@ -41,6 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             : base(context)
         {
             Language = language;
+            LanguageTokenizeString = Language.TokenizeString;
 
             var languageTokenizer = Language.CreateTokenizer(Context.Source);
             _tokenizer = new TokenizerView<TTokenizer>(languageTokenizer);
@@ -82,6 +83,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         protected LanguageCharacteristics<TTokenizer> Language { get; }
+        protected Func<string, IEnumerable<SyntaxToken>> LanguageTokenizeString { get; }
 
         protected SyntaxToken Lookahead(int count)
         {
@@ -273,9 +275,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         protected bool TokenExistsAfterWhitespace(SyntaxKind kind, bool includeNewLines = true)
         {
             var tokenFound = false;
-            var whitespace = ReadWhile(token =>
-                token.Kind == SyntaxKind.Whitespace ||
-                (includeNewLines && token.Kind == SyntaxKind.NewLine));
+            var whitespace = ReadWhile(
+                static (token, includeNewLines) =>
+                    token.Kind == SyntaxKind.Whitespace || (includeNewLines && token.Kind == SyntaxKind.NewLine),
+                includeNewLines);
             tokenFound = At(kind);
 
             PutCurrentBack();
@@ -296,8 +299,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         protected internal IReadOnlyList<SyntaxToken> ReadWhile(Func<SyntaxToken, bool> condition)
+            => ReadWhile(static (token, condition) => condition(token), condition);
+
+        protected internal IReadOnlyList<SyntaxToken> ReadWhile<TArg>(Func<SyntaxToken, TArg, bool> condition, TArg arg)
         {
-            if (!EnsureCurrent() || !condition(CurrentToken))
+            if (!EnsureCurrent() || !condition(CurrentToken, arg))
             {
                 return Array.Empty<SyntaxToken>();
             }
@@ -308,7 +314,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 result.Add(CurrentToken);
                 NextToken();
             }
-            while (EnsureCurrent() && condition(CurrentToken));
+            while (EnsureCurrent() && condition(CurrentToken, arg));
 
             return result;
         }
@@ -381,7 +387,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private void CommentSpanContextConfig(SpanContextBuilder spanContext)
         {
             spanContext.ChunkGenerator = SpanChunkGenerator.Null;
-            spanContext.EditHandler = SpanEditHandler.CreateDefault(Language.TokenizeString);
+            spanContext.EditHandler = SpanEditHandler.CreateDefault(LanguageTokenizeString);
         }
 
         protected SyntaxToken EatCurrentToken()
@@ -414,49 +420,54 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected internal void AcceptWhile(SyntaxKind type)
         {
-            AcceptWhile(token => type == token.Kind);
+            AcceptWhile(static (token, type) => type == token.Kind, type);
         }
 
         // We want to avoid array allocations and enumeration where possible, so we use the same technique as string.Format
         protected internal void AcceptWhile(SyntaxKind type1, SyntaxKind type2)
         {
-            AcceptWhile(token => type1 == token.Kind || type2 == token.Kind);
+            AcceptWhile(static (token, arg) => arg.type1 == token.Kind || arg.type2 == token.Kind, (type1, type2));
         }
 
         protected internal void AcceptWhile(SyntaxKind type1, SyntaxKind type2, SyntaxKind type3)
         {
-            AcceptWhile(token => type1 == token.Kind || type2 == token.Kind || type3 == token.Kind);
+            AcceptWhile(static (token, arg) => arg.type1 == token.Kind || arg.type2 == token.Kind || arg.type3 == token.Kind, (type1, type2, type3));
         }
 
         protected internal void AcceptWhile(params SyntaxKind[] types)
         {
-            AcceptWhile(token => types.Any(expected => expected == token.Kind));
+            AcceptWhile(static (token, types) => types.Any(expected => expected == token.Kind), types);
         }
 
         protected internal void AcceptUntil(SyntaxKind type)
         {
-            AcceptWhile(token => type != token.Kind);
+            AcceptWhile(static (token, type) => type != token.Kind, type);
         }
 
         // We want to avoid array allocations and enumeration where possible, so we use the same technique as string.Format
         protected internal void AcceptUntil(SyntaxKind type1, SyntaxKind type2)
         {
-            AcceptWhile(token => type1 != token.Kind && type2 != token.Kind);
+            AcceptWhile(static (token, arg) => arg.type1 != token.Kind && arg.type2 != token.Kind, (type1, type2));
         }
 
         protected internal void AcceptUntil(SyntaxKind type1, SyntaxKind type2, SyntaxKind type3)
         {
-            AcceptWhile(token => type1 != token.Kind && type2 != token.Kind && type3 != token.Kind);
+            AcceptWhile(static (token, arg) => arg.type1 != token.Kind && arg.type2 != token.Kind && arg.type3 != token.Kind, (type1, type2, type3));
         }
 
         protected internal void AcceptUntil(params SyntaxKind[] types)
         {
-            AcceptWhile(token => types.All(expected => expected != token.Kind));
+            AcceptWhile(static (token, types) => types.All(expected => expected != token.Kind), types);
         }
 
         protected internal void AcceptWhile(Func<SyntaxToken, bool> condition)
         {
             Accept(ReadWhile(condition));
+        }
+
+        protected internal void AcceptWhile<TArg>(Func<SyntaxToken, TArg, bool> condition, TArg arg)
+        {
+            Accept(ReadWhile(condition, arg));
         }
 
         protected internal void Accept(IReadOnlyList<SyntaxToken> tokens)

@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Hosting;
 using Xunit;
@@ -82,12 +81,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
                             o.Listen(IPAddress.Parse("127.0.0.1"), http3Port, listenOptions =>
                             {
                                 listenOptions.Protocols = Core.HttpProtocols.Http3;
-                                listenOptions.UseHttps();
+                                listenOptions.UseHttps(TestResources.GetTestCertificate());
                             });
                             o.Listen(IPAddress.Parse("127.0.0.1"), http1Port, listenOptions =>
                             {
                                 listenOptions.Protocols = Core.HttpProtocols.Http1;
-                                listenOptions.UseHttps();
+                                listenOptions.UseHttps(TestResources.GetTestCertificate());
                             });
                         })
                         .Configure(app =>
@@ -122,7 +121,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
                             o.Listen(IPAddress.Parse("127.0.0.1"), 5005, listenOptions =>
                             {
                                 listenOptions.Protocols = Core.HttpProtocols.Http1AndHttp2AndHttp3;
-                                listenOptions.UseHttps();
+                                listenOptions.UseHttps(TestResources.GetTestCertificate());
                             });
                         })
                         .Configure(app =>
@@ -157,7 +156,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
                             o.Listen(IPAddress.Parse("127.0.0.1"), 0, listenOptions =>
                             {
                                 listenOptions.Protocols = Core.HttpProtocols.Http1AndHttp2AndHttp3;
-                                listenOptions.UseHttps();
+                                listenOptions.UseHttps(TestResources.GetTestCertificate());
                             });
                         })
                         .Configure(app =>
@@ -225,7 +224,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
                             o.Listen(IPAddress.Parse("127.0.0.1"), 0, listenOptions =>
                             {
                                 listenOptions.Protocols = Core.HttpProtocols.Http1AndHttp2AndHttp3;
-                                listenOptions.UseHttps();
+                                listenOptions.UseHttps(TestResources.GetTestCertificate());
                             });
                         })
                         .Configure(app =>
@@ -303,6 +302,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
                 var responseText2 = await response2.Content.ReadAsStringAsync().DefaultTimeout();
                 Assert.Equal("hello, world", responseText2);
             }
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task StartAsync_Http3WithNonIPListener_ThrowError()
+        {
+            // Arrange
+            var builder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseKestrel(o =>
+                        {
+                            o.ListenUnixSocket("/test-path", listenOptions =>
+                            {
+                                listenOptions.Protocols = Core.HttpProtocols.Http3;
+                                listenOptions.UseHttps(TestResources.GetTestCertificate());
+                            });
+                        })
+                        .Configure(app =>
+                        {
+                            app.Run(async context =>
+                            {
+                                await context.Response.WriteAsync("hello, world");
+                            });
+                        });
+                })
+                .ConfigureServices(AddTestLogging);
+
+            using var host = builder.Build();
+
+            // Act
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => host.StartAsync()).DefaultTimeout();
+
+            // Assert
+            Assert.Equal("QUIC doesn't support listening on the configured endpoint type. Expected IPEndPoint but got UnixDomainSocketEndPoint.", ex.Message);
         }
 
         private static HttpClient CreateClient()

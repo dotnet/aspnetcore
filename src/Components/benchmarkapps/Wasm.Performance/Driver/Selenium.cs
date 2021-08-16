@@ -71,7 +71,7 @@ namespace Wasm.Performance.Driver
                 options.AddArgument("--enable-precise-memory-info");
             }
 
-            options.SetLoggingPreference(LogType.Browser, LogLevel.All);
+            options.SetLoggingPreference(LogType.Browser, OpenQA.Selenium.LogLevel.All);
 
             var attempt = 0;
             const int MaxAttempts = 3;

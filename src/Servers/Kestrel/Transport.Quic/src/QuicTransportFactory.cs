@@ -48,6 +48,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
         /// <returns>A </returns>
         public ValueTask<IMultiplexedConnectionListener> BindAsync(EndPoint endpoint, IFeatureCollection? features = null, CancellationToken cancellationToken = default)
         {
+            if (endpoint == null)
+            {
+                throw new ArgumentNullException(nameof(endpoint));
+            }
+
             var sslServerAuthenticationOptions = features?.Get<SslServerAuthenticationOptions>();
 
             if (sslServerAuthenticationOptions == null)

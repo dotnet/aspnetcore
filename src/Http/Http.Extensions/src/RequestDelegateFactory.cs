@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Security.Claims;
@@ -247,11 +248,22 @@ namespace Microsoft.AspNetCore.Http
             }
             else if (parameter.ParameterType == typeof(string) || TryParseMethodCache.HasTryParseMethod(parameter))
             {
-                // We're in the fallback case and we have a parameter and route parameter match so don't fallback
-                // to query string in this case
-                if (factoryContext.RouteParameters is { } routeParams && routeParams.Contains(parameter.Name, StringComparer.OrdinalIgnoreCase))
+                // 1. We bind from route values only, if route parameters are non-null and the parameter name is in that set.
+                // 2. We bind from query only, if route parameters are non-null and the parameter name is NOT in that set.
+                // 3. Otherwise, we fallback to route or query if route parameters is null (it means we don't know what route parameters are defined). This case only happens
+                // when RDF.Create is manually invoked.
+                if (factoryContext.RouteParameters is { } routeParams)
                 {
-                    return BindParameterFromProperty(parameter, RouteValuesExpr, parameter.Name, factoryContext);
+                    if (routeParams.Contains(parameter.Name, StringComparer.OrdinalIgnoreCase))
+                    {
+                        // We're in the fallback case and we have a parameter and route parameter match so don't fallback
+                        // to query string in this case
+                        return BindParameterFromProperty(parameter, RouteValuesExpr, parameter.Name, factoryContext);
+                    }
+                    else
+                    {
+                        return BindParameterFromProperty(parameter, QueryExpr, parameter.Name, factoryContext);
+                    }
                 }
 
                 return BindParameterFromRouteValueOrQueryString(parameter, parameter.Name, factoryContext);

@@ -507,6 +507,47 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
             return false;
         }
+
+        internal static SslServerAuthenticationOptions CreateHttp3Options(HttpsConnectionAdapterOptions httpsOptions)
+        {
+            // TODO Set other relevant values on options
+            var sslServerAuthenticationOptions = new SslServerAuthenticationOptions
+            {
+                ServerCertificate = httpsOptions.ServerCertificate,
+                ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol("h3"), new SslApplicationProtocol("h3-29") },
+                CertificateRevocationCheckMode = httpsOptions.CheckCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
+            };
+
+            if (httpsOptions.ServerCertificateSelector != null)
+            {
+                // We can't set both
+                sslServerAuthenticationOptions.ServerCertificate = null;
+                sslServerAuthenticationOptions.ServerCertificateSelectionCallback = (sender, host) =>
+                {
+                    // There is no ConnectionContext available durring the QUIC handshake.
+                    var cert = httpsOptions.ServerCertificateSelector(null, host);
+                    if (cert != null)
+                    {
+                        EnsureCertificateIsAllowedForServerAuth(cert);
+                    }
+                    return cert!;
+                };
+            }
+
+            // DelayCertificate is prohibited by the HTTP/2 and HTTP/3 protocols, ignore it here.
+            if (httpsOptions.ClientCertificateMode == ClientCertificateMode.AllowCertificate
+                    || httpsOptions.ClientCertificateMode == ClientCertificateMode.RequireCertificate)
+            {
+                sslServerAuthenticationOptions.ClientCertificateRequired = true; // We have to set this to prompt the client for a cert.
+                // For AllowCertificate we override the missing cert error in RemoteCertificateValidationCallback,
+                // except QuicListener doesn't call the callback for missing certs https://github.com/dotnet/runtime/issues/57308.
+                sslServerAuthenticationOptions.RemoteCertificateValidationCallback
+                    = (object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors) =>
+                        RemoteCertificateValidationCallback(httpsOptions.ClientCertificateMode, httpsOptions.ClientCertificateValidation, certificate, chain, sslPolicyErrors);
+            }
+
+            return sslServerAuthenticationOptions;
+        }
     }
 
     internal static partial class HttpsConnectionMiddlewareLoggerExtensions

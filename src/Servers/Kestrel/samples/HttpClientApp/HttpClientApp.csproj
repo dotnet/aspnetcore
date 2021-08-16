@@ -9,4 +9,9 @@
     <RuntimeHostConfigurationOption Include="System.Net.SocketsHttpHandler.Http3Support" Value="true" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="$(KestrelSharedSourceRoot)test\TestResources.cs" LinkBase="shared" />
+    <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

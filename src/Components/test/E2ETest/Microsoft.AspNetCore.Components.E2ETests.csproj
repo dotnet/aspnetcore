@@ -14,6 +14,9 @@
     <SkipTests Condition="'$(SeleniumE2ETestsSupported)' != 'true'">true</SkipTests>
     <SkipTests Condition="'$(SeleniumE2ETestsSupported)' == 'true'">false</SkipTests>
 
+    <!-- Until we resolve reliability issues, we're disabling these E2E tests in the main CI job -->
+    <SkipTests Condition="'$(SkipComponentsE2ETests)' == 'true'">true</SkipTests>
+
     <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
     <BaseOutputPath />
 

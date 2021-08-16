@@ -17,7 +17,7 @@ using NuGet.Packaging.Core;
 namespace RepoTasks
 {
     // This is temporary until we can use FrameworkReference to build our own packages
-    public class RemoveSharedFrameworkDependencies : Task
+    public class RemoveSharedFrameworkDependencies : Microsoft.Build.Utilities.Task
     {
         [Required]
         public ITaskItem[] Files { get; set; }

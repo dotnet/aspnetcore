@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     (previousSpan is MarkupEndTagSyntax endTag && endTag.IsMarkupTransition)))
                 {
                     var tokens = ReadWhile(
-                        f => (f.Kind == SyntaxKind.Whitespace) || (f.Kind == SyntaxKind.NewLine));
+                        static f => (f.Kind == SyntaxKind.Whitespace) || (f.Kind == SyntaxKind.NewLine));
 
                     // Make sure the current token is not markup, which can be html start tag or @:
                     if (!(At(SyntaxKind.OpenAngle) ||
@@ -418,7 +418,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // First, signal to code parser that whitespace is significant to us.
             var old = Context.WhiteSpaceIsSignificantToAncestorBlock;
             Context.WhiteSpaceIsSignificantToAncestorBlock = true;
-            SpanContext.EditHandler = new SpanEditHandler(Language.TokenizeString);
+            SpanContext.EditHandler = new SpanEditHandler(LanguageTokenizeString);
 
             // Now parse until a new line.
             do
@@ -1053,7 +1053,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             // http://dev.w3.org/html5/spec/tokenization.html#before-attribute-name-state
             // Capture whitespace
-            var attributePrefixWhitespace = ReadWhile(token => token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.NewLine);
+            var attributePrefixWhitespace = ReadWhile(static token => token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.NewLine);
 
             // http://dev.w3.org/html5/spec/tokenization.html#attribute-name-state
             // Read the 'name' (i.e. read until the '=' or whitespace/newline)
@@ -1102,13 +1102,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             if (IsValidAttributeNameToken(CurrentToken))
             {
-                nameTokens = ReadWhile(token =>
-                    token.Kind != SyntaxKind.Whitespace &&
-                    token.Kind != SyntaxKind.NewLine &&
-                    token.Kind != SyntaxKind.Equals &&
-                    token.Kind != SyntaxKind.CloseAngle &&
-                    token.Kind != SyntaxKind.OpenAngle &&
-                    (token.Kind != SyntaxKind.ForwardSlash || !NextIs(SyntaxKind.CloseAngle)));
+                nameTokens = ReadWhile(
+                    static (token, self) =>
+                        token.Kind != SyntaxKind.Whitespace &&
+                        token.Kind != SyntaxKind.NewLine &&
+                        token.Kind != SyntaxKind.Equals &&
+                        token.Kind != SyntaxKind.CloseAngle &&
+                        token.Kind != SyntaxKind.OpenAngle &&
+                        (token.Kind != SyntaxKind.ForwardSlash || !self.NextIs(SyntaxKind.CloseAngle)),
+                    this);
 
                 return true;
             }
@@ -1119,13 +1121,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private MarkupAttributeBlockSyntax ParseRemainingAttribute(MarkupTextLiteralSyntax namePrefix, MarkupTextLiteralSyntax name)
         {
             // Since this is not a minimized attribute, the whitespace after attribute name belongs to this attribute.
-            AcceptWhile(token => token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.NewLine);
+            AcceptWhile(static token => token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.NewLine);
             var nameSuffix = OutputAsMarkupLiteral();
 
             Assert(SyntaxKind.Equals); // We should be at "="
             var equalsToken = EatCurrentToken();
 
-            var whitespaceAfterEquals = ReadWhile(token => token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.NewLine);
+            var whitespaceAfterEquals = ReadWhile(static token => token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.NewLine);
             var quote = SyntaxKind.Marker;
             if (At(SyntaxKind.SingleQuote) || At(SyntaxKind.DoubleQuote))
             {
@@ -1219,7 +1221,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private void ParseConditionalAttributeValue(in SyntaxListBuilder<RazorSyntaxNode> builder, SyntaxKind quote)
         {
             var prefixStart = CurrentStart;
-            var prefixTokens = ReadWhile(token => token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.NewLine);
+            var prefixTokens = ReadWhile(static token => token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.NewLine);
 
             if (At(SyntaxKind.Transition))
             {
@@ -1274,14 +1276,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 // Literal value
                 // 'quote' should be "Unknown" if not quoted and tokens coming from the tokenizer should never have
                 // "Unknown" type.
-                var valueTokens = ReadWhile(token =>
-                    // These three conditions find separators which break the attribute value into portions
-                    token.Kind != SyntaxKind.Whitespace &&
-                    token.Kind != SyntaxKind.NewLine &&
-                    token.Kind != SyntaxKind.Transition &&
-                    // This condition checks for the end of the attribute value (it repeats some of the checks above
-                    // but for now that's ok)
-                    !IsEndOfAttributeValue(quote, token));
+                var valueTokens = ReadWhile(
+                    static (token, arg) =>
+                        // These three conditions find separators which break the attribute value into portions
+                        token.Kind != SyntaxKind.Whitespace &&
+                        token.Kind != SyntaxKind.NewLine &&
+                        token.Kind != SyntaxKind.Transition &&
+                        // This condition checks for the end of the attribute value (it repeats some of the checks above
+                        // but for now that's ok)
+                        !arg.self.IsEndOfAttributeValue(arg.quote, token),
+                    (self: this, quote));
                 Accept(valueTokens);
                 var value = OutputAsMarkupLiteral();
 
@@ -2151,7 +2155,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private void DefaultMarkupSpanContext(SpanContextBuilder spanContext)
         {
             spanContext.ChunkGenerator = new MarkupChunkGenerator();
-            spanContext.EditHandler = new SpanEditHandler(Language.TokenizeString, AcceptedCharactersInternal.Any);
+            spanContext.EditHandler = new SpanEditHandler(LanguageTokenizeString, AcceptedCharactersInternal.Any);
         }
 
         private Syntax.GreenNode GetLastSpan(RazorSyntaxNode node)

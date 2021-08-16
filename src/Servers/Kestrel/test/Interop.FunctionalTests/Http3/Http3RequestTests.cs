@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -277,7 +276,7 @@ namespace Interop.FunctionalTests.Http3
             using (var host = builder.Build())
             using (var client = Http3Helpers.CreateClient())
             {
-                await host.StartAsync();
+                await host.StartAsync().DefaultTimeout();
 
                 var requestContent = new StreamingHttpContext();
 
@@ -289,22 +288,22 @@ namespace Interop.FunctionalTests.Http3
                 // Act
                 var responseTask = client.SendAsync(request, CancellationToken.None);
 
-                var requestStream = await requestContent.GetStreamAsync();
+                var requestStream = await requestContent.GetStreamAsync().DefaultTimeout();
 
                 // Send headers
-                await requestStream.FlushAsync();
+                await requestStream.FlushAsync().DefaultTimeout();
                 // Write content
-                await requestStream.WriteAsync(TestData);
+                await requestStream.WriteAsync(TestData).DefaultTimeout();
 
-                var response = await responseTask;
+                var response = await responseTask.DefaultTimeout();
 
                 // Assert
                 response.EnsureSuccessStatusCode();
                 Assert.Equal(HttpVersion.Version30, response.Version);
-                var responseText = await response.Content.ReadAsStringAsync();
+                var responseText = await response.Content.ReadAsStringAsync().DefaultTimeout();
                 Assert.Equal("Hello world", responseText);
 
-                await host.StopAsync();
+                await host.StopAsync().DefaultTimeout();
             }
         }
 
