@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Http
 
             if (!request.HasJsonContentType(out var charset))
             {
-                throw CreateContentTypeError(request, typeof(TValue));
+                throw CreateContentTypeError(request);
             }
 
             options ??= ResolveSerializerOptions(request.HttpContext);
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Http
 
             if (!request.HasJsonContentType(out var charset))
             {
-                throw CreateContentTypeError(request, type);
+                throw CreateContentTypeError(request);
             }
 
             options ??= ResolveSerializerOptions(request.HttpContext);
@@ -194,15 +194,8 @@ namespace Microsoft.AspNetCore.Http
             return httpContext.RequestServices?.GetService<IOptions<JsonOptions>>()?.Value?.SerializerOptions ?? JsonOptions.DefaultSerializerOptions;
         }
 
-        private static InvalidOperationException CreateContentTypeError(HttpRequest request, Type? type)
+        private static InvalidOperationException CreateContentTypeError(HttpRequest request)
         {         
-            var feature = request.HttpContext.Features.Get<IHttpRequestBodyDetectionFeature>();
-
-            //if there is no content-type and the content-length is zero, it might be safe to assume that the parameter is a service that the user forgot to register with the DI
-            if (feature?.CanHaveBody == false)
-            {
-                return new InvalidOperationException($"We failed to infer or bind '{type?.FullName}' parameter. Was this a Service parameter that you forgot to register ?");
-            }
             return new InvalidOperationException($"Unable to read the request as JSON because the request content type '{request.ContentType}' is not a known JSON content type.");
         }
 

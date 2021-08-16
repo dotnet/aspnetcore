@@ -201,11 +201,10 @@ namespace Microsoft.AspNetCore.Http
                 errorMessage.Append($"Failure to infer one or more parameters. Below is the list of parameters we found: \n\n");
                 errorMessage.Append(string.Format("{0,6} {1,15}\n\n", "Parameter", "Source"));
 
-                foreach (KeyValuePair<string, string> kv in factoryContext.TrackedParameters)
+                foreach (var kv in factoryContext.TrackedParameters)
                 {
                     errorMessage.Append(string.Format("{0,6} {1,15:N0}\n", kv.Key, kv.Value));
                 }
-                //Could also throw a custom exception message if needed.
                 throw new InvalidOperationException(errorMessage.ToString());
             }
 
@@ -223,7 +222,7 @@ namespace Microsoft.AspNetCore.Http
 
             if (parameterCustomAttributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
             {
-                factoryContext.TrackedParameters.Add(parameter.Name, "Route Attribute");
+                factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.RouteAttribue);
                 if (factoryContext.RouteParameters is { } routeParams && !routeParams.Contains(parameter.Name, StringComparer.OrdinalIgnoreCase))
                 {
                     throw new InvalidOperationException($"{parameter.Name} is not a route paramter.");
@@ -233,22 +232,22 @@ namespace Microsoft.AspNetCore.Http
             }
             else if (parameterCustomAttributes.OfType<IFromQueryMetadata>().FirstOrDefault() is { } queryAttribute)
             {
-                factoryContext.TrackedParameters.Add(parameter.Name, "Query Attribute");
+                factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.QueryAttribue);
                 return BindParameterFromProperty(parameter, QueryExpr, queryAttribute.Name ?? parameter.Name, factoryContext);
             }
             else if (parameterCustomAttributes.OfType<IFromHeaderMetadata>().FirstOrDefault() is { } headerAttribute)
             {
-                factoryContext.TrackedParameters.Add(parameter.Name, "Header Attribute");
+                factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.HeaderAttribue);
                 return BindParameterFromProperty(parameter, HeadersExpr, headerAttribute.Name ?? parameter.Name, factoryContext);
             }
             else if (parameterCustomAttributes.OfType<IFromBodyMetadata>().FirstOrDefault() is { } bodyAttribute)
             {
-                factoryContext.TrackedParameters.Add(parameter.Name, "Body Attribute");
+                factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.BodyAttribue);
                 return BindParameterFromBody(parameter, bodyAttribute.AllowEmpty, factoryContext);
             }
             else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)))
             {
-                factoryContext.TrackedParameters.Add(parameter.Name, "From Services");
+                factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.ServiceAttribue);
                 return BindParameterFromService(parameter);
             }
             else if (parameter.ParameterType == typeof(HttpContext))
@@ -277,11 +276,11 @@ namespace Microsoft.AspNetCore.Http
                 // to query string in this case
                 if (factoryContext.RouteParameters is { } routeParams && routeParams.Contains(parameter.Name, StringComparer.OrdinalIgnoreCase))
                 {
-                    factoryContext.TrackedParameters.Add(parameter.Name, "Route Parameter");
+                    factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.RouteParameter);
                     return BindParameterFromProperty(parameter, RouteValuesExpr, parameter.Name, factoryContext);
                 }
 
-                factoryContext.TrackedParameters.Add(parameter.Name, "Query String Parameter");
+                factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.QueryStringParameter);
                 return BindParameterFromRouteValueOrQueryString(parameter, parameter.Name, factoryContext);
             }
             else
@@ -290,11 +289,12 @@ namespace Microsoft.AspNetCore.Http
                 {
                     if (serviceProviderIsService.IsService(parameter.ParameterType))
                     {
-                        factoryContext.TrackedParameters.Add(parameter.Name, "Service Parameter");
+                        factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.ServiceParameter);
                         return Expression.Call(GetRequiredServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
                     }
                 }
 
+                factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.BodyParameter);
                 return BindParameterFromBody(parameter, allowEmpty: false, factoryContext);
             }
         }
@@ -511,7 +511,9 @@ namespace Microsoft.AspNetCore.Http
             return async (target, httpContext) =>
             {
                 object? bodyValue = defaultBodyValue;
-
+                var feature = httpContext.Features.Get<IHttpRequestBodyDetectionFeature>();
+                if (feature?.CanHaveBody == true)
+                {
                     try
                     {
                         bodyValue = await httpContext.Request.ReadFromJsonAsync(bodyType);
@@ -528,7 +530,7 @@ namespace Microsoft.AspNetCore.Http
                         httpContext.Response.StatusCode = 400;
                         return;
                     }
-
+                }
                 await invoker(target, httpContext, bodyValue);
             };
         }
@@ -732,7 +734,12 @@ namespace Microsoft.AspNetCore.Http
             if (factoryContext.JsonRequestBodyType is not null)
             {
                 factoryContext.HasAnotherBodyParameter = true;
-                factoryContext.TrackedParameters.Add(parameter.Name!, "We failed to infer this parameter. Did you forget to inject it as a Service?");
+                var parameterName = parameter.Name;
+                if (parameterName is not null && factoryContext.TrackedParameters.ContainsKey(parameterName))
+                {
+                    factoryContext.TrackedParameters.Remove(parameterName);
+                    factoryContext.TrackedParameters.Add(parameter.Name!, "We failed to infer this parameter. Did you forget to inject it as a Service in the DI container?");
+                }              
             }
 
             var nullability = NullabilityContext.Create(parameter);
@@ -979,6 +986,20 @@ namespace Microsoft.AspNetCore.Http
             public Dictionary<string, string> TrackedParameters { get; } = new();
 
             public bool HasAnotherBodyParameter { get; set; }  
+        }
+
+        private static class RequestDelegateFactoryConstants
+        {
+            public const string RouteAttribue = "Route Attribute";
+            public const string QueryAttribue = "Query Attribute";
+            public const string HeaderAttribue = "Header Attribute";
+            public const string BodyAttribue = "Body Attribute";
+            public const string ServiceAttribue = "Service Attribute";
+            public const string RouteParameter = "Route Parameter";
+            public const string QueryStringParameter = "Query String Parameter";
+            public const string ServiceParameter = "Service Parameter";
+            public const string BodyParameter = "Body Parameter";
+
         }
 
         private static partial class Log
