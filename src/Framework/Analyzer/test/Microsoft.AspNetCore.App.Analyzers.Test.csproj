@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Microsoft.AspNetCore.App.Analyzer.csproj" />
+    <ProjectReference Include="..\src\Microsoft.AspNetCore.App.Analyzers.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Analyzers\Microsoft.AspNetCore.Analyzer.Testing\src\Microsoft.AspNetCore.Analyzer.Testing.csproj" />
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />

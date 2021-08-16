@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.AspNetCore.Analyzer.Testing;
 using Xunit;
 
@@ -60,6 +61,7 @@ webApp.MapGet(""/"", (/*MM*/[Bind] string name) => {});
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DoNotUseModelBindingAttributesOnMinimalActionParameters, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
+        Assert.Equal("BindAttribute should not be specified for a MapGet delegate parameter", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -72,7 +74,7 @@ using Microsoft.AspNetCore.Mvc;
 var webApp = WebApplication.Create();
 webApp.MapPost(""/"", PostWithBind);
 
-static void PostWithBind(/*MM*/[Bind] string name) {}
+static void PostWithBind(/*MM*/[ModelBinder] string name) {}
 ");
         // Act
         var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
@@ -81,6 +83,7 @@ static void PostWithBind(/*MM*/[Bind] string name) {}
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DoNotUseModelBindingAttributesOnMinimalActionParameters, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
+        Assert.Equal("ModelBinderAttribute should not be specified for a MapPost delegate parameter", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 }
 

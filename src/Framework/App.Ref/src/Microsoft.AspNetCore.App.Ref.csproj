@@ -63,6 +63,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <ItemGroup>
     <!-- Note: do not add _TransitiveExternalAspNetCoreAppReference to this list. This is intentionally not listed as a direct package reference. -->
     <Reference Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage);@(ExternalAspNetCoreAppReference)" />
+    <ProjectReference Include="..\..\Analyzer\src\Microsoft.AspNetCore.App.Analyzers.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
 
     <!-- Omit System.Security.Permissions closure. https://github.com/dotnet/runtime/issues/54341
          It is brought in by System.Security.Cryptography.Xml for netstandard2.0 compatibility
@@ -165,6 +166,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           Condition="Exists('%(RootDir)%(Directory)%(Filename).xml')" />
 
       <RefPackContent Include="$(PkgMicrosoft_AspNetCore_Internal_Transport)\$(AnalyzersPackagePath)**\*.*" PackagePath="$(AnalyzersPackagePath)" />
+      <RefPackContent Include="$(ArtifactsDir)bin\Microsoft.AspNetCore.App.Analyzers\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.App.Analyzers.dll" PackagePath="$(AnalyzersPackagePath)dotnet\cs\" />
 
       <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" PackagePath="$(RefAssemblyPackagePath)" />
       <RefPackContent Include="@(AspNetCoreReferenceDocXml)" PackagePath="$(RefAssemblyPackagePath)" />

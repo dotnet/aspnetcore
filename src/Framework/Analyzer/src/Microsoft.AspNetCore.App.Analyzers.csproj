@@ -13,7 +13,7 @@
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
     <Reference Include="System.Memory" />
 
-    <InternalsVisibleTo Include="Microsoft.AspNetCore.App.Analyzer.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.App.Analyzers.Test" />
   </ItemGroup>
 
   <ItemGroup>

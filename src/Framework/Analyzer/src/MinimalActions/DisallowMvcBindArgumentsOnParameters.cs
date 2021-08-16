@@ -4,6 +4,7 @@
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.AspNetCore.Analyzers.MinimalActions;
 
@@ -12,6 +13,7 @@ public partial class MinimalActionAnalyzer : DiagnosticAnalyzer
     private static void DisallowMvcBindArgumentsOnParameters(
         in OperationAnalysisContext context,
         WellKnownTypes wellKnownTypes,
+        IInvocationOperation invocation,
         IMethodSymbol methodSymbol)
     {
         foreach (var parameter in methodSymbol.Parameters)
@@ -28,10 +30,13 @@ public partial class MinimalActionAnalyzer : DiagnosticAnalyzer
                     location = syntax.GetLocation();
                 }
 
+                var methodName = invocation.TargetMethod.Name;
+
                 context.ReportDiagnostic(Diagnostic.Create(
                     DiagnosticDescriptors.DoNotUseModelBindingAttributesOnMinimalActionParameters,
                     location,
-                    modelBindingAttribute.AttributeClass.Name));
+                    modelBindingAttribute.AttributeClass.Name,
+                    methodName));
             }
         }
     }

@@ -16,8 +16,6 @@ public partial class MinimalActionAnalyzer : DiagnosticAnalyzer
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(new[]
     {
         DiagnosticDescriptors.DoNotUseModelBindingAttributesOnMinimalActionParameters,
-        DiagnosticDescriptors.RouteValueIsUnused,
-        DiagnosticDescriptors.RouteParameterCannotBeBound,
     });
 
     public override void Initialize(AnalysisContext context)
@@ -51,13 +49,12 @@ public partial class MinimalActionAnalyzer : DiagnosticAnalyzer
                 if (delegateCreation.Target.Kind == OperationKind.AnonymousFunction)
                 {
                     var lambda = ((IAnonymousFunctionOperation)delegateCreation.Target);
-                    DisallowMvcBindArgumentsOnParameters(in operationAnalysisContext, wellKnownTypes, lambda.Symbol);
-                    RouteAttributeMismatch(in operationAnalysisContext, wellKnownTypes, invocation, lambda.Symbol);
+                    DisallowMvcBindArgumentsOnParameters(in operationAnalysisContext, wellKnownTypes, invocation, lambda.Symbol);
                 }
                 else if (delegateCreation.Target.Kind == OperationKind.MethodReference)
                 {
                     var methodReference = (IMethodReferenceOperation)delegateCreation.Target;
-                    DisallowMvcBindArgumentsOnParameters(in operationAnalysisContext, wellKnownTypes, methodReference.Method);
+                    DisallowMvcBindArgumentsOnParameters(in operationAnalysisContext, wellKnownTypes, invocation, methodReference.Method);
                 }
             }, OperationKind.Invocation);
         });

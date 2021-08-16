@@ -1642,11 +1642,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testassets", "testassets", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Identity.DefaultUI.WebSite", "src\Identity\testassets\Identity.DefaultUI.WebSite\Identity.DefaultUI.WebSite.csproj", "{835A4E0F-A697-4B69-9736-3E99D163C4B9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.App.Analyzer", "src\Framework\Analyzer\src\Microsoft.AspNetCore.App.Analyzer.csproj", "{564CABB8-1B3F-4D9E-909D-260EF2B8614A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.App.Analyzer", "src\Framework\Analyzer\src\Microsoft.AspNetCore.App.Analyzers.csproj", "{564CABB8-1B3F-4D9E-909D-260EF2B8614A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Analyzer", "Analyzer", "{EE39397E-E4AF-4D3F-9B9C-D637F9222CDD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.App.Analyzer.Test", "src\Framework\Analyzer\test\Microsoft.AspNetCore.App.Analyzer.Test.csproj", "{CF4CEC18-798D-46EC-B0A0-98D97496590F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.App.Analyzer.Test", "src\Framework\Analyzer\test\Microsoft.AspNetCore.App.Analyzers.Test.csproj", "{CF4CEC18-798D-46EC-B0A0-98D97496590F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

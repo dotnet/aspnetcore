@@ -31,18 +31,11 @@ internal sealed class WellKnownTypes
             return false;
         }
 
-        const string IFromRouteMetadata = "Microsoft.AspNetCore.Http.Metadata.IFromRouteMetadata";
-        if (compilation.GetTypeByMetadataName(IFromRouteMetadata) is not { } iFromRouteMetadata)
-        {
-            return false;
-        }
-
         wellKnownTypes = new WellKnownTypes
         {
             MinimalActionEndpointRouteBuilderExtensions = minimalActionEndpointRouteBuilderExtensions,
             IBinderTypeProviderMetadata = ibinderTypeProviderMetadata,
             BindAttribute = bindAttribute,
-            IFromRouteMetadata = iFromRouteMetadata,
         };
 
         return true;
@@ -51,5 +44,4 @@ internal sealed class WellKnownTypes
     public ITypeSymbol MinimalActionEndpointRouteBuilderExtensions { get; private init; }
     public INamedTypeSymbol IBinderTypeProviderMetadata { get; private init; }
     public INamedTypeSymbol BindAttribute { get; private init; }
-    public INamedTypeSymbol IFromRouteMetadata { get; private init; }
 }
