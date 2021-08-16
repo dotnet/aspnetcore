@@ -8,7 +8,7 @@ using Microsoft.Build.Utilities;
 
 namespace RepoTasks
 {
-    public class GenerateGuid : Task
+    public class GenerateGuid : Microsoft.Build.Utilities.Task
     {
         [Output]
         public string Guid { get; private set; }

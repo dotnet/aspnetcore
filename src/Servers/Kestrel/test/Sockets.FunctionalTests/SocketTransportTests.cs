@@ -20,7 +20,7 @@ using KestrelHttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests
 {
-    public class SocketTranspotTests : LoggedTestBase
+    public class SocketTransportTests : LoggedTestBase
     {
         [Fact]
         public async Task SocketTransportExposesSocketsFeature()

@@ -58,6 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             quicListenerOptions.IdleTimeout = options.IdleTimeout;
             quicListenerOptions.MaxBidirectionalStreams = options.MaxBidirectionalStreamCount;
             quicListenerOptions.MaxUnidirectionalStreams = options.MaxUnidirectionalStreamCount;
+            quicListenerOptions.ListenBacklog = options.Backlog;
 
             _listener = new QuicListener(quicListenerOptions);
 

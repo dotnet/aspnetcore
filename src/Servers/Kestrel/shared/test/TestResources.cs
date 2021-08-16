@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Testing
 {
@@ -25,9 +21,9 @@ namespace Microsoft.AspNetCore.Testing
         {
             // On Windows, applications should not import PFX files in parallel to avoid a known system-level
             // race condition bug in native code which can cause crashes/corruption of the certificate state.
-            if (importPfxMutex != null)
+            if (importPfxMutex != null && !importPfxMutex.WaitOne(MutexTimeout))
             {
-                Assert.True(importPfxMutex.WaitOne(MutexTimeout), "Cannot acquire the global certificate mutex.");
+                throw new InvalidOperationException("Cannot acquire the global certificate mutex.");
             }
 
             try
