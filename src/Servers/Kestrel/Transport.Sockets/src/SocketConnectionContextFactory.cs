@@ -20,7 +20,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         private readonly ISocketsTrace _trace;
         private readonly int _settingsCount;
         private readonly QueueSettings[] _settings;
-        private int _settingsIndex;
+
+        // long to prevent overflow
+        private long _settingsIndex;
 
         /// <summary>
         /// Creates the <see cref="SocketConnectionContextFactory"/>.
