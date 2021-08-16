@@ -45,10 +45,10 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public RequiredAttributeDescriptor Build()
         {
-            var validationDiagnostics = Validate();
-            var diagnostics = new HashSet<RazorDiagnostic>(validationDiagnostics);
+            var diagnostics = Validate();
             if (_diagnostics != null)
             {
+                diagnostics ??= new();
                 diagnostics.UnionWith(_diagnostics);
             }
 
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 Value,
                 ValueComparisonMode,
                 displayName,
-                diagnostics.ToArray(),
+                diagnostics?.ToArray() ?? Array.Empty<RazorDiagnostic>(),
                 new Dictionary<string, string>(Metadata));
 
             return rule;
@@ -71,39 +71,47 @@ namespace Microsoft.AspNetCore.Razor.Language
             return NameComparisonMode == RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch ? string.Concat(Name, "...") : Name;
         }
 
-        private IEnumerable<RazorDiagnostic> Validate()
+        private HashSet<RazorDiagnostic> Validate()
         {
+            HashSet<RazorDiagnostic> diagnostics = null;
+
             if (string.IsNullOrWhiteSpace(Name))
             {
                 var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedAttributeNameNullOrWhitespace();
 
-                yield return diagnostic;
+                diagnostics ??= new();
+                diagnostics.Add(diagnostic);
             }
             else
             {
-                var name = Name;
+                var name = new StringSegment(Name);
                 var isDirectiveAttribute = this.IsDirectiveAttribute();
                 if (isDirectiveAttribute && name.StartsWith("@", StringComparison.Ordinal))
                 {
-                    name = name.Substring(1);
+                    name = name.Subsegment(1);
                 }
                 else if (isDirectiveAttribute)
                 {
                     var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidRequiredDirectiveAttributeName(GetDisplayName(), Name);
 
-                    yield return diagnostic;
+                    diagnostics ??= new();
+                    diagnostics.Add(diagnostic);
                 }
 
-                foreach (var character in name)
+                for (var i = 0; i < name.Length; i++)
                 {
-                    if (char.IsWhiteSpace(character) || HtmlConventions.InvalidNonWhitespaceHtmlCharacters.Contains(character))
+                    var character = name[i];
+                    if (char.IsWhiteSpace(character) || HtmlConventions.IsInvalidNonWhitespaceHtmlCharacters(character))
                     {
                         var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedAttributeName(Name, character);
 
-                        yield return diagnostic;
+                        diagnostics ??= new();
+                        diagnostics.Add(diagnostic);
                     }
                 }
             }
+
+            return diagnostics;
         }
     }
 }

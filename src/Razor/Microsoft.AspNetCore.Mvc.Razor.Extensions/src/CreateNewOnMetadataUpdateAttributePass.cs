@@ -16,9 +16,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
     {
         protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
-            if (FileKinds.IsComponent(codeDocument.GetFileKind()))
+            if (documentNode.DocumentKind != RazorPageDocumentClassifierPass.RazorPageDocumentKind &&
+                documentNode.DocumentKind != MvcViewDocumentClassifierPass.MvcViewDocumentKind)
             {
-                // Hot reload does not apply to components.
+                // Not a MVC file. Skip.
                 return;
             }
 
