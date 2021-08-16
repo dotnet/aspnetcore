@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     /// <summary>
     /// <see cref="IModelBinder"/> implementation for binding complex types.
     /// </summary>
-    public sealed class ComplexObjectModelBinder : IModelBinder
+    public sealed partial class ComplexObjectModelBinder : IModelBinder
     {
         // Don't want a new public enum because communication between the private and internal methods of this class
         // should not be exposed. Can't use an internal enum because types of [TheoryData] values must be public.
@@ -740,16 +740,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
         }
 
-        private static class Log
+        private static partial class Log
         {
-            private static readonly Action<ILogger, string, Type, Exception?> _noPublicSettableProperties = LoggerMessage.Define<string, Type>(
-               LogLevel.Debug,
-                new EventId(17, "NoPublicSettableItems"),
-               "Could not bind to model with name '{ModelName}' and type '{ModelType}' as the type has no public settable properties or constructor parameters.");
+            [LoggerMessage(17, LogLevel.Debug, "Could not bind to model with name '{ModelName}' and type '{ModelType}' as the type has no " +
+                "public settable properties or constructor parameters.", EventName = "NoPublicSettableItems")]
+            public static partial void NoPublicSettableItems(ILogger logger, string modelName, Type modelType);
 
             public static void NoPublicSettableItems(ILogger logger, ModelBindingContext bindingContext)
             {
-                _noPublicSettableProperties(logger, bindingContext.ModelName, bindingContext.ModelType, null);
+                NoPublicSettableItems(logger, bindingContext.ModelName, bindingContext.ModelType);
             }
         }
     }

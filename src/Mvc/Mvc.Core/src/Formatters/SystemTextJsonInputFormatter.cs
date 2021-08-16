@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// <summary>
     /// A <see cref="TextInputFormatter"/> for JSON content that uses <see cref="JsonSerializer"/>.
     /// </summary>
-    public class SystemTextJsonInputFormatter : TextInputFormatter, IInputFormatterExceptionPolicy
+    public partial class SystemTextJsonInputFormatter : TextInputFormatter, IInputFormatterExceptionPolicy
     {
         private readonly JsonOptions _jsonOptions;
         private readonly ILogger<SystemTextJsonInputFormatter> _logger;
@@ -144,28 +144,19 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             return (inputStream, true);
         }
 
-        private static class Log
+        private static partial class Log
         {
-            private static readonly Action<ILogger, string, Exception> _jsonInputFormatterException;
-            private static readonly Action<ILogger, string?, Exception?> _jsonInputSuccess;
-
-            static Log()
-            {
-                _jsonInputFormatterException = LoggerMessage.Define<string>(
-                    LogLevel.Debug,
-                    new EventId(1, "SystemTextJsonInputException"),
-                    "JSON input formatter threw an exception: {Message}");
-                _jsonInputSuccess = LoggerMessage.Define<string?>(
-                    LogLevel.Debug,
-                    new EventId(2, "SystemTextJsonInputSuccess"),
-                    "JSON input formatter succeeded, deserializing to type '{TypeName}'");
-            }
+            [LoggerMessage(1, LogLevel.Debug, "JSON input formatter threw an exception: {Message}", EventName = "SystemTextJsonInputException")]
+            private static partial void JsonInputException(ILogger logger, string message);
 
             public static void JsonInputException(ILogger logger, Exception exception)
-                => _jsonInputFormatterException(logger, exception.Message, exception);
+                => JsonInputException(logger, exception.Message);
+
+            [LoggerMessage(2, LogLevel.Debug, "JSON input formatter succeeded, deserializing to type '{TypeName}'", EventName = "SystemTextJsonInputSuccess")]
+            private static partial void JsonInputSuccess(ILogger logger, string? typeName);
 
             public static void JsonInputSuccess(ILogger logger, Type modelType)
-                => _jsonInputSuccess(logger, modelType.FullName, null);
+                => JsonInputSuccess(logger, modelType.FullName);
         }
     }
 }

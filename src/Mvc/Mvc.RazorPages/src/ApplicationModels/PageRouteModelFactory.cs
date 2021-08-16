@@ -11,23 +11,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
-    internal class PageRouteModelFactory
+    internal sealed partial class PageRouteModelFactory
     {
-        private static readonly Action<ILogger, string, Exception?> _unsupportedAreaPath;
-
         private static readonly string IndexFileName = "Index" + RazorViewEngine.ViewExtension;
         private readonly RazorPagesOptions _options;
         private readonly ILogger _logger;
         private readonly string _normalizedRootDirectory;
         private readonly string _normalizedAreaRootDirectory;
-
-        static PageRouteModelFactory()
-        {
-            _unsupportedAreaPath = LoggerMessage.Define<string>(
-                LogLevel.Warning,
-                new EventId(1, "UnsupportedAreaPath"),
-                "The page at '{FilePath}' is located under the area root directory '/Areas/' but does not follow the path format '/Areas/AreaName/Pages/Directory/FileName.cshtml");
-        }
 
         public PageRouteModelFactory(
             RazorPagesOptions options,
@@ -106,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 areaRootEndIndex >= relativePath.Length - 1 || // There's at least one token after the area root.
                 !relativePath.StartsWith(_normalizedAreaRootDirectory, StringComparison.OrdinalIgnoreCase)) // The path must start with area root.
             {
-                _unsupportedAreaPath(_logger, relativePath, null);
+                Log.UnsupportedAreaPath(_logger, relativePath);
                 return false;
             }
 
@@ -114,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             var areaEndIndex = relativePath.IndexOf('/', startIndex: areaRootEndIndex + 1);
             if (areaEndIndex == -1 || areaEndIndex == relativePath.Length)
             {
-                _unsupportedAreaPath(_logger, relativePath, null);
+                Log.UnsupportedAreaPath(_logger, relativePath);
                 return false;
             }
 
@@ -122,7 +112,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             // Ensure the next token is the "Pages" directory
             if (string.Compare(relativePath, areaEndIndex, AreaPagesRoot, 0, AreaPagesRoot.Length, StringComparison.OrdinalIgnoreCase) != 0)
             {
-                _unsupportedAreaPath(_logger, relativePath, null);
+                Log.UnsupportedAreaPath(_logger, relativePath);
                 return false;
             }
 
@@ -192,6 +182,12 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             }
 
             return directory;
+        }
+
+        private static partial class Log
+        {
+            [LoggerMessage(1, LogLevel.Warning, "The page at '{FilePath}' is located under the area root directory '/Areas/' but does not follow the path format '/Areas/AreaName/Pages/Directory/FileName.cshtml", EventName = "UnsupportedAreaPath")]
+            public static partial void UnsupportedAreaPath(ILogger log, string filePath);
         }
     }
 }
