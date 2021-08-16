@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
         public static TBuilder WithName<TBuilder>(this TBuilder builder, string endpointName) where TBuilder : IEndpointConventionBuilder
         {
-            builder.WithMetadata(new EndpointNameAttribute(endpointName));
+            builder.WithMetadata(new EndpointNameAttribute(endpointName), new RouteNameMetadata(endpointName));
             return builder;
         }
 
