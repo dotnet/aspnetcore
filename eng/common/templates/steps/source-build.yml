@@ -18,6 +18,35 @@ steps:
     set -x
     df -h
 
+    # If building on the internal project, the artifact feeds variable may be available (usually only if needed)
+    # In that case, call the feed setup script to add internal feeds corresponding to public ones.
+    # In addition, add an msbuild argument to copy the WIP from the repo to the target build location.
+    # This is because SetupNuGetSources.sh will alter the current NuGet.config file, and we need to preserve those
+    # changes.
+    $internalRestoreArgs=
+    if [ '$(dn-bot-dnceng-artifact-feeds-rw)' != '$''(dn-bot-dnceng-artifact-feeds-rw)' ]; then
+      # Temporarily work around https://github.com/dotnet/arcade/issues/7709
+      chmod +x $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
+      $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh $(Build.SourcesDirectory)/NuGet.config $(dn-bot-dnceng-artifact-feeds-rw)
+      internalRestoreArgs='/p:CopyWipIntoInnerSourceBuildRepo=true'
+
+      # The 'Copy WIP' feature of source build uses git stash to apply changes from the original repo.
+      # This only works if there is a username/email configured, which won't be the case in most CI runs.
+      git config --get user.email
+      if [ $? -ne 0 ]; then
+        git config user.email dn-bot@microsoft.com
+        git config user.name dn-bot
+      fi
+    fi
+
+    # If building on the internal project, the internal storage variable may be available (usually only if needed)
+    # In that case, add variables to allow the download of internal runtimes if the specified versions are not found
+    # in the default public locations.
+    internalRuntimeDownloadArgs=
+    if [ '$(dotnetclimsrc-read-sas-token-base64)' != '$''(dotnetclimsrc-read-sas-token-base64)' ]; then
+      internalRuntimeDownloadArgs='/p:DotNetRuntimeSourceFeed=https://dotnetclimsrc.blob.core.windows.net/dotnet /p:DotNetRuntimeSourceFeedKey=$(dotnetclimsrc-read-sas-token-base64) --runtimesourcefeed https://dotnetclimsrc.blob.core.windows.net/dotnet --runtimesourcefeedkey $(dotnetclimsrc-read-sas-token-base64)'
+    fi
+
     buildConfig=Release
     # Check if AzDO substitutes in a build config from a variable, and use it if so.
     if [ '$(_BuildConfig)' != '$''(_BuildConfig)' ]; then
@@ -27,11 +56,6 @@ steps:
     officialBuildArgs=
     if [ '${{ and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}' = 'True' ]; then
       officialBuildArgs='/p:DotNetPublishUsingPipelines=true /p:OfficialBuildId=$(BUILD.BUILDNUMBER)'
-    fi
-
-    internalRuntimeDownloadArgs=
-    if [ '$(dotnetclimsrc-read-sas-token-base64)' != '$''(dotnetclimsrc-read-sas-token-base64)' ]; then
-      internalRuntimeDownloadArgs='--runtimesourcefeed https://dotnetclimsrc.blob.core.windows.net/dotnet --runtimesourcefeedkey $(dotnetclimsrc-read-sas-token-base64)'
     fi
 
     targetRidArgs=
@@ -49,6 +73,7 @@ steps:
       --restore --build --pack $publishArgs -bl \
       $officialBuildArgs \
       $internalRuntimeDownloadArgs \
+      $internalRestoreArgs \
       $targetRidArgs \
       /p:SourceBuildNonPortable=${{ parameters.platform.nonPortable }} \
       /p:ArcadeBuildFromSource=true

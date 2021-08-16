@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Components.WebView
         private readonly IpcReceiver _ipcReceiver;
         private readonly Uri _appBaseUri;
         private readonly StaticContentProvider _staticContentProvider;
+        private readonly JSComponentConfigurationStore _jsComponents;
         private readonly Dictionary<string, RootComponent> _rootComponentsBySelector = new();
 
         // Each time a web page connects, we establish a new per-page context
@@ -41,13 +42,15 @@ namespace Microsoft.AspNetCore.Components.WebView
         /// <param name="dispatcher">A <see cref="Dispatcher"/> instance that can marshal calls to the required thread or sync context.</param>
         /// <param name="appBaseUri">The base URI for the application. Since this is a webview, the base URI is typically on a private origin such as http://0.0.0.0/ or app://example/</param>
         /// <param name="fileProvider">Provides static content to the webview.</param>
+        /// <param name="jsComponents">Describes configuration for adding, removing, and updating root components from JavaScript code.</param>
         /// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
-        public WebViewManager(IServiceProvider provider, Dispatcher dispatcher, Uri appBaseUri, IFileProvider fileProvider, string hostPageRelativePath)
+        public WebViewManager(IServiceProvider provider, Dispatcher dispatcher, Uri appBaseUri, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
         {
             _provider = provider ?? throw new ArgumentNullException(nameof(provider));
             _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
             _appBaseUri = EnsureTrailingSlash(appBaseUri ?? throw new ArgumentNullException(nameof(appBaseUri)));
             fileProvider = StaticWebAssetsLoader.UseStaticWebAssets(fileProvider);
+            _jsComponents = jsComponents;
             _staticContentProvider = new StaticContentProvider(fileProvider, appBaseUri, hostPageRelativePath);
             _ipcSender = new IpcSender(_dispatcher, SendMessage);
             _ipcReceiver = new IpcReceiver(AttachToPageAsync);
@@ -57,13 +60,6 @@ namespace Microsoft.AspNetCore.Components.WebView
         /// Gets the <see cref="Dispatcher"/> used by this <see cref="WebViewManager"/> instance.
         /// </summary>
         public Dispatcher Dispatcher => _dispatcher;
-
-        /// <summary>
-        /// Gets an object that can be used to configure support for adding, updating, and removing
-        /// components from JavaScript code. This object should be made available to application code
-        /// during the host building phase so that it can be populated.
-        /// </summary>
-        public JSComponentConfigurationStore JSComponentConfiguration { get; } = new();
 
         /// <summary>
         /// Instructs the web view to navigate to the specified location, bypassing any
@@ -198,7 +194,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 
             var serviceScope = _provider.CreateAsyncScope();
 
-            _currentPageContext = new PageContext(_dispatcher, serviceScope, _ipcSender, JSComponentConfiguration, baseUrl, startUrl);
+            _currentPageContext = new PageContext(_dispatcher, serviceScope, _ipcSender, _jsComponents, baseUrl, startUrl);
 
             // Add any root components that were registered before the page attached. We don't await any of the
             // returned render tasks so that the components can be processed in parallel.

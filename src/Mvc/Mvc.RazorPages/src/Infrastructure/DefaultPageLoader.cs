@@ -45,6 +45,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 throw new ArgumentNullException(nameof(actionDescriptor));
             }
 
+            if (actionDescriptor is CompiledPageActionDescriptor compiledPageActionDescriptor)
+            {
+                // It's possible for some code paths of PageLoaderMatcherPolicy to invoke LoadAsync with an instance
+                // of CompiledPageActionDescriptor. In that case, we'll return the instance as-is.
+                compiledPageActionDescriptor.CompiledPageActionDescriptorTask ??= Task.FromResult(compiledPageActionDescriptor);
+                return compiledPageActionDescriptor.CompiledPageActionDescriptorTask;
+            }
+
             var task = actionDescriptor.CompiledPageActionDescriptorTask;
 
             if (task != null)

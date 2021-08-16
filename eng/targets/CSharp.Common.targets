@@ -16,16 +16,14 @@
     <!-- Public members should not use oblivious types. Not done with all nullable annotations. -->
     <NoWarn>$(NoWarn);RS0041</NoWarn>
 
-    <Nullable Condition=" '$(Nullable)' == '' AND (
-        '$(IsImplementationProject)' == 'true' OR
+    <_IsSrcProject Condition="'$(IsImplementationProject)' == 'true' OR
         '$(IsAnalyzersProject)' == true OR
-        '$(IsSpecificationTestProject)' == 'true') ">enable</Nullable>
+        '$(IsSpecificationTestProject)' == 'true'">true</_IsSrcProject>
+
+    <Nullable Condition=" '$(Nullable)' == '' AND '$(_IsSrcProject)' == 'true'">enable</Nullable>
 
     <!-- Strip out non-public nullable annotations for src projects. This should help with size reduction -->
-     <Features Condition="
-        '$(IsImplementationProject)' == 'true' OR
-        '$(IsAnalyzersProject)' == true OR
-        '$(IsSpecificationTestProject)' == 'true'">$(Features);nullablePublicOnly</Features>
+     <Features Condition="'$(_IsSrcProject)' == 'true'">$(Features);nullablePublicOnly</Features>
 
     <!-- Turn off platform compatibility analyzer warnings in test, test assets, and samples. -->
     <NoWarn Condition=" '$(IsTestProject)' == 'true' OR
@@ -40,6 +38,19 @@
     <EnforceCodeStyleInBuild Condition="'$(BuildingInsideVisualStudio)' == 'true' AND $([MSBuild]::VersionGreaterThanOrEquals('$(VisualStudioVersion)', '17.0'))">false</EnforceCodeStyleInBuild>
     <EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == ''">true</EnforceCodeStyleInBuild>
   </PropertyGroup>
+
+  <!-- Enable implicit usings for projects that target the default TFM -->
+  <PropertyGroup Condition="'$(ImplicitUsings)' == '' AND '$(TargetFrameworks)' == '' AND '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(ImplicitUsings)' == 'enable'">
+    <!-- We should make it obvious when Linq is being used in shipping code -->
+    <Using Remove="System.Linq" Condition="'$(_IsSrcProject)' == 'true'" />
+    <!-- System.Net.Http types will frequently conflict with ASP.NET Core types-->
+    <Using Remove="System.Net.Http" />
+    <Using Include="Xunit" Condition="'$(IsTestProject)' == 'true' OR '$(IsUnitTestProject)' == 'true'" />
+  </ItemGroup>
 
   <ItemGroup Condition=" '$(DotNetBuildFromSource)' != 'true' AND $(AddPublicApiAnalyzers) ">
     <Reference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" ExcludeAssets="Compile" PrivateAssets="All" />

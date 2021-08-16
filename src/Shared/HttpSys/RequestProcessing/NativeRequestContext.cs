@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
@@ -116,6 +117,8 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         internal bool IsHttp2 => NativeRequest->Flags.HasFlag(HttpApiTypes.HTTP_REQUEST_FLAGS.Http2);
 
+        internal bool IsHttp3 => NativeRequest->Flags.HasFlag(HttpApiTypes.HTTP_REQUEST_FLAGS.Http3);
+
         // Assumes memory isn't pinned. Will fail if called by IIS.
         internal uint Size
         {
@@ -192,19 +195,23 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         internal Version GetVersion()
         {
+            if (IsHttp3)
+            {
+                return HttpVersion.Version30;
+            }
             if (IsHttp2)
             {
-                return Constants.V2;
+                return HttpVersion.Version20;
             }
             var major = NativeRequest->Version.MajorVersion;
             var minor = NativeRequest->Version.MinorVersion;
             if (major == 1 && minor == 1)
             {
-                return Constants.V1_1;
+                return HttpVersion.Version11;
             }
             else if (major == 1 && minor == 0)
             {
-                return Constants.V1_0;
+                return HttpVersion.Version10;
             }
             return new Version(major, minor);
         }

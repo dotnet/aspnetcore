@@ -463,12 +463,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 _context.StreamLifetimeHandler.OnStreamConnectionError(ex);
             }
+            catch (ConnectionAbortedException ex)
+            {
+                error = ex;
+            }
             catch (ConnectionResetException ex)
             {
-                // TODO: This is temporary. Don't want to tie HTTP/3 layer to one transport.
-                // This is here to check what other exceptions can cause ConnectionResetException.
-                Debug.Assert(ex.InnerException is QuicStreamAbortedException);
-
                 error = ex;
                 Abort(new ConnectionAbortedException(ex.Message, ex), (Http3ErrorCode)_errorCodeFeature.Error);
             }

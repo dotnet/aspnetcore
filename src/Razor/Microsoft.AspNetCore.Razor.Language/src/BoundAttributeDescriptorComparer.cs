@@ -69,10 +69,22 @@ namespace Microsoft.AspNetCore.Razor.Language
                 }
             }
 
-            foreach (var metadata in descriptor.Metadata)
+            // 🐇 Avoid enumerator allocations for Dictionary<TKey, TValue>
+            if (descriptor.Metadata is Dictionary<string, string> metadata)
             {
-                hash.Add(metadata.Key);
-                hash.Add(metadata.Value);
+                foreach (var kvp in metadata)
+                {
+                    hash.Add(kvp.Key);
+                    hash.Add(kvp.Value);
+                }
+            }
+            else
+            {
+                foreach (var kvp in descriptor.Metadata)
+                {
+                    hash.Add(kvp.Key);
+                    hash.Add(kvp.Value);
+                }
             }
 
             return hash.CombinedHash;

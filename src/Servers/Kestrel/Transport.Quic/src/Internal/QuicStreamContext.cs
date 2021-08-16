@@ -353,7 +353,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             }
             finally
             {
-                ShutdownWrite(shutdownReason);
+                ShutdownWrite(_shutdownWriteReason ?? _shutdownReason ?? shutdownReason);
 
                 // Complete the output after disposing the stream
                 Output.Complete(unexpectedError ?? shutdownReason);
@@ -373,6 +373,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             }
 
             _serverAborted = true;
+            _shutdownReason = abortReason;
 
             _log.StreamAbort(this, Error, abortReason.Message);
 

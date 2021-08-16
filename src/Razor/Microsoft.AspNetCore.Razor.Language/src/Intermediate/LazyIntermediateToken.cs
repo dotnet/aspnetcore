@@ -7,7 +7,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
     internal class LazyIntermediateToken : IntermediateToken
     {
-        public Func<string> ContentFactory { get; set; }
+        public object FactoryArgument { get; set; }
+        public Func<object, string> ContentFactory { get; set; }
 
         public override string Content
         {
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             {
                 if (base.Content == null && ContentFactory != null)
                 {
-                    Content = ContentFactory();
+                    Content = ContentFactory(FactoryArgument);
                     ContentFactory = null;
                 }
 

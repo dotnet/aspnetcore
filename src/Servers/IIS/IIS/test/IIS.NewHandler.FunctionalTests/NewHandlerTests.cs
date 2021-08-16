@@ -4,11 +4,12 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.NewHandler.FunctionalTests
 {
     [Collection(PublishedSitesCollection.Name)]
     public class NewHandlerTests : IISFunctionalTestBase

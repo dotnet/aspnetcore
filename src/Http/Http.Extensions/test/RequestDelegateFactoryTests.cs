@@ -3,11 +3,7 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
 using System.Net.Sockets;
@@ -18,9 +14,6 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Json;
@@ -253,6 +246,62 @@ namespace Microsoft.AspNetCore.Routing.Internal
             await requestDelegate(httpContext);
 
             Assert.Null(httpContext.Items["input"]);
+        }
+
+        [Fact]
+        public async Task SpecifiedQueryParametersDoNotFallbackToRouteValues()
+        {
+            var httpContext = new DefaultHttpContext();
+
+            var requestDelegate = RequestDelegateFactory.Create((int? id, HttpContext httpContext) =>
+            {
+                if (id is not null)
+                {
+                    httpContext.Items["input"] = id;
+                }
+            },
+            new() { RouteParameterNames = new string[] { } });
+
+            httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["id"] = "41"
+            });
+            httpContext.Request.RouteValues = new()
+            {
+                ["id"] = "42"
+            };
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(41, httpContext.Items["input"]);
+        }
+
+        [Fact]
+        public async Task NullRouteParametersPrefersRouteOverQueryString()
+        {
+            var httpContext = new DefaultHttpContext();
+
+            var requestDelegate = RequestDelegateFactory.Create((int? id, HttpContext httpContext) =>
+            {
+                if (id is not null)
+                {
+                    httpContext.Items["input"] = id;
+                }
+            },
+            new() { RouteParameterNames = null });
+
+            httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["id"] = "41"
+            });
+            httpContext.Request.RouteValues = new()
+            {
+                ["id"] = "42"
+            };
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(42, httpContext.Items["input"]);
         }
 
         [Fact]
@@ -645,14 +694,19 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     httpContext.Items.Add("body", todo);
                 }
 
-                void TestImpliedFromBody(HttpContext httpContext, Todo myService)
+                void TestImpliedFromBody(HttpContext httpContext, Todo todo)
                 {
-                    httpContext.Items.Add("body", myService);
+                    httpContext.Items.Add("body", todo);
                 }
 
-                void TestImpliedFromBodyInterface(HttpContext httpContext, ITodo myService)
+                void TestImpliedFromBodyInterface(HttpContext httpContext, ITodo todo)
                 {
-                    httpContext.Items.Add("body", myService);
+                    httpContext.Items.Add("body", todo);
+                }
+
+                void TestImpliedFromBodyStruct(HttpContext httpContext, TodoStruct todo)
+                {
+                    httpContext.Items.Add("body", todo);
                 }
 
                 return new[]
@@ -660,6 +714,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     new[] { (Action<HttpContext, Todo>)TestExplicitFromBody },
                     new[] { (Action<HttpContext, Todo>)TestImpliedFromBody },
                     new[] { (Action<HttpContext, ITodo>)TestImpliedFromBodyInterface },
+                    new object[] { (Action<HttpContext, TodoStruct>)TestImpliedFromBodyStruct },
                 };
             }
         }
@@ -703,7 +758,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var deserializedRequestBody = httpContext.Items["body"];
             Assert.NotNull(deserializedRequestBody);
-            Assert.Equal(originalTodo.Name, ((Todo)deserializedRequestBody!).Name);
+            Assert.Equal(originalTodo.Name, ((ITodo)deserializedRequestBody!).Name);
         }
 
         [Theory]
@@ -826,7 +881,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             httpContext.Request.Body = new IOExceptionThrowingRequestBodyStream(invalidDataException);
             httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
             httpContext.Features.Set<IHttpRequestLifetimeFeature>(new TestHttpRequestLifetimeFeature());
-            
+
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
             var requestDelegate = RequestDelegateFactory.Create(TestAction);
@@ -1517,7 +1572,10 @@ namespace Microsoft.AspNetCore.Routing.Internal
             serviceCollection.AddSingleton(LoggerFactory);
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = RequestDelegateFactory.Create(@delegate, new()
+            {
+                RouteParameterNames = routeParam is not null ? new[] { paramName } : Array.Empty<string>()
+            });
 
             await requestDelegate(httpContext);
 
@@ -1568,7 +1626,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             var responseBodyStream = new MemoryStream();
             httpContext.Response.Body = responseBodyStream;
-            
+
             if (hasBody)
             {
                 var todo = new Todo() { Name = "Default Todo" };
@@ -1700,7 +1758,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             await requestDelegate(httpContext);
 
             var logs = TestSink.Writes.ToArray();
-            
+
             if (!allowsEmptyRequest)
             {
                 Assert.Equal(400, httpContext.Response.StatusCode);
@@ -1784,6 +1842,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             public string? Name { get; set; } = "Todo";
             public bool IsComplete { get; set; }
         }
+
+        private record struct TodoStruct(int Id, string? Name, bool IsComplete) : ITodo;
 
         private interface ITodo
         {

@@ -9,7 +9,7 @@ using Microsoft.Deployment.WindowsInstaller.Package;
 
 namespace RepoTasks
 {
-    public class GetMsiProperty : Task
+    public class GetMsiProperty : Microsoft.Build.Utilities.Task
     {
         [Required]
         public string InstallPackage { get; set; }
