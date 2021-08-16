@@ -119,16 +119,20 @@ namespace Microsoft.AspNetCore.Builder
         public void WithName_SetsEndpointName()
         {
             // Arrange
+            var name = "SomeEndpointName";
             var builder = CreateBuilder();
 
             // Act
-            builder.WithName("SomeEndpointName");
+            builder.WithName(name);
 
             // Assert
             var endpoint = builder.Build();
 
             var endpointName = endpoint.Metadata.GetMetadata<IEndpointNameMetadata>();
-            Assert.Equal("SomeEndpointName", endpointName.EndpointName);
+            Assert.Equal(name, endpointName.EndpointName);
+
+            var routeName = endpoint.Metadata.GetMetadata<IRouteNameMetadata>();
+            Assert.Equal(name, routeName.RouteName);
         }
 
         [Fact]
