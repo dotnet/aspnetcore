@@ -809,9 +809,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // interaction as authentically as SendKeys in other cases.
             var javascript = (IJavaScriptExecutor)Browser;
             javascript.ExecuteScript(
-                $"var elem = document.querySelector('{cssSelector}');"
-                + $"elem.value = {JsonSerializer.Serialize(invalidValue, TestJsonSerializerOptionsProvider.Options)};"
-                + "elem.dispatchEvent(new KeyboardEvent('change'));");
+                $"document.querySelector('{cssSelector}').value = {JsonSerializer.Serialize(invalidValue, TestJsonSerializerOptionsProvider.Options)}");
+            javascript.ExecuteScript(
+                $"document.querySelector('{cssSelector}').dispatchEvent(new KeyboardEvent('change'))");
         }
 
         private void EnsureAttributeRendering(IWebElement element, string attributeName, bool shouldBeRendered = true)
