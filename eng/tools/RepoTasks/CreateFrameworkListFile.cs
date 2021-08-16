@@ -12,7 +12,7 @@ using Microsoft.Build.Utilities;
 
 namespace RepoTasks
 {
-    public class CreateFrameworkListFile : Task
+    public class CreateFrameworkListFile : Microsoft.Build.Utilities.Task
     {
         /// <summary>
         /// Files to extract basic information from and include in the list.
