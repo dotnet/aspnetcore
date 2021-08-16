@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var httpContext = new DefaultHttpContext();
 
-            var requestDelegate = RequestDelegateFactory.Create((int? id, HttpContext httpContext) =>
+            var factoryResult = RequestDelegateFactory.Create((int? id, HttpContext httpContext) =>
             {
                 if (id is not null)
                 {
@@ -278,6 +278,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 ["id"] = "42"
             };
 
+            var requestDelegate = factoryResult.RequestDelegate;
+
             await requestDelegate(httpContext);
 
             Assert.Equal(41, httpContext.Items["input"]);
@@ -288,7 +290,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var httpContext = new DefaultHttpContext();
 
-            var requestDelegate = RequestDelegateFactory.Create((int? id, HttpContext httpContext) =>
+            var factoryResult = RequestDelegateFactory.Create((int? id, HttpContext httpContext) =>
             {
                 if (id is not null)
                 {
@@ -306,6 +308,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 ["id"] = "42"
             };
 
+            var requestDelegate = factoryResult.RequestDelegate;
             await requestDelegate(httpContext);
 
             Assert.Equal(42, httpContext.Items["input"]);
