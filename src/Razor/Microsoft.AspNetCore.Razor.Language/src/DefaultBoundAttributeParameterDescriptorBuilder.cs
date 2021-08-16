@@ -1,6 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -51,10 +52,10 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public BoundAttributeParameterDescriptor Build()
         {
-            var validationDiagnostics = Validate();
-            var diagnostics = new HashSet<RazorDiagnostic>(validationDiagnostics);
+            var diagnostics = Validate();
             if (_diagnostics != null)
             {
+                diagnostics ??= new();
                 diagnostics.UnionWith(_diagnostics);
             }
             var descriptor = new DefaultBoundAttributeParameterDescriptor(
@@ -66,7 +67,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 GetDisplayName(),
                 CaseSensitive,
                 new Dictionary<string, string>(Metadata),
-                diagnostics.ToArray());
+                diagnostics?.ToArray() ?? Array.Empty<RazorDiagnostic>());
 
             return descriptor;
         }
@@ -81,28 +82,34 @@ namespace Microsoft.AspNetCore.Razor.Language
             return $":{Name}";
         }
 
-        private IEnumerable<RazorDiagnostic> Validate()
+        private HashSet<RazorDiagnostic> Validate()
         {
+            HashSet<RazorDiagnostic> diagnostics = null;
             if (string.IsNullOrWhiteSpace(Name))
             {
+
                 var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributeParameterNullOrWhitespace(_parent.Name);
-                yield return diagnostic;
+                diagnostics ??= new();
+                diagnostics.Add(diagnostic);
             }
             else
             {
                 foreach (var character in Name)
                 {
-                    if (char.IsWhiteSpace(character) || HtmlConventions.InvalidNonWhitespaceHtmlCharacters.Contains(character))
+                    if (char.IsWhiteSpace(character) || HtmlConventions.IsInvalidNonWhitespaceHtmlCharacters(character))
                     {
                         var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributeParameterName(
                             _parent.Name,
                             Name,
                             character);
 
-                        yield return diagnostic;
+                        diagnostics ??= new();
+                        diagnostics.Add(diagnostic);
                     }
                 }
             }
+
+            return diagnostics;
         }
     }
 }

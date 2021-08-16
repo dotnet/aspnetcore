@@ -170,7 +170,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 }
             }
 
-            return codeDocument.GetDocumentIntermediateNode();
+            var irNode = codeDocument.GetDocumentIntermediateNode();
+            irNode.DocumentKind = MvcViewDocumentClassifierPass.MvcViewDocumentKind;
+
+            return irNode;
         }
 
         private TagHelperIntermediateNode FindTagHelperNode(IntermediateNode node)

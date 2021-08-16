@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -65,10 +65,10 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public TagMatchingRuleDescriptor Build()
         {
-            var validationDiagnostics = Validate();
-            var diagnostics = new HashSet<RazorDiagnostic>(validationDiagnostics);
+            var diagnostics = Validate();
             if (_diagnostics != null)
             {
+                diagnostics ??= new();
                 diagnostics.UnionWith(_diagnostics);
             }
 
@@ -90,28 +90,32 @@ namespace Microsoft.AspNetCore.Razor.Language
                 TagStructure,
                 CaseSensitive,
                 requiredAttributes,
-                diagnostics.ToArray());
+                diagnostics?.ToArray() ?? Array.Empty<RazorDiagnostic>());
 
             return rule;
         }
 
-        private IEnumerable<RazorDiagnostic> Validate()
+        private HashSet<RazorDiagnostic> Validate()
         {
+            HashSet<RazorDiagnostic> diagnostics = null;
+
             if (string.IsNullOrWhiteSpace(TagName))
             {
                 var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedTagNameNullOrWhitespace();
 
-                yield return diagnostic;
+                diagnostics ??= new();
+                diagnostics.Add(diagnostic);
             }
             else if (TagName != TagHelperMatchingConventions.ElementCatchAllName)
             {
                 foreach (var character in TagName)
                 {
-                    if (char.IsWhiteSpace(character) || HtmlConventions.InvalidNonWhitespaceHtmlCharacters.Contains(character))
+                    if (char.IsWhiteSpace(character) || HtmlConventions.IsInvalidNonWhitespaceHtmlCharacters(character))
                     {
                         var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedTagName(TagName, character);
 
-                        yield return diagnostic;
+                        diagnostics ??= new();
+                        diagnostics.Add(diagnostic);
                     }
                 }
             }
@@ -122,21 +126,25 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedParentTagNameNullOrWhitespace();
 
-                    yield return diagnostic;
+                    diagnostics ??= new();
+                    diagnostics.Add(diagnostic);
                 }
                 else
                 {
                     foreach (var character in ParentTag)
                     {
-                        if (char.IsWhiteSpace(character) || HtmlConventions.InvalidNonWhitespaceHtmlCharacters.Contains(character))
+                        if (char.IsWhiteSpace(character) || HtmlConventions.IsInvalidNonWhitespaceHtmlCharacters(character))
                         {
                             var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedParentTagName(ParentTag, character);
 
-                            yield return diagnostic;
+                            diagnostics ??= new();
+                            diagnostics.Add(diagnostic);
                         }
                     }
                 }
             }
+
+            return diagnostics;
         }
 
         private void EnsureRequiredAttributeBuilders()
