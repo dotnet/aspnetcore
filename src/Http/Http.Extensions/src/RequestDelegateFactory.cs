@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Security.Claims;
+using System.Text;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
@@ -988,7 +989,8 @@ namespace Microsoft.AspNetCore.Http
             public List<string>? RouteParameters { get; set; }
 
             public bool UsingTempSourceString { get; set; }
-            public List<(ParameterExpression, Expression)> CheckParams { get; } = new();
+            public List<ParameterExpression> ExtraLocals { get; } = new();
+            public List<Expression> ParamCheckExpressions { get; } = new();
 
             public Dictionary<string, string> TrackedParameters { get; } = new();
 
