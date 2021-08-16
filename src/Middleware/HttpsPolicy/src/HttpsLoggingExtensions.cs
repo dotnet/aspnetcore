@@ -18,6 +18,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy
         public static partial void FailedToDeterminePort(this ILogger logger);
 
         [LoggerMessage(5, LogLevel.Debug, "Https port '{httpsPort}' discovered from server endpoints.", EventName = "PortFromServer")]
-        public static partial void PortFromServer(this ILogger logger, int port);
+        public static partial void PortFromServer(this ILogger logger, int httpsPort);
     }
 }
