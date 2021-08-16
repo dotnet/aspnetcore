@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             EndpointMetadataCollection endpointMetadata)
         {
             var requestMetadata = endpointMetadata.GetOrderedMetadata<IAcceptsMetadata>();
-            var declaredContentTypes = DefaultApiDescriptionProvider.GetAcceptsContentTypes(requestMetadata);
+            var declaredContentTypes = GetAcceptsContentTypes(requestMetadata);
 
             if (declaredContentTypes.Count > 0)
             {
@@ -370,6 +370,20 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     MediaType = contentType,
                 });
             }
+        }
+
+        private static IReadOnlyList<string> GetAcceptsContentTypes(IReadOnlyList<IAcceptsMetadata>? requestMetadataAttributes)
+        {
+            var contentTypes = new List<string>();
+            if (requestMetadataAttributes != null)
+            {
+                foreach (var metadataAttribute in requestMetadataAttributes)
+                {
+                    contentTypes.AddRange(metadataAttribute.ContentTypes);
+                }
+            }
+
+            return contentTypes;
         }
 
         private static void AddActionDescriptorEndpointMetadata(
