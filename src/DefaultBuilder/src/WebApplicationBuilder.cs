@@ -185,6 +185,13 @@ namespace Microsoft.AspNetCore.Builder
         {
             Debug.Assert(_builtApplication is not null);
 
+            // UseRouting called before WebApplication such as in a StartupFilter
+            // lets remove the property and reset it at the end so we don't mess with the routes in the filter
+            if (app.Properties.TryGetValue("__EndpointRouteBuilder", out var priorRouteBuilder))
+            {
+                app.Properties.Remove("__EndpointRouteBuilder");
+            }
+
             if (context.HostingEnvironment.IsDevelopment())
             {
                 // TODO: add test for this
@@ -196,9 +203,13 @@ namespace Microsoft.AspNetCore.Builder
             // destination.Run(source)
             // destination.UseEndpoints()
 
-            // Set the route builder so we preserve the routing information that may have been set already
-            app.Properties.Add(WebApplication.GlobalEndpointRouteBuilderKey, _builtApplication);
-            app.UseRouting();
+            // Only call UseRouting() if there are endpoints configured and UseRouting() wasn't called on the global route builder already
+            if (_builtApplication.DataSources.Count > 0 && !_builtApplication.Properties.TryGetValue("__UseRoutingWithGlobalSet", out _))
+            {
+                // Set the route builder so that UseRouting will use the WebApplication as the IEndpointRouteBuilder for route matching
+                app.Properties.Add(WebApplication.GlobalEndpointRouteBuilderKey, _builtApplication);
+                app.UseRouting();
+            }
 
             // Wire the source pipeline to run in the destination pipeline
             app.Use(next =>
@@ -207,11 +218,15 @@ namespace Microsoft.AspNetCore.Builder
                 return _builtApplication.BuildRequestDelegate();
             });
 
-            // We don't know if user code called UseEndpoints(), so we will call it just in case, and we will make sure we are the only ones setting
-            // the EndpointDataSource in RouteOptions with this property
-            app.Properties[GlobalEndpointBuilderCopyRoutesKey] = null;
-            app.UseEndpoints(_ => { });
-            app.Properties.Remove(GlobalEndpointBuilderCopyRoutesKey);
+            if (_builtApplication.DataSources.Count > 0)
+            {
+                app.Properties.TryAdd(WebApplication.GlobalEndpointRouteBuilderKey, _builtApplication);
+                // We don't know if user code called UseEndpoints(), so we will call it just in case, and we will make sure we are the only ones setting
+                // the EndpointDataSource in RouteOptions with this property
+                app.Properties[GlobalEndpointBuilderCopyRoutesKey] = null;
+                app.UseEndpoints(_ => { });
+                app.Properties.Remove(GlobalEndpointBuilderCopyRoutesKey);
+            }
 
             // Copy the properties to the destination app builder
             foreach (var item in _builtApplication.Properties)
@@ -220,10 +235,16 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             // Remove the route builder to clean up the properties, we're done adding routes to the pipeline
-            // REVIEW: this makes startup filter with userouting/useendpoints fail unless we don't remove the EndpointRouteBuilder in UseEndpoints if a global one exists
-            // or if we stored the property in this method at the beginning and replaced it at the end.
+            // REVIEW: There aren't any tests that fail if these two lines are removed (except the one that verfies the properties are removed)
+            //         Not sure if it's a missing scenario or not needed
             app.Properties.Remove(WebApplication.GlobalEndpointRouteBuilderKey);
             _builtApplication.Properties.Remove(WebApplication.GlobalEndpointRouteBuilderKey);
+
+            // reset route builder if it existed, this is needed for StartupFilters
+            if (priorRouteBuilder is { })
+            {
+                app.Properties["__EndpointRouteBuilder"] = priorRouteBuilder;
+            }
         }
 
         private class LoggingBuilder : ILoggingBuilder

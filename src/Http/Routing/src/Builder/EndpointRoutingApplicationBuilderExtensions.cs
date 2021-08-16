@@ -50,6 +50,8 @@ namespace Microsoft.AspNetCore.Builder
             if (builder.Properties.TryGetValue(GlobalEndpointRouteBuilderKey, out var obj))
             {
                 endpointRouteBuilder = (IEndpointRouteBuilder)obj!;
+                // Let interested parties know if UseRouting() was called while a global route builder was set
+                builder.Properties["__UseRoutingWithGlobalSet"] = true;
             }
             else
             {
@@ -116,12 +118,6 @@ namespace Microsoft.AspNetCore.Builder
                 {
                     routeOptions.Value.EndpointDataSources.Add(dataSource);
                 }
-            }
-
-            // REVIEW: this 'if' could be removed, see comment in WebApplicationBuilder
-            if (!builder.Properties.TryGetValue(GlobalEndpointRouteBuilderKey, out _))
-            {
-                builder.Properties.Remove(EndpointRouteBuilder);
             }
 
             return builder.UseMiddleware<EndpointMiddleware>();

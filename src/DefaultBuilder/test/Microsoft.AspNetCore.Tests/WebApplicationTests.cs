@@ -915,6 +915,42 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
+        public async Task CanAddMiddlewareBeforeUseRouting()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            var chosenEndpoint = string.Empty;
+
+            app.Use((c, n) =>
+            {
+                chosenEndpoint = c.GetEndpoint()?.DisplayName;
+                Assert.Null(c.GetEndpoint());
+                return n(c);
+            });
+
+            app.UseRouting();
+
+            app.MapGet("/1", async c => {
+                chosenEndpoint = c.GetEndpoint().DisplayName;
+                await c.Response.WriteAsync("Hello World");
+            }).WithDisplayName("One");
+
+            app.UseEndpoints(e => { });
+
+            await app.StartAsync();
+
+            var client = app.GetTestClient();
+
+            _ = await client.GetAsync("http://localhost/");
+            Assert.Null(chosenEndpoint);
+
+            _ = await client.GetAsync("http://localhost/1");
+            Assert.Equal("One", chosenEndpoint);
+        }
+
+        [Fact]
         public async Task WebApplicationBuilder_OnlyAddsDefaultServicesOnce()
         {
             var builder = WebApplication.CreateBuilder();
@@ -1100,7 +1136,6 @@ namespace Microsoft.AspNetCore.Tests
                 routes.MapGet("/heyo", () => "Heyo World").WithDisplayName("Three");
             });
 
-            // REVIEW: this cast is strange
             var newBuilder = ((IApplicationBuilder)app).New();
             Assert.False(newBuilder.Properties.TryGetValue(WebApplication.GlobalEndpointRouteBuilderKey, out _));
 

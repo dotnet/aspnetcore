@@ -382,23 +382,6 @@ namespace Microsoft.AspNetCore.Builder
             Assert.True(app.Properties.TryGetValue("__GlobalEndpointRouteBuilder", out _));
         }
 
-        [Fact]
-        public void UseEndpoints_RemovesEndpointRouteBuilderProperty()
-        {
-            // Arrange
-            var services = CreateServices();
-
-            var app = new ApplicationBuilder(services);
-
-            app.UseRouting();
-
-            Assert.True(app.Properties.TryGetValue("__EndpointRouteBuilder", out _));
-
-            app.UseEndpoints(endpoints => { });
-
-            Assert.False(app.Properties.TryGetValue("__EndpointRouteBuilder", out _));
-        }
-
         private IServiceProvider CreateServices()
         {
             return CreateServices(matcherFactory: null);

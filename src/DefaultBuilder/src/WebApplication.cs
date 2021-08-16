@@ -177,6 +177,7 @@ namespace Microsoft.AspNetCore.Builder
         IApplicationBuilder IApplicationBuilder.New()
         {
             var newBuilder = ApplicationBuilder.New();
+            // Remove the route builder so branched pipelines have their own routing world
             newBuilder.Properties.Remove(GlobalEndpointRouteBuilderKey);
             return newBuilder;
         }
@@ -187,7 +188,7 @@ namespace Microsoft.AspNetCore.Builder
             return this;
         }
 
-        IApplicationBuilder IEndpointRouteBuilder.CreateApplicationBuilder() => ApplicationBuilder.New();
+        IApplicationBuilder IEndpointRouteBuilder.CreateApplicationBuilder() => ((IApplicationBuilder)this).New();
 
         private void Listen(string? url)
         {
