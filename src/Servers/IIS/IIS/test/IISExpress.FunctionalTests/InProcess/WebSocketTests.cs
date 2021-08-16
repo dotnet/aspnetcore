@@ -10,9 +10,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
+
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests
 {
     [Collection(IISTestSiteCollection.Name)]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8, SkipReason = "No WebSocket supported on Win7")]

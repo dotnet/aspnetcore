@@ -1,19 +1,24 @@
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { EventDescriptor } from './Events/EventDelegator';
-import { enableJSRootComponents, JSComponentInfoByInitializer } from './JSRootComponents';
+import { enableJSRootComponents, JSComponentParametersByIdentifier, JSComponentIdentifiersByInitializer } from './JSRootComponents';
 
 const interopMethodsByRenderer = new Map<number, DotNet.DotNetObject>();
 
-export function attachWebRendererInterop(rendererId: number, interopMethods: DotNet.DotNetObject, hasJSComponents: boolean, jsRootComponents: JSComponentInfoByInitializer) {
+export function attachWebRendererInterop(
+  rendererId: number,
+  interopMethods: DotNet.DotNetObject,
+  jsComponentParameters: JSComponentParametersByIdentifier,
+  jsComponentInitializers: JSComponentIdentifiersByInitializer,
+): void {
   if (interopMethodsByRenderer.has(rendererId)) {
     throw new Error(`Interop methods are already registered for renderer ${rendererId}`);
   }
 
   interopMethodsByRenderer.set(rendererId, interopMethods);
 
-  if (hasJSComponents) {
+  if (Object.keys(jsComponentParameters).length > 0) {
     const manager = getInteropMethods(rendererId);
-    enableJSRootComponents(manager, jsRootComponents);
+    enableJSRootComponents(manager, jsComponentParameters, jsComponentInitializers);
   }
 }
 

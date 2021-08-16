@@ -3,15 +3,11 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Security;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
@@ -57,16 +53,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
             var features = new FeatureCollection();
 
+            // This should always be set in production, but it's not set for InMemory tests.
+            // The transport will check if the feature is missing.
             if (listenOptions.HttpsOptions != null)
             {
-                // TODO Set other relevant values on options
-                var sslServerAuthenticationOptions = new SslServerAuthenticationOptions
-                {
-                    ServerCertificate = listenOptions.HttpsOptions.ServerCertificate,
-                    ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol("h3"), new SslApplicationProtocol("h3-29") }
-                };
-
-                features.Set(sslServerAuthenticationOptions);
+                features.Set(HttpsConnectionMiddleware.CreateHttp3Options(listenOptions.HttpsOptions));
             }
 
             var transport = await _multiplexedTransportFactory.BindAsync(endPoint, features, cancellationToken).ConfigureAwait(false);

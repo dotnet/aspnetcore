@@ -6,6 +6,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
 using PhotinoNET;
 
@@ -26,8 +27,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Photino
         internal static readonly string AppBaseUri
             = $"{BlazorAppScheme}://0.0.0.0/";
 
-        public PhotinoWebViewManager(PhotinoWindow window, IServiceProvider provider, Dispatcher dispatcher, Uri appBaseUri, IFileProvider fileProvider, string hostPageRelativePath)
-            : base(provider, dispatcher, appBaseUri, fileProvider, hostPageRelativePath)
+        public PhotinoWebViewManager(PhotinoWindow window, IServiceProvider provider, Dispatcher dispatcher, Uri appBaseUri, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
+            : base(provider, dispatcher, appBaseUri, fileProvider, jsComponents, hostPageRelativePath)
         {
             _window = window ?? throw new ArgumentNullException(nameof(window));
             _window.WebMessageReceived += (sender, message) =>

@@ -585,7 +585,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 _builder.Add(new LazyIntermediateToken()
                 {
-                    ContentFactory = () => node.Value?.GetContent() ?? string.Empty,
+                    FactoryArgument = node,
+                    ContentFactory = static node => ((MarkupLiteralAttributeValueSyntax)node).Value?.GetContent() ?? string.Empty,
                     Kind = TokenKind.Html,
                     Source = BuildSourceSpanFromNode(node.Value)
                 });
@@ -723,7 +724,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 _builder.Add(new LazyIntermediateToken()
                 {
-                    ContentFactory = () => node.GetContent(),
+                    FactoryArgument = node,
+                    ContentFactory = static node => ((CSharpExpressionLiteralSyntax)node).GetContent(),
                     Kind = TokenKind.CSharp,
                     Source = BuildSourceSpanFromNode(node),
                 });
@@ -749,7 +751,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                     _builder.Add(new LazyIntermediateToken()
                     {
-                        ContentFactory = () => node.GetContent(),
+                        FactoryArgument = node,
+                        ContentFactory = static node => ((CSharpStatementLiteralSyntax)node).GetContent(),
                         Kind = TokenKind.CSharp,
                         Source = BuildSourceSpanFromNode(node),
                     });
@@ -851,7 +854,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 _builder.Add(new LazyIntermediateToken()
                 {
-                    ContentFactory = () => node.GetContent(),
+                    FactoryArgument = node,
+                    ContentFactory = static node => ((SyntaxNode)node).GetContent(),
                     Kind = TokenKind.Html,
                     Source = source,
                 });
@@ -1099,7 +1103,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 node.Children.Add(new LazyIntermediateToken()
                 {
-                    ContentFactory = () => item.GetContent(),
+                    FactoryArgument = item,
+                    ContentFactory = static item => ((SyntaxNode)item).GetContent(),
                     Kind = TokenKind.Html,
                     Source = BuildSourceSpanFromNode(item),
                 });
@@ -1338,7 +1343,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 _builder.Add(new LazyIntermediateToken()
                 {
-                    ContentFactory = () => node.Value?.GetContent() ?? string.Empty,
+                    FactoryArgument = node,
+                    ContentFactory = static node => ((MarkupLiteralAttributeValueSyntax)node).Value?.GetContent() ?? string.Empty,
                     Kind = TokenKind.Html,
                     Source = BuildSourceSpanFromNode(node.Value)
                 });
@@ -1359,7 +1365,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                     _builder.Add(new LazyIntermediateToken()
                     {
-                        ContentFactory = () => node.GetContent() ?? string.Empty,
+                        FactoryArgument = node,
+                        ContentFactory = static node => ((MarkupTextLiteralSyntax)node).GetContent() ?? string.Empty,
                         Kind = TokenKind.Html,
                         Source = BuildSourceSpanFromNode(node),
                     });
@@ -1416,7 +1423,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                     {
                         new LazyIntermediateToken()
                         {
-                            ContentFactory = () => node.GetContent(),
+                            FactoryArgument = node,
+                            ContentFactory = static node => ((MarkupTextLiteralSyntax)node).GetContent(),
                             Kind = TokenKind.Html,
                             Source = source,
                         }
@@ -1591,7 +1599,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 _builder.Add(new LazyIntermediateToken()
                 {
-                    ContentFactory = () => node.GetContent(),
+                    FactoryArgument = node,
+                    ContentFactory = static node => ((CSharpExpressionLiteralSyntax)node).GetContent(),
                     Kind = TokenKind.CSharp,
                     Source = BuildSourceSpanFromNode(node),
                 });
@@ -1617,7 +1626,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                     _builder.Add(new LazyIntermediateToken()
                     {
-                        ContentFactory = () => node.GetContent(),
+                        FactoryArgument = node,
+                        ContentFactory = static node => ((CSharpStatementLiteralSyntax)node).GetContent(),
                         Kind = TokenKind.CSharp,
                         Source = BuildSourceSpanFromNode(node),
                     });
@@ -2059,7 +2069,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 node.Children.Add(new LazyIntermediateToken()
                 {
-                    ContentFactory = () => item.GetContent(),
+                    FactoryArgument = item,
+                    ContentFactory = static item => ((SyntaxNode)item).GetContent(),
                     Kind = TokenKind.Html,
                     Source = BuildSourceSpanFromNode(item),
                 });
@@ -2201,7 +2212,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 _builder.Add(new LazyIntermediateToken()
                 {
-                    ContentFactory = () => node.GetContent(),
+                    FactoryArgument = node,
+                    ContentFactory = static node => ((CSharpExpressionLiteralSyntax)node).GetContent(),
                     Kind = TokenKind.CSharp,
                     Source = BuildSourceSpanFromNode(node),
                 });

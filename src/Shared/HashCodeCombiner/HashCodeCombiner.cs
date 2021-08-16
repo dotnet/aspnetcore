@@ -26,25 +26,6 @@ namespace Microsoft.Extensions.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Add(IEnumerable e)
-        {
-            if (e == null)
-            {
-                Add(0);
-            }
-            else
-            {
-                var count = 0;
-                foreach (object? o in e)
-                {
-                    Add(o);
-                    count++;
-                }
-                Add(count);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator int(HashCodeCombiner self)
         {
             return self.CombinedHash;
@@ -57,17 +38,9 @@ namespace Microsoft.Extensions.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Add(string? s)
+        public void Add<T>(T? o)
         {
-            var hashCode = (s != null) ? s.GetHashCode() : 0;
-            Add(hashCode);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Add(object? o)
-        {
-            var hashCode = (o != null) ? o.GetHashCode() : 0;
-            Add(hashCode);
+            Add(o?.GetHashCode() ?? 0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

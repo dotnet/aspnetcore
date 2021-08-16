@@ -9,10 +9,17 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
+#if LIBUV
+namespace Microsoft.AspNetCore.Server.Kestrel.Libuv.FunctionalTests
+#elif SOCKETS
+namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests
+#else
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
+#endif
 {
     public class ConnectionMiddlewareTests : LoggedTest
     {

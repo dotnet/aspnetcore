@@ -10,7 +10,20 @@ using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
+#if !IIS_FUNCTIONALS
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
+
+#if IISEXPRESS_FUNCTIONALS
+namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests
+#elif NEWHANDLER_FUNCTIONALS
+namespace Microsoft.AspNetCore.Server.IIS.NewHandler.FunctionalTests
+#elif NEWSHIM_FUNCTIONALS
+namespace Microsoft.AspNetCore.Server.IIS.NewShim.FunctionalTests
+#endif
+
+#else
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
+#endif
 {
     [Collection(PublishedSitesCollection.Name)]
     public class MaxRequestBodySizeTests : IISFunctionalTestBase

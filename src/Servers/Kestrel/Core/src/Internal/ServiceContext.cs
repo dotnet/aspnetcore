@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -27,5 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public Heartbeat Heartbeat { get; set; } = default!;
 
         public KestrelServerOptions ServerOptions { get; set; } = default!;
+
+        public DiagnosticSource? DiagnosticSource { get; set; }
     }
 }

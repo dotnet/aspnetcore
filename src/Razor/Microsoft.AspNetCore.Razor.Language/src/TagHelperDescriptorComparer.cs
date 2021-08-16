@@ -157,10 +157,22 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             if (descriptor.Metadata != null)
             {
-                foreach (var kvp in descriptor.Metadata)
+                // 🐇 Avoid enumerator allocations for Dictionary<TKey, TValue>
+                if (descriptor.Metadata is Dictionary<string, string> metadata)
                 {
-                    hash.Add(kvp.Key, StringComparer.Ordinal);
-                    hash.Add(kvp.Value, StringComparer.Ordinal);
+                    foreach (var kvp in metadata)
+                    {
+                        hash.Add(kvp.Key, StringComparer.Ordinal);
+                        hash.Add(kvp.Value, StringComparer.Ordinal);
+                    }
+                }
+                else
+                {
+                    foreach (var kvp in descriptor.Metadata)
+                    {
+                        hash.Add(kvp.Key, StringComparer.Ordinal);
+                        hash.Add(kvp.Value, StringComparer.Ordinal);
+                    }
                 }
             }
 

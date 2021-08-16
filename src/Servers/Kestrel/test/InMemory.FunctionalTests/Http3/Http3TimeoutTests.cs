@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -502,6 +503,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var inboundControlStream = await Http3Api.GetInboundControlStream();
             await inboundControlStream.ExpectSettingsAsync();
 
+            Logger.LogInformation("Sending first request");
             var requestStream1 = await Http3Api.CreateRequestStream();
 
             // _maxData is 16 KiB, and 16 KiB / 240 bytes/sec ~= 68 secs which is far above the grace period.
@@ -513,6 +515,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await requestStream1.ExpectReceiveEndOfStream();
 
+            Logger.LogInformation("Sending second request");
             var requestStream2 = await Http3Api.CreateRequestStream();
 
             await requestStream2.SendHeadersAsync(ReadRateRequestHeaders(_maxData.Length), endStream: false);

@@ -4,6 +4,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <TestGroupName>IISNewHandler.FunctionalTests</TestGroupName>
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
+    <DefineConstants>NEWHANDLER_FUNCTIONALS</DefineConstants>
     <SkipTests Condition=" '$(SkipIISNewHandlerTests)' == 'true' ">true</SkipTests>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>

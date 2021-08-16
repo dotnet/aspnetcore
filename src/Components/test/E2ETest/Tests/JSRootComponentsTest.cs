@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Interactions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -198,6 +199,41 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                     Assert.Equal("nullVal", param.FindElement(By.ClassName("unmatched-value-name")).Text);
                     Assert.Equal("null", param.FindElement(By.ClassName("unmatched-value-type")).Text);
                 });
+        }
+
+        [Fact]
+        public void CanSupplyAndInvokeFunctionParameters()
+        {
+            var containerId = "root-container-1";
+
+            app.FindElement(By.Id("add-root-component")).Click();
+            app.FindElement(By.Id("set-callback-params")).Click();
+            Browser.Equal($"Finished setting callback parameters on component in {containerId}", () => app.FindElement(By.Id("message")).Text);
+
+            var container = Browser.FindElement(By.Id(containerId));
+
+            // Invoke the callback without params.
+            container.FindElement(By.ClassName("js-callback")).Click();
+            Browser.Equal($"JavaScript button callback invoked (id=0)", () => app.FindElement(By.Id("message")).Text);
+
+            // Invoke the callback with params.
+            container.FindElement(By.ClassName("js-callback-with-params")).Click();
+            Browser.Equal($"JavaScript button callback received mouse event args (id=0, buttons=0)", () => app.FindElement(By.Id("message")).Text);
+
+            // Change the callback to one that displays the last ID (0) incremented by 1.
+            app.FindElement(By.Id("set-callback-params")).Click();
+
+            // Invoke callback without params (id=1).
+            container.FindElement(By.ClassName("js-callback")).Click();
+            Browser.Equal($"JavaScript button callback invoked (id=1)", () => app.FindElement(By.Id("message")).Text);
+
+            // Remove all callbacks.
+            app.FindElement(By.Id("remove-callback-params")).Click();
+            Browser.Equal($"Finished removing callback parameters on component in {containerId}", () => app.FindElement(By.Id("message")).Text);
+
+            // Invoke the callback without params, assert that it no-ops.
+            container.FindElement(By.ClassName("js-callback-with-params")).Click();
+            Browser.Equal($"Finished removing callback parameters on component in {containerId}", () => app.FindElement(By.Id("message")).Text);
         }
 
         [Fact]

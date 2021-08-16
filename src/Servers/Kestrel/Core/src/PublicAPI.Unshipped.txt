@@ -183,7 +183,7 @@ Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions.OnAuthen
 Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions.OnAuthenticate.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions.ServerCertificate.get -> System.Security.Cryptography.X509Certificates.X509Certificate2?
 Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions.ServerCertificate.set -> void
-Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions.ServerCertificateSelector.get -> System.Func<Microsoft.AspNetCore.Connections.ConnectionContext!, string?, System.Security.Cryptography.X509Certificates.X509Certificate2?>?
+Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions.ServerCertificateSelector.get -> System.Func<Microsoft.AspNetCore.Connections.ConnectionContext?, string?, System.Security.Cryptography.X509Certificates.X509Certificate2?>?
 Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions.ServerCertificateSelector.set -> void
 Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader.AnyIPEndpoint(int port) -> Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader!
 Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader.AnyIPEndpoint(int port, System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!>! configure) -> Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader!

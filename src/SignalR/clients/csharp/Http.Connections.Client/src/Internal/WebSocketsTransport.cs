@@ -181,8 +181,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             Log.StartedTransport(_logger);
 
             // Create the pipe pair (Application's writer is connected to Transport's reader, and vice versa)
-            var options = ClientPipeOptions.DefaultOptions;
-            var pair = DuplexPipe.CreateConnectionPair(options, options);
+            var pair = DuplexPipe.CreateConnectionPair(_httpConnectionOptions.TransportPipeOptions, _httpConnectionOptions.AppPipeOptions);
 
             _transport = pair.Transport;
             _application = pair.Application;

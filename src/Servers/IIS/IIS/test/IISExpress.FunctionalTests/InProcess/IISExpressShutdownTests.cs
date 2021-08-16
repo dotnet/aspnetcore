@@ -6,13 +6,14 @@ using System.IO;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests
 {
     [Collection(PublishedSitesCollection.Name)]
     public class IISExpressShutdownTests : IISFunctionalTestBase

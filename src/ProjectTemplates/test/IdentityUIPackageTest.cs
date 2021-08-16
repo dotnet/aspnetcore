@@ -125,7 +125,7 @@ namespace Templates.Test
             Assert.True(0 == migrationsResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", project, migrationsResult));
             project.AssertEmptyMigration("razorpages");
 
-            var versionValidator = "Bootstrap v5.0.2";
+            var versionValidator = "Bootstrap v5.1.0";
             using (var aspNetProcess = project.StartBuiltProjectAsync())
             {
                 Assert.False(

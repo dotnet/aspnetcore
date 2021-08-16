@@ -256,6 +256,62 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Fact]
+        public async Task SpecifiedQueryParametersDoNotFallbackToRouteValues()
+        {
+            var httpContext = new DefaultHttpContext();
+
+            var requestDelegate = RequestDelegateFactory.Create((int? id, HttpContext httpContext) =>
+            {
+                if (id is not null)
+                {
+                    httpContext.Items["input"] = id;
+                }
+            },
+            new() { RouteParameterNames = new string[] { } });
+
+            httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["id"] = "41"
+            });
+            httpContext.Request.RouteValues = new()
+            {
+                ["id"] = "42"
+            };
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(41, httpContext.Items["input"]);
+        }
+
+        [Fact]
+        public async Task NullRouteParametersPrefersRouteOverQueryString()
+        {
+            var httpContext = new DefaultHttpContext();
+
+            var requestDelegate = RequestDelegateFactory.Create((int? id, HttpContext httpContext) =>
+            {
+                if (id is not null)
+                {
+                    httpContext.Items["input"] = id;
+                }
+            },
+            new() { RouteParameterNames = null });
+
+            httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["id"] = "41"
+            });
+            httpContext.Request.RouteValues = new()
+            {
+                ["id"] = "42"
+            };
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(42, httpContext.Items["input"]);
+        }
+
+        [Fact]
         public async Task CreatingDelegateWithInstanceMethodInfoCreatesInstancePerCall()
         {
             var methodInfo = typeof(HttpHandler).GetMethod(nameof(HttpHandler.Handle));
@@ -852,7 +908,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             httpContext.Request.Body = new IOExceptionThrowingRequestBodyStream(invalidDataException);
             httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
             httpContext.Features.Set<IHttpRequestLifetimeFeature>(new TestHttpRequestLifetimeFeature());
-            
+
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
             var factoryResult = RequestDelegateFactory.Create(TestAction);
@@ -1560,7 +1616,11 @@ namespace Microsoft.AspNetCore.Routing.Internal
             serviceCollection.AddSingleton(LoggerFactory);
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var factoryResult = RequestDelegateFactory.Create(@delegate);
+            var factoryResult = RequestDelegateFactory.Create(@delegate, new()
+            {
+                RouteParameterNames = routeParam is not null ? new[] { paramName } : Array.Empty<string>()
+            });
+
             var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
@@ -1612,7 +1672,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             var responseBodyStream = new MemoryStream();
             httpContext.Response.Body = responseBodyStream;
-            
+
             if (hasBody)
             {
                 var todo = new Todo() { Name = "Default Todo" };
@@ -1748,7 +1808,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             await requestDelegate(httpContext);
 
             var logs = TestSink.Writes.ToArray();
-            
+
             if (!allowsEmptyRequest)
             {
                 Assert.Equal(400, httpContext.Response.StatusCode);

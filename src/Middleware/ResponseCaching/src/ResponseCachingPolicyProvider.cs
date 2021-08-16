@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         public virtual bool IsCachedEntryFresh(ResponseCachingContext context)
         {
             var age = context.CachedEntryAge!.Value;
-            var cachedCacheControlHeaders = context.CachedResponseHeaders[HeaderNames.CacheControl];
+            var cachedCacheControlHeaders = context.CachedResponseHeaders.CacheControl;
             var requestCacheControlHeaders = context.HttpContext.Request.Headers.CacheControl;
 
             // Add min-fresh requirements
@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 {
                     // Validate expiration
                     DateTimeOffset expires;
-                    if (HeaderUtilities.TryParseDate(context.CachedResponseHeaders[HeaderNames.Expires].ToString(), out expires) &&
+                    if (HeaderUtilities.TryParseDate(context.CachedResponseHeaders.Expires.ToString(), out expires) &&
                         context.ResponseTime!.Value >= expires)
                     {
                         context.Logger.ExpirationExpiresExceeded(context.ResponseTime.Value, expires);

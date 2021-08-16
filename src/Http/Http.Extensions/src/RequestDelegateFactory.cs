@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Net.Http;
 using System.Reflection;
@@ -47,15 +48,15 @@ namespace Microsoft.AspNetCore.Http
         private static readonly ParameterExpression BodyValueExpr = Expression.Parameter(typeof(object), "bodyValue");
         private static readonly ParameterExpression WasParamCheckFailureExpr = Expression.Variable(typeof(bool), "wasParamCheckFailure");
 
-        private static readonly MemberExpression RequestServicesExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.RequestServices));
-        private static readonly MemberExpression HttpRequestExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.Request));
-        private static readonly MemberExpression HttpResponseExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.Response));
-        private static readonly MemberExpression RequestAbortedExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.RequestAborted));
-        private static readonly MemberExpression UserExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.User));
-        private static readonly MemberExpression RouteValuesExpr = Expression.Property(HttpRequestExpr, nameof(HttpRequest.RouteValues));
-        private static readonly MemberExpression QueryExpr = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Query));
-        private static readonly MemberExpression HeadersExpr = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Headers));
-        private static readonly MemberExpression StatusCodeExpr = Expression.Property(HttpResponseExpr, nameof(HttpResponse.StatusCode));
+        private static readonly MemberExpression RequestServicesExpr = Expression.Property(HttpContextExpr, typeof(HttpContext).GetProperty(nameof(HttpContext.RequestServices))!);
+        private static readonly MemberExpression HttpRequestExpr = Expression.Property(HttpContextExpr, typeof(HttpContext).GetProperty(nameof(HttpContext.Request))!);
+        private static readonly MemberExpression HttpResponseExpr = Expression.Property(HttpContextExpr, typeof(HttpContext).GetProperty(nameof(HttpContext.Response))!);
+        private static readonly MemberExpression RequestAbortedExpr = Expression.Property(HttpContextExpr, typeof(HttpContext).GetProperty(nameof(HttpContext.RequestAborted))!);
+        private static readonly MemberExpression UserExpr = Expression.Property(HttpContextExpr, typeof(HttpContext).GetProperty(nameof(HttpContext.User))!);
+        private static readonly MemberExpression RouteValuesExpr = Expression.Property(HttpRequestExpr, typeof(HttpRequest).GetProperty(nameof(HttpRequest.RouteValues))!);
+        private static readonly MemberExpression QueryExpr = Expression.Property(HttpRequestExpr, typeof(HttpRequest).GetProperty(nameof(HttpRequest.Query))!);
+        private static readonly MemberExpression HeadersExpr = Expression.Property(HttpRequestExpr, typeof(HttpRequest).GetProperty(nameof(HttpRequest.Headers))!);
+        private static readonly MemberExpression StatusCodeExpr = Expression.Property(HttpResponseExpr, typeof(HttpResponse).GetProperty(nameof(HttpResponse.StatusCode))!);
         private static readonly MemberExpression CompletedTaskExpr = Expression.Property(null, (PropertyInfo)GetMemberInfo<Func<Task>>(() => Task.CompletedTask));
 
         private static readonly BinaryExpression TempSourceStringNotNullExpr = Expression.NotEqual(TryParseMethodCache.TempSourceStringExpr, Expression.Constant(null));
@@ -247,11 +248,22 @@ namespace Microsoft.AspNetCore.Http
             }
             else if (parameter.ParameterType == typeof(string) || TryParseMethodCache.HasTryParseMethod(parameter))
             {
-                // We're in the fallback case and we have a parameter and route parameter match so don't fallback
-                // to query string in this case
-                if (factoryContext.RouteParameters is { } routeParams && routeParams.Contains(parameter.Name, StringComparer.OrdinalIgnoreCase))
+                // 1. We bind from route values only, if route parameters are non-null and the parameter name is in that set.
+                // 2. We bind from query only, if route parameters are non-null and the parameter name is NOT in that set.
+                // 3. Otherwise, we fallback to route or query if route parameters is null (it means we don't know what route parameters are defined). This case only happens
+                // when RDF.Create is manually invoked.
+                if (factoryContext.RouteParameters is { } routeParams)
                 {
-                    return BindParameterFromProperty(parameter, RouteValuesExpr, parameter.Name, factoryContext);
+                    if (routeParams.Contains(parameter.Name, StringComparer.OrdinalIgnoreCase))
+                    {
+                        // We're in the fallback case and we have a parameter and route parameter match so don't fallback
+                        // to query string in this case
+                        return BindParameterFromProperty(parameter, RouteValuesExpr, parameter.Name, factoryContext);
+                    }
+                    else
+                    {
+                        return BindParameterFromProperty(parameter, QueryExpr, parameter.Name, factoryContext);
+                    }
                 }
 
                 return BindParameterFromRouteValueOrQueryString(parameter, parameter.Name, factoryContext);
