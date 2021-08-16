@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
-using static System.Collections.Specialized.BitVector32;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -161,7 +160,7 @@ namespace Microsoft.AspNetCore.Http
                 factoryContext.RouteParameters = new(routeParameterNames);
             }
 
-            var arguments = CreateArguments(methodInfo.GetParameters(), factoryContext, options);
+            var arguments = CreateArguments(methodInfo.GetParameters(), factoryContext);
 
             var responseWritingMethodCall = factoryContext.ParamCheckExpressions.Count > 0 ?
                 CreateParamCheckingResponseWritingMethodCall(methodInfo, targetExpression, arguments, factoryContext) :
@@ -175,7 +174,7 @@ namespace Microsoft.AspNetCore.Http
             return HandleRequestBodyAndCompileRequestDelegate(responseWritingMethodCall, factoryContext);
         }
 
-        private static Expression[] CreateArguments(ParameterInfo[]? parameters, FactoryContext factoryContext, RequestDelegateFactoryOptions? options)
+        private static Expression[] CreateArguments(ParameterInfo[]? parameters, FactoryContext factoryContext)
         {
             if (parameters is null || parameters.Length == 0)
             {
@@ -186,13 +185,13 @@ namespace Microsoft.AspNetCore.Http
 
             for (var i = 0; i < parameters.Length; i++)
             {
-                args[i] = CreateArgument(parameters[i], factoryContext, options);
+                args[i] = CreateArgument(parameters[i], factoryContext);
             }
 
             return args;
         }
 
-        private static Expression CreateArgument(ParameterInfo parameter, FactoryContext factoryContext, RequestDelegateFactoryOptions? options)
+        private static Expression CreateArgument(ParameterInfo parameter, FactoryContext factoryContext)
         {
             if (parameter.Name is null)
             {
@@ -220,7 +219,7 @@ namespace Microsoft.AspNetCore.Http
             }
             else if (parameterCustomAttributes.OfType<IFromBodyMetadata>().FirstOrDefault() is { } bodyAttribute)
             {
-                return BindParameterFromBody(parameter, bodyAttribute.AllowEmpty, factoryContext, options);
+                return BindParameterFromBody(parameter, bodyAttribute.AllowEmpty, factoryContext);
             }
             else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)))
             {
@@ -278,7 +277,7 @@ namespace Microsoft.AspNetCore.Http
                     }
                 }
 
-                return BindParameterFromBody(parameter, allowEmpty: false, factoryContext, options);
+                return BindParameterFromBody(parameter, allowEmpty: false, factoryContext);
             }
         }
 
@@ -721,7 +720,7 @@ namespace Microsoft.AspNetCore.Http
             return BindParameterFromValue(parameter, Expression.Coalesce(routeValue, queryValue), factoryContext);
         }
 
-        private static Expression BindParameterFromBody(ParameterInfo parameter, bool allowEmpty, FactoryContext factoryContext, RequestDelegateFactoryOptions? options)
+        private static Expression BindParameterFromBody(ParameterInfo parameter, bool allowEmpty, FactoryContext factoryContext)
         {
             if (factoryContext.JsonRequestBodyType is not null)
             {
