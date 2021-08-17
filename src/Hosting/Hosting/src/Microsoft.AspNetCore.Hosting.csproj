@@ -34,4 +34,8 @@
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\*.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Identity.DefaultUI.WebSite" />
+  </ItemGroup>
+
 </Project>

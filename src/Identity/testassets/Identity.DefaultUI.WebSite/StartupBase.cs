@@ -15,6 +15,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.StaticWebAssets;
 
 namespace Identity.DefaultUI.WebSite
 {
@@ -102,11 +103,8 @@ namespace Identity.DefaultUI.WebSite
                     case PhysicalFileProvider physical:
                         physical.UseActivePolling = false;
                         break;
-                    case IFileProvider staticWebAssets when staticWebAssets.GetType().Name == "StaticWebAssetsFileProvider":
-                        GetUnderlyingProvider(staticWebAssets).UseActivePolling = false;
-                        break;
-                    case IFileProvider manifestStaticWebAssets when manifestStaticWebAssets.GetType().Name == "ManifestStaticWebAssetFileProvider":
-                        foreach (var provider in GetUnderlyingProviders(manifestStaticWebAssets))
+                    case ManifestStaticWebAssetFileProvider manifestStaticWebAssets:
+                        foreach (var provider in manifestStaticWebAssets.FileProviders)
                         {
                             pendingProviders.Push(provider);
                         }
@@ -123,19 +121,6 @@ namespace Identity.DefaultUI.WebSite
                         throw new InvalidOperationException($"Unknown provider '{currentProvider.GetType().Name}'");
                 }
             }
-        }
-
-        private static IFileProvider[] GetUnderlyingProviders(IFileProvider manifestStaticWebAssets)
-        {
-            return (IFileProvider[])manifestStaticWebAssets
-                .GetType()
-                .GetField("_fileProviders", BindingFlags.NonPublic | BindingFlags.Instance)
-                .GetValue(manifestStaticWebAssets);
-        }
-
-        private static PhysicalFileProvider GetUnderlyingProvider(IFileProvider staticWebAssets)
-        {
-            return (PhysicalFileProvider) staticWebAssets.GetType().GetProperty("InnerProvider").GetValue(staticWebAssets);
         }
     }
 }
