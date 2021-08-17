@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Builder
         private readonly HostBuilder _hostBuilder = new();
         private readonly BootstrapHostBuilder _bootstrapHostBuilder;
         private readonly WebApplicationServiceCollection _services = new();
-        private static string EndpointRouteBuilderKey = "__EndpointRouteBuilder";
+        private const string EndpointRouteBuilderKey = "__EndpointRouteBuilder";
 
         private WebApplication? _builtApplication;
 
