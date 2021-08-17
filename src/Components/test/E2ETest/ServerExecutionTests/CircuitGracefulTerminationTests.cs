@@ -26,6 +26,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
+            // The browser won't sent the disconnection message if it's headless
+            browserFixture.EnsureNotHeadless = true;
         }
 
         public TaskCompletionSource<object> GracefulDisconnectCompletionSource { get; private set; }
@@ -65,7 +67,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.Contains((Extensions.Logging.LogLevel.Debug, "CircuitDisconnectedPermanently"), Messages);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/23015")]
+        [Fact]
         public async Task ClosingTheBrowserWindow_GracefullyDisconnects_TheCurrentCircuit()
         {
             // Arrange & Act
@@ -73,6 +75,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await Task.WhenAny(Task.Delay(10000), GracefulDisconnectCompletionSource.Task);
 
             // Assert
+            Assert.True(GracefulDisconnectCompletionSource.Task.IsCompletedSuccessfully);
             Assert.Contains((Extensions.Logging.LogLevel.Debug, "CircuitTerminatedGracefully"), Messages);
             Assert.Contains((Extensions.Logging.LogLevel.Debug, "CircuitDisconnectedPermanently"), Messages);
         }
