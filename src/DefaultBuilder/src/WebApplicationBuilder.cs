@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Builder
             // lets remove the property and reset it at the end so we don't mess with the routes in the filter
             if (app.Properties.TryGetValue(EndpointRouteBuilderKey, out var priorRouteBuilder))
             {
-                app.Properties.Remove("__EndpointRouteBuilder");
+                app.Properties.Remove(EndpointRouteBuilderKey);
             }
 
             if (context.HostingEnvironment.IsDevelopment())
@@ -242,8 +242,6 @@ namespace Microsoft.AspNetCore.Builder
 
             // Remove the route builder to clean up the properties, we're done adding routes to the pipeline
             app.Properties.Remove(WebApplication.GlobalEndpointRouteBuilderKey);
-            app.Properties.Remove(EndpointRouteBuilderKey);
-            _builtApplication.Properties.Remove(EndpointRouteBuilderKey);
 
             // reset route builder if it existed, this is needed for StartupFilters
             if (priorRouteBuilder is not null)

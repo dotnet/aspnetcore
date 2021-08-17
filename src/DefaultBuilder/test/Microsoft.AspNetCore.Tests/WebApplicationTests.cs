@@ -1058,21 +1058,6 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
-        public async Task AppPropertiesDoNotContainARouteBuilder()
-        {
-            var builder = WebApplication.CreateBuilder();
-            await using var app = builder.Build();
-
-            app.UseRouting();
-
-            app.UseEndpoints(endpoints => { });
-
-            app.Start();
-
-            Assert.False(app.Properties.TryGetValue("__EndpointRouteBuilder", out _));
-        }
-
-        [Fact]
         public async Task WebApplication_CallsUseRoutingAndUseEndpoints()
         {
             var builder = WebApplication.CreateBuilder();
