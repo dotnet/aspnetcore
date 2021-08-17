@@ -361,8 +361,9 @@ namespace Microsoft.AspNetCore.Builder
 
         [Fact]
         // This test scenario simulates methods defined in a top-level program
-        // which are compiler generated.
-        public void MapMethod_SetsEndpointNameForInnerMethod()
+        // which are compiler generated. This can be re-examined once
+        // https://github.com/dotnet/roslyn/issues/55651 is addressed.
+        public void MapMethod_DoesNotEndpointNameForInnerMethod()
         {
             var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
             string InnerGetString() => "TestString";
@@ -373,8 +374,7 @@ namespace Microsoft.AspNetCore.Builder
             var endpoint = Assert.Single(dataSource.Endpoints);
 
             var endpointName = endpoint.Metadata.GetMetadata<IEndpointNameMetadata>();
-            Assert.NotNull(endpointName);
-            Assert.Equal("InnerGetString", endpointName?.EndpointName);
+            Assert.Null(endpointName);
         }
 
         [Fact]
