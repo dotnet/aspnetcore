@@ -657,5 +657,65 @@ namespace Microsoft.AspNetCore.Diagnostics
                 && w.EventId == 4
                 && w.Message == "No exception handler was found, rethrowing original exception.");
         }
+
+        [Fact]
+        public async Task ExceptionHandlerWorksAfterUseRoutingIfGlobalRouteBuilderUsed()
+        {
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .ConfigureServices(services =>
+                    {
+                        services.AddRouting();
+                    })
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.Use(async (httpContext, next) =>
+                        {
+                            Exception exception = null;
+                            try
+                            {
+                                await next(httpContext);
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                exception = ex;
+                            }
+
+                            Assert.Null(exception);
+                        });
+
+                        app.UseRouting();
+                        app.Properties["__GlobalEndpointRouteBuilder"] = app.Properties["__EndpointRouteBuilder"];
+
+                        app.UseExceptionHandler("/handle-errors");
+
+                        app.UseEndpoints(endpoints =>
+                        {
+                            endpoints.Map("/handle-errors", c => {
+                                c.Response.StatusCode = 200;
+                                return c.Response.WriteAsync("Handled");
+                            });
+                        });
+
+                        app.Run((httpContext) =>
+                        {
+                            throw new InvalidOperationException("Something bad happened");
+                        });
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
+            {
+                var client = server.CreateClient();
+                var response = await client.GetAsync(string.Empty);
+                response.EnsureSuccessStatusCode();
+                Assert.Equal("Handled", await response.Content.ReadAsStringAsync());
+            }
+        }
     }
 }

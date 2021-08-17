@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder
@@ -26,7 +28,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            return app.UseMiddleware<ExceptionHandlerMiddleware>();
+            return SetExceptionHandlerMiddleware(app, options: null);
         }
 
         /// <summary>
@@ -95,7 +97,53 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(options));
             }
 
-            return app.UseMiddleware<ExceptionHandlerMiddleware>(Options.Create(options));
+            var iOptions = Options.Create(options);
+            return SetExceptionHandlerMiddleware(app, iOptions);
+        }
+
+        private static IApplicationBuilder SetExceptionHandlerMiddleware(IApplicationBuilder app, IOptions<ExceptionHandlerOptions>? options)
+        {
+            // Check if UseRouting() has been called so we know if it's safe to call UseRouting()
+            // otherwise we might call UseRouting() when AddRouting() hasn't been called which would fail
+            if (app.Properties.TryGetValue("__EndpointRouteBuilder", out _) || app.Properties.TryGetValue("__GlobalEndpointRouteBuilder", out _))
+            {
+                return app.Use(next =>
+                {
+                    var loggerFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
+                    var diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
+
+                    if (options is null)
+                    {
+                        options = app.ApplicationServices.GetRequiredService<IOptions<ExceptionHandlerOptions>>();
+                    }
+
+                    if (!string.IsNullOrEmpty(options.Value.ExceptionHandlingPath) && options.Value.ExceptionHandler is null)
+                    {
+                        app.Properties.TryGetValue("__GlobalEndpointRouteBuilder", out var routeBuilder);
+                        // start a new middleware pipeline
+                        var builder = app.New();
+                        if (routeBuilder is not null)
+                        {
+                            // use the old routing pipeline if it exists so we preserve all the routes and matching logic
+                            builder.Properties["__GlobalEndpointRouteBuilder"] = routeBuilder;
+                        }
+                        builder.UseRouting();
+                        // apply the next middleware
+                        builder.Run(next);
+                        // store the pipeline for the error case
+                        options.Value.ExceptionHandler = builder.Build();
+                    }
+
+                    return new ExceptionHandlerMiddleware(next, loggerFactory, options, diagnosticListener).Invoke;
+                });
+            }
+
+            if (options is null)
+            {
+                return app.UseMiddleware<ExceptionHandlerMiddleware>();
+            }
+
+            return app.UseMiddleware<ExceptionHandlerMiddleware>(options);
         }
     }
 }
