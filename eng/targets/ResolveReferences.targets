@@ -236,8 +236,8 @@
       '$(MSBuildProjectName)' != 'RepoTasks' AND
       ($(_CompileTfmUsingReferenceAssemblies) OR
        ('$(IsTargetingPackBuilding)' != 'false' AND '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref')) ">
-    <PackageReference Include="Microsoft.AspNetCore.Internal.Transport"
-        Version="$(MicrosoftAspNetCoreInternalTransportVersion)"
+    <PackageReference Include="Microsoft.Internal.Runtime.AspNetCore.Transport"
+        Version="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)"
         IsImplicitlyDefined="true"
         IncludeAssets="Compile"
         PrivateAssets="All"
@@ -253,7 +253,7 @@
   -->
   <Target Name="RemoveExtensionsCompileAssets"
       AfterTargets="ResolvePackageAssets"
-      Condition=" '$(PkgMicrosoft_AspNetCore_Internal_Transport)' != '' AND
+      Condition=" '$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)' != '' AND
           '$(IsServicingBuild)' == 'true' AND
           '$(IsImplementationProject)' == 'true' AND
           '$(MSBuildProjectName)' != 'Ignitor' AND
@@ -262,8 +262,8 @@
            ('$(IsTargetingPackBuilding)' != 'false' AND '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref')) ">
     <ItemGroup>
       <ResolvedCompileFileDefinitions Remove="@(ResolvedCompileFileDefinitions)"
-          Condition=" '%(NuGetPackageId)' != 'Microsoft.AspNetCore.Internal.Transport' AND
-              EXISTS('$(PkgMicrosoft_AspNetCore_Internal_Transport)\ref\$(TargetFramework)\%(Filename).dll') AND
+          Condition=" '%(NuGetPackageId)' != 'Microsoft.Internal.Runtime.AspNetCore.Transport' AND
+              EXISTS('$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)\ref\$(TargetFramework)\%(Filename).dll') AND
               $([System.String]::new('%(Directory)').Contains('$(TargetFramework)')) " />
     </ItemGroup>
   </Target>
