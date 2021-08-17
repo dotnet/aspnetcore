@@ -135,6 +135,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal void Fail(Exception ex)
         {
+            Dispose();
+            _requestStream.Abort();
             if (_tcs.TrySetException(ex) && _callback != null)
             {
                 try
@@ -147,8 +149,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     // TODO: Log
                 }
             }
-            Dispose();
-            _requestStream.Abort();
         }
 
         [SuppressMessage("Microsoft.Usage", "CA2216:DisposableTypesShouldDeclareFinalizer", Justification = "The disposable resource referenced does have a finalizer.")]

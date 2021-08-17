@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private static bool SupportsGoAway = true;
 
         private ResponseState _responseState;
+        private bool _aborted;
         private string? _reasonPhrase;
         private ResponseBody? _nativeStream;
         private AuthenticationSchemes _authChallenges;
@@ -196,14 +197,16 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal void Abort()
         {
-            // Update state for HasStarted. Do not attempt a graceful Dispose.
-            _responseState = ResponseState.Closed;
+            // Do not attempt a graceful Dispose.
+            // _responseState is not modified because that refers to app state like modifying
+            // status and headers. See https://github.com/dotnet/aspnetcore/issues/12194.
+            _aborted = true;
         }
 
         // should only be called from RequestContext
         internal void Dispose()
         {
-            if (_responseState >= ResponseState.Closed)
+            if (_aborted || _responseState >= ResponseState.Closed)
             {
                 return;
             }
