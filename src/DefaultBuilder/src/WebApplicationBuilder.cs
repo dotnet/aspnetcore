@@ -203,11 +203,12 @@ namespace Microsoft.AspNetCore.Builder
             // destination.Run(source)
             // destination.UseEndpoints()
 
+            // Set the route builder so that UseRouting will use the WebApplication as the IEndpointRouteBuilder for route matching
+            app.Properties.Add(WebApplication.GlobalEndpointRouteBuilderKey, _builtApplication);
+
             // Only call UseRouting() if there are endpoints configured and UseRouting() wasn't called on the global route builder already
             if (_builtApplication.DataSources.Count > 0 && !_builtApplication.Properties.TryGetValue("__UseRoutingWithGlobalSet", out _))
             {
-                // Set the route builder so that UseRouting will use the WebApplication as the IEndpointRouteBuilder for route matching
-                app.Properties.Add(WebApplication.GlobalEndpointRouteBuilderKey, _builtApplication);
                 app.UseRouting();
             }
 
@@ -220,7 +221,6 @@ namespace Microsoft.AspNetCore.Builder
 
             if (_builtApplication.DataSources.Count > 0)
             {
-                app.Properties.TryAdd(WebApplication.GlobalEndpointRouteBuilderKey, _builtApplication);
                 // We don't know if user code called UseEndpoints(), so we will call it just in case, and we will make sure we are the only ones setting
                 // the EndpointDataSource in RouteOptions with this property
                 app.Properties[GlobalEndpointBuilderCopyRoutesKey] = null;
@@ -235,13 +235,10 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             // Remove the route builder to clean up the properties, we're done adding routes to the pipeline
-            // REVIEW: There aren't any tests that fail if these two lines are removed (except the one that verfies the properties are removed)
-            //         Not sure if it's a missing scenario or not needed
             app.Properties.Remove(WebApplication.GlobalEndpointRouteBuilderKey);
-            _builtApplication.Properties.Remove(WebApplication.GlobalEndpointRouteBuilderKey);
 
             // reset route builder if it existed, this is needed for StartupFilters
-            if (priorRouteBuilder is { })
+            if (priorRouteBuilder is not null)
             {
                 app.Properties["__EndpointRouteBuilder"] = priorRouteBuilder;
             }

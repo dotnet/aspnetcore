@@ -1085,7 +1085,6 @@ namespace Microsoft.AspNetCore.Tests
             app.Start();
 
             Assert.False(app.Properties.TryGetValue("__EndpointRouteBuilder", out _));
-            Assert.False(app.Properties.TryGetValue("__GlobalEndpointRouteBuilder", out _));
         }
 
         [Fact]
@@ -1160,11 +1159,11 @@ namespace Microsoft.AspNetCore.Tests
 
             var ds = app.Services.GetRequiredService<EndpointDataSource>();
             Assert.Equal(5, ds.Endpoints.Count);
-            Assert.Equal("Four", ds.Endpoints[0].DisplayName);
-            Assert.Equal("Five", ds.Endpoints[1].DisplayName);
-            Assert.Equal("One", ds.Endpoints[2].DisplayName);
-            Assert.Equal("Two", ds.Endpoints[3].DisplayName);
-            Assert.Equal("Three", ds.Endpoints[4].DisplayName);
+            Assert.Equal("One", ds.Endpoints[0].DisplayName);
+            Assert.Equal("Two", ds.Endpoints[1].DisplayName);
+            Assert.Equal("Three", ds.Endpoints[2].DisplayName);
+            Assert.Equal("Four", ds.Endpoints[3].DisplayName);
+            Assert.Equal("Five", ds.Endpoints[4].DisplayName);
 
             var client = app.GetTestClient();
 

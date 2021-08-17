@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.Builder
     {
         private const string EndpointRouteBuilder = "__EndpointRouteBuilder";
         private const string GlobalEndpointRouteBuilderKey = "__GlobalEndpointRouteBuilder";
-        private const string GlobalEndpointBuilderCopyRoutesKey = "__GlobalEndpointBuilderShouldCopyRoutes";
 
         /// <summary>
         /// Adds a <see cref="EndpointRoutingMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>.
@@ -108,13 +107,10 @@ namespace Microsoft.AspNetCore.Builder
             //
             // Each middleware gets its own collection of data sources, and all of those data sources also
             // get added to a global collection.
-            // In the global endpoint route case we only want to copy data sources once, so we wait for a specific key before copying data sources
-            // like in the case of minimal hosting
-            if (builder.Properties.TryGetValue(GlobalEndpointBuilderCopyRoutesKey, out _) ||
-                !builder.Properties.TryGetValue(GlobalEndpointRouteBuilderKey, out _))
+            var routeOptions = builder.ApplicationServices.GetRequiredService<IOptions<RouteOptions>>();
+            foreach (var dataSource in endpointRouteBuilder.DataSources)
             {
-                var routeOptions = builder.ApplicationServices.GetRequiredService<IOptions<RouteOptions>>();
-                foreach (var dataSource in endpointRouteBuilder.DataSources)
+                if (!routeOptions.Value.EndpointDataSources.Contains(dataSource))
                 {
                     routeOptions.Value.EndpointDataSources.Add(dataSource);
                 }
