@@ -23,11 +23,15 @@ namespace Microsoft.AspNetCore.Builder
         private readonly IHost _host;
         private readonly List<EndpointDataSource> _dataSources = new();
 
+        internal static string GlobalEndpointRouteBuilderKey = "__GlobalEndpointRouteBuilder";
+
         internal WebApplication(IHost host)
         {
             _host = host;
             ApplicationBuilder = new ApplicationBuilder(host.Services);
             Logger = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger(Environment.ApplicationName);
+
+            Properties[GlobalEndpointRouteBuilderKey] = this;
         }
 
         /// <summary>
@@ -170,7 +174,13 @@ namespace Microsoft.AspNetCore.Builder
         RequestDelegate IApplicationBuilder.Build() => BuildRequestDelegate();
 
         // REVIEW: Should this be wrapping another type?
-        IApplicationBuilder IApplicationBuilder.New() => ApplicationBuilder.New();
+        IApplicationBuilder IApplicationBuilder.New()
+        {
+            var newBuilder = ApplicationBuilder.New();
+            // Remove the route builder so branched pipelines have their own routing world
+            newBuilder.Properties.Remove(GlobalEndpointRouteBuilderKey);
+            return newBuilder;
+        }
 
         IApplicationBuilder IApplicationBuilder.Use(Func<RequestDelegate, RequestDelegate> middleware)
         {
@@ -178,7 +188,7 @@ namespace Microsoft.AspNetCore.Builder
             return this;
         }
 
-        IApplicationBuilder IEndpointRouteBuilder.CreateApplicationBuilder() => ApplicationBuilder.New();
+        IApplicationBuilder IEndpointRouteBuilder.CreateApplicationBuilder() => ((IApplicationBuilder)this).New();
 
         private void Listen(string? url)
         {
