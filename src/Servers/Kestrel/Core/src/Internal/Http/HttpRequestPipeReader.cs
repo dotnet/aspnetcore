@@ -80,6 +80,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _state = HttpStreamState.Open;
                 _body = body;
+                _error = null;
             }
         }
 
@@ -89,6 +90,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // As exampled in EngineTests.ZeroContentLengthNotSetAutomaticallyForCertainStatusCodes
             _state = HttpStreamState.Closed;
             _body = null;
+            _error = null;
         }
 
         public void Abort(Exception? error = null)
