@@ -770,9 +770,8 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Equal("new", await oldResult.Content.ReadAsStringAsync());
         }
 
-        // REVIEW: David doesn't like this behavior :)
         [Fact]
-        public async Task WebApplication_CanCallUseEndpointsWithoutUseRouting()
+        public async Task WebApplication_CanCallUseEndpointsWithoutUseRoutingFails()
         {
             var builder = WebApplication.CreateBuilder();
             builder.WebHost.UseTestServer();
@@ -780,22 +779,8 @@ namespace Microsoft.AspNetCore.Tests
 
             app.MapGet("/1", () => "1");
 
-            app.UseEndpoints(endpoints => { });
-
-            await app.StartAsync();
-
-            var endpointDataSource = app.Services.GetRequiredService<EndpointDataSource>();
-
-            var newEndpoint = Assert.Single(endpointDataSource.Endpoints);
-            var newRouteEndpoint = Assert.IsType<RouteEndpoint>(newEndpoint);
-            Assert.Equal("/1", newRouteEndpoint.RoutePattern.RawText);
-
-            var client = app.GetTestClient();
-
-            var oldResult = await client.GetAsync("http://localhost/1");
-            oldResult.EnsureSuccessStatusCode();
-
-            Assert.Equal("1", await oldResult.Content.ReadAsStringAsync());
+            var ex = Assert.Throws<InvalidOperationException>(() => app.UseEndpoints(endpoints => { }));
+            Assert.Contains("UseRouting", ex.Message);
         }
 
         [Fact]
@@ -1174,6 +1159,33 @@ namespace Microsoft.AspNetCore.Tests
             // Can access branched routes
             _ = await client.GetAsync("http://localhost/h3");
             Assert.Equal("Four", chosenRoute);
+        }
+
+        [Fact]
+        public async Task PropertiesPreservedFromInnerApplication()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.Services.AddSingleton<IStartupFilter, PropertyFilter>();
+            await using var app = builder.Build();
+
+            ((IApplicationBuilder)app).Properties["didsomething"] = true;
+
+            app.Start();
+        }
+
+        class PropertyFilter : IStartupFilter
+        {
+            public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+            {
+                return app =>
+                {
+                    next(app);
+
+                    // This should be true
+                    var val = app.Properties["didsomething"];
+                    Assert.True((bool)val);
+                };
+            }
         }
 
         private class Service : IService { }

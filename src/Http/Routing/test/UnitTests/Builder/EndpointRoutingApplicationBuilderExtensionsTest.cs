@@ -311,8 +311,6 @@ namespace Microsoft.AspNetCore.Builder
             app.Properties.Add("__GlobalEndpointRouteBuilder", routeBuilder);
             app.UseRouting();
 
-            Assert.False(app.Properties.TryGetValue("__EndpointRouteBuilder", out _));
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.Map("/1", d => Task.CompletedTask).WithDisplayName("Test endpoint 1");
@@ -329,7 +327,7 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         [Fact]
-        public void UseRouting_DoesNotSetEndpointRouteBuilder_IfGlobalOneExists()
+        public void UseRouting_SetsEndpointRouteBuilder_IfGlobalOneExists()
         {
             // Arrange
             var services = CreateServices();
@@ -340,8 +338,9 @@ namespace Microsoft.AspNetCore.Builder
             app.Properties.Add("__GlobalEndpointRouteBuilder", routeBuilder);
             app.UseRouting();
 
-            Assert.False(app.Properties.TryGetValue("__EndpointRouteBuilder", out _));
-            Assert.True(app.Properties.TryGetValue("__GlobalEndpointRouteBuilder", out _));
+            Assert.True(app.Properties.TryGetValue("__EndpointRouteBuilder", out var local));
+            Assert.True(app.Properties.TryGetValue("__GlobalEndpointRouteBuilder", out var global));
+            Assert.Same(local, global);
         }
 
         private IServiceProvider CreateServices()

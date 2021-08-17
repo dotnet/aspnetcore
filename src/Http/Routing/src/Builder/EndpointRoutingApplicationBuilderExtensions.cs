@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Builder
             {
                 endpointRouteBuilder = (IEndpointRouteBuilder)obj!;
                 // Let interested parties know if UseRouting() was called while a global route builder was set
-                builder.Properties["__UseRoutingWithGlobalSet"] = true;
+                builder.Properties[EndpointRouteBuilder] = endpointRouteBuilder;
             }
             else
             {
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Builder
 
         private static void VerifyEndpointRoutingMiddlewareIsRegistered(IApplicationBuilder app, out IEndpointRouteBuilder endpointRouteBuilder)
         {
-            if (!app.Properties.TryGetValue(EndpointRouteBuilder, out var obj) && !app.Properties.TryGetValue(GlobalEndpointRouteBuilderKey, out obj))
+            if (!app.Properties.TryGetValue(EndpointRouteBuilder, out var obj))
             {
                 var message =
                     $"{nameof(EndpointRoutingMiddleware)} matches endpoints setup by {nameof(EndpointMiddleware)} and so must be added to the request " +
