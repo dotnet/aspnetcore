@@ -35,31 +35,31 @@
     </Dependency>
     <Dependency Name="dotnet-ef" Version="3.1.18">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
-      <Sha>36125f96cb9c0bf53a9c2cf80a4d06a0bd288aa2</Sha>
+      <Sha>ed3f6acb5ae56c7462efe58fee3f74996973a718</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="3.1.18">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
-      <Sha>36125f96cb9c0bf53a9c2cf80a4d06a0bd288aa2</Sha>
+      <Sha>ed3f6acb5ae56c7462efe58fee3f74996973a718</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="3.1.18">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
-      <Sha>36125f96cb9c0bf53a9c2cf80a4d06a0bd288aa2</Sha>
+      <Sha>ed3f6acb5ae56c7462efe58fee3f74996973a718</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.18">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
-      <Sha>36125f96cb9c0bf53a9c2cf80a4d06a0bd288aa2</Sha>
+      <Sha>ed3f6acb5ae56c7462efe58fee3f74996973a718</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.18">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
-      <Sha>36125f96cb9c0bf53a9c2cf80a4d06a0bd288aa2</Sha>
+      <Sha>ed3f6acb5ae56c7462efe58fee3f74996973a718</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="3.1.18">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
-      <Sha>36125f96cb9c0bf53a9c2cf80a4d06a0bd288aa2</Sha>
+      <Sha>ed3f6acb5ae56c7462efe58fee3f74996973a718</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore" Version="3.1.18">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
-      <Sha>36125f96cb9c0bf53a9c2cf80a4d06a0bd288aa2</Sha>
+      <Sha>ed3f6acb5ae56c7462efe58fee3f74996973a718</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Analyzer.Testing" Version="3.1.18-servicing.21364.3" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-extensions</Uri>
