@@ -106,8 +106,8 @@
     <MicrosoftExtensionsOptionsDataAnnotationsVersion>6.0.0-rc.1.21416.10</MicrosoftExtensionsOptionsDataAnnotationsVersion>
     <MicrosoftExtensionsOptionsVersion>6.0.0-rc.1.21416.10</MicrosoftExtensionsOptionsVersion>
     <MicrosoftExtensionsPrimitivesVersion>6.0.0-rc.1.21416.10</MicrosoftExtensionsPrimitivesVersion>
+    <MicrosoftInternalRuntimeAspNetCoreTransportVersion>6.0.0-rc.1.21415.6</MicrosoftInternalRuntimeAspNetCoreTransportVersion>
     <MicrosoftWin32SystemEventsVersion>6.0.0-rc.1.21416.10</MicrosoftWin32SystemEventsVersion>
-    <MicrosoftAspNetCoreInternalTransportVersion>6.0.0-rc.1.21415.6</MicrosoftAspNetCoreInternalTransportVersion>
     <SystemDiagnosticsDiagnosticSourceVersion>6.0.0-rc.1.21416.10</SystemDiagnosticsDiagnosticSourceVersion>
     <SystemDiagnosticsEventLogVersion>6.0.0-rc.1.21416.10</SystemDiagnosticsEventLogVersion>
     <SystemDirectoryServicesProtocolsVersion>6.0.0-rc.1.21416.10</SystemDirectoryServicesProtocolsVersion>
