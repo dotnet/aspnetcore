@@ -8,7 +8,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -136,7 +135,6 @@ namespace Microsoft.AspNetCore.Http
             try
             {
                 return await JsonSerializer.DeserializeAsync(inputStream, type, options, cancellationToken);
-
             }
             finally
             {
@@ -197,7 +195,6 @@ namespace Microsoft.AspNetCore.Http
         private static InvalidOperationException CreateContentTypeError(HttpRequest request)
         {
             return new InvalidOperationException($"Unable to read the request as JSON because the request content type '{request.ContentType}' is not a known JSON content type.");
-
         }
 
         private static (Stream inputStream, bool usesTranscodingStream) GetInputStream(HttpContext httpContext, Encoding? encoding)

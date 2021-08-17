@@ -267,20 +267,22 @@ namespace Microsoft.AspNetCore.Http
                 // when RDF.Create is manually invoked.
                 if (factoryContext.RouteParameters is { } routeParams)
                 {
-                    factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.RouteParameter);
+                   
                     if (routeParams.Contains(parameter.Name, StringComparer.OrdinalIgnoreCase))
                     {
                         // We're in the fallback case and we have a parameter and route parameter match so don't fallback
                         // to query string in this case
+                        factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.RouteParameter);
                         return BindParameterFromProperty(parameter, RouteValuesExpr, parameter.Name, factoryContext);
                     }
                     else
                     {
+                        factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.QueryStringParameter);
                         return BindParameterFromProperty(parameter, QueryExpr, parameter.Name, factoryContext);
                     }
                 }
 
-                factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.QueryStringParameter);
+                factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.RouteOrQueryStringParameter);
                 return BindParameterFromRouteValueOrQueryString(parameter, parameter.Name, factoryContext);
             }
             else
@@ -1002,6 +1004,7 @@ namespace Microsoft.AspNetCore.Http
             public const string QueryStringParameter = "Query String (Inferred)";
             public const string ServiceParameter = "Services (Inferred)";
             public const string BodyParameter = "Body (Inferred)";
+            public const string RouteOrQueryStringParameter = "Route or Query String (Inferred)";
 
         }
 
