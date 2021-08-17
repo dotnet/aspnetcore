@@ -521,6 +521,27 @@ namespace Microsoft.AspNetCore.Routing.Internal
             }
         }
 
+        private record struct MyTryParseHttpContextStruct(Uri Uri)
+        {
+            public static bool TryParse(HttpContext context, out MyTryParseHttpContextStruct result)
+            {
+                if (!Uri.TryCreate(context.Request.Headers.Referer, UriKind.Absolute, out var uri))
+                {
+                    result = default;
+                    return false;
+                }
+
+                result = new MyTryParseHttpContextStruct(uri);
+                return true;
+            }
+
+            // TryParse(HttpContext, ...) should be preferred over TryParse(string, ...) if there's
+            // no [FromRoute] or [FromQuery] attributes.
+            public static bool TryParse(string? value, out MyTryParseHttpContextStruct result) =>
+                throw new NotImplementedException();
+        }
+
+
         [Theory]
         [MemberData(nameof(TryParsableParameters))]
         public async Task RequestDelegatePopulatesUnattributedTryParsableParametersFromRouteValue(Delegate action, string? routeValue, object? expectedParameterValue)
@@ -599,6 +620,67 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(new MyTryParseHttpContextRecord(new Uri("https://example.org")), httpContext.Items["tryParsable"]);
         }
 
+        [Fact]
+        public async Task RequestDelegatePrefersTryParseHttpContextOverTryParseStringForNonNullableStruct()
+        {
+            var httpContext = new DefaultHttpContext();
+
+            httpContext.Request.Headers.Referer = "https://example.org";
+
+            var requestDelegate = RequestDelegateFactory.Create((HttpContext httpContext, MyTryParseHttpContextStruct tryParsable) =>
+            {
+                httpContext.Items["tryParsable"] = tryParsable;
+            });
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(new MyTryParseHttpContextStruct(new Uri("https://example.org")), httpContext.Items["tryParsable"]);
+        }
+
+        [Fact]
+        public async Task RequestDelegateUsesTryParseStringoOverTryParseHttpContextGivenExplicitAttribute()
+        {
+            var fromRouteRequestDelegate = RequestDelegateFactory.Create((HttpContext httpContext, [FromRoute] MyTryParseHttpContextRecord tryParsable) => { });
+            var fromQueryRequestDelegate = RequestDelegateFactory.Create((HttpContext httpContext, [FromQuery] MyTryParseHttpContextRecord tryParsable) => { });
+
+            var httpContext = new DefaultHttpContext
+            {
+                Request =
+                {
+                    RouteValues =
+                    {
+                        ["tryParsable"] = "foo"
+                    },
+                    Query = new QueryCollection(new Dictionary<string, StringValues>
+                    {
+                        ["tryParsable"] = "foo"
+                    }),
+                },
+            };
+
+            await Assert.ThrowsAsync<NotImplementedException>(() => fromRouteRequestDelegate(httpContext));
+            await Assert.ThrowsAsync<NotImplementedException>(() => fromQueryRequestDelegate(httpContext));
+        }
+
+        [Fact]
+        public async Task RequestDelegateUsesTryParseStringoOverTryParseHttpContextGivenNullableStruct()
+        {
+            var fromRouteRequestDelegate = RequestDelegateFactory.Create((HttpContext httpContext, MyTryParseHttpContextStruct? tryParsable) => { });
+
+            var httpContext = new DefaultHttpContext
+            {
+                Request =
+                {
+                    RouteValues =
+                    {
+                        ["tryParsable"] = "foo"
+                    },
+                },
+            };
+
+            await Assert.ThrowsAsync<NotImplementedException>(() => fromRouteRequestDelegate(httpContext));
+        }
+
         public static object[][] DelegatesWithAttributesOnNotTryParsableParameters
         {
             get
@@ -668,9 +750,44 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(LogLevel.Debug, logs[0].LogLevel);
             Assert.Equal(@"Failed to bind parameter ""Int32 tryParsable"" from ""invalid!"".", logs[0].Message);
 
-            Assert.Equal(new EventId(3, "ParamaterBindingFailed"), logs[0].EventId);
-            Assert.Equal(LogLevel.Debug, logs[0].LogLevel);
+            Assert.Equal(new EventId(3, "ParamaterBindingFailed"), logs[1].EventId);
+            Assert.Equal(LogLevel.Debug, logs[1].LogLevel);
             Assert.Equal(@"Failed to bind parameter ""Int32 tryParsable2"" from ""invalid again!"".", logs[1].Message);
+        }
+
+        [Fact]
+        public async Task RequestDelegateLogsTryParseHttpContextFailuresAndSets400Response()
+        {
+            // Not supplying any headers will cause the HttpContext TryParse overload to fail.
+            var httpContext = new DefaultHttpContext()
+            {
+                RequestServices = new ServiceCollection().AddSingleton(LoggerFactory).BuildServiceProvider(),
+            };
+
+            var invoked = false;
+
+            var requestDelegate = RequestDelegateFactory.Create((MyTryParseHttpContextRecord arg1, MyTryParseHttpContextRecord arg2) =>
+            {
+                invoked = true;
+            });
+
+            await requestDelegate(httpContext);
+
+            Assert.False(invoked);
+            Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+            Assert.Equal(400, httpContext.Response.StatusCode);
+
+            var logs = TestSink.Writes.ToArray();
+
+            Assert.Equal(2, logs.Length);
+
+            Assert.Equal(new EventId(5, "ParamaterBindingFromHttpContextFailed"), logs[0].EventId);
+            Assert.Equal(LogLevel.Debug, logs[0].LogLevel);
+            Assert.Equal(@"Failed to bind parameter ""MyTryParseHttpContextRecord arg1"" from HttpContext.", logs[0].Message);
+
+            Assert.Equal(new EventId(5, "ParamaterBindingFromHttpContextFailed"), logs[1].EventId);
+            Assert.Equal(LogLevel.Debug, logs[1].LogLevel);
+            Assert.Equal(@"Failed to bind parameter ""MyTryParseHttpContextRecord arg2"" from HttpContext.", logs[1].Message);
         }
 
         [Fact]
@@ -1706,6 +1823,37 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
                 Assert.Equal(expectedResponse, decodedResponseBody);
             }
+        }
+
+        public async Task RequestDelegateDoesNotSupportTryParseHttpContextOptionality()
+        {
+            // Not supplying any headers will cause the HttpContext TryParse overload to fail.
+            // However, RequestDelegateFactory cannot differentiate between a missing parameter and an invalid one, so
+            // the nullability of the argument doesn't change behavior.
+            var httpContext = new DefaultHttpContext()
+            {
+                RequestServices = new ServiceCollection().AddSingleton(LoggerFactory).BuildServiceProvider(),
+            };
+
+            var invoked = false;
+
+            var requestDelegate = RequestDelegateFactory.Create((MyTryParseHttpContextRecord? arg1) =>
+            {
+                invoked = true;
+            });
+
+            await requestDelegate(httpContext);
+
+            Assert.False(invoked);
+            Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+            Assert.Equal(400, httpContext.Response.StatusCode);
+
+            var logs = TestSink.Writes.ToArray();
+            var log = Assert.Single(logs);
+
+            Assert.Equal(new EventId(5, "ParamaterBindingFromHttpContextFailed"), log.EventId);
+            Assert.Equal(LogLevel.Debug, log.LogLevel);
+            Assert.Equal(@"Failed to bind parameter ""MyTryParseHttpContextRecord arg1"" from HttpContext.", log.Message);
         }
 
         public static IEnumerable<object?[]> ServiceParamOptionalityData
