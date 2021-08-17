@@ -19,7 +19,6 @@ namespace Microsoft.AspNetCore.Builder
         private readonly HostBuilder _hostBuilder = new();
         private readonly BootstrapHostBuilder _bootstrapHostBuilder;
         private readonly WebApplicationServiceCollection _services = new();
-        private const string GlobalEndpointBuilderCopyRoutesKey = "__GlobalEndpointBuilderShouldCopyRoutes";
 
         private WebApplication? _builtApplication;
 
@@ -221,11 +220,8 @@ namespace Microsoft.AspNetCore.Builder
 
             if (_builtApplication.DataSources.Count > 0)
             {
-                // We don't know if user code called UseEndpoints(), so we will call it just in case, and we will make sure we are the only ones setting
-                // the EndpointDataSource in RouteOptions with this property
-                app.Properties[GlobalEndpointBuilderCopyRoutesKey] = null;
+                // We don't know if user code called UseEndpoints(), so we will call it just in case, UseEndpoints() will ignore duplicate DataSources
                 app.UseEndpoints(_ => { });
-                app.Properties.Remove(GlobalEndpointBuilderCopyRoutesKey);
             }
 
             // Copy the properties to the destination app builder
