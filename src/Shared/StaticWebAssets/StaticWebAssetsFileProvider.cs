@@ -35,6 +35,9 @@ namespace Microsoft.AspNetCore.StaticWebAssets
             _root = manifest.Root;
         }
 
+        // For testing purposes only
+        internal IFileProvider[] FileProviders => _fileProviders;
+
         public IDirectoryContents GetDirectoryContents(string subpath)
         {
             if (subpath == null)
