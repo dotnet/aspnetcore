@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
+using Microsoft.AspNetCore.StaticWebAssets;
 using Microsoft.Extensions.FileProviders;
 using Moq;
 using Xunit;
@@ -23,7 +24,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests.StaticWebAssets
             var comparer = ManifestStaticWebAssetFileProvider.StaticWebAssetManifest.PathComparer;
             var expectedResult = OperatingSystem.IsWindows();
             var manifest = new ManifestStaticWebAssetFileProvider.StaticWebAssetManifest();
-            manifest.ContentRoots = new[] { Path.GetDirectoryName(typeof(StaticWebAssetsFileProviderTests).Assembly.Location) };
+            manifest.ContentRoots = new[] { Path.GetDirectoryName(typeof(ManifestStaticWebAssetsFileProviderTest).Assembly.Location) };
             manifest.Root = new()
             {
                 Children = new(comparer)
@@ -360,7 +361,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests.StaticWebAssets
             var comparer = ManifestStaticWebAssetFileProvider.StaticWebAssetManifest.PathComparer;
             var expectedResult = OperatingSystem.IsWindows();
             var manifest = new ManifestStaticWebAssetFileProvider.StaticWebAssetManifest();
-            manifest.ContentRoots = new[] { Path.GetDirectoryName(typeof(StaticWebAssetsFileProviderTests).Assembly.Location) };
+            manifest.ContentRoots = new[] { Path.GetDirectoryName(typeof(ManifestStaticWebAssetsFileProviderTest).Assembly.Location) };
             manifest.Root = new()
             {
                 Children = new(comparer)

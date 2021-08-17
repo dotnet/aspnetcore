@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
@@ -217,6 +218,8 @@ namespace Microsoft.Extensions.HotReload
             }
         }
 
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode",
+            Justification = "OpenComponent already has the right set of attributes")]
         private Type[] GetMetadataUpdateTypes(IReadOnlyList<UpdateDelta> deltas)
         {
             List<Type>? types = null;

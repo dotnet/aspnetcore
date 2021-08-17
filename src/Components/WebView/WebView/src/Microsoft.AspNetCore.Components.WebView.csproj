@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -26,9 +26,14 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\ElementReferenceJsonConverter.cs" LinkBase="Shared" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerializerOptionsProvider.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)StaticWebAssets\**\*.cs" LinkBase="Shared" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="Shared" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RenderBatchWriter.cs" LinkBase="Shared" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilderMemoryStream.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="buildTransitive\any\Microsoft.AspNetCore.Components.WebView.props" Pack="true" PackagePath="%(Identity)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -72,6 +77,7 @@
 
   <Target Name="_AddEmbeddedBlazorWebView" BeforeTargets="_CalculateEmbeddedFilesManifestInputs" DependsOnTargets="_CheckBlazorWebViewJSPath">
     <ItemGroup>
+      <EmbeddedResource Include="blazor.modules.json" LogicalName="_framework/blazor.modules.json" />
       <EmbeddedResource Include="$(BlazorWebViewJSFile)" LogicalName="_framework/$(BlazorWebViewJSFilename)" />
       <EmbeddedResource Include="$(BlazorWebViewJSFile).map" LogicalName="_framework/$(BlazorWebViewJSFilename).map" Condition="Exists('$(BlazorWebViewJSFile).map')" />
     </ItemGroup>
