@@ -361,8 +361,8 @@ namespace Microsoft.AspNetCore.Builder
 
         [Fact]
         // This test scenario simulates methods defined in a top-level program
-        // which are compiler generated. This can be re-examined once
-        // https://github.com/dotnet/roslyn/issues/55651 is addressed.
+        // which are compiler generated. We currently do some manually parsing leveraging
+        // code in Roslyn to support this scenario. More info at https://github.com/dotnet/roslyn/issues/55651.
         public void MapMethod_DoesNotEndpointNameForInnerMethod()
         {
             var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
@@ -374,7 +374,8 @@ namespace Microsoft.AspNetCore.Builder
             var endpoint = Assert.Single(dataSource.Endpoints);
 
             var endpointName = endpoint.Metadata.GetMetadata<IEndpointNameMetadata>();
-            Assert.Null(endpointName);
+            Assert.NotNull(endpointName);
+            Assert.Equal("InnerGetString", endpointName?.EndpointName);
         }
 
         [Fact]
@@ -390,6 +391,21 @@ namespace Microsoft.AspNetCore.Builder
             var endpointName = endpoint.Metadata.GetMetadata<IEndpointNameMetadata>();
             Assert.NotNull(endpointName);
             Assert.Equal("GetString", endpointName?.EndpointName);
+        }
+
+        [Fact]
+        public void WithNameOverridesDefaultEndpointName()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            _ = builder.MapDelete("/", GetString).WithName("SomeCustomName");
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var endpointName = endpoint.Metadata.GetMetadata<IEndpointNameMetadata>();
+            Assert.NotNull(endpointName);
+            Assert.Equal("SomeCustomName", endpointName?.EndpointName);
         }
 
         private string GetString() => "TestString";

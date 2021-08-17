@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.CodeAnalysis.CSharp.Symbols;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -185,16 +186,21 @@ namespace Microsoft.AspNetCore.Builder
             // Add MethodInfo as metadata to assist with OpenAPI generation for the endpoint.
             builder.Metadata.Add(action.Method);
 
-            // We only add endpoint names for types that are not compiler generated since
-            // compiler generated types are mangled by default. This logic can be changed once
-            // https://github.com/dotnet/roslyn/issues/55651 is addressed. For now, this will
-            // not set the endpoint name metadata for:
-            // - Local functions
-            // - Inline lambdas
-            // - Static functions
-            if (!TypeHelper.IsCompilerGenerated(action.Method.Name))
+            // Methods defined in a top-level program are generated as statics so the delegate
+            // target will be null. Inline lambdas are compiler generated properties so they can
+            // be filtered that way.
+            if (action.Target == null || !TypeHelper.IsCompilerGenerated(action.Method.Name))
             {
-                builder.Metadata.Add(new EndpointNameMetadata(action.Method.Name));
+                if (GeneratedNameParser.TryParseLocalFunctionName(action.Method.Name, out var endpointName))
+                {
+                    builder.Metadata.Add(new EndpointNameMetadata(endpointName));
+                    builder.Metadata.Add(new RouteNameMetadata(endpointName));
+                }
+                else
+                {
+                    builder.Metadata.Add(new EndpointNameMetadata(action.Method.Name));
+                    builder.Metadata.Add(new RouteNameMetadata(action.Method.Name));
+                }
             }
 
             // Add delegate attributes as metadata
