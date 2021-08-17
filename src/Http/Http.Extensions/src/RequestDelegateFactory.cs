@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Http
                 args[i] = CreateArgument(parameters[i], factoryContext);
             }
 
-            if(factoryContext.HasAnotherBodyParameter)
+            if(factoryContext.HasMultipleBodyParameters)
             {
                 var errorMessage = BuildErrorMessageForMultipleBodyParameters(factoryContext);
                 throw new InvalidOperationException(errorMessage);
@@ -741,7 +741,7 @@ namespace Microsoft.AspNetCore.Http
         {
             if (factoryContext.JsonRequestBodyType is not null)
             {
-                factoryContext.HasAnotherBodyParameter = true;
+                factoryContext.HasMultipleBodyParameters = true;
                 var parameterName = parameter.Name;
                 if (parameterName is not null && factoryContext.TrackedParameters.ContainsKey(parameterName))
                 {
@@ -989,7 +989,7 @@ namespace Microsoft.AspNetCore.Http
 
             public Dictionary<string, string> TrackedParameters { get; } = new();
 
-            public bool HasAnotherBodyParameter { get; set; }  
+            public bool HasMultipleBodyParameters { get; set; }  
         }
 
         private static class RequestDelegateFactoryConstants
@@ -1087,7 +1087,7 @@ namespace Microsoft.AspNetCore.Http
                 errorMessage.Append($"{kv.Key,-19} | {kv.Value, -15}\n");
             }
             errorMessage.Append("\n\n");
-            errorMessage.Append("Did you forget to inject the \"UNKNOWN\" parameters as a Service?\n\n");
+            errorMessage.Append("Did you mean to register the \"UNKNOWN\" parameters as a Service?\n\n");
             return errorMessage.ToString();
         }
     }
