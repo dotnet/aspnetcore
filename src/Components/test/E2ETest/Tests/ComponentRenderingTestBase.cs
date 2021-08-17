@@ -463,7 +463,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             string getFocusedElementId() => Browser.SwitchTo().ActiveElement().GetAttribute("id");
 
             // A local helper that gets window.PageYOffset
-            long getPageYOffset() => (long)((IJavaScriptExecutor)Browser).ExecuteScript("return window.pageYOffset");
+            long getPageYOffset() => (long)((IJavaScriptExecutor)Browser).ExecuteScript("return Math.round(window.pageYOffset)");
         }
 
         [Theory]
