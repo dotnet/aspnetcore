@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -138,7 +137,7 @@ namespace Microsoft.AspNetCore.Http
             {
                 return await JsonSerializer.DeserializeAsync(inputStream, type, options, cancellationToken);
 
-            } 
+            }
             finally
             {
                 if (usesTranscodingStream)
@@ -196,7 +195,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         private static InvalidOperationException CreateContentTypeError(HttpRequest request)
-        {         
+        {
             return new InvalidOperationException($"Unable to read the request as JSON because the request content type '{request.ContentType}' is not a known JSON content type.");
 
         }
