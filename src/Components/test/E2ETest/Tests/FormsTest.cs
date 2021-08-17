@@ -739,16 +739,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("modified invalid-socks", () => socksInput.GetAttribute("class"));
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/34857")]
+        [Fact]
         public void NavigateOnSubmitWorks()
         {
             var app = Browser.MountTestComponent<NavigateOnSubmit>();
             var input = app.FindElement(By.Id("text-input"));
 
-            input.SendKeys("Enter");
+            input.SendKeys(Keys.Enter);
 
-            var log = Browser.Manage().Logs.GetLog(LogType.Browser);
-            Assert.DoesNotContain(log, entry => entry.Level == LogLevel.Severe);
+            Browser.Equal("Choose...", () => Browser.WaitUntilTestSelectorReady().SelectedOption.Text);
         }
 
         [Fact]
