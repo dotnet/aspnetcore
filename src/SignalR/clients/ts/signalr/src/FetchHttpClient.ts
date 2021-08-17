@@ -32,11 +32,17 @@ export class FetchHttpClient extends HttpClient {
             // node-fetch doesn't have a nice API for getting and setting cookies
             // fetch-cookie will wrap a fetch implementation with a default CookieJar or a provided one
             this._fetchType = requireFunc("fetch-cookie")(this._fetchType, this._jar);
+        } else {
+            this._fetchType = fetch.bind(globalThis);
+        }
+        if (typeof AbortController === "undefined") {
+            // In order to ignore the dynamic require in webpack builds we need to do this magic
+            // @ts-ignore: TS doesn't know about these names
+            const requireFunc = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
 
             // Node needs EventListener methods on AbortController which our custom polyfill doesn't provide
             this._abortControllerType = requireFunc("abort-controller");
         } else {
-            this._fetchType = fetch.bind(self);
             this._abortControllerType = AbortController;
         }
     }
