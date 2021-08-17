@@ -73,6 +73,8 @@ namespace Microsoft.AspNetCore.Rewrite
                 Result = RuleResult.ContinueRules
             };
 
+            var originalPath = context.Request.Path;
+
             foreach (var rule in _options.Rules)
             {
                 rule.ApplyRule(rewriteContext);
@@ -93,6 +95,16 @@ namespace Microsoft.AspNetCore.Rewrite
                         throw new ArgumentOutOfRangeException($"Invalid rule termination {rewriteContext.Result}");
                 }
             }
+
+            // If a rule changed the path we want routing to find the new endpoint
+            if (originalPath != context.Request.Path)
+            {
+                if (context.GetEndpoint() is not null)
+                {
+                    context.SetEndpoint(null);
+                }
+            }
+
             return _next(context);
         }
     }
