@@ -135,6 +135,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal void Fail(Exception ex)
         {
+            // Make sure the Abort state is set before signaling the callback so we can avoid race condtions with user code.
             Dispose();
             _requestStream.Abort();
             if (_tcs.TrySetException(ex) && _callback != null)

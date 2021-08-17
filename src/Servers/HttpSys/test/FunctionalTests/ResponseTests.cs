@@ -232,9 +232,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                 }
 
-                // Let the Abort logic finish.
-                await Task.Yield();
-
                 try
                 {
                     // https://github.com/dotnet/aspnetcore/issues/12194
