@@ -183,7 +183,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(NuGetPackageId)|%(NuGetPackageVersion)')"
           Condition="!Exists('$(RuntimeTransportReferenceDirectory)%(AspNetCoreReferenceAssemblyPath.NuGetPackageId).dll') AND
             '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.NETCore.App' AND
-            '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.AspNetCore.Internal.Transport' AND
+            '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.Internal.Runtime.AspNetCore.Transport' AND
             '%(AspNetCoreReferenceAssemblyPath.NuGetSourceType)' == 'Package' " />
 
       <!-- Use NETCore.App.Runtime version for Runtime references. -->
