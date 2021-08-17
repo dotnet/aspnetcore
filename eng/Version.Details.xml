@@ -181,7 +181,7 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>380cfc9f3b4e1dab3266f44bb178ec456a9ae8a6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Internal.Transport" Version="6.0.0-rc.1.21415.6">
+    <Dependency Name="Microsoft.Internal.Runtime.AspNetCore.Transport" Version="6.0.0-rc.1.21415.6">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>fde6b37e985605d862c070256de7c97e2a3f3342</Sha>
     </Dependency>
