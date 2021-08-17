@@ -137,6 +137,7 @@ namespace Microsoft.AspNetCore.Http
             try
             {
                 return await JsonSerializer.DeserializeAsync(inputStream, type, options, cancellationToken);
+
             } 
             finally
             {
@@ -197,6 +198,7 @@ namespace Microsoft.AspNetCore.Http
         private static InvalidOperationException CreateContentTypeError(HttpRequest request)
         {         
             return new InvalidOperationException($"Unable to read the request as JSON because the request content type '{request.ContentType}' is not a known JSON content type.");
+
         }
 
         private static (Stream inputStream, bool usesTranscodingStream) GetInputStream(HttpContext httpContext, Encoding? encoding)

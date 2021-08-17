@@ -192,15 +192,9 @@ namespace Microsoft.AspNetCore.Http
 
             if(factoryContext.HasAnotherBodyParameter)
             {
-                var errorMessage = new StringBuilder();
-                errorMessage.Append($"Failure to infer one or more parameters. Below is the list of parameters we found: \n\n");
-                errorMessage.Append(string.Format("{0,6} {1,15}\n\n", "Parameter", "Source"));
+                var errorMessage = BuildErrorMessageForMultipleBodyParameters(factoryContext);
+                throw new InvalidOperationException(errorMessage);
 
-                foreach (var kv in factoryContext.TrackedParameters)
-                {
-                    errorMessage.Append(string.Format("{0,6} {1,15:N0}\n", kv.Key, kv.Value));
-                }
-                throw new InvalidOperationException(errorMessage.ToString());
             }
 
             return args;
@@ -752,7 +746,8 @@ namespace Microsoft.AspNetCore.Http
                 if (parameterName is not null && factoryContext.TrackedParameters.ContainsKey(parameterName))
                 {
                     factoryContext.TrackedParameters.Remove(parameterName);
-                    factoryContext.TrackedParameters.Add(parameter.Name!, "We failed to infer this parameter. Did you forget to inject it as a Service in the DI container?");
+                    factoryContext.TrackedParameters.Add(parameterName, "UNKNOWN");
+
                 }              
             }
 
@@ -999,15 +994,15 @@ namespace Microsoft.AspNetCore.Http
 
         private static class RequestDelegateFactoryConstants
         {
-            public const string RouteAttribue = "Route Attribute";
-            public const string QueryAttribue = "Query Attribute";
-            public const string HeaderAttribue = "Header Attribute";
-            public const string BodyAttribue = "Body Attribute";
-            public const string ServiceAttribue = "Service Attribute";
-            public const string RouteParameter = "Route Parameter";
-            public const string QueryStringParameter = "Query String Parameter";
-            public const string ServiceParameter = "Service Parameter";
-            public const string BodyParameter = "Body Parameter";
+            public const string RouteAttribue = "Route (Attribute)";
+            public const string QueryAttribue = "Query (Attribute)";
+            public const string HeaderAttribue = "Header (Attribute)";
+            public const string BodyAttribue = "Body (Attribute)";
+            public const string ServiceAttribue = "Service (Attribute)";
+            public const string RouteParameter = "Route (Inferred)";
+            public const string QueryStringParameter = "Query String (Inferred)";
+            public const string ServiceParameter = "Services (Inferred)";
+            public const string BodyParameter = "Body (Inferred)";
 
         }
 
@@ -1077,6 +1072,23 @@ namespace Microsoft.AspNetCore.Http
         private static void SetPlaintextContentType(HttpContext httpContext)
         {
             httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
+        }
+
+        private static string BuildErrorMessageForMultipleBodyParameters(FactoryContext factoryContext)
+        {
+            var errorMessage = new StringBuilder();
+            errorMessage.Append($"Failure to infer one or more parameters.\n");
+            errorMessage.Append("Below is the list of parameters that we found: \n\n");
+            errorMessage.Append($"{"Parameter",-20}|{"Source",-30} \n");
+            errorMessage.Append("---------------------------------------------------------------------------------\n");
+
+            foreach (var kv in factoryContext.TrackedParameters)
+            {
+                errorMessage.Append($"{kv.Key,-19} | {kv.Value, -15}\n");
+            }
+            errorMessage.Append("\n\n");
+            errorMessage.Append("Did you forget to inject the \"UNKNOWN\" parameters as a Service?\n\n");
+            return errorMessage.ToString();
         }
     }
 }
