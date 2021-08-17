@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         }
                         else
                         {
-                            _disconnectToken = CancellationToken.None;
+                            _disconnectToken = new CancellationToken(canceled: true);
                         }
                     }
                 }
@@ -180,6 +180,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     Log.AbortError(Logger, ex);
                 }
                 _requestAbortSource.Dispose();
+            }
+            else
+            {
+                _disconnectToken = new CancellationToken(canceled: true);
             }
             ForceCancelRequest();
             Request.Dispose();
