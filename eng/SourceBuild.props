@@ -48,7 +48,7 @@
 
     <!-- If the alternative runtime location and key are present, pass those through -->
     <PropertyGroup>
-      <_AdditionalRepoTaskBuildArgs></_AdditionalRepoTaskBuildArgs>
+      <_AdditionalRepoTaskBuildArgs />
       <_AdditionalRepoTaskBuildArgs Condition="'$(DotNetRuntimeSourceFeed)' != ''" >$(_AdditionalRepoTaskBuildArgs) --runtimesourcefeed $(DotNetRuntimeSourceFeed)</_AdditionalRepoTaskBuildArgs>
       <_AdditionalRepoTaskBuildArgs Condition="'$(DotNetRuntimeSourceFeedKey)' != ''" >$(_AdditionalRepoTaskBuildArgs) --runtimesourcefeedkey $(DotNetRuntimeSourceFeedKey)</_AdditionalRepoTaskBuildArgs>
     </PropertyGroup>
