@@ -25,9 +25,9 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         [InlineData(typeof(ushort))]
         [InlineData(typeof(uint))]
         [InlineData(typeof(ulong))]
-        public void FindTryParseMethod_ReturnsTheExpectedTryParseMethodWithInvariantCulture(Type @type)
+        public void FindTryParseStringMethod_ReturnsTheExpectedTryParseMethodWithInvariantCulture(Type @type)
         {
-            var methodFound = new TryParseMethodCache().FindTryParseMethod(@type);
+            var methodFound = new TryParseMethodCache().FindTryParseStringMethod(@type);
 
             Assert.NotNull(methodFound);
 
@@ -48,9 +48,9 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         [InlineData(typeof(DateTimeOffset))]
         [InlineData(typeof(TimeOnly))]
         [InlineData(typeof(TimeSpan))]
-        public void FindTryParseMethod_ReturnsTheExpectedTryParseMethodWithInvariantCultureDateType(Type @type)
+        public void FindTryParseStringMethod_ReturnsTheExpectedTryParseMethodWithInvariantCultureDateType(Type @type)
         {
-            var methodFound = new TryParseMethodCache().FindTryParseMethod(@type);
+            var methodFound = new TryParseMethodCache().FindTryParseStringMethod(@type);
 
             Assert.NotNull(methodFound);
 
@@ -77,9 +77,9 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
 
         [Theory]
         [InlineData(typeof(TryParsableInvariantRecord))]
-        public void FindTryParseMethod_ReturnsTheExpectedTryParseMethodWithInvariantCultureCustomType(Type @type)
+        public void FindTryParseStringMethod_ReturnsTheExpectedTryParseMethodWithInvariantCultureCustomType(Type @type)
         {
-            var methodFound = new TryParseMethodCache().FindTryParseMethod(@type);
+            var methodFound = new TryParseMethodCache().FindTryParseStringMethod(@type);
 
             Assert.NotNull(methodFound);
 
@@ -95,10 +95,10 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         }
 
         [Fact]
-        public void FindTryParseMethodForEnums()
+        public void FindTryParseStringMethod_WorksForEnums()
         {
             var type = typeof(Choice);
-            var methodFound = new TryParseMethodCache().FindTryParseMethod(type);
+            var methodFound = new TryParseMethodCache().FindTryParseStringMethod(type);
 
             Assert.NotNull(methodFound);
 
@@ -115,11 +115,11 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         }
 
         [Fact]
-        public void FindTryParseMethodForEnumsWhenNonGenericEnumParseIsUsed()
+        public void FindTryParseStringMethod_WorksForEnumsWhenNonGenericEnumParseIsUsed()
         {
             var type = typeof(Choice);
             var cache = new TryParseMethodCache(preferNonGenericEnumParseOverload: true);
-            var methodFound = cache.FindTryParseMethod(type);
+            var methodFound = cache.FindTryParseStringMethod(type);
 
             Assert.NotNull(methodFound);
 

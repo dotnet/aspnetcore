@@ -476,7 +476,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     new object[] { (Action<HttpContext, AssemblyFlags>)Store, "PublicKey,Retargetable", AssemblyFlags.PublicKey | AssemblyFlags.Retargetable },
                     new object[] { (Action<HttpContext, int?>)Store, "42", 42 },
                     new object[] { (Action<HttpContext, MyEnum>)Store, "ValueB", MyEnum.ValueB },
-                    new object[] { (Action<HttpContext, MyTryParsableRecord>)Store, "https://example.org", new MyTryParsableRecord(new Uri("https://example.org")) },
+                    new object[] { (Action<HttpContext, MyTryParseStringRecord>)Store, "https://example.org", new MyTryParseStringRecord(new Uri("https://example.org")) },
                     new object?[] { (Action<HttpContext, int?>)Store, null, null },
                 };
             }
@@ -484,9 +484,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         private enum MyEnum { ValueA, ValueB, }
 
-        private record MyTryParsableRecord(Uri Uri)
+        private record MyTryParseStringRecord(Uri Uri)
         {
-            public static bool TryParse(string? value, out MyTryParsableRecord? result)
+            public static bool TryParse(string? value, out MyTryParseStringRecord? result)
             {
                 if (!Uri.TryCreate(value, UriKind.Absolute, out var uri))
                 {
@@ -494,8 +494,30 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     return false;
                 }
 
-                result = new MyTryParsableRecord(uri);
+                result = new MyTryParseStringRecord(uri);
                 return true;
+            }
+        }
+
+        private record MyTryParseHttpContextRecord(Uri Uri)
+        {
+            public static bool TryParse(HttpContext context, out MyTryParseHttpContextRecord? result)
+            {
+                if (!Uri.TryCreate(context.Request.Headers.Referer, UriKind.Absolute, out var uri))
+                {
+                    result = null;
+                    return false;
+                }
+
+                result = new MyTryParseHttpContextRecord(uri);
+                return true;
+            }
+
+            // TryParse(HttpContext, ...) should be preferred over TryParse(string, ...) if there's
+            // no [FromRoute] or [FromQuery] attributes.
+            public static bool TryParse(string? value, out MyTryParseHttpContextRecord? result)
+            {
+                throw new NotImplementedException();
             }
         }
 
@@ -558,6 +580,23 @@ namespace Microsoft.AspNetCore.Routing.Internal
             await requestDelegate(httpContext);
 
             Assert.Equal(42, httpContext.Items["tryParsable"]);
+        }
+
+        [Fact]
+        public async Task RequestDelegatePrefersTryParseHttpContextOverTryParseString()
+        {
+            var httpContext = new DefaultHttpContext();
+
+            httpContext.Request.Headers.Referer = "https://example.org";
+
+            var requestDelegate = RequestDelegateFactory.Create((HttpContext httpContext, MyTryParseHttpContextRecord tryParsable) =>
+            {
+                httpContext.Items["tryParsable"] = tryParsable;
+            });
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(new MyTryParseHttpContextRecord(new Uri("https://example.org")), httpContext.Items["tryParsable"]);
         }
 
         public static object[][] DelegatesWithAttributesOnNotTryParsableParameters
