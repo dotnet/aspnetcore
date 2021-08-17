@@ -1,8 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Rewrite;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder
@@ -24,7 +26,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            return app.UseMiddleware<RewriteMiddleware>();
+            return AddRewriteMiddleware(app, options: null);
         }
 
         /// <summary>
@@ -46,7 +48,47 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             // put middleware in pipeline
-            return app.UseMiddleware<RewriteMiddleware>(Options.Create(options));
+            return AddRewriteMiddleware(app, Options.Create(options));
+        }
+
+        private static IApplicationBuilder AddRewriteMiddleware(IApplicationBuilder app, IOptions<RewriteOptions>? options)
+        {
+            // Check if UseRouting() has been called so we know if it's safe to call UseRouting()
+            // otherwise we might call UseRouting() when AddRouting() hasn't been called which would fail
+            if (app.Properties.TryGetValue("__EndpointRouteBuilder", out _) || app.Properties.TryGetValue("__GlobalEndpointRouteBuilder", out _))
+            {
+                return app.Use(next =>
+                {
+                    var loggerFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
+                    var hostEnvironment = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
+
+                    if (options is null)
+                    {
+                        options = app.ApplicationServices.GetRequiredService<IOptions<RewriteOptions>>();
+                    }
+
+                    app.Properties.TryGetValue("__GlobalEndpointRouteBuilder", out var routeBuilder);
+                    // start a new middleware pipeline
+                    var builder = app.New();
+                    builder.UseMiddleware<RewriteMiddleware>(options);
+                    if (routeBuilder is not null)
+                    {
+                        // use the old routing pipeline if it exists so we preserve all the routes and matching logic
+                        builder.Properties["__GlobalEndpointRouteBuilder"] = routeBuilder;
+                    }
+                    builder.UseRouting();
+                    builder.Run(next);
+                    // apply the next middleware
+                    return builder.Build();
+                });
+            }
+
+            if (options is null)
+            {
+                return app.UseMiddleware<RewriteMiddleware>();
+            }
+
+            return app.UseMiddleware<RewriteMiddleware>(options);
         }
     }
 }

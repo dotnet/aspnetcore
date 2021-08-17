@@ -680,5 +680,97 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
             Assert.Equal(statusCode, (int)response.StatusCode);
         }
 
+        [Theory]
+        [InlineData("(.*)", "http://example.com/g")]
+        [InlineData("/", "no rule")]
+        public async Task Rewrite_WorksAfterUseRoutingIfGlobalRouteBuilderUsed(string regex, string output)
+        {
+            var options = new RewriteOptions().AddRewrite(regex, "http://example.com/g", skipRemainingRules: false);
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
+                    {
+                        services.AddRouting();
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.Properties["__GlobalEndpointRouteBuilder"] = app.Properties["__EndpointRouteBuilder"];
+                        app.UseRewriter(options);
+
+                        app.UseEndpoints(endpoints =>
+                        {
+                            endpoints.MapGet("/foo", context => context.Response.WriteAsync(
+                                "no rule"));
+
+                            endpoints.MapGet("/g", context => context.Response.WriteAsync(
+                                context.Request.Scheme +
+                                "://" +
+                                context.Request.Host +
+                                context.Request.Path +
+                                context.Request.QueryString));
+                        });
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
+
+            var response = await server.CreateClient().GetStringAsync("foo");
+
+            Assert.Equal(output, response);
+        }
+
+        [Theory]
+        [InlineData("(.*)", "http://example.com/g")]
+        [InlineData("/", "no rule")]
+        public async Task RewriteFromOptions_WorksAfterUseRoutingIfGlobalRouteBuilderUsed(string regex, string output)
+        {
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
+                    {
+                        services.AddRouting();
+                        services.Configure<RewriteOptions>(options =>
+                        {
+                            options.AddRewrite(regex, "http://example.com/g", skipRemainingRules: false);
+                        });
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.Properties["__GlobalEndpointRouteBuilder"] = app.Properties["__EndpointRouteBuilder"];
+                        app.UseRewriter();
+
+                        app.UseEndpoints(endpoints =>
+                        {
+                            endpoints.MapGet("/foo", context => context.Response.WriteAsync(
+                                "no rule"));
+
+                            endpoints.MapGet("/g", context => context.Response.WriteAsync(
+                                context.Request.Scheme +
+                                "://" +
+                                context.Request.Host +
+                                context.Request.Path +
+                                context.Request.QueryString));
+                        });
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
+
+            var response = await server.CreateClient().GetStringAsync("foo");
+
+            Assert.Equal(output, response);
+        }
     }
 }
