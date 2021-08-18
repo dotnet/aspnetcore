@@ -20,7 +20,7 @@ namespace System.Runtime.CompilerServices
         /// <returns><see langword="true" /> if <paramref name="type"/> is compiler generated.</returns>
         internal static bool IsCompilerGeneratedType(Type? type = null)
         {
-            if (type is Type)
+            if (type is not null)
             {
                 return Attribute.IsDefined(type, typeof(CompilerGeneratedAttribute)) || IsCompilerGeneratedType(type.DeclaringType);
             }
