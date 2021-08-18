@@ -578,6 +578,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
                 // Both send and receive loops have exited.
                 await quicStreamContext._processingTask.DefaultTimeout();
                 await quicStreamContext.DisposeAsync();
+                quicStreamContext.Dispose();
             }
         }
 
@@ -614,6 +615,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             var quicStreamContext1 = Assert.IsType<QuicStreamContext>(serverStream1);
             await quicStreamContext1._processingTask.DefaultTimeout();
             await quicStreamContext1.DisposeAsync();
+            quicStreamContext1.Dispose();
 
             var clientStream2 = clientConnection.OpenBidirectionalStream();
             await clientStream2.WriteAsync(TestData, endStream: true).DefaultTimeout();
@@ -634,6 +636,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             var quicStreamContext2 = Assert.IsType<QuicStreamContext>(serverStream2);
             await quicStreamContext2._processingTask.DefaultTimeout();
             await quicStreamContext2.DisposeAsync();
+            quicStreamContext2.Dispose();
 
             Assert.Same(quicStreamContext1, quicStreamContext2);
 

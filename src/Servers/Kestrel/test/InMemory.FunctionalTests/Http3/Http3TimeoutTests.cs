@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Http3Api.TriggerTick(now);
             Http3Api.TriggerTick(now + limits.RequestHeadersTimeout);
 
-            Assert.Equal((now + limits.RequestHeadersTimeout).Ticks, serverRequestStream.HeaderTimeoutTicks);
+            Assert.Equal((now + limits.RequestHeadersTimeout).Ticks, serverRequestStream.StreamTimeoutTicks);
 
             Http3Api.TriggerTick(now + limits.RequestHeadersTimeout + TimeSpan.FromTicks(1));
 
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Http3Api.TriggerTick(now);
             Http3Api.TriggerTick(now + limits.RequestHeadersTimeout);
 
-            Assert.Equal((now + limits.RequestHeadersTimeout).Ticks, serverRequestStream.HeaderTimeoutTicks);
+            Assert.Equal((now + limits.RequestHeadersTimeout).Ticks, serverRequestStream.StreamTimeoutTicks);
 
             await requestStream.SendHeadersAsync(headers).DefaultTimeout();
 
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Http3Api.TriggerTick(now);
             Http3Api.TriggerTick(now + limits.RequestHeadersTimeout);
 
-            Assert.Equal((now + limits.RequestHeadersTimeout).Ticks, serverInboundControlStream.HeaderTimeoutTicks);
+            Assert.Equal((now + limits.RequestHeadersTimeout).Ticks, serverInboundControlStream.StreamTimeoutTicks);
 
             Http3Api.TriggerTick(now + limits.RequestHeadersTimeout + TimeSpan.FromTicks(1));
 
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Http3Api.TriggerTick(now);
 
-            Assert.Equal(TimeSpan.MaxValue.Ticks, serverInboundControlStream.HeaderTimeoutTicks);
+            Assert.Equal(TimeSpan.MaxValue.Ticks, serverInboundControlStream.StreamTimeoutTicks);
         }
 
         [Fact]
@@ -233,41 +233,53 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _mockTimeoutHandler.VerifyNoOtherCalls();
         }
 
-        /*
-         * Additional work around closing connections is required before response drain can be supported.
         [Fact]
         public async Task ResponseDrain_SlowerThanMinimumDataRate_AbortsConnection()
         {
-            var mockSystemClock = _serviceContext.MockSystemClock;
+            var now = _serviceContext.MockSystemClock.UtcNow;
             var limits = _serviceContext.ServerOptions.Limits;
+            var mockSystemClock = _serviceContext.MockSystemClock;
 
-            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
+            // Use non-default value to ensure the min request and response rates aren't mixed up.
+            limits.MinResponseDataRate = new MinDataRate(480, TimeSpan.FromSeconds(2.5));
 
-            await InitializeConnectionAsync(_noopApplication);
+            await Http3Api.InitializeConnectionAsync(_noopApplication);
 
-            var inboundControlStream = await GetInboundControlStream();
+            var inboundControlStream = await Http3Api.GetInboundControlStream();
             await inboundControlStream.ExpectSettingsAsync();
 
-            CloseConnectionGracefully();
+            var requestStream = await Http3Api.CreateRequestStream();
 
-            await inboundControlStream.ReceiveFrameAsync().DefaultTimeout();
-            await inboundControlStream.ReceiveFrameAsync().DefaultTimeout();
-            await inboundControlStream.ReceiveEndAsync().DefaultTimeout();
+            requestStream.StartStreamDisposeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            //await WaitForConnectionStopAsync(expectedLastStreamId: VariableLengthIntegerHelper.EightByteLimit, ignoreNonGoAwayFrames: false, expectedErrorCode: Http3ErrorCode.NoError);
+            await requestStream.SendHeadersAsync(new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            }, endStream: true);
 
-            AdvanceClock(TimeSpan.FromSeconds(inboundControlStream.BytesReceived / limits.MinResponseDataRate.BytesPerSecond) +
-                limits.MinResponseDataRate.GracePeriod + Heartbeat.Interval - TimeSpan.FromSeconds(.5));
+            await requestStream.OnDisposingTask.DefaultTimeout();
 
-            _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+            Http3Api.TriggerTick(now);
+            Assert.Equal(0, requestStream.Error);
 
-            AdvanceClock(TimeSpan.FromSeconds(1));
+            Http3Api.TriggerTick(now + TimeSpan.FromTicks(1));
+            Assert.Equal(0, requestStream.Error);
 
-            _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
+            Http3Api.TriggerTick(now + limits.MinResponseDataRate.GracePeriod + TimeSpan.FromTicks(1));
 
-            _mockTimeoutHandler.VerifyNoOtherCalls();
+            requestStream.StartStreamDisposeTcs.TrySetResult();
+
+            await Http3Api.WaitForConnectionErrorAsync<ConnectionAbortedException>(
+                ignoreNonGoAwayFrames: false,
+                expectedLastStreamId: 4,
+                Http3ErrorCode.InternalError,
+                expectedErrorMessage: CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied);
+
+            Assert.Contains(TestSink.Writes, w => w.EventId.Name == "ResponseMinimumDataRateNotSatisfied");
         }
-        */
 
         private class EchoAppWithNotification
         {
