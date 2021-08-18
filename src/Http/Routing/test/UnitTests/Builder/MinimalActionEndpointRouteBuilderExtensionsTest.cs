@@ -365,6 +365,7 @@ namespace Microsoft.AspNetCore.Builder
         // code in Roslyn to support this scenario. More info at https://github.com/dotnet/roslyn/issues/55651.
         public void MapMethod_DoesNotEndpointNameForInnerMethod()
         {
+            var name = "InnerGetString";
             var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
             string InnerGetString() => "TestString";
             _ = builder.MapDelete("/", InnerGetString);
@@ -374,13 +375,17 @@ namespace Microsoft.AspNetCore.Builder
             var endpoint = Assert.Single(dataSource.Endpoints);
 
             var endpointName = endpoint.Metadata.GetMetadata<IEndpointNameMetadata>();
-            Assert.NotNull(endpointName);
-            Assert.Equal("InnerGetString", endpointName?.EndpointName);
+            var routeName = endpoint.Metadata.GetMetadata<IRouteNameMetadata>();
+            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+            Assert.Equal(name, endpointName?.EndpointName);
+            Assert.Equal(name, routeName?.RouteName);
+            Assert.Equal("HTTP: DELETE / => InnerGetString", routeEndpointBuilder.DisplayName);
         }
 
         [Fact]
         public void MapMethod_SetsEndpointNameForMethodGroup()
         {
+            var name = "GetString";
             var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
             _ = builder.MapDelete("/", GetString);
 
@@ -389,23 +394,31 @@ namespace Microsoft.AspNetCore.Builder
             var endpoint = Assert.Single(dataSource.Endpoints);
 
             var endpointName = endpoint.Metadata.GetMetadata<IEndpointNameMetadata>();
-            Assert.NotNull(endpointName);
-            Assert.Equal("GetString", endpointName?.EndpointName);
+            var routeName = endpoint.Metadata.GetMetadata<IRouteNameMetadata>();
+            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+            Assert.Equal(name, endpointName?.EndpointName);
+            Assert.Equal(name, routeName?.RouteName);
+            Assert.Equal("HTTP: DELETE / => GetString", routeEndpointBuilder.DisplayName);
         }
 
         [Fact]
         public void WithNameOverridesDefaultEndpointName()
         {
+            var name = "SomeCustomName";
             var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
-            _ = builder.MapDelete("/", GetString).WithName("SomeCustomName");
+            _ = builder.MapDelete("/", GetString).WithName(name);
 
             var dataSource = GetBuilderEndpointDataSource(builder);
             // Trigger Endpoint build by calling getter.
             var endpoint = Assert.Single(dataSource.Endpoints);
 
             var endpointName = endpoint.Metadata.GetMetadata<IEndpointNameMetadata>();
-            Assert.NotNull(endpointName);
-            Assert.Equal("SomeCustomName", endpointName?.EndpointName);
+            var routeName = endpoint.Metadata.GetMetadata<IRouteNameMetadata>();
+            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+            Assert.Equal(name, endpointName?.EndpointName);
+            Assert.Equal(name, routeName?.RouteName);
+            // Will still use the original method name, not the custom endpoint name
+            Assert.Equal("HTTP: DELETE / => GetString", routeEndpointBuilder.DisplayName);
         }
 
         private string GetString() => "TestString";

@@ -15,12 +15,12 @@ namespace System.Runtime.CompilerServices
         /// </remarks>
         /// </summary>
         /// <param name="type">The type to evaluate. Can be null if evaluating only on name. </param>
-        /// <param name="name">The identifier associated wit the type.</param>
+        /// <param name="name">The identifier associated with the type.</param>
         /// <returns><see langword="true" /> if <paramref name="type"/> is compiler generated
         /// or <paramref name="name"/> represents a compiler generated identifier.</returns>
         internal static bool IsCompilerGenerated(string name, Type? type = null)
         {
-            return (type is Type  && Attribute.IsDefined(type, typeof(CompilerGeneratedAttribute)))
+            return (type is Type && Attribute.IsDefined(type, typeof(CompilerGeneratedAttribute)))
                 || name.StartsWith("<", StringComparison.Ordinal)
                 || (name.IndexOf('$') >= 0);
         }
