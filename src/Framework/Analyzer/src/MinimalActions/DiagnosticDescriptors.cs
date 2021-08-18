@@ -15,6 +15,6 @@ namespace Microsoft.AspNetCore.Analyzers.MinimalActions
             "Usage",
             DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
-            helpLinkUri: "https://aka.ms/minimal-action/analyzer");
+            helpLinkUri: "https://aka.ms/aspnet/analyzers");
     }
 }
