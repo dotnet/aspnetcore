@@ -272,7 +272,8 @@ describe("HttpConnection", () => {
         },
         "Failed to start the transport 'WebSockets': Error: Don't allow Websockets.",
         "Failed to start the transport 'ServerSentEvents': Error: Don't allow ServerSentEvents.",
-        "Failed to start the connection: Error: Unable to connect to the server with any of the available transports. Error: WebSockets failed: Error: Don't allow Websockets. Error: ServerSentEvents failed: Error: Don't allow ServerSentEvents. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
+        "Failed to start the connection: Error: Unable to connect to the server with any of the available transports. Error: WebSockets failed: Error: Don't allow Websockets. " +
+        "Error: ServerSentEvents failed: Error: Don't allow ServerSentEvents. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
     });
 
     it("failed re-negotiate fails start", async () => {
