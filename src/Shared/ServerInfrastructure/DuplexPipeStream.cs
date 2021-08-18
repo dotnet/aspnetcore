@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Buffers;
 using Microsoft.AspNetCore.Internal;
+using System.Runtime.CompilerServices;
 
 #nullable enable
 
@@ -112,6 +113,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             return _output.FlushAsync(cancellationToken).GetAsTask();
         }
 
+        [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder<>))]
         private async ValueTask<int> ReadAsyncInternal(Memory<byte> destination, CancellationToken cancellationToken)
         {
             while (true)

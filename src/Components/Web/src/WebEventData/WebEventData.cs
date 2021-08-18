@@ -59,6 +59,8 @@ namespace Microsoft.AspNetCore.Components.Web
 
         public EventArgs EventArgs { get; }
 
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode",
+            Justification = "We are already using the appropriate overload")]
         private static EventArgs ParseEventArgsJson(
             Renderer renderer,
             JsonSerializerOptions jsonSerializerOptions,
