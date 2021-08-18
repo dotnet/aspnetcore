@@ -24,6 +24,8 @@ namespace Microsoft.AspNetCore.HttpLogging
         private string _messageTwo = "Message two";
         private string _messageThree = "Message three";
 
+        private DateTime _today = new DateTime(2021, 01, 01, 12, 00, 00);        
+
         public FileLoggerProcessorTests()
         {
             TempPath = Path.GetTempFileName() + "_";
@@ -33,11 +35,10 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         [Fact]
         public async Task WritesToTextFile()
-        {
-            var today = new DateTime(2021, 01, 01, 12, 00, 00);
+        {            
             var mockSystemDateTime = new MockSystemDateTime
             {
-                Now = today
+                Now = _today
             };
             var path = Path.Combine(TempPath, Path.GetRandomFileName());
 
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     logger.SystemDateTime = mockSystemDateTime;
                     logger.EnqueueMessage(_messageOne);
-                    fileName = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{today.Year:0000}{today.Month:00}{today.Day:00}.0000.txt"));
+                    fileName = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0000.txt"));
                     // Pause for a bit before disposing so logger can finish logging
                     await WaitForFile(fileName, _messageOne.Length).DefaultTimeout();
                 }
@@ -66,20 +67,67 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
         }
 
+        [Fact]
+        public async Task RollsTextFilesBasedOnDate()
+        {        
+            var mockSystemDateTime = new MockSystemDateTime
+            {
+                Now = _today
+            };
+            var tomorrow = _today.AddDays(1);
+
+            var path = Path.Combine(TempPath, Path.GetRandomFileName());
+            var options = new W3CLoggerOptions()
+            {
+                LogDirectory = path
+            };
+
+            try
+            {
+                string fileNameToday;
+                string fileNameTomorrow; 
+
+                await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
+                {
+                    logger.SystemDateTime = mockSystemDateTime;
+                    logger.EnqueueMessage(_messageOne);
+
+                    fileNameToday = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0000.txt"));
+                    
+                    await WaitForFile(fileNameToday, _messageOne.Length).DefaultTimeout();
+                                    
+                    mockSystemDateTime.Now = tomorrow;
+                    logger.EnqueueMessage(_messageTwo);
+
+                    fileNameTomorrow = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}.0000.txt"));
+                 
+                    await WaitForFile(fileNameTomorrow, _messageTwo.Length).DefaultTimeout();
+                }
+
+                Assert.True(File.Exists(fileNameToday));
+                Assert.Equal(_messageOne + Environment.NewLine, File.ReadAllText(fileNameToday));
+                Assert.True(File.Exists(fileNameTomorrow));
+                Assert.Equal(_messageTwo + Environment.NewLine, File.ReadAllText(fileNameTomorrow));
+            }
+            finally
+            {
+                Helpers.DisposeDirectory(path);
+            }
+        }
+
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34284")]
         [Fact]
-        public async Task RollsTextFiles()
+        public async Task RollsTextFilesBasedOnSize()
         {
             var path = Path.Combine(TempPath, Path.GetRandomFileName());
 
             try
             {
                 string fileName1;
-                string fileName2;
-                var today = new DateTime(2021, 01, 01, 12, 00, 00);
+                string fileName2;                
                 var mockSystemDateTime = new MockSystemDateTime
                 {
-                    Now = today
+                    Now = _today
                 };
                 var options = new W3CLoggerOptions()
                 {
@@ -91,8 +139,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     logger.SystemDateTime = mockSystemDateTime;
                     logger.EnqueueMessage(_messageOne);
                     logger.EnqueueMessage(_messageTwo);
-                    fileName1 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{today.Year:0000}{today.Month:00}{today.Day:00}.0000.txt"));
-                    fileName2 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{today.Year:0000}{today.Month:00}{today.Day:00}.0001.txt"));
+                    fileName1 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0000.txt"));
+                    fileName2 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0001.txt"));
                     // Pause for a bit before disposing so logger can finish logging
                     await WaitForFile(fileName2, _messageTwo.Length).DefaultTimeout();
                 }
@@ -113,11 +161,10 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             var path = Path.Combine(TempPath, Path.GetRandomFileName());
             Directory.CreateDirectory(path);
-            File.WriteAllText(Path.Combine(path, "randomFile.txt"), "Text");
-            var today = new DateTime(2021, 01, 01, 12, 00, 00);
+            File.WriteAllText(Path.Combine(path, "randomFile.txt"), "Text");            
             var mockSystemDateTime = new MockSystemDateTime
             {
-                Now = today
+                Now = _today
             };
 
             try
@@ -136,12 +183,12 @@ namespace Microsoft.AspNetCore.HttpLogging
                     {
                         logger.EnqueueMessage(_messageOne);
                     }
-                    lastFileName = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{today.Year:0000}{today.Month:00}{today.Day:00}.0009.txt"));
+                    lastFileName = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0009.txt"));
                     // Pause for a bit before disposing so logger can finish logging
                     await WaitForFile(lastFileName, _messageOne.Length).DefaultTimeout();
                     for (int i = 0; i < 6; i++)
                     {
-                        await WaitForRoll(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{today.Year:0000}{today.Month:00}{today.Day:00}.{i:0000}.txt"))).DefaultTimeout();
+                        await WaitForRoll(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.{i:0000}.txt"))).DefaultTimeout();
                     }
                 }
 
@@ -155,7 +202,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 Assert.Equal("randomFile.txt", actualFiles[0]);
                 for (int i = 1; i < 4; i++)
                 {
-                    Assert.True((actualFiles[i].StartsWith($"{options.FileName}{today.Year:0000}{today.Month:00}{today.Day:00}", StringComparison.InvariantCulture)));
+                    Assert.True((actualFiles[i].StartsWith($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}", StringComparison.InvariantCulture)));
                 }
             }
             finally
@@ -166,11 +213,10 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         [Fact]
         public async Task InstancesWriteToSameDirectory()
-        {
-            var today = new DateTime(2021, 01, 01, 12, 00, 00);
+        {            
             var mockSystemDateTime = new MockSystemDateTime
             {
-                Now = today
+                Now = _today
             };
 
             var path = Path.Combine(TempPath, Path.GetRandomFileName());
@@ -191,7 +237,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     {
                         logger.EnqueueMessage(_messageOne);
                     }
-                    var filePath = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{today.Year:0000}{today.Month:00}{today.Day:00}.0002.txt"));
+                    var filePath = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0002.txt"));
                     // Pause for a bit before disposing so logger can finish logging
                     await WaitForFile(filePath, _messageOne.Length).DefaultTimeout();
                 }
@@ -204,7 +250,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     {
                         logger.EnqueueMessage(_messageOne);
                     }
-                    var filePath = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{today.Year:0000}{today.Month:00}{today.Day:00}.0005.txt"));
+                    var filePath = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0005.txt"));
                     // Pause for a bit before disposing so logger can finish logging
                     await WaitForFile(filePath, _messageOne.Length).DefaultTimeout();
                 }
@@ -218,7 +264,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 Assert.Equal(6, actualFiles1.Length);
                 for (int i = 0; i < 6; i++)
                 {
-                    Assert.Contains($"{options.FileName}{today.Year:0000}{today.Month:00}{today.Day:00}.{i:0000}.txt", actualFiles1[i]);
+                    Assert.Contains($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.{i:0000}.txt", actualFiles1[i]);
                 }
 
                 // Third instance should roll to 5 most recent files
@@ -228,9 +274,9 @@ namespace Microsoft.AspNetCore.HttpLogging
                     logger.SystemDateTime = mockSystemDateTime;
                     logger.EnqueueMessage(_messageOne);
                     // Pause for a bit before disposing so logger can finish logging
-                    await WaitForFile(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{today.Year:0000}{today.Month:00}{today.Day:00}.0006.txt")), _messageOne.Length).DefaultTimeout();
-                    await WaitForRoll(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{today.Year:0000}{today.Month:00}{today.Day:00}.0000.txt"))).DefaultTimeout();
-                    await WaitForRoll(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{today.Year:0000}{today.Month:00}{today.Day:00}.0001.txt"))).DefaultTimeout();
+                    await WaitForFile(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0006.txt")), _messageOne.Length).DefaultTimeout();
+                    await WaitForRoll(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0000.txt"))).DefaultTimeout();
+                    await WaitForRoll(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0001.txt"))).DefaultTimeout();
                 }
 
                 var actualFiles2 = new DirectoryInfo(path)
@@ -242,7 +288,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 Assert.Equal(5, actualFiles2.Length);
                 for (int i = 0; i < 5; i++)
                 {
-                    Assert.Equal($"{options.FileName}{today.Year:0000}{today.Month:00}{today.Day:00}.{i + 2:0000}.txt", actualFiles2[i]);
+                    Assert.Equal($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.{i + 2:0000}.txt", actualFiles2[i]);
                 }
             }
             finally
@@ -254,10 +300,9 @@ namespace Microsoft.AspNetCore.HttpLogging
         [Fact]
         public async Task WritesToNewFileOnNewInstance()
         {
-            var today = new DateTime(2021, 01, 01, 12, 00, 00);
             var mockSystemDateTime = new MockSystemDateTime
             {
-                Now = today
+                Now = _today
             };
 
             var path = Path.Combine(TempPath, Path.GetRandomFileName());
@@ -270,9 +315,9 @@ namespace Microsoft.AspNetCore.HttpLogging
                     LogDirectory = path,
                     FileSizeLimit = 5
                 };
-                var fileName1 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{today.Year:0000}{today.Month:00}{today.Day:00}.0000.txt"));
-                var fileName2 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{today.Year:0000}{today.Month:00}{today.Day:00}.0001.txt"));
-                var fileName3 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{today.Year:0000}{today.Month:00}{today.Day:00}.0002.txt"));
+                var fileName1 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0000.txt"));
+                var fileName2 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0001.txt"));
+                var fileName3 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0002.txt"));
 
                 await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
                 {
@@ -319,10 +364,9 @@ namespace Microsoft.AspNetCore.HttpLogging
         [Fact]
         public async Task WritesToNewFileOnOptionsChange()
         {
-            var today = new DateTime(2021, 01, 01, 12, 00, 00);
             var mockSystemDateTime = new MockSystemDateTime
             {
-                Now = today
+                Now = _today
             };
 
             var path = Path.Combine(TempPath, Path.GetRandomFileName());
@@ -336,8 +380,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     LoggingFields = W3CLoggingFields.Time,
                     FileSizeLimit = 10000
                 };
-                var fileName1 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{today.Year:0000}{today.Month:00}{today.Day:00}.0000.txt"));
-                var fileName2 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{today.Year:0000}{today.Month:00}{today.Day:00}.0001.txt"));
+                var fileName1 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0000.txt"));
+                var fileName2 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0001.txt"));
                 var monitor = new OptionsWrapperMonitor<W3CLoggerOptions>(options);
 
                 await using (var logger = new FileLoggerProcessor(monitor, new HostingEnvironment(), NullLoggerFactory.Instance))
