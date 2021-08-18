@@ -739,16 +739,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("modified invalid-socks", () => socksInput.GetAttribute("class"));
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/34857")]
+        [Fact]
         public void NavigateOnSubmitWorks()
         {
             var app = Browser.MountTestComponent<NavigateOnSubmit>();
             var input = app.FindElement(By.Id("text-input"));
 
-            input.SendKeys("Enter");
+            input.SendKeys(Keys.Enter);
 
-            var log = Browser.Manage().Logs.GetLog(LogType.Browser);
-            Assert.DoesNotContain(log, entry => entry.Level == LogLevel.Severe);
+            Browser.Equal("Choose...", () => Browser.WaitUntilTestSelectorReady().SelectedOption.Text);
         }
 
         [Fact]
@@ -809,9 +808,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // interaction as authentically as SendKeys in other cases.
             var javascript = (IJavaScriptExecutor)Browser;
             javascript.ExecuteScript(
-                $"var elem = document.querySelector('{cssSelector}');"
-                + $"elem.value = {JsonSerializer.Serialize(invalidValue, TestJsonSerializerOptionsProvider.Options)};"
-                + "elem.dispatchEvent(new KeyboardEvent('change'));");
+                $"document.querySelector('{cssSelector}').value = {JsonSerializer.Serialize(invalidValue, TestJsonSerializerOptionsProvider.Options)}");
+            javascript.ExecuteScript(
+                $"document.querySelector('{cssSelector}').dispatchEvent(new KeyboardEvent('change'))");
         }
 
         private void EnsureAttributeRendering(IWebElement element, string attributeName, bool shouldBeRendered = true)
