@@ -116,7 +116,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.5.0.x64" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.5.0.x86" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Runtime" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.Internal.Transport" />
+    <LatestPackageReference Include="Microsoft.Internal.Runtime.AspNetCore.Transport" />
     <LatestPackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.Design" />
