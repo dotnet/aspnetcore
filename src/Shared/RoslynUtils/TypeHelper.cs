@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
+
 namespace System.Runtime.CompilerServices
 {
     internal static class TypeHelper
@@ -8,21 +10,31 @@ namespace System.Runtime.CompilerServices
         /// <summary>
         /// Checks to see if a given type is compiler generated.
         /// <remarks>
-        /// The compiler doesn't always annotate every time it generates with the
-        /// CompilerGeneratedAttribute so sometimes we have to check if the type's
-        /// identifier represents a generated type. Follows the same heuristics seen
-        /// in https://github.com/dotnet/roslyn/blob/b57c1f89c1483da8704cde7b535a20fd029748db/src/ExpressionEvaluator/Core/Source/ResultProvider/Helpers/GeneratedMetadataNames.cs#L19
+        /// The compiler will annotate either the target type or the declaring type
+        /// with the CompilerGenerated attribute. We walk up the declaring types until
+        /// we find a CompilerGenerated attribute or declare the type as not compiler
+        /// generated otherwise.
         /// </remarks>
         /// </summary>
-        /// <param name="type">The type to evaluate. Can be null if evaluating only on name. </param>
-        /// <param name="name">The identifier associated with the type.</param>
-        /// <returns><see langword="true" /> if <paramref name="type"/> is compiler generated
-        /// or <paramref name="name"/> represents a compiler generated identifier.</returns>
-        internal static bool IsCompilerGenerated(string name, Type? type = null)
+        /// <param name="type">The type to evaluate.</param>
+        /// <returns><see langword="true" /> if <paramref name="type"/> is compiler generated.</returns>
+        internal static bool IsCompilerGeneratedType(Type? type = null)
         {
-            return (type is Type && Attribute.IsDefined(type, typeof(CompilerGeneratedAttribute)))
-                || name.StartsWith("<", StringComparison.Ordinal)
-                || (name.IndexOf('$') >= 0);
+            if (type is Type)
+            {
+                return Attribute.IsDefined(type, typeof(CompilerGeneratedAttribute)) || IsCompilerGeneratedType(type.DeclaringType);
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Checks to see if a given method is compiler generated.
+        /// </summary>
+        /// <param name="method">The method to evaluate.</param>
+        /// <returns><see langword="true" /> if <paramref name="method"/> is compiler generated.</returns>
+        internal static bool IsCompilerGeneratedMethod(MethodInfo method)
+        {
+            return Attribute.IsDefined(method, typeof(CompilerGeneratedAttribute)) || IsCompilerGeneratedType(method.DeclaringType);
         }
     }
 }

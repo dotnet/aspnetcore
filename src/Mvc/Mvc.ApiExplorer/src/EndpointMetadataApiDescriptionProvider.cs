@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             // For now, put all methods defined the same declaring type together.
             string controllerName;
 
-            if (methodInfo.DeclaringType is not null && !TypeHelper.IsCompilerGenerated(methodInfo.DeclaringType.Name, methodInfo.DeclaringType))
+            if (methodInfo.DeclaringType is not null && !TypeHelper.IsCompilerGeneratedType(methodInfo.DeclaringType))
             {
                 controllerName = methodInfo.DeclaringType.Name;
             }

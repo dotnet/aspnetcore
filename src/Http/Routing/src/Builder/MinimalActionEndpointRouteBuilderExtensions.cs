@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Builder
             // Methods defined in a top-level program are generated as statics so the delegate
             // target will be null. Inline lambdas are compiler generated properties so they can
             // be filtered that way.
-            if (action.Target == null || !TypeHelper.IsCompilerGenerated(action.Method.Name))
+            if (action.Target == null || !TypeHelper.IsCompilerGeneratedMethod(action.Method))
             {
                 if (!GeneratedNameParser.TryParseLocalFunctionName(action.Method.Name, out var endpointName))
                 {
