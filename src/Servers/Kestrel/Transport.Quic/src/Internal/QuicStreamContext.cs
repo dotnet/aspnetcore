@@ -191,7 +191,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
                     input.Advance(bytesReceived);
 
-                    var flushTask = input.FlushAsync();
+                    ValueTask<FlushResult> flushTask;
+
+                    if (_stream.ReadsCompleted)
+                    {
+                        // If the data returned from ReadAsync is the final chunk on the stream then
+                        // flush data and end pipe together with CompleteAsync.
+                        //
+                        // Getting data and complete together is important for HTTP/3 when parsing headers.
+                        // It is important that it knows that there is no body after the headers.
+                        var completeTask = input.CompleteAsync(ResolveCompleteReceiveException(error));
+                        if (completeTask.IsCompletedSuccessfully)
+                        {
+                            // Fast path. CompleteAsync completed immediately.
+                            flushTask = ValueTask.FromResult(new FlushResult(isCanceled: false, isCompleted: true));
+                        }
+                        else
+                        {
+                            flushTask = AwaitCompleteTaskAsync(completeTask);
+                        }
+                    }
+                    else
+                    {
+                        flushTask = input.FlushAsync();
+                    }
 
                     var paused = !flushTask.IsCompleted;
 
@@ -244,12 +267,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             finally
             {
                 // If Shutdown() has already bee called, assume that was the reason ProcessReceives() exited.
-                Input.Complete(_shutdownReadReason ?? _shutdownReason ?? error);
+                Input.Complete(ResolveCompleteReceiveException(error));
 
                 FireStreamClosed();
 
                 await _waitForConnectionClosedTcs.Task;
             }
+
+            async static ValueTask<FlushResult> AwaitCompleteTaskAsync(ValueTask completeTask)
+            {
+                await completeTask;
+                return new FlushResult(isCanceled: false, isCompleted: true);
+            }
+        }
+
+        private Exception? ResolveCompleteReceiveException(Exception? error)
+        {
+            return _shutdownReadReason ?? _shutdownReason ?? error;
         }
 
         private void FireStreamClosed()
