@@ -130,6 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             Assert.True(quicStreamContext.CanRead);
 
             await quicStreamContext.DisposeAsync();
+            quicStreamContext.Dispose();
 
             return quicStreamContext;
         }

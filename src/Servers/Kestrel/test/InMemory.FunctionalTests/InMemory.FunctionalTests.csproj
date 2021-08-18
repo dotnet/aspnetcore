@@ -20,6 +20,7 @@
     <Compile Include="$(RepoRoot)src\Shared\Buffers.MemoryPool\*.cs" LinkBase="MemoryPool" />
     <Compile Include="$(KestrelSharedSourceRoot)\CompletionPipeReader.cs" Link="Internal\CompletionPipeReader.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\CompletionPipeWriter.cs" Link="Internal\CompletionPipeWriter.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)\ConnectionCompletion.cs" Link="Internal\ConnectionCompletion.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\CorrelationIdGenerator.cs" Link="Internal\CorrelationIdGenerator.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.cs" Link="Internal\TransportConnection.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.Generated.cs" Link="Internal\TransportConnection.Generated.cs" />

@@ -17,12 +17,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
-    internal partial class QuicStreamContext : TransportConnection, IPooledStream
+    internal partial class QuicStreamContext : TransportConnection, IPooledStream, IDisposable
     {
         // Internal for testing.
         internal Task _processingTask = Task.CompletedTask;
 
-        private QuicStream _stream = default!;
+        private QuicStream? _stream;
         private readonly QuicConnectionContext _connection;
         private readonly QuicTransportContext _context;
         private readonly Pipe _inputPipe;
@@ -140,6 +140,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         private async Task StartAsync()
         {
+            Debug.Assert(_stream != null);
+
             try
             {
                 // Spawn send and receive logic
@@ -169,6 +171,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         private async Task DoReceive()
         {
+            Debug.Assert(_stream != null);
+
             Exception? error = null;
 
             try
@@ -316,6 +320,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         private async Task DoSend()
         {
+            Debug.Assert(_stream != null);
+
             Exception? shutdownReason = null;
             Exception? unexpectedError = null;
 
@@ -413,13 +419,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
             lock (_shutdownLock)
             {
-                if (_stream.CanRead)
+                if (_stream != null)
                 {
-                    _stream.AbortRead(Error);
-                }
-                if (_stream.CanWrite)
-                {
-                    _stream.AbortWrite(Error);
+                    if (_stream.CanRead)
+                    {
+                        _stream.AbortRead(Error);
+                    }
+                    if (_stream.CanWrite)
+                    {
+                        _stream.AbortWrite(Error);
+                    }
                 }
             }
 
@@ -429,6 +438,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         private void ShutdownWrite(Exception? shutdownReason)
         {
+            Debug.Assert(_stream != null);
+
             try
             {
                 lock (_shutdownLock)
@@ -449,6 +460,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         public override async ValueTask DisposeAsync()
         {
+            if (_stream == null)
+            {
+                return;
+            }
+            
             // Be conservative about what can be pooled.
             // Only pool bidirectional streams whose pipes have completed successfully and haven't been aborted.
             CanReuse = _stream.CanRead && _stream.CanWrite
@@ -464,9 +480,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
             await _processingTask;
 
-            _stream.Dispose();
-            _stream = null!;
+            lock (_shutdownLock)
+            {
+                if (!CanReuse)
+                {
+                    DisposeCore();
+                }
 
+                _stream.Dispose();
+                _stream = null!;
+            }
+        }
+
+        public void Dispose()
+        {
             if (!_connection.TryReturnStream(this))
             {
                 // Dispose when one of:

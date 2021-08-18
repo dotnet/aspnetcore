@@ -257,6 +257,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _mockTimeoutHandler.VerifyNoOtherCalls();
             _mockConnectionContext.VerifyNoOtherCalls();
+
+            Assert.Contains(TestSink.Writes, w => w.EventId.Name == "ResponseMinimumDataRateNotSatisfied");
         }
 
         [Theory]
