@@ -115,8 +115,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
             // https://github.com/dotnet/runtime/issues/57246 The accept still completes even though the connection was rejected, but it's already failed.
             var serverContext = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
-            qex = await Assert.ThrowsAsync<QuicException>(() => serverContext.ConnectAsync().DefaultTimeout());
-            Assert.Equal("Failed to open stream to peer. Error Code: INVALID_STATE", qex.Message);
+            await Assert.ThrowsAsync<QuicException>(() => serverContext.ConnectAsync().DefaultTimeout());
         }
     }
 }
