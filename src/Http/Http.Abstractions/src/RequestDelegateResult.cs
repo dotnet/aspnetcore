@@ -22,13 +22,12 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Gets the <see cref="RequestDelegate" />
         /// </summary>
-        /// <returns>A task that represents the completion of request processing.</returns>
-        public RequestDelegate RequestDelegate { get; init; }
+        public RequestDelegate RequestDelegate { get;}
 
         /// <summary>
         /// Gets endpoint metadata inferred from creating the <see cref="RequestDelegate" />
         /// </summary>
-        public IReadOnlyList<object> EndpointMetadata { get; init; }
+        public IReadOnlyList<object> EndpointMetadata { get;}
     }
 
 }

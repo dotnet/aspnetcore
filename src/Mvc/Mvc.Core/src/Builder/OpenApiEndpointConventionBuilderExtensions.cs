@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Http
         public static MinimalActionEndpointConventionBuilder Produces<TResponse>(this MinimalActionEndpointConventionBuilder builder,
 #pragma warning restore RS0026
             int statusCode = StatusCodes.Status200OK,
-            string? contentType =  null,
+            string? contentType = null,
             params string[] additionalContentTypes)
         {
             return Produces(builder, statusCode, typeof(TResponse), contentType, additionalContentTypes);
@@ -125,7 +125,6 @@ namespace Microsoft.AspNetCore.Http
             return Produces<HttpValidationProblemDetails>(builder, statusCode, contentType);
         }
 
-#pragma warning disable CS0419 // Ambiguous reference in cref attribute
         /// <summary>
         /// Adds the <see cref="Accepts"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
         /// produced by <paramref name="builder"/>.
@@ -135,17 +134,13 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="contentType">The request content type. Defaults to "application/json" if empty.</param>
         /// <param name="additionalContentTypes">Additional response content types the endpoint produces for the supplied status code.</param>
         /// <returns>A <see cref="MinimalActionEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
-        public static MinimalActionEndpointConventionBuilder Accepts<TRequest>(this MinimalActionEndpointConventionBuilder builder, string? contentType = null, params string[] additionalContentTypes)
-#pragma warning restore CS0419 // Ambiguous reference in cref attribute
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        public static MinimalActionEndpointConventionBuilder Accepts<TRequest>(this MinimalActionEndpointConventionBuilder builder, string contentType, params string[] additionalContentTypes)
         {
             Accepts(builder, typeof(TRequest), contentType, additionalContentTypes);
 
             return builder;
         }
 
-#pragma warning disable CS0419 // Ambiguous reference in cref attribute
         /// <summary>
         /// Adds the <see cref="Accepts"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
         /// produced by <paramref name="builder"/>.
@@ -155,48 +150,16 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="contentType">The response content type that the endpoint accepts.</param>
         /// <param name="additionalContentTypes">Additional response content types the endpoint accepts</param>
         /// <returns>A <see cref="MinimalActionEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
-        public static MinimalActionEndpointConventionBuilder Accepts(this MinimalActionEndpointConventionBuilder builder, Type requestType ,
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
-#pragma warning restore CS0419 // Ambiguous reference in cref attribute
-            string? contentType = null, params string[] additionalContentTypes)
-        {           
-            builder.WithMetadata(new AcceptsMetadata(requestType, GetAllContentTypes(contentType, additionalContentTypes)));
-            return builder;
-        }
-
-#pragma warning disable CS0419 // Ambiguous reference in cref attribute
-        /// <summary>
-        /// Adds the <see cref="Accepts"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
-        /// produced by <paramref name="builder"/>.
-        /// </summary>
-        /// <param name="builder">The <see cref="MinimalActionEndpointConventionBuilder"/>.</param>
-        /// <param name="contentType">The response content type that the endpoint accepts.</param>
-        /// <param name="additionalContentTypes">Additional response content types the endpoint accepts</param>
-        /// <returns>A <see cref="MinimalActionEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static MinimalActionEndpointConventionBuilder Accepts(this MinimalActionEndpointConventionBuilder builder,
-#pragma warning restore CS0419 // Ambiguous reference in cref attribute
+        public static MinimalActionEndpointConventionBuilder Accepts(this MinimalActionEndpointConventionBuilder builder, Type requestType,
             string contentType, params string[] additionalContentTypes)
-        {
-            var allContentTypes = GetAllContentTypes(contentType, additionalContentTypes);
-            builder.WithMetadata(new AcceptsMetadata(allContentTypes));
-
-            return builder;
-        }
-
-        private static string[] GetAllContentTypes(string? contentType, string[] additionalContentTypes)
         {
             if (string.IsNullOrEmpty(contentType))
             {
                 contentType = "application/json";
             }
 
-            var allContentTypes = new List<string>()
-            {
-                contentType
-            };
-            allContentTypes.AddRange(additionalContentTypes);
-            return allContentTypes.ToArray();
+            builder.WithMetadata(new ConsumesAttribute(requestType, contentType, additionalContentTypes));
+            return builder;
         }
     }
 }
