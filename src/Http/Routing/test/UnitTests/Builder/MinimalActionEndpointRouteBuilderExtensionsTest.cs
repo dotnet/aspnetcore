@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal("GET", method);
 
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal("/ HTTP: GET", routeEndpointBuilder.DisplayName);
+            Assert.Equal("HTTP: GET /", routeEndpointBuilder.DisplayName);
             Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
         }
 
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal("GET", method);
 
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal("/{id} HTTP: GET", routeEndpointBuilder.DisplayName);
+            Assert.Equal("HTTP: GET /{id}", routeEndpointBuilder.DisplayName);
             Assert.Equal("/{id}", routeEndpointBuilder.RoutePattern.RawText);
 
             // Assert that we don't fallback to the query string
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal("GET", method);
 
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal("/ HTTP: GET", routeEndpointBuilder.DisplayName);
+            Assert.Equal("HTTP: GET /", routeEndpointBuilder.DisplayName);
             Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
 
             // Assert that we don't fallback to the route values
@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal(expectedMethod, method);
 
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal($"/{{ID}} HTTP: {expectedMethod}", routeEndpointBuilder.DisplayName);
+            Assert.Equal($"HTTP: {expectedMethod} /{{ID}}", routeEndpointBuilder.DisplayName);
             Assert.Equal($"/{{ID}}", routeEndpointBuilder.RoutePattern.RawText);
 
             var httpContext = new DefaultHttpContext();
@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal(expectedMethod, method);
 
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal($"/{{ID}} HTTP: {expectedMethod}", routeEndpointBuilder.DisplayName);
+            Assert.Equal($"HTTP: {expectedMethod} /{{ID}}", routeEndpointBuilder.DisplayName);
             Assert.Equal($"/{{ID}}", routeEndpointBuilder.RoutePattern.RawText);
 
             // Assert that we don't fallback to the query string
@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal("POST", method);
 
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal("/ HTTP: POST", routeEndpointBuilder.DisplayName);
+            Assert.Equal("HTTP: POST /", routeEndpointBuilder.DisplayName);
             Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
         }
 
@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal("PUT", method);
 
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal("/ HTTP: PUT", routeEndpointBuilder.DisplayName);
+            Assert.Equal("HTTP: PUT /", routeEndpointBuilder.DisplayName);
             Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
         }
 
@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal("DELETE", method);
 
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal("/ HTTP: DELETE", routeEndpointBuilder.DisplayName);
+            Assert.Equal("HTTP: DELETE /", routeEndpointBuilder.DisplayName);
             Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
         }
 

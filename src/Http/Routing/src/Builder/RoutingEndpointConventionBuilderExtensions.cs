@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Linq;
 using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Builder

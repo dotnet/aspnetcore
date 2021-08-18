@@ -109,7 +109,8 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             var builder = endpoints.Map(RoutePatternFactory.Parse(pattern), action);
-            builder.WithDisplayName($"{pattern} HTTP: {string.Join(", ", httpMethods)}");
+            // Prepends the HTTP method to the DisplayName produced with pattern + method name
+            builder.Add(b => b.DisplayName = $"HTTP: {string.Join(", ", httpMethods)} {b.DisplayName}");
             builder.WithMetadata(new HttpMethodMetadata(httpMethods));
             return builder;
         }
@@ -191,16 +192,14 @@ namespace Microsoft.AspNetCore.Builder
             // be filtered that way.
             if (action.Target == null || !TypeHelper.IsCompilerGenerated(action.Method.Name))
             {
-                if (GeneratedNameParser.TryParseLocalFunctionName(action.Method.Name, out var endpointName))
+                if (!GeneratedNameParser.TryParseLocalFunctionName(action.Method.Name, out var endpointName))
                 {
-                    builder.Metadata.Add(new EndpointNameMetadata(endpointName));
-                    builder.Metadata.Add(new RouteNameMetadata(endpointName));
+                    endpointName = action.Method.Name;
                 }
-                else
-                {
-                    builder.Metadata.Add(new EndpointNameMetadata(action.Method.Name));
-                    builder.Metadata.Add(new RouteNameMetadata(action.Method.Name));
-                }
+
+                builder.Metadata.Add(new EndpointNameMetadata(endpointName));
+                builder.Metadata.Add(new RouteNameMetadata(endpointName));
+                builder.DisplayName = $"{builder.DisplayName} => {endpointName}";
             }
 
             // Add delegate attributes as metadata
