@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Authorization
         private AuthorizationFailure() { }
 
         /// <summary>
-        /// Failure was due to <see cref="AuthorizationHandlerContext.Fail"/> being called.
+        /// Failure was due to <see cref="AuthorizationHandlerContext.Fail()"/> being called.
         /// </summary>
         public bool FailCalled { get; private set; }
 
@@ -25,13 +25,29 @@ namespace Microsoft.AspNetCore.Authorization
         public IEnumerable<IAuthorizationRequirement> FailedRequirements { get; private set; } = Array.Empty<IAuthorizationRequirement>();
 
         /// <summary>
-        /// Return a failure due to <see cref="AuthorizationHandlerContext.Fail"/> being called.
+        /// Allows <see cref="IAuthorizationHandler"/> to flow more detailed reasons for why authorization failed.
+        /// </summary>
+        public IEnumerable<AuthorizationFailureReason> Reasons { get; private set; } = Array.Empty<AuthorizationFailureReason>();
+
+        /// <summary>
+        /// Return a failure due to <see cref="AuthorizationHandlerContext.Fail()"/> being called.
         /// </summary>
         /// <returns>The failure.</returns>
         public static AuthorizationFailure ExplicitFail()
             => new AuthorizationFailure
             {
+                FailCalled = true
+            };
+
+        /// <summary>
+        /// Return a failure due to <see cref="AuthorizationHandlerContext.Fail(AuthorizationFailureReason)"/> being called.
+        /// </summary>
+        /// <returns>The failure.</returns>
+        public static AuthorizationFailure Failed(IEnumerable<AuthorizationFailureReason> reasons)
+            => new AuthorizationFailure
+            {
                 FailCalled = true,
+                Reasons = reasons
             };
 
         /// <summary>

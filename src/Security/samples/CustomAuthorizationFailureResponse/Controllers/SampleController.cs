@@ -24,5 +24,12 @@ namespace CustomAuthorizationFailureResponse.Controllers
         {
             return "Hello world from GetWithCustomPolicy";
         }
+
+        [HttpGet("failureReason")]
+        [Authorize(Policy = SamplePolicyNames.FailureReasonPolicy)]
+        public string FailureReason()
+        {
+            return "Hello world from FailureReason";
+        }
     }
 }

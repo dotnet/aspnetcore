@@ -174,6 +174,54 @@ namespace Microsoft.AspNetCore.Authorization.Test
             }
         }
 
+        private class ReasonableFailHandler : IAuthorizationHandler
+        {
+            private string _reason;
+
+            public ReasonableFailHandler(string reason) => _reason = reason;
+
+            public bool Invoked { get; set; }
+
+            public Task HandleAsync(AuthorizationHandlerContext context)
+            {
+                Invoked = true;
+                context.Fail(new AuthorizationFailureReason(this, _reason));
+                return Task.FromResult(0);
+            }
+        }
+
+        [Fact]
+        public async Task CanFailWithReasons()
+        {
+            var handler1 = new ReasonableFailHandler("1");
+            var handler2 = new FailHandler();
+            var handler3 = new ReasonableFailHandler("3");
+            var authorizationService = BuildAuthorizationService(services =>
+            {
+                services.AddSingleton<IAuthorizationHandler>(handler1);
+                services.AddSingleton<IAuthorizationHandler>(handler2);
+                services.AddSingleton<IAuthorizationHandler>(handler3);
+                services.AddAuthorization(options =>
+                {
+                    options.AddPolicy("Custom", policy => policy.Requirements.Add(new CustomRequirement()));
+                });
+            });
+
+            // Act
+            var allowed = await authorizationService.AuthorizeAsync(new ClaimsPrincipal(), "Custom");
+
+            // Assert
+            Assert.False(allowed.Succeeded);
+            Assert.NotNull(allowed.Failure);
+            Assert.Equal(2, allowed.Failure.Reasons.Count());
+            var first = allowed.Failure.Reasons.First();
+            Assert.Equal("1", first.Message);
+            Assert.Equal(handler1, first.Handler);
+            var second = allowed.Failure.Reasons.Last();
+            Assert.Equal("3", second.Message);
+            Assert.Equal(handler3, second.Handler);
+        }
+
         [Fact]
         public async Task Authorize_ShouldFailWhenAllRequirementsNotHandled()
         {

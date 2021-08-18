@@ -31,6 +31,14 @@ namespace CustomAuthorizationFailureResponse.Authorization
             // if the authorization was forbidden, let's use custom logic to handle that.
             if (policyAuthorizationResult.Forbidden && policyAuthorizationResult.AuthorizationFailure != null)
             {
+                if (policyAuthorizationResult.AuthorizationFailure.Reasons.Any())
+                {
+                    await httpContext.Response.WriteAsync(policyAuthorizationResult.AuthorizationFailure.Reasons.First().Message);
+
+                    // return right away as the default implementation would overwrite the status code
+                    return;
+                }
+
                 // as an example, let's return 404 if specific requirement has failed
                 if (policyAuthorizationResult.AuthorizationFailure.FailedRequirements.Any(requirement => requirement is SampleRequirement))
                 {
