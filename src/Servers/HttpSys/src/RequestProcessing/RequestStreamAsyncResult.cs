@@ -135,6 +135,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal void Fail(Exception ex)
         {
+            // Make sure the Abort state is set before signaling the callback so we can avoid race condtions with user code.
+            Dispose();
+            _requestStream.Abort();
             if (_tcs.TrySetException(ex) && _callback != null)
             {
                 try
@@ -147,8 +150,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     // TODO: Log
                 }
             }
-            Dispose();
-            _requestStream.Abort();
         }
 
         [SuppressMessage("Microsoft.Usage", "CA2216:DisposableTypesShouldDeclareFinalizer", Justification = "The disposable resource referenced does have a finalizer.")]

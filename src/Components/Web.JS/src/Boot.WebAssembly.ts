@@ -14,6 +14,8 @@ import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 import { discoverComponents, discoverPersistedState, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { setDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
+import { AfterBlazorStartedCallback, JSInitializer } from './JSInitializers/JSInitializers';
+import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.WebAssembly';
 
 declare var Module: EmscriptenModule;
 let started = false;
@@ -80,11 +82,13 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     );
   });
 
-  // Get the custom environment setting if defined
-  const environment = options?.environment;
+  const candidateOptions = options ?? {};
+
+  // Get the custom environment setting and blazorBootJson loader if defined
+  const environment = candidateOptions.environment;
 
   // Fetch the resources and prepare the Mono runtime
-  const bootConfigPromise = BootConfigResult.initAsync(environment);
+  const bootConfigPromise = BootConfigResult.initAsync(candidateOptions.loadBootResource, environment);
 
   // Leverage the time while we are loading boot.config.json from the network to discover any potentially registered component on
   // the document.
@@ -110,9 +114,11 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     }
   };
 
-  const bootConfigResult = await bootConfigPromise;
+  const bootConfigResult: BootConfigResult = await bootConfigPromise;
+  const jsInitializer = await fetchAndInvokeInitializers(bootConfigResult.bootConfig, candidateOptions);
+
   const [resourceLoader] = await Promise.all([
-    WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig, options || {}),
+    WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig, candidateOptions || {}),
     WebAssemblyConfigLoader.initAsync(bootConfigResult)]);
 
   try {
@@ -123,6 +129,9 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
 
   // Start up the application
   platform.callEntryPoint(resourceLoader.bootConfig.entryAssembly);
+  // At this point .NET has been initialized (and has yielded), we can't await the promise becasue it will
+  // only end when the app finishes running
+  jsInitializer.invokeAfterStartedCallbacks(Blazor);
 }
 
 function invokeJSFromDotNet(callInfo: Pointer, arg0: any, arg1: any, arg2: any): any {

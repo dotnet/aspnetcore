@@ -201,9 +201,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             var jsExecutor = (IJavaScriptExecutor)Browser;
             jsExecutor.ExecuteScript(
-                $"document.getElementById('{elementId}').dispatchEvent(" +
-                $"    new Event('{eventName}', {{ bubbles: true }})" +
-                $")");
+                $"window.testelem = document.getElementById('{elementId}')");
+            jsExecutor.ExecuteScript(
+                $"window.testelem.dispatchEvent(new Event('{eventName}', {{ bubbles: true }}))");
         }
     }
 }

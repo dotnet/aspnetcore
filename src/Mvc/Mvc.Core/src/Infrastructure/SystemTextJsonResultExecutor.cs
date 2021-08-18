@@ -16,7 +16,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
-    internal sealed class SystemTextJsonResultExecutor : IActionResultExecutor<JsonResult>
+    internal sealed partial class SystemTextJsonResultExecutor : IActionResultExecutor<JsonResult>
     {
         private static readonly string DefaultContentType = new MediaTypeHeaderValue("application/json")
         {
@@ -135,26 +135,21 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        private static class Log
+        private static partial class Log
         {
-            private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
-
-            private static readonly Action<ILogger, string?, Exception?> _jsonResultExecuting = LoggerMessage.Define<string?>(
-                LogLevel.Information,
-                new EventId(1, "JsonResultExecuting"),
-                "Executing JsonResult, writing value of type '{Type}'.",
-                SkipEnabledCheckLogOptions);
-
-            // EventId 2 BufferingAsyncEnumerable
+            [LoggerMessage(1, LogLevel.Information, "Executing JsonResult, writing value of type '{Type}'.", EventName = "JsonResultExecuting", SkipEnabledCheck = true)]
+            private static partial void JsonResultExecuting(ILogger logger, string? type);
 
             public static void JsonResultExecuting(ILogger logger, object? value)
             {
                 if (logger.IsEnabled(LogLevel.Information))
                 {
                     var type = value == null ? "null" : value.GetType().FullName;
-                    _jsonResultExecuting(logger, type, null);
+                    JsonResultExecuting(logger, type);
                 }
             }
+
+            // EventId 2 BufferingAsyncEnumerable
         }
     }
 }

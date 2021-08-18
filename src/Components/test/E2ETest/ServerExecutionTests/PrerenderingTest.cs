@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.Equal($"Hello, {interactiveUsername ?? "anonymous"}!", () => Browser.Exists(By.TagName("h1")).Text);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/35449")]
         public async Task NoHotReloadListenersAreOrdinarilyRegistered()
         {
             Navigate("/prerendered/prerendered-transition");

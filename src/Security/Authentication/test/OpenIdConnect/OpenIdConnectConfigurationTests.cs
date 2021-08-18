@@ -521,7 +521,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 {
                     o.SignInScheme = "TestScheme";
                     o.ClientId = "Test Id";
-                    o.MetadataAddress = "http://example.com";
+                    o.Authority = "http://example.com";
                     o.CallbackPath = "/";
                 },
                 ex => Assert.Equal("The MetadataAddress or Authority must use HTTPS unless disabled for development by setting RequireHttpsMetadata=false.", ex.Message)

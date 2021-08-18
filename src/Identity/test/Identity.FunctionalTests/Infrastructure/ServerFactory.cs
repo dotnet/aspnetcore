@@ -57,70 +57,11 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
                     .AddCookieTempDataProvider(o => o.Cookie.IsEssential = true);
             });
 
-            UpdateStaticAssets(builder);
             UpdateApplicationParts(builder);
         }
 
         private void UpdateApplicationParts(IWebHostBuilder builder) =>
             builder.ConfigureServices(services => AddRelatedParts(services, BootstrapFrameworkVersion));
-
-        private void UpdateStaticAssets(IWebHostBuilder builder)
-        {
-            var manifestPath = Path.GetDirectoryName(typeof(ServerFactory<,>).Assembly.Location);
-            builder.ConfigureAppConfiguration((ctx, cb) =>
-            {
-                if (ctx.HostingEnvironment.WebRootFileProvider is CompositeFileProvider composite)
-                {
-                    var originalWebRoot = composite.FileProviders.First();
-                    ctx.HostingEnvironment.WebRootFileProvider = originalWebRoot;
-                }
-            });
-
-            string versionedPath = Path.Combine(manifestPath, $"Testing.DefaultWebSite.StaticWebAssets.{BootstrapFrameworkVersion}.xml");
-            UpdateManifest(versionedPath);
-
-            builder.ConfigureAppConfiguration((context, configBuilder) =>
-            {
-                using (var manifest = File.OpenRead(versionedPath))
-                {
-                    typeof(StaticWebAssetsLoader)
-                        .GetMethod("UseStaticWebAssetsCore", BindingFlags.NonPublic | BindingFlags.Static)
-                        .Invoke(null, new object[] { context.HostingEnvironment, manifest, false });
-                }
-            });
-        }
-
-        private void UpdateManifest(string versionedPath)
-        {
-            var content = File.ReadAllText(versionedPath);
-            var path = typeof(ServerFactory<,>).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-                    .Single(a => a.Key == "Microsoft.AspNetCore.Testing.IdentityUIProjectPath").Value;
-
-            path = Directory.Exists(path) ? Path.Combine(path, "wwwroot") : Path.Combine(FindHelixSlnFileDirectory(), "UI", "wwwroot");
-
-            var updatedContent = content.Replace("{TEST_PLACEHOLDER}", path);
-
-            File.WriteAllText(versionedPath, updatedContent);
-        }
-
-        private string FindHelixSlnFileDirectory()
-        {
-            var applicationPath = Path.GetDirectoryName(typeof(ServerFactory<,>).Assembly.Location);
-            var directoryInfo = new DirectoryInfo(applicationPath);
-            do
-            {
-                var solutionPath = Directory.EnumerateFiles(directoryInfo.FullName, "*.sln").FirstOrDefault();
-                if (solutionPath != null)
-                {
-                    return directoryInfo.FullName;
-                }
-
-                directoryInfo = directoryInfo.Parent;
-            }
-            while (directoryInfo.Parent != null);
-
-            throw new InvalidOperationException($"Solution root could not be located using application root {applicationPath}.");
-        }
 
         protected override IHost CreateHost(IHostBuilder builder)
         {

@@ -15,15 +15,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest
         {
             var absoluteUrl = new Uri(baseUri, relativeUrl);
 
-            if (noReload)
-            {
-                var existingUrl = browser.Url;
-                if (string.Equals(existingUrl, absoluteUrl.AbsoluteUri, StringComparison.Ordinal))
-                {
-                    return;
-                }
-            }
-
             browser.Navigate().GoToUrl("about:blank");
             browser.Navigate().GoToUrl(absoluteUrl);
         }

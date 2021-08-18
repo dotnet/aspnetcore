@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -6,6 +6,8 @@
     <IsShippingPackage>false</IsShippingPackage>
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
+
+  <Import Project="..\..\..\..\WebView\src\buildTransitive\any\Microsoft.AspNetCore.Components.WebView.props" />
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Components.WebView.Photino.csproj" />

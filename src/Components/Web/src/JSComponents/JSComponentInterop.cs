@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Text.Json;
@@ -76,6 +77,8 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
         /// <summary>
         /// For framework use only.
         /// </summary>
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode",
+            Justification = "OpenComponent already has the right set of attributes")]
         protected internal void SetRootComponentParameters(int componentId, int parameterCount, JsonElement parametersJson, JsonSerializerOptions jsonOptions)
         {
             // In case the client misreports the number of parameters, impose bounds so we know the amount

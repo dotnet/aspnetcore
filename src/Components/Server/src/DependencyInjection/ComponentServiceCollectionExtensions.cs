@@ -83,6 +83,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
 
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<CircuitOptions>, CircuitOptionsJSInteropDetailedErrorsConfiguration>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<CircuitOptions>, CircuitOptionsJavaScriptInitializersConfiguration>());
 
             if (configure != null)
             {

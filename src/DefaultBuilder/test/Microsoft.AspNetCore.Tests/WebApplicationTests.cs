@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
@@ -235,7 +236,7 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
-        public void WebApplicationBuildeSettingInvalidApplicationWillFailAssemblyLoadForUserSecrets()
+        public void WebApplicationBuilderSettingInvalidApplicationWillFailAssemblyLoadForUserSecrets()
         {
             var options = new WebApplicationOptions
             {
@@ -732,7 +733,7 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
-        public async Task WebApplication_CanCallUseRoutingWithouUseEndpoints()
+        public async Task WebApplication_CanCallUseRoutingWithoutUseEndpoints()
         {
             var builder = WebApplication.CreateBuilder();
             builder.WebHost.UseTestServer();
@@ -767,6 +768,19 @@ namespace Microsoft.AspNetCore.Tests
             oldResult.EnsureSuccessStatusCode();
 
             Assert.Equal("new", await oldResult.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task WebApplication_CanCallUseEndpointsWithoutUseRoutingFails()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            app.MapGet("/1", () => "1");
+
+            var ex = Assert.Throws<InvalidOperationException>(() => app.UseEndpoints(endpoints => { }));
+            Assert.Contains("UseRouting", ex.Message);
         }
 
         [Fact]
@@ -861,6 +875,67 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
+        public async Task StartupFilter_WithUseRoutingWorks()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            builder.Services.AddSingleton<IStartupFilter, UseRoutingStartupFilter>();
+            await using var app = builder.Build();
+
+            var chosenEndpoint = string.Empty;
+            app.MapGet("/", async c => {
+                chosenEndpoint = c.GetEndpoint().DisplayName;
+                await c.Response.WriteAsync("Hello World");
+            }).WithDisplayName("One");
+
+            await app.StartAsync();
+
+            var client = app.GetTestClient();
+
+            _ = await client.GetAsync("http://localhost/");
+            Assert.Equal("One", chosenEndpoint);
+
+            var response = await client.GetAsync("http://localhost/1");
+            Assert.Equal(203, ((int)response.StatusCode));
+        }
+
+        [Fact]
+        public async Task CanAddMiddlewareBeforeUseRouting()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            var chosenEndpoint = string.Empty;
+
+            app.Use((c, n) =>
+            {
+                chosenEndpoint = c.GetEndpoint()?.DisplayName;
+                Assert.Null(c.GetEndpoint());
+                return n(c);
+            });
+
+            app.UseRouting();
+
+            app.MapGet("/1", async c => {
+                chosenEndpoint = c.GetEndpoint().DisplayName;
+                await c.Response.WriteAsync("Hello World");
+            }).WithDisplayName("One");
+
+            app.UseEndpoints(e => { });
+
+            await app.StartAsync();
+
+            var client = app.GetTestClient();
+
+            _ = await client.GetAsync("http://localhost/");
+            Assert.Null(chosenEndpoint);
+
+            _ = await client.GetAsync("http://localhost/1");
+            Assert.Equal("One", chosenEndpoint);
+        }
+
+        [Fact]
         public async Task WebApplicationBuilder_OnlyAddsDefaultServicesOnce()
         {
             var builder = WebApplication.CreateBuilder();
@@ -920,6 +995,182 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Throws<NotSupportedException>(() => builder.Host.ConfigureWebHost(webHostBuilder => { }));
             Assert.Throws<NotSupportedException>(() => builder.Host.ConfigureWebHost(webHostBuilder => { }, options => { }));
             Assert.Throws<NotSupportedException>(() => builder.Host.ConfigureWebHostDefaults(webHostBuilder => { }));
+        }
+
+        [Fact]
+        public async Task EndpointDataSourceOnlyAddsOnce()
+        {
+            var builder = WebApplication.CreateBuilder();
+            await using var app = builder.Build();
+
+            app.UseRouting();
+
+            app.MapGet("/", () => "Hello World!").WithDisplayName("One");
+
+            app.UseEndpoints(routes =>
+            {
+                routes.MapGet("/hi", () => "Hi World").WithDisplayName("Two");
+                routes.MapGet("/heyo", () => "Heyo World").WithDisplayName("Three");
+            });
+
+            app.Start();
+
+            var ds = app.Services.GetRequiredService<EndpointDataSource>();
+            Assert.Equal(3, ds.Endpoints.Count);
+            Assert.Equal("One", ds.Endpoints[0].DisplayName);
+            Assert.Equal("Two", ds.Endpoints[1].DisplayName);
+            Assert.Equal("Three", ds.Endpoints[2].DisplayName);
+        }
+
+        [Fact]
+        public async Task RoutesAddedToCorrectMatcher()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            app.UseRouting();
+
+            var chosenRoute = string.Empty;
+
+            app.Use((context, next) =>
+            {
+                chosenRoute = context.GetEndpoint()?.DisplayName;
+                return next(context);
+            });
+
+            app.MapGet("/", () => "Hello World").WithDisplayName("One");
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapGet("/hi", () => "Hello Endpoints").WithDisplayName("Two");
+            });
+
+            app.UseRouting();
+            app.UseEndpoints(_ => { });
+
+            await app.StartAsync();
+
+            var client = app.GetTestClient();
+
+            _ = await client.GetAsync("http://localhost/");
+            Assert.Equal("One", chosenRoute);
+        }
+
+        [Fact]
+        public async Task WebApplication_CallsUseRoutingAndUseEndpoints()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            var chosenRoute = string.Empty;
+            app.MapGet("/", async c =>
+            {
+                chosenRoute = c.GetEndpoint()?.DisplayName;
+                await c.Response.WriteAsync("Hello World");
+            }).WithDisplayName("One");
+
+            await app.StartAsync();
+
+            var ds = app.Services.GetRequiredService<EndpointDataSource>();
+            Assert.Equal(1, ds.Endpoints.Count);
+            Assert.Equal("One", ds.Endpoints[0].DisplayName);
+
+            var client = app.GetTestClient();
+
+            _ = await client.GetAsync("http://localhost/");
+            Assert.Equal("One", chosenRoute);
+        }
+
+        [Fact]
+        public async Task BranchingPipelineHasOwnRoutes()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            app.UseRouting();
+
+            var chosenRoute = string.Empty;
+            app.MapGet("/", () => "Hello World!").WithDisplayName("One");
+
+            app.UseEndpoints(routes =>
+            {
+                routes.MapGet("/hi", async c =>
+                {
+                    chosenRoute = c.GetEndpoint()?.DisplayName;
+                    await c.Response.WriteAsync("Hello World");
+                }).WithDisplayName("Two");
+                routes.MapGet("/heyo", () => "Heyo World").WithDisplayName("Three");
+            });
+
+            var newBuilder = ((IApplicationBuilder)app).New();
+            Assert.False(newBuilder.Properties.TryGetValue(WebApplication.GlobalEndpointRouteBuilderKey, out _));
+
+            newBuilder.UseRouting();
+            newBuilder.UseEndpoints(endpoints =>
+            {
+                endpoints.MapGet("/h3", async c =>
+                {
+                    chosenRoute = c.GetEndpoint()?.DisplayName;
+                    await c.Response.WriteAsync("Hello World");
+                }).WithDisplayName("Four");
+                endpoints.MapGet("hi", async c =>
+                {
+                    chosenRoute = c.GetEndpoint()?.DisplayName;
+                    await c.Response.WriteAsync("Hi New");
+                }).WithDisplayName("Five");
+            });
+            var branch = newBuilder.Build();
+            app.Run(c => branch(c));
+
+            app.Start();
+
+            var ds = app.Services.GetRequiredService<EndpointDataSource>();
+            Assert.Equal(5, ds.Endpoints.Count);
+            Assert.Equal("One", ds.Endpoints[0].DisplayName);
+            Assert.Equal("Two", ds.Endpoints[1].DisplayName);
+            Assert.Equal("Three", ds.Endpoints[2].DisplayName);
+            Assert.Equal("Four", ds.Endpoints[3].DisplayName);
+            Assert.Equal("Five", ds.Endpoints[4].DisplayName);
+
+            var client = app.GetTestClient();
+
+            // '/hi' routes don't conflict and the non-branched one is chosen
+            _ = await client.GetAsync("http://localhost/hi");
+            Assert.Equal("Two", chosenRoute);
+
+            // Can access branched routes
+            _ = await client.GetAsync("http://localhost/h3");
+            Assert.Equal("Four", chosenRoute);
+        }
+
+        [Fact]
+        public async Task PropertiesPreservedFromInnerApplication()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.Services.AddSingleton<IStartupFilter, PropertyFilter>();
+            await using var app = builder.Build();
+
+            ((IApplicationBuilder)app).Properties["didsomething"] = true;
+
+            app.Start();
+        }
+
+        class PropertyFilter : IStartupFilter
+        {
+            public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+            {
+                return app =>
+                {
+                    next(app);
+
+                    // This should be true
+                    var val = app.Properties["didsomething"];
+                    Assert.True((bool)val);
+                };
+            }
         }
 
         private class Service : IService { }
@@ -1127,6 +1378,26 @@ namespace Microsoft.AspNetCore.Tests
                     {
                         context.Response.StatusCode = 418; // I'm a teapot
                         return Task.CompletedTask;
+                    });
+                };
+            }
+        }
+
+        class UseRoutingStartupFilter : IStartupFilter
+        {
+            public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+            {
+                return app =>
+                {
+                    app.UseRouting();
+                    next(app);
+                    app.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapGet("/1", async c =>
+                        {
+                            c.Response.StatusCode = 203;
+                            await c.Response.WriteAsync("Hello Filter");
+                        }).WithDisplayName("Two");
                     });
                 };
             }

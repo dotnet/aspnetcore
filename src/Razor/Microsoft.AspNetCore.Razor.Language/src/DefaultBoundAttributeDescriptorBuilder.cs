@@ -92,10 +92,10 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public BoundAttributeDescriptor Build()
         {
-            var validationDiagnostics = Validate();
-            var diagnostics = new HashSet<RazorDiagnostic>(validationDiagnostics);
+            var diagnostics = Validate();
             if (_diagnostics != null)
             {
+                diagnostics ??= new();
                 diagnostics.UnionWith(_diagnostics);
             }
 
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 CaseSensitive,
                 parameters,
                 new Dictionary<string, string>(Metadata),
-                diagnostics.ToArray())
+                diagnostics?.ToArray() ?? Array.Empty<RazorDiagnostic>())
             {
                 IsEditorRequired = IsEditorRequired,
             };
@@ -159,12 +159,14 @@ namespace Microsoft.AspNetCore.Razor.Language
             return Name;
         }
 
-        private IEnumerable<RazorDiagnostic> Validate()
+        private HashSet<RazorDiagnostic> Validate()
         {
             // data-* attributes are explicitly not implemented by user agents and are not intended for use on
             // the server; therefore it's invalid for TagHelpers to bind to them.
             const string DataDashPrefix = "data-";
             var isDirectiveAttribute = this.IsDirectiveAttribute();
+
+            HashSet<RazorDiagnostic> diagnostics = null;
 
             if (string.IsNullOrWhiteSpace(Name))
             {
@@ -174,7 +176,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                         _parent.GetDisplayName(),
                         GetDisplayName());
 
-                    yield return diagnostic;
+                    diagnostics ??= new();
+                    diagnostics.Add(diagnostic);
                 }
             }
             else
@@ -186,7 +189,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                         GetDisplayName(),
                         Name);
 
-                    yield return diagnostic;
+                    diagnostics ??= new();
+                    diagnostics.Add(diagnostic);
                 }
 
                 StringSegment name = Name;
@@ -201,13 +205,14 @@ namespace Microsoft.AspNetCore.Razor.Language
                             GetDisplayName(),
                             Name);
 
-                    yield return diagnostic;
+                    diagnostics ??= new();
+                    diagnostics.Add(diagnostic);
                 }
 
                 for (var i = 0; i < name.Length; i++)
                 {
                     var character = name[i];
-                    if (char.IsWhiteSpace(character) || HtmlConventions.InvalidNonWhitespaceHtmlCharacters.Contains(character))
+                    if (char.IsWhiteSpace(character) || HtmlConventions.IsInvalidNonWhitespaceHtmlCharacters(character))
                     {
                         var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributeName(
                             _parent.GetDisplayName(),
@@ -215,7 +220,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                             name.Value,
                             character);
 
-                        yield return diagnostic;
+                        diagnostics ??= new();
+                        diagnostics.Add(diagnostic);
                     }
                 }
             }
@@ -229,7 +235,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                         GetDisplayName(),
                         IndexerAttributeNamePrefix);
 
-                    yield return diagnostic;
+                    diagnostics ??= new();
+                    diagnostics.Add(diagnostic);
                 }
                 else if (IndexerAttributeNamePrefix.Length > 0 && string.IsNullOrWhiteSpace(IndexerAttributeNamePrefix))
                 {
@@ -237,7 +244,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                         _parent.GetDisplayName(),
                         GetDisplayName());
 
-                    yield return diagnostic;
+                    diagnostics ??= new();
+                    diagnostics.Add(diagnostic);
                 }
                 else
                 {
@@ -253,13 +261,14 @@ namespace Microsoft.AspNetCore.Razor.Language
                             GetDisplayName(),
                             indexerPrefix.Value);
 
-                        yield return diagnostic;
+                        diagnostics ??= new();
+                        diagnostics.Add(diagnostic);
                     }
 
                     for (var i = 0; i < indexerPrefix.Length; i++)
                     {
                         var character = indexerPrefix[i];
-                        if (char.IsWhiteSpace(character) || HtmlConventions.InvalidNonWhitespaceHtmlCharacters.Contains(character))
+                        if (char.IsWhiteSpace(character) || HtmlConventions.IsInvalidNonWhitespaceHtmlCharacters(character))
                         {
                             var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributePrefix(
                                 _parent.GetDisplayName(),
@@ -267,11 +276,14 @@ namespace Microsoft.AspNetCore.Razor.Language
                                 indexerPrefix.Value,
                                 character);
 
-                            yield return diagnostic;
+                            diagnostics ??= new();
+                            diagnostics.Add(diagnostic);
                         }
                     }
                 }
             }
+
+            return diagnostics;
         }
 
         private void EnsureAttributeParameterBuilders()

@@ -1,8 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Razor.Language
@@ -10,6 +9,8 @@ namespace Microsoft.AspNetCore.Razor.Language
     public static class HtmlConventions
     {
         private const string HtmlCaseRegexReplacement = "-$1$2";
+        private static readonly char[] InvalidNonWhitespaceHtmlCharacters =
+            new[] { '@', '!', '<', '/', '?', '[', '>', ']', '=', '"', '\'', '*' };
 
         // This matches the following AFTER the start of the input string (MATCH).
         // Any letter/number followed by an uppercase letter then lowercase letter: 1(Aa), a(Aa), A(Aa)
@@ -21,8 +22,19 @@ namespace Microsoft.AspNetCore.Razor.Language
                 RegexOptions.None,
                 TimeSpan.FromMilliseconds(500));
 
-        internal static IReadOnlyCollection<char> InvalidNonWhitespaceHtmlCharacters { get; } = new List<char>(
-            new[] { '@', '!', '<', '/', '?', '[', '>', ']', '=', '"', '\'', '*' });
+
+        internal static bool IsInvalidNonWhitespaceHtmlCharacters(char testChar)
+        {
+            foreach (var c in InvalidNonWhitespaceHtmlCharacters)
+            {
+                if (c == testChar)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         /// <summary>
         /// Converts from pascal/camel case to lower kebab-case.
