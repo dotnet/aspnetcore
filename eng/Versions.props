@@ -106,7 +106,7 @@
     <MicrosoftExtensionsOptionsDataAnnotationsVersion>7.0.0-alpha.1.21417.28</MicrosoftExtensionsOptionsDataAnnotationsVersion>
     <MicrosoftExtensionsOptionsVersion>7.0.0-alpha.1.21417.28</MicrosoftExtensionsOptionsVersion>
     <MicrosoftExtensionsPrimitivesVersion>7.0.0-alpha.1.21417.28</MicrosoftExtensionsPrimitivesVersion>
-    <MicrosoftInternalRuntimeAspNetCoreTransportVersion>6.0.0-rc.1.21417.1</MicrosoftInternalRuntimeAspNetCoreTransportVersion>
+    <MicrosoftInternalRuntimeAspNetCoreTransportVersion>7.0.0-alpha.1.21417.28</MicrosoftInternalRuntimeAspNetCoreTransportVersion>
     <MicrosoftWin32SystemEventsVersion>7.0.0-alpha.1.21417.28</MicrosoftWin32SystemEventsVersion>
     <SystemDiagnosticsDiagnosticSourceVersion>7.0.0-alpha.1.21417.28</SystemDiagnosticsDiagnosticSourceVersion>
     <SystemDiagnosticsEventLogVersion>7.0.0-alpha.1.21417.28</SystemDiagnosticsEventLogVersion>

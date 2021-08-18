@@ -181,9 +181,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>616ace39bb8d9431097b433c31caca6dd934d349</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Internal.Runtime.AspNetCore.Transport" Version="6.0.0-rc.1.21417.1">
+    <Dependency Name="Microsoft.Internal.Runtime.AspNetCore.Transport" Version="7.0.0-alpha.1.21417.28">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>14b34eb02bc8969b77c0d3a1e39fb38f450625cf</Sha>
+      <Sha>616ace39bb8d9431097b433c31caca6dd934d349</Sha>
     </Dependency>
     <Dependency Name="System.Diagnostics.DiagnosticSource" Version="7.0.0-alpha.1.21417.28">
       <Uri>https://github.com/dotnet/runtime</Uri>
