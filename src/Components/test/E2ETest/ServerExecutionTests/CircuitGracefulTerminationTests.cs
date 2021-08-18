@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
-            // The browser won't sent the disconnection message if it's headless
+            // The browser won't send the disconnection message if it's headless
             browserFixture.EnsureNotHeadless = true;
         }
 
