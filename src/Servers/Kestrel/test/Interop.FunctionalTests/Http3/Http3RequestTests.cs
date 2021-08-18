@@ -174,7 +174,7 @@ namespace Interop.FunctionalTests.Http3
         [ConditionalTheory]
         [MsQuicSupported]
         [InlineData(HttpProtocols.Http3, 11)]
-        [InlineData(HttpProtocols.Http3, 1024, Skip = "HttpClient issue https://github.com/dotnet/runtime/issues/56115")]
+        [InlineData(HttpProtocols.Http3, 1024)]
         [InlineData(HttpProtocols.Http2, 11)]
         [InlineData(HttpProtocols.Http2, 1024)]
         public async Task GET_ServerStreaming_ClientReadsPartialResponse(HttpProtocols protocol, int clientBufferSize)
@@ -219,7 +219,7 @@ namespace Interop.FunctionalTests.Http3
 
         [ConditionalTheory]
         [MsQuicSupported]
-        [InlineData(HttpProtocols.Http3, Skip = "https://github.com/dotnet/runtime/issues/56969")]
+        [InlineData(HttpProtocols.Http3)]
         [InlineData(HttpProtocols.Http2)]
         public async Task POST_ClientSendsOnlyHeaders_RequestReceivedOnServer(HttpProtocols protocol)
         {
@@ -511,6 +511,164 @@ namespace Interop.FunctionalTests.Http3
                 Assert.Equal(1, secondRequestState);
 
                 await host.StopAsync();
+            }
+        }
+
+        // Verify HTTP/2 and HTTP/3 match behavior
+        [ConditionalTheory]
+        [MsQuicSupported]
+        [InlineData(HttpProtocols.Http3, Skip = "https://github.com/dotnet/runtime/issues/56129")]
+        [InlineData(HttpProtocols.Http2)]
+        public async Task POST_ClientCancellationBidirectional_RequestAbortRaised(HttpProtocols protocol)
+        {
+            // Arrange
+            var cancelledTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var readAsyncTask = new TaskCompletionSource<Task>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var clientHasCancelledSyncPoint = new SyncPoint();
+
+            var builder = CreateHostBuilder(async context =>
+            {
+                context.RequestAborted.Register(() =>
+                {
+                    Logger.LogInformation("Server received request aborted.");
+                    cancelledTcs.SetResult();
+                });
+
+                var requestBody = context.Request.Body;
+                var responseBody = context.Response.Body;
+
+                // Read content
+                var data = await requestBody.ReadAtLeastLengthAsync(TestData.Length);
+
+                await responseBody.WriteAsync(data);
+                await responseBody.FlushAsync();
+
+                await clientHasCancelledSyncPoint.WaitForSyncPoint().DefaultTimeout();
+                clientHasCancelledSyncPoint.Continue();
+
+                for (var i = 0; i < 5; i++)
+                {
+                    await Task.Delay(100);
+
+                    Logger.LogInformation($"Server writing to response after cancellation {i}.");
+                    await responseBody.WriteAsync(data);
+                    await responseBody.FlushAsync();
+                }
+
+                // Wait for task cancellation
+                await cancelledTcs.Task;
+
+                readAsyncTask.SetResult(requestBody.ReadAsync(data).AsTask());
+            }, protocol: protocol);
+
+            var httpClientHandler = new HttpClientHandler();
+            httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+
+            using (var host = builder.Build())
+            using (var client = new HttpClient(httpClientHandler))
+            {
+                await host.StartAsync().DefaultTimeout();
+
+                var cts = new CancellationTokenSource();
+                var requestContent = new StreamingHttpContext();
+
+                var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
+                request.Content = requestContent;
+                request.Version = GetProtocol(protocol);
+                request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                // Act
+                var responseTask = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+
+                var requestStream = await requestContent.GetStreamAsync().DefaultTimeout();
+
+                // Send headers
+                await requestStream.FlushAsync().DefaultTimeout();
+                // Write content
+                await requestStream.WriteAsync(TestData).DefaultTimeout();
+
+                var response = await responseTask.DefaultTimeout();
+
+                var responseStream = await response.Content.ReadAsStreamAsync().DefaultTimeout();
+
+                var data = await responseStream.ReadAtLeastLengthAsync(TestData.Length).DefaultTimeout();
+
+                Logger.LogInformation("Client canceled request.");
+                response.Dispose();
+
+                await clientHasCancelledSyncPoint.WaitToContinue().DefaultTimeout();
+
+                // Assert
+                await cancelledTcs.Task.DefaultTimeout();
+
+                var serverWriteTask = await readAsyncTask.Task.DefaultTimeout();
+
+                await Assert.ThrowsAnyAsync<Exception>(() => serverWriteTask).DefaultTimeout();
+
+                await host.StopAsync().DefaultTimeout();
+            }
+
+            // Ensure this log wasn't written:
+            // Critical: Http3OutputProducer.ProcessDataWrites observed an unexpected exception.
+            var badLogWrite = TestSink.Writes.FirstOrDefault(w => w.LogLevel == LogLevel.Critical);
+            if (badLogWrite != null)
+            {
+                Assert.True(false, "Bad log write: " + badLogWrite + Environment.NewLine + badLogWrite.Exception);
+            }
+        }
+
+        // Verify HTTP/2 and HTTP/3 match behavior
+        [ConditionalTheory]
+        [MsQuicSupported]
+        [InlineData(HttpProtocols.Http3, Skip = "https://github.com/dotnet/runtime/issues/56129")]
+        [InlineData(HttpProtocols.Http2)]
+        public async Task GET_ClientCancellationAfterResponseHeaders_RequestAbortRaised(HttpProtocols protocol)
+        {
+            // Arrange
+            var cancelledTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var builder = CreateHostBuilder(async context =>
+            {
+                context.RequestAborted.Register(() =>
+                {
+                    Logger.LogInformation("Server received request aborted.");
+                    cancelledTcs.SetResult();
+                });
+
+                var responseBody = context.Response.Body;
+                await responseBody.WriteAsync(TestData);
+                await responseBody.FlushAsync();
+
+                // Wait for task cancellation
+                await cancelledTcs.Task;
+            }, protocol: protocol);
+
+            var httpClientHandler = new HttpClientHandler();
+            httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+
+            using (var host = builder.Build())
+            using (var client = new HttpClient(httpClientHandler))
+            {
+                await host.StartAsync().DefaultTimeout();
+
+                var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+                request.Version = GetProtocol(protocol);
+                request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                // Act
+                var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+
+                var responseStream = await response.Content.ReadAsStreamAsync().DefaultTimeout();
+
+                var data = await responseStream.ReadAtLeastLengthAsync(TestData.Length).DefaultTimeout();
+
+                Logger.LogInformation("Client canceled request.");
+                response.Dispose();
+
+                // Assert
+                await cancelledTcs.Task.DefaultTimeout();
+
+                await host.StopAsync().DefaultTimeout();
             }
         }
 
