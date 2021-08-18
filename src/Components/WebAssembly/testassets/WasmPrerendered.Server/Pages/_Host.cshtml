@@ -1,0 +1,9 @@
+﻿@page "/"
+@namespace WasmPrerendered.Pages
+@using WasmPrerendered.Client
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = "_Layout";
+}
+
+<component type="typeof(App)" render-mode="WebAssemblyPrerendered" />
