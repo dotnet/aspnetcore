@@ -168,26 +168,25 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         }
 
         [Fact]
-        public void FindTryParseHttpContextMethod_FindsCorrectMethodOnClass()
+        public async Task FindBindAsyncMethod_FindsCorrectMethodOnClass()
         {
-            var type = typeof(TryParseHttpContextRecord);
+            var type = typeof(BindAsyncRecord);
             var cache = new TryParseMethodCache();
-            var methodFound = cache.FindTryParseHttpContextMethod(type);
+            var methodFound = cache.FindBindAsyncMethod(type);
 
             Assert.NotNull(methodFound);
 
             var parsedValue = Expression.Variable(type, "parsedValue");
-            var call = methodFound!(parsedValue) as MethodCallExpression;
+            var call = methodFound as MethodCallExpression;
             Assert.NotNull(call);
             var method = call!.Method;
             var parameters = method.GetParameters();
 
+            Assert.Single(parameters);
             Assert.Equal(typeof(HttpContext), parameters[0].ParameterType);
-            Assert.True(parameters[1].IsOut);
 
-            var parseHttpContext = Expression.Lambda<Func<HttpContext, TryParseHttpContextRecord>>(Expression.Block(new[] { parsedValue },
-                call,
-                parsedValue), cache.HttpContextExpr).Compile();
+            var parseHttpContext = Expression.Lambda<Func<HttpContext, ValueTask<object>>>(Expression.Block(new[] { parsedValue },
+                call), cache.HttpContextExpr).Compile();
 
             var httpContext = new DefaultHttpContext
             {
@@ -200,10 +199,10 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
             },
             };
 
-            Assert.Equal(new TryParseHttpContextRecord(42), parseHttpContext(httpContext));
+            Assert.Equal(new BindAsyncRecord(42), await parseHttpContext(httpContext));
         }
 
-        public static IEnumerable<object[]> TryParseHttpContextParameterInfoData
+        public static IEnumerable<object[]> BindAsyncParameterInfoData
         {
             get
             {
@@ -211,28 +210,28 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
                 {
                     new[]
                     {
-                        GetFirstParameter((TryParseHttpContextRecord arg) => TryParseHttpContextRecordMethod(arg)),
+                        GetFirstParameter((BindAsyncRecord arg) => BindAsyncRecordMethod(arg)),
                     },
                     new[]
                     {
-                        GetFirstParameter((TryParseHttpContextStruct arg) => TryParseHttpContextStructMethod(arg)),
+                        GetFirstParameter((BindAsyncStruct arg) => BindAsyncStructMethod(arg)),
                     },
                 };
             }
         }
 
         [Theory]
-        [MemberData(nameof(TryParseHttpContextParameterInfoData))]
-        public void HasTryParseHttpContextMethod_ReturnsTrueWhenMethodExists(ParameterInfo parameterInfo)
+        [MemberData(nameof(BindAsyncParameterInfoData))]
+        public void HasBindAsyncMethod_ReturnsTrueWhenMethodExists(ParameterInfo parameterInfo)
         {
-            Assert.True(new TryParseMethodCache().HasTryParseHttpContextMethod(parameterInfo));
+            Assert.True(new TryParseMethodCache().HasBindAsyncMethod(parameterInfo));
         }
 
         [Fact]
-        public void FindTryParseHttpContextMethod_DoesNotFindMethodGivenNullableType()
+        public void FindBindAsyncMethod_DoesNotFindMethodGivenNullableType()
         {
-            var parameterInfo = GetFirstParameter((TryParseHttpContextStruct? arg) => TryParseHttpContextNullableStructMethod(arg));
-            Assert.False(new TryParseMethodCache().HasTryParseHttpContextMethod(parameterInfo));
+            var parameterInfo = GetFirstParameter((BindAsyncStruct? arg) => BindAsyncNullableStructMethod(arg));
+            Assert.False(new TryParseMethodCache().HasBindAsyncMethod(parameterInfo));
         }
 
         enum Choice
@@ -246,9 +245,9 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         private static void TryParseStringStructMethod(TryParseStringStruct arg) { }
         private static void TryParseStringNullableStructMethod(TryParseStringStruct? arg) { }
 
-        private static void TryParseHttpContextRecordMethod(TryParseHttpContextRecord arg) { }
-        private static void TryParseHttpContextStructMethod(TryParseHttpContextStruct arg) { }
-        private static void TryParseHttpContextNullableStructMethod(TryParseHttpContextStruct? arg) { }
+        private static void BindAsyncRecordMethod(BindAsyncRecord arg) { }
+        private static void BindAsyncStructMethod(BindAsyncStruct arg) { }
+        private static void BindAsyncNullableStructMethod(BindAsyncStruct? arg) { }
 
 
         private static ParameterInfo GetFirstParameter<T>(Expression<Action<T>> expr)
@@ -287,33 +286,29 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
             }
         }
 
-        private record TryParseHttpContextRecord(int Value)
+        private record BindAsyncRecord(int Value)
         {
-            public static bool TryParse(HttpContext context, out TryParseHttpContextRecord? result)
+            public static ValueTask<object?> BindAsync(HttpContext context)
             {
                 if (!int.TryParse(context.Request.Headers.ETag, out var val))
                 {
-                    result = null;
-                    return false;
+                    return ValueTask.FromResult<object?>(null);
                 }
 
-                result = new TryParseHttpContextRecord(val);
-                return true;
+                return ValueTask.FromResult<object?>(new BindAsyncRecord(val));
             }
         }
 
-        private record struct TryParseHttpContextStruct(int Value)
+        private record struct BindAsyncStruct(int Value)
         {
-            public static bool TryParse(HttpContext context, out TryParseHttpContextStruct result)
+            public static ValueTask<object?> BindAsync(HttpContext context)
             {
                 if (!int.TryParse(context.Request.Headers.ETag, out var val))
                 {
-                    result = default;
-                    return false;
+                    return ValueTask.FromResult<object?>(null);
                 }
 
-                result = new TryParseHttpContextStruct(val);
-                return true;
+                return ValueTask.FromResult<object?>(new BindAsyncRecord(val));
             }
         }
     }

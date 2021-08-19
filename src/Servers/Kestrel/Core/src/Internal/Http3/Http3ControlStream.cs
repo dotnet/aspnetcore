@@ -67,10 +67,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         public PipeReader Input => _context.Transport.Input;
         public IKestrelTrace Log => _context.ServiceContext.Log;
 
-        public long HeaderTimeoutTicks { get; set; }
-        public bool ReceivedHeader => _headerType >= 0;
-
+        public long StreamTimeoutTicks { get; set; }
+        public bool IsReceivingHeader => _headerType == -1;
+        public bool IsDraining => false;
         public bool IsRequestStream => false;
+        public string TraceIdentifier => _context.StreamContext.ConnectionId;
 
         public void Abort(ConnectionAbortedException abortReason, Http3ErrorCode errorCode)
         {

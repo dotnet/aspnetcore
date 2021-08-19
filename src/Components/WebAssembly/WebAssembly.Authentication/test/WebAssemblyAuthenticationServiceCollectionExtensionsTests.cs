@@ -432,15 +432,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
             // from the root scope.
             var rootOptions = host.Services.GetRequiredService<IOptionsSnapshot<RemoteAuthenticationOptions<OidcProviderOptions>>>();
-            
-            // First options update should increment calls
-            Assert.Equal(1, calls);
 
             // from the created scope
             var scopedOptions = scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<RemoteAuthenticationOptions<OidcProviderOptions>>>();
-            
-            // IOptionsSnapshot is cached across scopes
-            Assert.Equal(1, calls);
+
+            // we should have 2 navigation managers. One in the root scope, and one in the created scope.
+            Assert.Equal(2, calls);
         }
 
         private class TestNavigationManager : NavigationManager

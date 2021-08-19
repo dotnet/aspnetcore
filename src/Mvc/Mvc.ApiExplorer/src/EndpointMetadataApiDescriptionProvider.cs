@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                      parameter.ParameterType == typeof(HttpResponse) ||
                      parameter.ParameterType == typeof(ClaimsPrincipal) ||
                      parameter.ParameterType == typeof(CancellationToken) ||
-                     TryParseMethodCache.HasTryParseHttpContextMethod(parameter) ||
+                     TryParseMethodCache.HasBindAsyncMethod(parameter) ||
                      _serviceProviderIsService?.IsService(parameter.ParameterType) == true)
             {
                 return (BindingSource.Services, parameter.Name ?? string.Empty, false);
