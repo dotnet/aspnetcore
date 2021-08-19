@@ -45,6 +45,7 @@ namespace Microsoft.AspNetCore.Http
         private static readonly ParameterExpression HttpContextExpr = Expression.Parameter(typeof(HttpContext), "httpContext");
         private static readonly ParameterExpression BodyValueExpr = Expression.Parameter(typeof(object), "bodyValue");
         private static readonly ParameterExpression WasParamCheckFailureExpr = Expression.Variable(typeof(bool), "wasParamCheckFailure");
+        private static readonly ParameterExpression BoundValuesArrayExpr = Expression.Parameter(typeof(object[]), "boundValues");
 
         private static readonly MemberExpression RequestServicesExpr = Expression.Property(HttpContextExpr, typeof(HttpContext).GetProperty(nameof(HttpContext.RequestServices))!);
         private static readonly MemberExpression HttpRequestExpr = Expression.Property(HttpContextExpr, typeof(HttpContext).GetProperty(nameof(HttpContext.Request))!);
@@ -194,7 +195,6 @@ namespace Microsoft.AspNetCore.Http
             {
                 var errorMessage = BuildErrorMessageForMultipleBodyParameters(factoryContext);
                 throw new InvalidOperationException(errorMessage);
-
             }
 
             return args;
@@ -259,7 +259,11 @@ namespace Microsoft.AspNetCore.Http
             {
                 return RequestAbortedExpr;
             }
-            else if (parameter.ParameterType == typeof(string) || TryParseMethodCache.HasTryParseMethod(parameter))
+            else if (TryParseMethodCache.HasBindAsyncMethod(parameter))
+            {
+                return BindParameterFromBindAsync(parameter, factoryContext);
+            }
+            else if (parameter.ParameterType == typeof(string) || TryParseMethodCache.HasTryParseStringMethod(parameter))
             {
                 // 1. We bind from route values only, if route parameters are non-null and the parameter name is in that set.
                 // 2. We bind from query only, if route parameters are non-null and the parameter name is NOT in that set.
@@ -267,7 +271,6 @@ namespace Microsoft.AspNetCore.Http
                 // when RDF.Create is manually invoked.
                 if (factoryContext.RouteParameters is { } routeParams)
                 {
-                   
                     if (routeParams.Contains(parameter.Name, StringComparer.OrdinalIgnoreCase))
                     {
                         // We're in the fallback case and we have a parameter and route parameter match so don't fallback
@@ -352,7 +355,6 @@ namespace Microsoft.AspNetCore.Http
 
             var localVariables = new ParameterExpression[factoryContext.ExtraLocals.Count + 1];
             var checkParamAndCallMethod = new Expression[factoryContext.ParamCheckExpressions.Count + 1];
-
 
             for (var i = 0; i < factoryContext.ExtraLocals.Count; i++)
             {
@@ -500,13 +502,32 @@ namespace Microsoft.AspNetCore.Http
         {
             if (factoryContext.JsonRequestBodyType is null)
             {
+                if (factoryContext.ParameterBinders.Count > 0)
+                {
+                    // We need to generate the code for reading from the custom binders calling into the delegate
+                    var continuation = Expression.Lambda<Func<object?, HttpContext, object?[], Task>>(
+                        responseWritingMethodCall, TargetExpr, HttpContextExpr, BoundValuesArrayExpr).Compile();
+
+                    // Looping over arrays is faster
+                    var binders = factoryContext.ParameterBinders.ToArray();
+                    var count = binders.Length;
+
+                    return async (target, httpContext) =>
+                    {
+                        var boundValues = new object?[count];
+
+                        for (var i = 0; i < count; i++)
+                        {
+                            boundValues[i] = await binders[i](httpContext);
+                        }
+
+                        await continuation(target, httpContext, boundValues);
+                    };
+                }
+
                 return Expression.Lambda<Func<object?, HttpContext, Task>>(
                     responseWritingMethodCall, TargetExpr, HttpContextExpr).Compile();
             }
-
-            // We need to generate the code for reading from the body before calling into the delegate
-            var invoker = Expression.Lambda<Func<object?, HttpContext, object?, Task>>(
-                responseWritingMethodCall, TargetExpr, HttpContextExpr, BodyValueExpr).Compile();
 
             var bodyType = factoryContext.JsonRequestBodyType;
             object? defaultBodyValue = null;
@@ -516,31 +537,82 @@ namespace Microsoft.AspNetCore.Http
                 defaultBodyValue = Activator.CreateInstance(bodyType);
             }
 
-            return async (target, httpContext) =>
+            if (factoryContext.ParameterBinders.Count > 0)
             {
-                object? bodyValue = defaultBodyValue;
-                var feature = httpContext.Features.Get<IHttpRequestBodyDetectionFeature>();
-                if (feature?.CanHaveBody == true)
-                {
-                    try
-                    {
-                        bodyValue = await httpContext.Request.ReadFromJsonAsync(bodyType);
-                    }
-                    catch (IOException ex)
-                    {
-                        Log.RequestBodyIOException(httpContext, ex);
-                        return;
-                    }
-                    catch (InvalidDataException ex)
-                    {
+                // We need to generate the code for reading from the body before calling into the delegate
+                var continuation = Expression.Lambda<Func<object?, HttpContext, object?, object?[], Task>>(
+                responseWritingMethodCall, TargetExpr, HttpContextExpr, BodyValueExpr, BoundValuesArrayExpr).Compile();
 
-                        Log.RequestBodyInvalidDataException(httpContext, ex);
-                        httpContext.Response.StatusCode = 400;
-                        return;
+                // Looping over arrays is faster
+                var binders = factoryContext.ParameterBinders.ToArray();
+                var count = binders.Length;
+
+                return async (target, httpContext) =>
+                {
+                    // Run these first so that they can potentially read and rewind the body
+                    var boundValues = new object?[count];
+
+                    for (var i = 0; i < count; i++)
+                    {
+                        boundValues[i] = await binders[i](httpContext);
                     }
-                }
-                await invoker(target, httpContext, bodyValue);
-            };
+
+                    var bodyValue = defaultBodyValue;
+                    var feature = httpContext.Features.Get<IHttpRequestBodyDetectionFeature>();
+                    if (feature?.CanHaveBody == true)
+                    {
+                        try
+                        {
+                            bodyValue = await httpContext.Request.ReadFromJsonAsync(bodyType);
+                        }
+                        catch (IOException ex)
+                        {
+                            Log.RequestBodyIOException(httpContext, ex);
+                            return;
+                        }
+                        catch (InvalidDataException ex)
+                        {
+                            Log.RequestBodyInvalidDataException(httpContext, ex);
+                            httpContext.Response.StatusCode = 400;
+                            return;
+                        }
+                    }
+
+                    await continuation(target, httpContext, bodyValue, boundValues);
+                };
+            }
+            else
+            {
+                // We need to generate the code for reading from the body before calling into the delegate
+                var continuation = Expression.Lambda<Func<object?, HttpContext, object?, Task>>(
+                responseWritingMethodCall, TargetExpr, HttpContextExpr, BodyValueExpr).Compile();
+
+                return async (target, httpContext) =>
+                {
+                    var bodyValue = defaultBodyValue;
+                    var feature = httpContext.Features.Get<IHttpRequestBodyDetectionFeature>();
+                    if (feature?.CanHaveBody == true)
+                    {
+                        try
+                        {
+                            bodyValue = await httpContext.Request.ReadFromJsonAsync(bodyType);
+                        }
+                        catch (IOException ex)
+                        {
+                            Log.RequestBodyIOException(httpContext, ex);
+                            return;
+                        }
+                        catch (InvalidDataException ex)
+                        {
+
+                            Log.RequestBodyInvalidDataException(httpContext, ex);
+                            httpContext.Response.StatusCode = 400;
+                            return;
+                        }
+                    }
+                    await continuation(target, httpContext, bodyValue);
+                };
+            }
         }
 
         private static Expression GetValueFromProperty(Expression sourceExpression, string key)
@@ -739,6 +811,42 @@ namespace Microsoft.AspNetCore.Http
             return BindParameterFromValue(parameter, Expression.Coalesce(routeValue, queryValue), factoryContext);
         }
 
+        private static Expression BindParameterFromBindAsync(ParameterInfo parameter, FactoryContext factoryContext)
+        {
+            // We reference the boundValues array by parameter index here
+            var nullability = NullabilityContext.Create(parameter);
+            var isOptional = parameter.HasDefaultValue || nullability.ReadState == NullabilityState.Nullable;
+
+            // Get the BindAsync method
+            var body = TryParseMethodCache.FindBindAsyncMethod(parameter.ParameterType)!;
+
+            // Compile the delegate to the BindAsync method for this parameter index
+            var bindAsyncDelegate = Expression.Lambda<Func<HttpContext, ValueTask<object?>>>(body, HttpContextExpr).Compile();
+            factoryContext.ParameterBinders.Add(bindAsyncDelegate);
+
+            // boundValues[index]
+            var boundValueExpr = Expression.ArrayIndex(BoundValuesArrayExpr, Expression.Constant(factoryContext.ParameterBinders.Count - 1));
+
+            if (!isOptional)
+            {
+                var checkRequiredBodyBlock = Expression.Block(
+                        Expression.IfThen(
+                        Expression.Equal(boundValueExpr, Expression.Constant(null)),
+                            Expression.Block(
+                                Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
+                                Expression.Call(LogRequiredParameterNotProvidedMethod,
+                                        HttpContextExpr, Expression.Constant(parameter.ParameterType.Name), Expression.Constant(parameter.Name))
+                            )
+                        )
+                    );
+
+                factoryContext.ParamCheckExpressions.Add(checkRequiredBodyBlock);
+            }
+
+            // (ParamterType)boundValues[i]
+            return Expression.Convert(boundValueExpr, parameter.ParameterType);
+        }
+
         private static Expression BindParameterFromBody(ParameterInfo parameter, bool allowEmpty, FactoryContext factoryContext)
         {
             if (factoryContext.JsonRequestBodyType is not null)
@@ -749,7 +857,6 @@ namespace Microsoft.AspNetCore.Http
                 {
                     factoryContext.TrackedParameters.Remove(parameterName);
                     factoryContext.TrackedParameters.Add(parameterName, "UNKNOWN");
-
                 }
             }
 
@@ -881,7 +988,6 @@ namespace Microsoft.AspNetCore.Http
 
         private static Task ExecuteTaskOfString(Task<string?> task, HttpContext httpContext)
         {
-
             SetPlaintextContentType(httpContext);
             EnsureRequestTaskNotNull(task);
 
@@ -988,6 +1094,7 @@ namespace Microsoft.AspNetCore.Http
             public bool UsingTempSourceString { get; set; }
             public List<ParameterExpression> ExtraLocals { get; } = new();
             public List<Expression> ParamCheckExpressions { get; } = new();
+            public List<Func<HttpContext, ValueTask<object?>>> ParameterBinders { get; } = new();
 
             public Dictionary<string, string> TrackedParameters { get; } = new();
             public bool HasMultipleBodyParameters { get; set; }

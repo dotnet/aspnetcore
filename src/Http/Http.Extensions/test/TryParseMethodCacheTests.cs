@@ -137,6 +137,73 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
             Assert.Equal(Choice.Three, parseEnum("Three"));
         }
 
+        [Fact]
+        public async Task FindBindAsyncMethod_FindsCorrectMethodOnClass()
+        {
+            var type = typeof(BindAsyncRecord);
+            var cache = new TryParseMethodCache();
+            var methodFound = cache.FindBindAsyncMethod(type);
+
+            Assert.NotNull(methodFound);
+
+            var parsedValue = Expression.Variable(type, "parsedValue");
+            var call = methodFound as MethodCallExpression;
+            Assert.NotNull(call);
+            var method = call!.Method;
+            var parameters = method.GetParameters();
+
+            Assert.Single(parameters);
+            Assert.Equal(typeof(HttpContext), parameters[0].ParameterType);
+
+            var parseHttpContext = Expression.Lambda<Func<HttpContext, ValueTask<object>>>(Expression.Block(new[] { parsedValue },
+                call), cache.HttpContextExpr).Compile();
+
+            var httpContext = new DefaultHttpContext
+            {
+                Request =
+                {
+                    Headers =
+                    {
+                        ["ETag"] = "42",
+                    },
+            },
+            };
+
+            Assert.Equal(new BindAsyncRecord(42), await parseHttpContext(httpContext));
+        }
+
+        public static IEnumerable<object[]> BindAsyncParameterInfoData
+        {
+            get
+            {
+                return new[]
+                {
+                    new[]
+                    {
+                        GetFirstParameter((BindAsyncRecord arg) => BindAsyncRecordMethod(arg)),
+                    },
+                    new[]
+                    {
+                        GetFirstParameter((BindAsyncStruct arg) => BindAsyncStructMethod(arg)),
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(BindAsyncParameterInfoData))]
+        public void HasBindAsyncMethod_ReturnsTrueWhenMethodExists(ParameterInfo parameterInfo)
+        {
+            Assert.True(new TryParseMethodCache().HasBindAsyncMethod(parameterInfo));
+        }
+
+        [Fact]
+        public void FindBindAsyncMethod_DoesNotFindMethodGivenNullableType()
+        {
+            var parameterInfo = GetFirstParameter((BindAsyncStruct? arg) => BindAsyncNullableStructMethod(arg));
+            Assert.False(new TryParseMethodCache().HasBindAsyncMethod(parameterInfo));
+        }
+
         enum Choice
         {
             One,
@@ -144,9 +211,24 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
             Three
         }
 
-        private record TryParsableInvariantRecord(int value)
+        private static void TryParseStringRecordMethod(TryParseStringRecord arg) { }
+        private static void TryParseStringStructMethod(TryParseStringStruct arg) { }
+        private static void TryParseStringNullableStructMethod(TryParseStringStruct? arg) { }
+
+        private static void BindAsyncRecordMethod(BindAsyncRecord arg) { }
+        private static void BindAsyncStructMethod(BindAsyncStruct arg) { }
+        private static void BindAsyncNullableStructMethod(BindAsyncStruct? arg) { }
+
+
+        private static ParameterInfo GetFirstParameter<T>(Expression<Action<T>> expr)
         {
-            public static bool TryParse(string? value, IFormatProvider formatProvider, out TryParsableInvariantRecord? result)
+            var mc = (MethodCallExpression)expr.Body;
+            return mc.Method.GetParameters()[0];
+        }
+
+        private record TryParseStringRecord(int Value)
+        {
+            public static bool TryParse(string? value, IFormatProvider formatProvider, out TryParseStringRecord? result)
             {
                 if (!int.TryParse(value, NumberStyles.Integer, formatProvider, out var val))
                 {
@@ -154,10 +236,50 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
                     return false;
                 }
 
-                result = new TryParsableInvariantRecord(val);
+                result = new TryParseStringRecord(val);
                 return true;
             }
         }
 
+        private record struct TryParseStringStruct(int Value)
+        {
+            public static bool TryParse(string? value, IFormatProvider formatProvider, out TryParsableInvariantRecord? result)
+            {
+                if (!int.TryParse(value, NumberStyles.Integer, formatProvider, out var val))
+                {
+                    result = default;
+                    return false;
+                }
+
+                result = new TryParseStringStruct(val);
+                return true;
+            }
+        }
+
+        private record BindAsyncRecord(int Value)
+        {
+            public static ValueTask<object?> BindAsync(HttpContext context)
+            {
+                if (!int.TryParse(context.Request.Headers.ETag, out var val))
+                {
+                    return ValueTask.FromResult<object?>(null);
+                }
+
+                return ValueTask.FromResult<object?>(new BindAsyncRecord(val));
+            }
+        }
+
+        private record struct BindAsyncStruct(int Value)
+        {
+            public static ValueTask<object?> BindAsync(HttpContext context)
+            {
+                if (!int.TryParse(context.Request.Headers.ETag, out var val))
+                {
+                    return ValueTask.FromResult<object?>(null);
+                }
+
+                return ValueTask.FromResult<object?>(new BindAsyncRecord(val));
+            }
+        }
     }
 }
