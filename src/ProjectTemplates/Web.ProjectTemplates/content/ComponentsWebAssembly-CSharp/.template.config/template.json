@@ -217,7 +217,8 @@
           "exclude": [
             "Server/Areas/Identity/Pages/Shared/_LoginPartial.cshtml",
             "Server/Controllers/OidcConfigurationController.cs",
-            "Server/Models/ApplicationUser.cs"
+            "Server/Models/ApplicationUser.cs",
+            "Server/Readme.txt"
           ]
         }
       ]
