@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             if (listenOptions.Protocols >= HttpProtocols.Http3)
             {
-                throw new NotSupportedException("UseHttps with ServerOptionsSelectionCallback is unsupported for HTTP/3");
+                throw new NotSupportedException($"{nameof(UseHttps)} with {nameof(ServerOptionsSelectionCallback)} is not supported with HTTP/3.");
             }
             return listenOptions.UseHttps(new TlsHandshakeCallbackOptions()
             {
