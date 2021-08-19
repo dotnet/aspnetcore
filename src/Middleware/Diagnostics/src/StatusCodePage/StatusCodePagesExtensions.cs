@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            return app.UseStatusCodePages(async context =>
+            Func<StatusCodeContext, Task> handler = async context =>
             {
                 var newPath = new PathString(
                     string.Format(CultureInfo.InvariantCulture, pathFormat, context.HttpContext.Response.StatusCode));
@@ -210,7 +210,31 @@ namespace Microsoft.AspNetCore.Builder
                     context.HttpContext.Request.Path = originalPath;
                     context.HttpContext.Features.Set<IStatusCodeReExecuteFeature?>(null);
                 }
-            });
+            };
+
+            // Check if UseRouting() has been called so we know if it's safe to call UseRouting()
+            // otherwise we might call UseRouting() when AddRouting() hasn't been called which would fail
+            if (app.Properties.TryGetValue("__EndpointRouteBuilder", out _) || app.Properties.TryGetValue("__GlobalEndpointRouteBuilder", out _))
+            {
+                return app.Use(next =>
+                {
+                    app.Properties.TryGetValue("__GlobalEndpointRouteBuilder", out var routeBuilder);
+                    // start a new middleware pipeline
+                    var builder = app.New();
+                    if (routeBuilder is not null)
+                    {
+                        // use the old routing pipeline if it exists so we preserve all the routes and matching logic
+                        builder.Properties["__GlobalEndpointRouteBuilder"] = routeBuilder;
+                    }
+                    builder.UseStatusCodePages(handler);
+                    builder.UseRouting();
+                    // apply the next middleware
+                    builder.Run(next);
+                    return builder.Build();
+                });
+            }
+
+            return app.UseStatusCodePages(handler);
         }
     }
 }

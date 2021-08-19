@@ -193,5 +193,50 @@ namespace Microsoft.AspNetCore.Diagnostics
             var content = await response.Content.ReadAsStringAsync();
             Assert.Equal($"?id={expectedStatusCode}, /location, ?name=James", content);
         }
+
+        [Fact]
+        public async Task Reexecute_WorksAfterUseRoutingWithGlobalRouteBuilder()
+        {
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .ConfigureServices(services =>
+                    {
+                        services.AddRouting();
+                    })
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.Properties["__GlobalEndpointRouteBuilder"] = app.Properties["__EndpointRouteBuilder"];
+
+                        app.UseStatusCodePagesWithReExecute(pathFormat: "/errorPage", queryFormat: "?id={0}");
+                        app.UseEndpoints(endpoints =>
+                        {
+                            endpoints.MapGet("/", c =>
+                            {
+                                c.Response.StatusCode = 404;
+                                return Task.CompletedTask;
+                            });
+
+                            endpoints.MapGet("/errorPage", () => "errorPage");
+                        });
+
+                        app.Run((context) =>
+                        {
+                            throw new InvalidOperationException("Invalid input provided.");
+                        });
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var response = await client.GetAsync("/");
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal("errorPage", content);
+        }
     }
 }
