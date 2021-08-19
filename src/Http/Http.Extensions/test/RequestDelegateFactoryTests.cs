@@ -636,7 +636,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             httpContext.Request.Headers.Referer = "https://example.org";
 
-            var requestDelegate = RequestDelegateFactory.Create((HttpContext httpContext, MyBindAsyncRecord tryParsable) =>
+            var resultFactory = RequestDelegateFactory.Create((HttpContext httpContext, MyBindAsyncRecord tryParsable) =>
             {
                 httpContext.Items["tryParsable"] = tryParsable;
             });
@@ -655,12 +655,12 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             httpContext.Request.Headers.Referer = "https://example.org";
 
-            var requestDelegate = RequestDelegateFactory.Create((HttpContext httpContext, MyBindAsyncStruct tryParsable) =>
+            var resultFactory = RequestDelegateFactory.Create((HttpContext httpContext, MyBindAsyncStruct tryParsable) =>
             {
                 httpContext.Items["tryParsable"] = tryParsable;
             });
 
-            var requestDelegate = factoryResult.RequestDelegate;
+            var requestDelegate = resultFactory.RequestDelegate;
             await requestDelegate(httpContext);
 
             Assert.Equal(new MyBindAsyncStruct(new Uri("https://example.org")), httpContext.Items["tryParsable"]);
@@ -669,8 +669,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
         [Fact]
         public async Task RequestDelegateUsesTryParseStringoOverBindAsyncGivenExplicitAttribute()
         {
-            var fromRouteRequestDelegate = RequestDelegateFactory.Create((HttpContext httpContext, [FromRoute] MyBindAsyncRecord tryParsable) => { });
-            var fromQueryRequestDelegate = RequestDelegateFactory.Create((HttpContext httpContext, [FromQuery] MyBindAsyncRecord tryParsable) => { });
+            var fromRouteFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, [FromRoute] MyBindAsyncRecord tryParsable) => { });
+            var fromQueryFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, [FromQuery] MyBindAsyncRecord tryParsable) => { });
 
 
             var httpContext = new DefaultHttpContext
@@ -698,7 +698,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         [Fact]
         public async Task RequestDelegateUsesTryParseStringOverBindAsyncGivenNullableStruct()
         {
-            var fromRouteRequestDelegate = RequestDelegateFactory.Create((HttpContext httpContext, MyBindAsyncStruct? tryParsable) => { });
+            var fromRouteFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, MyBindAsyncStruct? tryParsable) => { });
 
             var httpContext = new DefaultHttpContext
             {
@@ -801,7 +801,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var invoked = false;
 
-            var requestDelegate = RequestDelegateFactory.Create((MyBindAsyncRecord arg1, MyBindAsyncRecord arg2) =>
+            var factoryResult = RequestDelegateFactory.Create((MyBindAsyncRecord arg1, MyBindAsyncRecord arg2) =>
             {
                 invoked = true;
             });
@@ -835,7 +835,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 RequestServices = new ServiceCollection().AddSingleton(LoggerFactory).BuildServiceProvider(),
             };
 
-            var requestDelegate = RequestDelegateFactory.Create((MyBindAsyncTypeThatThrows arg1) => { });
+            var factoryResult = RequestDelegateFactory.Create((MyBindAsyncTypeThatThrows arg1) => { });
+
+            var requestDelegate = factoryResult.RequestDelegate;
 
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => requestDelegate(httpContext));
             Assert.Equal("BindAsync failed", ex.Message);
@@ -877,12 +879,14 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var invoked = false;
 
-            var requestDelegate = RequestDelegateFactory.Create((HttpContext context, MyBindAsyncRecord arg1, Todo todo) =>
+            var factoryResult = RequestDelegateFactory.Create((HttpContext context, MyBindAsyncRecord arg1, Todo todo) =>
             {
                 invoked = true;
                 context.Items[nameof(arg1)] = arg1;
                 context.Items[nameof(todo)] = todo;
             });
+
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -931,12 +935,14 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var invoked = false;
 
-            var requestDelegate = RequestDelegateFactory.Create((HttpContext context, CustomTodo customTodo, Todo todo) =>
+            var factoryResult = RequestDelegateFactory.Create((HttpContext context, CustomTodo customTodo, Todo todo) =>
             {
                 invoked = true;
                 context.Items[nameof(customTodo)] = customTodo;
                 context.Items[nameof(todo)] = todo;
             });
+
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -2021,7 +2027,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var invoked = false;
 
-            var requestDelegate = RequestDelegateFactory.Create((MyBindAsyncRecord? arg1) =>
+            var factoryResult = RequestDelegateFactory.Create((MyBindAsyncRecord? arg1) =>
             {
                 invoked = true;
             });
