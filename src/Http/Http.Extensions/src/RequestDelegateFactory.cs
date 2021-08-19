@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Http.Features;
@@ -627,8 +628,7 @@ namespace Microsoft.AspNetCore.Http
 
         private static Expression BindParameterFromService(ParameterInfo parameter)
         {
-            var nullability = NullabilityContext.Create(parameter);
-            var isOptional = parameter.HasDefaultValue || nullability.ReadState == NullabilityState.Nullable;
+            var isOptional = IsOptionalParameter(parameter);
 
             return isOptional
                 ? Expression.Call(GetServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr)
@@ -637,8 +637,7 @@ namespace Microsoft.AspNetCore.Http
 
         private static Expression BindParameterFromValue(ParameterInfo parameter, Expression valueExpression, FactoryContext factoryContext)
         {
-            var nullability = NullabilityContext.Create(parameter);
-            var isOptional = parameter.HasDefaultValue || nullability.ReadState == NullabilityState.Nullable;
+            var isOptional = IsOptionalParameter(parameter);
 
             var argument = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
 
@@ -671,7 +670,8 @@ namespace Microsoft.AspNetCore.Http
                 }
 
                 // Allow nullable parameters that don't have a default value
-                if (nullability.ReadState == NullabilityState.Nullable && !parameter.HasDefaultValue)
+                var nullability = NullabilityContext.Create(parameter);
+                if (nullability.ReadState != NullabilityState.NotNull && !parameter.HasDefaultValue)
                 {
                     return valueExpression;
                 }
@@ -862,8 +862,7 @@ namespace Microsoft.AspNetCore.Http
                 }
             }
 
-            var nullability = NullabilityContext.Create(parameter);
-            var isOptional = parameter.HasDefaultValue || nullability.ReadState == NullabilityState.Nullable;
+            var isOptional = IsOptionalParameter(parameter);
 
             factoryContext.JsonRequestBodyType = parameter.ParameterType;
             factoryContext.AllowEmptyRequestBody = allowEmpty || isOptional;
@@ -901,6 +900,21 @@ namespace Microsoft.AspNetCore.Http
 
             // Convert(bodyValue, Todo)
             return Expression.Convert(BodyValueExpr, parameter.ParameterType);
+        }
+
+        private static bool IsOptionalParameter(ParameterInfo parameter)
+        {
+            // NullabilityInfo will treat all value types, regardless of
+            // nullability context as nullable. So the following code segment:
+            //     #nullable disable
+            //     app.MapGet("/{id}", (int id) => ...)
+            // will treat id as a non-nullable parameter even though
+            // the context is oblivious. To work around this, we check
+            // to see if the member is in a nullability context first.
+            var nullability = NullabilityContext.Create(parameter);
+            return parameter.HasDefaultValue
+                || !TypeHelper.IsInNullableContext(parameter.Member)
+                || nullability.ReadState != NullabilityState.NotNull;
         }
 
         private static MethodInfo GetMethodInfo<T>(Expression<T> expr)
