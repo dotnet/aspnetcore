@@ -4,12 +4,13 @@
 using System;
 using System.Collections.Generic;
 
+#nullable enable
 namespace Microsoft.AspNetCore.Http.Metadata
 {
     /// <summary>
     /// Metadata that specifies the supported request content types.
     /// </summary>
-    public sealed class AcceptsMetadata : IAcceptsMetadata
+    internal sealed class AcceptsMetadata : IAcceptsMetadata
     {
         /// <summary>
         /// Creates a new instance of <see cref="AcceptsMetadata"/>.
