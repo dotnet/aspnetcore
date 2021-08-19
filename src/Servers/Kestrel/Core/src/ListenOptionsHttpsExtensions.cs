@@ -256,6 +256,10 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="ListenOptions"/>.</returns>
         public static ListenOptions UseHttps(this ListenOptions listenOptions, ServerOptionsSelectionCallback serverOptionsSelectionCallback, object state, TimeSpan handshakeTimeout)
         {
+            if (listenOptions.Protocols >= HttpProtocols.Http3)
+            {
+                throw new NotSupportedException("UseHttps with ServerOptionsSelectionCallback is not supported for HTTP/3");
+            }
             return listenOptions.UseHttps(new TlsHandshakeCallbackOptions()
             {
                 OnConnection = context => serverOptionsSelectionCallback(context.SslStream, context.ClientHelloInfo, context.State, context.CancellationToken),
@@ -281,6 +285,11 @@ namespace Microsoft.AspNetCore.Hosting
             if (callbackOptions.OnConnection is null)
             {
                 throw new ArgumentException($"{nameof(TlsHandshakeCallbackOptions.OnConnection)} must not be null.");
+            }
+
+            if (listenOptions.Protocols >= HttpProtocols.Http3)
+            {
+                throw new NotSupportedException("UseHttps with TlsHandshakeCallbackOptions is not supported for HTTP/3");
             }
 
             var loggerFactory = listenOptions.KestrelServerOptions?.ApplicationServices.GetRequiredService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
