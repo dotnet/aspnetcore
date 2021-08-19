@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.SignalR.Internal;
-
 namespace Microsoft.AspNetCore.SignalR
 {
     /// <summary>
@@ -22,7 +20,7 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 if (_clients == null)
                 {
-                    _clients = new TypedHubClients<T>(base.Clients);
+                    _clients = new TypedHubCallerClients<T>(base.Clients);
                 }
                 return _clients;
             }

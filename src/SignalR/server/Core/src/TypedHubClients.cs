@@ -1,24 +1,21 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
+using Microsoft.AspNetCore.SignalR.Internal;
+using System.Collections.Generics;
 
-namespace Microsoft.AspNetCore.SignalR.Internal
+namespace Microsoft.AspNetCore.SignalR
 {
-    internal class TypedHubClients<T> : IHubCallerClients<T>
+    internal class TypedHubClients<T> : IHubClients<T>
     {
-        private readonly IHubCallerClients _hubClients;
+        private readonly IHubClients _hubClients;
 
-        public TypedHubClients(IHubCallerClients dynamicContext)
+        public TypedHubClients(IHubClients dynamicContext)
         {
             _hubClients = dynamicContext;
         }
 
         public T All => TypedClientBuilder<T>.Build(_hubClients.All);
-
-        public T Caller => TypedClientBuilder<T>.Build(_hubClients.Caller);
-
-        public T Others => TypedClientBuilder<T>.Build(_hubClients.Others);
 
         public T AllExcept(IReadOnlyList<string> excludedConnectionIds) => TypedClientBuilder<T>.Build(_hubClients.AllExcept(excludedConnectionIds));
 
@@ -45,11 +42,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         public T Groups(IReadOnlyList<string> groupNames)
         {
             return TypedClientBuilder<T>.Build(_hubClients.Groups(groupNames));
-        }
-
-        public T OthersInGroup(string groupName)
-        {
-            return TypedClientBuilder<T>.Build(_hubClients.OthersInGroup(groupName));
         }
 
         public T User(string userId)
