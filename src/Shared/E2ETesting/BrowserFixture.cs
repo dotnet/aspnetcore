@@ -35,6 +35,8 @@ namespace Microsoft.AspNetCore.E2ETesting
 
         public string UserProfileDir { get; private set; }
 
+        public bool EnsureNotHeadless { get; set; }
+
         public static void EnforceSupportedConfigurations()
         {
             // Do not change the current platform support without explicit approval.
@@ -143,7 +145,8 @@ namespace Microsoft.AspNetCore.E2ETesting
             // Force language to english for tests
             opts.AddUserProfilePreference("intl.accept_languages", "en");
 
-            if (!Debugger.IsAttached &&
+            if (!EnsureNotHeadless &&
+                !Debugger.IsAttached &&
                 !string.Equals(Environment.GetEnvironmentVariable("E2E_TEST_VISIBLE"), "true", StringComparison.OrdinalIgnoreCase))
             {
                 opts.AddArgument("--headless");

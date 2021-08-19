@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.Equal(2, Batches.Count);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task CannotInvokeNonJSInvokableMethods()
         {
             // Arrange
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await ValidateClientKeepsWorking(Client, Batches);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task CannotInvokeNonExistingMethods()
         {
             // Arrange
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await ValidateClientKeepsWorking(Client, Batches);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task CannotInvokeJSInvokableMethodsWithWrongNumberOfArguments()
         {
             // Arrange
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await ValidateClientKeepsWorking(Client, Batches);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task CannotInvokeJSInvokableMethodsEmptyAssemblyName()
         {
             // Arrange
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await ValidateClientKeepsWorking(Client, Batches);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task CannotInvokeJSInvokableMethodsEmptyMethodName()
         {
             // Arrange
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await ValidateClientKeepsWorking(Client, Batches);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task CannotInvokeJSInvokableMethodsWithWrongReferenceId()
         {
             // Arrange
@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await ValidateClientKeepsWorking(Client, Batches);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task CannotInvokeJSInvokableMethodsWrongReferenceIdType()
         {
             // Arrange
@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await ValidateClientKeepsWorking(Client, Batches);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task ContinuesWorkingAfterInvalidAsyncReturnCallback()
         {
             // Arrange
@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await ValidateClientKeepsWorking(Client, Batches);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task JSInteropCompletionSuccess()
         {
             // Arrange
@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.Equal(LogLevel.Debug, entry.LogLevel);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task JSInteropThrowsInUserCode()
         {
             // Arrange
@@ -304,7 +304,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await ValidateClientKeepsWorking(Client, Batches);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task MalformedJSInteropCallbackDisposesCircuit()
         {
             // Arrange
@@ -339,7 +339,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             });
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task CannotInvokeJSInvokableMethodsWithInvalidArgumentsPayload()
         {
             // Arrange
@@ -360,7 +360,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await ValidateClientKeepsWorking(Client, Batches);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task CannotInvokeJSInvokableMethodsWithMalformedArgumentPayload()
         {
             // Arrange
@@ -381,7 +381,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await ValidateClientKeepsWorking(Client, Batches);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task DispatchingEventsWithInvalidPayloadsShutsDownCircuitGracefully()
         {
             // Arrange
@@ -405,7 +405,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             });
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task DispatchingEventsWithInvalidEventDescriptor()
         {
             // Arrange
@@ -429,7 +429,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             });
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task DispatchingEventsWithInvalidEventArgs()
         {
             // Arrange
@@ -461,7 +461,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             });
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task DispatchingEventsWithInvalidEventHandlerId()
         {
             // Arrange
@@ -495,7 +495,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             });
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task EventHandlerThrowsSyncExceptionTerminatesTheCircuit()
         {
             // Arrange

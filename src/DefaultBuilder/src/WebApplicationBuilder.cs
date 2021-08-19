@@ -4,7 +4,6 @@
 using System.Diagnostics;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -17,11 +16,10 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public sealed class WebApplicationBuilder
     {
-        private const string EndpointRouteBuilderKey = "__EndpointRouteBuilder";
-
         private readonly HostBuilder _hostBuilder = new();
         private readonly BootstrapHostBuilder _bootstrapHostBuilder;
         private readonly WebApplicationServiceCollection _services = new();
+        private const string EndpointRouteBuilderKey = "__EndpointRouteBuilder";
 
         private WebApplication? _builtApplication;
 
@@ -187,48 +185,39 @@ namespace Microsoft.AspNetCore.Builder
         {
             Debug.Assert(_builtApplication is not null);
 
+            // UseRouting called before WebApplication such as in a StartupFilter
+            // lets remove the property and reset it at the end so we don't mess with the routes in the filter
+            if (app.Properties.TryGetValue(EndpointRouteBuilderKey, out var priorRouteBuilder))
+            {
+                app.Properties.Remove(EndpointRouteBuilderKey);
+            }
+
             if (context.HostingEnvironment.IsDevelopment())
             {
+                // TODO: add test for this
                 app.UseDeveloperExceptionPage();
             }
 
-            var implicitRouting = false;
+            // Wrap the entire destination pipeline in UseRouting() and UseEndpoints(), essentially:
+            // destination.UseRouting()
+            // destination.Run(source)
+            // destination.UseEndpoints()
 
-            // The endpoints were already added on the outside
+            // Set the route builder so that UseRouting will use the WebApplication as the IEndpointRouteBuilder for route matching
+            app.Properties.Add(WebApplication.GlobalEndpointRouteBuilderKey, _builtApplication);
+
+            // Only call UseRouting() if there are endpoints configured and UseRouting() wasn't called on the global route builder already
             if (_builtApplication.DataSources.Count > 0)
             {
-                // The user did not register the routing middleware so wrap the entire
-                // destination pipeline in UseRouting() and UseEndpoints(), essentially:
-                // destination.UseRouting()
-                // destination.Run(source)
-                // destination.UseEndpoints()
-
-                // Copy endpoints to the IEndpointRouteBuilder created by an explicit call to UseRouting() if possible.
-                var targetRouteBuilder = GetEndpointRouteBuilder(_builtApplication);
-
-                if (targetRouteBuilder is null)
+                // If this is set, someone called UseRouting() when a global route builder was already set
+                if (!_builtApplication.Properties.TryGetValue(EndpointRouteBuilderKey, out var localRouteBuilder))
                 {
-                    // The app defined endpoints without calling UseRouting() explicitly, so call UseRouting() implicitly.
                     app.UseRouting();
-
-                    // An implicitly created IEndpointRouteBuilder was addeded to app.Properties by the UseRouting() call above.
-                    targetRouteBuilder = GetEndpointRouteBuilder(app)!;
-                    implicitRouting = true;
                 }
-
-                // Copy the endpoints to the explicitly or implicitly created IEndopintRouteBuilder.
-                foreach (var ds in _builtApplication.DataSources)
+                else
                 {
-                    targetRouteBuilder.DataSources.Add(ds);
-                }
-
-                // UseEndpoints consumes the DataSources immediately to populate CompositeEndpointDataSource via RouteOptions,
-                // so it must be called after we copy the endpoints.
-                if (!implicitRouting)
-                {
-                    // UseRouting() was called explicitely, but we may still need to call UseEndpoints() implicitely at
-                    // the end of the pipeline.
-                    _builtApplication.UseEndpoints(_ => { });
+                    // UseEndpoints will be looking for the RouteBuilder so make sure it's set
+                    app.Properties[EndpointRouteBuilderKey] = localRouteBuilder;
                 }
             }
 
@@ -239,11 +228,9 @@ namespace Microsoft.AspNetCore.Builder
                 return _builtApplication.BuildRequestDelegate();
             });
 
-            // Implicitly call UseEndpoints() at the end of the pipeline if UseRouting() was called implicitly.
-            // We could add this to the end of _buildApplication instead if UseEndpoints() was not so picky about
-            // being called with the same IApplicationBluilder instance as UseRouting().
-            if (implicitRouting)
+            if (_builtApplication.DataSources.Count > 0)
             {
+                // We don't know if user code called UseEndpoints(), so we will call it just in case, UseEndpoints() will ignore duplicate DataSources
                 app.UseEndpoints(_ => { });
             }
 
@@ -252,12 +239,15 @@ namespace Microsoft.AspNetCore.Builder
             {
                 app.Properties[item.Key] = item.Value;
             }
-        }
 
-        private static IEndpointRouteBuilder? GetEndpointRouteBuilder(IApplicationBuilder app)
-        {
-            app.Properties.TryGetValue(EndpointRouteBuilderKey, out var value);
-            return (IEndpointRouteBuilder?)value;
+            // Remove the route builder to clean up the properties, we're done adding routes to the pipeline
+            app.Properties.Remove(WebApplication.GlobalEndpointRouteBuilderKey);
+
+            // reset route builder if it existed, this is needed for StartupFilters
+            if (priorRouteBuilder is not null)
+            {
+                app.Properties[EndpointRouteBuilderKey] = priorRouteBuilder;
+            }
         }
 
         private class LoggingBuilder : ILoggingBuilder

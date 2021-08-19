@@ -5,8 +5,11 @@ using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
@@ -208,6 +211,68 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 // Fires after the response completes
                 await onCompletedCalled.Task.TimeoutAfter(TimeSpan.FromSeconds(5));
             }
+        }
+
+        [ConditionalFact]
+        public async Task ClientDisconnectsBeforeResponse_ResponseCanStillBeModified()
+        {
+            var readStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var readCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var server = Utilities.CreateHttpServer(out var address, async httpContext =>
+            {
+                var readTask = httpContext.Request.Body.ReadAsync(new byte[10]);
+                readStarted.SetResult();
+                try
+                {
+                    await readTask;
+                    readCompleted.SetException(new InvalidOperationException("The read wasn't supposed to succeed"));
+                    return;
+                }
+                catch (IOException)
+                {
+                }
+
+                try
+                {
+                    // https://github.com/dotnet/aspnetcore/issues/12194
+                    // Modifying the response after the client has disconnected must be allowed.
+                    Assert.False(httpContext.Response.HasStarted);
+                    httpContext.Response.StatusCode = 400;
+                    httpContext.Response.ContentType = "text/plain";
+                    await httpContext.Response.WriteAsync("Body");
+                }
+                catch (Exception ex)
+                {
+                    readCompleted.SetException(ex);
+                    return;
+                }
+
+                readCompleted.SetResult();
+            });
+
+            // Send a request without the body.
+            var uri = new Uri(address);
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine("POST / HTTP/1.1");
+            builder.AppendLine("Connection: close");
+            builder.Append("HOST: ");
+            builder.AppendLine(uri.Authority);
+            builder.AppendLine("Content-Length: 10");
+            builder.AppendLine();
+
+            byte[] request = Encoding.ASCII.GetBytes(builder.ToString());
+
+            using var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+            socket.Connect(uri.Host, uri.Port);
+            socket.Send(request);
+
+            await readStarted.Task.DefaultTimeout();
+
+            // Disconnect
+            socket.Close();
+
+            // Make sure the server code behaved as expected.
+            await readCompleted.Task.DefaultTimeout();
         }
 
         private async Task<HttpResponseMessage> SendRequestAsync(string uri)

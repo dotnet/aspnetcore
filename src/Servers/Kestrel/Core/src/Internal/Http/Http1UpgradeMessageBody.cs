@@ -3,6 +3,7 @@
 
 using System;
 using System.IO.Pipelines;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -92,6 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return new ValueTask<ReadResult>(readResult);
         }
 
+        [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder<>))]
         private async ValueTask<ReadResult> ReadAsyncInternalAwaited(ValueTask<ReadResult> readTask, CancellationToken cancellationToken = default)
         {
             var readResult = await readTask;

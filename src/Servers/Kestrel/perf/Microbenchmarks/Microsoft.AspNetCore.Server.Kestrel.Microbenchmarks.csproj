@@ -22,6 +22,7 @@
     <Compile Include="$(KestrelSharedSourceRoot)test\TestKestrelTrace.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestContextFactory.cs" />
     <Compile Include="..\..\Transport.Sockets\src\Internal\IOQueue.cs" Link="Internal\IOQueue.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)\ConnectionCompletion.cs" Link="Internal\ConnectionCompletion.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\CorrelationIdGenerator.cs" Link="Internal\CorrelationIdGenerator.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.cs" Link="Internal\TransportConnection.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.Generated.cs" Link="Internal\TransportConnection.Generated.cs" />

@@ -19,9 +19,11 @@ namespace Microsoft.AspNetCore.Http
         private readonly MethodInfo _enumTryParseMethod;
 
         // Since this is shared source, the cache won't be shared between RequestDelegateFactory and the ApiDescriptionProvider sadly :(
-        private readonly ConcurrentDictionary<Type, Func<Expression, Expression>?> _methodCallCache = new();
+        private readonly ConcurrentDictionary<Type, Func<Expression, Expression>?> _stringMethodCallCache = new();
+        private readonly ConcurrentDictionary<Type, Func<Expression, Expression>?> _httpContextMethodCallCache = new();
 
         internal readonly ParameterExpression TempSourceStringExpr = Expression.Variable(typeof(string), "tempSourceString");
+        internal readonly ParameterExpression HttpContextExpr = Expression.Parameter(typeof(HttpContext), "httpContext");
 
         // If IsDynamicCodeSupported is false, we can't use the static Enum.TryParse<T> since there's no easy way for
         // this code to generate the specific instantiation for any enums used
@@ -35,13 +37,16 @@ namespace Microsoft.AspNetCore.Http
             _enumTryParseMethod = GetEnumTryParseMethod(preferNonGenericEnumParseOverload);
         }
 
-        public bool HasTryParseMethod(ParameterInfo parameter)
+        public bool HasTryParseStringMethod(ParameterInfo parameter)
         {
             var nonNullableParameterType = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
-            return FindTryParseMethod(nonNullableParameterType) is not null;
+            return FindTryParseStringMethod(nonNullableParameterType) is not null;
         }
 
-        public Func<Expression, Expression>? FindTryParseMethod(Type type)
+        public bool HasTryParseHttpContextMethod(ParameterInfo parameter) =>
+            FindTryParseHttpContextMethod(parameter.ParameterType) is not null;
+
+        public Func<Expression, Expression>? FindTryParseStringMethod(Type type)
         {
             Func<Expression, Expression>? Finder(Type type)
             {
@@ -117,7 +122,24 @@ namespace Microsoft.AspNetCore.Http
                 return null;
             }
 
-            return _methodCallCache.GetOrAdd(type, Finder);
+            return _stringMethodCallCache.GetOrAdd(type, Finder);
+        }
+
+        public Func<Expression, Expression>? FindTryParseHttpContextMethod(Type type)
+        {
+            Func<Expression, Expression>? Finder(Type type)
+            {
+                var methodInfo = type.GetMethod("TryParse", BindingFlags.Public | BindingFlags.Static, new[] { typeof(HttpContext), type.MakeByRefType() });
+
+                if (methodInfo is not null)
+                {
+                    return (expression) => Expression.Call(methodInfo, HttpContextExpr, expression);
+                }
+
+                return null;
+            }
+
+            return _httpContextMethodCallCache.GetOrAdd(type, Finder);
         }
 
         private static MethodInfo GetEnumTryParseMethod(bool preferNonGenericEnumParseOverload)
