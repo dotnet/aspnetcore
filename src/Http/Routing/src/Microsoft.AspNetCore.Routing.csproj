@@ -24,6 +24,8 @@ Microsoft.AspNetCore.Routing.RouteCollection</Description>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" />
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\TypeHelper.cs" />
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\GeneratedNameParser.cs" />
   </ItemGroup>
 
   <ItemGroup>
