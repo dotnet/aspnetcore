@@ -48,7 +48,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <FrameworkListOutputPath>$(ArtifactsObjDir)$(FrameworkListFileName)</FrameworkListOutputPath>
 
     <!-- Runtime transport path i.e. location of runtime ref/ assemblies that are not in Microsoft.NETCore.App.Ref. -->
-    <RuntimeTransportReferenceDirectory>$(PkgMicrosoft_AspNetCore_Internal_Transport)\ref\$(TargetFramework)\</RuntimeTransportReferenceDirectory>
+    <RuntimeTransportReferenceDirectory>$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)\ref\$(TargetFramework)\</RuntimeTransportReferenceDirectory>
 
     <!-- Package overrides and platform manifest metadata. -->
     <PackageOverridesFileName>PackageOverrides.txt</PackageOverridesFileName>
@@ -168,7 +168,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           Include="@(AspNetCoreReferenceAssemblyPath->WithMetadataValue('ExternallyResolved', 'true')->'%(RootDir)%(Directory)%(Filename).xml')"
           Condition="Exists('%(RootDir)%(Directory)%(Filename).xml')" />
 
-      <RefPackContent Include="$(PkgMicrosoft_AspNetCore_Internal_Transport)\$(AnalyzersPackagePath)**\*.*" PackagePath="$(AnalyzersPackagePath)" />
+      <RefPackContent Include="$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)\$(AnalyzersPackagePath)**\*.*" PackagePath="$(AnalyzersPackagePath)" />
       <RefPackContent Include="$(ArtifactsDir)bin\Microsoft.AspNetCore.App.Analyzers\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.App.Analyzers.dll" PackagePath="$(AnalyzersPackagePath)dotnet/cs/" />
 
       <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" PackagePath="$(RefAssemblyPackagePath)" />
@@ -188,7 +188,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(NuGetPackageId)|%(NuGetPackageVersion)')"
           Condition="!Exists('$(RuntimeTransportReferenceDirectory)%(AspNetCoreReferenceAssemblyPath.NuGetPackageId).dll') AND
             '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.NETCore.App' AND
-            '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.AspNetCore.Internal.Transport' AND
+            '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.Internal.Runtime.AspNetCore.Transport' AND
             '%(AspNetCoreReferenceAssemblyPath.NuGetSourceType)' == 'Package' " />
 
       <!-- Use NETCore.App.Runtime version for Runtime references. -->
