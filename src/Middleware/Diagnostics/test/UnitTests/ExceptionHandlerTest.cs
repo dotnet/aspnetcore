@@ -659,6 +659,48 @@ namespace Microsoft.AspNetCore.Diagnostics
         }
 
         [Fact]
+        public async Task ExceptionHandlerWithOwnBuilder()
+        {
+            var sink = new TestSink(TestSink.EnableWithTypeName<ExceptionHandlerMiddleware>);
+
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseExceptionHandler(builder =>
+                        {
+                            builder.Run(c =>
+                            {
+                                c.Response.StatusCode = 200;
+                                return c.Response.WriteAsync("separate pipeline");
+                            });
+                        });
+
+                        app.Map("/throw", (innerAppBuilder) =>
+                        {
+                            innerAppBuilder.Run(httpContext =>
+                            {
+                                throw new InvalidOperationException("Something bad happened.");
+                            });
+                        });
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
+            {
+                var client = server.CreateClient();
+                var response = await client.GetAsync("throw");
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal("separate pipeline", await response.Content.ReadAsStringAsync());
+            }
+        }
+
+        [Fact]
         public async Task ExceptionHandlerWithPathWorksAfterUseRoutingIfGlobalRouteBuilderUsed()
         {
             using var host = new HostBuilder()

@@ -96,13 +96,10 @@ namespace Microsoft.AspNetCore.Rewrite
                 }
             }
 
-            // If a rule changed the path we want routing to find the new endpoint
+            // If a rule changed the path we want routing to find a new endpoint
             if (originalPath != context.Request.Path)
             {
-                if (context.GetEndpoint() is not null)
-                {
-                    context.SetEndpoint(null);
-                }
+                context.SetEndpoint(null);
             }
 
             return _next(context);

@@ -59,9 +59,6 @@ namespace Microsoft.AspNetCore.Builder
             {
                 return app.Use(next =>
                 {
-                    var loggerFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
-                    var hostEnvironment = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
-
                     if (options is null)
                     {
                         options = app.ApplicationServices.GetRequiredService<IOptions<RewriteOptions>>();
