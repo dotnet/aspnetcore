@@ -299,7 +299,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.Empty(GetApiDescription((HttpResponse response) => { }).ParameterDescriptions);
             Assert.Empty(GetApiDescription((ClaimsPrincipal user) => { }).ParameterDescriptions);
             Assert.Empty(GetApiDescription((CancellationToken token) => { }).ParameterDescriptions);
-            Assert.Empty(GetApiDescription((TryParseHttpContextRecord context) => { }).ParameterDescriptions);
+            Assert.Empty(GetApiDescription((BindAsyncRecord context) => { }).ParameterDescriptions);
         }
 
         [Fact]
@@ -681,11 +681,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 throw new NotImplementedException();
         }
 
-        private record TryParseHttpContextRecord(int Value)
+        private record BindAsyncRecord(int Value)
         {
-            public static bool TryParse(HttpContext context, out TryParseHttpContextRecord result) =>
+            public static ValueTask<object> BindAsync(HttpContext context) =>
                 throw new NotImplementedException();
-            public static bool TryParse(string value, out TryParseHttpContextRecord result) =>
+            public static bool TryParse(string value, out BindAsyncRecord result) =>
                 throw new NotImplementedException();
         }
     }
