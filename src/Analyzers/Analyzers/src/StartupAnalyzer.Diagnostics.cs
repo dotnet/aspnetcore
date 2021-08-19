@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Analyzers
 
             internal static readonly DiagnosticDescriptor UnsupportedUseMvcWithEndpointRouting = new DiagnosticDescriptor(
                 "MVC1005",
-                "Cannot use UseMvc with Endpoint Routing.",
+                "Cannot use UseMvc with Endpoint Routing",
                 "Using '{0}' to configure MVC is not supported while using Endpoint Routing. To continue using '{0}', please set 'MvcOptions.EnableEndpointRouting = false' inside '{1}'.",
                 "Usage",
                 DiagnosticSeverity.Warning,
@@ -47,8 +47,8 @@ namespace Microsoft.AspNetCore.Analyzers
 
             internal static readonly DiagnosticDescriptor IncorrectlyConfiguredAuthorizationMiddleware = new DiagnosticDescriptor(
                 "ASP0001",
-                "Authorization middleware is incorrectly configured.",
-                "The call to UseAuthorization should appear between app.UseRouting() and app.UseEndpoints(..) for authorization to be correctly evaluated.",
+                "Authorization middleware is incorrectly configured",
+                "The call to UseAuthorization should appear between app.UseRouting() and app.UseEndpoints(..) for authorization to be correctly evaluated",
                 "Usage",
                 DiagnosticSeverity.Warning,
                 isEnabledByDefault: true,
