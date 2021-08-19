@@ -154,6 +154,9 @@ function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
     return $global:_DotNetInstallDir
   }
 
+  # In case of network error, try to log the current IP for reference
+  Try-LogClientIpAddress
+
   # Don't resolve runtime, shared framework, or SDK from other locations to ensure build determinism
   $env:DOTNET_MULTILEVEL_LOOKUP=0
 
@@ -871,4 +874,22 @@ if (!$disableConfigureToolsetImport) {
       }
     }
   }
+}
+
+function Try-LogClientIpAddress()
+{
+    Write-Host "Attempting to log this client's IP for Azure Package feed telemetry purposes"
+    try
+    {
+        $result = Invoke-WebRequest -Uri "http://co1.msedge.net/fdv2/diagnostics.aspx" -UseBasicParsing
+        $lines = $result.Content.Split([Environment]::NewLine) 
+        $socketIp = $lines | Select-String -Pattern "^Socket IP:.*"
+        Write-Host $socketIp
+        $clientIp = $lines | Select-String -Pattern "^Client IP:.*"
+        Write-Host $clientIp
+    }
+    catch
+    {
+        Write-Host "Unable to get this machine's effective IP address for logging: $_"
+    }
 }

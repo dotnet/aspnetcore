@@ -17,6 +17,7 @@ $global:RepoFiles = @{}
 $MaxParallelJobs = 16
 
 $MaxRetries = 5
+$RetryWaitTimeInSeconds = 30
 
 # Wait time between check for system load
 $SecondsBetweenLoadChecks = 10
@@ -99,9 +100,9 @@ $ValidatePackage = {
                     $Status = 200
                     $Cache = $using:RepoFiles
 
-                    $totalRetries = 0
+                    $attempts = 0
 
-                    while ($totalRetries -lt $using:MaxRetries) {
+                    while ($attempts -lt $using:MaxRetries) {
                       if ( !($Cache.ContainsKey($FilePath)) ) {
                         try {
                           $Uri = $Link -as [System.URI]
@@ -113,7 +114,7 @@ $ValidatePackage = {
                           else {
                             # If it's not a github link, we want to break out of the loop and not retry.
                             $Status = 0
-                            $totalRetries = $using:MaxRetries
+                            $attempts = $using:MaxRetries
                           }
                         }
                         catch {
@@ -123,9 +124,15 @@ $ValidatePackage = {
                       }
 
                       if ($Status -ne 200) {
-                        $totalRetries++
+                        $attempts++
                         
-                        if ($totalRetries -ge $using:MaxRetries) {
+                        if  ($attempts -lt $using:MaxRetries)
+                        {
+                          $attemptsLeft = $using:MaxRetries - $attempts
+                          Write-Warning "Download failed, $attemptsLeft attempts remaining, will retry in $using:RetryWaitTimeInSeconds seconds"
+                          Start-Sleep -Seconds $using:RetryWaitTimeInSeconds
+                        }
+                        else {
                           if ($NumFailedLinks -eq 0) {
                             if ($FailedFiles.Value -eq 0) {
                               Write-Host
