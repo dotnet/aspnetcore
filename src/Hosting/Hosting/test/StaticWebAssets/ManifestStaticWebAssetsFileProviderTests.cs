@@ -57,6 +57,74 @@ namespace Microsoft.AspNetCore.Hosting.Tests.StaticWebAssets
             Assert.Equal(expectedResult, file.Exists);
         }
 
+        [Theory]
+        [InlineData("/img/icon.png", true)]
+        [InlineData("/Img/hero.gif", true)]
+        // Note that we've changed the casing of the first segment
+        [InlineData("/Img/icon.png", false)]
+        [InlineData("/img/hero.gif", false)]
+        public void ParseWorksWithNodesThatOnlyDifferOnCasing(string path, bool exists)
+        {
+            exists = exists | OperatingSystem.IsWindows();
+            // Arrange
+            using var memoryStream = new MemoryStream();
+            using var writer = new StreamWriter(memoryStream);
+            writer.Write(@"{
+  ""ContentRoots"": [
+    ""D:\\path\\"",
+    ""D:\\other\\""
+  ],
+  ""Root"": {
+    ""Children"": {
+      ""img"": {
+        ""Children"": {
+          ""icon.png"": {
+            ""Asset"": {
+              ""ContentRootIndex"": 0,
+              ""SubPath"": ""icon.png""
+            }
+          }
+        }
+      },
+      ""Img"": {
+        ""Children"": {
+          ""hero.gif"": {
+            ""Asset"": {
+              ""ContentRootIndex"": 1,
+              ""SubPath"": ""hero.gif""
+            }
+          }
+        }
+      }
+    }
+  }
+}");
+            var first = new Mock<IFileProvider>();
+            first.Setup(s => s.GetFileInfo("icon.png")).Returns(new TestFileInfo() { Name = "icon.png", Exists = true });
+            var second = new Mock<IFileProvider>();
+            second.Setup(s => s.GetFileInfo("hero.gif")).Returns(new TestFileInfo() { Name = "hero.gif", Exists = true });
+
+            writer.Flush();
+            memoryStream.Seek(0, SeekOrigin.Begin);
+            var manifest = ManifestStaticWebAssetFileProvider.StaticWebAssetManifest.Parse(memoryStream);
+            var comparer = ManifestStaticWebAssetFileProvider.StaticWebAssetManifest.PathComparer;
+
+            var provider = new ManifestStaticWebAssetFileProvider(
+                manifest,
+                contentRoot => contentRoot switch
+                {
+                    "D:\\path\\" => first.Object,
+                    "D:\\other\\" => second.Object,
+                    _ => throw new InvalidOperationException("Unknown provider")
+                });
+
+            // Act
+            var file = provider.GetFileInfo(path);
+
+            // Assert
+            Assert.Equal(exists, file.Exists);
+        }
+
         [Fact]
         public void CanFindFileListedOnTheManifest()
         {
