@@ -18,9 +18,8 @@
                         <div class="input-group-append">
                             <span class="h-100 input-group-text text-success font-weight-bold">✓</span>
                         </div>
+                    <label asp-for="Email" class="form-label"></label>
                 </div>
-                <label asp-for="Email" class="form-label"></label>
-            </div>
             }
             else
             {
@@ -29,7 +28,6 @@
                     <label asp-for="Email" class="form-label"></label>
                     <button id="email-verification" type="submit" asp-page-handler="SendVerificationEmail" class="btn btn-link">Send verification email</button>
                 </div>
-            </div>
             }
             <div class="form-floating">
                 <input asp-for="Input.NewEmail" class="form-control" autocomplete="email" aria-required="true" />
