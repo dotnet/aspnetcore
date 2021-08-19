@@ -188,14 +188,12 @@ namespace Microsoft.AspNetCore.Builder
             builder.Metadata.Add(action.Method);
 
             // Methods defined in a top-level program are generated as statics so the delegate
-            // target will be null. Inline lambdas are compiler generated properties so they can
+            // target will be null. Inline lambdas are compiler generated method so they can
             // be filtered that way.
-            if (action.Target == null || !TypeHelper.IsCompilerGeneratedMethod(action.Method))
+            if (GeneratedNameParser.TryParseLocalFunctionName(action.Method.Name, out var endpointName)
+                || !TypeHelper.IsCompilerGeneratedMethod(action.Method))
             {
-                if (!GeneratedNameParser.TryParseLocalFunctionName(action.Method.Name, out var endpointName))
-                {
-                    endpointName = action.Method.Name;
-                }
+                endpointName ??= action.Method.Name;
 
                 builder.Metadata.Add(new EndpointNameMetadata(endpointName));
                 builder.Metadata.Add(new RouteNameMetadata(endpointName));

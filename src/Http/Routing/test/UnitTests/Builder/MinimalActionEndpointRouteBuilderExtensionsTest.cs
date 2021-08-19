@@ -383,6 +383,28 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         [Fact]
+        public void MapMethod_DoesNotEndpointNameForInnerMethodWithTarget()
+        {
+            var name = "InnerGetString";
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            var testString = "TestString";
+            string InnerGetString() => testString;
+            _ = builder.MapDelete("/", InnerGetString);
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var endpointName = endpoint.Metadata.GetMetadata<IEndpointNameMetadata>();
+            var routeName = endpoint.Metadata.GetMetadata<IRouteNameMetadata>();
+            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+            Assert.Equal(name, endpointName?.EndpointName);
+            Assert.Equal(name, routeName?.RouteName);
+            Assert.Equal("HTTP: DELETE / => InnerGetString", routeEndpointBuilder.DisplayName);
+        }
+
+
+        [Fact]
         public void MapMethod_SetsEndpointNameForMethodGroup()
         {
             var name = "GetString";
