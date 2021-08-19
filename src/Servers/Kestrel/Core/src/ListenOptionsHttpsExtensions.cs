@@ -289,7 +289,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             if (listenOptions.Protocols >= HttpProtocols.Http3)
             {
-                throw new NotSupportedException("UseHttps with TlsHandshakeCallbackOptions is unsupported for HTTP/3");
+                throw new NotSupportedException($"{nameof(UseHttps)} with {nameof(TlsHandshakeCallbackOptions)} is not supported with HTTP/3.");
             }
 
             var loggerFactory = listenOptions.KestrelServerOptions?.ApplicationServices.GetRequiredService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
