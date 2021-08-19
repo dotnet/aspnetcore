@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/35481")]
         public void DefaultTransportsWorksWithWebSockets()
         {
             Navigate("/defaultTransport/Transports");
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 "Blazor server-side application started.");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/35481")]
         public void ErrorIfClientAttemptsLongPollingWithServerOnWebSockets()
         {
             Navigate("/defaultTransport/Transports");
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.Equal("block", () => errorUiElem.GetCssValue("display"));
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/35481")]
         public void ErrorIfWebSocketsConnectionIsRejected()
         {
             Navigate("/defaultTransport/Transports");
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.Equal("block", () => errorUiElem.GetCssValue("display"));
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/35481")]
         public void ErrorIfClientAttemptsWebSocketsWithServerOnLongPolling()
         {
             Navigate("/longPolling/Transports");
