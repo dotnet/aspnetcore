@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="ListenOptions"/>.</returns>
         public static ListenOptions UseHttps(this ListenOptions listenOptions, ServerOptionsSelectionCallback serverOptionsSelectionCallback, object state, TimeSpan handshakeTimeout)
         {
-            if (listenOptions.Protocols >= HttpProtocols.Http3)
+            if (listenOptions.Protocols.HasFlags(HttpProtocols.Http3))
             {
                 throw new NotSupportedException($"{nameof(UseHttps)} with {nameof(ServerOptionsSelectionCallback)} is not supported with HTTP/3.");
             }
