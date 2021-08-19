@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
@@ -18,7 +18,9 @@ namespace Microsoft.AspNetCore.Analyzers
             _analyzer = analyzer;
             StartupSymbols = startupSymbols;
 
-            _analysesByType = new Dictionary<INamedTypeSymbol, List<object>>();
+#pragma warning disable RS1024 // Compare symbols correctly
+            _analysesByType = new Dictionary<INamedTypeSymbol, List<object>>(SymbolEqualityComparer.Default);
+#pragma warning restore RS1024 // Compare symbols correctly
             _lock = new object();
         }
 
