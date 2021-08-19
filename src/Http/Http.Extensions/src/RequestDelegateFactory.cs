@@ -187,11 +187,10 @@ namespace Microsoft.AspNetCore.Http
             }
 
             var args = new Expression[parameters.Length];
-            factoryContext.ParameterCount = parameters.Length;
 
             for (var i = 0; i < parameters.Length; i++)
             {
-                args[i] = CreateArgument(i, parameters[i], factoryContext);
+                args[i] = CreateArgument(parameters[i], factoryContext);
             }
 
             if (factoryContext.HasMultipleBodyParameters)
@@ -203,7 +202,7 @@ namespace Microsoft.AspNetCore.Http
             return args;
         }
 
-        private static Expression CreateArgument(int index, ParameterInfo parameter, FactoryContext factoryContext)
+        private static Expression CreateArgument(ParameterInfo parameter, FactoryContext factoryContext)
         {
             if (parameter.Name is null)
             {
@@ -264,7 +263,7 @@ namespace Microsoft.AspNetCore.Http
             }
             else if (TryParseMethodCache.HasBindAsyncMethod(parameter))
             {
-                return BindParameterFromBindAsync(index, parameter, factoryContext);
+                return BindParameterFromBindAsync(parameter, factoryContext);
             }
             else if (parameter.ParameterType == typeof(string) || TryParseMethodCache.HasTryParseStringMethod(parameter))
             {
@@ -513,15 +512,15 @@ namespace Microsoft.AspNetCore.Http
 
                     // Looping over arrays is faster
                     var binders = factoryContext.ParameterBinders.ToArray();
-                    var count = factoryContext.ParameterCount;
+                    var count = binders.Length;
 
                     return async (target, httpContext) =>
                     {
                         var boundValues = new object?[count];
 
-                        foreach (var (index, binder) in binders)
+                        for (var i = 0; i < count; i++)
                         {
-                            boundValues[index] = await binder(httpContext);
+                            boundValues[i] = await binders[i](httpContext);
                         }
 
                         await continuation(target, httpContext, boundValues);
@@ -548,16 +547,16 @@ namespace Microsoft.AspNetCore.Http
 
                 // Looping over arrays is faster
                 var binders = factoryContext.ParameterBinders.ToArray();
-                var count = factoryContext.ParameterCount;
+                var count = binders.Length;
 
                 return async (target, httpContext) =>
                 {
                     // Run these first so that they can potentially read and rewind the body
                     var boundValues = new object?[count];
 
-                    foreach (var (index, binder) in binders)
+                    for (var i = 0; i < count; i++)
                     {
-                        boundValues[index] = await binder(httpContext);
+                        boundValues[i] = await binders[i](httpContext);
                     }
 
                     var bodyValue = defaultBodyValue;
@@ -814,7 +813,7 @@ namespace Microsoft.AspNetCore.Http
             return BindParameterFromValue(parameter, Expression.Coalesce(routeValue, queryValue), factoryContext);
         }
 
-        private static Expression BindParameterFromBindAsync(int index, ParameterInfo parameter, FactoryContext factoryContext)
+        private static Expression BindParameterFromBindAsync(ParameterInfo parameter, FactoryContext factoryContext)
         {
             // We reference the boundValues array by parameter index here
             var nullability = NullabilityContext.Create(parameter);
@@ -825,10 +824,10 @@ namespace Microsoft.AspNetCore.Http
 
             // Compile the delegate to the BindAsync method for this parameter index
             var bindAsyncDelegate = Expression.Lambda<Func<HttpContext, ValueTask<object?>>>(body, HttpContextExpr).Compile();
-            factoryContext.ParameterBinders.Add((index, bindAsyncDelegate));
+            factoryContext.ParameterBinders.Add(bindAsyncDelegate);
 
             // boundValues[index]
-            var boundValueExpr = Expression.ArrayIndex(BoundValuesArrayExpr, Expression.Constant(index));
+            var boundValueExpr = Expression.ArrayIndex(BoundValuesArrayExpr, Expression.Constant(factoryContext.ParameterBinders.Count - 1));
 
             if (!isOptional)
             {
@@ -1097,8 +1096,7 @@ namespace Microsoft.AspNetCore.Http
             public bool UsingTempSourceString { get; set; }
             public List<ParameterExpression> ExtraLocals { get; } = new();
             public List<Expression> ParamCheckExpressions { get; } = new();
-            public List<(int, Func<HttpContext, ValueTask<object?>>)> ParameterBinders { get; } = new();
-            public int ParameterCount { get; set; }
+            public List<Func<HttpContext, ValueTask<object?>>> ParameterBinders { get; } = new();
 
             public Dictionary<string, string> TrackedParameters { get; } = new();
             public bool HasMultipleBodyParameters { get; set; }
