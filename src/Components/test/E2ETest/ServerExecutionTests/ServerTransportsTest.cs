@@ -8,6 +8,7 @@ using BasicTestApp.Reconnection;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit;
@@ -25,7 +26,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/35481")]
+        [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35481")]
         public void DefaultTransportsWorksWithWebSockets()
         {
             Navigate("/defaultTransport/Transports");
@@ -43,7 +45,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 "Blazor server-side application started.");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/35481")]
+        [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35481")]
         public void ErrorIfClientAttemptsLongPollingWithServerOnWebSockets()
         {
             Navigate("/defaultTransport/Transports");
@@ -64,7 +67,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.Equal("block", () => errorUiElem.GetCssValue("display"));
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/35481")]
+        [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35481")]
         public void ErrorIfWebSocketsConnectionIsRejected()
         {
             Navigate("/defaultTransport/Transports");
@@ -88,7 +92,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.Equal("block", () => errorUiElem.GetCssValue("display"));
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/35481")]
+        [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35481")]
         public void ErrorIfClientAttemptsWebSocketsWithServerOnLongPolling()
         {
             Navigate("/longPolling/Transports");
