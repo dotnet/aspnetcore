@@ -24,15 +24,15 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public HttpClient Client { get; }
 
         [Fact]
-        public Task AsyncEnumerableReturnedWorks() => AsyncEnumerableWorks();
+        public Task AsyncEnumerableReturnedWorks() => AsyncEnumerableWorks("getallprojects");
 
         [Fact]
-        public Task AsyncEnumerableWrappedInTask() => AsyncEnumerableWorks();
+        public Task AsyncEnumerableWrappedInTask() => AsyncEnumerableWorks("getallprojectsastask");
 
-        private async Task AsyncEnumerableWorks()
+        private async Task AsyncEnumerableWorks(string action)
         {
             // Act
-            var response = await Client.GetAsync("asyncenumerable/getallprojects");
+            var response = await Client.GetAsync($"asyncenumerable/{action}");
 
             // Assert
             await response.AssertStatusCodeAsync(HttpStatusCode.OK);
