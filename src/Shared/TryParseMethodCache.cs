@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Http
 
         // Since this is shared source, the cache won't be shared between RequestDelegateFactory and the ApiDescriptionProvider sadly :(
         private readonly ConcurrentDictionary<Type, Func<Expression, Expression>?> _stringMethodCallCache = new();
-        private readonly ConcurrentDictionary<Type, Func<Expression, Expression>?> _httpContextMethodCallCache = new();
+        private readonly ConcurrentDictionary<Type, Expression?> _bindAsyncMethodCallCache = new();
 
         internal readonly ParameterExpression TempSourceStringExpr = Expression.Variable(typeof(string), "tempSourceString");
         internal readonly ParameterExpression HttpContextExpr = Expression.Parameter(typeof(HttpContext), "httpContext");
@@ -43,8 +43,8 @@ namespace Microsoft.AspNetCore.Http
             return FindTryParseStringMethod(nonNullableParameterType) is not null;
         }
 
-        public bool HasTryParseHttpContextMethod(ParameterInfo parameter) =>
-            FindTryParseHttpContextMethod(parameter.ParameterType) is not null;
+        public bool HasBindAsyncMethod(ParameterInfo parameter) =>
+            FindBindAsyncMethod(parameter.ParameterType) is not null;
 
         public Func<Expression, Expression>? FindTryParseStringMethod(Type type)
         {
@@ -125,21 +125,23 @@ namespace Microsoft.AspNetCore.Http
             return _stringMethodCallCache.GetOrAdd(type, Finder);
         }
 
-        public Func<Expression, Expression>? FindTryParseHttpContextMethod(Type type)
+        public Expression? FindBindAsyncMethod(Type type)
         {
-            Func<Expression, Expression>? Finder(Type type)
+            Expression? Finder(Type type)
             {
-                var methodInfo = type.GetMethod("TryParse", BindingFlags.Public | BindingFlags.Static, new[] { typeof(HttpContext), type.MakeByRefType() });
+                var methodInfo = type.GetMethod("BindAsync", BindingFlags.Public | BindingFlags.Static, new[] { typeof(HttpContext) });
 
-                if (methodInfo is not null)
+                // We're looking for a method with the following signature:
+                // static ValueTask<object> BindAsync(HttpContext context)
+                if (methodInfo is not null && methodInfo.ReturnType == typeof(ValueTask<object>))
                 {
-                    return (expression) => Expression.Call(methodInfo, HttpContextExpr, expression);
+                    return Expression.Call(methodInfo, HttpContextExpr);
                 }
 
                 return null;
             }
 
-            return _httpContextMethodCallCache.GetOrAdd(type, Finder);
+            return _bindAsyncMethodCallCache.GetOrAdd(type, Finder);
         }
 
         private static MethodInfo GetEnumTryParseMethod(bool preferNonGenericEnumParseOverload)
