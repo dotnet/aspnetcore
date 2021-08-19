@@ -632,10 +632,12 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             httpContext.Request.Headers.Referer = "https://example.org";
 
-            var requestDelegate = RequestDelegateFactory.Create((HttpContext httpContext, MyTryParseHttpContextRecord tryParsable) =>
+            var resultFactory = RequestDelegateFactory.Create((HttpContext httpContext, MyTryParseHttpContextRecord tryParsable) =>
             {
                 httpContext.Items["tryParsable"] = tryParsable;
             });
+
+            var requestDelegate = resultFactory.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -649,11 +651,12 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             httpContext.Request.Headers.Referer = "https://example.org";
 
-            var requestDelegate = RequestDelegateFactory.Create((HttpContext httpContext, MyTryParseHttpContextStruct tryParsable) =>
+            var factoryResult = RequestDelegateFactory.Create((HttpContext httpContext, MyTryParseHttpContextStruct tryParsable) =>
             {
                 httpContext.Items["tryParsable"] = tryParsable;
             });
 
+            var requestDelegate = factoryResult.RequestDelegate;
             await requestDelegate(httpContext);
 
             Assert.Equal(new MyTryParseHttpContextStruct(new Uri("https://example.org")), httpContext.Items["tryParsable"]);
@@ -662,8 +665,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
         [Fact]
         public async Task RequestDelegateUsesTryParseStringoOverTryParseHttpContextGivenExplicitAttribute()
         {
-            var fromRouteRequestDelegate = RequestDelegateFactory.Create((HttpContext httpContext, [FromRoute] MyTryParseHttpContextRecord tryParsable) => { });
-            var fromQueryRequestDelegate = RequestDelegateFactory.Create((HttpContext httpContext, [FromQuery] MyTryParseHttpContextRecord tryParsable) => { });
+            var fromRouteFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, [FromRoute] MyTryParseHttpContextRecord tryParsable) => { });
+            var fromQueryFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, [FromQuery] MyTryParseHttpContextRecord tryParsable) => { });
+
 
             var httpContext = new DefaultHttpContext
             {
@@ -680,6 +684,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 },
             };
 
+            var fromRouteRequestDelegate = fromRouteFactoryResult.RequestDelegate;
+            var fromQueryRequestDelegate = fromQueryFactoryResult.RequestDelegate;
+
             await Assert.ThrowsAsync<NotImplementedException>(() => fromRouteRequestDelegate(httpContext));
             await Assert.ThrowsAsync<NotImplementedException>(() => fromQueryRequestDelegate(httpContext));
         }
@@ -687,7 +694,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         [Fact]
         public async Task RequestDelegateUsesTryParseStringoOverTryParseHttpContextGivenNullableStruct()
         {
-            var fromRouteRequestDelegate = RequestDelegateFactory.Create((HttpContext httpContext, MyTryParseHttpContextStruct? tryParsable) => { });
+            var fromRouteFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, MyTryParseHttpContextStruct? tryParsable) => { });
 
             var httpContext = new DefaultHttpContext
             {
@@ -700,6 +707,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 },
             };
 
+            var fromRouteRequestDelegate = fromRouteFactoryResult.RequestDelegate;
             await Assert.ThrowsAsync<NotImplementedException>(() => fromRouteRequestDelegate(httpContext));
         }
 
@@ -789,11 +797,12 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var invoked = false;
 
-            var requestDelegate = RequestDelegateFactory.Create((MyTryParseHttpContextRecord arg1, MyTryParseHttpContextRecord arg2) =>
+            var factoryResult = RequestDelegateFactory.Create((MyTryParseHttpContextRecord arg1, MyTryParseHttpContextRecord arg2) =>
             {
                 invoked = true;
             });
 
+            var requestDelegate = factoryResult.RequestDelegate;
             await requestDelegate(httpContext);
 
             Assert.False(invoked);
@@ -1887,11 +1896,12 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var invoked = false;
 
-            var requestDelegate = RequestDelegateFactory.Create((MyTryParseHttpContextRecord? arg1) =>
+            var factoryResult = RequestDelegateFactory.Create((MyTryParseHttpContextRecord? arg1) =>
             {
                 invoked = true;
             });
 
+            var requestDelegate = factoryResult.RequestDelegate;
             await requestDelegate(httpContext);
 
             Assert.False(invoked);
