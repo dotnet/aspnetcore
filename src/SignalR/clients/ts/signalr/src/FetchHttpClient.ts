@@ -7,7 +7,7 @@ import { CookieJar } from "@types/tough-cookie";
 import { AbortError, HttpError, TimeoutError } from "./Errors";
 import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
-import { Platform } from "./Utils";
+import { Platform, getGlobalThis } from "./Utils";
 
 export class FetchHttpClient extends HttpClient {
     private readonly _abortControllerType: { prototype: AbortController, new(): AbortController };
@@ -33,7 +33,7 @@ export class FetchHttpClient extends HttpClient {
             // fetch-cookie will wrap a fetch implementation with a default CookieJar or a provided one
             this._fetchType = requireFunc("fetch-cookie")(this._fetchType, this._jar);
         } else {
-            this._fetchType = fetch.bind(globalThis);
+            this._fetchType = fetch.bind(getGlobalThis());
         }
         if (typeof AbortController === "undefined") {
             // In order to ignore the dynamic require in webpack builds we need to do this magic

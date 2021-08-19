@@ -1,13 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Security.Claims;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -17,7 +12,6 @@ using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 {
@@ -256,6 +250,20 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
+        public void AddsFromRouteParameterAsPathWithCustomTypep()
+        {
+            static void AssertPathParameter(ApiDescription apiDescription)
+            {
+                var param = Assert.Single(apiDescription.ParameterDescriptions);
+                Assert.Equal(typeof(TryParseStringRecord), param.Type);
+                Assert.Equal(typeof(TryParseStringRecord), param.ModelMetadata.ModelType);
+                Assert.Equal(BindingSource.Path, param.Source);
+            }
+
+            AssertPathParameter(GetApiDescription((TryParseStringRecord foo) => { }, "/{foo}"));
+        }
+
+        [Fact]
         public void AddsFromQueryParameterAsQuery()
         {
             static void AssertQueryParameter(ApiDescription apiDescription)
@@ -291,6 +299,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.Empty(GetApiDescription((HttpResponse response) => { }).ParameterDescriptions);
             Assert.Empty(GetApiDescription((ClaimsPrincipal user) => { }).ParameterDescriptions);
             Assert.Empty(GetApiDescription((CancellationToken token) => { }).ParameterDescriptions);
+            Assert.Empty(GetApiDescription((TryParseHttpContextRecord context) => { }).ParameterDescriptions);
         }
 
         [Fact]
@@ -664,6 +673,20 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             public ICollection<EndpointDataSource> DataSources { get; }
 
             public IServiceProvider ServiceProvider => ApplicationBuilder.ApplicationServices;
+        }
+
+        private record TryParseStringRecord(int Value)
+        {
+            public static bool TryParse(string value, out TryParseStringRecord result) =>
+                throw new NotImplementedException();
+        }
+
+        private record TryParseHttpContextRecord(int Value)
+        {
+            public static bool TryParse(HttpContext context, out TryParseHttpContextRecord result) =>
+                throw new NotImplementedException();
+            public static bool TryParse(string value, out TryParseHttpContextRecord result) =>
+                throw new NotImplementedException();
         }
     }
 }

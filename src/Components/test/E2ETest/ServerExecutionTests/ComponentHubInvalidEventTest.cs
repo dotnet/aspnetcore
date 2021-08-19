@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.Equal(2, Batches.Count);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task DispatchingAnInvalidEventArgument_DoesNotProduceWarnings()
         {
             // Arrange
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.Contains(Logs, l => (l.LogLevel, l.Exception?.Message) == (LogLevel.Debug, "There was an error parsing the event arguments. EventId: '3'."));
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task DispatchingAnInvalidEvent_DoesNotTriggerWarnings()
         {
             // Arrange
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 "There is no event handler associated with this event. EventId: '1990'. (Parameter 'eventHandlerId')"));
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task DispatchingAnInvalidRenderAcknowledgement_DoesNotTriggerWarnings()
         {
             // Arrange

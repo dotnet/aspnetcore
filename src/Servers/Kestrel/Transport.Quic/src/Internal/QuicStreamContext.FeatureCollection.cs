@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Net.Sockets;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 
@@ -31,15 +30,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         {
             lock (_shutdownLock)
             {
-                if (_stream.CanRead)
+                if (_stream != null)
                 {
-                    _shutdownReadReason = abortReason;
-                    _log.StreamAbortRead(this, errorCode, abortReason.Message);
-                    _stream.AbortRead(errorCode);
-                }
-                else
-                {
-                    throw new InvalidOperationException("Unable to abort reading from a stream that doesn't support reading.");
+                    if (_stream.CanRead)
+                    {
+                        _shutdownReadReason = abortReason;
+                        _log.StreamAbortRead(this, errorCode, abortReason.Message);
+                        _stream.AbortRead(errorCode);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Unable to abort reading from a stream that doesn't support reading.");
+                    }
                 }
             }
         }
@@ -48,15 +50,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         {
             lock (_shutdownLock)
             {
-                if (_stream.CanWrite)
+                if (_stream != null)
                 {
-                    _shutdownWriteReason = abortReason;
-                    _log.StreamAbortWrite(this, errorCode, abortReason.Message);
-                    _stream.AbortWrite(errorCode);
-                }
-                else
-                {
-                    throw new InvalidOperationException("Unable to abort writing to a stream that doesn't support writing.");
+                    if (_stream.CanWrite)
+                    {
+                        _shutdownWriteReason = abortReason;
+                        _log.StreamAbortWrite(this, errorCode, abortReason.Message);
+                        _stream.AbortWrite(errorCode);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Unable to abort writing to a stream that doesn't support writing.");
+                    }
                 }
             }
         }

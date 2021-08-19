@@ -207,8 +207,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             },
             payload.Scopes.OrderBy(id => id));
 
-            var currentTime = DateTimeOffset.Parse(Browser.Exists(By.Id("current-time")).Text, CultureInfo.InvariantCulture);
-            var tokenExpiration = DateTimeOffset.Parse(Browser.Exists(By.Id("access-token-expires")).Text, CultureInfo.InvariantCulture);
+            // The browser formats the text using the current language, so the following parsing relies on
+            // the server being set to an equivalent culture. This should be true in our test scenarios.
+            var currentTime = DateTimeOffset.Parse(Browser.Exists(By.Id("current-time")).Text, CultureInfo.CurrentCulture);
+            var tokenExpiration = DateTimeOffset.Parse(Browser.Exists(By.Id("access-token-expires")).Text, CultureInfo.CurrentCulture);
             Assert.True(currentTime.AddMinutes(50) < tokenExpiration);
             Assert.True(currentTime.AddMinutes(60) >= tokenExpiration);
         }

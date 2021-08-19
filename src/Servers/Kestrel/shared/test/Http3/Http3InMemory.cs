@@ -608,6 +608,13 @@ namespace Microsoft.AspNetCore.Testing
 
         public bool Disposed => _testStreamContext.Disposed;
         public Task OnDisposedTask => _testStreamContext.OnDisposedTask;
+        public Task OnDisposingTask => _testStreamContext.OnDisposingTask;
+
+        public TaskCompletionSource StartStreamDisposeTcs
+        {
+            get => _testStreamContext.StartStreamDisposeTcs;
+            internal set => _testStreamContext.StartStreamDisposeTcs = value;
+        }
 
         public Http3RequestStream(Http3InMemory testBase, Http3Connection connection, TestStreamContext testStreamContext, Http3RequestHeaderHandler headerHandler)
             : base(testStreamContext)
@@ -994,7 +1001,7 @@ namespace Microsoft.AspNetCore.Testing
         }
     }
 
-    internal class TestStreamContext : ConnectionContext, IStreamDirectionFeature, IStreamIdFeature, IProtocolErrorCodeFeature, IPersistentStateFeature, IStreamAbortFeature
+    internal class TestStreamContext : ConnectionContext, IStreamDirectionFeature, IStreamIdFeature, IProtocolErrorCodeFeature, IPersistentStateFeature, IStreamAbortFeature, IDisposable
     {
         private readonly Http3InMemory _testBase;
 
@@ -1010,6 +1017,7 @@ namespace Microsoft.AspNetCore.Testing
         // Persistent state collection is not reset with a stream by design.
         private IDictionary<object, object> _persistentState;
 
+        private TaskCompletionSource _disposingTcs;
         private TaskCompletionSource _disposedTcs;
 
         public TestStreamContext(bool canRead, bool canWrite, Http3InMemory testBase)
@@ -1066,14 +1074,18 @@ namespace Microsoft.AspNetCore.Testing
             AbortWriteException = null;
 
             _disposedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            _disposingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             Disposed = false;
         }
+
+        public TaskCompletionSource StartStreamDisposeTcs { get; internal set; }
 
         public ConnectionAbortedException AbortReadException { get; private set; }
         public ConnectionAbortedException AbortWriteException { get; private set; }
 
         public bool Disposed { get; private set; }
 
+        public Task OnDisposingTask => _disposingTcs.Task;
         public Task OnDisposedTask => _disposedTcs.Task;
 
         public override string ConnectionId { get; set; }
@@ -1108,33 +1120,41 @@ namespace Microsoft.AspNetCore.Testing
             _pair.Application.Output.Complete(abortReason);
         }
 
-        public override ValueTask DisposeAsync()
+        public override async ValueTask DisposeAsync()
         {
+            _disposingTcs.TrySetResult();
+            if (StartStreamDisposeTcs != null)
+            {
+                await StartStreamDisposeTcs.Task;
+            }
+
             _testBase.Logger.LogDebug($"Disposing stream {StreamId}");
 
             var readerCompletedSuccessfully = _transportPipeReader.IsCompletedSuccessfully;
             var writerCompletedSuccessfully = _transportPipeWriter.IsCompletedSuccessfully;
-            var canReuse = !_isAborted &&
+            CanReuse = !_isAborted &&
                 readerCompletedSuccessfully &&
                 writerCompletedSuccessfully;
 
             _pair.Transport.Input.Complete();
             _pair.Transport.Output.Complete();
+        }
 
-            if (canReuse)
+        public void Dispose()
+        {
+            if (CanReuse)
             {
                 _testBase.Logger.LogDebug($"Pooling stream {StreamId} for reuse.");
                 _testBase._streamContextPool.Enqueue(this);
             }
             else
             {
-                _testBase.Logger.LogDebug($"Can't reuse stream {StreamId}. Aborted: {_isAborted}, Reader completed successfully: {readerCompletedSuccessfully}, Writer completed successfully: {writerCompletedSuccessfully}.");
+                // Note that completed flags could be out of date at this point.
+                _testBase.Logger.LogDebug($"Can't reuse stream {StreamId}. Aborted: {_isAborted}, Reader completed successfully: {_transportPipeReader.IsCompletedSuccessfully}, Writer completed successfully: {_transportPipeWriter.IsCompletedSuccessfully}.");
             }
 
             Disposed = true;
             _disposedTcs.TrySetResult();
-
-            return ValueTask.CompletedTask;
         }
 
         internal void Complete()
@@ -1150,6 +1170,8 @@ namespace Microsoft.AspNetCore.Testing
                 return _persistentState ?? (_persistentState = new ConnectionItems());
             }
         }
+
+        public bool CanReuse { get; private set; }
 
         void IStreamAbortFeature.AbortRead(long errorCode, ConnectionAbortedException abortReason)
         {
