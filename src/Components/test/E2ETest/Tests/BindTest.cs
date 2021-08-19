@@ -2022,9 +2022,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // interaction as authentically as SendKeys in other cases.
             var javascript = (IJavaScriptExecutor)Browser;
             javascript.ExecuteScript(
-                $"var elem = document.querySelector('{cssSelector}');"
-                + $"elem.value = '{value}';"
-                + "elem.dispatchEvent(new KeyboardEvent('change'));");
+                $"document.querySelector('{cssSelector}').value = '{value}'");
+            javascript.ExecuteScript(
+                $"document.querySelector('{cssSelector}').dispatchEvent(new KeyboardEvent('change'));");
         }
     }
 }
