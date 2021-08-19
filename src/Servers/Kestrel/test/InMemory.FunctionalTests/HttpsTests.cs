@@ -607,7 +607,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         return ValueTask.FromResult((new SslServerAuthenticationOptions()));
                     }, state: null)
                 );
-                Assert.Equal("UseHttps with ServerOptionsSelectionCallback is unsupported for HTTP/3", exception.Message);
+                Assert.Equal("UseHttps with ServerOptionsSelectionCallback is not supported with HTTP/3.", exception.Message);
             });
         }
 
@@ -629,7 +629,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         }
                     })
                 );
-                Assert.Equal("UseHttps with TlsHandshakeCallbackOptions is unsupported for HTTP/3", exception.Message);
+                Assert.Equal("UseHttps with TlsHandshakeCallbackOptions is not supported with HTTP/3.", exception.Message);
             });
         }
 

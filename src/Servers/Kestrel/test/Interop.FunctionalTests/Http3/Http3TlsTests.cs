@@ -251,7 +251,7 @@ namespace Interop.FunctionalTests.Http3
 
             var exception = await Assert.ThrowsAsync<NotSupportedException>(() =>
                 host.StartAsync().DefaultTimeout());
-            Assert.Equal("The OnAuthenticate callback is unsupported for HTTP/3", exception.Message);
+            Assert.Equal("The OnAuthenticate callback is not supported with HTTP/3.", exception.Message);
         }
 
         private IHostBuilder CreateHostBuilder(RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null)
