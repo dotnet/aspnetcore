@@ -512,7 +512,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
         {
             if (httpsOptions.OnAuthenticate != null)
             {
-                throw new NotSupportedException("The OnAuthenticate callback is unsupported for HTTP/3");
+                throw new NotSupportedException($"The {nameof(HttpsConnectionAdapterOptions.OnAuthenticate)} callback is not supported with HTTP/3.");
             }
 
             // TODO Set other relevant values on options
