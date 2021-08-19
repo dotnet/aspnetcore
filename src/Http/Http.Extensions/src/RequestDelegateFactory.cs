@@ -274,7 +274,6 @@ namespace Microsoft.AspNetCore.Http
                 // when RDF.Create is manually invoked.
                 if (factoryContext.RouteParameters is { } routeParams)
                 {
-
                     if (routeParams.Contains(parameter.Name, StringComparer.OrdinalIgnoreCase))
                     {
                         // We're in the fallback case and we have a parameter and route parameter match so don't fallback
