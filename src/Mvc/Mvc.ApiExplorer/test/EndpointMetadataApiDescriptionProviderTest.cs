@@ -6,7 +6,6 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -592,7 +591,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             // Arrange
             var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(null));
             builder.MapPost("/api/todos", () => "")
-                .Accepts("application/json", "application/xml");
+                .Accepts<string>("application/json", "application/xml");
             var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
 
             var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
@@ -625,7 +624,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             // Arrange
             var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(null));
             builder.MapPost("/api/todos", () => "")
-                .Accepts("");
+                .Accepts(typeof(string), "");
             var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
 
             var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
