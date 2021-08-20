@@ -11,13 +11,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private static class Log
         {
             private static readonly Action<ILogger, Exception?> _errorWhenReadAsync =
-                LoggerMessage.Define(LogLevel.Error, LoggerEventIds.ErrorWhenReadAsync, "ReadAsync");
+                LoggerMessage.Define(LogLevel.Debug, LoggerEventIds.ErrorWhenReadAsync, "ReadAsync");
 
             private static readonly Action<ILogger, Exception?> _errorWhenReadBegun =
-                LoggerMessage.Define(LogLevel.Error, LoggerEventIds.ErrorWhenReadBegun, "BeginRead");
+                LoggerMessage.Define(LogLevel.Debug, LoggerEventIds.ErrorWhenReadBegun, "BeginRead");
 
             private static readonly Action<ILogger, Exception?> _errorWhileRead =
-                LoggerMessage.Define(LogLevel.Error, LoggerEventIds.ErrorWhileRead, "Read");
+                LoggerMessage.Define(LogLevel.Debug, LoggerEventIds.ErrorWhileRead, "Read");
 
             public static void ErrorWhenReadAsync(ILogger logger, Exception exception)
             {
