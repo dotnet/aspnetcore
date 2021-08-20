@@ -2137,6 +2137,35 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(expectedResponse, decodedResponseBody);
         }
 
+        [Theory]
+        [InlineData(true, "Age: 42")]
+        [InlineData(false, "Age: ")]
+        public async Task TreatsUnknownNullabilityAsOptionalForReferenceType(bool provideValue, string expectedResponse)
+        {
+            string optionalQueryParam(string age) => $"Age: {age}";
+
+            var httpContext = new DefaultHttpContext();
+            var responseBodyStream = new MemoryStream();
+            httpContext.Response.Body = responseBodyStream;
+
+            if (provideValue)
+            {
+                httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+                {
+                    ["age"] = "42"
+                });
+            }
+
+            var requestDelegate = RequestDelegateFactory.Create(optionalQueryParam);
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(200, httpContext.Response.StatusCode);
+            Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+            var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+            Assert.Equal(expectedResponse, decodedResponseBody);
+        }
+
 #nullable enable
 
         private class Todo : ITodo

@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.Equal(typeof(InferredJsonClass), fromBodyParam.Type);
             Assert.Equal(typeof(InferredJsonClass), fromBodyParam.ModelMetadata.ModelType);
             Assert.Equal(BindingSource.Body, fromBodyParam.Source);
-            Assert.True(fromBodyParam.IsRequired);
+            Assert.False(fromBodyParam.IsRequired); // Reference type in oblivious nullability context
         }
 
         [Fact]
@@ -411,6 +411,27 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             Assert.NotNull(apiExplorerSettings);
             Assert.True(apiExplorerSettings.IgnoreApi);
+        }
+
+        [Fact]
+        public void TestParameterIsRequiredForObliviousNullabilityContext()
+        {
+            // In an oblivious nullability context, reference type parameters without
+            // annotations are optional. Value type parameters are always required.
+            var apiDescription = GetApiDescription((string foo, int bar) => { });
+            Assert.Equal(2, apiDescription.ParameterDescriptions.Count);
+
+            var fooParam = apiDescription.ParameterDescriptions[0];
+            Assert.Equal(typeof(string), fooParam.Type);
+            Assert.Equal(typeof(string), fooParam.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.Query, fooParam.Source);
+            Assert.False(fooParam.IsRequired);
+
+            var barParam = apiDescription.ParameterDescriptions[1];
+            Assert.Equal(typeof(int), barParam.Type);
+            Assert.Equal(typeof(int), barParam.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.Query, barParam.Source);
+            Assert.True(barParam.IsRequired);
         }
 
         [Fact]
