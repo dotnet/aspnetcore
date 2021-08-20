@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Http.Result
 {
     /// <summary>
     /// Implements an interface for registering external methods that provide
-    /// custom IResult instances.
+    /// custom <see cref="IResult"/> instances.
     /// </summary>
     internal class ResultExtensions : IResultExtensions { }
 }

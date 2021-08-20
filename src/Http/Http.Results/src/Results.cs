@@ -590,8 +590,8 @@ namespace Microsoft.AspNetCore.Http
             => new AcceptedAtRouteResult(routeName, routeValues, value);
 
         /// <summary>
-        /// Provides a container for external libraries to extend
-        /// the default `Results` set with their own samples.
+        /// Provides a place for external libraries to extend the default `Results` set
+        /// via extension methods returning custom <see cref="IResult" /> implementations.
         /// </summary>
         public static IResultExtensions Extensions { get; } = new ResultExtensions();
     }
