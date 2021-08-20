@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             // Determine the "requiredness" based on nullability, default value or if allowEmpty is set
             var nullability = NullabilityContext.Create(parameter);
-            var isOptional = parameter.HasDefaultValue || nullability.ReadState == NullabilityState.Nullable || allowEmpty;
+            var isOptional = parameter.HasDefaultValue || nullability.ReadState != NullabilityState.NotNull || allowEmpty;
 
             return new ApiParameterDescription
             {
