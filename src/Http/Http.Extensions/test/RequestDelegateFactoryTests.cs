@@ -2227,8 +2227,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 });
             }
 
-            var requestDelegate = RequestDelegateFactory.Create(optionalQueryParam);
+            var factoryResult = RequestDelegateFactory.Create(optionalQueryParam);
 
+            var requestDelegate = factoryResult.RequestDelegate;
             await requestDelegate(httpContext);
 
             Assert.Equal(200, httpContext.Response.StatusCode);
