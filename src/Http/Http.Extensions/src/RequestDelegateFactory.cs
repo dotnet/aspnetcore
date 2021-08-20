@@ -816,7 +816,7 @@ namespace Microsoft.AspNetCore.Http
         {
             // We reference the boundValues array by parameter index here
             var nullability = NullabilityContext.Create(parameter);
-            var isOptional = parameter.HasDefaultValue || nullability.ReadState == NullabilityState.Nullable;
+            var isOptional = IsOptionalParameter(parameter);
 
             // Get the BindAsync method
             var body = TryParseMethodCache.FindBindAsyncMethod(parameter.ParameterType)!;

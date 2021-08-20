@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.Equal(typeof(InferredJsonClass), fromBodyParam.Type);
             Assert.Equal(typeof(InferredJsonClass), fromBodyParam.ModelMetadata.ModelType);
             Assert.Equal(BindingSource.Body, fromBodyParam.Source);
-            Assert.True(fromBodyParam.IsRequired);
+            Assert.False(fromBodyParam.IsRequired); // Reference type in oblivious nullability context
         }
 
         [Fact]
