@@ -53,9 +53,10 @@ namespace Microsoft.AspNetCore.Builder
 
         private static IApplicationBuilder AddRewriteMiddleware(IApplicationBuilder app, IOptions<RewriteOptions>? options)
         {
+            const string globalRouteBuilderKey = "__GlobalEndpointRouteBuilder";
             // Check if UseRouting() has been called so we know if it's safe to call UseRouting()
             // otherwise we might call UseRouting() when AddRouting() hasn't been called which would fail
-            if (app.Properties.TryGetValue("__EndpointRouteBuilder", out _) || app.Properties.TryGetValue("__GlobalEndpointRouteBuilder", out _))
+            if (app.Properties.TryGetValue("__EndpointRouteBuilder", out _) || app.Properties.TryGetValue(globalRouteBuilderKey, out _))
             {
                 return app.Use(next =>
                 {
@@ -64,14 +65,14 @@ namespace Microsoft.AspNetCore.Builder
                         options = app.ApplicationServices.GetRequiredService<IOptions<RewriteOptions>>();
                     }
 
-                    app.Properties.TryGetValue("__GlobalEndpointRouteBuilder", out var routeBuilder);
+                    app.Properties.TryGetValue(globalRouteBuilderKey, out var routeBuilder);
                     // start a new middleware pipeline
                     var builder = app.New();
                     builder.UseMiddleware<RewriteMiddleware>(options);
                     if (routeBuilder is not null)
                     {
                         // use the old routing pipeline if it exists so we preserve all the routes and matching logic
-                        builder.Properties["__GlobalEndpointRouteBuilder"] = routeBuilder;
+                        builder.Properties[globalRouteBuilderKey] = routeBuilder;
                     }
                     builder.UseRouting();
                     builder.Run(next);
