@@ -227,6 +227,33 @@ namespace Interop.FunctionalTests.Http3
             await host.StopAsync().DefaultTimeout();
         }
 
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task OnAuthentice_Available_Throws()
+        {
+            var builder = CreateHostBuilder(async context =>
+            {
+                await context.Response.WriteAsync("Hello World");
+            }, configureKestrel: kestrelOptions =>
+            {
+                kestrelOptions.ListenAnyIP(0, listenOptions =>
+                {
+                    listenOptions.Protocols = HttpProtocols.Http3;
+                    listenOptions.UseHttps(httpsOptions =>
+                    {
+                        httpsOptions.OnAuthenticate = (_, _) => { };
+                    });
+                });
+            });
+
+            using var host = builder.Build();
+            using var client = Http3Helpers.CreateClient();
+
+            var exception = await Assert.ThrowsAsync<NotSupportedException>(() =>
+                host.StartAsync().DefaultTimeout());
+            Assert.Equal("The OnAuthenticate callback is not supported with HTTP/3.", exception.Message);
+        }
+
         private IHostBuilder CreateHostBuilder(RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null)
         {
             return Http3Helpers.CreateHostBuilder(AddTestLogging, requestDelegate, protocol, configureKestrel);
