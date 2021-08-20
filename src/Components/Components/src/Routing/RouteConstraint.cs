@@ -27,6 +27,8 @@ namespace Microsoft.AspNetCore.Components.Routing
         {
             "bool" => typeof(bool),
             "datetime" => typeof(DateTime),
+            "dateonly" => typeof(DateOnly),
+            "timeonly" => typeof(TimeOnly),
             "decimal" => typeof(decimal),
             "double" => typeof(double),
             "float" => typeof(float),

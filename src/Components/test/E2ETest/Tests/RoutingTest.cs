@@ -777,6 +777,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("Hello Abc .", app.FindElement(By.Id("test-info")).Text);
             Assert.Equal("0", app.FindElement(By.Id("value-QueryInt")).Text);
             Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateOnlyValue")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableTimeOnlyValue")).Text);
             Assert.Equal(string.Empty, app.FindElement(By.Id("value-StringValue")).Text);
             Assert.Equal("0 values ()", app.FindElement(By.Id("value-LongValues")).Text);
 
@@ -784,7 +786,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void CanArriveAtQueryStringPageWithQuery()
+        public void CanArriveAtQueryStringPageWithStringQuery()
         {
             SetUrlViaPushState("/WithQueryParameters/Abc?stringvalue=Hello+there");
 
@@ -792,6 +794,45 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("Hello Abc .", app.FindElement(By.Id("test-info")).Text);
             Assert.Equal("0", app.FindElement(By.Id("value-QueryInt")).Text);
             Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateOnlyValue")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableTimeOnlyValue")).Text);
+            Assert.Equal("Hello there", app.FindElement(By.Id("value-StringValue")).Text);
+            Assert.Equal("0 values ()", app.FindElement(By.Id("value-LongValues")).Text);
+
+            AssertHighlightedLinks("With query parameters (none)", "With query parameters (passing string value)");
+        }
+
+        [Fact]
+        public void CanArriveAtQueryStringPageWithDateTimeQuery()
+        {
+            var dateTime = new DateTime(2000, 1, 2, 3, 4, 5, 6);
+            var dateOnly = new DateOnly(2000, 1, 2);
+            var timeOnly = new TimeOnly(3, 4, 5, 6);
+            SetUrlViaPushState($"/WithQueryParameters/Abc?&NullableDateTimeValue={dateTime.ToString("u")}&NullableDateOnlyValue={dateOnly.ToString("u")}&NullableTimeOnlyValue={timeOnly.ToString("u")}");
+
+            var app = Browser.MountTestComponent<TestRouter>();
+            Assert.Equal("Hello Abc .", app.FindElement(By.Id("test-info")).Text);
+            Assert.Equal("0", app.FindElement(By.Id("value-QueryInt")).Text);
+            Assert.Equal(dateTime.ToString("hh:mm:ss on yyyy-MM-dd"), app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
+            Assert.Equal(dateOnly.ToString("yyyy-MM-dd"), app.FindElement(By.Id("value-NullableDateOnlyValue")).Text);
+            Assert.Equal(timeonly.ToString("hh:mm:ss"), app.FindElement(By.Id("value-NullableTimeOnlyValue")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-StringValue")).Text);
+            Assert.Equal("0 values ()", app.FindElement(By.Id("value-LongValues")).Text);
+
+            AssertHighlightedLinks("With query parameters (none)", "With query parameters (passing Date Time values)");
+        }
+
+        [Fact]
+        public void CanArriveAtQueryStringPageWithStringQuery()
+        {
+            SetUrlViaPushState("/WithQueryParameters/Abc?stringvalue=Hello+there");
+
+            var app = Browser.MountTestComponent<TestRouter>();
+            Assert.Equal("Hello Abc .", app.FindElement(By.Id("test-info")).Text);
+            Assert.Equal("0", app.FindElement(By.Id("value-QueryInt")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateOnlyValue")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableTimeOnlyValue")).Text);
             Assert.Equal("Hello there", app.FindElement(By.Id("value-StringValue")).Text);
             Assert.Equal("0 values ()", app.FindElement(By.Id("value-LongValues")).Text);
 
@@ -809,6 +850,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("Hello Abc .", app.FindElement(By.Id("test-info")).Text);
             Assert.Equal("0", app.FindElement(By.Id("value-QueryInt")).Text);
             Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateOnlyValue")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableTimeOnlyValue")).Text);
             Assert.Equal(string.Empty, app.FindElement(By.Id("value-StringValue")).Text);
             Assert.Equal("0 values ()", app.FindElement(By.Id("value-LongValues")).Text);
 
@@ -827,6 +870,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("Hello Abc .", () => app.FindElement(By.Id("test-info")).Text);
             Assert.Equal("0", app.FindElement(By.Id("value-QueryInt")).Text);
             Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateOnlyValue")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableTimeOnlyValue")).Text);
             Assert.Equal("Hello there", app.FindElement(By.Id("value-StringValue")).Text);
             Assert.Equal("0 values ()", app.FindElement(By.Id("value-LongValues")).Text);
             var instanceId = app.FindElement(By.Id("instance-id")).Text;
@@ -838,6 +883,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             app.FindElement(By.LinkText("With IntValue and LongValues")).Click();
             Browser.Equal("123", () => app.FindElement(By.Id("value-QueryInt")).Text);
             Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateOnlyValue")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableTimeOnlyValue")).Text);
             Assert.Equal(string.Empty, app.FindElement(By.Id("value-StringValue")).Text);
             Assert.Equal("3 values (50, 100, -20)", app.FindElement(By.Id("value-LongValues")).Text);
             Assert.Equal(instanceId, app.FindElement(By.Id("instance-id")).Text);
@@ -847,6 +894,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Navigate().Back();
             Browser.Equal("0", () => app.FindElement(By.Id("value-QueryInt")).Text);
             Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateOnlyValue")).Text);
+            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableTimeOnlyValue")).Text);
             Assert.Equal("Hello there", app.FindElement(By.Id("value-StringValue")).Text);
             Assert.Equal("0 values ()", app.FindElement(By.Id("value-LongValues")).Text);
             Assert.Equal(instanceId, app.FindElement(By.Id("instance-id")).Text);
