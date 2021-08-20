@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.Builder
             // Add delegate attributes as metadata
             var attributes = action.Method.GetCustomAttributes();
 
-            //Add add request delegate metadata 
+            // Add add request delegate metadata 
             foreach (var metadata in requestDelegateResult.EndpointMetadata)
             {
                 builder.Metadata.Add(metadata);
