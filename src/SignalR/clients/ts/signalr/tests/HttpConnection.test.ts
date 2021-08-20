@@ -213,7 +213,7 @@ describe("HttpConnection", () => {
         await VerifyLogger.run(async (loggerImpl) => {
             let negotiateCount: number = 0;
             const options: IHttpConnectionOptions = {
-                WebSocket: false,
+                WebSocket: TestWebSocket,
                 ...commonOptions,
                 httpClient: new TestHttpClient()
                     .on("POST", () =>  {
@@ -227,8 +227,16 @@ describe("HttpConnection", () => {
                 transport: HttpTransportType.WebSockets,
             } as IHttpConnectionOptions;
 
+            TestWebSocket.webSocketSet = new PromiseSource();
+
             const connection = new HttpConnection("http://tempuri.org", options);
-            await expect(connection.start(TransferFormat.Text))
+            const startPromise = connection.start(TransferFormat.Text);
+
+            await TestWebSocket.webSocketSet;
+            await TestWebSocket.webSocket.closeSet;
+            TestWebSocket.webSocket.onclose(new TestEvent());
+
+            await expect(startPromise)
                 .rejects
                 .toThrow("Unable to connect to the server with any of the available transports. Error: WebSockets failed: Error: WebSocket failed to connect. " +
                 "The connection could not be found on the server, either the endpoint may not be a SignalR endpoint, the connection ID is not present on the server, " +
