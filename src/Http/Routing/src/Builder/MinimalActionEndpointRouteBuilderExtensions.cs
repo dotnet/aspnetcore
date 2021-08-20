@@ -5,10 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.CodeAnalysis.CSharp.Symbols;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -108,7 +110,8 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             var builder = endpoints.Map(RoutePatternFactory.Parse(pattern), action);
-            builder.WithDisplayName($"{pattern} HTTP: {string.Join(", ", httpMethods)}");
+            // Prepends the HTTP method to the DisplayName produced with pattern + method name
+            builder.Add(b => b.DisplayName = $"HTTP: {string.Join(", ", httpMethods)} {b.DisplayName}");
             builder.WithMetadata(new HttpMethodMetadata(httpMethods));
             return builder;
         }
@@ -186,6 +189,19 @@ namespace Microsoft.AspNetCore.Builder
 
             // Add MethodInfo as metadata to assist with OpenAPI generation for the endpoint.
             builder.Metadata.Add(action.Method);
+
+            // Methods defined in a top-level program are generated as statics so the delegate
+            // target will be null. Inline lambdas are compiler generated method so they can
+            // be filtered that way.
+            if (GeneratedNameParser.TryParseLocalFunctionName(action.Method.Name, out var endpointName)
+                || !TypeHelper.IsCompilerGeneratedMethod(action.Method))
+            {
+                endpointName ??= action.Method.Name;
+
+                builder.Metadata.Add(new EndpointNameMetadata(endpointName));
+                builder.Metadata.Add(new RouteNameMetadata(endpointName));
+                builder.DisplayName = $"{builder.DisplayName} => {endpointName}";
+            }
 
             // Add delegate attributes as metadata
             var attributes = action.Method.GetCustomAttributes();

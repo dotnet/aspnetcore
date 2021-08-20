@@ -23,9 +23,11 @@ Microsoft.AspNetCore.Routing.RouteCollection</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)MediaType\ReadOnlyMediaTypeHeaderValue.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)MediaType\HttpTokenParsingRule.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" />
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\TypeHelper.cs" />
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\GeneratedNameParser.cs" />
+	<Compile Include="$(SharedSourceRoot)MediaType\ReadOnlyMediaTypeHeaderValue.cs" LinkBase="Shared" />
+	 <Compile Include="$(SharedSourceRoot)MediaType\HttpTokenParsingRule.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
