@@ -823,23 +823,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void CanArriveAtQueryStringPageWithStringQuery()
-        {
-            SetUrlViaPushState("/WithQueryParameters/Abc?stringvalue=Hello+there");
-
-            var app = Browser.MountTestComponent<TestRouter>();
-            Assert.Equal("Hello Abc .", app.FindElement(By.Id("test-info")).Text);
-            Assert.Equal("0", app.FindElement(By.Id("value-QueryInt")).Text);
-            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
-            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateOnlyValue")).Text);
-            Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableTimeOnlyValue")).Text);
-            Assert.Equal("Hello there", app.FindElement(By.Id("value-StringValue")).Text);
-            Assert.Equal("0 values ()", app.FindElement(By.Id("value-LongValues")).Text);
-
-            AssertHighlightedLinks("With query parameters (none)", "With query parameters (passing string value)");
-        }
-
-        [Fact]
         public void CanNavigateToQueryStringPageWithNoQuery()
         {
             SetUrlViaPushState("/");
