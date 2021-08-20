@@ -6,9 +6,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
-namespace Microsoft.AspNetCore.Analyzers.MinimalActions;
+namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints;
 
-public partial class MinimalActionAnalyzer : DiagnosticAnalyzer
+public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
 {
     private static void DisallowMvcBindArgumentsOnParameters(
         in OperationAnalysisContext context,
@@ -33,7 +33,7 @@ public partial class MinimalActionAnalyzer : DiagnosticAnalyzer
                 var methodName = invocation.TargetMethod.Name;
 
                 context.ReportDiagnostic(Diagnostic.Create(
-                    DiagnosticDescriptors.DoNotUseModelBindingAttributesOnMinimalActionParameters,
+                    DiagnosticDescriptors.DoNotUseModelBindingAttributesOnDelegateEndpointParameters,
                     location,
                     modelBindingAttribute.AttributeClass.Name,
                     methodName));
