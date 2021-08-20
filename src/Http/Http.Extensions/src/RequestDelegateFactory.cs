@@ -627,8 +627,7 @@ namespace Microsoft.AspNetCore.Http
 
         private static Expression BindParameterFromService(ParameterInfo parameter)
         {
-            var nullability = NullabilityContext.Create(parameter);
-            var isOptional = parameter.HasDefaultValue || nullability.ReadState == NullabilityState.Nullable;
+            var isOptional = IsOptionalParameter(parameter);
 
             return isOptional
                 ? Expression.Call(GetServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr)
@@ -637,8 +636,7 @@ namespace Microsoft.AspNetCore.Http
 
         private static Expression BindParameterFromValue(ParameterInfo parameter, Expression valueExpression, FactoryContext factoryContext)
         {
-            var nullability = NullabilityContext.Create(parameter);
-            var isOptional = parameter.HasDefaultValue || nullability.ReadState == NullabilityState.Nullable;
+            var isOptional = IsOptionalParameter(parameter);
 
             var argument = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
 
@@ -671,7 +669,8 @@ namespace Microsoft.AspNetCore.Http
                 }
 
                 // Allow nullable parameters that don't have a default value
-                if (nullability.ReadState == NullabilityState.Nullable && !parameter.HasDefaultValue)
+                var nullability = NullabilityContext.Create(parameter);
+                if (nullability.ReadState != NullabilityState.NotNull && !parameter.HasDefaultValue)
                 {
                     return valueExpression;
                 }
@@ -817,7 +816,7 @@ namespace Microsoft.AspNetCore.Http
         {
             // We reference the boundValues array by parameter index here
             var nullability = NullabilityContext.Create(parameter);
-            var isOptional = parameter.HasDefaultValue || nullability.ReadState == NullabilityState.Nullable;
+            var isOptional = IsOptionalParameter(parameter);
 
             // Get the BindAsync method
             var body = TryParseMethodCache.FindBindAsyncMethod(parameter.ParameterType)!;
@@ -863,9 +862,7 @@ namespace Microsoft.AspNetCore.Http
             }
 
             factoryContext.Metadata.Add(DefaultAcceptsMetadata);
-
-            var nullability = NullabilityContext.Create(parameter);
-            var isOptional = parameter.HasDefaultValue || nullability.ReadState == NullabilityState.Nullable;
+            var isOptional = IsOptionalParameter(parameter);
 
             factoryContext.JsonRequestBodyType = parameter.ParameterType;
             factoryContext.AllowEmptyRequestBody = allowEmpty || isOptional;
@@ -903,6 +900,19 @@ namespace Microsoft.AspNetCore.Http
 
             // Convert(bodyValue, Todo)
             return Expression.Convert(BodyValueExpr, parameter.ParameterType);
+        }
+
+        private static bool IsOptionalParameter(ParameterInfo parameter)
+        {
+            // - Parameters representing value or reference types with a default value
+            // under any nullability context are treated as optional.
+            // - Value type parameters without a default value in an oblivious
+            // nullability context are required.
+            // - Reference type parameters without a default value in an oblivious
+            // nullability context are optional.
+            var nullability = NullabilityContext.Create(parameter);
+            return parameter.HasDefaultValue
+                || nullability.ReadState != NullabilityState.NotNull;
         }
 
         private static MethodInfo GetMethodInfo<T>(Expression<T> expr)
