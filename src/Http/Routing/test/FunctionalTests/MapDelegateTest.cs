@@ -17,7 +17,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.FunctionalTests
 {
-    public class MinimalActionTest
+    public class MapDelegateTest
     {
         [Fact]
         public async Task MapPost_FromBodyWorksWithJsonPayload()

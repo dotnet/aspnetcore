@@ -9,16 +9,16 @@ namespace Microsoft.AspNetCore.Builder
     /// <summary>
     /// Builds conventions that will be used for customization of MapAction <see cref="EndpointBuilder"/> instances.
     /// </summary>
-    public sealed class MinimalActionEndpointConventionBuilder : IEndpointConventionBuilder
+    public sealed class DelegateEndpointConventionBuilder : IEndpointConventionBuilder
     {
         private readonly List<IEndpointConventionBuilder> _endpointConventionBuilders;
 
-        internal MinimalActionEndpointConventionBuilder(IEndpointConventionBuilder endpointConventionBuilder)
+        internal DelegateEndpointConventionBuilder(IEndpointConventionBuilder endpointConventionBuilder)
         {
             _endpointConventionBuilders = new List<IEndpointConventionBuilder>() { endpointConventionBuilder };
         }
 
-        internal MinimalActionEndpointConventionBuilder(List<IEndpointConventionBuilder> endpointConventionBuilders)
+        internal DelegateEndpointConventionBuilder(List<IEndpointConventionBuilder> endpointConventionBuilders)
         {
             _endpointConventionBuilders = endpointConventionBuilders;
         }
