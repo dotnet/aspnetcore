@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Http.Result;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -2240,6 +2241,35 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
 #nullable enable
 
+        [Fact]
+        public async Task CanExecuteRequestDelegateWithResultsExtension()
+        {
+            IResult actionWithExtensionsResult(string name) => Results.Extensions.TestResult(name);
+
+            var httpContext = new DefaultHttpContext();
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(LoggerFactory);
+            httpContext.RequestServices = serviceCollection.BuildServiceProvider();
+            var responseBodyStream = new MemoryStream();
+            httpContext.Response.Body = responseBodyStream;
+
+            httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["name"] = "Tester"
+            });
+
+            var factoryResult = RequestDelegateFactory.Create(actionWithExtensionsResult);
+
+            var requestDelegate = factoryResult.RequestDelegate;
+            await requestDelegate(httpContext);
+
+            Assert.Equal(200, httpContext.Response.StatusCode);
+            Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+            var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+            Assert.Equal(@"""Hello Tester. This is from an extension method.""", decodedResponseBody);
+
+        }
+
         private class Todo : ITodo
         {
             public int Id { get; set; }
@@ -2458,6 +2488,14 @@ namespace Microsoft.AspNetCore.Routing.Internal
             }
 
             public bool CanHaveBody { get; }
+        }
+    }
+
+    internal static class TestExtensionResults
+    {
+        public static IResult TestResult(this IResultExtensions resultExtensions, string name)
+        {
+            return Results.Ok($"Hello {name}. This is from an extension method.");
         }
     }
 }
