@@ -588,5 +588,11 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
         public static IResult AcceptedAtRoute(string? routeName = null, object? routeValues = null, object? value = null)
             => new AcceptedAtRouteResult(routeName, routeValues, value);
+
+        /// <summary>
+        /// Provides a container for external libraries to extend
+        /// the default `Results` set with their own samples.
+        /// </summary>
+        public static IResultExtensions Extensions { get; } = new ResultExtensions();
     }
 }
