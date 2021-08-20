@@ -414,6 +414,27 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
+        public void TestParameterIsRequiredForObliviousNullabilityContext()
+        {
+            // In an oblivious nullability context, reference type parameters without
+            // annotations are optional. Value type parameters are always required.
+            var apiDescription = GetApiDescription((string foo, int bar) => { });
+            Assert.Equal(2, apiDescription.ParameterDescriptions.Count);
+
+            var fooParam = apiDescription.ParameterDescriptions[0];
+            Assert.Equal(typeof(string), fooParam.Type);
+            Assert.Equal(typeof(string), fooParam.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.Query, fooParam.Source);
+            Assert.False(fooParam.IsRequired);
+
+            var barParam = apiDescription.ParameterDescriptions[1];
+            Assert.Equal(typeof(int), barParam.Type);
+            Assert.Equal(typeof(int), barParam.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.Query, barParam.Source);
+            Assert.True(barParam.IsRequired);
+        }
+
+        [Fact]
         public void RespectsProducesProblemExtensionMethod()
         {
             // Arrange
