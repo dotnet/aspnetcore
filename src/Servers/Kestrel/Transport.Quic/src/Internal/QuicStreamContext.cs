@@ -449,11 +449,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         public override async ValueTask DisposeAsync()
         {
+            // Be conservative about what can be pooled.
+            // Only pool bidirectional streams whose pipes have completed successfully and haven't been aborted.
             CanReuse = _stream.CanRead && _stream.CanWrite
                 && _transportPipeReader.IsCompletedSuccessfully
                 && _transportPipeWriter.IsCompletedSuccessfully
                 && !_clientAbort
-                && !_serverAborted;
+                && !_serverAborted
+                && _shutdownReadReason == null
+                && _shutdownWriteReason == null;
 
             _originalTransport.Input.Complete();
             _originalTransport.Output.Complete();

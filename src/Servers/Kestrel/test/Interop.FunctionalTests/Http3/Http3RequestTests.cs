@@ -674,6 +674,69 @@ namespace Interop.FunctionalTests.Http3
 
         [ConditionalFact]
         [MsQuicSupported]
+        public async Task StreamResponseContent_DelayAndTrailers_ClientSuccess()
+        {
+            // Arrange
+            var builder = CreateHostBuilder(async context =>
+            {
+                var feature = context.Features.Get<IHttpResponseTrailersFeature>();
+
+                for (var i = 1; i < 200; i++)
+                {
+                    feature.Trailers.Append($"trailer-{i}", new string('!', i));
+                }
+
+                Logger.LogInformation($"Server trailer count: {feature.Trailers.Count}");
+
+                await context.Request.BodyReader.ReadAtLeastAsync(TestData.Length);
+
+                for (var i = 0; i < 3; i++)
+                {
+                    await context.Response.BodyWriter.WriteAsync(TestData);
+
+                    await Task.Delay(TimeSpan.FromMilliseconds(10));
+                }
+            });
+
+            using (var host = builder.Build())
+            using (var client = Http3Helpers.CreateClient())
+            {
+                await host.StartAsync();
+
+                // Act
+                var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
+                request.Content = new ByteArrayContent(TestData);
+                request.Version = HttpVersion.Version30;
+                request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                var response = await client.SendAsync(request, CancellationToken.None);
+                response.EnsureSuccessStatusCode();
+
+                var responseStream = await response.Content.ReadAsStreamAsync();
+
+                await responseStream.ReadUntilEndAsync();
+
+                Logger.LogInformation($"Client trailer count: {response.TrailingHeaders.Count()}");
+
+                for (var i = 1; i < 200; i++)
+                {
+                    try
+                    {
+                        var value = response.TrailingHeaders.GetValues($"trailer-{i}").Single();
+                        Assert.Equal(new string('!', i), value);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Error checking trailer {i}", ex);
+                    }
+                }
+
+                await host.StopAsync();
+            }
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
         public async Task GET_MultipleRequests_ConnectionAndTraceIdsUpdated()
         {
             // Arrange
