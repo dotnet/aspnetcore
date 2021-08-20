@@ -31,11 +31,32 @@ internal sealed class WellKnownTypes
             return false;
         }
 
+        const string IResult = "Microsoft.AspNetCore.Http.IResult";
+        if (compilation.GetTypeByMetadataName(IResult) is not { } iResult)
+        {
+            return false;
+        }
+
+        const string IActionResult = "Microsoft.AspNetCore.Mvc.IActionResult";
+        if (compilation.GetTypeByMetadataName(IActionResult) is not { } iActionResult)
+        {
+            return false;
+        }
+
+        const string IConvertToActionResult = "Microsoft.AspNetCore.Mvc.Infrastructure.IConvertToActionResult";
+        if (compilation.GetTypeByMetadataName(IConvertToActionResult) is not { } iConvertToActionResult)
+        {
+            return false;
+        }
+
         wellKnownTypes = new WellKnownTypes
         {
             DelegateEndpointRouteBuilderExtensions = delegateEndpointRouteBuilderExtensions,
             IBinderTypeProviderMetadata = ibinderTypeProviderMetadata,
             BindAttribute = bindAttribute,
+            IResult = iResult,
+            IActionResult = iActionResult,
+            IConvertToActionResult = iConvertToActionResult,
         };
 
         return true;
@@ -44,4 +65,7 @@ internal sealed class WellKnownTypes
     public ITypeSymbol DelegateEndpointRouteBuilderExtensions { get; private init; }
     public INamedTypeSymbol IBinderTypeProviderMetadata { get; private init; }
     public INamedTypeSymbol BindAttribute { get; private init; }
+    public INamedTypeSymbol IResult { get; private init; }
+    public INamedTypeSymbol IActionResult { get; private init; }
+    public INamedTypeSymbol IConvertToActionResult { get; private init; }
 }
