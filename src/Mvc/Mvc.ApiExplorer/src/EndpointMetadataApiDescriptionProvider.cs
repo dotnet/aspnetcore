@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 return (BindingSource.Services, parameter.Name ?? string.Empty, false);
             }
-            else if (parameter.ParameterType == typeof(string) || TryParseMethodCache.HasTryParseMethod(parameter))
+            else if (parameter.ParameterType == typeof(string) || TryParseMethodCache.HasTryParseStringMethod(parameter))
             {
                 // Path vs query cannot be determined by RequestDelegateFactory at startup currently because of the layering, but can be done here.
                 if (parameter.Name is { } name && pattern.GetParameter(name) is not null)

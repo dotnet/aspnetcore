@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Http
         private readonly ConcurrentDictionary<Type, Expression?> _bindAsyncMethodCallCache = new();
 
         internal readonly ParameterExpression TempSourceStringExpr = Expression.Variable(typeof(string), "tempSourceString");
+        internal readonly ParameterExpression HttpContextExpr = Expression.Parameter(typeof(HttpContext), "httpContext");
 
         // If IsDynamicCodeSupported is false, we can't use the static Enum.TryParse<T> since there's no easy way for
         // this code to generate the specific instantiation for any enums used
@@ -36,10 +37,10 @@ namespace Microsoft.AspNetCore.Http
             _enumTryParseMethod = GetEnumTryParseMethod(preferNonGenericEnumParseOverload);
         }
 
-        public bool HasTryParseMethod(ParameterInfo parameter)
+        public bool HasTryParseStringMethod(ParameterInfo parameter)
         {
             var nonNullableParameterType = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
-            return FindTryParseMethod(nonNullableParameterType) is not null;
+            return FindTryParseStringMethod(nonNullableParameterType) is not null;
         }
 
         public bool HasBindAsyncMethod(ParameterInfo parameter) =>
