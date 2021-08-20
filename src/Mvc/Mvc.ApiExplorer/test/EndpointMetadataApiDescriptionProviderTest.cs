@@ -291,6 +291,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.Empty(GetApiDescription((HttpResponse response) => { }).ParameterDescriptions);
             Assert.Empty(GetApiDescription((ClaimsPrincipal user) => { }).ParameterDescriptions);
             Assert.Empty(GetApiDescription((CancellationToken token) => { }).ParameterDescriptions);
+            Assert.Empty(GetApiDescription((BindAsyncRecord context) => { }).ParameterDescriptions);
         }
 
         [Fact]
@@ -664,6 +665,20 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             public ICollection<EndpointDataSource> DataSources { get; }
 
             public IServiceProvider ServiceProvider => ApplicationBuilder.ApplicationServices;
+        }
+
+        private record TryParseStringRecord(int Value)
+        {
+            public static bool TryParse(string value, out TryParseStringRecord result) =>
+                throw new NotImplementedException();
+        }
+
+        private record BindAsyncRecord(int Value)
+        {
+            public static ValueTask<object> BindAsync(HttpContext context) =>
+                throw new NotImplementedException();
+            public static bool TryParse(string value, out BindAsyncRecord result) =>
+                throw new NotImplementedException();
         }
     }
 }
