@@ -356,6 +356,34 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void InputSelectInteractsWithEditContext_BoolValues()
+        {
+            var appElement = MountTypicalValidationComponent();
+            var ticketClassInput = new SelectElement(appElement.FindElement(By.ClassName("select-bool-values")).FindElement(By.TagName("select")));
+            var select = ticketClassInput.WrappedElement;
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+            // Invalidates on edit
+            Browser.Equal("valid", () => select.GetAttribute("class"));
+            ticketClassInput.SelectByText("true");
+            Browser.Equal("modified invalid", () => select.GetAttribute("class"));
+            Browser.Equal(new[] { "77 + 33 = 100 is a false statement, unfortunately." }, messagesAccessor);
+
+            // Nullable conversion can fail
+            ticketClassInput.SelectByText("(select)");
+            Browser.Equal("modified invalid", () => select.GetAttribute("class"));
+            Browser.Equal(new[]
+            {
+                "77 + 33 = 100 is a false statement, unfortunately.",
+                "The IsSelectMathStatementTrue field is not valid."
+            }, messagesAccessor);
+
+            // Can become valid
+            ticketClassInput.SelectByText("false");
+            Browser.Equal("modified valid", () => select.GetAttribute("class"));
+        }
+
+        [Fact]
         public void InputSelectInteractsWithEditContext_MultipleAttribute()
         {
             var appElement = MountTypicalValidationComponent();
@@ -519,6 +547,42 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             IReadOnlyCollection<IWebElement> FindCountryInputs() => group.FindElements(By.Name("country"));
 
             IReadOnlyCollection<IWebElement> FindColorInputs() => group.FindElements(By.Name("color"));
+        }
+
+        [Fact]
+        public void InputRadioGroupWithBoolValuesInteractsWithEditContext()
+        {
+            var appElement = MountTypicalValidationComponent();
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+            // Validate selected inputs
+            Browser.False(() => FindTrueInput().Selected);
+            Browser.True(() => FindFalseInput().Selected);
+
+            // Validates on edit
+            Browser.Equal("valid", () => FindTrueInput().GetAttribute("class"));
+            Browser.Equal("valid", () => FindFalseInput().GetAttribute("class"));
+
+            FindTrueInput().Click();
+
+            Browser.Equal("modified valid", () => FindTrueInput().GetAttribute("class"));
+            Browser.Equal("modified valid", () => FindFalseInput().GetAttribute("class"));
+
+            // Can become invalid
+            FindFalseInput().Click();
+
+            Browser.Equal("modified invalid", () => FindTrueInput().GetAttribute("class"));
+            Browser.Equal("modified invalid", () => FindFalseInput().GetAttribute("class"));
+            Browser.Equal(new[] { "7 * 3 = 21 is a true statement." }, messagesAccessor);
+
+            IReadOnlyCollection<IWebElement> FindInputs()
+                => appElement.FindElement(By.ClassName("radio-group-bool-values")).FindElements(By.TagName("input"));
+
+            IWebElement FindTrueInput()
+                => FindInputs().First(i => string.Equals("True", i.GetAttribute("value")));
+
+            IWebElement FindFalseInput()
+                => FindInputs().First(i => string.Equals("False", i.GetAttribute("value")));
         }
 
         [Fact]
