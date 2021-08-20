@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.SignalR.Internal;
-using System.Collections.Generics;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.SignalR
 {
