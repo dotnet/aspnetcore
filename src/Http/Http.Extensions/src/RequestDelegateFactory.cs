@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Http.Features;
@@ -904,16 +903,14 @@ namespace Microsoft.AspNetCore.Http
 
         private static bool IsOptionalParameter(ParameterInfo parameter)
         {
-            // NullabilityInfo will treat all value types, regardless of
-            // nullability context as nullable. So the following code segment:
-            //     #nullable disable
-            //     app.MapGet("/{id}", (int id) => ...)
-            // will treat id as a non-nullable parameter even though
-            // the context is oblivious. To work around this, we check
-            // to see if the member is in a nullability context first.
+            // - Parameters representing value or reference types with a default value
+            // under any nullability context are treated as optional.
+            // - Value type parameters without a default value in an oblivious
+            // nullability context are required.
+            // - Reference type parameters without a default value in an oblivious
+            // nullability context are optional.
             var nullability = NullabilityContext.Create(parameter);
             return parameter.HasDefaultValue
-                || !TypeHelper.IsInNullableContext(parameter.Member)
                 || nullability.ReadState != NullabilityState.NotNull;
         }
 

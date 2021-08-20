@@ -2139,10 +2139,10 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         [Theory]
         [InlineData(true, "Age: 42")]
-        [InlineData(false, "Age: 0")]
-        public async Task TreatsUnknownNullabilityAsOptional(bool provideValue, string expectedResponse)
+        [InlineData(false, "Age: ")]
+        public async Task TreatsUnknownNullabilityAsOptionalForReferenceType(bool provideValue, string expectedResponse)
         {
-            string optionalQueryParam(int age) => $"Age: {age}";
+            string optionalQueryParam(string age) => $"Age: {age}";
 
             var httpContext = new DefaultHttpContext();
             var responseBodyStream = new MemoryStream();
