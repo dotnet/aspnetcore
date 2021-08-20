@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.SignalR
     {
         private readonly IHubCallerClients _hubClients;
 
-        public TypedHubClients(IHubCallerClients dynamicContext)
+        public TypedHubCallerClients(IHubCallerClients dynamicContext)
             : base(dynamicContext)
         {
             _hubClients = dynamicContext;
