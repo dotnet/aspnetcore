@@ -125,6 +125,161 @@ namespace Microsoft.AspNetCore.Hosting.Tests.StaticWebAssets
             Assert.Equal(exists, file.Exists);
         }
 
+        [Theory]
+        [InlineData("/img/Subdir/icon.png", true)]
+        [InlineData("/Img/subdir/hero.gif", true)]
+        // Note that we've changed the casing of the second segment
+        [InlineData("/img/subdir/icon.png", false)]
+        [InlineData("/Img/Subdir/hero.gif", false)]
+        public void ParseWorksWithMergesNodesRecursively(string path, bool exists)
+        {
+            // Arrange
+            exists = exists | OperatingSystem.IsWindows();
+            var firstLevelCount = OperatingSystem.IsWindows() ? 1 : 2;
+            using var memoryStream = new MemoryStream();
+            using var writer = new StreamWriter(memoryStream);
+            writer.Write(@"{
+  ""ContentRoots"": [
+    ""D:\\path\\"",
+    ""D:\\other\\""
+  ],
+  ""Root"": {
+    ""Children"": {
+      ""img"": {
+        ""Children"": {
+          ""Subdir"": {
+            ""Children"": {
+              ""icon.png"": {
+                ""Asset"": {
+                  ""ContentRootIndex"": 0,
+                  ""SubPath"": ""icon.png""
+                }
+              }
+            }
+          }
+        }
+      },
+      ""Img"": {
+        ""Children"": {
+          ""subdir"": {
+            ""Children"": {
+              ""hero.gif"": {
+                ""Asset"": {
+                  ""ContentRootIndex"": 1,
+                  ""SubPath"": ""hero.gif""
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}");
+            var first = new Mock<IFileProvider>();
+            first.Setup(s => s.GetFileInfo("icon.png")).Returns(new TestFileInfo() { Name = "icon.png", Exists = true });
+            var second = new Mock<IFileProvider>();
+            second.Setup(s => s.GetFileInfo("hero.gif")).Returns(new TestFileInfo() { Name = "hero.gif", Exists = true });
+
+            writer.Flush();
+            memoryStream.Seek(0, SeekOrigin.Begin);
+            var manifest = ManifestStaticWebAssetFileProvider.StaticWebAssetManifest.Parse(memoryStream);
+            var comparer = ManifestStaticWebAssetFileProvider.StaticWebAssetManifest.PathComparer;
+
+            var provider = new ManifestStaticWebAssetFileProvider(
+                manifest,
+                contentRoot => contentRoot switch
+                {
+                    "D:\\path\\" => first.Object,
+                    "D:\\other\\" => second.Object,
+                    _ => throw new InvalidOperationException("Unknown provider")
+                });
+
+            // Act
+            var file = provider.GetFileInfo(path);
+
+            // Assert
+            Assert.Equal(exists, file.Exists);
+            Assert.Equal(firstLevelCount, manifest.Root.Children.Count);
+            Assert.All(manifest.Root.Children.Values, c => Assert.Single(c.Children));
+        }
+
+        [Theory]
+        [InlineData("/img/Subdir", true)]
+        [InlineData("/Img/subdir/hero.gif", true)]
+        // Note that we've changed the casing of the second segment
+        [InlineData("/img/subdir", false)]
+        [InlineData("/Img/Subdir/hero.gif", false)]
+        public void ParseWorksFolderAndFileWithDiferentCasing(string path, bool exists)
+        {
+            // Arrange
+            exists = exists | OperatingSystem.IsWindows();
+            var firstLevelCount = OperatingSystem.IsWindows() ? 1 : 2;
+            using var memoryStream = new MemoryStream();
+            using var writer = new StreamWriter(memoryStream);
+            // img/Subdir is a file without extension
+            writer.Write(@"{
+  ""ContentRoots"": [
+    ""D:\\path\\"",
+    ""D:\\other\\""
+  ],
+  ""Root"": {
+    ""Children"": {
+      ""img"": {
+        ""Children"": {
+          ""Subdir"": {
+            ""Asset"": {
+              ""ContentRootIndex"": 0,
+              ""SubPath"": ""Subdir""
+            }
+          }
+        }
+      },
+      ""Img"": {
+        ""Children"": {
+          ""subdir"": {
+            ""Children"": {
+              ""hero.gif"": {
+                ""Asset"": {
+                  ""ContentRootIndex"": 1,
+                  ""SubPath"": ""hero.gif""
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}");
+            var first = new Mock<IFileProvider>();
+            first.Setup(s => s.GetFileInfo("Subdir")).Returns(new TestFileInfo() { Name = "Subdir", Exists = true });
+            var second = new Mock<IFileProvider>();
+            second.Setup(s => s.GetFileInfo("hero.gif")).Returns(new TestFileInfo() { Name = "hero.gif", Exists = true });
+
+            writer.Flush();
+            memoryStream.Seek(0, SeekOrigin.Begin);
+            var manifest = ManifestStaticWebAssetFileProvider.StaticWebAssetManifest.Parse(memoryStream);
+            var comparer = ManifestStaticWebAssetFileProvider.StaticWebAssetManifest.PathComparer;
+
+            var provider = new ManifestStaticWebAssetFileProvider(
+                manifest,
+                contentRoot => contentRoot switch
+                {
+                    "D:\\path\\" => first.Object,
+                    "D:\\other\\" => second.Object,
+                    _ => throw new InvalidOperationException("Unknown provider")
+                });
+
+            // Act
+            var file = provider.GetFileInfo(path);
+
+            // Assert
+            Assert.Equal(exists, file.Exists);
+            Assert.Equal(firstLevelCount, manifest.Root.Children.Count);
+            Assert.All(manifest.Root.Children.Values, c => Assert.Single(c.Children));
+        }
+
         [Fact]
         public void CanFindFileListedOnTheManifest()
         {
