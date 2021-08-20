@@ -22,8 +22,6 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
         [Fact]
         public async Task MapPost_FromBodyWorksWithJsonPayload()
         {
-            Todo EchoTodo([FromRoute] int id, [FromBody] Todo todo) => todo with { Id = id };
-
             using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
@@ -31,7 +29,9 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
                         .Configure(app =>
                         {
                             app.UseRouting();
-                            app.UseEndpoints(b => b.MapPost("/EchoTodo/{id}", (Func<int, Todo, Todo>)EchoTodo));
+                            app.UseEndpoints(b =>
+                                b.MapPost("/EchoTodo/{id}",
+                                    (int id, Todo todo) => todo with { Id = id }));
                         })
                         .UseTestServer();
                 })
