@@ -3,21 +3,17 @@
 
 #nullable enable
 
-using System;
 using System.Net.Http.Json;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.FunctionalTests
 {
-    public class MapDelegateTest
+    public class DelegateEndpointTest
     {
         [Fact]
         public async Task MapPost_FromBodyWorksWithJsonPayload()

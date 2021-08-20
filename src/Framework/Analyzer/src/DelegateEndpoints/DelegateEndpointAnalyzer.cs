@@ -8,14 +8,14 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
-namespace Microsoft.AspNetCore.Analyzers.MinimalActions;
+namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public partial class MinimalActionAnalyzer : DiagnosticAnalyzer
+public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(new[]
     {
-        DiagnosticDescriptors.DoNotUseModelBindingAttributesOnMinimalActionParameters,
+        DiagnosticDescriptors.DoNotUseModelBindingAttributesOnDelegateEndpointParameters,
     });
 
     public override void Initialize(AnalysisContext context)
@@ -35,7 +35,7 @@ public partial class MinimalActionAnalyzer : DiagnosticAnalyzer
             {
                 var invocation = (IInvocationOperation)operationAnalysisContext.Operation;
                 var targetMethod = invocation.TargetMethod;
-                if (IsMapActionInvocation(wellKnownTypes, invocation, targetMethod))
+                if (IsDelegateHandlerInvocation(wellKnownTypes, invocation, targetMethod))
                 {
                     return;
                 }
@@ -60,13 +60,13 @@ public partial class MinimalActionAnalyzer : DiagnosticAnalyzer
         });
     }
 
-    private static bool IsMapActionInvocation(
+    private static bool IsDelegateHandlerInvocation(
         WellKnownTypes wellKnownTypes,
         IInvocationOperation invocation,
         IMethodSymbol targetMethod)
     {
         return !targetMethod.Name.StartsWith("Map", StringComparison.Ordinal) ||
-            !SymbolEqualityComparer.Default.Equals(wellKnownTypes.MinimalActionEndpointRouteBuilderExtensions, targetMethod.ContainingType) ||
+            !SymbolEqualityComparer.Default.Equals(wellKnownTypes.DelegateEndpointRouteBuilderExtensions, targetMethod.ContainingType) ||
             invocation.Arguments.Length != 3;
     }
 }
