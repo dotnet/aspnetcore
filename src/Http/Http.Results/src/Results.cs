@@ -590,6 +590,9 @@ namespace Microsoft.AspNetCore.Http
             => new AcceptedAtRouteResult(routeName, routeValues, value);
 
         /// <summary>
+        /// Provides a place for external libraries to extend the default <see cref="Results"/> set
+        /// via extension methods returning custom <see cref="IResult" /> implementations.
+        /// </summary>
         /// Provides a place for external libraries to extend the default `Results` set
         /// via extension methods returning custom <see cref="IResult" /> implementations.
         /// </summary>
