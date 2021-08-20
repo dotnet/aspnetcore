@@ -6,7 +6,7 @@ using System.Collections.Generics;
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    internal class TypedHubClients<T> : IHubClients<T>
+    public class TypedHubClients<T> : IHubClients<T>
     {
         private readonly IHubClients _hubClients;
 

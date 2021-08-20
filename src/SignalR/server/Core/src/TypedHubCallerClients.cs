@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.SignalR.Internal;
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    internal class TypedHubCallerClients<T> : TypedHubClients<T>, IHubCallerClients<T>
+    public class TypedHubCallerClients<T> : TypedHubClients<T>, IHubCallerClients<T>
     {
         private readonly IHubCallerClients _hubClients;
 
