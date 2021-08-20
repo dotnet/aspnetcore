@@ -41,7 +41,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             base.Initialize(context);
 
-            CanReuse = false;
             _decrementCalled = false;
             _completionState = StreamCompletionFlags.None;
             InputRemaining = null;
@@ -107,7 +106,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public bool CanReuse { get; private set; }
+        // We only want to reuse a stream that was not aborted and has completely finished writing.
+        // This ensures Http2OutputProducer.ProcessDataWrites is in the correct state to be reused.
+        public bool CanReuse => !_connectionAborted && HasResponseCompleted;
 
         protected override void OnReset()
         {
@@ -164,9 +165,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // connection's flow-control window.
                 _inputFlowControl.Abort();
 
-                // We only want to reuse a stream that was not aborted and has completely finished writing.
-                // This ensures Http2OutputProducer.ProcessDataWrites is in the correct state to be reused.
-                CanReuse = !_connectionAborted && HasResponseCompleted;
             }
             finally
             {
