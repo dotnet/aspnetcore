@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         }
                         else
                         {
-                            _disconnectToken = new CancellationToken(canceled: true);
+                            _disconnectToken = CancellationToken.None;
                         }
                     }
                 }
