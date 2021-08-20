@@ -64,6 +64,8 @@ namespace Microsoft.AspNetCore.Http
         private static readonly BinaryExpression TempSourceStringNotNullExpr = Expression.NotEqual(TempSourceStringExpr, Expression.Constant(null));
         private static readonly BinaryExpression TempSourceStringNullExpr = Expression.Equal(TempSourceStringExpr, Expression.Constant(null));
 
+        private static readonly AcceptsMetadata DefaultAcceptsMetadata = new(new[] { "application/json" });
+
         /// <summary>
         /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="action"/>.
         /// </summary>
@@ -140,7 +142,7 @@ namespace Microsoft.AspNetCore.Http
             return new RequestDelegateResult(httpContext => targetableRequestDelegate(targetFactory(httpContext), httpContext), factoryContext.Metadata);
         }
 
-        private static Func<object?, HttpContext, Task> CreateTargetableRequestDelegate(MethodInfo methodInfo, RequestDelegateFactoryOptions? options, FactoryContext factoryContext,  Expression? targetExpression)
+        private static Func<object?, HttpContext, Task> CreateTargetableRequestDelegate(MethodInfo methodInfo, RequestDelegateFactoryOptions? options, FactoryContext factoryContext, Expression? targetExpression)
         {
             // Non void return type
 
@@ -860,7 +862,7 @@ namespace Microsoft.AspNetCore.Http
                 }
             }
 
-            factoryContext.Metadata.Add(new AcceptsMetadata(new string[] { "application/json" }));
+            factoryContext.Metadata.Add(DefaultAcceptsMetadata);
 
             var nullability = NullabilityContext.Create(parameter);
             var isOptional = parameter.HasDefaultValue || nullability.ReadState == NullabilityState.Nullable;

@@ -1,10 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 
-#nullable enable
 namespace Microsoft.AspNetCore.Http.Metadata
 {
     /// <summary>
@@ -44,7 +45,6 @@ namespace Microsoft.AspNetCore.Http.Metadata
         /// Gets the supported request content types. 
         /// </summary>
         public IReadOnlyList<string> ContentTypes { get; }
-
 
         /// <summary>
         /// Accepts request content types of any shape. 

@@ -153,11 +153,6 @@ namespace Microsoft.AspNetCore.Http
         public static MinimalActionEndpointConventionBuilder Accepts(this MinimalActionEndpointConventionBuilder builder, Type requestType,
             string contentType, params string[] additionalContentTypes)
         {
-            if (string.IsNullOrEmpty(contentType))
-            {
-                contentType = "application/json";
-            }
-
             builder.WithMetadata(new ConsumesAttribute(requestType, contentType, additionalContentTypes));
             return builder;
         }

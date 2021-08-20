@@ -12,7 +12,8 @@ namespace Microsoft.AspNetCore.Http.Metadata
     public interface IAcceptsMetadata
     {
         /// <summary>
-        /// Gets a list of the allowed request content types. If the incoming request does not have a <c>Content-Type</c> with one of these values, the request will be rejected with a 415 response.
+        /// Gets a list of the allowed request content types.
+        /// If the incoming request does not have a <c>Content-Type</c> with one of these values, the request will be rejected with a 415 response.
         /// </summary>
         IReadOnlyList<string> ContentTypes { get; }
 

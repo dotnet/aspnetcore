@@ -35,6 +35,8 @@ namespace Microsoft.AspNetCore.Mvc
 
         /// <summary>
         /// Creates a new instance of <see cref="ConsumesAttribute"/>.
+        /// <param name="contentType"> The request content type </param>
+        /// <param name="otherContentTypes">The additional list of allowed request content types </param>
         /// </summary>
         public ConsumesAttribute(string contentType, params string[] otherContentTypes)
         {
@@ -57,6 +59,9 @@ namespace Microsoft.AspNetCore.Mvc
 
         /// <summary>
         /// Creates a new instance of <see cref="ConsumesAttribute"/>.
+        /// <param name="requestType"> The type being read from the request </param>
+        /// <param name="contentType"> The request content type </param>
+        /// <param name="otherContentTypes">The additional list of allowed request content types </param>
         /// </summary>
         public ConsumesAttribute(Type requestType, string contentType, params string[] otherContentTypes)
         {
@@ -74,10 +79,10 @@ namespace Microsoft.AspNetCore.Mvc
                 MediaTypeHeaderValue.Parse(otherContentTypes[i]);
             }
 
-             ContentTypes = GetContentTypes(contentType, otherContentTypes);
+            ContentTypes = GetContentTypes(contentType, otherContentTypes);
             _contentTypes = GetAllContentTypes(contentType, otherContentTypes);
             _requestType = requestType;
-          
+
         }
 
         // The value used is a non default value so that it avoids getting mixed with other action constraints
@@ -91,9 +96,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public MediaTypeCollection ContentTypes { get; set; }
 
-        internal readonly Type? _requestType;
+        readonly Type? _requestType;
 
-        internal readonly List<string> _contentTypes = new();
+        readonly List<string> _contentTypes = new();
 
         Type? IAcceptsMetadata.RequestType => _requestType;
 
