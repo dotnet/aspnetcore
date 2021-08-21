@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
@@ -173,8 +174,10 @@ namespace Microsoft.AspNetCore.Builder
                 RouteParameterNames = routeParams
             };
 
+            var requestDelegateResult = RequestDelegateFactory.Create(action, options);
+
             var builder = new RouteEndpointBuilder(
-                RequestDelegateFactory.Create(action, options),
+                requestDelegateResult.RequestDelegate,
                 pattern,
                 defaultOrder)
             {
@@ -202,6 +205,12 @@ namespace Microsoft.AspNetCore.Builder
 
             // Add delegate attributes as metadata
             var attributes = action.Method.GetCustomAttributes();
+
+            // Add add request delegate metadata 
+            foreach (var metadata in requestDelegateResult.EndpointMetadata)
+            {
+                builder.Metadata.Add(metadata);
+            }
 
             // This can be null if the delegate is a dynamic method or compiled from an expression tree
             if (attributes is not null)
