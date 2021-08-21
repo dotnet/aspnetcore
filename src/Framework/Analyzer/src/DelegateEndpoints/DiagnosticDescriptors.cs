@@ -3,15 +3,15 @@
 
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.AspNetCore.Analyzers.MinimalActions
+namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("MicrosoftCodeAnalysisReleaseTracking", "RS2008:Enable analyzer release tracking")]
     internal static class DiagnosticDescriptors
     {
-        internal static readonly DiagnosticDescriptor DoNotUseModelBindingAttributesOnMinimalActionParameters = new(
+        internal static readonly DiagnosticDescriptor DoNotUseModelBindingAttributesOnDelegateEndpointParameters = new(
             "ASP0003",
-            "Do not use model binding attributes with Map actions",
-            "{0} should not be specified for a {1} delegate parameter",
+            "Do not use model binding attributes with Map handlers",
+            "{0} should not be specified for a {1} Delegate parameter",
             "Usage",
             DiagnosticSeverity.Warning,
             isEnabledByDefault: true,

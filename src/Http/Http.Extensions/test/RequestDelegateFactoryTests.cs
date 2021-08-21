@@ -185,10 +185,10 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var serviceProvider = new EmptyServiceProvider();
 
-            var exNullAction = Assert.Throws<ArgumentNullException>(() => RequestDelegateFactory.Create(action: null!));
+            var exNullAction = Assert.Throws<ArgumentNullException>(() => RequestDelegateFactory.Create(handler: null!));
             var exNullMethodInfo1 = Assert.Throws<ArgumentNullException>(() => RequestDelegateFactory.Create(methodInfo: null!));
 
-            Assert.Equal("action", exNullAction.ParamName);
+            Assert.Equal("handler", exNullAction.ParamName);
             Assert.Equal("methodInfo", exNullMethodInfo1.ParamName);
         }
 
