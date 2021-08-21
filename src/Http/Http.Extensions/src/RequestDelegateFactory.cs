@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net.Http;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
@@ -63,14 +64,16 @@ namespace Microsoft.AspNetCore.Http
         private static readonly BinaryExpression TempSourceStringNotNullExpr = Expression.NotEqual(TempSourceStringExpr, Expression.Constant(null));
         private static readonly BinaryExpression TempSourceStringNullExpr = Expression.Equal(TempSourceStringExpr, Expression.Constant(null));
 
+        private static readonly AcceptsMetadata DefaultAcceptsMetadata = new(new[] { "application/json" });
+
         /// <summary>
         /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="action"/>.
         /// </summary>
         /// <param name="action">A request handler with any number of custom parameters that often produces a response with its return value.</param>
         /// <param name="options">The <see cref="RequestDelegateFactoryOptions"/> used to configure the behavior of the handler.</param>
-        /// <returns>The <see cref="RequestDelegate"/>.</returns>
+        /// <returns>The <see cref="RequestDelegateResult"/>.</returns>
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
-        public static RequestDelegate Create(Delegate action, RequestDelegateFactoryOptions? options = null)
+        public static RequestDelegateResult Create(Delegate action, RequestDelegateFactoryOptions? options = null)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         {
             if (action is null)
@@ -84,12 +87,15 @@ namespace Microsoft.AspNetCore.Http
                 null => null,
             };
 
-            var targetableRequestDelegate = CreateTargetableRequestDelegate(action.Method, options, targetExpression);
-
-            return httpContext =>
+            var factoryContext = new FactoryContext
             {
-                return targetableRequestDelegate(action.Target, httpContext);
+                ServiceProviderIsService = options?.ServiceProvider?.GetService<IServiceProviderIsService>()
             };
+
+            var targetableRequestDelegate = CreateTargetableRequestDelegate(action.Method, options, factoryContext, targetExpression);
+
+            return new RequestDelegateResult(httpContext => targetableRequestDelegate(action.Target, httpContext), factoryContext.Metadata);
+
         }
 
         /// <summary>
@@ -100,7 +106,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="options">The <see cref="RequestDelegateFactoryOptions"/> used to configure the behavior of the handler.</param>
         /// <returns>The <see cref="RequestDelegate"/>.</returns>
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
-        public static RequestDelegate Create(MethodInfo methodInfo, Func<HttpContext, object>? targetFactory = null, RequestDelegateFactoryOptions? options = null)
+        public static RequestDelegateResult Create(MethodInfo methodInfo, Func<HttpContext, object>? targetFactory = null, RequestDelegateFactoryOptions? options = null)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         {
             if (methodInfo is null)
@@ -113,31 +119,30 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentException($"{nameof(methodInfo)} does not have a declaring type.");
             }
 
+            var factoryContext = new FactoryContext
+            {
+                ServiceProviderIsService = options?.ServiceProvider?.GetService<IServiceProviderIsService>()
+            };
+
             if (targetFactory is null)
             {
                 if (methodInfo.IsStatic)
                 {
-                    var untargetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, options, targetExpression: null);
+                    var untargetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, options, factoryContext, targetExpression: null);
 
-                    return httpContext =>
-                    {
-                        return untargetableRequestDelegate(null, httpContext);
-                    };
+                    return new RequestDelegateResult(httpContext => untargetableRequestDelegate(null, httpContext), factoryContext.Metadata);
                 }
 
                 targetFactory = context => Activator.CreateInstance(methodInfo.DeclaringType)!;
             }
 
             var targetExpression = Expression.Convert(TargetExpr, methodInfo.DeclaringType);
-            var targetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, options, targetExpression);
+            var targetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, options, factoryContext, targetExpression);
 
-            return httpContext =>
-            {
-                return targetableRequestDelegate(targetFactory(httpContext), httpContext);
-            };
+            return new RequestDelegateResult(httpContext => targetableRequestDelegate(targetFactory(httpContext), httpContext), factoryContext.Metadata);
         }
 
-        private static Func<object?, HttpContext, Task> CreateTargetableRequestDelegate(MethodInfo methodInfo, RequestDelegateFactoryOptions? options, Expression? targetExpression)
+        private static Func<object?, HttpContext, Task> CreateTargetableRequestDelegate(MethodInfo methodInfo, RequestDelegateFactoryOptions? options, FactoryContext factoryContext, Expression? targetExpression)
         {
             // Non void return type
 
@@ -154,11 +159,6 @@ namespace Microsoft.AspNetCore.Http
             //     action(...);
             //     return default;
             // }
-
-            var factoryContext = new FactoryContext()
-            {
-                ServiceProviderIsService = options?.ServiceProvider?.GetService<IServiceProviderIsService>()
-            };
 
             if (options?.RouteParameterNames is { } routeParameterNames)
             {
@@ -861,6 +861,7 @@ namespace Microsoft.AspNetCore.Http
                 }
             }
 
+            factoryContext.Metadata.Add(DefaultAcceptsMetadata);
             var isOptional = IsOptionalParameter(parameter);
 
             factoryContext.JsonRequestBodyType = parameter.ParameterType;
@@ -1111,6 +1112,8 @@ namespace Microsoft.AspNetCore.Http
 
             public Dictionary<string, string> TrackedParameters { get; } = new();
             public bool HasMultipleBodyParameters { get; set; }
+
+            public List<object> Metadata { get; } = new();
         }
 
         private static class RequestDelegateFactoryConstants
