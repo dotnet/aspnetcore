@@ -1,10 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>ASP.NET Core middleware for routing requests to application logic and for generating links.
-Commonly used types:
-Microsoft.AspNetCore.Routing.Route
-Microsoft.AspNetCore.Routing.RouteCollection</Description>
+    <Description>
+      ASP.NET Core middleware for routing requests to application logic and for generating links.
+      Commonly used types:
+      Microsoft.AspNetCore.Routing.Route
+      Microsoft.AspNetCore.Routing.RouteCollection
+    </Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -26,6 +28,8 @@ Microsoft.AspNetCore.Routing.RouteCollection</Description>
     <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" />
     <Compile Include="$(SharedSourceRoot)RoslynUtils\TypeHelper.cs" />
     <Compile Include="$(SharedSourceRoot)RoslynUtils\GeneratedNameParser.cs" />
+    <Compile Include="$(SharedSourceRoot)MediaType\ReadOnlyMediaTypeHeaderValue.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)MediaType\HttpTokenParsingRule.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>

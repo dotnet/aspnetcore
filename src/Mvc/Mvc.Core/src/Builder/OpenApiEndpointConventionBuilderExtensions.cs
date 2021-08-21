@@ -1,8 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Http
@@ -41,7 +45,7 @@ namespace Microsoft.AspNetCore.Http
         public static MinimalActionEndpointConventionBuilder Produces<TResponse>(this MinimalActionEndpointConventionBuilder builder,
 #pragma warning restore RS0026
             int statusCode = StatusCodes.Status200OK,
-            string? contentType =  null,
+            string? contentType = null,
             params string[] additionalContentTypes)
         {
             return Produces(builder, statusCode, typeof(TResponse), contentType, additionalContentTypes);
@@ -119,6 +123,38 @@ namespace Microsoft.AspNetCore.Http
             }
 
             return Produces<HttpValidationProblemDetails>(builder, statusCode, contentType);
+        }
+
+        /// <summary>
+        /// Adds the <see cref="Accepts"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+        /// produced by <paramref name="builder"/>.
+        /// </summary>
+        /// <typeparam name="TRequest">The type of the request.</typeparam>
+        /// <param name="builder">The <see cref="MinimalActionEndpointConventionBuilder"/>.</param>
+        /// <param name="contentType">The request content type. Defaults to "application/json" if empty.</param>
+        /// <param name="additionalContentTypes">Additional response content types the endpoint produces for the supplied status code.</param>
+        /// <returns>A <see cref="MinimalActionEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static MinimalActionEndpointConventionBuilder Accepts<TRequest>(this MinimalActionEndpointConventionBuilder builder, string contentType, params string[] additionalContentTypes)
+        {
+            Accepts(builder, typeof(TRequest), contentType, additionalContentTypes);
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds the <see cref="Accepts"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+        /// produced by <paramref name="builder"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="MinimalActionEndpointConventionBuilder"/>.</param>
+        /// <param name="requestType">The type of the request. Defaults to null.</param>
+        /// <param name="contentType">The response content type that the endpoint accepts.</param>
+        /// <param name="additionalContentTypes">Additional response content types the endpoint accepts</param>
+        /// <returns>A <see cref="MinimalActionEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static MinimalActionEndpointConventionBuilder Accepts(this MinimalActionEndpointConventionBuilder builder, Type requestType,
+            string contentType, params string[] additionalContentTypes)
+        {
+            builder.WithMetadata(new ConsumesAttribute(requestType, contentType, additionalContentTypes));
+            return builder;
         }
     }
 }
