@@ -25,5 +25,14 @@ namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints
             DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
             helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+        internal static readonly DiagnosticDescriptor DetectMisplacedLambdaAttribute = new(
+            "ASP0005",
+            "Do not place attribute on invoked method",
+            "'{0}' should not be placed on '{1}'. Place '{0}' on the endpoint delegate instead.",
+            "Usage",
+            DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
+            helpLinkUri: "https://aka.ms/aspnet/analyzers");
     }
 }

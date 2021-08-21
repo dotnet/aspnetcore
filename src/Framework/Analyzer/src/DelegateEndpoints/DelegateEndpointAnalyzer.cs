@@ -18,6 +18,7 @@ public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
     {
         DiagnosticDescriptors.DoNotUseModelBindingAttributesOnDelegateEndpointParameters,
         DiagnosticDescriptors.DoNotReturnActionResultsFromMapActions,
+        DiagnosticDescriptors.DetectMisplacedLambdaAttribute
     });
 
     public override void Initialize(AnalysisContext context)
@@ -54,6 +55,7 @@ public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
                     var lambda = ((IAnonymousFunctionOperation)delegateCreation.Target);
                     DisallowMvcBindArgumentsOnParameters(in operationAnalysisContext, wellKnownTypes, invocation, lambda.Symbol);
                     DisallowReturningActionResultFromMapMethods(in operationAnalysisContext, wellKnownTypes, invocation, lambda);
+                    DetectMisplacedLambdaAttribute(operationAnalysisContext, invocation, lambda);
                 }
                 else if (delegateCreation.Target.Kind == OperationKind.MethodReference)
                 {
