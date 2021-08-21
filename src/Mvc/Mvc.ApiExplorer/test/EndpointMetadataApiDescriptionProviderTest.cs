@@ -606,6 +606,39 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 });
         }
 
+        [Fact]
+        public void HandleAcceptsMetadata()
+        {
+            // Arrange
+            var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(null));
+            builder.MapPost("/api/todos", () => "")
+                .Accepts<string>("application/json", "application/xml");
+            var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+            var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+            var hostEnvironment = new HostEnvironment
+            {
+                ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+            };
+            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+
+            // Act
+            provider.OnProvidersExecuting(context);
+            provider.OnProvidersExecuted(context);
+
+            // Assert
+            Assert.Collection(
+                context.Results.SelectMany(r => r.SupportedRequestFormats),
+                requestType =>
+                {
+                    Assert.Equal("application/json", requestType.MediaType);
+                },
+                requestType =>
+                {
+                    Assert.Equal("application/xml", requestType.MediaType);
+                });
+        }
+
         private static IEnumerable<string> GetSortedMediaTypes(ApiResponseType apiResponseType)
         {
             return apiResponseType.ApiResponseFormats
