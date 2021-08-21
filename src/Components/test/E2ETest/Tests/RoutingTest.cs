@@ -815,7 +815,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("0", app.FindElement(By.Id("value-QueryInt")).Text);
             Assert.Equal(dateTime.ToString("hh:mm:ss on yyyy-MM-dd"), app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
             Assert.Equal(dateOnly.ToString("yyyy-MM-dd"), app.FindElement(By.Id("value-NullableDateOnlyValue")).Text);
-            Assert.Equal(timeonly.ToString("hh:mm:ss"), app.FindElement(By.Id("value-NullableTimeOnlyValue")).Text);
+            Assert.Equal(timeOnly.ToString("hh:mm:ss"), app.FindElement(By.Id("value-NullableTimeOnlyValue")).Text);
             Assert.Equal(string.Empty, app.FindElement(By.Id("value-StringValue")).Text);
             Assert.Equal("0 values ()", app.FindElement(By.Id("value-LongValues")).Text);
 
