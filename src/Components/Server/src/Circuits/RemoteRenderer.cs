@@ -3,16 +3,14 @@
 
 using System.Collections.Concurrent;
 using System.Linq;
-using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
-    internal class RemoteRenderer : WebRenderer
+    internal partial class RemoteRenderer : WebRenderer
     {
         private static readonly Task CanceledTask = Task.FromCanceled(new CancellationToken(canceled: true));
 
@@ -196,7 +194,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     return;
                 }
 
-                Log.BeginUpdateDisplayAsync(_logger, _client.ConnectionId, pending.BatchId, pending.Data.Count);
+                Log.BeginUpdateDisplayAsync(_logger, pending.BatchId, pending.Data.Count, _client.ConnectionId);
                 var segment = new ArraySegment<byte>(pending.Data.Buffer, 0, pending.Data.Count);
                 await _client.SendAsync("JS.RenderBatch", pending.BatchId, segment);
             }
@@ -341,131 +339,43 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
-        private static class Log
+        private static partial class Log
         {
-            private static readonly Action<ILogger, string, Exception> _unhandledExceptionRenderingComponent;
-            private static readonly Action<ILogger, long, int, string, Exception> _beginUpdateDisplayAsync;
-            private static readonly Action<ILogger, string, Exception> _bufferingRenderDisconnectedClient;
-            private static readonly Action<ILogger, string, Exception> _sendBatchDataFailed;
-            private static readonly Action<ILogger, long, string, double, Exception> _completingBatchWithError;
-            private static readonly Action<ILogger, long, double, Exception> _completingBatchWithoutError;
-            private static readonly Action<ILogger, long, Exception> _receivedDuplicateBatchAcknowledgement;
-            private static readonly Action<ILogger, Exception> _fullUnacknowledgedRenderBatchesQueue;
-
-            private static class EventIds
-            {
-                public static readonly EventId UnhandledExceptionRenderingComponent = new EventId(100, "ExceptionRenderingComponent");
-                public static readonly EventId BeginUpdateDisplayAsync = new EventId(101, "BeginUpdateDisplayAsync");
-                public static readonly EventId SkipUpdateDisplayAsync = new EventId(102, "SkipUpdateDisplayAsync");
-                public static readonly EventId SendBatchDataFailed = new EventId(103, "SendBatchDataFailed");
-                public static readonly EventId CompletingBatchWithError = new EventId(104, "CompletingBatchWithError");
-                public static readonly EventId CompletingBatchWithoutError = new EventId(105, "CompletingBatchWithoutError");
-                public static readonly EventId ReceivedDuplicateBatchAcknowledgement = new EventId(106, "ReceivedDuplicateBatchAcknowledgement");
-                public static readonly EventId FullUnacknowledgedRenderBatchesQueue = new EventId(107, "FullUnacknowledgedRenderBatchesQueue");
-            }
-
-            static Log()
-            {
-                _unhandledExceptionRenderingComponent = LoggerMessage.Define<string>(
-                    LogLevel.Warning,
-                    EventIds.UnhandledExceptionRenderingComponent,
-                    "Unhandled exception rendering component: {Message}");
-
-                _beginUpdateDisplayAsync = LoggerMessage.Define<long, int, string>(
-                    LogLevel.Debug,
-                    EventIds.BeginUpdateDisplayAsync,
-                    "Sending render batch {BatchId} of size {DataLength} bytes to client {ConnectionId}.");
-
-                _bufferingRenderDisconnectedClient = LoggerMessage.Define<string>(
-                    LogLevel.Debug,
-                    EventIds.SkipUpdateDisplayAsync,
-                    "Buffering remote render because the client on connection {ConnectionId} is disconnected.");
-
-                _sendBatchDataFailed = LoggerMessage.Define<string>(
-                    LogLevel.Information,
-                    EventIds.SendBatchDataFailed,
-                    "Sending data for batch failed: {Message}");
-
-                _completingBatchWithError = LoggerMessage.Define<long, string, double>(
-                    LogLevel.Debug,
-                    EventIds.CompletingBatchWithError,
-                    "Completing batch {BatchId} with error: {ErrorMessage} in {ElapsedMilliseconds}ms.");
-
-                _completingBatchWithoutError = LoggerMessage.Define<long, double>(
-                    LogLevel.Debug,
-                    EventIds.CompletingBatchWithoutError,
-                    "Completing batch {BatchId} without error in {ElapsedMilliseconds}ms.");
-
-                _receivedDuplicateBatchAcknowledgement = LoggerMessage.Define<long>(
-                    LogLevel.Debug,
-                    EventIds.ReceivedDuplicateBatchAcknowledgement,
-                    "Received a duplicate ACK for batch id '{IncomingBatchId}'.");
-
-                _fullUnacknowledgedRenderBatchesQueue = LoggerMessage.Define(
-                    LogLevel.Debug,
-                    EventIds.FullUnacknowledgedRenderBatchesQueue,
-                    "The queue of unacknowledged render batches is full.");
-            }
+            [LoggerMessage(103, LogLevel.Information, "Sending data for batch failed: {Message}", EventName = "SendBatchDataFailed")]
+            private static partial void SendBatchDataFailed(ILogger logger, string message, Exception exception);
 
             public static void SendBatchDataFailed(ILogger logger, Exception exception)
-            {
-                _sendBatchDataFailed(logger, exception.Message, exception);
-            }
+                => SendBatchDataFailed(logger, exception.Message, exception);
+
+            [LoggerMessage(100, LogLevel.Warning, "Unhandled exception rendering component: {Message}", EventName = "ExceptionRenderingComponent")]
+            private static partial void UnhandledExceptionRenderingComponent(ILogger logger, string message, Exception exception);
 
             public static void UnhandledExceptionRenderingComponent(ILogger logger, Exception exception)
-            {
-                _unhandledExceptionRenderingComponent(
-                    logger,
-                    exception.Message,
-                    exception);
-            }
+                => UnhandledExceptionRenderingComponent(logger, exception.Message, exception);
 
-            public static void BeginUpdateDisplayAsync(ILogger logger, string connectionId, long batchId, int dataLength)
-            {
-                _beginUpdateDisplayAsync(
-                    logger,
-                    batchId,
-                    dataLength,
-                    connectionId,
-                    null);
-            }
+            [LoggerMessage(101, LogLevel.Debug, "Sending render batch {BatchId} of size {DataLength} bytes to client {ConnectionId}.", EventName = "BeginUpdateDisplayAsync")]
+            public static partial void BeginUpdateDisplayAsync(ILogger logger, long batchId, int dataLength, string connectionId);
 
-            public static void BufferingRenderDisconnectedClient(ILogger logger, string connectionId)
-            {
-                _bufferingRenderDisconnectedClient(
-                    logger,
-                    connectionId,
-                    null);
-            }
+            [LoggerMessage(102, LogLevel.Debug, "Buffering remote render because the client on connection {ConnectionId} is disconnected.", EventName = "SkipUpdateDisplayAsync")]
+            public static partial void BufferingRenderDisconnectedClient(ILogger logger, string connectionId);
+
+            [LoggerMessage(104, LogLevel.Debug, "Completing batch {BatchId} with error: {ErrorMessage} in {ElapsedMilliseconds}ms.", EventName = "CompletingBatchWithError")]
+            private static partial void CompletingBatchWithError(ILogger logger, long batchId, string errorMessage, double elapsedMilliseconds);
 
             public static void CompletingBatchWithError(ILogger logger, long batchId, string errorMessage, TimeSpan elapsedTime)
-            {
-                _completingBatchWithError(
-                    logger,
-                    batchId,
-                    errorMessage,
-                    elapsedTime.TotalMilliseconds,
-                    null);
-            }
+                => CompletingBatchWithError(logger, batchId, errorMessage, elapsedTime.TotalMilliseconds);
+
+            [LoggerMessage(105, LogLevel.Debug, "Completing batch {BatchId} without error in {ElapsedMilliseconds}ms.", EventName = "CompletingBatchWithoutError")]
+            private static partial void CompletingBatchWithoutError(ILogger logger, long batchId, double elapsedMilliseconds);
 
             public static void CompletingBatchWithoutError(ILogger logger, long batchId, TimeSpan elapsedTime)
-            {
-                _completingBatchWithoutError(
-                    logger,
-                    batchId,
-                    elapsedTime.TotalMilliseconds,
-                    null);
-            }
+                => CompletingBatchWithoutError(logger, batchId, elapsedTime.TotalMilliseconds);
 
-            public static void ReceivedDuplicateBatchAck(ILogger logger, long incomingBatchId)
-            {
-                _receivedDuplicateBatchAcknowledgement(logger, incomingBatchId, null);
-            }
+            [LoggerMessage(106, LogLevel.Debug, "Received a duplicate ACK for batch id '{IncomingBatchId}'.", EventName = "ReceivedDuplicateBatchAcknowledgement")]
+            public static partial void ReceivedDuplicateBatchAck(ILogger logger, long incomingBatchId);
 
-            public static void FullUnacknowledgedRenderBatchesQueue(ILogger logger)
-            {
-                _fullUnacknowledgedRenderBatchesQueue(logger, null);
-            }
+            [LoggerMessage(107, LogLevel.Debug, "The queue of unacknowledged render batches is full.", EventName = "FullUnacknowledgedRenderBatchesQueue")]
+            public static partial void FullUnacknowledgedRenderBatchesQueue(ILogger logger);
         }
     }
 

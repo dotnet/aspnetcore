@@ -1,15 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
 using System.Globalization;
 using System.Security.Claims;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Channels;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -18,7 +12,7 @@ using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
-    internal class CircuitHost : IAsyncDisposable
+    internal partial class CircuitHost : IAsyncDisposable
     {
         private readonly AsyncServiceScope _scope;
         private readonly CircuitOptions _options;
@@ -641,271 +635,47 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
-        private static class Log
+        private static partial class Log
         {
-            private static readonly Action<ILogger, Exception> _initializationStarted;
-            private static readonly Action<ILogger, Exception> _initializationSucceded;
-            private static readonly Action<ILogger, Exception> _initializationFailed;
-            private static readonly Action<ILogger, CircuitId, Exception> _disposeStarted;
-            private static readonly Action<ILogger, CircuitId, Exception> _disposeSucceeded;
-            private static readonly Action<ILogger, CircuitId, Exception> _disposeFailed;
-            private static readonly Action<ILogger, CircuitId, Exception> _onCircuitOpened;
-            private static readonly Action<ILogger, CircuitId, string, Exception> _onConnectionUp;
-            private static readonly Action<ILogger, CircuitId, string, Exception> _onConnectionDown;
-            private static readonly Action<ILogger, CircuitId, Exception> _onCircuitClosed;
-            private static readonly Action<ILogger, Type, string, string, Exception> _circuitHandlerFailed;
-            private static readonly Action<ILogger, CircuitId, Exception> _circuitUnhandledException;
-            private static readonly Action<ILogger, CircuitId, Exception> _circuitTransmittingClientError;
-            private static readonly Action<ILogger, CircuitId, Exception> _circuitTransmittedClientErrorSuccess;
-            private static readonly Action<ILogger, CircuitId, Exception> _circuitTransmitErrorFailed;
-            private static readonly Action<ILogger, CircuitId, Exception> _unhandledExceptionClientDisconnected;
+            // 100s used for lifecycle stuff
+            // 200s used for interactive stuff
 
-            private static readonly Action<ILogger, string, string, string, Exception> _beginInvokeDotNetStatic;
-            private static readonly Action<ILogger, string, long, string, Exception> _beginInvokeDotNetInstance;
-            private static readonly Action<ILogger, string, string, string, Exception> _beginInvokeDotNetStaticFailed;
-            private static readonly Action<ILogger, string, long, string, Exception> _beginInvokeDotNetInstanceFailed;
-            private static readonly Action<ILogger, Exception> _endInvokeDispatchException;
-            private static readonly Action<ILogger, long, string, Exception> _endInvokeJSFailed;
-            private static readonly Action<ILogger, long, Exception> _endInvokeJSSucceeded;
-            private static readonly Action<ILogger, long, Exception> _receiveByteArraySuccess;
-            private static readonly Action<ILogger, long, Exception> _receiveByteArrayException;
-            private static readonly Action<ILogger, long, Exception> _receiveJSDataChunkException;
-            private static readonly Action<ILogger, long, Exception> _sendDotNetStreamException;
-            private static readonly Action<ILogger, Exception> _dispatchEventFailedToParseEventData;
-            private static readonly Action<ILogger, string, Exception> _dispatchEventFailedToDispatchEvent;
-            private static readonly Action<ILogger, string, CircuitId, Exception> _locationChange;
-            private static readonly Action<ILogger, string, CircuitId, Exception> _locationChangeSucceeded;
-            private static readonly Action<ILogger, string, CircuitId, Exception> _locationChangeFailed;
-            private static readonly Action<ILogger, string, CircuitId, Exception> _locationChangeFailedInCircuit;
-            private static readonly Action<ILogger, long, CircuitId, Exception> _onRenderCompletedFailed;
+            [LoggerMessage(100, LogLevel.Debug, "Circuit initialization started.", EventName = "InitializationStarted")]
+            public static partial void InitializationStarted(ILogger logger);
 
-            private static class EventIds
-            {
-                // 100s used for lifecycle stuff
-                public static readonly EventId InitializationStarted = new EventId(100, "InitializationStarted");
-                public static readonly EventId InitializationSucceeded = new EventId(101, "InitializationSucceeded");
-                public static readonly EventId InitializationFailed = new EventId(102, "InitializationFailed");
-                public static readonly EventId DisposeStarted = new EventId(103, "DisposeStarted");
-                public static readonly EventId DisposeSucceeded = new EventId(104, "DisposeSucceeded");
-                public static readonly EventId DisposeFailed = new EventId(105, "DisposeFailed");
-                public static readonly EventId OnCircuitOpened = new EventId(106, "OnCircuitOpened");
-                public static readonly EventId OnConnectionUp = new EventId(107, "OnConnectionUp");
-                public static readonly EventId OnConnectionDown = new EventId(108, "OnConnectionDown");
-                public static readonly EventId OnCircuitClosed = new EventId(109, "OnCircuitClosed");
-                public static readonly EventId CircuitHandlerFailed = new EventId(110, "CircuitHandlerFailed");
-                public static readonly EventId CircuitUnhandledException = new EventId(111, "CircuitUnhandledException");
-                public static readonly EventId CircuitTransmittingClientError = new EventId(112, "CircuitTransmittingClientError");
-                public static readonly EventId CircuitTransmittedClientErrorSuccess = new EventId(113, "CircuitTransmittedClientErrorSuccess");
-                public static readonly EventId CircuitTransmitErrorFailed = new EventId(114, "CircuitTransmitErrorFailed");
-                public static readonly EventId UnhandledExceptionClientDisconnected = new EventId(115, "UnhandledExceptionClientDisconnected");
+            [LoggerMessage(101, LogLevel.Debug, "Circuit initialization succeeded.", EventName = "InitializationSucceeded")]
+            public static partial void InitializationSucceeded(ILogger logger);
 
-                // 200s used for interactive stuff
-                public static readonly EventId DispatchEventFailedToParseEventData = new EventId(200, "DispatchEventFailedToParseEventData");
-                public static readonly EventId DispatchEventFailedToDispatchEvent = new EventId(201, "DispatchEventFailedToDispatchEvent");
-                public static readonly EventId BeginInvokeDotNet = new EventId(202, "BeginInvokeDotNet");
-                public static readonly EventId BeginInvokeDotNetFailed = new EventId(203, "BeginInvokeDotNetFailed");
-                public static readonly EventId EndInvokeDispatchException = new EventId(204, "EndInvokeDispatchException");
-                public static readonly EventId EndInvokeJSFailed = new EventId(205, "EndInvokeJSFailed");
-                public static readonly EventId EndInvokeJSSucceeded = new EventId(206, "EndInvokeJSSucceeded");
-                public static readonly EventId DispatchEventThroughJSInterop = new EventId(207, "DispatchEventThroughJSInterop");
-                public static readonly EventId LocationChange = new EventId(208, "LocationChange");
-                public static readonly EventId LocationChangeSucceeded = new EventId(209, "LocationChangeSucceeded");
-                public static readonly EventId LocationChangeFailed = new EventId(210, "LocationChangeFailed");
-                public static readonly EventId LocationChangeFailedInCircuit = new EventId(211, "LocationChangeFailedInCircuit");
-                public static readonly EventId OnRenderCompletedFailed = new EventId(212, "OnRenderCompletedFailed");
-                public static readonly EventId ReceiveByteArraySucceeded = new EventId(213, "ReceiveByteArraySucceeded");
-                public static readonly EventId ReceiveByteArrayException = new EventId(214, "ReceiveByteArrayException");
-                public static readonly EventId ReceiveJSDataChunkException = new EventId(215, "ReceiveJSDataChunkException");
-                public static readonly EventId SendDotNetStreamException = new EventId(216, "SendDotNetStreamException");
-            }
+            [LoggerMessage(102, LogLevel.Debug, "Circuit initialization failed.", EventName = "InitializationFailed")]
+            public static partial void InitializationFailed(ILogger logger, Exception exception);
 
-            static Log()
-            {
-                _initializationStarted = LoggerMessage.Define(
-                    LogLevel.Debug,
-                    EventIds.InitializationStarted,
-                    "Circuit initialization started.");
+            [LoggerMessage(103, LogLevel.Debug, "Disposing circuit '{CircuitId}' started.", EventName = "DisposeStarted")]
+            public static partial void DisposeStarted(ILogger logger, CircuitId circuitId);
 
-                _initializationSucceded = LoggerMessage.Define(
-                    LogLevel.Debug,
-                    EventIds.InitializationSucceeded,
-                    "Circuit initialization succeeded.");
+            [LoggerMessage(104, LogLevel.Debug, "Disposing circuit '{CircuitId}' succeeded.", EventName = "DisposeSucceeded")]
+            public static partial void DisposeSucceeded(ILogger logger, CircuitId circuitId);
 
-                _initializationFailed = LoggerMessage.Define(
-                    LogLevel.Debug,
-                    EventIds.InitializationFailed,
-                    "Circuit initialization failed.");
+            [LoggerMessage(105, LogLevel.Debug, "Disposing circuit '{CircuitId}' failed.", EventName = "DisposeFailed")]
+            public static partial void DisposeFailed(ILogger logger, CircuitId circuitId, Exception exception);
 
-                _disposeStarted = LoggerMessage.Define<CircuitId>(
-                    LogLevel.Debug,
-                    EventIds.DisposeStarted,
-                    "Disposing circuit '{CircuitId}' started.");
+            [LoggerMessage(106, LogLevel.Debug, "Opening circuit with id '{CircuitId}'.", EventName = "OnCircuitOpened")]
+            public static partial void CircuitOpened(ILogger logger, CircuitId circuitId);
 
-                _disposeSucceeded = LoggerMessage.Define<CircuitId>(
-                    LogLevel.Debug,
-                    EventIds.DisposeSucceeded,
-                    "Disposing circuit '{CircuitId}' succeeded.");
+            [LoggerMessage(107, LogLevel.Debug, "Circuit id '{CircuitId}' connected using connection '{ConnectionId}'.", EventName = "OnConnectionUp")]
+            public static partial void ConnectionUp(ILogger logger, CircuitId circuitId, string connectionId);
 
-                _disposeFailed = LoggerMessage.Define<CircuitId>(
-                    LogLevel.Debug,
-                    EventIds.DisposeFailed,
-                    "Disposing circuit '{CircuitId}' failed.");
+            [LoggerMessage(108, LogLevel.Debug, "Circuit id '{CircuitId}' disconnected from connection '{ConnectionId}'.", EventName = "OnConnectionDown")]
+            public static partial void ConnectionDown(ILogger logger, CircuitId circuitId, string connectionId);
 
-                _onCircuitOpened = LoggerMessage.Define<CircuitId>(
-                    LogLevel.Debug,
-                    EventIds.OnCircuitOpened,
-                    "Opening circuit with id '{CircuitId}'.");
+            [LoggerMessage(109, LogLevel.Debug, "Closing circuit with id '{CircuitId}'.", EventName = "OnCircuitClosed")]
+            public static partial void CircuitClosed(ILogger logger, CircuitId circuitId);
 
-                _onConnectionUp = LoggerMessage.Define<CircuitId, string>(
-                    LogLevel.Debug,
-                    EventIds.OnConnectionUp,
-                    "Circuit id '{CircuitId}' connected using connection '{ConnectionId}'.");
-
-                _onConnectionDown = LoggerMessage.Define<CircuitId, string>(
-                    LogLevel.Debug,
-                    EventIds.OnConnectionDown,
-                    "Circuit id '{CircuitId}' disconnected from connection '{ConnectionId}'.");
-
-                _onCircuitClosed = LoggerMessage.Define<CircuitId>(
-                   LogLevel.Debug,
-                   EventIds.OnCircuitClosed,
-                   "Closing circuit with id '{CircuitId}'.");
-
-                _circuitHandlerFailed = LoggerMessage.Define<Type, string, string>(
-                    LogLevel.Error,
-                    EventIds.CircuitHandlerFailed,
-                    "Unhandled error invoking circuit handler type {handlerType}.{handlerMethod}: {Message}");
-
-                _circuitUnhandledException = LoggerMessage.Define<CircuitId>(
-                   LogLevel.Error,
-                   EventIds.CircuitUnhandledException,
-                   "Unhandled exception in circuit '{CircuitId}'.");
-
-                _circuitTransmittingClientError = LoggerMessage.Define<CircuitId>(
-                    LogLevel.Debug,
-                    EventIds.CircuitTransmittingClientError,
-                    "About to notify client of an error in circuit '{CircuitId}'.");
-
-                _circuitTransmittedClientErrorSuccess = LoggerMessage.Define<CircuitId>(
-                    LogLevel.Debug,
-                    EventIds.CircuitTransmittedClientErrorSuccess,
-                    "Successfully transmitted error to client in circuit '{CircuitId}'.");
-
-                _circuitTransmitErrorFailed = LoggerMessage.Define<CircuitId>(
-                    LogLevel.Debug,
-                    EventIds.CircuitTransmitErrorFailed,
-                    "Failed to transmit exception to client in circuit '{CircuitId}'.");
-
-                _unhandledExceptionClientDisconnected = LoggerMessage.Define<CircuitId>(
-                    LogLevel.Debug,
-                    EventIds.UnhandledExceptionClientDisconnected,
-                    "An exception occurred on the circuit host '{CircuitId}' while the client is disconnected.");
-
-                _beginInvokeDotNetStatic = LoggerMessage.Define<string, string, string>(
-                    LogLevel.Debug,
-                    EventIds.BeginInvokeDotNet,
-                    "Invoking static method with identifier '{MethodIdentifier}' on assembly '{Assembly}' with callback id '{CallId}'.");
-
-                _beginInvokeDotNetInstance = LoggerMessage.Define<string, long, string>(
-                    LogLevel.Debug,
-                    EventIds.BeginInvokeDotNet,
-                    "Invoking instance method '{MethodIdentifier}' on instance '{DotNetObjectId}' with callback id '{CallId}'.");
-
-                _beginInvokeDotNetStaticFailed = LoggerMessage.Define<string, string, string>(
-                    LogLevel.Debug,
-                    EventIds.BeginInvokeDotNetFailed,
-                    "Failed to invoke static method with identifier '{MethodIdentifier}' on assembly '{Assembly}' with callback id '{CallId}'.");
-
-                _beginInvokeDotNetInstanceFailed = LoggerMessage.Define<string, long, string>(
-                    LogLevel.Debug,
-                    EventIds.BeginInvokeDotNetFailed,
-                    "Failed to invoke instance method '{MethodIdentifier}' on instance '{DotNetObjectId}' with callback id '{CallId}'.");
-
-                _endInvokeDispatchException = LoggerMessage.Define(
-                    LogLevel.Debug,
-                    EventIds.EndInvokeDispatchException,
-                    "There was an error invoking 'Microsoft.JSInterop.DotNetDispatcher.EndInvoke'.");
-
-                _endInvokeJSFailed = LoggerMessage.Define<long, string>(
-                    LogLevel.Debug,
-                    EventIds.EndInvokeJSFailed,
-                    "The JS interop call with callback id '{AsyncCall}' failed with error '{Error}'.");
-
-                _endInvokeJSSucceeded = LoggerMessage.Define<long>(
-                    LogLevel.Debug,
-                    EventIds.EndInvokeJSSucceeded,
-                    "The JS interop call with callback id '{AsyncCall}' succeeded.");
-
-                _receiveByteArraySuccess = LoggerMessage.Define<long>(
-                    LogLevel.Debug,
-                    EventIds.ReceiveByteArraySucceeded,
-                    "The ReceiveByteArray call with id '{id}' succeeded.");
-
-                _receiveByteArrayException = LoggerMessage.Define<long>(
-                    LogLevel.Debug,
-                    EventIds.ReceiveByteArrayException,
-                    "The ReceiveByteArray call with id '{id}' failed.");
-
-                _receiveJSDataChunkException = LoggerMessage.Define<long>(
-                   LogLevel.Debug,
-                   EventIds.ReceiveJSDataChunkException,
-                   "The ReceiveJSDataChunk call with stream id '{streamId}' failed.");
-
-                _sendDotNetStreamException = LoggerMessage.Define<long>(
-                    LogLevel.Debug,
-                    EventIds.SendDotNetStreamException,
-                    "The SendDotNetStreamAsync call with id '{id}' failed.");
-
-                _dispatchEventFailedToParseEventData = LoggerMessage.Define(
-                    LogLevel.Debug,
-                    EventIds.DispatchEventFailedToParseEventData,
-                    "Failed to parse the event data when trying to dispatch an event.");
-
-                _dispatchEventFailedToDispatchEvent = LoggerMessage.Define<string>(
-                    LogLevel.Debug,
-                    EventIds.DispatchEventFailedToDispatchEvent,
-                    "There was an error dispatching the event '{EventHandlerId}' to the application.");
-
-                _locationChange = LoggerMessage.Define<string, CircuitId>(
-                    LogLevel.Debug,
-                    EventIds.LocationChange,
-                    "Location changing to {URI} in circuit '{CircuitId}'.");
-
-                _locationChangeSucceeded = LoggerMessage.Define<string, CircuitId>(
-                    LogLevel.Debug,
-                    EventIds.LocationChangeSucceeded,
-                    "Location change to '{URI}' in circuit '{CircuitId}' succeeded.");
-
-                _locationChangeFailed = LoggerMessage.Define<string, CircuitId>(
-                    LogLevel.Debug,
-                    EventIds.LocationChangeFailed,
-                    "Location change to '{URI}' in circuit '{CircuitId}' failed.");
-
-                _locationChangeFailedInCircuit = LoggerMessage.Define<string, CircuitId>(
-                    LogLevel.Error,
-                    EventIds.LocationChangeFailed,
-                    "Location change to '{URI}' in circuit '{CircuitId}' failed.");
-
-                _onRenderCompletedFailed = LoggerMessage.Define<long, CircuitId>(
-                    LogLevel.Debug,
-                    EventIds.OnRenderCompletedFailed,
-                    "Failed to complete render batch '{RenderId}' in circuit host '{CircuitId}'.");
-            }
-
-            public static void InitializationStarted(ILogger logger) => _initializationStarted(logger, null);
-            public static void InitializationSucceeded(ILogger logger) => _initializationSucceded(logger, null);
-            public static void InitializationFailed(ILogger logger, Exception exception) => _initializationFailed(logger, exception);
-            public static void DisposeStarted(ILogger logger, CircuitId circuitId) => _disposeStarted(logger, circuitId, null);
-            public static void DisposeSucceeded(ILogger logger, CircuitId circuitId) => _disposeSucceeded(logger, circuitId, null);
-            public static void DisposeFailed(ILogger logger, CircuitId circuitId, Exception exception) => _disposeFailed(logger, circuitId, exception);
-            public static void CircuitOpened(ILogger logger, CircuitId circuitId) => _onCircuitOpened(logger, circuitId, null);
-            public static void ConnectionUp(ILogger logger, CircuitId circuitId, string connectionId) => _onConnectionUp(logger, circuitId, connectionId, null);
-            public static void ConnectionDown(ILogger logger, CircuitId circuitId, string connectionId) => _onConnectionDown(logger, circuitId, connectionId, null);
-            public static void CircuitClosed(ILogger logger, CircuitId circuitId) => _onCircuitClosed(logger, circuitId, null);
+            [LoggerMessage(110, LogLevel.Error, "Unhandled error invoking circuit handler type {handlerType}.{handlerMethod}: {Message}", EventName = "CircuitHandlerFailed")]
+            private static partial void CircuitHandlerFailed(ILogger logger, Type handlerType, string handlerMethod, string message, Exception exception);
 
             public static void CircuitHandlerFailed(ILogger logger, CircuitHandler handler, string handlerMethod, Exception exception)
             {
-                _circuitHandlerFailed(
+                CircuitHandlerFailed(
                     logger,
                     handler.GetType(),
                     handlerMethod,
@@ -913,50 +683,98 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     exception);
             }
 
-            public static void CircuitUnhandledException(ILogger logger, CircuitId circuitId, Exception exception) => _circuitUnhandledException(logger, circuitId, exception);
-            public static void CircuitTransmitErrorFailed(ILogger logger, CircuitId circuitId, Exception exception) => _circuitTransmitErrorFailed(logger, circuitId, exception);
-            public static void EndInvokeDispatchException(ILogger logger, Exception ex) => _endInvokeDispatchException(logger, ex);
-            public static void EndInvokeJSFailed(ILogger logger, long asyncHandle, string arguments) => _endInvokeJSFailed(logger, asyncHandle, arguments, null);
-            public static void EndInvokeJSSucceeded(ILogger logger, long asyncCall) => _endInvokeJSSucceeded(logger, asyncCall, null);
-            public static void ReceiveByteArraySuccess(ILogger logger, long id) => _receiveByteArraySuccess(logger, id, null);
-            public static void ReceiveByteArrayException(ILogger logger, long id, Exception ex) => _receiveByteArrayException(logger, id, ex);
-            public static void ReceiveJSDataChunkException(ILogger logger, long streamId, Exception ex) => _receiveJSDataChunkException(logger, streamId, ex);
-            public static void SendDotNetStreamException(ILogger logger, long streamId, Exception ex) => _sendDotNetStreamException(logger, streamId, ex);
-            public static void DispatchEventFailedToParseEventData(ILogger logger, Exception ex) => _dispatchEventFailedToParseEventData(logger, ex);
-            public static void DispatchEventFailedToDispatchEvent(ILogger logger, string eventHandlerId, Exception ex) => _dispatchEventFailedToDispatchEvent(logger, eventHandlerId ?? "", ex);
+            [LoggerMessage(111, LogLevel.Error, "Unhandled exception in circuit '{CircuitId}'.", EventName = "CircuitUnhandledException")]
+            public static partial void CircuitUnhandledException(ILogger logger, CircuitId circuitId, Exception exception);
+
+            [LoggerMessage(114, LogLevel.Debug, "Failed to transmit exception to client in circuit '{CircuitId}'.", EventName = "CircuitTransmitErrorFailed")]
+            public static partial void CircuitTransmitErrorFailed(ILogger logger, CircuitId circuitId, Exception exception);
+
+            [LoggerMessage(204, LogLevel.Debug, "There was an error invoking 'Microsoft.JSInterop.DotNetDispatcher.EndInvoke'.", EventName = "EndInvokeDispatchException")]
+            public static partial void EndInvokeDispatchException(ILogger logger, Exception ex);
+
+            [LoggerMessage(205, LogLevel.Debug, "The JS interop call with callback id '{AsyncCall}' with arguments {Arguments}.", EventName = "EndInvokeJSFailed")]
+            public static partial void EndInvokeJSFailed(ILogger logger, long asyncCall, string arguments);
+
+            [LoggerMessage(206, LogLevel.Debug, "The JS interop call with callback id '{AsyncCall}' succeeded.", EventName = "EndInvokeJSSucceeded")]
+            public static partial void EndInvokeJSSucceeded(ILogger logger, long asyncCall);
+
+            [LoggerMessage(213, LogLevel.Debug, "The ReceiveByteArray call with id '{id}' succeeded.", EventName = "ReceiveByteArraySucceeded")]
+            public static partial void ReceiveByteArraySuccess(ILogger logger, long id);
+
+            [LoggerMessage(214, LogLevel.Debug, "The ReceiveByteArray call with id '{id}' failed.", EventName = "ReceiveByteArrayException")]
+            public static partial void ReceiveByteArrayException(ILogger logger, long id, Exception ex);
+
+            [LoggerMessage(215, LogLevel.Debug, "The ReceiveJSDataChunk call with stream id '{streamId}' failed.", EventName = "ReceiveJSDataChunkException")]
+            public static partial void ReceiveJSDataChunkException(ILogger logger, long streamId, Exception ex);
+
+            [LoggerMessage(216, LogLevel.Debug, "The SendDotNetStreamAsync call with id '{id}' failed.", EventName = "SendDotNetStreamException")]
+            public static partial void SendDotNetStreamException(ILogger logger, long id, Exception ex);
+
+            [LoggerMessage(200, LogLevel.Debug, "Failed to parse the event data when trying to dispatch an event.", EventName = "DispatchEventFailedToParseEventData")]
+            public static partial void DispatchEventFailedToParseEventData(ILogger logger, Exception ex);
+
+            [LoggerMessage(201, LogLevel.Debug, "There was an error dispatching the event '{EventHandlerId}' to the application.", EventName = "DispatchEventFailedToDispatchEvent")]
+            public static partial void DispatchEventFailedToDispatchEvent(ILogger logger, string eventHandlerId, Exception ex);
+
+            [LoggerMessage(202, LogLevel.Debug, "Invoking instance method '{MethodIdentifier}' on instance '{DotNetObjectId}' with callback id '{CallId}'.", EventName = "BeginInvokeDotNet")]
+            private static partial void BeginInvokeDotNet(ILogger logger, string methodIdentifier, long dotNetObjectId, string callId);
+
+            [LoggerMessage(217, LogLevel.Debug, "Invoking static method with identifier '{MethodIdentifier}' on assembly '{Assembly}' with callback id '{CallId}'.", EventName = "BeginInvokeDotNetStatic")]
+            private static partial void BeginInvokeDotNetStatic(ILogger logger, string methodIdentifier, string assembly, string callId);
 
             public static void BeginInvokeDotNet(ILogger logger, string callId, string assemblyName, string methodIdentifier, long dotNetObjectId)
             {
                 if (assemblyName != null)
                 {
-                    _beginInvokeDotNetStatic(logger, methodIdentifier, assemblyName, callId, null);
+                    BeginInvokeDotNetStatic(logger, methodIdentifier, assemblyName, callId);
                 }
                 else
                 {
-                    _beginInvokeDotNetInstance(logger, methodIdentifier, dotNetObjectId, callId, null);
+                    BeginInvokeDotNet(logger, methodIdentifier, dotNetObjectId, callId);
                 }
             }
+
+            [LoggerMessage(203, LogLevel.Debug, "Failed to invoke instance method '{MethodIdentifier}' on instance '{DotNetObjectId}' with callback id '{CallId}'.", EventName = "BeginInvokeDotNetFailed")]
+            private static partial void BeginInvokeDotNetFailed(ILogger logger, string methodIdentifier, long dotNetObjectId, string callId, Exception exception);
+
+            [LoggerMessage(218, LogLevel.Debug, "Failed to invoke static method with identifier '{MethodIdentifier}' on assembly '{Assembly}' with callback id '{CallId}'.", EventName = "BeginInvokeDotNetFailed")]
+            private static partial void BeginInvokeDotNetStaticFailed(ILogger logger, string methodIdentifier, string assembly, string callId, Exception exception);
 
             public static void BeginInvokeDotNetFailed(ILogger logger, string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, Exception exception)
             {
                 if (assemblyName != null)
                 {
-                    _beginInvokeDotNetStaticFailed(logger, methodIdentifier, assemblyName, callId, null);
+                    BeginInvokeDotNetStaticFailed(logger, methodIdentifier, assemblyName, callId, exception);
                 }
                 else
                 {
-                    _beginInvokeDotNetInstanceFailed(logger, methodIdentifier, dotNetObjectId, callId, null);
+                    BeginInvokeDotNetFailed(logger, methodIdentifier, dotNetObjectId, callId, exception);
                 }
             }
 
-            public static void LocationChange(ILogger logger, string uri, CircuitId circuitId) => _locationChange(logger, uri, circuitId, null);
-            public static void LocationChangeSucceeded(ILogger logger, string uri, CircuitId circuitId) => _locationChangeSucceeded(logger, uri, circuitId, null);
-            public static void LocationChangeFailed(ILogger logger, string uri, CircuitId circuitId, Exception exception) => _locationChangeFailed(logger, uri, circuitId, exception);
-            public static void LocationChangeFailedInCircuit(ILogger logger, string uri, CircuitId circuitId, Exception exception) => _locationChangeFailedInCircuit(logger, uri, circuitId, exception);
-            public static void UnhandledExceptionClientDisconnected(ILogger logger, CircuitId circuitId, Exception exception) => _unhandledExceptionClientDisconnected(logger, circuitId, exception);
-            public static void CircuitTransmittingClientError(ILogger logger, CircuitId circuitId) => _circuitTransmittingClientError(logger, circuitId, null);
-            public static void CircuitTransmittedClientErrorSuccess(ILogger logger, CircuitId circuitId) => _circuitTransmittedClientErrorSuccess(logger, circuitId, null);
-            public static void OnRenderCompletedFailed(ILogger logger, long renderId, CircuitId circuitId, Exception e) => _onRenderCompletedFailed(logger, renderId, circuitId, e);
+            [LoggerMessage(208, LogLevel.Debug, "Location changing to {URI} in circuit '{CircuitId}'.", EventName = "LocationChange")]
+            public static partial void LocationChange(ILogger logger, string uri, CircuitId circuitId);
+
+            [LoggerMessage(209, LogLevel.Debug, "Location change to '{URI}' in circuit '{CircuitId}' succeeded.", EventName = "LocationChangeSucceeded")]
+            public static partial void LocationChangeSucceeded(ILogger logger, string uri, CircuitId circuitId);
+
+            [LoggerMessage(210, LogLevel.Debug, "Location change to '{URI}' in circuit '{CircuitId}' failed.", EventName = "LocationChangeFailed")]
+            public static partial void LocationChangeFailed(ILogger logger, string uri, CircuitId circuitId, Exception exception);
+
+            [LoggerMessage(219, LogLevel.Error, "Location change to '{URI}' in circuit '{CircuitId}' failed.", EventName = "LocationChangeFailed")]
+            public static partial void LocationChangeFailedInCircuit(ILogger logger, string uri, CircuitId circuitId, Exception exception);
+
+            [LoggerMessage(115, LogLevel.Debug, "An exception occurred on the circuit host '{CircuitId}' while the client is disconnected.", EventName = "UnhandledExceptionClientDisconnected")]
+            public static partial void UnhandledExceptionClientDisconnected(ILogger logger, CircuitId circuitId, Exception exception);
+
+            [LoggerMessage(112, LogLevel.Debug, "About to notify client of an error in circuit '{CircuitId}'.", EventName = "CircuitTransmittingClientError")]
+            public static partial void CircuitTransmittingClientError(ILogger logger, CircuitId circuitId);
+
+            [LoggerMessage(113, LogLevel.Debug, "Successfully transmitted error to client in circuit '{CircuitId}'.", EventName = "CircuitTransmittedClientErrorSuccess")]
+            public static partial void CircuitTransmittedClientErrorSuccess(ILogger logger, CircuitId circuitId);
+
+            [LoggerMessage(212, LogLevel.Debug, "Failed to complete render batch '{RenderId}' in circuit host '{CircuitId}'.", EventName = "OnRenderCompletedFailed")]
+            public static partial void OnRenderCompletedFailed(ILogger logger, long renderId, CircuitId circuitId, Exception e);
         }
     }
 }

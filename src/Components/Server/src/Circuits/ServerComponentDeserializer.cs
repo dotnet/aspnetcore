@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.DataProtection;
@@ -55,7 +53,7 @@ namespace Microsoft.AspNetCore.Components.Server
     //  * If a marker has the right sequence but the invocation ID is different we will fail at that point. We know for sure that the
     //    component wasn't render as part of the same response.
     //  * If a marker can't be unprotected we will fail early. We know that the marker was tampered with and can't be trusted.
-    internal class ServerComponentDeserializer : IServerComponentDeserializer
+    internal sealed partial class ServerComponentDeserializer : IServerComponentDeserializer
     {
         private readonly IDataProtector _dataProtector;
         private readonly ILogger<ServerComponentDeserializer> _logger;
@@ -202,79 +200,31 @@ namespace Microsoft.AspNetCore.Components.Server
             return (componentDescriptor, serverComponent);
         }
 
-        private static class Log
+        private static partial class Log
         {
-            private static readonly Action<ILogger, Exception> _failedToDeserializeDescriptor =
-                LoggerMessage.Define(
-                    LogLevel.Debug,
-                    new EventId(1, "FailedToDeserializeDescriptor"),
-                    "Failed to deserialize the component descriptor.");
+            [LoggerMessage(1, LogLevel.Debug, "Failed to deserialize the component descriptor.", EventName = "FailedToDeserializeDescriptor")]
+            public static partial void FailedToDeserializeDescriptor(ILogger<ServerComponentDeserializer> logger, Exception e);
 
-            private static readonly Action<ILogger, string, string, Exception> _failedToFindComponent =
-                LoggerMessage.Define<string, string>(
-                    LogLevel.Debug,
-                    new EventId(2, "FailedToFindComponent"),
-                    "Failed to find component '{ComponentName}' in assembly '{Assembly}'.");
+            [LoggerMessage(2, LogLevel.Debug, "Failed to find component '{ComponentName}' in assembly '{Assembly}'.", EventName = "FailedToFindComponent")]
+            public static partial void FailedToFindComponent(ILogger<ServerComponentDeserializer> logger, string componentName, string assembly);
 
-            private static readonly Action<ILogger, Exception> _failedToUnprotectDescriptor =
-                LoggerMessage.Define(
-                    LogLevel.Debug,
-                    new EventId(3, "FailedToUnprotectDescriptor"),
-                    "Failed to unprotect the component descriptor.");
+            [LoggerMessage(3, LogLevel.Debug, "Failed to unprotect the component descriptor.", EventName = "FailedToUnprotectDescriptor")]
+            public static partial void FailedToUnprotectDescriptor(ILogger<ServerComponentDeserializer> logger, Exception e);
 
-            private static readonly Action<ILogger, string, Exception> _invalidMarkerType =
-                LoggerMessage.Define<string>(
-                    LogLevel.Debug,
-                    new EventId(4, "InvalidMarkerType"),
-                    "Invalid component marker type '{MarkerType}'.");
+            [LoggerMessage(4, LogLevel.Debug, "Invalid component marker type '{MarkerType}'.", EventName = "InvalidMarkerType")]
+            public static partial void InvalidMarkerType(ILogger<ServerComponentDeserializer> logger, string markerType);
 
-            private static readonly Action<ILogger, Exception> _missingMarkerDescriptor =
-                LoggerMessage.Define(
-                    LogLevel.Debug,
-                    new EventId(5, "MissingMarkerDescriptor"),
-                    "The component marker is missing the descriptor.");
+            [LoggerMessage(5, LogLevel.Debug, "The component marker is missing the descriptor.", EventName = "MissingMarkerDescriptor")]
+            public static partial void MissingMarkerDescriptor(ILogger<ServerComponentDeserializer> logger);
 
-            private static readonly Action<ILogger, string, string, Exception> _mismatchedInvocationId =
-                LoggerMessage.Define<string, string>(
-                    LogLevel.Debug,
-                    new EventId(6, "MismatchedInvocationId"),
-                    "The descriptor invocationId is '{invocationId}' and got a descriptor with invocationId '{currentInvocationId}'.");
+            [LoggerMessage(6, LogLevel.Debug, "The descriptor invocationId is '{invocationId}' and got a descriptor with invocationId '{currentInvocationId}'.", EventName = "MismatchedInvocationId")]
+            public static partial void MismatchedInvocationId(ILogger<ServerComponentDeserializer> logger, string invocationId, string currentInvocationId);
 
-            private static readonly Action<ILogger, int, int, Exception> _outOfSequenceDescriptor =
-                LoggerMessage.Define<int, int>(
-                    LogLevel.Debug,
-                    new EventId(7, "OutOfSequenceDescriptor"),
-                    "The last descriptor sequence was '{lastSequence}' and got a descriptor with sequence '{receivedSequence}'.");
+            [LoggerMessage(7, LogLevel.Debug, "The last descriptor sequence was '{lastSequence}' and got a descriptor with sequence '{sequence}'.", EventName = "OutOfSequenceDescriptor")]
+            public static partial void OutOfSequenceDescriptor(ILogger<ServerComponentDeserializer> logger, int lastSequence, int sequence);
 
-            private static readonly Action<ILogger, int, Exception> _descriptorSequenceMustStartAtZero =
-                LoggerMessage.Define<int>(
-                    LogLevel.Debug,
-                    new EventId(8, "DescriptorSequenceMustStartAtZero"),
-                    "The descriptor sequence '{sequence}' is an invalid start sequence.");
-
-            public static void FailedToDeserializeDescriptor(ILogger<ServerComponentDeserializer> logger, Exception e) =>
-                _failedToDeserializeDescriptor(logger, e);
-
-            public static void FailedToFindComponent(ILogger<ServerComponentDeserializer> logger, string assemblyName, string typeName) =>
-                _failedToFindComponent(logger, assemblyName, typeName, null);
-
-            public static void FailedToUnprotectDescriptor(ILogger<ServerComponentDeserializer> logger, Exception e) =>
-                _failedToUnprotectDescriptor(logger, e);
-
-            public static void InvalidMarkerType(ILogger<ServerComponentDeserializer> logger, string markerType) =>
-                _invalidMarkerType(logger, markerType, null);
-
-            public static void MissingMarkerDescriptor(ILogger<ServerComponentDeserializer> logger) =>
-                _missingMarkerDescriptor(logger, null);
-
-            public static void MismatchedInvocationId(ILogger<ServerComponentDeserializer> logger, string invocationId, string currentInvocationId) =>
-                _mismatchedInvocationId(logger, invocationId, currentInvocationId, null);
-
-            public static void OutOfSequenceDescriptor(ILogger<ServerComponentDeserializer> logger, int lastSequence, int sequence) =>
-                _outOfSequenceDescriptor(logger, lastSequence, sequence, null);
-
-            public static void DescriptorSequenceMustStartAtZero(ILogger<ServerComponentDeserializer> logger, int sequence) =>
-                _descriptorSequenceMustStartAtZero(logger, sequence, null);
+            [LoggerMessage(8, LogLevel.Debug, "The descriptor sequence '{sequence}' is an invalid start sequence.", EventName = "DescriptorSequenceMustStartAtZero")]
+            public static partial void DescriptorSequenceMustStartAtZero(ILogger<ServerComponentDeserializer> logger, int sequence);
         }
     }
 }
