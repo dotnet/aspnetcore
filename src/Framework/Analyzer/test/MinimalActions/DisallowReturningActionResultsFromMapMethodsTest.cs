@@ -82,7 +82,7 @@ webApp.MapGet(""/"", (int id) =>
     }
 
     [Fact]
-    public async Task MinimalAction_ReturningTypeThatImplementsIResultAndActionResultFails()
+    public async Task MinimalAction_ReturningTypeThatImplementsIResultAndActionResultDoesNotProduceDiagnostics()
     {
         // Arrange
         var source = @"
