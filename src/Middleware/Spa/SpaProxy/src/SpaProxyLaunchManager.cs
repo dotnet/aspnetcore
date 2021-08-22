@@ -188,9 +188,27 @@ namespace Microsoft.AspNetCore.SpaProxy
                     WorkingDirectory = Path.Combine(AppContext.BaseDirectory, _options.WorkingDirectory)
                 };
                 _spaProcess = Process.Start(info);
-                if (OperatingSystem.IsWindows() && _spaProcess != null)
+                if(_spaProcess != null && !_spaProcess.HasExited)
                 {
-                    var stopScript = $@"do{{
+                    if(OperatingSystem.IsWindows())
+                    {
+                        LaunchStopScriptWindows();
+                    }
+                    else if (OperatingSystem.IsMacOS())
+                    {
+                        LaunchStopScriptMacOS();
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(exception, $"Failed to launch the SPA development server '{_options.LaunchCommand}'.");
+            }
+        }
+
+        private void LaunchStopScriptWindows()
+        {
+            var stopScript = $@"do{{
   try
   {{
     $processId = Get-Process -PID {Environment.ProcessId} -ErrorAction Stop;
@@ -208,31 +226,73 @@ try
 catch
 {{
 }}";
-                    var stopScriptInfo = new ProcessStartInfo(
-                        "powershell.exe",
-                        string.Join(" ", "-NoProfile", "-C", stopScript))
-                    {
-                        CreateNoWindow = true,
-                        WorkingDirectory = Path.Combine(AppContext.BaseDirectory, _options.WorkingDirectory)
-                    };
-
-                    var stopProcess = Process.Start(stopScriptInfo);
-                    if (stopProcess == null || stopProcess.HasExited)
-                    {
-                        _logger.LogWarning($"SPA process shutdown script '{stopProcess?.Id}' failed to start. The SPA proxy might" +
-                            $" remain open if the dotnet process is terminated abruptly. Use the operating system command to kill" +
-                            $"the process tree for {_spaProcess.Id}");
-                    }
-                    else
-                    {
-                        _logger.LogDebug($"Watch process '{stopProcess}' started.");
-                    }
-                }
-            }
-            catch (Exception exception)
+            var stopScriptInfo = new ProcessStartInfo(
+                "powershell.exe",
+                string.Join(" ", "-NoProfile", "-C", stopScript))
             {
-                _logger.LogError(exception, $"Failed to launch the SPA development server '{_options.LaunchCommand}'.");
+                CreateNoWindow = true,
+                WorkingDirectory = Path.Combine(AppContext.BaseDirectory, _options.WorkingDirectory)
+            };
+
+            var stopProcess = Process.Start(stopScriptInfo);
+            if (stopProcess == null || stopProcess.HasExited)
+            {
+                _logger.LogWarning($"SPA process shutdown script '{stopProcess?.Id}' failed to start. The SPA proxy might" +
+                    $" remain open if the dotnet process is terminated abruptly. Use the operating system command to kill" +
+                    $"the process tree for {_spaProcess.Id}");
             }
+            else
+            {
+                _logger.LogDebug($"Watch process '{stopProcess}' started.");
+            }
+        }
+
+        private void LaunchStopScriptMacOS()
+        {
+            var fileName = Guid.NewGuid().ToString("N") + ".sh";
+            var scriptPath = Path.Combine(AppContext.BaseDirectory, fileName);
+            var stopScript = @$"function list_child_processes(){{
+    local ppid=$1;
+    local current_children=$(pgrep -P $ppid);
+    local local_child;
+    if [ $? -eq 0 ];
+    then
+        for current_child in $current_children
+        do
+          local_child=$current_child;
+          list_child_processes $local_child;
+          echo $local_child;
+        done;
+    else
+      return 0;
+    fi;
+}}
+
+ps {Environment.ProcessId};
+while [ $? -eq 0 ];
+do
+  sleep 1;
+  ps {Environment.ProcessId} > /dev/null;
+done;
+
+for child in $(list_child_processes {_spaProcess.Id});
+do
+  echo killing $child;
+  kill -s KILL $child;
+done;
+rm {scriptPath};
+";
+            File.WriteAllText(scriptPath, stopScript);
+
+            var stopScriptInfo = new ProcessStartInfo(
+                "/bin/bash",
+                string.Join(" ", scriptPath))
+            {
+                CreateNoWindow = true,
+                WorkingDirectory = Path.Combine(AppContext.BaseDirectory, _options.WorkingDirectory)
+            };
+
+            _stopScript = Process.Start(stopScriptInfo);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
