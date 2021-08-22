@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.SpaProxy
 
 try
 {{
-  taskkill /T /F /PID {_spaProcess.Id};
+  taskkill /T /F /PID {_spaProcess!.Id};
 }}
 catch
 {{
