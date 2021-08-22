@@ -237,9 +237,9 @@ catch
             var stopProcess = Process.Start(stopScriptInfo);
             if (stopProcess == null || stopProcess.HasExited)
             {
-                _logger.LogWarning($"SPA process shutdown script '{stopProcess?.Id}' failed to start. The SPA proxy might" +
-                    $" remain open if the dotnet process is terminated abruptly. Use the operating system command to kill" +
-                    $"the process tree for {_spaProcess.Id}");
+                _logger.LogWarning($"The SPA process shutdown script '{stopProcess?.Id}' failed to start. The SPA proxy might" +
+                    $" remain open if the dotnet process is terminated ungracefully. Use the operating system commands to kill" +
+                    $" the process tree for {_spaProcess!.Id}");
             }
             else
             {
@@ -275,7 +275,7 @@ do
   ps {Environment.ProcessId} > /dev/null;
 done;
 
-for child in $(list_child_processes {_spaProcess.Id});
+for child in $(list_child_processes {_spaProcess!.Id});
 do
   echo killing $child;
   kill -s KILL $child;
@@ -292,7 +292,13 @@ rm {scriptPath};
                 WorkingDirectory = Path.Combine(AppContext.BaseDirectory, _options.WorkingDirectory)
             };
 
-            _stopScript = Process.Start(stopScriptInfo);
+            var stopProcess = Process.Start(stopScriptInfo);
+            if (stopProcess == null || stopProcess.HasExited)
+            {
+                _logger.LogWarning($"The SPA process shutdown script '{stopProcess?.Id}' failed to start. The SPA proxy might" +
+                    $" remain open if the dotnet process is terminated ungracefully. Use the operating system commands to kill" +
+                    $" the process tree for {_spaProcess!.Id}");
+            }            
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
