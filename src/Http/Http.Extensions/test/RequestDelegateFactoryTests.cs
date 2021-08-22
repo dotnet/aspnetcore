@@ -2258,8 +2258,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 ["name"] = "Tester"
             });
 
-            var requestDelegate = RequestDelegateFactory.Create(actionWithExtensionsResult);
+            var factoryResult = RequestDelegateFactory.Create(actionWithExtensionsResult);
 
+            var requestDelegate = factoryResult.RequestDelegate;
             await requestDelegate(httpContext);
 
             Assert.Equal(200, httpContext.Response.StatusCode);
