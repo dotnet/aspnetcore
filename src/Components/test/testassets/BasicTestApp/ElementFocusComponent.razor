@@ -30,15 +30,18 @@
     {
         Task.Run(async () =>
         {
-            await Task.Yield();
-            performFocusDuringOnAfterRender = true;
-            _ = InvokeAsync(StateHasChanged);
+            await Task.Delay(500);
+            _ = InvokeAsync(() =>
+            {
+                performFocusDuringOnAfterRender = true;
+                StateHasChanged();
+            });
         });
     }
 
     private async Task FocusDuringOnAfterRenderViaAwait()
     {
-        await Task.Yield();
+        await Task.Delay(500);
         performFocusDuringOnAfterRender = true;
     }
 
