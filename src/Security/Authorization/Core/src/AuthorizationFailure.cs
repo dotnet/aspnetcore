@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// <summary>
         /// Allows <see cref="IAuthorizationHandler"/> to flow more detailed reasons for why authorization failed.
         /// </summary>
-        public IEnumerable<AuthorizationFailureReason> Reasons { get; private set; } = Array.Empty<AuthorizationFailureReason>();
+        public IEnumerable<AuthorizationFailureReason> FailureReasons { get; private set; } = Array.Empty<AuthorizationFailureReason>();
 
         /// <summary>
         /// Return a failure due to <see cref="AuthorizationHandlerContext.Fail()"/> being called.
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Authorization
             => new AuthorizationFailure
             {
                 FailCalled = true,
-                Reasons = reasons
+                FailureReasons = reasons
             };
 
         /// <summary>
