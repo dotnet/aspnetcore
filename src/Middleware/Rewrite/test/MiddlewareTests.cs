@@ -687,40 +687,30 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task Rewrite_WorksAfterUseRoutingIfGlobalRouteBuilderUsed(string regex, string output)
         {
             var options = new RewriteOptions().AddRewrite(regex, "http://example.com/g", skipRemainingRules: false);
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
-                {
-                    webHostBuilder
-                    .UseTestServer()
-                    .ConfigureServices(services =>
-                    {
-                        services.AddRouting();
-                    })
-                    .Configure(app =>
-                    {
-                        app.UseRouting();
-                        app.Properties["__GlobalEndpointRouteBuilder"] = app.Properties["__EndpointRouteBuilder"];
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
 
-                        GetMockWebApplication(app).UseRewriter(options);
+            app.UseRouting();
 
-                        app.UseEndpoints(endpoints =>
-                        {
-                            endpoints.MapGet("/foo", context => context.Response.WriteAsync(
-                                "no rule"));
+            app.UseRewriter(options);
 
-                            endpoints.MapGet("/g", context => context.Response.WriteAsync(
-                                context.Request.Scheme +
-                                "://" +
-                                context.Request.Host +
-                                context.Request.Path +
-                                context.Request.QueryString));
-                        });
-                    });
-                }).Build();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapGet("/foo", context => context.Response.WriteAsync(
+                    "no rule"));
 
-            await host.StartAsync();
+                endpoints.MapGet("/g", context => context.Response.WriteAsync(
+                    context.Request.Scheme +
+                    "://" +
+                    context.Request.Host +
+                    context.Request.Path +
+                    context.Request.QueryString));
+            });
 
-            var server = host.GetTestServer();
+            await app.StartAsync();
+
+            var server = app.GetTestServer();
 
             var response = await server.CreateClient().GetStringAsync("foo");
 
@@ -732,65 +722,37 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         [InlineData("/", "no rule")]
         public async Task RewriteFromOptions_WorksAfterUseRoutingIfGlobalRouteBuilderUsed(string regex, string output)
         {
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
-                {
-                    webHostBuilder
-                    .UseTestServer()
-                    .ConfigureServices(services =>
-                    {
-                        services.AddRouting();
-                        services.Configure<RewriteOptions>(options =>
-                        {
-                            options.AddRewrite(regex, "http://example.com/g", skipRemainingRules: false);
-                        });
-                    })
-                    .Configure(app =>
-                    {
-                        app.UseRouting();
-                        app.Properties["__GlobalEndpointRouteBuilder"] = app.Properties["__EndpointRouteBuilder"];
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            builder.Services.Configure<RewriteOptions>(options =>
+            {
+                options.AddRewrite(regex, "http://example.com/g", skipRemainingRules: false);
+            });
+            await using var app = builder.Build();
+            app.UseRouting();
 
-                        GetMockWebApplication(app).UseRewriter();
+            app.UseRewriter();
 
-                        app.UseEndpoints(endpoints =>
-                        {
-                            endpoints.MapGet("/foo", context => context.Response.WriteAsync(
-                                "no rule"));
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapGet("/foo", context => context.Response.WriteAsync(
+                    "no rule"));
 
-                            endpoints.MapGet("/g", context => context.Response.WriteAsync(
-                                context.Request.Scheme +
-                                "://" +
-                                context.Request.Host +
-                                context.Request.Path +
-                                context.Request.QueryString));
-                        });
-                    });
-                }).Build();
+                endpoints.MapGet("/g", context => context.Response.WriteAsync(
+                    context.Request.Scheme +
+                    "://" +
+                    context.Request.Host +
+                    context.Request.Path +
+                    context.Request.QueryString));
+            });
 
-            await host.StartAsync();
+            await app.StartAsync();
 
-            var server = host.GetTestServer();
+            var server = app.GetTestServer();
 
             var response = await server.CreateClient().GetStringAsync("foo");
 
             Assert.Equal(output, response);
-        }
-
-        private IApplicationBuilder GetMockWebApplication(IApplicationBuilder builder)
-        {
-            var mockApp = new Mock<IApplicationBuilder>();
-            mockApp.Setup(m => m.New()).Returns(() =>
-            {
-                builder.Properties.Remove("__GlobalEndpointRouteBuilder");
-                return builder.New();
-            });
-            mockApp.Setup(m => m.ApplicationServices).Returns(builder.ApplicationServices);
-            mockApp.Setup(m => m.Properties).Returns(builder.Properties);
-            mockApp.Setup(m => m.Build()).Returns(() => builder.Build());
-            mockApp.Setup(m => m.Use(It.IsAny<Func<RequestDelegate, RequestDelegate>>()))
-                .Returns<Func<RequestDelegate, RequestDelegate>>((f) => builder.Use(f));
-
-            return mockApp.Object;
         }
     }
 }

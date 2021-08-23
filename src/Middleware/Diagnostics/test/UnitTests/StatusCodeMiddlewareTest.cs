@@ -198,56 +198,33 @@ namespace Microsoft.AspNetCore.Diagnostics
         [Fact]
         public async Task Reexecute_WorksAfterUseRoutingWithGlobalRouteBuilder()
         {
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            app.UseRouting();
+
+            app.UseStatusCodePagesWithReExecute(pathFormat: "/errorPage", queryFormat: "?id={0}");
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapGet("/", c =>
                 {
-                    webHostBuilder
-                    .ConfigureServices(services =>
-                    {
-                        services.AddRouting();
-                    })
-                    .UseTestServer()
-                    .Configure(app =>
-                    {
-                        app.UseRouting();
-                        app.Properties["__GlobalEndpointRouteBuilder"] = app.Properties["__EndpointRouteBuilder"];
+                    c.Response.StatusCode = 404;
+                    return Task.CompletedTask;
+                });
 
-                        // Mock app builder to simulate WebApplicationBuilders New() method
-                        var mockApp = new Mock<IApplicationBuilder>();
-                        mockApp.Setup(m => m.New()).Returns(() =>
-                        {
-                            app.Properties.Remove("__GlobalEndpointRouteBuilder");
-                            return app.New();
-                        });
-                        mockApp.Setup(m => m.ApplicationServices).Returns(app.ApplicationServices);
-                        mockApp.Setup(m => m.Properties).Returns(app.Properties);
-                        mockApp.Setup(m => m.Build()).Returns(() => app.Build());
-                        mockApp.Setup(m => m.Use(It.IsAny<Func<RequestDelegate, RequestDelegate>>()))
-                            .Returns<Func<RequestDelegate, RequestDelegate>>((f) => app.Use(f));
+                endpoints.MapGet("/errorPage", () => "errorPage");
+            });
 
-                        mockApp.Object.UseStatusCodePagesWithReExecute(pathFormat: "/errorPage", queryFormat: "?id={0}");
+            app.Run((context) =>
+            {
+                throw new InvalidOperationException("Invalid input provided.");
+            });
 
-                        app.UseEndpoints(endpoints =>
-                        {
-                            endpoints.MapGet("/", c =>
-                            {
-                                c.Response.StatusCode = 404;
-                                return Task.CompletedTask;
-                            });
+            await app.StartAsync();
 
-                            endpoints.MapGet("/errorPage", () => "errorPage");
-                        });
-
-                        app.Run((context) =>
-                        {
-                            throw new InvalidOperationException("Invalid input provided.");
-                        });
-                    });
-                }).Build();
-
-            await host.StartAsync();
-
-            using var server = host.GetTestServer();
+            using var server = app.GetTestServer();
             var client = server.CreateClient();
             var response = await client.GetAsync("/");
             var content = await response.Content.ReadAsStringAsync();

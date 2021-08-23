@@ -704,55 +704,45 @@ namespace Microsoft.AspNetCore.Diagnostics
         [Fact]
         public async Task ExceptionHandlerWithPathWorksAfterUseRoutingIfGlobalRouteBuilderUsed()
         {
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            app.Use(async (httpContext, next) =>
+            {
+                Exception exception = null;
+                try
                 {
-                    webHostBuilder
-                    .ConfigureServices(services =>
-                    {
-                        services.AddRouting();
-                    })
-                    .UseTestServer()
-                    .Configure(app =>
-                    {
-                        app.Use(async (httpContext, next) =>
-                        {
-                            Exception exception = null;
-                            try
-                            {
-                                await next(httpContext);
-                            }
-                            catch (InvalidOperationException ex)
-                            {
-                                exception = ex;
-                            }
+                    await next(httpContext);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    exception = ex;
+                }
 
-                            Assert.Null(exception);
-                        });
+                Assert.Null(exception);
+            });
 
-                        app.UseRouting();
-                        app.Properties["__GlobalEndpointRouteBuilder"] = app.Properties["__EndpointRouteBuilder"];
+            app.UseRouting();
 
-                        GetMockWebApplication(app).UseExceptionHandler("/handle-errors");
+            app.UseExceptionHandler("/handle-errors");
 
-                        app.UseEndpoints(endpoints =>
-                        {
-                            endpoints.Map("/handle-errors", c => {
-                                c.Response.StatusCode = 200;
-                                return c.Response.WriteAsync("Handled");
-                            });
-                        });
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.Map("/handle-errors", c => {
+                    c.Response.StatusCode = 200;
+                    return c.Response.WriteAsync("Handled");
+                });
+            });
 
-                        app.Run((httpContext) =>
-                        {
-                            throw new InvalidOperationException("Something bad happened");
-                        });
-                    });
-                }).Build();
+            app.Run((httpContext) =>
+            {
+                throw new InvalidOperationException("Something bad happened");
+            });
 
-            await host.StartAsync();
+            await app.StartAsync();
 
-            using (var server = host.GetTestServer())
+            using (var server = app.GetTestServer())
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
@@ -764,58 +754,48 @@ namespace Microsoft.AspNetCore.Diagnostics
         [Fact]
         public async Task ExceptionHandlerWithOptionsWorksAfterUseRoutingIfGlobalRouteBuilderUsed()
         {
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            app.Use(async (httpContext, next) =>
+            {
+                Exception exception = null;
+                try
                 {
-                    webHostBuilder
-                    .ConfigureServices(services =>
-                    {
-                        services.AddRouting();
-                    })
-                    .UseTestServer()
-                    .Configure(app =>
-                    {
-                        app.Use(async (httpContext, next) =>
-                        {
-                            Exception exception = null;
-                            try
-                            {
-                                await next(httpContext);
-                            }
-                            catch (InvalidOperationException ex)
-                            {
-                                exception = ex;
-                            }
+                    await next(httpContext);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    exception = ex;
+                }
 
-                            Assert.Null(exception);
-                        });
+                Assert.Null(exception);
+            });
 
-                        app.UseRouting();
-                        app.Properties["__GlobalEndpointRouteBuilder"] = app.Properties["__EndpointRouteBuilder"];
+            app.UseRouting();
 
-                        GetMockWebApplication(app).UseExceptionHandler(new ExceptionHandlerOptions()
-                        {
-                            ExceptionHandlingPath = "/handle-errors"
-                        });
+            app.UseExceptionHandler(new ExceptionHandlerOptions()
+            {
+                ExceptionHandlingPath = "/handle-errors"
+            });
 
-                        app.UseEndpoints(endpoints =>
-                        {
-                            endpoints.Map("/handle-errors", c => {
-                                c.Response.StatusCode = 200;
-                                return c.Response.WriteAsync("Handled");
-                            });
-                        });
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.Map("/handle-errors", c => {
+                    c.Response.StatusCode = 200;
+                    return c.Response.WriteAsync("Handled");
+                });
+            });
 
-                        app.Run((httpContext) =>
-                        {
-                            throw new InvalidOperationException("Something bad happened");
-                        });
-                    });
-                }).Build();
+            app.Run((httpContext) =>
+            {
+                throw new InvalidOperationException("Something bad happened");
+            });
 
-            await host.StartAsync();
+            await app.StartAsync();
 
-            using (var server = host.GetTestServer())
+            using (var server = app.GetTestServer())
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
@@ -827,56 +807,46 @@ namespace Microsoft.AspNetCore.Diagnostics
         [Fact]
         public async Task ExceptionHandlerWithAddWorksAfterUseRoutingIfGlobalRouteBuilderUsed()
         {
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+            var builder = WebApplication.CreateBuilder();
+            builder.Services.AddExceptionHandler(o => o.ExceptionHandlingPath = "/handle-errors");
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            app.Use(async (httpContext, next) =>
+            {
+                Exception exception = null;
+                try
                 {
-                    webHostBuilder
-                    .ConfigureServices(services =>
-                    {
-                        services.AddRouting();
-                        services.AddExceptionHandler(o => o.ExceptionHandlingPath = "/handle-errors");
-                    })
-                    .UseTestServer()
-                    .Configure(app =>
-                    {
-                        app.Use(async (httpContext, next) =>
-                        {
-                            Exception exception = null;
-                            try
-                            {
-                                await next(httpContext);
-                            }
-                            catch (InvalidOperationException ex)
-                            {
-                                exception = ex;
-                            }
+                    await next(httpContext);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    exception = ex;
+                }
 
-                            Assert.Null(exception);
-                        });
+                Assert.Null(exception);
+            });
 
-                        app.UseRouting();
-                        app.Properties["__GlobalEndpointRouteBuilder"] = app.Properties["__EndpointRouteBuilder"];
+            app.UseRouting();
 
-                        GetMockWebApplication(app).UseExceptionHandler();
+            app.UseExceptionHandler();
 
-                        app.UseEndpoints(endpoints =>
-                        {
-                            endpoints.Map("/handle-errors", c => {
-                                c.Response.StatusCode = 200;
-                                return c.Response.WriteAsync("Handled");
-                            });
-                        });
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.Map("/handle-errors", c => {
+                    c.Response.StatusCode = 200;
+                    return c.Response.WriteAsync("Handled");
+                });
+            });
 
-                        app.Run((httpContext) =>
-                        {
-                            throw new InvalidOperationException("Something bad happened");
-                        });
-                    });
-                }).Build();
+            app.Run((httpContext) =>
+            {
+                throw new InvalidOperationException("Something bad happened");
+            });
 
-            await host.StartAsync();
+            await app.StartAsync();
 
-            using (var server = host.GetTestServer())
+            using (var server = app.GetTestServer())
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
@@ -888,85 +858,58 @@ namespace Microsoft.AspNetCore.Diagnostics
         [Fact]
         public async Task ExceptionHandlerWithExceptionHandlerNotReplacedWithGlobalRouteBuilder()
         {
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            app.Use(async (httpContext, next) =>
+            {
+                Exception exception = null;
+                try
                 {
-                    webHostBuilder
-                    .ConfigureServices(services =>
-                    {
-                        services.AddRouting();
-                    })
-                    .UseTestServer()
-                    .Configure(app =>
-                    {
-                        app.Use(async (httpContext, next) =>
-                        {
-                            Exception exception = null;
-                            try
-                            {
-                                await next(httpContext);
-                            }
-                            catch (InvalidOperationException ex)
-                            {
-                                exception = ex;
-                            }
+                    await next(httpContext);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    exception = ex;
+                }
 
-                            Assert.Null(exception);
-                        });
+                Assert.Null(exception);
+            });
 
-                        app.UseRouting();
-                        app.Properties["__GlobalEndpointRouteBuilder"] = app.Properties["__EndpointRouteBuilder"];
+            app.UseRouting();
 
-                        GetMockWebApplication(app).UseExceptionHandler(new ExceptionHandlerOptions()
-                        {
-                            ExceptionHandler = httpContext =>
-                            {
-                                httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
-                                return httpContext.Response.WriteAsync("Custom handler");
-                            }
-                        });
+            app.UseExceptionHandler(new ExceptionHandlerOptions()
+            {
+                ExceptionHandler = httpContext =>
+                {
+                    httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+                    return httpContext.Response.WriteAsync("Custom handler");
+                }
+            });
 
-                        app.UseEndpoints(endpoints =>
-                        {
-                            endpoints.Map("/handle-errors", c => {
-                                c.Response.StatusCode = 200;
-                                return c.Response.WriteAsync("Handled");
-                            });
-                        });
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.Map("/handle-errors", c => {
+                    c.Response.StatusCode = 200;
+                    return c.Response.WriteAsync("Handled");
+                });
+            });
 
-                        app.Run((httpContext) =>
-                        {
-                            throw new InvalidOperationException("Something bad happened");
-                        });
-                    });
-                }).Build();
+            app.Run((httpContext) =>
+            {
+                throw new InvalidOperationException("Something bad happened");
+            });
 
-            await host.StartAsync();
+            await app.StartAsync();
 
-            using (var server = host.GetTestServer())
+            using (var server = app.GetTestServer())
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
                 Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
                 Assert.Equal("Custom handler", await response.Content.ReadAsStringAsync());
             }
-        }
-
-        private IApplicationBuilder GetMockWebApplication(IApplicationBuilder builder)
-        {
-            var mockApp = new Mock<IApplicationBuilder>();
-            mockApp.Setup(m => m.New()).Returns(() =>
-            {
-                builder.Properties.Remove("__GlobalEndpointRouteBuilder");
-                return builder.New();
-            });
-            mockApp.Setup(m => m.ApplicationServices).Returns(builder.ApplicationServices);
-            mockApp.Setup(m => m.Properties).Returns(builder.Properties);
-            mockApp.Setup(m => m.Build()).Returns(() => builder.Build());
-            mockApp.Setup(m => m.Use(It.IsAny<Func<RequestDelegate, RequestDelegate>>()))
-                .Returns<Func<RequestDelegate, RequestDelegate>>((f) => builder.Use(f));
-
-            return mockApp.Object;
         }
     }
 }
