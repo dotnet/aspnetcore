@@ -18,12 +18,14 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public abstract class InputBase<TValue> : ComponentBase, IDisposable
     {
+        private static readonly object _defaultModel = new();
+
         private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
         private bool _previousParsingAttemptFailed;
         private ValidationMessageStore? _parsingValidationMessages;
         private Type? _nullableUnderlyingType;
 
-        [CascadingParameter] EditContext CascadedEditContext { get; set; } = default!;
+        [CascadingParameter] private EditContext? CascadedEditContext { get; set; }
 
         /// <summary>
         /// Gets or sets a collection of additional attributes that will be applied to the created element.
@@ -185,11 +187,12 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
         }
 
-
         /// <inheritdoc />
-        [MemberNotNull(nameof(EditContext), nameof(CascadedEditContext))]
+        [MemberNotNull(nameof(EditContext))]
         public override Task SetParametersAsync(ParameterView parameters)
         {
+            var previousCascadedEditContext = CascadedEditContext;
+
             parameters.SetParameterProperties(this);
 
             if (EditContext == null)
@@ -197,26 +200,19 @@ namespace Microsoft.AspNetCore.Components.Forms
                 // This is the first run
                 // Could put this logic in OnInit, but its nice to avoid forcing people who override OnInit to call base.OnInit()
 
-                if (CascadedEditContext == null)
-                {
-                    throw new InvalidOperationException($"{GetType()} requires a cascading parameter " +
-                        $"of type {nameof(Forms.EditContext)}. For example, you can use {GetType().FullName} inside " +
-                        $"an {nameof(EditForm)}.");
-                }
-
                 if (ValueExpression == null)
                 {
                     throw new InvalidOperationException($"{GetType()} requires a value for the 'ValueExpression' " +
                         $"parameter. Normally this is provided automatically when using 'bind-Value'.");
                 }
 
-                EditContext = CascadedEditContext;
+                EditContext = CascadedEditContext ?? new(_defaultModel);
                 FieldIdentifier = FieldIdentifier.Create(ValueExpression);
                 _nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(TValue));
 
                 EditContext.OnValidationStateChanged += _validationStateChangedHandler;
             }
-            else if (CascadedEditContext != EditContext)
+            else if (previousCascadedEditContext != CascadedEditContext)
             {
                 // Not the first run
 
