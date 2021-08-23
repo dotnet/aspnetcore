@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Authorization
     public class AuthorizationHandlerContext
     {
         private readonly HashSet<IAuthorizationRequirement> _pendingRequirements;
-        private readonly List<AuthorizationFailureReason> _failedReasons;
+        private List<AuthorizationFailureReason> _failedReasons;
         private bool _failCalled;
         private bool _succeedCalled;
 
@@ -38,7 +38,6 @@ namespace Microsoft.AspNetCore.Authorization
             User = user;
             Resource = resource;
             _pendingRequirements = new HashSet<IAuthorizationRequirement>(requirements);
-            _failedReasons = new List<AuthorizationFailureReason>();
         }
 
         /// <summary>
@@ -64,7 +63,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// <summary>
         /// Gets the reasons why authorization has failed.
         /// </summary>
-        public virtual IEnumerable<AuthorizationFailureReason> FailureReasons { get { return _failedReasons; } }
+        public virtual IEnumerable<AuthorizationFailureReason> FailureReasons { get { return _failedReasons ?? Array.Empty<AuthorizationFailureReason>(); } }
 
         /// <summary>
         /// Flag indicating whether the current authorization processing has failed.
@@ -101,6 +100,11 @@ namespace Microsoft.AspNetCore.Authorization
             Fail();
             if (reason != null)
             {
+                if (_failedReasons == null)
+                {
+                    _failedReasons = new List<AuthorizationFailureReason>();
+                }
+                
                 _failedReasons.Add(reason);
             }
         }
