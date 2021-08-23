@@ -18,6 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Diagnostics
@@ -732,7 +733,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                         app.UseRouting();
                         app.Properties["__GlobalEndpointRouteBuilder"] = app.Properties["__EndpointRouteBuilder"];
 
-                        app.UseExceptionHandler("/handle-errors");
+                        GetMockWebApplication(app).UseExceptionHandler("/handle-errors");
 
                         app.UseEndpoints(endpoints =>
                         {
@@ -792,7 +793,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                         app.UseRouting();
                         app.Properties["__GlobalEndpointRouteBuilder"] = app.Properties["__EndpointRouteBuilder"];
 
-                        app.UseExceptionHandler(new ExceptionHandlerOptions()
+                        GetMockWebApplication(app).UseExceptionHandler(new ExceptionHandlerOptions()
                         {
                             ExceptionHandlingPath = "/handle-errors"
                         });
@@ -856,7 +857,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                         app.UseRouting();
                         app.Properties["__GlobalEndpointRouteBuilder"] = app.Properties["__EndpointRouteBuilder"];
 
-                        app.UseExceptionHandler();
+                        GetMockWebApplication(app).UseExceptionHandler();
 
                         app.UseEndpoints(endpoints =>
                         {
@@ -916,7 +917,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                         app.UseRouting();
                         app.Properties["__GlobalEndpointRouteBuilder"] = app.Properties["__EndpointRouteBuilder"];
 
-                        app.UseExceptionHandler(new ExceptionHandlerOptions()
+                        GetMockWebApplication(app).UseExceptionHandler(new ExceptionHandlerOptions()
                         {
                             ExceptionHandler = httpContext =>
                             {
@@ -949,6 +950,23 @@ namespace Microsoft.AspNetCore.Diagnostics
                 Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
                 Assert.Equal("Custom handler", await response.Content.ReadAsStringAsync());
             }
+        }
+
+        private IApplicationBuilder GetMockWebApplication(IApplicationBuilder builder)
+        {
+            var mockApp = new Mock<IApplicationBuilder>();
+            mockApp.Setup(m => m.New()).Returns(() =>
+            {
+                builder.Properties.Remove("__GlobalEndpointRouteBuilder");
+                return builder.New();
+            });
+            mockApp.Setup(m => m.ApplicationServices).Returns(builder.ApplicationServices);
+            mockApp.Setup(m => m.Properties).Returns(builder.Properties);
+            mockApp.Setup(m => m.Build()).Returns(() => builder.Build());
+            mockApp.Setup(m => m.Use(It.IsAny<Func<RequestDelegate, RequestDelegate>>()))
+                .Returns<Func<RequestDelegate, RequestDelegate>>((f) => builder.Use(f));
+
+            return mockApp.Object;
         }
     }
 }

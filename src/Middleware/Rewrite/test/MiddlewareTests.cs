@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
@@ -699,7 +700,8 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
                     {
                         app.UseRouting();
                         app.Properties["__GlobalEndpointRouteBuilder"] = app.Properties["__EndpointRouteBuilder"];
-                        app.UseRewriter(options);
+
+                        GetMockWebApplication(app).UseRewriter(options);
 
                         app.UseEndpoints(endpoints =>
                         {
@@ -747,7 +749,8 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
                     {
                         app.UseRouting();
                         app.Properties["__GlobalEndpointRouteBuilder"] = app.Properties["__EndpointRouteBuilder"];
-                        app.UseRewriter();
+
+                        GetMockWebApplication(app).UseRewriter();
 
                         app.UseEndpoints(endpoints =>
                         {
@@ -771,6 +774,23 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
             var response = await server.CreateClient().GetStringAsync("foo");
 
             Assert.Equal(output, response);
+        }
+
+        private IApplicationBuilder GetMockWebApplication(IApplicationBuilder builder)
+        {
+            var mockApp = new Mock<IApplicationBuilder>();
+            mockApp.Setup(m => m.New()).Returns(() =>
+            {
+                builder.Properties.Remove("__GlobalEndpointRouteBuilder");
+                return builder.New();
+            });
+            mockApp.Setup(m => m.ApplicationServices).Returns(builder.ApplicationServices);
+            mockApp.Setup(m => m.Properties).Returns(builder.Properties);
+            mockApp.Setup(m => m.Build()).Returns(() => builder.Build());
+            mockApp.Setup(m => m.Use(It.IsAny<Func<RequestDelegate, RequestDelegate>>()))
+                .Returns<Func<RequestDelegate, RequestDelegate>>((f) => builder.Use(f));
+
+            return mockApp.Object;
         }
     }
 }
