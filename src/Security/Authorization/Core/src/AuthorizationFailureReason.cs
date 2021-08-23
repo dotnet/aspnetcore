@@ -22,11 +22,11 @@ namespace Microsoft.AspNetCore.Authorization
         /// <summary>
         /// A message describing the failure reason.
         /// </summary>
-        public string Message { get; set; }
+        public string Message { get; }
 
         /// <summary>
         /// The <see cref="IAuthorizationHandler"/> responsible for this failure reason.
         /// </summary>
-        public IAuthorizationHandler Handler { get; set; }
+        public IAuthorizationHandler Handler { get; }
     }
 }
