@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.E2ETests.Tests
+namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
     public class WebAssemblyPrerenderedTest : ServerTestBase<AspNetSiteServerFixture>
     {
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
-            serverFixture.BuildWebHostMethod = WasmPrerendered.Server.Program.BuildWebHost;
+            serverFixture.BuildWebHostMethod = Wasm.Prerendered.Server.Program.BuildWebHost;
             serverFixture.Environment = AspNetEnvironment.Development;
 
             var testTrimmedApps = typeof(ToggleExecutionModeServerFixture<>).Assembly

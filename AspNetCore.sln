@@ -1642,9 +1642,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testassets", "testassets", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Identity.DefaultUI.WebSite", "src\Identity\testassets\Identity.DefaultUI.WebSite\Identity.DefaultUI.WebSite.csproj", "{835A4E0F-A697-4B69-9736-3E99D163C4B9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WasmPrerendered.Client", "src\Components\WebAssembly\testassets\WasmPrerendered.Client\WasmPrerendered.Client.csproj", "{148A5B4F-C8A3-4468-92F6-51DB5641FB49}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wasm.Prerendered.Client", "src\Components\WebAssembly\testassets\Wasm.Prerendered.Client\Wasm.Prerendered.Client.csproj", "{148A5B4F-C8A3-4468-92F6-51DB5641FB49}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WasmPrerendered.Server", "src\Components\WebAssembly\testassets\WasmPrerendered.Server\WasmPrerendered.Server.csproj", "{6D365C86-3158-49F5-A21D-506C1E06E870}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wasm.Prerendered.Server", "src\Components\WebAssembly\testassets\Wasm.Prerendered.Server\Wasm.Prerendered.Server.csproj", "{6D365C86-3158-49F5-A21D-506C1E06E870}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.App.Analyzer", "src\Framework\Analyzer\src\Microsoft.AspNetCore.App.Analyzers.csproj", "{564CABB8-1B3F-4D9E-909D-260EF2B8614A}"
 EndProject

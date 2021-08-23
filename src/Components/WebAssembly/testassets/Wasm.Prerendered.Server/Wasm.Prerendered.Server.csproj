@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CustomBasePathApp\CustomBasePathApp.csproj" />
-    <ProjectReference Include="..\WasmPrerendered.Client\WasmPrerendered.Client.csproj" />
+    <ProjectReference Include="..\Wasm.Prerendered.Client\Wasm.Prerendered.Client.csproj" />
   </ItemGroup>
 
   <ItemGroup>
