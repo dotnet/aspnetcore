@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Diagnostics
@@ -211,7 +212,21 @@ namespace Microsoft.AspNetCore.Diagnostics
                         app.UseRouting();
                         app.Properties["__GlobalEndpointRouteBuilder"] = app.Properties["__EndpointRouteBuilder"];
 
-                        app.UseStatusCodePagesWithReExecute(pathFormat: "/errorPage", queryFormat: "?id={0}");
+                        // Mock app builder to simulate WebApplicationBuilders New() method
+                        var mockApp = new Mock<IApplicationBuilder>();
+                        mockApp.Setup(m => m.New()).Returns(() =>
+                        {
+                            app.Properties.Remove("__GlobalEndpointRouteBuilder");
+                            return app.New();
+                        });
+                        mockApp.Setup(m => m.ApplicationServices).Returns(app.ApplicationServices);
+                        mockApp.Setup(m => m.Properties).Returns(app.Properties);
+                        mockApp.Setup(m => m.Build()).Returns(() => app.Build());
+                        mockApp.Setup(m => m.Use(It.IsAny<Func<RequestDelegate, RequestDelegate>>()))
+                            .Returns<Func<RequestDelegate, RequestDelegate>>((f) => app.Use(f));
+
+                        mockApp.Object.UseStatusCodePagesWithReExecute(pathFormat: "/errorPage", queryFormat: "?id={0}");
+
                         app.UseEndpoints(endpoints =>
                         {
                             endpoints.MapGet("/", c =>
