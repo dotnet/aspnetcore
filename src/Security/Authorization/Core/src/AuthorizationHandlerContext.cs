@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// <summary>
         /// Gets the reasons why authorization has failed.
         /// </summary>
-        public virtual IEnumerable<AuthorizationFailureReason> FailureReasons { get { return _failedReasons ?? Array.Empty<AuthorizationFailureReason>(); } }
+        public virtual IEnumerable<AuthorizationFailureReason> FailureReasons { get { return _failedReasons != null ? _failedReasons : Array.Empty<AuthorizationFailureReason>(); } }
 
         /// <summary>
         /// Flag indicating whether the current authorization processing has failed.
