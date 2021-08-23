@@ -485,7 +485,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("focus-input-onafterrender", () => Browser.SwitchTo().ActiveElement().GetAttribute("id"));
 
             // As well as actually focusing and triggering the onfocusin event, we should not be seeing any errors
-            var log = Browser.Manage().Logs.GetLog(LogType.Browser);
+            var log = Browser.Manage().Logs.GetLog(LogType.Browser).ToArray();
             Assert.DoesNotContain(log, entry => entry.Level == LogLevel.Severe);
         }
 
