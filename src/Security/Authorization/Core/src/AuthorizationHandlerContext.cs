@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Authorization
     public class AuthorizationHandlerContext
     {
         private readonly HashSet<IAuthorizationRequirement> _pendingRequirements;
-        private List<AuthorizationFailureReason> _failedReasons;
+        private List<AuthorizationFailureReason>? _failedReasons;
         private bool _failCalled;
         private bool _succeedCalled;
 
