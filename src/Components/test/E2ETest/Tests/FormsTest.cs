@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal(new[] { "The DepartureTime field must be a time." }, messagesAccessor);
         }
 
-        [Fact(Skip = "Failing")]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/35498")]
         public void InputDateInteractsWithEditContext_MonthInput()
         {
             var appElement = MountTypicalValidationComponent();
