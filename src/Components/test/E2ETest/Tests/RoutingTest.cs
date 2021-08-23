@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Linq;
 using System.Runtime.InteropServices;
 using BasicTestApp;
 using BasicTestApp.RouterTest;
@@ -12,7 +10,6 @@ using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
@@ -808,7 +805,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var dateTime = new DateTime(2000, 1, 2, 3, 4, 5, 6);
             var dateOnly = new DateOnly(2000, 1, 2);
             var timeOnly = new TimeOnly(3, 4, 5, 6);
-            SetUrlViaPushState($"/WithQueryParameters/Abc?&NullableDateTimeValue={dateTime.ToString("u")}&NullableDateOnlyValue={dateOnly.ToString("u")}&NullableTimeOnlyValue={timeOnly.ToString("u")}");
+            SetUrlViaPushState($"/WithQueryParameters/Abc?NullableDateTimeValue=2000-01-02%2003:04:05&NullableDateOnlyValue=2000-01-02&NullableTimeOnlyValue=03:04:05");
 
             var app = Browser.MountTestComponent<TestRouter>();
             Assert.Equal("Hello Abc .", app.FindElement(By.Id("test-info")).Text);
