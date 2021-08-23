@@ -175,8 +175,7 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             const string globalRouteBuilderKey = "__GlobalEndpointRouteBuilder";
-            // Check if UseRouting() has been called so we know if it's safe to call UseRouting()
-            // otherwise we might call UseRouting() when AddRouting() hasn't been called which would fail
+            // Only use this path if there's a global router (in the 'WebApplication' case).
             if (app.Properties.TryGetValue(globalRouteBuilderKey, out var routeBuilder))
             {
                 return app.Use(next =>
