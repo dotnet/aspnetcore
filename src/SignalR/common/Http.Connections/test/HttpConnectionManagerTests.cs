@@ -449,6 +449,138 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         }
     }
 
+        [Fact]
+        public async Task ShutdownCallbackCanHaveMultipleCallbacks()
+        {
+            using (StartVerifiableLog())
+            {
+                var beforeShutdown = new DefaultBeforeShutdown();
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                var count = 0;
+                beforeShutdown.Register(() =>
+                {
+                    ++count;
+                    return tcs.Task;
+                });
+                beforeShutdown.Register(() => {
+                    ++count;
+                    return Task.CompletedTask;
+                });
+
+                var connectionManager = CreateConnectionManager(LoggerFactory, beforeShutdown: beforeShutdown);
+
+                var connection = connectionManager.CreateConnection();
+
+                var closeTask = connectionManager.CloseConnections(beforeShutdown);
+
+                var result = await connection.Application.Output.FlushAsync();
+                // Shutdown callback prevents close from being called on the connection
+                Assert.False(result.IsCompleted);
+                Assert.False(closeTask.IsCompleted);
+
+                Assert.Equal(1, count);
+                tcs.SetResult();
+                await closeTask.DefaultTimeout();
+                Assert.Equal(2, count);
+
+                result = await connection.Application.Output.FlushAsync();
+                Assert.True(result.IsCompleted);
+            }
+        }
+
+        [Fact]
+        public async Task ShutdownCallbackThrowIgnored()
+        {
+            using (StartVerifiableLog())
+            {
+                var beforeShutdown = new DefaultBeforeShutdown();
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                beforeShutdown.Register(() => throw new Exception());
+                beforeShutdown.Register(() => tcs.Task);
+
+                var connectionManager = CreateConnectionManager(LoggerFactory, beforeShutdown: beforeShutdown);
+
+                var connection = connectionManager.CreateConnection();
+
+                var closeTask = connectionManager.CloseConnections(beforeShutdown);
+
+                var result = await connection.Application.Output.FlushAsync();
+                // Shutdown callback prevents close from being called on the connection
+                Assert.False(result.IsCompleted);
+                Assert.False(closeTask.IsCompleted);
+
+                tcs.SetResult();
+                await closeTask.DefaultTimeout();
+
+                result = await connection.Application.Output.FlushAsync();
+                Assert.True(result.IsCompleted);
+            }
+        }
+
+        public class TestBeforeShutdown : IBeforeShutdown
+        {
+            List<Func<Task>> _callbacks = new List<Func<Task>>();
+
+            public IDisposable Register(Func<Task> callback)
+            {
+                _callbacks.Add(callback);
+                return null;
+            }
+
+            public async Task TriggerAsync()
+            {
+                foreach (var callback in _callbacks)
+                {
+                    await callback();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task NonDefaultShutdownCallbackThrowIgnored()
+        {
+            using (StartVerifiableLog())
+            {
+                var beforeShutdown = new TestBeforeShutdown();
+                beforeShutdown.Register(() => throw new Exception());
+
+                var connectionManager = CreateConnectionManager(LoggerFactory, beforeShutdown: beforeShutdown);
+
+                var connection = connectionManager.CreateConnection();
+
+                await connectionManager.CloseConnections(beforeShutdown);
+
+                var result = await connection.Application.Output.FlushAsync();
+                Assert.True(result.IsCompleted);
+            }
+        }
+
+        [Fact]
+        public async Task ShutdownCallbackCanRemoveRegistration()
+        {
+            using (StartVerifiableLog())
+            {
+                var beforeShutdown = new DefaultBeforeShutdown();
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                beforeShutdown.Register(() => throw new Exception());
+                var disposable = beforeShutdown.Register(() => tcs.Task);
+                disposable.Dispose();
+
+                var connectionManager = CreateConnectionManager(LoggerFactory, beforeShutdown: beforeShutdown);
+
+                var connection = connectionManager.CreateConnection();
+
+                var closeTask = connectionManager.CloseConnections(beforeShutdown);
+
+                var result = await connection.Application.Output.FlushAsync();
+
+                Assert.True(result.IsCompleted);
+                Assert.True(closeTask.IsCompleted);
+
+                await closeTask.DefaultTimeout();
+            }
+        }
+
         private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory,
             IHostApplicationLifetime lifetime = null, ConnectionOptions options = null, IBeforeShutdown beforeShutdown = null)
         {
