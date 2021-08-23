@@ -399,6 +399,13 @@ function StopProcesses {
   return 0
 }
 
+function TryLogClientIpAddress () {
+  echo 'Attempting to log this client''s IP for Azure Package feed telemetry purposes'
+  if command -v curl > /dev/null; then
+    curl -s 'http://co1.msedge.net/fdv2/diagnostics.aspx' | grep ' IP: '
+  fi
+}
+
 function MSBuild {
   local args=$@
   if [[ "$pipelines_log" == true ]]; then
