@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Can become invalid
             expiryDateInput.SendKeys("11-11-11111\t");
-            Browser.Equal("modified invalid", () => expiryDateInput.GetAttribute("class")); // FAIL here, still valid
+            Browser.Equal("modified invalid", () => expiryDateInput.GetAttribute("class"));
             Browser.Equal(new[] { "The OptionalExpiryDate field must be a date." }, messagesAccessor);
 
             // Empty is valid, because it's nullable
@@ -285,7 +285,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Can become invalid
             visitMonthInput.SendKeys($"11{Keys.ArrowRight}11111\t");
-            Browser.Equal("modified invalid", () => visitMonthInput.GetAttribute("class")); // FAIL HERE Expected: modified invalid; Actual: modified valid
+            Browser.Equal("modified invalid", () => visitMonthInput.GetAttribute("class"));
             Browser.Equal(new[] { "The VisitMonth field must be a year and month." }, messagesAccessor);
 
             // Empty is invalid, because it's not nullable
