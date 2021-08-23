@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
+using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
@@ -27,9 +28,8 @@ internal partial class HttpConnectionManager
     private readonly long _disconnectTimeoutTicks;
     private readonly ConnectionOptions _connectionOptions;
 
-    internal Func<Task>? ShutdownDelay => _connectionOptions.ShutdownCallback;
-
-    public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions)
+    public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions,
+        IBeforeShutdown beforeShutdown)
     {
         _logger = loggerFactory.CreateLogger<HttpConnectionManager>();
         _connectionLogger = loggerFactory.CreateLogger<HttpConnectionContext>();
@@ -38,7 +38,7 @@ internal partial class HttpConnectionManager
 
         // Register these last as the callbacks could run immediately
         appLifetime.ApplicationStarted.Register(() => Start());
-        appLifetime.ApplicationStopping.Register(() => CloseConnections());
+        appLifetime.ApplicationStopping.Register(() => _ = CloseConnections(beforeShutdown));
     }
 
 
@@ -173,14 +173,20 @@ internal partial class HttpConnectionManager
         }
     }
 
-    public async Task CloseConnections()
+    public async Task CloseConnections(IBeforeShutdown beforeShutdown)
     {
-        if (ShutdownDelay is not null)
+        // ...
+        if (beforeShutdown is DefaultBeforeShutdown defaultBeforeShutdown)
         {
-            // Delay to let users react to application shutdown before we close the SignalR connections
-            // Review: dispatch (to avoid any sync-over-async operations) and Task.WhenAny(userTask, Task.Delay())?
-            // or just let them do whatever and the server can close connections
-            await ShutdownDelay();
+            var callbacks = defaultBeforeShutdown.Callbacks;
+            foreach (var callback in callbacks)
+            {
+                try
+                {
+                    await callback();
+                }
+                catch { }
+            }
         }
 
         // Stop firing the timer

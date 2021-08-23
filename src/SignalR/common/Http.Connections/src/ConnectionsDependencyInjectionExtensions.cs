@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -25,6 +26,7 @@ public static class ConnectionsDependencyInjectionExtensions
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<ConnectionOptions>, ConnectionOptionsSetup>());
         services.TryAddSingleton<HttpConnectionDispatcher>();
         services.TryAddSingleton<HttpConnectionManager>();
+        services.TryAddSingleton<IBeforeShutdown, DefaultBeforeShutdown>();
         return services;
     }
 

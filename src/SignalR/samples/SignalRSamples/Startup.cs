@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text.Json;
 using SignalRSamples.ConnectionHandlers;
 using SignalRSamples.Hubs;
+using Microsoft.AspNetCore.Http.Connections.Features;
 
 namespace SignalRSamples;
 
@@ -30,7 +31,6 @@ public class Startup
     {
         var sn = new ShutdownNotification();
         services.AddSingleton(sn);
-        services.AddConnections();
 
         services.AddSignalR()
         .AddMessagePackProtocol();
@@ -38,8 +38,14 @@ public class Startup
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IBeforeShutdown beforeShutdown, ShutdownNotification sn)
     {
+        beforeShutdown.Register(() =>
+        {
+            sn.Cancel();
+            return Task.CompletedTask;
+        });
+
         app.UseFileServer();
 
         if (env.IsDevelopment())
