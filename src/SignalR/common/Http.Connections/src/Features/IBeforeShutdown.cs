@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Http.Connections.Features
 {
-    public interface IBeforeShutdown
+    public interface IBeforeShutdown : IEnumerable<Func<Task>>
     {
         /// <summary>
         /// Register a function to run when graceful shutdown starts and before connections are closed.

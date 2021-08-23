@@ -26,7 +26,6 @@ internal partial class HttpConnectionManager
     private readonly ILogger<HttpConnectionManager> _logger;
     private readonly ILogger<HttpConnectionContext> _connectionLogger;
     private readonly long _disconnectTimeoutTicks;
-    private readonly ConnectionOptions _connectionOptions;
 
     public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions,
         IBeforeShutdown beforeShutdown)
@@ -175,18 +174,13 @@ internal partial class HttpConnectionManager
 
     public async Task CloseConnections(IBeforeShutdown beforeShutdown)
     {
-        // ...
-        if (beforeShutdown is DefaultBeforeShutdown defaultBeforeShutdown)
+        foreach (var callback in beforeShutdown)
         {
-            var callbacks = defaultBeforeShutdown.Callbacks;
-            foreach (var callback in callbacks)
+            try
             {
-                try
-                {
-                    await callback();
-                }
-                catch { }
+                await callback();
             }
+            catch { }
         }
 
         // Stop firing the timer
