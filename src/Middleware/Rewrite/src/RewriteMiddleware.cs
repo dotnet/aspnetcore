@@ -100,6 +100,10 @@ namespace Microsoft.AspNetCore.Rewrite
             if (originalPath != context.Request.Path)
             {
                 context.SetEndpoint(null);
+                if (_options.BranchedNext is not null)
+                {
+                    return _options.BranchedNext(context);
+                }
             }
 
             return _next(context);

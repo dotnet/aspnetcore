@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Builder
             const string globalRouteBuilderKey = "__GlobalEndpointRouteBuilder";
             // Check if UseRouting() has been called so we know if it's safe to call UseRouting()
             // otherwise we might call UseRouting() when AddRouting() hasn't been called which would fail
-            if (app.Properties.TryGetValue("__EndpointRouteBuilder", out _) || app.Properties.TryGetValue(globalRouteBuilderKey, out _))
+            if (app.Properties.TryGetValue(globalRouteBuilderKey, out var routeBuilder))
             {
                 return app.Use(next =>
                 {
@@ -65,7 +65,9 @@ namespace Microsoft.AspNetCore.Builder
                         options = app.ApplicationServices.GetRequiredService<IOptions<RewriteOptions>>();
                     }
 
-                    app.Properties.TryGetValue(globalRouteBuilderKey, out var routeBuilder);
+                    var webHostEnv = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
+                    var loggerFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
+
                     // start a new middleware pipeline
                     var builder = app.New();
                     builder.UseMiddleware<RewriteMiddleware>(options);
@@ -73,11 +75,13 @@ namespace Microsoft.AspNetCore.Builder
                     {
                         // use the old routing pipeline if it exists so we preserve all the routes and matching logic
                         builder.Properties[globalRouteBuilderKey] = routeBuilder;
+                        builder.UseRouting();
+                        // apply the next middleware
+                        builder.Run(next);
+                        options.Value.BranchedNext = builder.Build();
                     }
-                    builder.UseRouting();
-                    builder.Run(next);
-                    // apply the next middleware
-                    return builder.Build();
+
+                    return new RewriteMiddleware(next, webHostEnv, loggerFactory, options).Invoke;
                 });
             }
 

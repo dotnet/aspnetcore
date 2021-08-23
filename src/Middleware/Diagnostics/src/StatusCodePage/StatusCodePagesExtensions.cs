@@ -174,7 +174,37 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            Func<StatusCodeContext, Task> handler = async context =>
+            const string globalRouteBuilderKey = "__GlobalEndpointRouteBuilder";
+            // Check if UseRouting() has been called so we know if it's safe to call UseRouting()
+            // otherwise we might call UseRouting() when AddRouting() hasn't been called which would fail
+            if (app.Properties.TryGetValue(globalRouteBuilderKey, out var routeBuilder))
+            {
+                return app.Use(next =>
+                {
+                    RequestDelegate? newNext = null;
+                    // start a new middleware pipeline
+                    var builder = app.New();
+                    if (routeBuilder is not null)
+                    {
+                        // use the old routing pipeline if it exists so we preserve all the routes and matching logic
+                        builder.Properties[globalRouteBuilderKey] = routeBuilder;
+                        builder.UseRouting();
+                        // apply the next middleware
+                        builder.Run(next);
+                        newNext = builder.Build();
+                    }
+
+                    return new StatusCodePagesMiddleware(next,
+                        Options.Create(new StatusCodePagesOptions() { HandleAsync = CreateHandler(pathFormat, queryFormat, newNext) })).Invoke;
+                });
+            }
+
+            return app.UseStatusCodePages(CreateHandler(pathFormat, queryFormat));
+        }
+
+        private static Func<StatusCodeContext, Task> CreateHandler(string pathFormat, string? queryFormat, RequestDelegate? next = null)
+        {
+            var handler = async (StatusCodeContext context) =>
             {
                 var newPath = new PathString(
                     string.Format(CultureInfo.InvariantCulture, pathFormat, context.HttpContext.Response.StatusCode));
@@ -202,7 +232,14 @@ namespace Microsoft.AspNetCore.Builder
                 context.HttpContext.Request.QueryString = newQueryString;
                 try
                 {
-                    await context.Next(context.HttpContext);
+                    if (next is not null)
+                    {
+                        await next(context.HttpContext);
+                    }
+                    else
+                    {
+                        await context.Next(context.HttpContext);
+                    }
                 }
                 finally
                 {
@@ -212,30 +249,7 @@ namespace Microsoft.AspNetCore.Builder
                 }
             };
 
-            const string globalRouteBuilderKey = "__GlobalEndpointRouteBuilder";
-            // Check if UseRouting() has been called so we know if it's safe to call UseRouting()
-            // otherwise we might call UseRouting() when AddRouting() hasn't been called which would fail
-            if (app.Properties.TryGetValue("__EndpointRouteBuilder", out _) || app.Properties.TryGetValue(globalRouteBuilderKey, out _))
-            {
-                return app.Use(next =>
-                {
-                    app.Properties.TryGetValue(globalRouteBuilderKey, out var routeBuilder);
-                    // start a new middleware pipeline
-                    var builder = app.New();
-                    if (routeBuilder is not null)
-                    {
-                        // use the old routing pipeline if it exists so we preserve all the routes and matching logic
-                        builder.Properties[globalRouteBuilderKey] = routeBuilder;
-                    }
-                    builder.UseStatusCodePages(handler);
-                    builder.UseRouting();
-                    // apply the next middleware
-                    builder.Run(next);
-                    return builder.Build();
-                });
-            }
-
-            return app.UseStatusCodePages(handler);
+            return handler;
         }
     }
 }
