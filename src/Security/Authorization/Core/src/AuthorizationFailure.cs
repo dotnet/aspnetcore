@@ -40,18 +40,6 @@ namespace Microsoft.AspNetCore.Authorization
             };
 
         /// <summary>
-        /// Calls Fail and stores the failure reasons for future reference. Can be called multiple times. 
-        /// </summary>
-        /// <param name="reasons">The reasons of failure</param>
-        /// <returns>The failure.</returns>
-        public static AuthorizationFailure ExplicitFail(IEnumerable<AuthorizationFailureReason> reasons)
-            => new AuthorizationFailure
-            {
-                FailCalled = true,
-                FailureReasons = reasons
-            };
-
-        /// <summary>
         /// Return a failure due to <see cref="AuthorizationHandlerContext.Fail(AuthorizationFailureReason)"/> being called.
         /// </summary>
         /// <returns>The failure.</returns>
