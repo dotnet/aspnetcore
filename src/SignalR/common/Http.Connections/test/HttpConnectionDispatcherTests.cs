@@ -1353,7 +1353,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
                 await ws.Client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
             }
 
-            await manager.CloseConnections();
+            await manager.CloseConnections(new DefaultBeforeShutdown());
 
             await request1.DefaultTimeout();
         }
@@ -1418,7 +1418,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
 
             Assert.False(request2.IsCompleted);
 
-            await manager.CloseConnections();
+            await manager.CloseConnections(new DefaultBeforeShutdown());
 
             await request2;
         }
@@ -1479,7 +1479,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
 
             Assert.Equal(HttpConnectionStatus.Active, connection.Status);
 
-            await manager.CloseConnections();
+            await manager.CloseConnections(new DefaultBeforeShutdown());
 
             await request1.DefaultTimeout();
             await request2.DefaultTimeout();
@@ -3287,7 +3287,8 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
     {
         var connectionOptions = new ConnectionOptions();
         connectionOptions.DisconnectTimeout = disconnectTimeout;
-        return new HttpConnectionManager(loggerFactory ?? new LoggerFactory(), new EmptyApplicationLifetime(), Options.Create(connectionOptions));
+        return new HttpConnectionManager(loggerFactory ?? new LoggerFactory(), new EmptyApplicationLifetime(),
+            Options.Create(connectionOptions), new DefaultBeforeShutdown());
     }
 
     private string GetContentAsString(Stream body)

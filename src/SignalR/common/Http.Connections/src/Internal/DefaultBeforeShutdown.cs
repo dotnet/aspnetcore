@@ -1,12 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Connections.Features;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal
@@ -15,20 +9,31 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
     {
         internal List<Func<Task>> Callbacks { get; } = new();
 
-        public IEnumerator<Func<Task>> GetEnumerator()
-        {
-            return Callbacks.GetEnumerator();
-        }
-
         public IDisposable Register(Func<Task> func)
         {
-            Callbacks.Add(func);
+            lock (Callbacks)
+            {
+                Callbacks.Add(func);
+            }
             return new Disposable(Callbacks, func);
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
+        public async Task TriggerAsync()
         {
-            return GetEnumerator();
+            Func<Task>[] callbacks;
+            lock (Callbacks)
+            {
+                callbacks = Callbacks.ToArray();
+                Callbacks.Clear();
+            }
+            foreach (var callback in callbacks)
+            {
+                try
+                {
+                    await callback();
+                }
+                catch { }
+            }
         }
 
         private class Disposable : IDisposable
@@ -44,7 +49,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             public void Dispose()
             {
-                _list.Remove(_func);
+                lock (_list)
+                {
+                    _list.Remove(_func);
+                }
             }
         }
     }

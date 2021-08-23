@@ -174,14 +174,11 @@ internal partial class HttpConnectionManager
 
     public async Task CloseConnections(IBeforeShutdown beforeShutdown)
     {
-        foreach (var callback in beforeShutdown)
+        try
         {
-            try
-            {
-                await callback();
-            }
-            catch { }
+            await beforeShutdown.TriggerAsync();
         }
+        catch { }
 
         // Stop firing the timer
         _nextHeartbeat.Dispose();

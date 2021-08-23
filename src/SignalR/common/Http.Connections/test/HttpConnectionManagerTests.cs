@@ -4,6 +4,7 @@
 using System;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.Testing;
@@ -268,7 +269,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
                 }
             });
 
-            await connectionManager.CloseConnections();
+            await connectionManager.CloseConnections(new DefaultBeforeShutdown());
 
             await connection.DisposeAsync();
         }
@@ -424,12 +425,16 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
     {
         using (StartVerifiableLog())
         {
+
+            var beforeShutdown = new DefaultBeforeShutdown();
             var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            var connectionManager = CreateConnectionManager(LoggerFactory,
-                options: new ConnectionOptions() { ShutdownCallback = () => tcs.Task });
+            beforeShutdown.Register(() => tcs.Task);
+
+            var connectionManager = CreateConnectionManager(LoggerFactory, beforeShutdown: beforeShutdown);
 
             var connection = connectionManager.CreateConnection();
 
+            var closeTask = connectionManager.CloseConnections(beforeShutdown);
 
             var result = await connection.Application.Output.FlushAsync();
             // Shutdown callback prevents close from being called on the connection
@@ -444,12 +449,13 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         }
     }
 
-    private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory,
-        IHostApplicationLifetime lifetime = null, ConnectionOptions options = null)
-    {
-        lifetime = lifetime ?? new EmptyApplicationLifetime();
-        return new HttpConnectionManager(loggerFactory, lifetime, Options.Create(options ?? new ConnectionOptions()));
-    }
+        private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory,
+            IHostApplicationLifetime lifetime = null, ConnectionOptions options = null, IBeforeShutdown beforeShutdown = null)
+        {
+            lifetime = lifetime ?? new EmptyApplicationLifetime();
+            return new HttpConnectionManager(loggerFactory, lifetime, Options.Create(options ?? new ConnectionOptions()),
+                beforeShutdown ?? new DefaultBeforeShutdown());
+        }
 
     [Flags]
     public enum ConnectionStates
