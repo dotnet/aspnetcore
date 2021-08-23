@@ -5,16 +5,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.CodeAnalysis.CSharp.Symbols;
 
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
     /// Provides extension methods for <see cref="IEndpointRouteBuilder"/> to define HTTP API endpoints.
     /// </summary>
-    public static class MinimalActionEndpointRouteBuilderExtensions
+    public static class DelegateEndpointRouteBuilderExtensions
     {
         // Avoid creating a new array every call
         private static readonly string[] GetVerb = new[] { "GET" };
@@ -28,14 +31,14 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
-        /// <param name="action">The delegate executed when the endpoint is matched.</param>
+        /// <param name="handler">The delegate executed when the endpoint is matched.</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static MinimalActionEndpointConventionBuilder MapGet(
+        public static DelegateEndpointConventionBuilder MapGet(
             this IEndpointRouteBuilder endpoints,
             string pattern,
-            Delegate action)
+            Delegate handler)
         {
-            return MapMethods(endpoints, pattern, GetVerb, action);
+            return MapMethods(endpoints, pattern, GetVerb, handler);
         }
 
         /// <summary>
@@ -44,14 +47,14 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
-        /// <param name="action">The delegate executed when the endpoint is matched.</param>
+        /// <param name="handler">The delegate executed when the endpoint is matched.</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static MinimalActionEndpointConventionBuilder MapPost(
+        public static DelegateEndpointConventionBuilder MapPost(
             this IEndpointRouteBuilder endpoints,
             string pattern,
-            Delegate action)
+            Delegate handler)
         {
-            return MapMethods(endpoints, pattern, PostVerb, action);
+            return MapMethods(endpoints, pattern, PostVerb, handler);
         }
 
         /// <summary>
@@ -60,14 +63,14 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
-        /// <param name="action">The delegate executed when the endpoint is matched.</param>
+        /// <param name="handler">The delegate executed when the endpoint is matched.</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static MinimalActionEndpointConventionBuilder MapPut(
+        public static DelegateEndpointConventionBuilder MapPut(
             this IEndpointRouteBuilder endpoints,
             string pattern,
-            Delegate action)
+            Delegate handler)
         {
-            return MapMethods(endpoints, pattern, PutVerb, action);
+            return MapMethods(endpoints, pattern, PutVerb, handler);
         }
 
         /// <summary>
@@ -76,14 +79,14 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
-        /// <param name="action">The delegate executed when the endpoint is matched.</param>
+        /// <param name="handler">The delegate executed when the endpoint is matched.</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static MinimalActionEndpointConventionBuilder MapDelete(
+        public static DelegateEndpointConventionBuilder MapDelete(
             this IEndpointRouteBuilder endpoints,
             string pattern,
-            Delegate action)
+            Delegate handler)
         {
-            return MapMethods(endpoints, pattern, DeleteVerb, action);
+            return MapMethods(endpoints, pattern, DeleteVerb, handler);
         }
 
         /// <summary>
@@ -92,22 +95,23 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
-        /// <param name="action">The delegate executed when the endpoint is matched.</param>
+        /// <param name="handler">The delegate executed when the endpoint is matched.</param>
         /// <param name="httpMethods">HTTP methods that the endpoint will match.</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static MinimalActionEndpointConventionBuilder MapMethods(
+        public static DelegateEndpointConventionBuilder MapMethods(
            this IEndpointRouteBuilder endpoints,
            string pattern,
            IEnumerable<string> httpMethods,
-           Delegate action)
+           Delegate handler)
         {
             if (httpMethods is null)
             {
                 throw new ArgumentNullException(nameof(httpMethods));
             }
 
-            var builder = endpoints.Map(RoutePatternFactory.Parse(pattern), action);
-            builder.WithDisplayName($"{pattern} HTTP: {string.Join(", ", httpMethods)}");
+            var builder = endpoints.Map(RoutePatternFactory.Parse(pattern), handler);
+            // Prepends the HTTP method to the DisplayName produced with pattern + method name
+            builder.Add(b => b.DisplayName = $"HTTP: {string.Join(", ", httpMethods)} {b.DisplayName}");
             builder.WithMetadata(new HttpMethodMetadata(httpMethods));
             return builder;
         }
@@ -118,14 +122,14 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
-        /// <param name="action">The delegate executed when the endpoint is matched.</param>
+        /// <param name="handler">The delegate executed when the endpoint is matched.</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static MinimalActionEndpointConventionBuilder Map(
+        public static DelegateEndpointConventionBuilder Map(
             this IEndpointRouteBuilder endpoints,
             string pattern,
-            Delegate action)
+            Delegate handler)
         {
-            return Map(endpoints, RoutePatternFactory.Parse(pattern), action);
+            return Map(endpoints, RoutePatternFactory.Parse(pattern), handler);
         }
 
         /// <summary>
@@ -134,12 +138,12 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
-        /// <param name="action">The delegate executed when the endpoint is matched.</param>
+        /// <param name="handler">The delegate executed when the endpoint is matched.</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static MinimalActionEndpointConventionBuilder Map(
+        public static DelegateEndpointConventionBuilder Map(
             this IEndpointRouteBuilder endpoints,
             RoutePattern pattern,
-            Delegate action)
+            Delegate handler)
         {
             if (endpoints is null)
             {
@@ -151,9 +155,9 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(pattern));
             }
 
-            if (action is null)
+            if (handler is null)
             {
-                throw new ArgumentNullException(nameof(action));
+                throw new ArgumentNullException(nameof(handler));
             }
 
             const int defaultOrder = 0;
@@ -170,8 +174,10 @@ namespace Microsoft.AspNetCore.Builder
                 RouteParameterNames = routeParams
             };
 
+            var requestDelegateResult = RequestDelegateFactory.Create(handler, options);
+
             var builder = new RouteEndpointBuilder(
-                RequestDelegateFactory.Create(action, options),
+                requestDelegateResult.RequestDelegate,
                 pattern,
                 defaultOrder)
             {
@@ -179,13 +185,32 @@ namespace Microsoft.AspNetCore.Builder
             };
 
             // REVIEW: Should we add an IActionMethodMetadata with just MethodInfo on it so we are
-            // explicit about the MethodInfo representing the "action" and not the RequestDelegate?
+            // explicit about the MethodInfo representing the "handler" and not the RequestDelegate?
 
             // Add MethodInfo as metadata to assist with OpenAPI generation for the endpoint.
-            builder.Metadata.Add(action.Method);
+            builder.Metadata.Add(handler.Method);
+
+            // Methods defined in a top-level program are generated as statics so the delegate
+            // target will be null. Inline lambdas are compiler generated method so they can
+            // be filtered that way.
+            if (GeneratedNameParser.TryParseLocalFunctionName(handler.Method.Name, out var endpointName)
+                || !TypeHelper.IsCompilerGeneratedMethod(handler.Method))
+            {
+                endpointName ??= handler.Method.Name;
+
+                builder.Metadata.Add(new EndpointNameMetadata(endpointName));
+                builder.Metadata.Add(new RouteNameMetadata(endpointName));
+                builder.DisplayName = $"{builder.DisplayName} => {endpointName}";
+            }
 
             // Add delegate attributes as metadata
-            var attributes = action.Method.GetCustomAttributes();
+            var attributes = handler.Method.GetCustomAttributes();
+
+            // Add add request delegate metadata 
+            foreach (var metadata in requestDelegateResult.EndpointMetadata)
+            {
+                builder.Metadata.Add(metadata);
+            }
 
             // This can be null if the delegate is a dynamic method or compiled from an expression tree
             if (attributes is not null)
@@ -203,7 +228,7 @@ namespace Microsoft.AspNetCore.Builder
                 endpoints.DataSources.Add(dataSource);
             }
 
-            return new MinimalActionEndpointConventionBuilder(dataSource.AddEndpointBuilder(builder));
+            return new DelegateEndpointConventionBuilder(dataSource.AddEndpointBuilder(builder));
         }
 
         /// <summary>
@@ -211,7 +236,7 @@ namespace Microsoft.AspNetCore.Builder
         /// requests for non-file-names with the lowest possible priority.
         /// </summary>
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
-        /// <param name="action">The delegate executed when the endpoint is matched.</param>
+        /// <param name="handler">The delegate executed when the endpoint is matched.</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         /// <remarks>
         /// <para>
@@ -225,19 +250,19 @@ namespace Microsoft.AspNetCore.Builder
         /// <c>{*path:nonfile}</c>. The order of the registered endpoint will be <c>int.MaxValue</c>.
         /// </para>
         /// </remarks>
-        public static MinimalActionEndpointConventionBuilder MapFallback(this IEndpointRouteBuilder endpoints, Delegate action)
+        public static DelegateEndpointConventionBuilder MapFallback(this IEndpointRouteBuilder endpoints, Delegate handler)
         {
             if (endpoints == null)
             {
                 throw new ArgumentNullException(nameof(endpoints));
             }
 
-            if (action == null)
+            if (handler == null)
             {
-                throw new ArgumentNullException(nameof(action));
+                throw new ArgumentNullException(nameof(handler));
             }
 
-            return endpoints.MapFallback("{*path:nonfile}", action);
+            return endpoints.MapFallback("{*path:nonfile}", handler);
         }
 
         /// <summary>
@@ -246,7 +271,7 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
-        /// <param name="action">The delegate executed when the endpoint is matched.</param>
+        /// <param name="handler">The delegate executed when the endpoint is matched.</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         /// <remarks>
         /// <para>
@@ -261,10 +286,10 @@ namespace Microsoft.AspNetCore.Builder
         /// to exclude requests for static files.
         /// </para>
         /// </remarks>
-        public static MinimalActionEndpointConventionBuilder MapFallback(
+        public static DelegateEndpointConventionBuilder MapFallback(
             this IEndpointRouteBuilder endpoints,
             string pattern,
-            Delegate action)
+            Delegate handler)
         {
             if (endpoints == null)
             {
@@ -276,12 +301,12 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(pattern));
             }
 
-            if (action == null)
+            if (handler == null)
             {
-                throw new ArgumentNullException(nameof(action));
+                throw new ArgumentNullException(nameof(handler));
             }
 
-            var conventionBuilder = endpoints.Map(pattern, action);
+            var conventionBuilder = endpoints.Map(pattern, handler);
             conventionBuilder.WithDisplayName("Fallback " + pattern);
             conventionBuilder.Add(b => ((RouteEndpointBuilder)b).Order = int.MaxValue);
             return conventionBuilder;

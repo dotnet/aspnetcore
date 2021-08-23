@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -324,7 +325,6 @@ namespace Microsoft.AspNetCore.Mvc
                         typeof(MatcherPolicy),
                         new Type[]
                         {
-                            typeof(ConsumesMatcherPolicy),
                             typeof(ActionConstraintMatcherPolicy),
                             typeof(DynamicControllerEndpointMatcherPolicy),
                         }

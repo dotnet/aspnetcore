@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Net;
@@ -91,7 +92,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var httpContext = new DefaultHttpContext();
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var factoryResult = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -111,7 +113,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 BindingFlags.NonPublic | BindingFlags.Static,
                 new[] { typeof(HttpContext) });
 
-            var requestDelegate = RequestDelegateFactory.Create(methodInfo!);
+            var factoryResult = RequestDelegateFactory.Create(methodInfo!);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             var httpContext = new DefaultHttpContext();
 
@@ -156,7 +159,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 return new TestNonStaticActionClass(2);
             }
 
-            var requestDelegate = RequestDelegateFactory.Create(methodInfo!, _ => GetTarget());
+            var factoryResult = RequestDelegateFactory.Create(methodInfo!, _ => GetTarget());
+            var requestDelegate = factoryResult.RequestDelegate;
 
             var httpContext = new DefaultHttpContext();
 
@@ -181,10 +185,10 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var serviceProvider = new EmptyServiceProvider();
 
-            var exNullAction = Assert.Throws<ArgumentNullException>(() => RequestDelegateFactory.Create(action: null!));
+            var exNullAction = Assert.Throws<ArgumentNullException>(() => RequestDelegateFactory.Create(handler: null!));
             var exNullMethodInfo1 = Assert.Throws<ArgumentNullException>(() => RequestDelegateFactory.Create(methodInfo: null!));
 
-            Assert.Equal("action", exNullAction.ParamName);
+            Assert.Equal("handler", exNullAction.ParamName);
             Assert.Equal("methodInfo", exNullMethodInfo1.ParamName);
         }
 
@@ -202,7 +206,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.Request.RouteValues[paramName] = originalRouteParam.ToString(NumberFormatInfo.InvariantInfo);
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var factoryResult = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -229,7 +234,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var httpContext = new DefaultHttpContext();
 
-            var requestDelegate = RequestDelegateFactory.Create((int? id, HttpContext httpContext) =>
+            var factoryResult = RequestDelegateFactory.Create((int? id, HttpContext httpContext) =>
             {
                 if (id is not null)
                 {
@@ -237,6 +242,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 }
             },
             new() { RouteParameterNames = new string[] { "id" } });
+
+            var requestDelegate = factoryResult.RequestDelegate;
 
             httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
             {
@@ -253,7 +260,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var httpContext = new DefaultHttpContext();
 
-            var requestDelegate = RequestDelegateFactory.Create((int? id, HttpContext httpContext) =>
+            var factoryResult = RequestDelegateFactory.Create((int? id, HttpContext httpContext) =>
             {
                 if (id is not null)
                 {
@@ -271,6 +278,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 ["id"] = "42"
             };
 
+            var requestDelegate = factoryResult.RequestDelegate;
+
             await requestDelegate(httpContext);
 
             Assert.Equal(41, httpContext.Items["input"]);
@@ -281,7 +290,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var httpContext = new DefaultHttpContext();
 
-            var requestDelegate = RequestDelegateFactory.Create((int? id, HttpContext httpContext) =>
+            var factoryResult = RequestDelegateFactory.Create((int? id, HttpContext httpContext) =>
             {
                 if (id is not null)
                 {
@@ -299,6 +308,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 ["id"] = "42"
             };
 
+            var requestDelegate = factoryResult.RequestDelegate;
             await requestDelegate(httpContext);
 
             Assert.Equal(42, httpContext.Items["input"]);
@@ -311,7 +321,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             Assert.NotNull(methodInfo);
 
-            var requestDelegate = RequestDelegateFactory.Create(methodInfo!);
+            var factoryResult = RequestDelegateFactory.Create(methodInfo!);
+            var requestDelegate = factoryResult.RequestDelegate;
+
             var context = new DefaultHttpContext();
 
             await requestDelegate(context);
@@ -337,7 +349,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var httpContext = new DefaultHttpContext();
 
-            var requestDelegate = RequestDelegateFactory.Create(TestOptional);
+            var factoryResult = RequestDelegateFactory.Create(TestOptional);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -349,7 +362,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var httpContext = new DefaultHttpContext();
 
-            var requestDelegate = RequestDelegateFactory.Create(TestOptional);
+            var factoryResult = RequestDelegateFactory.Create(TestOptional);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -361,7 +375,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var httpContext = new DefaultHttpContext();
 
-            var requestDelegate = RequestDelegateFactory.Create(TestOptionalString);
+            var factoryResult = RequestDelegateFactory.Create(TestOptionalString);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -378,7 +393,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             httpContext.Request.RouteValues[paramName] = originalRouteParam.ToString(NumberFormatInfo.InvariantInfo);
 
-            var requestDelegate = RequestDelegateFactory.Create(TestOptional);
+            var factoryResult = RequestDelegateFactory.Create(TestOptional);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -401,7 +417,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.Request.RouteValues[specifiedName] = originalRouteParam.ToString(NumberFormatInfo.InvariantInfo);
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var factoryResult = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -428,7 +445,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             serviceCollection.AddSingleton(LoggerFactory);
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var factoryResult = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -499,45 +517,49 @@ namespace Microsoft.AspNetCore.Routing.Internal
             }
         }
 
-        private record MyTryParseHttpContextRecord(Uri Uri)
+        private class MyBindAsyncTypeThatThrows
         {
-            public static bool TryParse(HttpContext context, out MyTryParseHttpContextRecord? result)
+            public static ValueTask<object?> BindAsync(HttpContext context)
+            {
+                throw new InvalidOperationException("BindAsync failed");
+            }
+        }
+
+        private record MyBindAsyncRecord(Uri Uri)
+        {
+            public static ValueTask<object?> BindAsync(HttpContext context)
             {
                 if (!Uri.TryCreate(context.Request.Headers.Referer, UriKind.Absolute, out var uri))
                 {
-                    result = null;
-                    return false;
+                    return ValueTask.FromResult<object?>(null);
                 }
 
-                result = new MyTryParseHttpContextRecord(uri);
-                return true;
+                return ValueTask.FromResult<object?>(new MyBindAsyncRecord(uri));
             }
 
             // TryParse(HttpContext, ...) should be preferred over TryParse(string, ...) if there's
             // no [FromRoute] or [FromQuery] attributes.
-            public static bool TryParse(string? value, out MyTryParseHttpContextRecord? result)
+            public static bool TryParse(string? value, out MyBindAsyncRecord? result)
             {
                 throw new NotImplementedException();
             }
         }
 
-        private record struct MyTryParseHttpContextStruct(Uri Uri)
+        private record struct MyBindAsyncStruct(Uri Uri)
         {
-            public static bool TryParse(HttpContext context, out MyTryParseHttpContextStruct result)
+            public static ValueTask<object?> BindAsync(HttpContext context)
             {
                 if (!Uri.TryCreate(context.Request.Headers.Referer, UriKind.Absolute, out var uri))
                 {
-                    result = default;
-                    return false;
+                    return ValueTask.FromResult<object?>(null);
                 }
 
-                result = new MyTryParseHttpContextStruct(uri);
-                return true;
+                return ValueTask.FromResult<object?>(new MyBindAsyncStruct(uri));
             }
 
             // TryParse(HttpContext, ...) should be preferred over TryParse(string, ...) if there's
             // no [FromRoute] or [FromQuery] attributes.
-            public static bool TryParse(string? value, out MyTryParseHttpContextStruct result) =>
+            public static bool TryParse(string? value, out MyBindAsyncStruct result) =>
                 throw new NotImplementedException();
         }
 
@@ -553,7 +575,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             serviceCollection.AddSingleton(LoggerFactory);
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create(action);
+            var factoryResult = RequestDelegateFactory.Create(action);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -574,7 +597,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             serviceCollection.AddSingleton(LoggerFactory);
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create(action);
+            var factoryResult = RequestDelegateFactory.Create(action);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -593,10 +617,12 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 ["tryParsable"] = "invalid!"
             });
 
-            var requestDelegate = RequestDelegateFactory.Create((HttpContext httpContext, int tryParsable) =>
+            var factoryResult = RequestDelegateFactory.Create((HttpContext httpContext, int tryParsable) =>
             {
                 httpContext.Items["tryParsable"] = tryParsable;
             });
+
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -604,44 +630,48 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Fact]
-        public async Task RequestDelegatePrefersTryParseHttpContextOverTryParseString()
+        public async Task RequestDelegatePrefersBindAsyncOverTryParseString()
         {
             var httpContext = new DefaultHttpContext();
 
             httpContext.Request.Headers.Referer = "https://example.org";
 
-            var requestDelegate = RequestDelegateFactory.Create((HttpContext httpContext, MyTryParseHttpContextRecord tryParsable) =>
+            var resultFactory = RequestDelegateFactory.Create((HttpContext httpContext, MyBindAsyncRecord tryParsable) =>
             {
                 httpContext.Items["tryParsable"] = tryParsable;
             });
 
+            var requestDelegate = resultFactory.RequestDelegate;
+
             await requestDelegate(httpContext);
 
-            Assert.Equal(new MyTryParseHttpContextRecord(new Uri("https://example.org")), httpContext.Items["tryParsable"]);
+            Assert.Equal(new MyBindAsyncRecord(new Uri("https://example.org")), httpContext.Items["tryParsable"]);
         }
 
         [Fact]
-        public async Task RequestDelegatePrefersTryParseHttpContextOverTryParseStringForNonNullableStruct()
+        public async Task RequestDelegatePrefersBindAsyncOverTryParseStringForNonNullableStruct()
         {
             var httpContext = new DefaultHttpContext();
 
             httpContext.Request.Headers.Referer = "https://example.org";
 
-            var requestDelegate = RequestDelegateFactory.Create((HttpContext httpContext, MyTryParseHttpContextStruct tryParsable) =>
+            var resultFactory = RequestDelegateFactory.Create((HttpContext httpContext, MyBindAsyncStruct tryParsable) =>
             {
                 httpContext.Items["tryParsable"] = tryParsable;
             });
 
+            var requestDelegate = resultFactory.RequestDelegate;
             await requestDelegate(httpContext);
 
-            Assert.Equal(new MyTryParseHttpContextStruct(new Uri("https://example.org")), httpContext.Items["tryParsable"]);
+            Assert.Equal(new MyBindAsyncStruct(new Uri("https://example.org")), httpContext.Items["tryParsable"]);
         }
 
         [Fact]
-        public async Task RequestDelegateUsesTryParseStringoOverTryParseHttpContextGivenExplicitAttribute()
+        public async Task RequestDelegateUsesTryParseStringoOverBindAsyncGivenExplicitAttribute()
         {
-            var fromRouteRequestDelegate = RequestDelegateFactory.Create((HttpContext httpContext, [FromRoute] MyTryParseHttpContextRecord tryParsable) => { });
-            var fromQueryRequestDelegate = RequestDelegateFactory.Create((HttpContext httpContext, [FromQuery] MyTryParseHttpContextRecord tryParsable) => { });
+            var fromRouteFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, [FromRoute] MyBindAsyncRecord tryParsable) => { });
+            var fromQueryFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, [FromQuery] MyBindAsyncRecord tryParsable) => { });
+
 
             var httpContext = new DefaultHttpContext
             {
@@ -658,14 +688,17 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 },
             };
 
+            var fromRouteRequestDelegate = fromRouteFactoryResult.RequestDelegate;
+            var fromQueryRequestDelegate = fromQueryFactoryResult.RequestDelegate;
+
             await Assert.ThrowsAsync<NotImplementedException>(() => fromRouteRequestDelegate(httpContext));
             await Assert.ThrowsAsync<NotImplementedException>(() => fromQueryRequestDelegate(httpContext));
         }
 
         [Fact]
-        public async Task RequestDelegateUsesTryParseStringoOverTryParseHttpContextGivenNullableStruct()
+        public async Task RequestDelegateUsesTryParseStringOverBindAsyncGivenNullableStruct()
         {
-            var fromRouteRequestDelegate = RequestDelegateFactory.Create((HttpContext httpContext, MyTryParseHttpContextStruct? tryParsable) => { });
+            var fromRouteFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, MyBindAsyncStruct? tryParsable) => { });
 
             var httpContext = new DefaultHttpContext
             {
@@ -678,6 +711,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 },
             };
 
+            var fromRouteRequestDelegate = fromRouteFactoryResult.RequestDelegate;
             await Assert.ThrowsAsync<NotImplementedException>(() => fromRouteRequestDelegate(httpContext));
         }
 
@@ -734,7 +768,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             httpContext.Features.Set<IHttpRequestLifetimeFeature>(new TestHttpRequestLifetimeFeature());
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var factoryResult = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -756,7 +791,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Fact]
-        public async Task RequestDelegateLogsTryParseHttpContextFailuresAndSets400Response()
+        public async Task RequestDelegateLogsBindAsyncFailuresAndSets400Response()
         {
             // Not supplying any headers will cause the HttpContext TryParse overload to fail.
             var httpContext = new DefaultHttpContext()
@@ -766,11 +801,12 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var invoked = false;
 
-            var requestDelegate = RequestDelegateFactory.Create((MyTryParseHttpContextRecord arg1, MyTryParseHttpContextRecord arg2) =>
+            var factoryResult = RequestDelegateFactory.Create((MyBindAsyncRecord arg1, MyBindAsyncRecord arg2) =>
             {
                 invoked = true;
             });
 
+            var requestDelegate = factoryResult.RequestDelegate;
             await requestDelegate(httpContext);
 
             Assert.False(invoked);
@@ -781,13 +817,142 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             Assert.Equal(2, logs.Length);
 
-            Assert.Equal(new EventId(5, "ParamaterBindingFromHttpContextFailed"), logs[0].EventId);
+            Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[0].EventId);
             Assert.Equal(LogLevel.Debug, logs[0].LogLevel);
-            Assert.Equal(@"Failed to bind parameter ""MyTryParseHttpContextRecord arg1"" from HttpContext.", logs[0].Message);
+            Assert.Equal(@"Required parameter ""MyBindAsyncRecord arg1"" was not provided.", logs[0].Message);
 
-            Assert.Equal(new EventId(5, "ParamaterBindingFromHttpContextFailed"), logs[1].EventId);
+            Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[1].EventId);
             Assert.Equal(LogLevel.Debug, logs[1].LogLevel);
-            Assert.Equal(@"Failed to bind parameter ""MyTryParseHttpContextRecord arg2"" from HttpContext.", logs[1].Message);
+            Assert.Equal(@"Required parameter ""MyBindAsyncRecord arg2"" was not provided.", logs[1].Message);
+        }
+
+        [Fact]
+        public async Task BindAsyncExceptionsThrowException()
+        {
+            // Not supplying any headers will cause the HttpContext TryParse overload to fail.
+            var httpContext = new DefaultHttpContext()
+            {
+                RequestServices = new ServiceCollection().AddSingleton(LoggerFactory).BuildServiceProvider(),
+            };
+
+            var factoryResult = RequestDelegateFactory.Create((MyBindAsyncTypeThatThrows arg1) => { });
+
+            var requestDelegate = factoryResult.RequestDelegate;
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => requestDelegate(httpContext));
+            Assert.Equal("BindAsync failed", ex.Message);
+        }
+
+        [Fact]
+        public async Task BindAsyncWithBodyArgument()
+        {
+            Todo originalTodo = new()
+            {
+                Name = "Write more tests!"
+            };
+
+            var httpContext = new DefaultHttpContext();
+
+            var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(originalTodo);
+            var stream = new MemoryStream(requestBodyBytes); ;
+            httpContext.Request.Body = stream;
+
+            httpContext.Request.Headers["Content-Type"] = "application/json";
+            httpContext.Request.Headers["Content-Length"] = stream.Length.ToString();
+            httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+            var jsonOptions = new JsonOptions();
+            jsonOptions.SerializerOptions.Converters.Add(new TodoJsonConverter());
+
+            var mock = new Mock<IServiceProvider>();
+            mock.Setup(m => m.GetService(It.IsAny<Type>())).Returns<Type>(t =>
+            {
+                if (t == typeof(IOptions<JsonOptions>))
+                {
+                    return Options.Create(jsonOptions);
+                }
+                return null;
+            });
+
+            httpContext.RequestServices = mock.Object;
+            httpContext.Request.Headers.Referer = "https://example.org";
+
+            var invoked = false;
+
+            var factoryResult = RequestDelegateFactory.Create((HttpContext context, MyBindAsyncRecord arg1, Todo todo) =>
+            {
+                invoked = true;
+                context.Items[nameof(arg1)] = arg1;
+                context.Items[nameof(todo)] = todo;
+            });
+
+            var requestDelegate = factoryResult.RequestDelegate;
+
+            await requestDelegate(httpContext);
+
+            Assert.True(invoked);
+            var arg = httpContext.Items["arg1"] as MyBindAsyncRecord;
+            Assert.NotNull(arg);
+            Assert.Equal("https://example.org/", arg!.Uri.ToString());
+            var todo = httpContext.Items["todo"] as Todo;
+            Assert.NotNull(todo);
+            Assert.Equal("Write more tests!", todo!.Name);
+        }
+
+        [Fact]
+        public async Task BindAsyncRunsBeforeBodyBinding()
+        {
+            Todo originalTodo = new()
+            {
+                Name = "Write more tests!"
+            };
+
+            var httpContext = new DefaultHttpContext();
+
+            var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(originalTodo);
+            var stream = new MemoryStream(requestBodyBytes); ;
+            httpContext.Request.Body = stream;
+
+            httpContext.Request.Headers["Content-Type"] = "application/json";
+            httpContext.Request.Headers["Content-Length"] = stream.Length.ToString();
+            httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+            var jsonOptions = new JsonOptions();
+            jsonOptions.SerializerOptions.Converters.Add(new TodoJsonConverter());
+
+            var mock = new Mock<IServiceProvider>();
+            mock.Setup(m => m.GetService(It.IsAny<Type>())).Returns<Type>(t =>
+            {
+                if (t == typeof(IOptions<JsonOptions>))
+                {
+                    return Options.Create(jsonOptions);
+                }
+                return null;
+            });
+
+            httpContext.RequestServices = mock.Object;
+            httpContext.Request.Headers.Referer = "https://example.org";
+
+            var invoked = false;
+
+            var factoryResult = RequestDelegateFactory.Create((HttpContext context, CustomTodo customTodo, Todo todo) =>
+            {
+                invoked = true;
+                context.Items[nameof(customTodo)] = customTodo;
+                context.Items[nameof(todo)] = todo;
+            });
+
+            var requestDelegate = factoryResult.RequestDelegate;
+
+            await requestDelegate(httpContext);
+
+            Assert.True(invoked);
+            var todo0 = httpContext.Items["customTodo"] as Todo;
+            Assert.NotNull(todo0);
+            Assert.Equal("Write more tests!", todo0!.Name);
+            var todo1 = httpContext.Items["todo"] as Todo;
+            Assert.NotNull(todo1);
+            Assert.Equal("Write more tests!", todo1!.Name);
         }
 
         [Fact]
@@ -811,7 +976,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Query = query;
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var factoryResult = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -834,7 +1000,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Headers[customHeaderName] = originalHeaderParam.ToString(NumberFormatInfo.InvariantInfo);
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var factoryResult = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -908,7 +1075,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             });
             httpContext.RequestServices = mock.Object;
 
-            var requestDelegate = RequestDelegateFactory.Create(action);
+            var factoryResult = RequestDelegateFactory.Create(action);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -930,7 +1098,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             serviceCollection.AddSingleton(LoggerFactory);
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create(action);
+            var factoryResult = RequestDelegateFactory.Create(action);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -951,7 +1120,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             httpContext.Request.Headers["Content-Type"] = "application/json";
             httpContext.Request.Headers["Content-Length"] = "0";
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var factoryResult = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -975,7 +1145,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             httpContext.Request.Headers["Content-Type"] = "application/json";
             httpContext.Request.Headers["Content-Length"] = "0";
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var factoryResult = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -1004,7 +1175,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var factoryResult = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -1040,7 +1212,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var factoryResult = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -1113,7 +1286,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.RequestServices = new EmptyServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create(action);
+            var factoryResult = RequestDelegateFactory.Create(action);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await Assert.ThrowsAsync<InvalidOperationException>(() => requestDelegate(httpContext));
         }
@@ -1135,7 +1309,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.RequestServices = requestScoped.ServiceProvider;
 
-            var requestDelegate = RequestDelegateFactory.Create(action, options: new() { ServiceProvider = services });
+            var factoryResult = RequestDelegateFactory.Create(action, options: new() { ServiceProvider = services });
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -1154,7 +1329,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var httpContext = new DefaultHttpContext();
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var factoryResult = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -1177,7 +1353,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 RequestAborted = cts.Token
             };
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var factoryResult = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -1199,7 +1376,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 User = new ClaimsPrincipal()
             };
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var factoryResult = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -1218,7 +1396,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var httpContext = new DefaultHttpContext();
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var factoryResult = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -1237,7 +1416,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var httpContext = new DefaultHttpContext();
 
-            var requestDelegate = RequestDelegateFactory.Create(TestAction);
+            var factoryResult = RequestDelegateFactory.Create(TestAction);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -1281,7 +1461,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var responseBodyStream = new MemoryStream();
             httpContext.Response.Body = responseBodyStream;
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var factoryResult = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -1355,7 +1536,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var responseBodyStream = new MemoryStream();
             httpContext.Response.Body = responseBodyStream;
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var factoryResult = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -1418,7 +1600,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var responseBodyStream = new MemoryStream();
             httpContext.Response.Body = responseBodyStream;
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var factoryResult = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -1435,7 +1618,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.Response.ContentType = "application/json; charset=utf-8";
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var factoryResult = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -1474,7 +1658,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var responseBodyStream = new MemoryStream();
             httpContext.Response.Body = responseBodyStream;
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var factoryResult = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -1515,7 +1700,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var responseBodyStream = new MemoryStream();
             httpContext.Response.Body = responseBodyStream;
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var factoryResult = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -1553,7 +1739,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var responseBodyStream = new MemoryStream();
             httpContext.Response.Body = responseBodyStream;
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var factoryResult = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             var exception = await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await requestDelegate(httpContext));
             Assert.Contains(message, exception.Message);
@@ -1598,7 +1785,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var responseBodyStream = new MemoryStream();
             httpContext.Response.Body = responseBodyStream;
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var factoryResult = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -1657,7 +1845,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             serviceCollection.AddSingleton(LoggerFactory);
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var factoryResult = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -1728,10 +1917,12 @@ namespace Microsoft.AspNetCore.Routing.Internal
             serviceCollection.AddSingleton(LoggerFactory);
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate, new()
+            var factoryResult = RequestDelegateFactory.Create(@delegate, new()
             {
                 RouteParameterNames = routeParam is not null ? new[] { paramName } : Array.Empty<string>()
             });
+
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -1802,7 +1993,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             serviceCollection.AddSingleton(Options.Create(jsonOptions));
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var factoryResult = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -1825,11 +2017,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
             }
         }
 
-        public async Task RequestDelegateDoesNotSupportTryParseHttpContextOptionality()
+        [Fact]
+        public async Task RequestDelegateDoesSupportBindAsyncOptionality()
         {
-            // Not supplying any headers will cause the HttpContext TryParse overload to fail.
-            // However, RequestDelegateFactory cannot differentiate between a missing parameter and an invalid one, so
-            // the nullability of the argument doesn't change behavior.
             var httpContext = new DefaultHttpContext()
             {
                 RequestServices = new ServiceCollection().AddSingleton(LoggerFactory).BuildServiceProvider(),
@@ -1837,23 +2027,15 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var invoked = false;
 
-            var requestDelegate = RequestDelegateFactory.Create((MyTryParseHttpContextRecord? arg1) =>
+            var factoryResult = RequestDelegateFactory.Create((MyBindAsyncRecord? arg1) =>
             {
                 invoked = true;
             });
 
+            var requestDelegate = factoryResult.RequestDelegate;
             await requestDelegate(httpContext);
 
-            Assert.False(invoked);
-            Assert.False(httpContext.RequestAborted.IsCancellationRequested);
-            Assert.Equal(400, httpContext.Response.StatusCode);
-
-            var logs = TestSink.Writes.ToArray();
-            var log = Assert.Single(logs);
-
-            Assert.Equal(new EventId(5, "ParamaterBindingFromHttpContextFailed"), log.EventId);
-            Assert.Equal(LogLevel.Debug, log.LogLevel);
-            Assert.Equal(@"Failed to bind parameter ""MyTryParseHttpContextRecord arg1"" from HttpContext.", log.Message);
+            Assert.True(invoked);
         }
 
         public static IEnumerable<object?[]> ServiceParamOptionalityData
@@ -1896,7 +2078,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             httpContext.RequestServices = services;
             RequestDelegateFactoryOptions options = new() { ServiceProvider = services };
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate, options);
+            var factoryResult = RequestDelegateFactory.Create(@delegate, options);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             if (!isInvalid)
             {
@@ -1940,7 +2123,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
             serviceCollection.AddSingleton(LoggerFactory);
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var factoryResult = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = factoryResult.RequestDelegate;
+
 
             await requestDelegate(httpContext);
 
@@ -1982,7 +2167,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 });
             }
 
-            var requestDelegate = RequestDelegateFactory.Create(optionalQueryParam);
+            var factoryResult = RequestDelegateFactory.Create(optionalQueryParam);
+            var requestDelegate = factoryResult.RequestDelegate;
 
             await requestDelegate(httpContext);
 
@@ -2011,8 +2197,39 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 });
             }
 
-            var requestDelegate = RequestDelegateFactory.Create(optionalQueryParam);
+            var factoryResult = RequestDelegateFactory.Create(optionalQueryParam);
+            var requestDelegate = factoryResult.RequestDelegate;
 
+            await requestDelegate(httpContext);
+
+            Assert.Equal(200, httpContext.Response.StatusCode);
+            Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+            var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+            Assert.Equal(expectedResponse, decodedResponseBody);
+        }
+
+        [Theory]
+        [InlineData(true, "Age: 42")]
+        [InlineData(false, "Age: ")]
+        public async Task TreatsUnknownNullabilityAsOptionalForReferenceType(bool provideValue, string expectedResponse)
+        {
+            string optionalQueryParam(string age) => $"Age: {age}";
+
+            var httpContext = new DefaultHttpContext();
+            var responseBodyStream = new MemoryStream();
+            httpContext.Response.Body = responseBodyStream;
+
+            if (provideValue)
+            {
+                httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+                {
+                    ["age"] = "42"
+                });
+            }
+
+            var factoryResult = RequestDelegateFactory.Create(optionalQueryParam);
+
+            var requestDelegate = factoryResult.RequestDelegate;
             await requestDelegate(httpContext);
 
             Assert.Equal(200, httpContext.Response.StatusCode);
@@ -2028,6 +2245,16 @@ namespace Microsoft.AspNetCore.Routing.Internal
             public int Id { get; set; }
             public string? Name { get; set; } = "Todo";
             public bool IsComplete { get; set; }
+        }
+
+        private class CustomTodo : Todo
+        {
+            public static async ValueTask<object?> BindAsync(HttpContext context)
+            {
+                var body = await context.Request.ReadFromJsonAsync<CustomTodo>();
+                context.Request.Body.Position = 0;
+                return body;
+            }
         }
 
         private record struct TodoStruct(int Id, string? Name, bool IsComplete) : ITodo;

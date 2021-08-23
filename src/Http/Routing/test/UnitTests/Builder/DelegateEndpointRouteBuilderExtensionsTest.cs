@@ -17,7 +17,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Builder
 {
-    public class MinimalActionEndpointDataSourceBuilderExtensionsTest
+    public class DelegateEndpointRouteBuilderExtensionsTest
     {
         private ModelEndpointDataSource GetBuilderEndpointDataSource(IEndpointRouteBuilder endpointRouteBuilder)
         {
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal("GET", method);
 
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal("/ HTTP: GET", routeEndpointBuilder.DisplayName);
+            Assert.Equal("HTTP: GET /", routeEndpointBuilder.DisplayName);
             Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
         }
 
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal("GET", method);
 
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal("/{id} HTTP: GET", routeEndpointBuilder.DisplayName);
+            Assert.Equal("HTTP: GET /{id}", routeEndpointBuilder.DisplayName);
             Assert.Equal("/{id}", routeEndpointBuilder.RoutePattern.RawText);
 
             // Assert that we don't fallback to the query string
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal("GET", method);
 
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal("/ HTTP: GET", routeEndpointBuilder.DisplayName);
+            Assert.Equal("HTTP: GET /", routeEndpointBuilder.DisplayName);
             Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
 
             // Assert that we don't fallback to the route values
@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal(expectedMethod, method);
 
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal($"/{{ID}} HTTP: {expectedMethod}", routeEndpointBuilder.DisplayName);
+            Assert.Equal($"HTTP: {expectedMethod} /{{ID}}", routeEndpointBuilder.DisplayName);
             Assert.Equal($"/{{ID}}", routeEndpointBuilder.RoutePattern.RawText);
 
             var httpContext = new DefaultHttpContext();
@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal(expectedMethod, method);
 
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal($"/{{ID}} HTTP: {expectedMethod}", routeEndpointBuilder.DisplayName);
+            Assert.Equal($"HTTP: {expectedMethod} /{{ID}}", routeEndpointBuilder.DisplayName);
             Assert.Equal($"/{{ID}}", routeEndpointBuilder.RoutePattern.RawText);
 
             // Assert that we don't fallback to the query string
@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal("POST", method);
 
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal("/ HTTP: POST", routeEndpointBuilder.DisplayName);
+            Assert.Equal("HTTP: POST /", routeEndpointBuilder.DisplayName);
             Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
         }
 
@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal("PUT", method);
 
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal("/ HTTP: PUT", routeEndpointBuilder.DisplayName);
+            Assert.Equal("HTTP: PUT /", routeEndpointBuilder.DisplayName);
             Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
         }
 
@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal("DELETE", method);
 
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal("/ HTTP: DELETE", routeEndpointBuilder.DisplayName);
+            Assert.Equal("HTTP: DELETE /", routeEndpointBuilder.DisplayName);
             Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
         }
 
@@ -357,6 +357,106 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Single(routeEndpointBuilder.RoutePattern.Parameters);
             Assert.True(routeEndpointBuilder.RoutePattern.Parameters[0].IsCatchAll);
             Assert.Equal(int.MaxValue, routeEndpointBuilder.Order);
+        }
+
+        [Fact]
+        // This test scenario simulates methods defined in a top-level program
+        // which are compiler generated. We currently do some manually parsing leveraging
+        // code in Roslyn to support this scenario. More info at https://github.com/dotnet/roslyn/issues/55651.
+        public void MapMethod_DoesNotEndpointNameForInnerMethod()
+        {
+            var name = "InnerGetString";
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            string InnerGetString() => "TestString";
+            _ = builder.MapDelete("/", InnerGetString);
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var endpointName = endpoint.Metadata.GetMetadata<IEndpointNameMetadata>();
+            var routeName = endpoint.Metadata.GetMetadata<IRouteNameMetadata>();
+            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+            Assert.Equal(name, endpointName?.EndpointName);
+            Assert.Equal(name, routeName?.RouteName);
+            Assert.Equal("HTTP: DELETE / => InnerGetString", routeEndpointBuilder.DisplayName);
+        }
+
+        [Fact]
+        public void MapMethod_DoesNotEndpointNameForInnerMethodWithTarget()
+        {
+            var name = "InnerGetString";
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            var testString = "TestString";
+            string InnerGetString() => testString;
+            _ = builder.MapDelete("/", InnerGetString);
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var endpointName = endpoint.Metadata.GetMetadata<IEndpointNameMetadata>();
+            var routeName = endpoint.Metadata.GetMetadata<IRouteNameMetadata>();
+            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+            Assert.Equal(name, endpointName?.EndpointName);
+            Assert.Equal(name, routeName?.RouteName);
+            Assert.Equal("HTTP: DELETE / => InnerGetString", routeEndpointBuilder.DisplayName);
+        }
+
+
+        [Fact]
+        public void MapMethod_SetsEndpointNameForMethodGroup()
+        {
+            var name = "GetString";
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            _ = builder.MapDelete("/", GetString);
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var endpointName = endpoint.Metadata.GetMetadata<IEndpointNameMetadata>();
+            var routeName = endpoint.Metadata.GetMetadata<IRouteNameMetadata>();
+            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+            Assert.Equal(name, endpointName?.EndpointName);
+            Assert.Equal(name, routeName?.RouteName);
+            Assert.Equal("HTTP: DELETE / => GetString", routeEndpointBuilder.DisplayName);
+        }
+
+        [Fact]
+        public void WithNameOverridesDefaultEndpointName()
+        {
+            var name = "SomeCustomName";
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            _ = builder.MapDelete("/", GetString).WithName(name);
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var endpointName = endpoint.Metadata.GetMetadata<IEndpointNameMetadata>();
+            var routeName = endpoint.Metadata.GetMetadata<IRouteNameMetadata>();
+            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+            Assert.Equal(name, endpointName?.EndpointName);
+            Assert.Equal(name, routeName?.RouteName);
+            // Will still use the original method name, not the custom endpoint name
+            Assert.Equal("HTTP: DELETE / => GetString", routeEndpointBuilder.DisplayName);
+        }
+
+        private string GetString() => "TestString";
+
+        [Fact]
+        public void MapMethod_DoesNotSetEndpointNameForLambda()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            _ = builder.MapDelete("/", () => { });
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var endpointName = endpoint.Metadata.GetMetadata<IEndpointNameMetadata>();
+            Assert.Null(endpointName);
         }
 
         class FromRoute : Attribute, IFromRouteMetadata

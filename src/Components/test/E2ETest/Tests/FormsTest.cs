@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("modified valid", () => renewalDateInput.GetAttribute("class"));
 
             // Can become invalid
-            ApplyInvalidInputDateValue(".renewal-date input", "11111-11-11");
+            renewalDateInput.SendKeys("11-11-11111\t");
             Browser.Equal("modified invalid", () => renewalDateInput.GetAttribute("class"));
             Browser.Equal(new[] { "The RenewalDate field must be a date." }, messagesAccessor);
 
@@ -236,11 +236,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Validates on edit
             Browser.Equal("valid", () => expiryDateInput.GetAttribute("class"));
-            expiryDateInput.SendKeys("01/01/2000\t");
+            expiryDateInput.SendKeys("01-01-2000\t");
             Browser.Equal("modified valid", () => expiryDateInput.GetAttribute("class"));
 
             // Can become invalid
-            ApplyInvalidInputDateValue(".expiry-date input", "11111-11-11");
+            expiryDateInput.SendKeys("11-11-11111\t");
             Browser.Equal("modified invalid", () => expiryDateInput.GetAttribute("class"));
             Browser.Equal(new[] { "The OptionalExpiryDate field must be a date." }, messagesAccessor);
 
@@ -264,21 +264,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("modified valid", () => departureTimeInput.GetAttribute("class"));
 
             // Can become invalid
-            ApplyInvalidInputDateValue(".departure-time input", "01:234:56");
+            // Stricly speaking the following is equivalent to the empty state, because that's how incomplete input is represented
+            // We don't know of any way to produce a different (non-empty-equivalent) state using UI gestures, so there's nothing else to test
+            departureTimeInput.SendKeys($"20{Keys.Backspace}\t");
             Browser.Equal("modified invalid", () => departureTimeInput.GetAttribute("class"));
             Browser.Equal(new[] { "The DepartureTime field must be a time." }, messagesAccessor);
-
-            // Empty is invalid, because it's not nullable
-            departureTimeInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t");
-            Browser.Equal("modified invalid", () => departureTimeInput.GetAttribute("class"));
-            Browser.Equal(new[] { "The DepartureTime field must be a time." }, messagesAccessor);
-
-            departureTimeInput.SendKeys("07201\t");
-            Browser.Equal("modified valid", () => departureTimeInput.GetAttribute("class"));
-            Browser.Empty(messagesAccessor);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/35498")]
         public void InputDateInteractsWithEditContext_MonthInput()
         {
             var appElement = MountTypicalValidationComponent();
@@ -287,11 +280,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Validates on edit
             Browser.Equal("valid", () => visitMonthInput.GetAttribute("class"));
-            visitMonthInput.SendKeys("03\t2005\t");
+            visitMonthInput.SendKeys($"03{Keys.ArrowRight}2005\t");
             Browser.Equal("modified valid", () => visitMonthInput.GetAttribute("class"));
 
             // Can become invalid
-            ApplyInvalidInputDateValue(".visit-month input", "05/1992");
+            visitMonthInput.SendKeys($"11{Keys.ArrowRight}11111\t");
             Browser.Equal("modified invalid", () => visitMonthInput.GetAttribute("class"));
             Browser.Equal(new[] { "The VisitMonth field must be a year and month." }, messagesAccessor);
 
@@ -300,12 +293,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("modified invalid", () => visitMonthInput.GetAttribute("class"));
             Browser.Equal(new[] { "The VisitMonth field must be a year and month." }, messagesAccessor);
 
-            visitMonthInput.SendKeys("05\t2007\t");
+            visitMonthInput.Clear();
+            visitMonthInput.SendKeys($"05{Keys.ArrowRight}2007\t");
             Browser.Equal("modified valid", () => visitMonthInput.GetAttribute("class"));
             Browser.Empty(messagesAccessor);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/35498")]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34884")]
         public void InputDateInteractsWithEditContext_DateTimeLocalInput()
         {
@@ -319,7 +313,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("modified valid", () => appointmentInput.GetAttribute("class"));
 
             // Can become invalid
-            ApplyInvalidInputDateValue(".appointment-date-time input", "1234/567/89 33:44 FM");
+            appointmentInput.SendKeys($"11{Keys.ArrowRight}11{Keys.ArrowRight}11111{Keys.ArrowRight}\t");
             Browser.Equal("modified invalid", () => appointmentInput.GetAttribute("class"));
             Browser.Equal(new[] { "The AppointmentDateAndTime field must be a date and time." }, messagesAccessor);
 
@@ -353,6 +347,34 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ticketClassInput.SelectByText("(select)");
             Browser.Equal("modified invalid", () => select.GetAttribute("class"));
             Browser.Equal(new[] { "The TicketClass field is not valid." }, messagesAccessor);
+        }
+
+        [Fact]
+        public void InputSelectInteractsWithEditContext_BoolValues()
+        {
+            var appElement = MountTypicalValidationComponent();
+            var ticketClassInput = new SelectElement(appElement.FindElement(By.ClassName("select-bool-values")).FindElement(By.TagName("select")));
+            var select = ticketClassInput.WrappedElement;
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+            // Invalidates on edit
+            Browser.Equal("valid", () => select.GetAttribute("class"));
+            ticketClassInput.SelectByText("true");
+            Browser.Equal("modified invalid", () => select.GetAttribute("class"));
+            Browser.Equal(new[] { "77 + 33 = 100 is a false statement, unfortunately." }, messagesAccessor);
+
+            // Nullable conversion can fail
+            ticketClassInput.SelectByText("(select)");
+            Browser.Equal("modified invalid", () => select.GetAttribute("class"));
+            Browser.Equal(new[]
+            {
+                "77 + 33 = 100 is a false statement, unfortunately.",
+                "The IsSelectMathStatementTrue field is not valid."
+            }, messagesAccessor);
+
+            // Can become valid
+            ticketClassInput.SelectByText("false");
+            Browser.Equal("modified valid", () => select.GetAttribute("class"));
         }
 
         [Fact]
@@ -519,6 +541,42 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             IReadOnlyCollection<IWebElement> FindCountryInputs() => group.FindElements(By.Name("country"));
 
             IReadOnlyCollection<IWebElement> FindColorInputs() => group.FindElements(By.Name("color"));
+        }
+
+        [Fact]
+        public void InputRadioGroupWithBoolValuesInteractsWithEditContext()
+        {
+            var appElement = MountTypicalValidationComponent();
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+            // Validate selected inputs
+            Browser.False(() => FindTrueInput().Selected);
+            Browser.True(() => FindFalseInput().Selected);
+
+            // Validates on edit
+            Browser.Equal("valid", () => FindTrueInput().GetAttribute("class"));
+            Browser.Equal("valid", () => FindFalseInput().GetAttribute("class"));
+
+            FindTrueInput().Click();
+
+            Browser.Equal("modified valid", () => FindTrueInput().GetAttribute("class"));
+            Browser.Equal("modified valid", () => FindFalseInput().GetAttribute("class"));
+
+            // Can become invalid
+            FindFalseInput().Click();
+
+            Browser.Equal("modified invalid", () => FindTrueInput().GetAttribute("class"));
+            Browser.Equal("modified invalid", () => FindFalseInput().GetAttribute("class"));
+            Browser.Equal(new[] { "7 * 3 = 21 is a true statement." }, messagesAccessor);
+
+            IReadOnlyCollection<IWebElement> FindInputs()
+                => appElement.FindElement(By.ClassName("radio-group-bool-values")).FindElements(By.TagName("input"));
+
+            IWebElement FindTrueInput()
+                => FindInputs().First(i => string.Equals("True", i.GetAttribute("value")));
+
+            IWebElement FindFalseInput()
+                => FindInputs().First(i => string.Equals("False", i.GetAttribute("value")));
         }
 
         [Fact]
@@ -796,21 +854,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 .Select(x => x.Text)
                 .OrderBy(x => x)
                 .ToArray();
-        }
-
-        private void ApplyInvalidInputDateValue(string cssSelector, string invalidValue)
-        {
-            // It's very difficult to enter an invalid value into an <input type=date>, because
-            // most combinations of keystrokes get normalized to something valid. Additionally,
-            // using Selenium's SendKeys interacts unpredictably with this normalization logic,
-            // most likely based on timings. As a workaround, use JS to apply the values. This
-            // should only be used when strictly necessary, as it doesn't represent actual user
-            // interaction as authentically as SendKeys in other cases.
-            var javascript = (IJavaScriptExecutor)Browser;
-            javascript.ExecuteScript(
-                $"document.querySelector('{cssSelector}').value = {JsonSerializer.Serialize(invalidValue, TestJsonSerializerOptionsProvider.Options)}");
-            javascript.ExecuteScript(
-                $"document.querySelector('{cssSelector}').dispatchEvent(new KeyboardEvent('change'))");
         }
 
         private void EnsureAttributeRendering(IWebElement element, string attributeName, bool shouldBeRendered = true)
