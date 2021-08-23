@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Builder
             const string globalRouteBuilderKey = "__GlobalEndpointRouteBuilder";
             // Check if UseRouting() has been called so we know if it's safe to call UseRouting()
             // otherwise we might call UseRouting() when AddRouting() hasn't been called which would fail
-            if (app.Properties.TryGetValue("__EndpointRouteBuilder", out _) || app.Properties.TryGetValue(globalRouteBuilderKey, out _))
+            if (app.Properties.TryGetValue(globalRouteBuilderKey, out var routeBuilder))
             {
                 return app.Use(next =>
                 {
@@ -120,7 +120,6 @@ namespace Microsoft.AspNetCore.Builder
 
                     if (!string.IsNullOrEmpty(options.Value.ExceptionHandlingPath) && options.Value.ExceptionHandler is null)
                     {
-                        app.Properties.TryGetValue(globalRouteBuilderKey, out var routeBuilder);
                         // start a new middleware pipeline
                         var builder = app.New();
                         if (routeBuilder is not null)
