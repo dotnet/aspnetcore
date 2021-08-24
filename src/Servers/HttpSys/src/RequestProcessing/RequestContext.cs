@@ -181,6 +181,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 _requestAbortSource.Dispose();
             }
+            else
+            {
+                _disconnectToken = new CancellationToken(canceled: true);
+            }
             ForceCancelRequest();
             Request.Dispose();
             // Only Abort, Response.Dispose() tries a graceful flush
