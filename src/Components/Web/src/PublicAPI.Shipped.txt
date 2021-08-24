@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 Microsoft.AspNetCore.Components.BindInputElementAttribute
 Microsoft.AspNetCore.Components.BindInputElementAttribute.BindInputElementAttribute(string? type, string? suffix, string? valueAttribute, string? changeAttribute, bool isInvariantCulture, string? format) -> void
 Microsoft.AspNetCore.Components.BindInputElementAttribute.ChangeAttribute.get -> string?
@@ -44,7 +44,6 @@ Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.CurrentValueAsString.get
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.CurrentValueAsString.set -> void
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.DisplayName.get -> string?
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.DisplayName.set -> void
-Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.EditContext.get -> Microsoft.AspNetCore.Components.Forms.EditContext!
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.EditContext.set -> void
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.FieldIdentifier.get -> Microsoft.AspNetCore.Components.Forms.FieldIdentifier
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.FieldIdentifier.set -> void

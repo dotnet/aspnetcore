@@ -1,13 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
@@ -18,9 +15,8 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public abstract class InputBase<TValue> : ComponentBase, IDisposable
     {
-        private static readonly object _defaultModel = new();
-
         private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
+        private bool _hasInitializedParameters;
         private bool _previousParsingAttemptFailed;
         private ValidationMessageStore? _parsingValidationMessages;
         private Type? _nullableUnderlyingType;
@@ -60,7 +56,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <summary>
         /// Gets the associated <see cref="Forms.EditContext"/>.
         /// </summary>
-        protected EditContext EditContext { get; set; } = default!;
+        protected EditContext? EditContext { get; set; } = default!;
 
         /// <summary>
         /// Gets the <see cref="FieldIdentifier"/> for the bound value.
@@ -80,7 +76,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                 {
                     Value = value;
                     _ = ValueChanged.InvokeAsync(Value);
-                    EditContext.NotifyFieldChanged(FieldIdentifier);
+                    EditContext?.NotifyFieldChanged(FieldIdentifier);
                 }
             }
         }
@@ -114,21 +110,24 @@ namespace Microsoft.AspNetCore.Components.Forms
                 {
                     parsingFailed = true;
 
-                    if (_parsingValidationMessages == null)
+                    if (EditContext != null)
                     {
-                        _parsingValidationMessages = new ValidationMessageStore(EditContext);
+                        if (_parsingValidationMessages == null)
+                        {
+                            _parsingValidationMessages = new ValidationMessageStore(EditContext);
+                        }
+
+                        _parsingValidationMessages.Add(FieldIdentifier, validationErrorMessage);
+
+                        // Since we're not writing to CurrentValue, we'll need to notify about modification from here
+                        EditContext.NotifyFieldChanged(FieldIdentifier);
                     }
-
-                    _parsingValidationMessages.Add(FieldIdentifier, validationErrorMessage);
-
-                    // Since we're not writing to CurrentValue, we'll need to notify about modification from here
-                    EditContext.NotifyFieldChanged(FieldIdentifier);
                 }
 
                 // We can skip the validation notification if we were previously valid and still are
                 if (parsingFailed || _previousParsingAttemptFailed)
                 {
-                    EditContext.NotifyValidationStateChanged();
+                    EditContext?.NotifyValidationStateChanged();
                     _previousParsingAttemptFailed = parsingFailed;
                 }
             }
@@ -161,41 +160,33 @@ namespace Microsoft.AspNetCore.Components.Forms
         protected abstract bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage);
 
         /// <summary>
-        /// Gets a string that indicates the status of the field being edited. This will include
-        /// some combination of "modified", "valid", or "invalid", depending on the status of the field.
-        /// </summary>
-        private string FieldClass
-            => EditContext.FieldCssClass(FieldIdentifier);
-
-        /// <summary>
-        /// Gets a CSS class string that combines the <c>class</c> attribute and <see cref="FieldClass"/>
-        /// properties. Derived components should typically use this value for the primary HTML element's
-        /// 'class' attribute.
+        /// Gets a CSS class string that combines the <c>class</c> attribute and and a string indicating
+        /// the status of the field being edited (a combination of "modified", "valid", and "invalid").
+        /// Derived components should typically use this value for the primary HTML element's 'class' attribute.
         /// </summary>
         protected string CssClass
         {
             get
             {
+                var fieldClass = EditContext?.FieldCssClass(FieldIdentifier);
+
                 if (AdditionalAttributes != null &&
                     AdditionalAttributes.TryGetValue("class", out var @class) &&
                     !string.IsNullOrEmpty(Convert.ToString(@class, CultureInfo.InvariantCulture)))
                 {
-                    return $"{@class} {FieldClass}";
+                    return fieldClass is null ? @class.ToString()! : $"{@class} {fieldClass}";
                 }
 
-                return FieldClass; // Never null or empty
+                return fieldClass ?? string.Empty;
             }
         }
 
         /// <inheritdoc />
-        [MemberNotNull(nameof(EditContext))]
         public override Task SetParametersAsync(ParameterView parameters)
         {
-            var previousCascadedEditContext = CascadedEditContext;
-
             parameters.SetParameterProperties(this);
 
-            if (EditContext == null)
+            if (!_hasInitializedParameters)
             {
                 // This is the first run
                 // Could put this logic in OnInit, but its nice to avoid forcing people who override OnInit to call base.OnInit()
@@ -206,13 +197,18 @@ namespace Microsoft.AspNetCore.Components.Forms
                         $"parameter. Normally this is provided automatically when using 'bind-Value'.");
                 }
 
-                EditContext = CascadedEditContext ?? new(_defaultModel);
                 FieldIdentifier = FieldIdentifier.Create(ValueExpression);
-                _nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(TValue));
 
-                EditContext.OnValidationStateChanged += _validationStateChangedHandler;
+                if (CascadedEditContext != null)
+                {
+                    EditContext = CascadedEditContext;
+                    EditContext.OnValidationStateChanged += _validationStateChangedHandler;
+                }
+
+                _nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(TValue));
+                _hasInitializedParameters = true;
             }
-            else if (previousCascadedEditContext != CascadedEditContext)
+            else if (CascadedEditContext != EditContext)
             {
                 // Not the first run
 
@@ -239,7 +235,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         private void UpdateAdditionalValidationAttributes()
         {
             var hasAriaInvalidAttribute = AdditionalAttributes != null && AdditionalAttributes.ContainsKey("aria-invalid");
-            if (EditContext.GetValidationMessages(FieldIdentifier).Any())
+            if (EditContext != null && EditContext.GetValidationMessages(FieldIdentifier).Any())
             {
                 if (hasAriaInvalidAttribute)
                 {
