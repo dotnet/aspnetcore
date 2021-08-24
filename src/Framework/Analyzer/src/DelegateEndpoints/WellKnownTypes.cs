@@ -4,15 +4,15 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.AspNetCore.Analyzers.MinimalActions;
+namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints;
 
 internal sealed class WellKnownTypes
 {
     public static bool TryCreate(Compilation compilation, [NotNullWhen(true)] out WellKnownTypes? wellKnownTypes)
     {
         wellKnownTypes = default;
-        const string MinimalActionEndpointRouteBuilderExtensions = "Microsoft.AspNetCore.Builder.MinimalActionEndpointRouteBuilderExtensions";
-        if (compilation.GetTypeByMetadataName(MinimalActionEndpointRouteBuilderExtensions) is not { } minimalActionEndpointRouteBuilderExtensions)
+        const string DelegateEndpointRouteBuilderExtensions = "Microsoft.AspNetCore.Builder.DelegateEndpointRouteBuilderExtensions";
+        if (compilation.GetTypeByMetadataName(DelegateEndpointRouteBuilderExtensions) is not { } delegateEndpointRouteBuilderExtensions)
         {
             return false;
         }
@@ -33,7 +33,7 @@ internal sealed class WellKnownTypes
 
         wellKnownTypes = new WellKnownTypes
         {
-            MinimalActionEndpointRouteBuilderExtensions = minimalActionEndpointRouteBuilderExtensions,
+            DelegateEndpointRouteBuilderExtensions = delegateEndpointRouteBuilderExtensions,
             IBinderTypeProviderMetadata = ibinderTypeProviderMetadata,
             BindAttribute = bindAttribute,
         };
@@ -41,7 +41,7 @@ internal sealed class WellKnownTypes
         return true;
     }
 
-    public ITypeSymbol MinimalActionEndpointRouteBuilderExtensions { get; private init; }
+    public ITypeSymbol DelegateEndpointRouteBuilderExtensions { get; private init; }
     public INamedTypeSymbol IBinderTypeProviderMetadata { get; private init; }
     public INamedTypeSymbol BindAttribute { get; private init; }
 }

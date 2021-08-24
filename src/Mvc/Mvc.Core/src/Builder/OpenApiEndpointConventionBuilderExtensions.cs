@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Http
@@ -22,9 +18,9 @@ namespace Microsoft.AspNetCore.Http
         /// Adds the <see cref="IExcludeFromDescriptionMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
         /// produced by <paramref name="builder"/>.
         /// </summary>
-        /// <param name="builder">The <see cref="MinimalActionEndpointConventionBuilder"/>.</param>
-        /// <returns>A <see cref="MinimalActionEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static MinimalActionEndpointConventionBuilder ExcludeFromDescription(this MinimalActionEndpointConventionBuilder builder)
+        /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
+        /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static DelegateEndpointConventionBuilder ExcludeFromDescription(this DelegateEndpointConventionBuilder builder)
         {
             builder.WithMetadata(_excludeFromDescriptionMetadataAttribute);
 
@@ -36,13 +32,13 @@ namespace Microsoft.AspNetCore.Http
         /// produced by <paramref name="builder"/>.
         /// </summary>
         /// <typeparam name="TResponse">The type of the response.</typeparam>
-        /// <param name="builder">The <see cref="MinimalActionEndpointConventionBuilder"/>.</param>
+        /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
         /// <param name="statusCode">The response status code. Defaults to StatusCodes.Status200OK.</param>
         /// <param name="contentType">The response content type. Defaults to "application/json".</param>
         /// <param name="additionalContentTypes">Additional response content types the endpoint produces for the supplied status code.</param>
-        /// <returns>A <see cref="MinimalActionEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
 #pragma warning disable RS0026
-        public static MinimalActionEndpointConventionBuilder Produces<TResponse>(this MinimalActionEndpointConventionBuilder builder,
+        public static DelegateEndpointConventionBuilder Produces<TResponse>(this DelegateEndpointConventionBuilder builder,
 #pragma warning restore RS0026
             int statusCode = StatusCodes.Status200OK,
             string? contentType = null,
@@ -55,14 +51,14 @@ namespace Microsoft.AspNetCore.Http
         /// Adds the <see cref="ProducesResponseTypeAttribute"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
         /// produced by <paramref name="builder"/>.
         /// </summary>
-        /// <param name="builder">The <see cref="MinimalActionEndpointConventionBuilder"/>.</param>
+        /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
         /// <param name="statusCode">The response status code.</param>
         /// <param name="responseType">The type of the response. Defaults to null.</param>
         /// <param name="contentType">The response content type. Defaults to "application/json" if responseType is not null, otherwise defaults to null.</param>
         /// <param name="additionalContentTypes">Additional response content types the endpoint produces for the supplied status code.</param>
-        /// <returns>A <see cref="MinimalActionEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
 #pragma warning disable RS0026
-        public static MinimalActionEndpointConventionBuilder Produces(this MinimalActionEndpointConventionBuilder builder,
+        public static DelegateEndpointConventionBuilder Produces(this DelegateEndpointConventionBuilder builder,
 #pragma warning restore RS0026
             int statusCode,
             Type? responseType = null,
@@ -89,11 +85,11 @@ namespace Microsoft.AspNetCore.Http
         /// Adds the <see cref="ProducesResponseTypeAttribute"/> with a <see cref="ProblemDetails"/> type
         /// to <see cref="EndpointBuilder.Metadata"/> for all builders produced by <paramref name="builder"/>.
         /// </summary>
-        /// <param name="builder">The <see cref="MinimalActionEndpointConventionBuilder"/>.</param>
+        /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
         /// <param name="statusCode">The response status code.</param>
         /// <param name="contentType">The response content type. Defaults to "application/problem+json".</param>
-        /// <returns>A <see cref="MinimalActionEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static MinimalActionEndpointConventionBuilder ProducesProblem(this MinimalActionEndpointConventionBuilder builder,
+        /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static DelegateEndpointConventionBuilder ProducesProblem(this DelegateEndpointConventionBuilder builder,
             int statusCode,
             string? contentType = null)
         {
@@ -109,11 +105,11 @@ namespace Microsoft.AspNetCore.Http
         /// Adds the <see cref="ProducesResponseTypeAttribute"/> with a <see cref="HttpValidationProblemDetails"/> type
         /// to <see cref="EndpointBuilder.Metadata"/> for all builders produced by <paramref name="builder"/>.
         /// </summary>
-        /// <param name="builder">The <see cref="MinimalActionEndpointConventionBuilder"/>.</param>
+        /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
         /// <param name="statusCode">The response status code. Defaults to StatusCodes.Status400BadRequest.</param>
         /// <param name="contentType">The response content type. Defaults to "application/validationproblem+json".</param>
-        /// <returns>A <see cref="MinimalActionEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static MinimalActionEndpointConventionBuilder ProducesValidationProblem(this MinimalActionEndpointConventionBuilder builder,
+        /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static DelegateEndpointConventionBuilder ProducesValidationProblem(this DelegateEndpointConventionBuilder builder,
             int statusCode = StatusCodes.Status400BadRequest,
             string? contentType = null)
         {
@@ -130,11 +126,11 @@ namespace Microsoft.AspNetCore.Http
         /// produced by <paramref name="builder"/>.
         /// </summary>
         /// <typeparam name="TRequest">The type of the request.</typeparam>
-        /// <param name="builder">The <see cref="MinimalActionEndpointConventionBuilder"/>.</param>
+        /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
         /// <param name="contentType">The request content type. Defaults to "application/json" if empty.</param>
         /// <param name="additionalContentTypes">Additional response content types the endpoint produces for the supplied status code.</param>
-        /// <returns>A <see cref="MinimalActionEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static MinimalActionEndpointConventionBuilder Accepts<TRequest>(this MinimalActionEndpointConventionBuilder builder, string contentType, params string[] additionalContentTypes)
+        /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static DelegateEndpointConventionBuilder Accepts<TRequest>(this DelegateEndpointConventionBuilder builder, string contentType, params string[] additionalContentTypes)
         {
             Accepts(builder, typeof(TRequest), contentType, additionalContentTypes);
 
@@ -145,12 +141,12 @@ namespace Microsoft.AspNetCore.Http
         /// Adds the <see cref="Accepts"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
         /// produced by <paramref name="builder"/>.
         /// </summary>
-        /// <param name="builder">The <see cref="MinimalActionEndpointConventionBuilder"/>.</param>
+        /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
         /// <param name="requestType">The type of the request. Defaults to null.</param>
         /// <param name="contentType">The response content type that the endpoint accepts.</param>
         /// <param name="additionalContentTypes">Additional response content types the endpoint accepts</param>
-        /// <returns>A <see cref="MinimalActionEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static MinimalActionEndpointConventionBuilder Accepts(this MinimalActionEndpointConventionBuilder builder, Type requestType,
+        /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static DelegateEndpointConventionBuilder Accepts(this DelegateEndpointConventionBuilder builder, Type requestType,
             string contentType, params string[] additionalContentTypes)
         {
             builder.WithMetadata(new ConsumesAttribute(requestType, contentType, additionalContentTypes));

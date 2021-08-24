@@ -17,7 +17,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Builder
 {
-    public class MinimalActionEndpointDataSourceBuilderExtensionsTest
+    public class DelegateEndpointRouteBuilderExtensionsTest
     {
         private ModelEndpointDataSource GetBuilderEndpointDataSource(IEndpointRouteBuilder endpointRouteBuilder)
         {

@@ -7,5 +7,6 @@ namespace CustomAuthorizationFailureResponse.Authorization
     {
         public const string CustomPolicy = "Custom";
         public const string CustomPolicyWithCustomForbiddenMessage = "CustomPolicyWithCustomForbiddenMessage";
+        public const string FailureReasonPolicy = "FailureReason";
     }
 }

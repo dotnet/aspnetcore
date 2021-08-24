@@ -330,5 +330,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
             ResetTimeout(timeSpan.Ticks, TimeoutReason.TimeoutFeature);
         }
+
+        public long GetResponseDrainDeadline(long ticks, MinDataRate minRate)
+        {
+            // On grace period overflow, use max value.
+            var gracePeriod = ticks + minRate.GracePeriod.Ticks;
+            gracePeriod = gracePeriod >= 0 ? gracePeriod : long.MaxValue;
+
+            return Math.Max(_writeTimingTimeoutTimestamp, gracePeriod);
+        }
     }
 }

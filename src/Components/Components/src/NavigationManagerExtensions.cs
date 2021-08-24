@@ -28,6 +28,8 @@ namespace Microsoft.AspNetCore.Components
             [typeof(string)] = value => Format((string)value)!,
             [typeof(bool)] = value => Format((bool)value),
             [typeof(DateTime)] = value => Format((DateTime)value),
+            [typeof(DateOnly)] = value => Format((DateOnly)value),
+            [typeof(TimeOnly)] = value => Format((TimeOnly)value),
             [typeof(decimal)] = value => Format((decimal)value),
             [typeof(double)] = value => Format((double)value),
             [typeof(float)] = value => Format((float)value),
@@ -49,6 +51,18 @@ namespace Microsoft.AspNetCore.Components
             => value.ToString(CultureInfo.InvariantCulture);
 
         private static string? Format(DateTime? value)
+            => value?.ToString(CultureInfo.InvariantCulture);
+
+        private static string Format(DateOnly value)
+            => value.ToString(CultureInfo.InvariantCulture);
+
+        private static string? Format(DateOnly? value)
+            => value?.ToString(CultureInfo.InvariantCulture);
+
+        private static string Format(TimeOnly value)
+            => value.ToString(CultureInfo.InvariantCulture);
+
+        private static string? Format(TimeOnly? value)
             => value?.ToString(CultureInfo.InvariantCulture);
 
         private static string Format(decimal value)
@@ -287,6 +301,54 @@ namespace Microsoft.AspNetCore.Components
         /// Otherwise, it will be added or updated.
         /// </remarks>
         public static string GetUriWithQueryParameter(this NavigationManager navigationManager, string name, DateTime? value)
+            => GetUriWithQueryParameter(navigationManager, name, Format(value));
+
+        /// <summary>
+        /// Returns a URI that is constructed by updating <see cref="NavigationManager.Uri"/> with a single parameter
+        /// added or updated.
+        /// </summary>
+        /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
+        /// <param name="name">The name of the parameter to add or update.</param>
+        /// <param name="value">The value of the parameter to add or update.</param>
+        public static string GetUriWithQueryParameter(this NavigationManager navigationManager, string name, DateOnly value)
+            => GetUriWithQueryParameter(navigationManager, name, Format(value));
+
+        /// <summary>
+        /// Returns a URI that is constructed by updating <see cref="NavigationManager.Uri"/> with a single parameter
+        /// added, updated, or removed.
+        /// </summary>
+        /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
+        /// <param name="name">The name of the parameter to add or update.</param>
+        /// <param name="value">The value of the parameter to add or update.</param>
+        /// <remarks>
+        /// If <paramref name="value"/> is <c>null</c>, the parameter will be removed if it exists in the URI.
+        /// Otherwise, it will be added or updated.
+        /// </remarks>
+        public static string GetUriWithQueryParameter(this NavigationManager navigationManager, string name, DateOnly? value)
+            => GetUriWithQueryParameter(navigationManager, name, Format(value));
+
+        /// <summary>
+        /// Returns a URI that is constructed by updating <see cref="NavigationManager.Uri"/> with a single parameter
+        /// added or updated.
+        /// </summary>
+        /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
+        /// <param name="name">The name of the parameter to add or update.</param>
+        /// <param name="value">The value of the parameter to add or update.</param>
+        public static string GetUriWithQueryParameter(this NavigationManager navigationManager, string name, TimeOnly value)
+            => GetUriWithQueryParameter(navigationManager, name, Format(value));
+
+        /// <summary>
+        /// Returns a URI that is constructed by updating <see cref="NavigationManager.Uri"/> with a single parameter
+        /// added, updated, or removed.
+        /// </summary>
+        /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
+        /// <param name="name">The name of the parameter to add or update.</param>
+        /// <param name="value">The value of the parameter to add or update.</param>
+        /// <remarks>
+        /// If <paramref name="value"/> is <c>null</c>, the parameter will be removed if it exists in the URI.
+        /// Otherwise, it will be added or updated.
+        /// </remarks>
+        public static string GetUriWithQueryParameter(this NavigationManager navigationManager, string name, TimeOnly? value)
             => GetUriWithQueryParameter(navigationManager, name, Format(value));
 
         /// <summary>
