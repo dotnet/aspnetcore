@@ -123,21 +123,19 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
 
             // Get custom attributes for the handler. ConsumesAttribute is one of the examples. 
-            var methodAttributes = methodInfo.GetCustomAttributes();
-            foreach (var attribute in methodAttributes)
+            var acceptsRequestType = routeEndpoint.Metadata.GetMetadata<IAcceptsMetadata>()?.RequestType;
+            if (acceptsRequestType is not null)
             {
-                ApiParameterDescription? parameterDescription;
-
-                if (attribute is IAcceptsMetadata)
+                var parameterDescriptor = new ApiParameterDescription
                 {
-                    parameterDescription = CreateConsumesAttributeParameterDescription(attribute);
-                    if (parameterDescription is null)
-                    {
-                        continue;
-                    }
+                    Name = acceptsRequestType.Name,
+                    ModelMetadata = CreateModelMetadata(acceptsRequestType),
+                    Source = BindingSource.Body,
+                    Type = acceptsRequestType,
+                    IsRequired = true,
+                };
 
-                    apiDescription.ParameterDescriptions.Add(parameterDescription!);
-                }               
+                apiDescription.ParameterDescriptions.Add(parameterDescriptor);
             }
 
             AddSupportedRequestFormats(apiDescription.SupportedRequestFormats, hasJsonBody, routeEndpoint.Metadata);
@@ -170,25 +168,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 DefaultValue = parameter.DefaultValue,
                 Type = parameter.ParameterType,
                 IsRequired = !isOptional
-            };
-        }
-
-        private static ApiParameterDescription? CreateConsumesAttributeParameterDescription(Attribute attribute)
-        {
-            var requestType = ((IAcceptsMetadata)attribute).RequestType;
-
-            if(requestType is null)
-            {
-                return null;
-            }
-
-            return new ApiParameterDescription
-            {
-                Name = requestType.Name,
-                ModelMetadata = CreateModelMetadata(requestType),
-                Source = BindingSource.Body,
-                Type = requestType,
-                IsRequired = true
             };
         }
 
