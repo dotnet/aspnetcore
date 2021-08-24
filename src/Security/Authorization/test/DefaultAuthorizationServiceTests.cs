@@ -213,11 +213,11 @@ namespace Microsoft.AspNetCore.Authorization.Test
             // Assert
             Assert.False(allowed.Succeeded);
             Assert.NotNull(allowed.Failure);
-            Assert.Equal(2, allowed.Failure.Reasons.Count());
-            var first = allowed.Failure.Reasons.First();
+            Assert.Equal(2, allowed.Failure.FailureReasons.Count());
+            var first = allowed.Failure.FailureReasons.First();
             Assert.Equal("1", first.Message);
             Assert.Equal(handler1, first.Handler);
-            var second = allowed.Failure.Reasons.Last();
+            var second = allowed.Failure.FailureReasons.Last();
             Assert.Equal("3", second.Message);
             Assert.Equal(handler3, second.Handler);
         }

@@ -31,9 +31,9 @@ namespace CustomAuthorizationFailureResponse.Authorization
             // if the authorization was forbidden, let's use custom logic to handle that.
             if (policyAuthorizationResult.Forbidden && policyAuthorizationResult.AuthorizationFailure != null)
             {
-                if (policyAuthorizationResult.AuthorizationFailure.Reasons.Any())
+                if (policyAuthorizationResult.AuthorizationFailure.FailureReasons.Any())
                 {
-                    await httpContext.Response.WriteAsync(policyAuthorizationResult.AuthorizationFailure.Reasons.First().Message);
+                    await httpContext.Response.WriteAsync(policyAuthorizationResult.AuthorizationFailure.FailureReasons.First().Message);
 
                     // return right away as the default implementation would overwrite the status code
                     return;
