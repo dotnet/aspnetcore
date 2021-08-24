@@ -306,7 +306,7 @@ __OptionalWithMultipleTypesViewComponentTagHelper.birthDate = DateTime.Now;
             }
             private Dictionary<string, object> ProcessInvokeAsyncArgs(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext __context)
             {
-                Dictionary<string, object> args = new();
+                Dictionary<string, object> args = new Dictionary<string, object>();
                 if (__context.AllAttributes.ContainsName("show-secret"))
                 {
                     args[nameof(showSecret)] = showSecret;
@@ -335,7 +335,7 @@ __OptionalWithMultipleTypesViewComponentTagHelper.birthDate = DateTime.Now;
             }
             private Dictionary<string, object> ProcessInvokeAsyncArgs(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext __context)
             {
-                Dictionary<string, object> args = new();
+                Dictionary<string, object> args = new Dictionary<string, object>();
                 if (__context.AllAttributes.ContainsName("secret"))
                 {
                     args[nameof(secret)] = secret;
@@ -371,7 +371,7 @@ __OptionalWithMultipleTypesViewComponentTagHelper.birthDate = DateTime.Now;
             }
             private Dictionary<string, object> ProcessInvokeAsyncArgs(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext __context)
             {
-                Dictionary<string, object> args = new();
+                Dictionary<string, object> args = new Dictionary<string, object>();
                 if (__context.AllAttributes.ContainsName("age"))
                 {
                     args[nameof(age)] = age;
