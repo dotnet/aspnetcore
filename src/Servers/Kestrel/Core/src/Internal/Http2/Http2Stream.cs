@@ -108,6 +108,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         // We only want to reuse a stream that was not aborted and has completely finished writing.
         // This ensures Http2OutputProducer.ProcessDataWrites is in the correct state to be reused.
+
+        // CanReuse must be evaluated on the main frame-processing looping after the stream is removed
+        // from the connection's active streams collection. This is required because a RST_STREAM
+        // frame could arrive after the END_STREAM flag is received. Only once the stream is removed
+        // from the connection's active stream collection can no longer be reset, and is safe to
+        // evaluate for pooling.
+
         public bool CanReuse => !_connectionAborted && HasResponseCompleted;
 
         protected override void OnReset()
