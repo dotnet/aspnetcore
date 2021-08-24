@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Rewrite.Logging;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
@@ -73,6 +74,8 @@ namespace Microsoft.AspNetCore.Rewrite
                 Result = RuleResult.ContinueRules
             };
 
+            var originalPath = context.Request.Path;
+
             foreach (var rule in _options.Rules)
             {
                 rule.ApplyRule(rewriteContext);
@@ -93,6 +96,24 @@ namespace Microsoft.AspNetCore.Rewrite
                         throw new ArgumentOutOfRangeException($"Invalid rule termination {rewriteContext.Result}");
                 }
             }
+
+            // If a rule changed the path we want routing to find a new endpoint
+            if (originalPath != context.Request.Path)
+            {
+                if (_options.BranchedNext is not null)
+                {
+                    // An endpoint may have already been set. Since we're going to re-invoke the middleware pipeline we need to reset
+                    // the endpoint and route values to ensure things are re-calculated.
+                    context.SetEndpoint(endpoint: null);
+                    var routeValuesFeature = context.Features.Get<IRouteValuesFeature>();
+                    if (routeValuesFeature is not null)
+                    {
+                        routeValuesFeature.RouteValues = null!;
+                    }
+                    return _options.BranchedNext(context);
+                }
+            }
+
             return _next(context);
         }
     }
