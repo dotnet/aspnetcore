@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var acceptsRequestType = routeEndpoint.Metadata.GetMetadata<IAcceptsMetadata>()?.RequestType;
             if (acceptsRequestType is not null)
             {
-                var parameterDescriptor = new ApiParameterDescription
+                var parameterDescription = new ApiParameterDescription
                 {
                     Name = acceptsRequestType.Name,
                     ModelMetadata = CreateModelMetadata(acceptsRequestType),
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     IsRequired = true,
                 };
 
-                apiDescription.ParameterDescriptions.Add(parameterDescriptor);
+                apiDescription.ParameterDescriptions.Add(parameterDescription);
             }
 
             AddSupportedRequestFormats(apiDescription.SupportedRequestFormats, hasJsonBody, routeEndpoint.Metadata);
