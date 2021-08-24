@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                 AdditionalAttributes.TryGetValue("class", out var @class) &&
                 !string.IsNullOrEmpty(Convert.ToString(@class, CultureInfo.InvariantCulture)))
             {
-                return $"{@class} {fieldClass}";
+                return string.IsNullOrEmpty(fieldClass) ? @class.ToString()! : $"{@class} {fieldClass}";
             }
 
             return fieldClass;
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
             builder.OpenElement(0, "input");
             builder.AddMultipleAttributes(1, AdditionalAttributes);
-            builder.AddAttribute(2, "class", GetCssClass(Context.FieldClass));
+            builder.AddAttributeIfNotNullOrEmpty(2, "class", GetCssClass(Context.FieldClass));
             builder.AddAttribute(3, "type", "radio");
             builder.AddAttribute(4, "name", Context.GroupName);
             builder.AddAttribute(5, "value", BindConverter.FormatValue(Value?.ToString()));

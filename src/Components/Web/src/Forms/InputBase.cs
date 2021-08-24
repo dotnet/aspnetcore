@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                     AdditionalAttributes.TryGetValue("class", out var @class) &&
                     !string.IsNullOrEmpty(Convert.ToString(@class, CultureInfo.InvariantCulture)))
                 {
-                    return fieldClass is null ? @class.ToString()! : $"{@class} {fieldClass}";
+                    return string.IsNullOrEmpty(fieldClass) ? @class.ToString()! : $"{@class} {fieldClass}";
                 }
 
                 return fieldClass ?? string.Empty;

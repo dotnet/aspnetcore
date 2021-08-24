@@ -848,6 +848,47 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("210", () => rangeWithValueLast.GetDomProperty("value"));
         }
 
+        [Fact]
+        public void InputSelectWorksWithoutEditContext()
+        {
+            var appElement = Browser.MountTestComponent<InputsWithoutEditForm>();
+            var selectElement = new SelectElement(appElement.FindElement(By.Id("selected-cities-input-select")));
+            var selectedElementText = appElement.FindElement(By.Id("selected-cities-text"));
+
+            // The bound value is expected and no class attribute exists
+            Browser.Equal("SanFrancisco", () => selectedElementText.Text);
+            Browser.False(() => ElementHasAttribute(selectElement.WrappedElement, "class"));
+
+            selectElement.SelectByIndex(2);
+            selectElement.SelectByIndex(3);
+
+            // Value binding continues to work without an edit context and the class attribute is unchanged
+            Browser.Equal("SanFrancisco, London, Madrid", () => selectedElementText.Text);
+            Browser.False(() => ElementHasAttribute(selectElement.WrappedElement, "class"));
+        }
+
+        [Fact]
+        public void InputRadioGroupWorksWithoutEditContext()
+        {
+            var appElement = Browser.MountTestComponent<InputsWithoutEditForm>();
+            var selectedInputText = appElement.FindElement(By.Id("selected-airline-text"));
+
+            // The bound value is expected and no inputs have a class attribute
+            Browser.True(() => FindRadioInputs().All(input => !ElementHasAttribute(input, "class")));
+            Browser.True(() => FindRadioInputs().First(input => input.GetAttribute("value") == "Unknown").Selected);
+            Browser.Equal("Unknown", () => selectedInputText.Text);
+
+            FindRadioInputs().First().Click();
+
+            // Value binding continues to work without an edit context and class attributes are unchanged
+            Browser.True(() => FindRadioInputs().All(input => !ElementHasAttribute(input, "class")));
+            Browser.True(() => FindRadioInputs().First(input => input.GetAttribute("value") == "BestAirline").Selected);
+            Browser.Equal("BestAirline", () => selectedInputText.Text);
+
+            IReadOnlyCollection<IWebElement> FindRadioInputs()
+                => appElement.FindElement(By.ClassName("airlines")).FindElements(By.TagName("input"));
+        }
+
         private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)
         {
             return () => appElement.FindElements(By.ClassName("validation-message"))
@@ -859,6 +900,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         private void EnsureAttributeRendering(IWebElement element, string attributeName, bool shouldBeRendered = true)
         {
             Browser.Equal(shouldBeRendered, () => element.GetAttribute(attributeName) != null);
+        }
+
+        private bool ElementHasAttribute(IWebElement webElement, string attribute)
+        {
+            var jsExecutor = (IJavaScriptExecutor)Browser;
+            return (bool)jsExecutor.ExecuteScript($"return arguments[0].attributes['{attribute}'] !== undefined;", webElement);
         }
     }
 }
