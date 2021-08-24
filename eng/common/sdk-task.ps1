@@ -83,6 +83,7 @@ try {
   }
 
   if ($restore) {
+    Try-LogClientIpAddress
     Build 'Restore'
   }
 

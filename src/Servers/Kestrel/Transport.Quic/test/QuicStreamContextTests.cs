@@ -305,6 +305,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
         [ConditionalFact]
         [MsQuicSupported]
+        public async Task ClientToServerUnidirectionalStream_CompleteWrites_PipeProvidesDataAndCompleteTogether()
+        {
+            // Arrange
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
+
+            var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+            using var quicConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+            await quicConnection.ConnectAsync().DefaultTimeout();
+
+            await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+
+            // Act
+            await using var clientStream = quicConnection.OpenUnidirectionalStream();
+            await clientStream.WriteAsync(TestData).DefaultTimeout();
+
+            await using var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
+            var readResult = await serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
+            serverStream.Transport.Input.AdvanceTo(readResult.Buffer.End);
+
+            var readResultTask = serverStream.Transport.Input.ReadAsync();
+
+            await clientStream.WriteAsync(TestData, endStream: true).DefaultTimeout();
+
+            // Assert
+            var completeReadResult = await readResultTask.DefaultTimeout();
+
+            Assert.Equal(TestData, completeReadResult.Buffer.ToArray());
+            Assert.True(completeReadResult.IsCompleted);
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
         public async Task ServerToClientUnidirectionalStream_ServerWritesDataAndCompletes_GracefullyClosed()
         {
             // Arrange

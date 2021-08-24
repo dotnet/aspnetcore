@@ -16,9 +16,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
     {
         public delegate IHost BuildWebHost(string[] args);
 
+        public delegate string GetContentRoot(Assembly assembly);
+
         public Assembly ApplicationAssembly { get; set; }
 
         public BuildWebHost BuildWebHostMethod { get; set; }
+
+        public GetContentRoot GetContentRootMethod { get; set; } = DefaultGetContentRoot;
 
         public AspNetEnvironment Environment { get; set; } = AspNetEnvironment.Production;
 
@@ -33,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
             }
 
             var assembly = ApplicationAssembly ?? BuildWebHostMethod.Method.DeclaringType.Assembly;
-            var sampleSitePath = FindSampleOrTestSitePath(assembly.FullName);
+            var sampleSitePath = DefaultGetContentRoot(assembly);
 
             var host = "127.0.0.1";
             if (E2ETestOptions.Instance.SauceTest)
@@ -48,5 +52,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
                 "--environment", Environment.ToString(),
             }.Concat(AdditionalArguments).ToArray());
         }
+
+        private static string DefaultGetContentRoot(Assembly assembly)
+            => FindSampleOrTestSitePath(assembly.FullName);
     }
 }

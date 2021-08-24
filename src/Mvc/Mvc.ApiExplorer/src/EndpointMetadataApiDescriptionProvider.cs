@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             // For now, put all methods defined the same declaring type together.
             string controllerName;
 
-            if (methodInfo.DeclaringType is not null && !IsCompilerGenerated(methodInfo.DeclaringType))
+            if (methodInfo.DeclaringType is not null && !TypeHelper.IsCompilerGeneratedType(methodInfo.DeclaringType))
             {
                 controllerName = methodInfo.DeclaringType.Name;
             }
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             // Determine the "requiredness" based on nullability, default value or if allowEmpty is set
             var nullability = NullabilityContext.Create(parameter);
-            var isOptional = parameter.HasDefaultValue || nullability.ReadState == NullabilityState.Nullable || allowEmpty;
+            var isOptional = parameter.HasDefaultValue || nullability.ReadState != NullabilityState.NotNull || allowEmpty;
 
             return new ApiParameterDescription
             {
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                      parameter.ParameterType == typeof(HttpResponse) ||
                      parameter.ParameterType == typeof(ClaimsPrincipal) ||
                      parameter.ParameterType == typeof(CancellationToken) ||
-                     TryParseMethodCache.HasTryParseHttpContextMethod(parameter) ||
+                     TryParseMethodCache.HasBindAsyncMethod(parameter) ||
                      _serviceProviderIsService?.IsService(parameter.ParameterType) == true)
             {
                 return (BindingSource.Services, parameter.Name ?? string.Empty, false);
@@ -364,11 +364,5 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 actionDescriptor.EndpointMetadata = new List<object>(endpointMetadata);
             }
         }
-
-        // The CompilerGeneratedAttribute doesn't always get added so we also check if the type name starts with "<"
-        // For example, "<>c" is a "declaring" type the C# compiler will generate without the attribute for a top-level lambda
-        // REVIEW: Is there a better way to do this?
-        private static bool IsCompilerGenerated(Type type) =>
-            Attribute.IsDefined(type, typeof(CompilerGeneratedAttribute)) || type.Name.StartsWith('<');
     }
 }

@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Results" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
