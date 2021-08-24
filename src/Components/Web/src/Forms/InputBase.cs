@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         /// <summary>
         /// Gets the associated <see cref="Forms.EditContext"/>.
-        /// May be <c>null</c> if the input does not have a parent <see cref="EditForm"/>.
+        /// This property is uninitialized if the input does not have a parent <see cref="EditForm"/>.
         /// </summary>
         protected EditContext EditContext { get; set; } = default!;
 
@@ -111,13 +111,10 @@ namespace Microsoft.AspNetCore.Components.Forms
                 {
                     parsingFailed = true;
 
-                    if (EditContext != null)
+                    // EditContext may be null if the input is not a child component of EditForm.
+                    if (EditContext is not null)
                     {
-                        if (_parsingValidationMessages == null)
-                        {
-                            _parsingValidationMessages = new ValidationMessageStore(EditContext);
-                        }
-
+                        _parsingValidationMessages ??= new ValidationMessageStore(EditContext);
                         _parsingValidationMessages.Add(FieldIdentifier, validationErrorMessage);
 
                         // Since we're not writing to CurrentValue, we'll need to notify about modification from here
@@ -169,16 +166,8 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             get
             {
-                var fieldClass = EditContext?.FieldCssClass(FieldIdentifier);
-
-                if (AdditionalAttributes != null &&
-                    AdditionalAttributes.TryGetValue("class", out var @class) &&
-                    !string.IsNullOrEmpty(Convert.ToString(@class, CultureInfo.InvariantCulture)))
-                {
-                    return string.IsNullOrEmpty(fieldClass) ? @class.ToString()! : $"{@class} {fieldClass}";
-                }
-
-                return fieldClass ?? string.Empty;
+                var fieldClass = EditContext?.FieldCssClass(FieldIdentifier) ?? string.Empty;
+                return AttributeUtilities.CombineClassNames(AdditionalAttributes, fieldClass);
             }
         }
 
@@ -236,7 +225,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         private void UpdateAdditionalValidationAttributes()
         {
             var hasAriaInvalidAttribute = AdditionalAttributes != null && AdditionalAttributes.ContainsKey("aria-invalid");
-            if (EditContext != null && EditContext.GetValidationMessages(FieldIdentifier).Any())
+            if (EditContext is not null && EditContext.GetValidationMessages(FieldIdentifier).Any())
             {
                 if (hasAriaInvalidAttribute)
                 {
