@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Rewrite.Logging;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
@@ -99,7 +100,14 @@ namespace Microsoft.AspNetCore.Rewrite
             // If a rule changed the path we want routing to find a new endpoint
             if (originalPath != context.Request.Path)
             {
-                context.SetEndpoint(null);
+                // An endpoint may have already been set. Since we're going to re-invoke the middleware pipeline we need to reset
+                // the endpoint and route values to ensure things are re-calculated.
+                context.SetEndpoint(endpoint: null);
+                var routeValuesFeature = context.Features.Get<IRouteValuesFeature>();
+                if (routeValuesFeature is not null)
+                {
+                    routeValuesFeature.RouteValues = null!;
+                }
                 if (_options.BranchedNext is not null)
                 {
                     return _options.BranchedNext(context);
