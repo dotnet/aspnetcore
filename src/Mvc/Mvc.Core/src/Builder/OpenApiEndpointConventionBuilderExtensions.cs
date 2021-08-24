@@ -28,6 +28,20 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
+        /// Adds the <see cref="ITagsMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+        /// produced by <paramref name="builder"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="MinimalActionEndpointConventionBuilder"/>.</param>
+        /// <param name="tags">A collection of tags to be associated with the endpoint.</param>
+        /// <returns>A <see cref="MinimalActionEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+
+        public static MinimalActionEndpointConventionBuilder WithTags(this MinimalActionEndpointConventionBuilder builder, params string[] tags)
+        {
+            builder.WithMetadata(new TagsAttribute(tags));
+            return builder;
+        }
+
+        /// <summary>
         /// Adds the <see cref="ProducesResponseTypeAttribute"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
         /// produced by <paramref name="builder"/>.
         /// </summary>
