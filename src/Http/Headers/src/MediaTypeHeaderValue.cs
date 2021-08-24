@@ -119,7 +119,7 @@ namespace Microsoft.Net.Http.Headers
                 {
                     try
                     {
-                        return Encoding.GetEncoding(charset!.Value);
+                        return Encoding.GetEncoding(charset.Value!);
                     }
                     catch (ArgumentException)
                     {
