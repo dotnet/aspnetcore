@@ -72,4 +72,19 @@
     </PropertyGroup>
   </Target>
 
+  <Target Name="GetAspnetcoreCategorizedIntermediateNupkgContents"
+          BeforeTargets="GetCategorizedIntermediateNupkgContents">
+    <PropertyGroup>
+      <InstallersArtifactsDir>$(CurrentRepoSourceBuildArtifactsDir)\installers\$(Configuration)\</InstallersArtifactsDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <!--
+        Add the internal installers artifacts required by dotnet/installer.
+      -->
+      <IntermediateNupkgArtifactFile Include="$(InstallersArtifactsDir)aspnetcore-runtime-internal-*.tar.gz" />
+      <IntermediateNupkgArtifactFile Include="$(InstallersArtifactsDir)aspnetcore_base_runtime.version" />
+    </ItemGroup>
+  </Target>
+
 </Project>
