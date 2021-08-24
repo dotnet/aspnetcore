@@ -124,6 +124,7 @@ namespace Microsoft.AspNetCore.Builder
                         if (routeBuilder is not null)
                         {
                             // use the old routing pipeline if it exists so we preserve all the routes and matching logic
+                            // ((IApplicationBuilder)WebApplication).New() does not copy globalRouteBuilderKey automatically like it does for all other properties.
                             builder.Properties[globalRouteBuilderKey] = routeBuilder;
                         }
                         builder.UseRouting();
