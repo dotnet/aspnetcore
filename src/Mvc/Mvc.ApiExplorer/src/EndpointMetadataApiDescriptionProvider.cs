@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     hasJsonBody = true;
                 }
 
-                apiDescription.ParameterDescriptions.Add(parameterDescription!);
+                apiDescription.ParameterDescriptions.Add(parameterDescription);
             }
 
             // Get custom attributes for the handler. ConsumesAttribute is one of the examples. 
