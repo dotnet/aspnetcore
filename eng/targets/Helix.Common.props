@@ -19,7 +19,7 @@
   
   <!-- x64 Quarantined-only (quarantined-pr.yml and quarantined-tests.yml) test queues -->
   <ItemGroup Condition="'$(IsRequiredCheck)' == 'true' AND '$(TargetArchitecture)' == 'x64' AND '$(_UseHelixOpenQueues)' == 'true' AND '$(RunQuarantinedTests)' == 'true'">
-    <HelixAvailableTargetQueue Include="(Fedora.34.Amd64.Open)ubuntu.1804.amd64.open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-34-helix-20210728124700-4f64125" Platform="Linux" />
+    <HelixAvailableTargetQueue Include="(Fedora.34.Amd64.Open)ubuntu.1604.amd64.open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-34-helix-20210728124700-4f64125" Platform="Linux" />
   </ItemGroup>
 
   <!-- x64 Queues for public helix-matrix.yml and quarantine pipelines, except in windows-only cases -->
