@@ -55,8 +55,9 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         /// <summary>
         /// Gets the associated <see cref="Forms.EditContext"/>.
+        /// May be <c>null</c> if the input does not have a parent <see cref="EditForm"/>.
         /// </summary>
-        protected EditContext? EditContext { get; set; } = default!;
+        protected EditContext EditContext { get; set; } = default!;
 
         /// <summary>
         /// Gets the <see cref="FieldIdentifier"/> for the bound value.

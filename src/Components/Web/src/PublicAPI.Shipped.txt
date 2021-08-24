@@ -44,6 +44,7 @@ Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.CurrentValueAsString.get
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.CurrentValueAsString.set -> void
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.DisplayName.get -> string?
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.DisplayName.set -> void
+Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.EditContext.get -> Microsoft.AspNetCore.Components.Forms.EditContext!
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.EditContext.set -> void
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.FieldIdentifier.get -> Microsoft.AspNetCore.Components.Forms.FieldIdentifier
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.FieldIdentifier.set -> void
