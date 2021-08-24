@@ -60,6 +60,10 @@ async function toImageFile(elem: InputElement, fileId: number, format: string, m
       URL.revokeObjectURL(originalFileImage.src);
       resolve(originalFileImage);
     };
+    originalFileImage.onerror = function(): void {
+      originalFileImage.onerror = null;
+      URL.revokeObjectURL(originalFileImage.src);
+    };
     originalFileImage.src = URL.createObjectURL(originalFile['blob']);
   });
 
