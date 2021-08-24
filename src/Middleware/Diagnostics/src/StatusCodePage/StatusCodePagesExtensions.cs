@@ -176,23 +176,20 @@ namespace Microsoft.AspNetCore.Builder
 
             const string globalRouteBuilderKey = "__GlobalEndpointRouteBuilder";
             // Only use this path if there's a global router (in the 'WebApplication' case).
-            if (app.Properties.TryGetValue(globalRouteBuilderKey, out var routeBuilder))
+            if (app.Properties.TryGetValue(globalRouteBuilderKey, out var routeBuilder) && routeBuilder is not null)
             {
                 return app.Use(next =>
                 {
                     RequestDelegate? newNext = null;
                     // start a new middleware pipeline
                     var builder = app.New();
-                    if (routeBuilder is not null)
-                    {
-                        // use the old routing pipeline if it exists so we preserve all the routes and matching logic
-                        // ((IApplicationBuilder)WebApplication).New() does not copy globalRouteBuilderKey automatically like it does for all other properties. 
-                        builder.Properties[globalRouteBuilderKey] = routeBuilder;
-                        builder.UseRouting();
-                        // apply the next middleware
-                        builder.Run(next);
-                        newNext = builder.Build();
-                    }
+                    // use the old routing pipeline if it exists so we preserve all the routes and matching logic
+                    // ((IApplicationBuilder)WebApplication).New() does not copy globalRouteBuilderKey automatically like it does for all other properties.
+                    builder.Properties[globalRouteBuilderKey] = routeBuilder;
+                    builder.UseRouting();
+                    // apply the next middleware
+                    builder.Run(next);
+                    newNext = builder.Build();
 
                     return new StatusCodePagesMiddleware(next,
                         Options.Create(new StatusCodePagesOptions() { HandleAsync = CreateHandler(pathFormat, queryFormat, newNext) })).Invoke;
