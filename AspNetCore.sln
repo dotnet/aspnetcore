@@ -1620,9 +1620,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PhotinoPlatform", "PhotinoP
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testassets", "testassets", "{3EC71A0E-6515-4A5A-B759-F0BCF1BCFC56}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotinoTestApp", "src\Components\WebView\Samples\PhotinoPlatform\testassets\PhotinoTestApp\PhotinoTestApp.csproj", "{558C46DE-DE16-41D5-8DB7-D6D748E32977}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PhotinoTestApp", "src\Components\WebView\Samples\PhotinoPlatform\testassets\PhotinoTestApp\PhotinoTestApp.csproj", "{558C46DE-DE16-41D5-8DB7-D6D748E32977}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.WebView.Photino", "src\Components\WebView\Samples\PhotinoPlatform\src\Microsoft.AspNetCore.Components.WebView.Photino.csproj", "{B1AA24A4-5E02-4DC1-B57F-6EB03F91E4DD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebView.Photino", "src\Components\WebView\Samples\PhotinoPlatform\src\Microsoft.AspNetCore.Components.WebView.Photino.csproj", "{B1AA24A4-5E02-4DC1-B57F-6EB03F91E4DD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleWebSiteWithWebApplicationBuilderException", "src\Mvc\test\WebSites\SimpleWebSiteWithWebApplicationBuilderException\SimpleWebSiteWithWebApplicationBuilderException.csproj", "{5C641396-7E92-4F5C-A5A1-B4CDF480539B}"
 EndProject

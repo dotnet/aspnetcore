@@ -113,6 +113,23 @@ namespace Microsoft.AspNetCore.Components.Forms
         }
 
         [Fact]
+        public async Task CanRenderWithoutEditContext()
+        {
+            // Arrange
+            var model = new TestModel();
+            var value = "some value";
+            var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>>
+            {
+                Value = value,
+                ValueExpression = () => value
+            };
+
+            // Act/Assert
+            var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+            Assert.Null(inputComponent.EditContext);
+        }
+
+        [Fact]
         public async Task WritingToCurrentValueInvokesValueChangedIfDifferent()
         {
             // Arrange
