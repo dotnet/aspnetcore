@@ -100,16 +100,16 @@ namespace Microsoft.AspNetCore.Rewrite
             // If a rule changed the path we want routing to find a new endpoint
             if (originalPath != context.Request.Path)
             {
-                // An endpoint may have already been set. Since we're going to re-invoke the middleware pipeline we need to reset
-                // the endpoint and route values to ensure things are re-calculated.
-                context.SetEndpoint(endpoint: null);
-                var routeValuesFeature = context.Features.Get<IRouteValuesFeature>();
-                if (routeValuesFeature is not null)
-                {
-                    routeValuesFeature.RouteValues = null!;
-                }
                 if (_options.BranchedNext is not null)
                 {
+                    // An endpoint may have already been set. Since we're going to re-invoke the middleware pipeline we need to reset
+                    // the endpoint and route values to ensure things are re-calculated.
+                    context.SetEndpoint(endpoint: null);
+                    var routeValuesFeature = context.Features.Get<IRouteValuesFeature>();
+                    if (routeValuesFeature is not null)
+                    {
+                        routeValuesFeature.RouteValues = null!;
+                    }
                     return _options.BranchedNext(context);
                 }
             }

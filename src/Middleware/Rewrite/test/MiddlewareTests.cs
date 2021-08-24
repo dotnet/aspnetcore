@@ -515,6 +515,43 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         }
 
         [Fact]
+        public async Task RewriteAfterUseRoutingHitsOriginalEndpoint()
+        {
+            // This is an edge case where users setup routing incorrectly, but we don't want to accidentally change behavior in case someone
+            // relies on it, so we have this test
+            var options = new RewriteOptions().AddRewrite("(.*)", "$1s", skipRemainingRules: false);
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(s =>
+                    {
+                        s.AddRouting();
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.UseRewriter(options);
+
+                        app.UseEndpoints(endpoints =>
+                        {
+                            endpoints.MapGet("/foos", context => context.Response.WriteAsync("bad"));
+                            endpoints.MapGet("/foo", context => context.Response.WriteAsync($"{context.GetEndpoint()?.DisplayName} from {context.Request.Path}"));
+                        });
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
+
+            var response = await server.CreateClient().GetStringAsync("foo");
+
+            Assert.Equal("/foo HTTP: GET from /foos", response);
+        }
+
+        [Fact]
         public async Task CheckIfEmptyStringRewriteCorrectly()
         {
             var options = new RewriteOptions().AddRewrite("(.*)", "$1", skipRemainingRules: false);
