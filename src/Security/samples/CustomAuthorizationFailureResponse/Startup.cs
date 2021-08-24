@@ -35,13 +35,13 @@ namespace CustomAuthorizationFailureResponse
 
             services.AddAuthorization(options =>
             {
-                options.AddPolicy(SamplePolicyNames.CustomPolicy, policy => 
+                options.AddPolicy(SamplePolicyNames.CustomPolicy, policy =>
                     policy.AddRequirements(new SampleRequirement()));
 
-                options.AddPolicy(SamplePolicyNames.FailureReasonPolicy, policy => 
+                options.AddPolicy(SamplePolicyNames.FailureReasonPolicy, policy =>
                     policy.AddRequirements(new SampleFailReasonRequirement()));
-                
-                options.AddPolicy(SamplePolicyNames.CustomPolicyWithCustomForbiddenMessage, policy => 
+
+                options.AddPolicy(SamplePolicyNames.CustomPolicyWithCustomForbiddenMessage, policy =>
                     policy.AddRequirements(new SampleWithCustomMessageRequirement()));
             });
 
