@@ -33,8 +33,8 @@ namespace Microsoft.Net.Http.Headers
                         // The entry may not contain an actual value, like " , "
                         if (parsedName != null && parsedValue != null)
                         {
-                            var name = enableCookieNameEncoding ? Uri.UnescapeDataString(parsedName.Value.Value) : parsedName.Value.Value;
-                            store[name] = Uri.UnescapeDataString(parsedValue.Value.Value);
+                            var name = enableCookieNameEncoding ? Uri.UnescapeDataString(parsedName.Value.Value!) : parsedName.Value.Value!;
+                            store[name] = Uri.UnescapeDataString(parsedValue.Value.Value!);
                             hasFoundValue = true;
                         }
                     }

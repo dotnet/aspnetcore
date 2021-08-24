@@ -244,21 +244,21 @@ namespace Microsoft.Net.Http.Headers
                 // Trim leading white space
                 var current = HttpRuleParser.GetWhitespaceLength(headerValues[i], 0);
 
-                while (current < headerValues[i].Length)
+                while (current < headerValues[i]!.Length)
                 {
                     long seconds;
                     var initial = current;
                     var tokenLength = HttpRuleParser.GetTokenLength(headerValues[i], current);
                     if (tokenLength == targetValue.Length
                         && string.Compare(headerValues[i], current, targetValue, 0, tokenLength, StringComparison.OrdinalIgnoreCase) == 0
-                        && TryParseNonNegativeInt64FromHeaderValue(current + tokenLength, headerValues[i], out seconds))
+                        && TryParseNonNegativeInt64FromHeaderValue(current + tokenLength, headerValues[i]!, out seconds))
                     {
                         // Token matches target value and seconds were parsed
                         value = TimeSpan.FromSeconds(seconds);
                         return true;
                     }
 
-                    current = AdvanceCacheDirectiveIndex(current + tokenLength, headerValues[i]);
+                    current = AdvanceCacheDirectiveIndex(current + tokenLength, headerValues[i]!);
 
                     // Ensure index was advanced
                     if (current <= initial)
@@ -298,7 +298,7 @@ namespace Microsoft.Net.Http.Headers
                 // Trim leading white space
                 var current = HttpRuleParser.GetWhitespaceLength(cacheControlDirectives[i], 0);
 
-                while (current < cacheControlDirectives[i].Length)
+                while (current < cacheControlDirectives[i]!.Length)
                 {
                     var initial = current;
 
@@ -310,7 +310,7 @@ namespace Microsoft.Net.Http.Headers
                         return true;
                     }
 
-                    current = AdvanceCacheDirectiveIndex(current + tokenLength, cacheControlDirectives[i]);
+                    current = AdvanceCacheDirectiveIndex(current + tokenLength, cacheControlDirectives[i]!);
 
                     // Ensure index was advanced
                     if (current <= initial)
