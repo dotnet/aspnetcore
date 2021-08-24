@@ -188,15 +188,15 @@ namespace Microsoft.AspNetCore.SpaProxy
                     WorkingDirectory = Path.Combine(AppContext.BaseDirectory, _options.WorkingDirectory)
                 };
                 _spaProcess = Process.Start(info);
-                if(_spaProcess != null && !_spaProcess.HasExited)
+                if (_spaProcess != null && !_spaProcess.HasExited)
                 {
-                    if(OperatingSystem.IsWindows())
+                    if (OperatingSystem.IsWindows())
                     {
-                        LaunchStopScriptWindows();
+                        LaunchStopScriptWindows(_spaProcess.Id);
                     }
                     else if (OperatingSystem.IsMacOS())
                     {
-                        LaunchStopScriptMacOS();
+                        LaunchStopScriptMacOS(_spaProcess.Id);
                     }
                 }
             }
@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.SpaProxy
             }
         }
 
-        private void LaunchStopScriptWindows()
+        private void LaunchStopScriptWindows(int spaProcessId)
         {
             var stopScript = $@"do{{
   try
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.SpaProxy
 
 try
 {{
-  taskkill /T /F /PID {_spaProcess!.Id};
+  taskkill /T /F /PID {spaProcessId};
 }}
 catch
 {{
@@ -239,7 +239,7 @@ catch
             {
                 _logger.LogWarning($"The SPA process shutdown script '{stopProcess?.Id}' failed to start. The SPA proxy might" +
                     $" remain open if the dotnet process is terminated ungracefully. Use the operating system commands to kill" +
-                    $" the process tree for {_spaProcess!.Id}");
+                    $" the process tree for {spaProcessId}");
             }
             else
             {
@@ -247,7 +247,7 @@ catch
             }
         }
 
-        private void LaunchStopScriptMacOS()
+        private void LaunchStopScriptMacOS(int spaProcessId)
         {
             var fileName = Guid.NewGuid().ToString("N") + ".sh";
             var scriptPath = Path.Combine(AppContext.BaseDirectory, fileName);
@@ -275,7 +275,7 @@ do
   ps {Environment.ProcessId} > /dev/null;
 done;
 
-for child in $(list_child_processes {_spaProcess!.Id});
+for child in $(list_child_processes {spaProcessId});
 do
   echo killing $child;
   kill -s KILL $child;
@@ -284,9 +284,7 @@ rm {scriptPath};
 ";
             File.WriteAllText(scriptPath, stopScript);
 
-            var stopScriptInfo = new ProcessStartInfo(
-                "/bin/bash",
-                string.Join(" ", scriptPath))
+            var stopScriptInfo = new ProcessStartInfo("/bin/bash", scriptPath)
             {
                 CreateNoWindow = true,
                 WorkingDirectory = Path.Combine(AppContext.BaseDirectory, _options.WorkingDirectory)
@@ -297,8 +295,8 @@ rm {scriptPath};
             {
                 _logger.LogWarning($"The SPA process shutdown script '{stopProcess?.Id}' failed to start. The SPA proxy might" +
                     $" remain open if the dotnet process is terminated ungracefully. Use the operating system commands to kill" +
-                    $" the process tree for {_spaProcess!.Id}");
-            }            
+                    $" the process tree for {spaProcessId}");
+            }
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
