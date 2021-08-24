@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
@@ -176,7 +176,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 TagHelperProcessInvokeAsyncArgsMethodName,
                 new Dictionary<string, string>() { { TagHelperContextTypeName, TagHelperContextVariableName } }))
             {
-                writer.WriteStartAssignment($"{methodReturnType} args").WriteLine("new();");
+                writer.WriteStartAssignment($"{methodReturnType} args")
+                    .WriteStartNewObject(methodReturnType)
+                    .WriteEndMethodInvocation();
+
                 for (var i = 0; i < tagHelper.BoundAttributes.Count; i++)
                 {
                     var attributeName = tagHelper.BoundAttributes[i].Name;
