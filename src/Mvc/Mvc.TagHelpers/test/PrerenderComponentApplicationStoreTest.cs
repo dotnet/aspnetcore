@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Xunit;
@@ -17,16 +19,16 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Arrange
             var expected = "eyJNeVZhbHVlIjoiQVFJREJBPT0ifQ==";
             var store = new PrerenderComponentApplicationStore();
-            var state = new Dictionary<string, byte[]>()
+            var state = new Dictionary<string, ReadOnlySequence<byte>>()
             {
-                ["MyValue"] = new byte[] {1,2,3,4}
+                ["MyValue"] = new ReadOnlySequence<byte>(new byte[] {1,2,3,4})
             };
 
             // Act
             await store.PersistStateAsync(state);
 
             // Assert
-            Assert.Equal(expected, store.PersistedState);
+            Assert.Equal(expected, store.PersistedState.Span.ToString());
         }
 
         [Fact]
@@ -35,16 +37,18 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Arrange
             var persistedState = "eyJNeVZhbHVlIjoiQVFJREJBPT0ifQ==";
             var store = new PrerenderComponentApplicationStore(persistedState);
-            var expected = new Dictionary<string, byte[]>()
+            var expected = new Dictionary<string, ReadOnlySequence<byte>>()
             {
-                ["MyValue"] = new byte[] { 1, 2, 3, 4 }
+                ["MyValue"] = new ReadOnlySequence<byte>(new byte [] { 1, 2, 3, 4 })
             };
 
             // Act
             var state = await store.GetPersistedStateAsync();
 
             // Assert
-            Assert.Equal(expected, state);
+            Assert.Equal(
+                expected.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToArray()),
+                state.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToArray()));
         }
     }
 }
