@@ -109,6 +109,42 @@ app.Run();");
                 });
         }
 
+        [Fact]
+        public async Task StartupAnalyzer_MvcOptionsAnalysis_UseMvc_FindsEndpointRoutingDisabled()
+        {
+            var source = TestSource.Read(@"using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddMvc(options => options.EnableEndpointRouting = false);
+var app = builder.Build();
+app.UseMvc();
+app.Run();");
+
+            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
+
+            Assert.NotEmpty(middlewareAnalysis.Middleware);
+            Assert.Empty(diagnostics);
+        }
+
+        [Fact]
+        public async Task StartupAnalyzer_MvcOptionsAnalysis_AddMvcOptions_FindsEndpointRoutingDisabled()
+        {
+            var source = TestSource.Read(@"using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddMvc().AddMvcOptions(options => options.EnableEndpointRouting = false);
+var app = builder.Build();
+app.UseMvcWithDefaultRoute();
+app.Run();");
+
+            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
+
+            Assert.NotEmpty(middlewareAnalysis.Middleware);
+            Assert.Empty(diagnostics);
+        }
+
         private Dictionary<string, string> MvcSources = new()
         {
             { "MvcOptions_UseMvc", @"using Microsoft.AspNetCore.Builder;
