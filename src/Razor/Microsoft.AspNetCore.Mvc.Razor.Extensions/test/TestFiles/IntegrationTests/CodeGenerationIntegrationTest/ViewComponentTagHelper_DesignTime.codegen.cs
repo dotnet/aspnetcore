@@ -94,7 +94,7 @@ global::System.Object __typeHelper = "*, AppCode";
             }
             private Dictionary<string, object> ProcessInvokeAsyncArgs(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext __context)
             {
-                Dictionary<string, object> args = new();
+                Dictionary<string, object> args = new Dictionary<string, object>();
                 if (__context.AllAttributes.ContainsName("first-name"))
                 {
                     args[nameof(firstName)] = firstName;
