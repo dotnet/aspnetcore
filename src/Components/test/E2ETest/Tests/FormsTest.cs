@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal(new[] { "The DepartureTime field must be a time." }, messagesAccessor);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/35498")]
+        [Fact]
         public void InputDateInteractsWithEditContext_MonthInput()
         {
             var appElement = MountTypicalValidationComponent();
@@ -283,23 +283,24 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             visitMonthInput.SendKeys($"03{Keys.ArrowRight}2005\t");
             Browser.Equal("modified valid", () => visitMonthInput.GetAttribute("class"));
 
-            // Can become invalid
+            // Empty is invalid because it's not nullable
+            visitMonthInput.Clear();
+            Browser.Equal("modified invalid", () => visitMonthInput.GetAttribute("class"));
+            Browser.Equal(new[] { "The VisitMonth field must be a year and month." }, messagesAccessor);
+
+            // Invalid year (11111)
             visitMonthInput.SendKeys($"11{Keys.ArrowRight}11111\t");
             Browser.Equal("modified invalid", () => visitMonthInput.GetAttribute("class"));
             Browser.Equal(new[] { "The VisitMonth field must be a year and month." }, messagesAccessor);
 
-            // Empty is invalid, because it's not nullable
-            visitMonthInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t");
-            Browser.Equal("modified invalid", () => visitMonthInput.GetAttribute("class"));
-            Browser.Equal(new[] { "The VisitMonth field must be a year and month." }, messagesAccessor);
-
+            // Can become valid again
             visitMonthInput.Clear();
-            visitMonthInput.SendKeys($"05{Keys.ArrowRight}2007\t");
+            visitMonthInput.SendKeys($"11{Keys.ArrowRight}1111\t");
             Browser.Equal("modified valid", () => visitMonthInput.GetAttribute("class"));
             Browser.Empty(messagesAccessor);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/35498")]
+        [Fact]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34884")]
         public void InputDateInteractsWithEditContext_DateTimeLocalInput()
         {
@@ -309,20 +310,22 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Validates on edit
             Browser.Equal("valid", () => appointmentInput.GetAttribute("class"));
-            appointmentInput.SendKeys("01\t02\t1988\t0523\t1");
+            appointmentInput.SendKeys($"01011970{Keys.ArrowRight}05421");
             Browser.Equal("modified valid", () => appointmentInput.GetAttribute("class"));
 
-            // Can become invalid
-            appointmentInput.SendKeys($"11{Keys.ArrowRight}11{Keys.ArrowRight}11111{Keys.ArrowRight}\t");
+            // Empty is invalid because it's not nullable
+            appointmentInput.Clear();
             Browser.Equal("modified invalid", () => appointmentInput.GetAttribute("class"));
             Browser.Equal(new[] { "The AppointmentDateAndTime field must be a date and time." }, messagesAccessor);
 
-            // Empty is invalid, because it's not nullable
-            appointmentInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t");
+            // Invalid year (11111)
+            appointmentInput.SendKeys($"111111111{Keys.ArrowRight}11111");
             Browser.Equal("modified invalid", () => appointmentInput.GetAttribute("class"));
             Browser.Equal(new[] { "The AppointmentDateAndTime field must be a date and time." }, messagesAccessor);
 
-            appointmentInput.SendKeys("01234567\t11551\t");
+            // Can become valid again
+            appointmentInput.Clear();
+            appointmentInput.SendKeys($"11111111{Keys.ArrowRight}11111");
             Browser.Equal("modified valid", () => appointmentInput.GetAttribute("class"));
             Browser.Empty(messagesAccessor);
         }
