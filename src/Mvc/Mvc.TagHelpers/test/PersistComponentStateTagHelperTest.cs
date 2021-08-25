@@ -5,8 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Lifetime;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Html;
@@ -191,7 +190,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             {
                 RequestServices = new ServiceCollection()
                     .AddSingleton(renderer)
-                    .AddSingleton(new ComponentApplicationLifetime(NullLogger<ComponentApplicationLifetime>.Instance))
+                    .AddSingleton(new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance))
                     .AddSingleton<HtmlRenderer>()
                     .AddSingleton(_ephemeralProvider)
                     .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)

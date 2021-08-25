@@ -7,7 +7,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Lifetime;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.SignalR;
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 string baseUri,
                 string uri,
                 ClaimsPrincipal user,
-                IComponentApplicationStateStore store)
+                IPersistentComponentStateStore store)
             {
                 var serviceScope = new Mock<IServiceScope>();
                 var circuitHost = TestCircuitHost.Create(serviceScope: new AsyncServiceScope(serviceScope.Object));
