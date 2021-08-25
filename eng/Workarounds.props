@@ -25,10 +25,9 @@
     <UseSharedCompilation>true</UseSharedCompilation>
   </PropertyGroup>
 
-  <!-- Workaround for RC2 SDK update. -->
+  <!-- Workaround continued use of netcoreapp2.1. -->
   <PropertyGroup>
-    <NoWarn>NETSDK1138</NoWarn>
-    <NoWarn>CS8969</NoWarn>
+    <NoWarn>$(NoWarn);NETSDK1138;CS8969</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
