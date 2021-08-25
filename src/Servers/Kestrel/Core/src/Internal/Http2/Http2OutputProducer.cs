@@ -498,7 +498,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
                 else
                 {
-                    // Use the array pool. It's MaxBufferSize is int.MaxValue.
+                    // Use the array pool. Its MaxBufferSize is int.MaxValue.
                     _fakeMemoryOwner = MemoryPool<byte>.Shared.Rent(sizeHint);
                 }
             }
