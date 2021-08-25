@@ -89,6 +89,7 @@
     <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponentMarker.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\PrerenderComponentApplicationStore.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ProtectedPrerenderComponentApplicationStore.cs" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\PooledByteBufferWritter.cs" />
   </ItemGroup>
 
   <PropertyGroup>
