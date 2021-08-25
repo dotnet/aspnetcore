@@ -5,7 +5,7 @@ using System;
 using System.Buffers;
 using System.Linq;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Lifetime;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
@@ -239,8 +239,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddScoped<NavigationManager, HttpNavigationManager>();
             services.TryAddScoped<IJSRuntime, UnsupportedJavaScriptRuntime>();
             services.TryAddScoped<INavigationInterception, UnsupportedNavigationInterception>();
-            services.TryAddScoped<ComponentApplicationLifetime>();
-            services.TryAddScoped<ComponentApplicationState>(sp => sp.GetRequiredService<ComponentApplicationLifetime>().State);
+            services.TryAddScoped<ComponentStatePersistenceManager>();
+            services.TryAddScoped<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
             services.TryAddScoped<IErrorBoundaryLogger, PrerenderingErrorBoundaryLogger>();
 
             services.TryAddTransient<ControllerSaveTempDataPropertyFilter>();
