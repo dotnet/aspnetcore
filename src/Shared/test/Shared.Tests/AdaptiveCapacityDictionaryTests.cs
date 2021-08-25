@@ -1279,6 +1279,42 @@ namespace Microsoft.AspNetCore.Internal.Tests
             Assert.Equal("value3", storage[1].Value);
         }
 
+        [Fact]
+        public void UpgradeToDictionary_KeepsComparer()
+        {
+            // Arrange
+            var comparer = StringComparer.OrdinalIgnoreCase;
+            var dict = new AdaptiveCapacityDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            for (var i = 0; i < 11; i++)
+            {
+                dict[i.ToString()] = i;
+            }
+
+            Assert.NotNull(dict._dictionaryStorage);
+            Assert.Equal(comparer, dict._dictionaryStorage.Comparer);
+
+            dict["K"] = 1;
+            dict["k"] = 2;
+
+            Assert.Equal(2, dict["K"]);
+        }
+
+        [Fact]
+        public void StartAsDictionary_UsesComparer()
+        {
+            // Arrange
+            var comparer = StringComparer.OrdinalIgnoreCase;
+            var dict = new AdaptiveCapacityDictionary<string, object>(11, StringComparer.OrdinalIgnoreCase);
+
+            Assert.NotNull(dict._dictionaryStorage);
+            Assert.Equal(comparer, dict._dictionaryStorage.Comparer);
+
+            dict["K"] = 1;
+            dict["k"] = 2;
+
+            Assert.Equal(2, dict["K"]);
+        }
+
         private void AssertEmptyArrayStorage(AdaptiveCapacityDictionary<string, string> value)
         {
             Assert.Same(Array.Empty<KeyValuePair<string, object?>>(), value._arrayStorage);
