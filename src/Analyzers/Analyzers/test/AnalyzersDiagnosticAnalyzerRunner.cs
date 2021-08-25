@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Analyzers
             {
                 return options.WithOutputKind((OutputKind)(_outputKind));
             }
-            return options;
+            return options.WithOutputKind(OutputKind.DynamicallyLinkedLibrary);
         }
     }
 }
