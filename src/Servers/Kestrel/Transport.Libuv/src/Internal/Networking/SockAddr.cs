@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Net;
 using System.Runtime.InteropServices;
 
@@ -63,9 +64,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
 
             // Quick calculate the port by mask the field and locate the byte 3 and byte 4
             // and then shift them to correct place to form a int.
-            var port = ((int)(_field0 & 0x00FF0000) >> 8) | (int)((_field0 & 0xFF000000) >> 24);
+            int port;
+            if (BitConverter.IsLittleEndian)
+            {
+                port = ((int)(_field0 & 0x00FF0000) >> 8) | (int)((_field0 & 0xFF000000) >> 24);
+            }
+            else
+            {
+                port = ((int)(_field0 >> 32) & 0xFFFF);
+            }
 
-            int family = (int)_field0;
+            int family;
+            if (BitConverter.IsLittleEndian)
+            {
+                family = (int)_field0;
+            }
+            else
+            {
+                family = (int)(_field0 >> 48);
+            }
             if (PlatformApis.IsDarwin)
             {
                 // see explanation in example 4
@@ -76,11 +93,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
             if (family == 2)
             {
                 // AF_INET => IPv4
-                return new IPEndPoint(new IPAddress((_field0 >> 32) & 0xFFFFFFFF), port);
+                long ipv4bits;
+                if (BitConverter.IsLittleEndian)
+                {
+                    ipv4bits = (_field0 >> 32) & 0x00000000FFFFFFFF;
+                }
+                else
+                {
+                    ipv4bits = _field0 & 0x00000000FFFFFFFF;
+                }
+                return new IPEndPoint(new IPAddress(ipv4bits), port);
             }
             else if (IsIPv4MappedToIPv6())
             {
-                var ipv4bits = (_field2 >> 32) & 0x00000000FFFFFFFF;
+                long ipv4bits;
+                if (BitConverter.IsLittleEndian)
+                {
+                    ipv4bits = (_field2 >> 32) & 0x00000000FFFFFFFF;
+                }
+                else
+                {
+                    ipv4bits = _field2 & 0x00000000FFFFFFFF;
+                }
                 return new IPEndPoint(new IPAddress(ipv4bits), port);
             }
             else
@@ -101,12 +135,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         {
             get
             {
-                return (uint)_field3;
+                if (BitConverter.IsLittleEndian)
+                {
+                    return (uint)_field3;
+                }
+                else
+                {
+                    return (uint)(_field3 >> 32);
+                }
             }
             set
             {
-                _field3 &= unchecked ((long)0xFFFFFFFF00000000);
-                _field3 |= value;
+                if (BitConverter.IsLittleEndian)
+                {
+                    _field3 &= unchecked ((long)0xFFFFFFFF00000000);
+                    _field3 |= value;
+                }
+                else
+                {
+                    _field3 &= 0x00000000FFFFFFFF;
+                    _field3 |= ((long)value << 32);
+                }
             }
         }
 
@@ -119,7 +168,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
                 return false;
             }
 
-            return (_field2 & 0xFFFFFFFF) == 0xFFFF0000;
+            if (BitConverter.IsLittleEndian)
+            {
+                return (_field2 & 0xFFFFFFFF) == 0xFFFF0000;
+            }
+            else
+            {
+                return _field2 >> 32 == 0x0000FFFF;
+            }
         }
     }
 }
