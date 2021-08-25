@@ -13,10 +13,6 @@ updates:
       include: scope
     labels:
       - area-infrastructure
-    reviewers:
-      - "dotnet/aspnet-build"
-      - "dougbu"
-      - "wtgodbe"
 
   # Keep submodules up to date in 'release/*' branches. (Unfortunately Dependabot security PRs can't target these.)
   # Monthly interval opens PRs on the first of each month.
