@@ -35,6 +35,8 @@
       "src\\Components\\WebAssembly\\testassets\\Wasm.Authentication.Server\\Wasm.Authentication.Server.csproj",
       "src\\Components\\WebAssembly\\testassets\\Wasm.Authentication.Shared\\Wasm.Authentication.Shared.csproj",
       "src\\Components\\WebAssembly\\testassets\\WasmLinkerTest\\WasmLinkerTest.csproj",
+      "src\\Components\\WebAssembly\\testassets\\Wasm.Prerendered.Client\\Wasm.Prerendered.Client.csproj",
+      "src\\Components\\WebAssembly\\testassets\\Wasm.Prerendered.Server\\Wasm.Prerendered.Server.csproj",
       "src\\Components\\WebView\\Samples\\PhotinoPlatform\\src\\Microsoft.AspNetCore.Components.WebView.Photino.csproj",
       "src\\Components\\WebView\\Samples\\PhotinoPlatform\\testassets\\PhotinoTestApp\\PhotinoTestApp.csproj",
       "src\\Components\\WebView\\WebView\\src\\Microsoft.AspNetCore.Components.WebView.csproj",
