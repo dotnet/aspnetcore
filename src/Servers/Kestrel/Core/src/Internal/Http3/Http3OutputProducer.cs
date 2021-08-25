@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             if (_fakeMemoryOwner == null)
             {
-                // 
+                // Requesting a bigger buffer could throw.
                 if (sizeHint <= _memoryPool.MaxBufferSize)
                 {
                     // Use the specified pool as it fits.
