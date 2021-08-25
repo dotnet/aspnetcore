@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Diagnostics
@@ -192,6 +193,42 @@ namespace Microsoft.AspNetCore.Diagnostics
             var response = await client.GetAsync(destination + "?name=James");
             var content = await response.Content.ReadAsStringAsync();
             Assert.Equal($"?id={expectedStatusCode}, /location, ?name=James", content);
+        }
+
+        [Fact]
+        public async Task Reexecute_WorksAfterUseRoutingWithGlobalRouteBuilder()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            app.UseRouting();
+
+            app.UseStatusCodePagesWithReExecute(pathFormat: "/errorPage", queryFormat: "?id={0}");
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapGet("/", c =>
+                {
+                    c.Response.StatusCode = 404;
+                    return Task.CompletedTask;
+                });
+
+                endpoints.MapGet("/errorPage", () => "errorPage");
+            });
+
+            app.Run((context) =>
+            {
+                throw new InvalidOperationException("Invalid input provided.");
+            });
+
+            await app.StartAsync();
+
+            using var server = app.GetTestServer();
+            var client = server.CreateClient();
+            var response = await client.GetAsync("/");
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal("errorPage", content);
         }
     }
 }
