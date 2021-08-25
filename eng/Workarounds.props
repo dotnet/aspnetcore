@@ -25,9 +25,10 @@
     <UseSharedCompilation>true</UseSharedCompilation>
   </PropertyGroup>
 
-  <!-- Workaround for netstandard2.0 targets not building in rc2 SDK. -->
+  <!-- Workaround for RC2 SDK update. -->
   <PropertyGroup>
     <NoWarn>NETSDK1138</NoWarn>
+    <NoWarn>CS8969</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
