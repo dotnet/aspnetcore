@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Internal
             }
             else
             {
-                _dictionaryStorage = new Dictionary<TKey, TValue>(capacity);
+                _dictionaryStorage = new Dictionary<TKey, TValue>(capacity, _comparer);
             }
         }
 
@@ -519,7 +519,7 @@ namespace Microsoft.AspNetCore.Internal
 
             if (capacity > DefaultArrayThreshold)
             {
-                _dictionaryStorage = new Dictionary<TKey, TValue>(capacity);
+                _dictionaryStorage = new Dictionary<TKey, TValue>(capacity, _comparer);
                 foreach (var item in _arrayStorage)
                 {
                     _dictionaryStorage[item.Key] = item.Value;
