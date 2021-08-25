@@ -300,7 +300,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Input works with non-zero seconds value
             // Move to the beginning of the input and put the new time
-            departureTimeInput.SendKeys(string.Concat(Enumerable.Repeat(Keys.ArrowLeft, 3)) + "101010"); 
+            departureTimeInput.SendKeys(string.Concat(Enumerable.Repeat(Keys.ArrowLeft, 3)) + "101010");
             Browser.Equal("modified valid", () => departureTimeInput.GetAttribute("class"));
             Browser.Equal("10:10:10", () => departureTimeInput.GetAttribute("value"));
 
@@ -390,14 +390,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 includeSecondsCheckbox.Click();
             }
 
-            // Validates on edit
+            // Input works with seconds value of zero and has the expected final value
             Browser.Equal("valid", () => appointmentInput.GetAttribute("class"));
             appointmentInput.SendKeys($"11111970{Keys.ArrowRight}114216");
             Browser.Equal("modified valid", () => appointmentInput.GetAttribute("class"));
             Browser.Equal("1970-11-11T11:42:16", () => appointmentInput.GetAttribute("value"));
 
-            // Empty is invalid because it's not nullable
-            appointmentInput.SendKeys(string.Concat(Enumerable.Repeat(Keys.ArrowLeft, 6)) + $"10101970{Keys.ArrowRight}105321"); 
+            // Input works with non-zero seconds value
+            // Move to the beginning of the input and put the new value
+            appointmentInput.SendKeys(string.Concat(Enumerable.Repeat(Keys.ArrowLeft, 6)) + $"10101970{Keys.ArrowRight}105321");
             Browser.Equal("modified valid", () => appointmentInput.GetAttribute("class"));
             Browser.Equal("1970-10-10T10:53:21", () => appointmentInput.GetAttribute("value"));
 
