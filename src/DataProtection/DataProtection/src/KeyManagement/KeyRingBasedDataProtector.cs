@@ -149,10 +149,28 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             Debug.Assert((long)ptr % 4 == 0);
 
             Guid retVal;
-            ((int*)&retVal)[0] = ((int*)ptr)[0];
-            ((int*)&retVal)[1] = ((int*)ptr)[1];
-            ((int*)&retVal)[2] = ((int*)ptr)[2];
-            ((int*)&retVal)[3] = ((int*)ptr)[3];
+            if (BitConverter.IsLittleEndian)
+            {
+                ((int*)&retVal)[0] = ((int*)ptr)[0];
+                ((int*)&retVal)[1] = ((int*)ptr)[1];
+                ((int*)&retVal)[2] = ((int*)ptr)[2];
+                ((int*)&retVal)[3] = ((int*)ptr)[3];
+            }
+            else
+            {
+                // The first 8 bytes of the Guid hold one 32-bit integer
+                // and two 16-bit integers that must be byte-swapped.
+                ((byte*)&retVal)[0] = ((byte*)ptr)[3];
+                ((byte*)&retVal)[1] = ((byte*)ptr)[2];
+                ((byte*)&retVal)[2] = ((byte*)ptr)[1];
+                ((byte*)&retVal)[3] = ((byte*)ptr)[0];
+                ((byte*)&retVal)[4] = ((byte*)ptr)[5];
+                ((byte*)&retVal)[5] = ((byte*)ptr)[4];
+                ((byte*)&retVal)[6] = ((byte*)ptr)[7];
+                ((byte*)&retVal)[7] = ((byte*)ptr)[6];
+                ((int*)&retVal)[2] = ((int*)ptr)[2];
+                ((int*)&retVal)[3] = ((int*)ptr)[3];
+            }
             return retVal;
         }
 
@@ -306,10 +324,28 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         {
             Debug.Assert((long)ptr % 4 == 0);
 
-            ((int*)ptr)[0] = ((int*)&value)[0];
-            ((int*)ptr)[1] = ((int*)&value)[1];
-            ((int*)ptr)[2] = ((int*)&value)[2];
-            ((int*)ptr)[3] = ((int*)&value)[3];
+            if (BitConverter.IsLittleEndian)
+            {
+                ((int*)ptr)[0] = ((int*)&value)[0];
+                ((int*)ptr)[1] = ((int*)&value)[1];
+                ((int*)ptr)[2] = ((int*)&value)[2];
+                ((int*)ptr)[3] = ((int*)&value)[3];
+            }
+            else
+            {
+                // The first 8 bytes of the Guid hold one 32-bit integer
+                // and two 16-bit integers that must be byte-swapped.
+                ((byte*)ptr)[0] = ((byte*)&value)[3];
+                ((byte*)ptr)[1] = ((byte*)&value)[2];
+                ((byte*)ptr)[2] = ((byte*)&value)[1];
+                ((byte*)ptr)[3] = ((byte*)&value)[0];
+                ((byte*)ptr)[4] = ((byte*)&value)[5];
+                ((byte*)ptr)[5] = ((byte*)&value)[4];
+                ((byte*)ptr)[6] = ((byte*)&value)[7];
+                ((byte*)ptr)[7] = ((byte*)&value)[6];
+                ((int*)ptr)[2] = ((int*)&value)[2];
+                ((int*)ptr)[3] = ((int*)&value)[3];
+            }
         }
 
         private static void WriteBigEndianInteger(byte* ptr, uint value)
