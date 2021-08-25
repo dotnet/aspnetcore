@@ -220,5 +220,39 @@ namespace Microsoft.AspNetCore.Http.Features
             Assert.Single(queryCollection);
             Assert.Equal(new[] { "[ 1 ]", "[ 2 ]" }, queryCollection["fields [todoItems]"]);
         }
+
+        [Fact]
+        public void CaseInsensitiveWithManyKeys()
+        {
+            // need to use over 10 keys to test dictionary storage code path
+            var features = new FeatureCollection();
+            features[typeof(IHttpRequestFeature)] = new HttpRequestFeature
+            {
+                QueryString = "?a=0&b=0&c=1&d=2&e=3&f=4&g=5&h=6&i=7&j=8&k=9&" +
+                    "key=1&Key=2&key=3&Key=4&KEy=5&KEY=6&kEY=7&KeY=8&kEy=9&keY=10"
+            };
+
+            var provider = new QueryFeature(features);
+
+            var queryCollection = provider.Query;
+
+            Assert.Equal(12, queryCollection.Count);
+            Assert.Equal(new[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" }, queryCollection["KEY"]);
+        }
+
+        [Fact]
+        public void CaseInsensitiveWithFewKeys()
+        {
+            // need to use less than 10 keys to test array storage code path
+            var features = new FeatureCollection();
+            features[typeof(IHttpRequestFeature)] = new HttpRequestFeature { QueryString = "?key=1&Key=2&key=3&Key=4&KEy=5" };
+
+            var provider = new QueryFeature(features);
+
+            var queryCollection = provider.Query;
+
+            Assert.Equal(1, queryCollection.Count);
+            Assert.Equal(new[] { "1", "2", "3", "4", "5" }, queryCollection["KEY"]);
+        }
     }
 }
