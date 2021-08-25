@@ -5,6 +5,7 @@ using System;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.AspNetCore.Analyzers
 {
@@ -35,10 +36,13 @@ namespace Microsoft.AspNetCore.Analyzers
                 return;
             }
 
+            var main = context.Compilation.GetEntryPoint(default)?.ContainingType;
+
             context.RegisterSymbolStartAction(context =>
             {
                 var type = (INamedTypeSymbol)context.Symbol;
-                if (!StartupFacts.IsStartupClass(symbols, type))
+                var isMain = SymbolEqualityComparer.Default.Equals(main, type);
+                if (!StartupFacts.IsStartupClass(symbols, type) && !isMain)
                 {
                     // Not a startup class, nothing to do.
                     return;
@@ -60,18 +64,24 @@ namespace Microsoft.AspNetCore.Analyzers
                     }
 
                     var method = (IMethodSymbol)context.OwningSymbol;
-                    if (StartupFacts.IsConfigureServices(symbols, method))
+                    var isConfigureServices = StartupFacts.IsConfigureServices(symbols, method);
+                    if (isConfigureServices)
                     {
                         OnConfigureServicesMethodFound(method);
-
+                    }
+                    if (isConfigureServices || isMain)
+                    {
                         services.AnalyzeConfigureServices(context);
                         options.AnalyzeConfigureServices(context);
                     }
 
-                    if (StartupFacts.IsConfigure(symbols, method))
+                    var isConfigure = StartupFacts.IsConfigure(symbols, method);
+                    if (isConfigure)
                     {
                         OnConfigureMethodFound(method);
-
+                    }
+                    if (isConfigure || isMain)
+                    {
                         middleware.AnalyzeConfigureMethod(context);
                     }
                 });

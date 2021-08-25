@@ -41,26 +41,33 @@ namespace Microsoft.AspNetCore.Analyzers
         private ConcurrentBag<IMethodSymbol> ConfigureMethods { get; }
 
         [Fact]
-        public async Task StartupAnalyzer_FindsStartupMethods_StartupSignatures_WebApplicationBuilder()
+        public async Task StartupAnalyzer_Simple_WebApplicationBuilder()
         {
             // Arrange
-            var source = Read("StartupSignatures_WebApplicationBuilder");
+            var source = @"using Microsoft.AspNetCore.Builder;
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+app.MapGet(""/"", () => ""Hello World!"");
+app.Run();";
 
             // Act
-            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+            var diagnostics = await Runner.GetDiagnosticsAsync(source);
 
             // Assert
             Assert.Empty(diagnostics);
-
-            //Assert.Collection(ConfigureServicesMethods, m => Assert.Equal("ConfigureServices", m.Name));
-            //Assert.Collection(ConfigureMethods, m => Assert.Equal("Configure", m.Name));
         }
 
         [Fact]
-        public async Task M()
+        public async Task StartupAnalyzer_UseAuthAfterUseEndpoints_WebApplicationBuilder()
         {
             // Arrange
-            var source = Read("UseAuthAfterUseEndpoints");
+            var source = TestSource.Read(@"using Microsoft.AspNetCore.Builder;
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+app.UseRouting();
+app.UseEndpoints(r => { });
+/*MM*/app.UseAuthorization();
+app.Run();");
 
             // Act
             var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
@@ -75,5 +82,60 @@ namespace Microsoft.AspNetCore.Analyzers
                     AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
                 });
         }
+
+        [Theory]
+        [InlineData("MvcOptions_UseMvc", "UseMvc")]
+        [InlineData("MvcOptions_UseMvcAndConfiguredRoutes", "UseMvc")]
+        [InlineData("MvcOptions_UseMvcWithDefaultRoute", "UseMvcWithDefaultRoute")]
+        public async Task StartupAnalyzer_UseMvc_WebApplicationBuilder(string sources, string middlewareName)
+        {
+            // Arrange
+            var source = TestSource.Read(MvcSources[sources]);
+
+            // Act
+            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+            // Assert
+            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
+            var middleware = Assert.Single(middlewareAnalysis.Middleware);
+            Assert.Equal(middlewareName, middleware.UseMethod.Name);
+
+            Assert.NotEmpty(middlewareAnalysis.Middleware);
+            Assert.Collection(diagnostics,
+                diagnostic =>
+                {
+                    Assert.Same(StartupAnalyzer.Diagnostics.UnsupportedUseMvcWithEndpointRouting, diagnostic.Descriptor);
+                    AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
+                });
+        }
+
+        private Dictionary<string, string> MvcSources = new()
+        {
+            { "MvcOptions_UseMvc", @"using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddMvc();
+var app = builder.Build();
+/*MM*/app.UseMvc();
+app.Run();" },
+            { "MvcOptions_UseMvcAndConfiguredRoutes",
+                @"using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddMvc();
+var app = builder.Build();
+/*MM*/app.UseMvc(routes =>
+{
+    routes.MapRoute(""Name"", ""Template"");
+});
+app.Run();" },
+            { "MvcOptions_UseMvcWithDefaultRoute", @"using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddMvc();
+var app = builder.Build();
+/*MM*/app.UseMvcWithDefaultRoute();
+app.Run();" }
+        };
     }
 }
