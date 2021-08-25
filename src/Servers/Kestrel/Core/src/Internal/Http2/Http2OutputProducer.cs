@@ -490,12 +490,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             if (_fakeMemoryOwner == null)
             {
-                _fakeMemoryOwner = _memoryPool.Rent(sizeHint);
+                // 
+                if (sizeHint <= _memoryPool.MaxBufferSize)
+                {
+                    // Use the specified pool as it fits.
+                    _fakeMemoryOwner = _memoryPool.Rent(sizeHint);
+                }
+                else
+                {
+                    // Use the array pool. It's MaxBufferSize is int.MaxValue.
+                    _fakeMemoryOwner = MemoryPool<byte>.Shared.Rent(sizeHint);
+                }
             }
 
             return _fakeMemoryOwner.Memory;
         }
-
         [StackTraceHidden]
         private void ThrowIfSuffixSentOrCompleted()
         {
