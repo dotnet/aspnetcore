@@ -25,6 +25,11 @@
     <UseSharedCompilation>true</UseSharedCompilation>
   </PropertyGroup>
 
+  <!-- Workaround for netstandard2.0 targets not building in rc2 SDK. -->
+  <PropertyGroup>
+    <NoWarn>NETSDK1138</NoWarn>
+  </PropertyGroup>
+
   <PropertyGroup>
     <!-- Ignore warning about calling the Pack target on Web SDK projects. Our build scripts call /t:pack on everything in this repo. -->
     <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
