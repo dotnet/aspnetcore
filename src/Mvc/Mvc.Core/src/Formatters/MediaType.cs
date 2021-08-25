@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// </summary>
         /// <param name="mediaType">The <see cref="StringSegment"/> with the media type.</param>
         public MediaType(StringSegment mediaType)
-            : this(mediaType.Buffer, mediaType.Offset, mediaType.Length)
+            : this(mediaType.Buffer ?? string.Empty, mediaType.Offset, mediaType.Length)
         {
         }
 
@@ -354,7 +354,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             if (charset.HasValue && charset.Equals(encoding.WebName, StringComparison.OrdinalIgnoreCase))
             {
-                return mediaType.Value;
+                return mediaType.Value ?? string.Empty;
             }
 
             if (!charset.HasValue)
@@ -454,7 +454,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 // charset.Value might be an invalid encoding name as in charset=invalid.
                 // For that reason, we catch the exception thrown by Encoding.GetEncoding
                 // and return null instead.
-                return charset.HasValue ? Encoding.GetEncoding(charset.Value) : null;
+                return charset.HasValue ? Encoding.GetEncoding(charset.Value!) : null;
             }
             catch (Exception)
             {

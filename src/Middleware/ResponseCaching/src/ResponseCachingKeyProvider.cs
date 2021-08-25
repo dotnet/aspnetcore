@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     var requestHeaders = context.HttpContext.Request.Headers;
                     for (var i = 0; i < headersCount; i++)
                     {
-                        var header = varyByRules!.Headers[i];
+                        var header = varyByRules!.Headers[i]!;
                         var headerValues = requestHeaders[header];
                         builder.Append(KeyDelimiter)
                             .Append(header)
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     {
                         for (var i = 0; i < varyByRules.QueryKeys.Count; i++)
                         {
-                            var queryKey = varyByRules.QueryKeys[i];
+                            var queryKey = varyByRules.QueryKeys[i]!;
                             var queryKeyValues = context.HttpContext.Request.Query[queryKey];
                             builder.Append(KeyDelimiter)
                                 .Append(queryKey)

@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Http
 
         public override HostString Host
         {
-            get { return HostString.FromUriComponent(Headers.Host); }
+            get { return HostString.FromUriComponent(Headers.Host.ToString()); }
             set { Headers.Host = value.ToUriComponent(); }
         }
 

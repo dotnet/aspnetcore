@@ -192,9 +192,10 @@ namespace Microsoft.AspNetCore.Http
 
                 for (var i = 0; i < values.Length; i++)
                 {
-                    if (!rejectPredicate(values[i], encodedKeyPlusEquals, options))
+                    var value = values[i]!;
+                    if (!rejectPredicate(value, encodedKeyPlusEquals, options))
                     {
-                        newValues.Add(values[i]);
+                        newValues.Add(value);
                     }
                 }
 

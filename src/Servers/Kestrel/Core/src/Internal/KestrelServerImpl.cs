@@ -325,10 +325,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
         }
 
-        private static void TriggerRebind(object state)
+        private static void TriggerRebind(object? state)
         {
-            var server = (KestrelServerImpl)state;
-            _ = server.RebindAsync();
+            if (state != null)
+            {
+                var server = (KestrelServerImpl)state;
+                _ = server.RebindAsync();
+            }
         }
 
         private async Task RebindAsync()

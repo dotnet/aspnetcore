@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     var stringValue = stringValues[i];
                     if (!string.IsNullOrEmpty(stringValue))
                     {
-                        size += stringValues[i].Length * sizeof(char);
+                        size += stringValue.Length * sizeof(char);
                     }
                 }
 

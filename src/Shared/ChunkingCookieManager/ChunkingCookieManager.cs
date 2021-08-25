@@ -293,9 +293,10 @@ namespace Microsoft.AspNetCore.Internal
 
                 for (var i = 0; i < values.Length; i++)
                 {
-                    if (!rejectPredicate(values[i]))
+                    var value = values[i]!;
+                    if (!rejectPredicate(value))
                     {
-                        newValues.Add(values[i]);
+                        newValues.Add(value);
                     }
                 }
 

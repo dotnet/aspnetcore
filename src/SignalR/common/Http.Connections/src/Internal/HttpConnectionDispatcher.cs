@@ -381,7 +381,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             return features.Get<IHttpWebSocketFeature>() != null;
         }
 
-        private static string GetConnectionToken(HttpContext context) => context.Request.Query["id"];
+        private static string GetConnectionToken(HttpContext context) => context.Request.Query["id"].ToString();
 
         private async Task ProcessSend(HttpContext context, HttpConnectionDispatcherOptions options)
         {

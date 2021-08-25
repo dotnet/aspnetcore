@@ -268,9 +268,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             var count = headerValues.Count;
             for (var i = 0; i < count; i++)
-
             {
-                ValidateHeaderValueCharacters(headerValues[i], requireAscii);
+                ValidateHeaderValueCharacters(headerValues[i]!, requireAscii);
             }
         }
 

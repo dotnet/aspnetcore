@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 {
                     // We add 'identity' to the list of "candidates" with a very low priority and no provider.
                     // This will allow it to be ordered based on its quality (and priority) later in the method.
-                    candidates.Add(new ProviderCandidate(encodingName.Value, quality, priority: int.MaxValue, provider: null));
+                    candidates.Add(new ProviderCandidate(encodingName.Value ?? string.Empty, quality, priority: int.MaxValue, provider: null));
                 }
             }
 

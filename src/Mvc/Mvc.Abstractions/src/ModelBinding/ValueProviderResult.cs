@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <param name="result">The <see cref="ValueProviderResult"/>.</param>
         public static explicit operator string(ValueProviderResult result)
         {
-            return result.Values;
+            return result.Values.ToString();
         }
 
         /// <summary>
@@ -159,7 +159,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <param name="result">The <see cref="ValueProviderResult"/>.</param>
         public static explicit operator string[](ValueProviderResult result)
         {
-            return result.Values;
+            // ToArray() handles the entirely-null case and we assume individual values are never null.
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
+            return result.Values.ToArray();
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
         }
 
         /// <summary>

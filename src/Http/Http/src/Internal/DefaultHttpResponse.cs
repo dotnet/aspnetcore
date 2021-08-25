@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Http
         {
             get
             {
-                return Headers.ContentType;
+                return Headers.ContentType.ToString();
             }
             set
             {
