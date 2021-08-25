@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers.Binary;
 using System.Text;
 
 #nullable enable
@@ -29,7 +30,7 @@ namespace Ignitor
 
             for (var i = 0; i < indexes.Length; i += 4)
             {
-                var index = BitConverter.ToInt32(indexes.Slice(i, 4));
+                var index = BinaryPrimitives.ReadInt32LittleEndian(indexes.Slice(i, 4));
 
                 // The string table entries are all length-prefixed UTF8 blobs
                 var length = (int)ReadUnsignedLEB128(data, index, out var numLEB128Bytes);
@@ -46,21 +47,21 @@ namespace Ignitor
 
             for (var i = 0; i < indexes.Length; i += 4)
             {
-                var index = BitConverter.ToInt32(indexes.Slice(i, 4));
+                var index = BinaryPrimitives.ReadInt32LittleEndian(indexes.Slice(i, 4));
 
-                var componentId = BitConverter.ToInt32(data.Slice(index, 4));
-                var editCount = BitConverter.ToInt32(data.Slice(index + 4, 4));
+                var componentId = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(index, 4));
+                var editCount = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(index + 4, 4));
 
                 var editData = data.Slice(index + 8);
                 var edits = new RenderTreeEdit[editCount];
                 for (var j = 0; j < editCount; j++)
                 {
-                    var type = (RenderTreeEditType)BitConverter.ToInt32(editData.Slice(0, 4));
-                    var siblingIndex = BitConverter.ToInt32(editData.Slice(4, 4));
+                    var type = (RenderTreeEditType)BinaryPrimitives.ReadInt32LittleEndian(editData.Slice(0, 4));
+                    var siblingIndex = BinaryPrimitives.ReadInt32LittleEndian(editData.Slice(4, 4));
 
                     // ReferenceFrameIndex and MoveToSiblingIndex share a slot, so this reads
                     // whichever one applies to the edit type
-                    var referenceFrameIndex = BitConverter.ToInt32(editData.Slice(8, 4));
+                    var referenceFrameIndex = BinaryPrimitives.ReadInt32LittleEndian(editData.Slice(8, 4));
                     var removedAttributeName = ReadString(editData.Slice(12, 4), strings);
 
                     editData = editData.Slice(16);
@@ -133,7 +134,7 @@ namespace Ignitor
             {
                 var frameData = data.Slice(i, ReferenceFrameSize);
 
-                var type = (RenderTreeFrameType)BitConverter.ToInt32(frameData.Slice(0, 4));
+                var type = (RenderTreeFrameType)BinaryPrimitives.ReadInt32LittleEndian(frameData.Slice(0, 4));
 
                 // We want each frame to take up the same number of bytes, so that the
                 // recipient can index into the array directly instead of having to
@@ -146,13 +147,13 @@ namespace Ignitor
                     case RenderTreeFrameType.Attribute:
                         var attributeName = ReadString(frameData.Slice(4, 4), strings);
                         var attributeValue = ReadString(frameData.Slice(8, 4), strings);
-                        var attributeEventHandlerId = BitConverter.ToUInt64(frameData.Slice(12, 8));
+                        var attributeEventHandlerId = BinaryPrimitives.ReadUInt64LittleEndian(frameData.Slice(12, 8));
                         result[i / ReferenceFrameSize] = RenderTreeFrame.Attribute(0, attributeName, attributeValue).WithAttributeEventHandlerId(attributeEventHandlerId);
                         break;
 
                     case RenderTreeFrameType.Component:
-                        var componentSubtreeLength = BitConverter.ToInt32(frameData.Slice(4, 4));
-                        var componentId = BitConverter.ToInt32(frameData.Slice(8, 4)); // Nowhere to put this without creating a ComponentState
+                        var componentSubtreeLength = BinaryPrimitives.ReadInt32LittleEndian(frameData.Slice(4, 4));
+                        var componentId = BinaryPrimitives.ReadInt32LittleEndian(frameData.Slice(8, 4)); // Nowhere to put this without creating a ComponentState
                         result[i / ReferenceFrameSize] = RenderTreeFrame.ChildComponent(0, componentType: null)
                             .WithComponentSubtreeLength(componentSubtreeLength)
                             .WithComponent(new ComponentState(componentId));
@@ -164,7 +165,7 @@ namespace Ignitor
                         break;
 
                     case RenderTreeFrameType.Element:
-                        var elementSubtreeLength = BitConverter.ToInt32(frameData.Slice(4, 4));
+                        var elementSubtreeLength = BinaryPrimitives.ReadInt32LittleEndian(frameData.Slice(4, 4));
                         var elementName = ReadString(frameData.Slice(8, 4), strings);
                         result[i / ReferenceFrameSize] = RenderTreeFrame.Element(0, elementName).WithElementSubtreeLength(elementSubtreeLength);
                         break;
@@ -176,7 +177,7 @@ namespace Ignitor
                         break;
 
                     case RenderTreeFrameType.Region:
-                        var regionSubtreeLength = BitConverter.ToInt32(frameData.Slice(4, 4));
+                        var regionSubtreeLength = BinaryPrimitives.ReadInt32LittleEndian(frameData.Slice(4, 4));
                         result[i / ReferenceFrameSize] = RenderTreeFrame.Region(0).WithRegionSubtreeLength(regionSubtreeLength);
                         break;
 
@@ -210,7 +211,7 @@ namespace Ignitor
 
         private static string? ReadString(ReadOnlySpan<byte> data, string[] strings)
         {
-            var index = BitConverter.ToInt32(data.Slice(0, 4));
+            var index = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(0, 4));
             return index >= 0 ? strings[index] : null;
         }
 
@@ -237,11 +238,11 @@ namespace Ignitor
             public static Sections Parse(ReadOnlySpan<byte> data)
             {
                 return new Sections(
-                    BitConverter.ToInt32(data.Slice(data.Length - 20, 4)),
-                    BitConverter.ToInt32(data.Slice(data.Length - 16, 4)),
-                    BitConverter.ToInt32(data.Slice(data.Length - 12, 4)),
-                    BitConverter.ToInt32(data.Slice(data.Length - 8, 4)),
-                    BitConverter.ToInt32(data.Slice(data.Length - 4, 4)));
+                    BinaryPrimitives.ReadInt32LittleEndian(data.Slice(data.Length - 20, 4)),
+                    BinaryPrimitives.ReadInt32LittleEndian(data.Slice(data.Length - 16, 4)),
+                    BinaryPrimitives.ReadInt32LittleEndian(data.Slice(data.Length - 12, 4)),
+                    BinaryPrimitives.ReadInt32LittleEndian(data.Slice(data.Length - 8, 4)),
+                    BinaryPrimitives.ReadInt32LittleEndian(data.Slice(data.Length - 4, 4)));
             }
 
             private readonly int _updatedComponents;
@@ -262,14 +263,14 @@ namespace Ignitor
             public ReadOnlySpan<byte> GetUpdatedComponentIndexes(ReadOnlySpan<byte> data)
             {
                 // This is count-prefixed contiguous array of of integers.
-                var count = BitConverter.ToInt32(data.Slice(_updatedComponents, 4));
+                var count = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(_updatedComponents, 4));
                 return data.Slice(_updatedComponents + 4, count * 4);
             }
 
             public ReadOnlySpan<byte> GetReferenceFrameData(ReadOnlySpan<byte> data)
             {
                 // This is a count-prefixed contiguous array of RenderTreeFrame.
-                var count = BitConverter.ToInt32(data.Slice(_referenceFrames, 4));
+                var count = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(_referenceFrames, 4));
                 return data.Slice(_referenceFrames + 4, count * ReferenceFrameSize);
             }
 
