@@ -995,5 +995,37 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
 
             Assert.Equal("http://example.com/g", response);
         }
+
+        [Fact]
+        public async Task Rewrite_WorksWithoutUseRoutingWithWebApplication()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            builder.Services.Configure<RewriteOptions>(options =>
+            {
+                options.AddRewrite("(.*)", "http://example.com/g", skipRemainingRules: true);
+            });
+            await using var app = builder.Build();
+
+            app.UseRewriter();
+
+            app.MapGet("/foo", context => context.Response.WriteAsync(
+                "no rule"));
+
+            app.MapGet("/g", context => context.Response.WriteAsync(
+                context.Request.Scheme +
+                "://" +
+                context.Request.Host +
+                context.Request.Path +
+                context.Request.QueryString));
+
+            await app.StartAsync();
+
+            var server = app.GetTestServer();
+
+            var response = await server.CreateClient().GetStringAsync("foo");
+
+            Assert.Equal("http://example.com/g", response);
+        }
     }
 }
