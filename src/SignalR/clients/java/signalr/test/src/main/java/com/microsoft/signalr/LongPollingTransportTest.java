@@ -49,7 +49,6 @@ public class LongPollingTransportTest {
     }
 
     @Test
-    @Disabled("https://github.com/dotnet/aspnetcore/issues/35684")
     public void StatusCode204StopsLongPollingTriggersOnClosed() {
         AtomicBoolean firstPoll = new AtomicBoolean(true);
         CompletableSubject block = CompletableSubject.create();
