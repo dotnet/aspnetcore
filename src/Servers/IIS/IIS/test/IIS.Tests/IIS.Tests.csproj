@@ -26,4 +26,8 @@
     <None Include="$(AspNetCoreModuleV2ShimDll)" Condition="$(PackNativeAssets) == 'true'" CopyToOutputDirectory="PreserveNewest" Link="%(FileName)%(Extension)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\MsQuicSupportedAttribute.cs" LinkBase="shared\" />
+  </ItemGroup>
+
 </Project>
