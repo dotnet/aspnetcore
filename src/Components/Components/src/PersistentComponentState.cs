@@ -1,11 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components
@@ -13,70 +12,59 @@ namespace Microsoft.AspNetCore.Components
     /// <summary>
     /// The state for the components and services of a components application.
     /// </summary>
-    public class ComponentApplicationState
+    public class PersistentComponentState
     {
-        private IDictionary<string, byte[]>? _existingState;
-        private readonly IDictionary<string, byte[]> _currentState;
-        private readonly List<OnPersistingCallback> _registeredCallbacks;
+        private IDictionary<string, ReadOnlySequence<byte>>? _existingState;
+        private readonly IDictionary<string, PooledByteBufferWriter> _currentState;
 
-        internal ComponentApplicationState(
-            IDictionary<string, byte[]> currentState,
-            List<OnPersistingCallback> pauseCallbacks)
+        private readonly List<Func<Task>> _registeredCallbacks;
+
+        internal PersistentComponentState(
+            IDictionary<string, PooledByteBufferWriter> currentState,
+            List<Func<Task>> pauseCallbacks)
         {
             _currentState = currentState;
             _registeredCallbacks = pauseCallbacks;
         }
 
-        internal void InitializeExistingState(IDictionary<string, byte[]> existingState)
+        internal bool PersistingState { get; set; }
+
+        internal void InitializeExistingState(IDictionary<string, ReadOnlySequence<byte>> existingState)
         {
             if (_existingState != null)
             {
-                throw new InvalidOperationException("ComponentApplicationState already initialized.");
+                throw new InvalidOperationException("PersistentComponentState already initialized.");
             }
             _existingState = existingState ?? throw new ArgumentNullException(nameof(existingState));
         }
 
         /// <summary>
-        /// Represents the method that performs operations when <see cref="OnPersisting"/> is raised and the application is about to be paused.
+        /// Register a callback to persist the component state when the application is about to be paused.
+        /// Registered callbacks can use this opportunity to persist their state so that it can be retrieved when the application resumes.
         /// </summary>
-        /// <returns>A <see cref="Task"/> that will complete when the method is done preparing for the application pause.</returns>
-        public delegate Task OnPersistingCallback();
-
-        /// <summary>
-        /// An event that is raised when the application is about to be paused.
-        /// Registered handlers can use this opportunity to persist their state so that it can be retrieved when the application resumes.
-        /// </summary>
-        public event OnPersistingCallback OnPersisting
+        /// <param name="callback">The callback to invoke when the application is being paused.</param>
+        /// <returns>A subscription that can be used to unregister the callback when disposed.</returns>
+        public PersistingComponentStateSubscription RegisterOnPersisting(Func<Task> callback)
         {
-            add
+            if (callback == null)
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                _registeredCallbacks.Add(value);
+                throw new ArgumentNullException(nameof(callback));
             }
-            remove
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
 
-                _registeredCallbacks.Remove(value);
-            }
+            _registeredCallbacks.Add(callback);
+
+            return new PersistingComponentStateSubscription(_registeredCallbacks, callback);
         }
 
         /// <summary>
         /// Tries to retrieve the persisted state with the given <paramref name="key"/>.
         /// When the key is present, the state is successfully returned via <paramref name="value"/>
-        /// and removed from the <see cref="ComponentApplicationState"/>.
+        /// and removed from the <see cref="PersistentComponentState"/>.
         /// </summary>
         /// <param name="key">The key used to persist the state.</param>
         /// <param name="value">The persisted state.</param>
         /// <returns><c>true</c> if the state was found; <c>false</c> otherwise.</returns>
-        public bool TryTakePersistedState(string key, [MaybeNullWhen(false)] out byte[]? value)
+        public bool TryTake(string key, out ReadOnlySequence<byte> value)
         {
             if (key is null)
             {
@@ -89,7 +77,7 @@ namespace Microsoft.AspNetCore.Components
                 // and we don't want to fail in that case.
                 // When a service is prerendering there is no state to restore and in other cases the host
                 // is responsible for initializing the state before services or components can access it.
-                value = null;
+                value = default;
                 return false;
             }
 
@@ -105,27 +93,35 @@ namespace Microsoft.AspNetCore.Components
         }
 
         /// <summary>
-        /// Persists the serialized state <paramref name="value"/> for the given <paramref name="key"/>.
+        /// Persists the serialized state <paramref name="valueWriter"/> for the given <paramref name="key"/>.
         /// </summary>
         /// <param name="key">The key to use to persist the state.</param>
-        /// <param name="value">The state to persist.</param>
-        public void PersistState(string key, byte[] value)
+        /// <param name="valueWriter">The state to persist.</param>
+        public void Persist(string key, Action<IBufferWriter<byte>> valueWriter)
         {
             if (key is null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (value is null)
+            if (valueWriter is null)
             {
-                throw new ArgumentNullException(nameof(value));
+                throw new ArgumentNullException(nameof(valueWriter));
+            }
+
+            if (!PersistingState)
+            {
+                throw new InvalidOperationException("Persisting state is only allowed during an OnPersisting callback.");
             }
 
             if (_currentState.ContainsKey(key))
             {
                 throw new ArgumentException($"There is already a persisted object under the same key '{key}'");
             }
-            _currentState.Add(key, value);
+
+            var writer = new PooledByteBufferWriter();
+            _currentState.Add(key, writer);
+            valueWriter(writer);
         }
 
         /// <summary>
@@ -142,29 +138,47 @@ namespace Microsoft.AspNetCore.Components
                 throw new ArgumentNullException(nameof(key));
             }
 
-            PersistState(key, JsonSerializer.SerializeToUtf8Bytes(instance, JsonSerializerOptionsProvider.Options));
+            if (key is null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (!PersistingState)
+            {
+                throw new InvalidOperationException("Persisting state is only allowed during an OnPersisting callback.");
+            }
+
+            if (_currentState.ContainsKey(key))
+            {
+                throw new ArgumentException($"There is already a persisted object under the same key '{key}'");
+            }
+
+            var writer = new PooledByteBufferWriter();
+            _currentState.Add(key, writer);
+            JsonSerializer.Serialize(new Utf8JsonWriter(writer), instance, JsonSerializerOptionsProvider.Options);
         }
 
         /// <summary>
         /// Tries to retrieve the persisted state as JSON with the given <paramref name="key"/> and deserializes it into an
         /// instance of type <typeparamref name="TValue"/>.
         /// When the key is present, the state is successfully returned via <paramref name="instance"/>
-        /// and removed from the <see cref="ComponentApplicationState"/>.
+        /// and removed from the <see cref="PersistentComponentState"/>.
         /// </summary>
         /// <param name="key">The key used to persist the instance.</param>
         /// <param name="instance">The persisted instance.</param>
         /// <returns><c>true</c> if the state was found; <c>false</c> otherwise.</returns>
         [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-        public bool TryTakeAsJson<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string key, [MaybeNullWhen(false)] out TValue? instance)
+        public bool TryTakeFromJson<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string key, [MaybeNullWhen(false)] out TValue? instance)
         {
             if (key is null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (TryTakePersistedState(key, out var data))
+            if (TryTake(key, out var data))
             {
-                instance = JsonSerializer.Deserialize<TValue>(data, JsonSerializerOptionsProvider.Options)!;
+                var reader = new Utf8JsonReader(data);
+                instance = JsonSerializer.Deserialize<TValue>(ref reader, JsonSerializerOptionsProvider.Options)!;
                 return true;
             }
             else

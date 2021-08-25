@@ -1,9 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Reflection.Metadata;
-using Microsoft.AspNetCore.Components.Lifetime;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.HotReload;
 using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
@@ -129,7 +128,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // This is the earliest opportunity to fetch satellite assemblies for this selection.
             await cultureProvider.LoadCurrentCultureResourcesAsync();
 
-            var manager = Services.GetRequiredService<ComponentApplicationLifetime>();
+            var manager = Services.GetRequiredService<ComponentStatePersistenceManager>();
             var store = !string.IsNullOrEmpty(_persistedState) ?
                 new PrerenderComponentApplicationStore(_persistedState) :
                 new PrerenderComponentApplicationStore();
