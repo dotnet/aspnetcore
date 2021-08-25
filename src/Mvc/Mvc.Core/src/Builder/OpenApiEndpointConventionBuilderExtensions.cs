@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="additionalContentTypes">Additional response content types the endpoint accepts</param>
         /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static DelegateEndpointConventionBuilder Accepts(this DelegateEndpointConventionBuilder builder, Type requestType,
-            string contentType, params string[] additionalContentTypes) 
+            string contentType, params string[] additionalContentTypes)
         {
             builder.WithMetadata(new ConsumesAttribute(requestType, contentType, additionalContentTypes));
             return builder;

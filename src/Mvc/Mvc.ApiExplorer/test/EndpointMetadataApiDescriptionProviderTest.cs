@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         public void AddsMultipleRequestFormatsFromMetadata()
         {
             var apiDescription = GetApiDescription(
-                [Consumes(typeof(InferredJsonClass),"application/custom0", "application/custom1")]
+                [Consumes("application/custom0", "application/custom1")]
             (InferredJsonClass fromBody) =>
                 { });
 
@@ -105,10 +105,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var requestFormat1 = apiDescription.SupportedRequestFormats[1];
             Assert.Equal("application/custom1", requestFormat1.MediaType);
             Assert.Null(requestFormat1.Formatter);
-
-            var apiParameterDescription = apiDescription.ParameterDescriptions[0];
-            Assert.Equal("InferredJsonClass", apiParameterDescription.Type.Name);
-            Assert.True(apiParameterDescription.IsRequired);
         }
 
         [Fact]
