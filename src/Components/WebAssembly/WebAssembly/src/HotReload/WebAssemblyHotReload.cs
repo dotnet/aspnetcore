@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload
 
             // Attempt to read previously applied hot reload deltas. dotnet-watch and VS will serve the script that can provide results from local-storage and
             // the injected middleware if present.
-            var jsObjectReference = (IJSUnmarshalledObjectReference)(await DefaultWebAssemblyJSRuntime.Instance.InvokeAsync<IJSObjectReference>("import", "./_framework/blazor-hotreload.js"));
+            var jsObjectReference = (IJSUnmarshalledObjectReference)(await DefaultWebAssemblyJSRuntime.Instance.InvokeAsync<IJSObjectReference>("import", "/_framework/blazor-hotreload.js"));
             await jsObjectReference.InvokeUnmarshalled<Task<int>>("receiveHotReload");
         }
 
