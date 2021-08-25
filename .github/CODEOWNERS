@@ -41,3 +41,4 @@
 /src/Shared/test/Shared.Tests/runtime/                                            @dotnet/http
 /src/SignalR/                                                                     @BrennanConroy @halter73
 /src/SignalR/**/PublicAPI.*Shipped.txt                                            @dotnet/aspnet-api-review @BrennanConroy @halter73
+/src/submodules                                                                   @dotnet/aspnet-build @dougbu @wtgodbe
