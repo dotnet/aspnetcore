@@ -269,7 +269,7 @@ namespace RunTests
             if (File.Exists("TestResults/TestResults.xml"))
             {
                 Console.WriteLine("Copying TestResults/TestResults.xml to ./testResults.xml");
-                File.Copy("TestResults/TestResults.xml", "testResults.xml");
+                File.Copy("TestResults/TestResults.xml", "testResults.xml", overwrite: true);
             }
             else
             {

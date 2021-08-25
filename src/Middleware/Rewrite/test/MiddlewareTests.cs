@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
@@ -514,6 +515,43 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         }
 
         [Fact]
+        public async Task RewriteAfterUseRoutingHitsOriginalEndpoint()
+        {
+            // This is an edge case where users setup routing incorrectly, but we don't want to accidentally change behavior in case someone
+            // relies on it, so we have this test
+            var options = new RewriteOptions().AddRewrite("(.*)", "$1s", skipRemainingRules: false);
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(s =>
+                    {
+                        s.AddRouting();
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.UseRewriter(options);
+
+                        app.UseEndpoints(endpoints =>
+                        {
+                            endpoints.MapGet("/foos", context => context.Response.WriteAsync("bad"));
+                            endpoints.MapGet("/foo", context => context.Response.WriteAsync($"{context.GetEndpoint()?.DisplayName} from {context.Request.Path}"));
+                        });
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
+
+            var response = await server.CreateClient().GetStringAsync("foo");
+
+            Assert.Equal("/foo HTTP: GET from /foos", response);
+        }
+
+        [Fact]
         public async Task CheckIfEmptyStringRewriteCorrectly()
         {
             var options = new RewriteOptions().AddRewrite("(.*)", "$1", skipRemainingRules: false);
@@ -680,5 +718,78 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
             Assert.Equal(statusCode, (int)response.StatusCode);
         }
 
+        [Theory]
+        [InlineData("(.*)", "http://example.com/g")]
+        [InlineData("/", "no rule")]
+        public async Task Rewrite_WorksAfterUseRoutingIfGlobalRouteBuilderUsed(string regex, string output)
+        {
+            var options = new RewriteOptions().AddRewrite(regex, "http://example.com/g", skipRemainingRules: false);
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            app.UseRouting();
+
+            app.UseRewriter(options);
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapGet("/foo", context => context.Response.WriteAsync(
+                    "no rule"));
+
+                endpoints.MapGet("/g", context => context.Response.WriteAsync(
+                    context.Request.Scheme +
+                    "://" +
+                    context.Request.Host +
+                    context.Request.Path +
+                    context.Request.QueryString));
+            });
+
+            await app.StartAsync();
+
+            var server = app.GetTestServer();
+
+            var response = await server.CreateClient().GetStringAsync("foo");
+
+            Assert.Equal(output, response);
+        }
+
+        [Theory]
+        [InlineData("(.*)", "http://example.com/g")]
+        [InlineData("/", "no rule")]
+        public async Task RewriteFromOptions_WorksAfterUseRoutingIfGlobalRouteBuilderUsed(string regex, string output)
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            builder.Services.Configure<RewriteOptions>(options =>
+            {
+                options.AddRewrite(regex, "http://example.com/g", skipRemainingRules: false);
+            });
+            await using var app = builder.Build();
+            app.UseRouting();
+
+            app.UseRewriter();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapGet("/foo", context => context.Response.WriteAsync(
+                    "no rule"));
+
+                endpoints.MapGet("/g", context => context.Response.WriteAsync(
+                    context.Request.Scheme +
+                    "://" +
+                    context.Request.Host +
+                    context.Request.Path +
+                    context.Request.QueryString));
+            });
+
+            await app.StartAsync();
+
+            var server = app.GetTestServer();
+
+            var response = await server.CreateClient().GetStringAsync("foo");
+
+            Assert.Equal(output, response);
+        }
     }
 }
