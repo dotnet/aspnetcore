@@ -129,14 +129,14 @@
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <MicrosoftNETCorePlatformsVersion>6.0.0-rc.2.21424.20</MicrosoftNETCorePlatformsVersion>
     <!-- Packages from dotnet/efcore -->
-    <dotnetefVersion>6.0.0-rc.2.21424.26</dotnetefVersion>
-    <MicrosoftEntityFrameworkCoreInMemoryVersion>6.0.0-rc.2.21424.26</MicrosoftEntityFrameworkCoreInMemoryVersion>
-    <MicrosoftEntityFrameworkCoreRelationalVersion>6.0.0-rc.2.21424.26</MicrosoftEntityFrameworkCoreRelationalVersion>
-    <MicrosoftEntityFrameworkCoreSqliteVersion>6.0.0-rc.2.21424.26</MicrosoftEntityFrameworkCoreSqliteVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerVersion>6.0.0-rc.2.21424.26</MicrosoftEntityFrameworkCoreSqlServerVersion>
-    <MicrosoftEntityFrameworkCoreToolsVersion>6.0.0-rc.2.21424.26</MicrosoftEntityFrameworkCoreToolsVersion>
-    <MicrosoftEntityFrameworkCoreVersion>6.0.0-rc.2.21424.26</MicrosoftEntityFrameworkCoreVersion>
-    <MicrosoftEntityFrameworkCoreDesignVersion>6.0.0-rc.2.21424.26</MicrosoftEntityFrameworkCoreDesignVersion>
+    <dotnetefVersion>6.0.0-rc.2.21424.29</dotnetefVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryVersion>6.0.0-rc.2.21424.29</MicrosoftEntityFrameworkCoreInMemoryVersion>
+    <MicrosoftEntityFrameworkCoreRelationalVersion>6.0.0-rc.2.21424.29</MicrosoftEntityFrameworkCoreRelationalVersion>
+    <MicrosoftEntityFrameworkCoreSqliteVersion>6.0.0-rc.2.21424.29</MicrosoftEntityFrameworkCoreSqliteVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerVersion>6.0.0-rc.2.21424.29</MicrosoftEntityFrameworkCoreSqlServerVersion>
+    <MicrosoftEntityFrameworkCoreToolsVersion>6.0.0-rc.2.21424.29</MicrosoftEntityFrameworkCoreToolsVersion>
+    <MicrosoftEntityFrameworkCoreVersion>6.0.0-rc.2.21424.29</MicrosoftEntityFrameworkCoreVersion>
+    <MicrosoftEntityFrameworkCoreDesignVersion>6.0.0-rc.2.21424.29</MicrosoftEntityFrameworkCoreDesignVersion>
     <!-- Packages from dotnet/arcade -->
     <MicrosoftDotNetBuildTasksInstallersVersion>6.0.0-beta.21418.12</MicrosoftDotNetBuildTasksInstallersVersion>
     <MicrosoftDotNetBuildTasksTemplatingVersion>6.0.0-beta.21418.12</MicrosoftDotNetBuildTasksTemplatingVersion>
