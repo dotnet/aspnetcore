@@ -57,7 +57,12 @@ async function toImageFile(elem: InputElement, fileId: number, format: string, m
   const loadedImage = await new Promise(function(resolve: (loadedImage: HTMLImageElement) => void): void {
     const originalFileImage = new Image();
     originalFileImage.onload = function(): void {
+      URL.revokeObjectURL(originalFileImage.src);
       resolve(originalFileImage);
+    };
+    originalFileImage.onerror = function(): void {
+      originalFileImage.onerror = null;
+      URL.revokeObjectURL(originalFileImage.src);
     };
     originalFileImage.src = URL.createObjectURL(originalFile['blob']);
   });

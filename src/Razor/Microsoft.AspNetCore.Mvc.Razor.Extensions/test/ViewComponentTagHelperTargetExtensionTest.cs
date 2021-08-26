@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Razor.Language;
@@ -58,7 +58,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
     }
     private Dictionary<string, object> ProcessInvokeAsyncArgs(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext __context)
     {
-        Dictionary<string, object> args = new();
+        Dictionary<string, object> args = new Dictionary<string, object>();
         if (__context.AllAttributes.ContainsName(""Foo""))
         {
             args[nameof(Foo)] = Foo;
@@ -122,7 +122,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
     }
     private Dictionary<string, object> ProcessInvokeAsyncArgs(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext __context)
     {
-        Dictionary<string, object> args = new();
+        Dictionary<string, object> args = new Dictionary<string, object>();
         if (__context.AllAttributes.ContainsName(""Foo""))
         {
             args[nameof(Tags)] = Tags;

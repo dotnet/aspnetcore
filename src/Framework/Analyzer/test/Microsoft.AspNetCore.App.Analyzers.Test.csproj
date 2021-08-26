@@ -15,6 +15,7 @@
     <ProjectReference Include="$(RepoRoot)src\Analyzers\Microsoft.AspNetCore.Analyzer.Testing\src\Microsoft.AspNetCore.Analyzer.Testing.csproj" />
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.Http.Results" />
   </ItemGroup>
 
 </Project>
