@@ -1,17 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.Web.Infrastructure;
+using Microsoft.AspNetCore.StaticWebAssets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.JSInterop;
-using Microsoft.AspNetCore.StaticWebAssets;
 
 namespace Microsoft.AspNetCore.Components.WebView
 {
@@ -26,11 +20,13 @@ namespace Microsoft.AspNetCore.Components.WebView
         // per-page-load scope. Instead, their lifetime matches the webview itself.
         private readonly IServiceProvider _provider;
         private readonly Dispatcher _dispatcher;
+        private readonly IFileProvider _appAssetFileProvider;
         private readonly IpcSender _ipcSender;
         private readonly IpcReceiver _ipcReceiver;
         private readonly Uri _appBaseUri;
-        private readonly StaticContentProvider _staticContentProvider;
+        private StaticContentProvider _staticContentProvider;
         private readonly JSComponentConfigurationStore _jsComponents;
+        private readonly string _hostPageRelativePath;
         private readonly Dictionary<string, RootComponent> _rootComponentsBySelector = new();
 
         // Each time a web page connects, we establish a new per-page context
@@ -50,10 +46,10 @@ namespace Microsoft.AspNetCore.Components.WebView
         {
             _provider = provider ?? throw new ArgumentNullException(nameof(provider));
             _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+            _appAssetFileProvider = fileProvider;
             _appBaseUri = EnsureTrailingSlash(appBaseUri ?? throw new ArgumentNullException(nameof(appBaseUri)));
-            fileProvider = StaticWebAssetsLoader.UseStaticWebAssets(fileProvider);
             _jsComponents = jsComponents;
-            _staticContentProvider = new StaticContentProvider(fileProvider, appBaseUri, hostPageRelativePath);
+            _hostPageRelativePath = hostPageRelativePath;
             _ipcSender = new IpcSender(_dispatcher, SendMessage);
             _ipcReceiver = new IpcReceiver(AttachToPageAsync);
         }
@@ -62,6 +58,35 @@ namespace Microsoft.AspNetCore.Components.WebView
         /// Gets the <see cref="Dispatcher"/> used by this <see cref="WebViewManager"/> instance.
         /// </summary>
         public Dispatcher Dispatcher => _dispatcher;
+
+        private StaticContentProvider StaticContentProvider
+        {
+            get
+            {
+                if (_staticContentProvider == null)
+                {
+                    var fileProvider = StaticWebAssetsLoader.UseStaticWebAssets(_appAssetFileProvider, CreateStaticWebAssetFileProvider);
+                    _staticContentProvider = new StaticContentProvider(fileProvider, _appBaseUri, _hostPageRelativePath);
+                }
+                return _staticContentProvider;
+            }
+            set
+            {
+                _staticContentProvider = value;
+            }
+        }
+
+        /// <summary>
+        /// Creates an <see cref="IFileProvider"/> for the given <paramref name="contentRoot"/> for reading Static Web Assets. Override
+        /// this method on platforms that use Static Web Assets so that they can be served by the <see cref="WebViewManager"/>.
+        /// </summary>
+        /// <param name="contentRoot">The content root path on the local disk.</param>
+        /// <returns>An <see cref="IFileProvider"/> for the specified <paramref name="contentRoot"/>, or <c>null</c> if the platform
+        /// doesn't use Static Web Assets.</returns>
+        protected virtual IFileProvider? CreateStaticWebAssetFileProvider(string contentRoot)
+        {
+            return null;
+        }
 
         /// <summary>
         /// Instructs the web view to navigate to the specified location, bypassing any
@@ -182,7 +207,7 @@ namespace Microsoft.AspNetCore.Components.WebView
         /// <param name="headers">The response headers</param>
         /// <returns><c>true</c> if the response can be provided; <c>false</c> otherwise.</returns>
         protected bool TryGetResponseContent(string uri, bool allowFallbackOnHostPage, out int statusCode, out string statusMessage, out Stream content, out IDictionary<string, string> headers)
-            => _staticContentProvider.TryGetResponseContent(uri, allowFallbackOnHostPage, out statusCode, out statusMessage, out content, out headers);
+            => StaticContentProvider.TryGetResponseContent(uri, allowFallbackOnHostPage, out statusCode, out statusMessage, out content, out headers);
 
         internal async Task AttachToPageAsync(string baseUrl, string startUrl)
         {
@@ -249,7 +274,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 
         private class StaticWebAssetsLoader
         {
-            internal static IFileProvider UseStaticWebAssets(IFileProvider fileProvider)
+            internal static IFileProvider UseStaticWebAssets(IFileProvider fileProvider, Func<string, IFileProvider> staticWebAssetFileProviderFactory)
             {
                 var manifestPath = ResolveRelativeToAssembly();
                 if (File.Exists(manifestPath))
@@ -258,7 +283,7 @@ namespace Microsoft.AspNetCore.Components.WebView
                     var manifest = ManifestStaticWebAssetFileProvider.StaticWebAssetManifest.Parse(manifestStream);
                     if (manifest.ContentRoots.Length > 0)
                     {
-                        var manifestProvider = new ManifestStaticWebAssetFileProvider(manifest, (path) => new PhysicalFileProvider(path));
+                        var manifestProvider = new ManifestStaticWebAssetFileProvider(manifest, staticWebAssetFileProviderFactory);
                         return new CompositeFileProvider(manifestProvider, fileProvider);
                     }
                 }

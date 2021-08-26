@@ -65,6 +65,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Photino
             }
         }
 
+        protected override IFileProvider? CreateStaticWebAssetFileProvider(string contentRoot)
+        {
+            return new PhysicalFileProvider(contentRoot);
+        }
+
         protected override void NavigateCore(Uri absoluteUri)
         {
             _window.Load(absoluteUri);
