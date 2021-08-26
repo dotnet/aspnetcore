@@ -130,7 +130,8 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="contentType">The request content type. Defaults to "application/json" if empty.</param>
         /// <param name="additionalContentTypes">Additional response content types the endpoint produces for the supplied status code.</param>
         /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static DelegateEndpointConventionBuilder Accepts<TRequest>(this DelegateEndpointConventionBuilder builder, string contentType, params string[] additionalContentTypes)
+        public static DelegateEndpointConventionBuilder Accepts<TRequest>(this DelegateEndpointConventionBuilder builder,
+            string contentType, params string[] additionalContentTypes)
         {
             Accepts(builder, typeof(TRequest), contentType, additionalContentTypes);
 
@@ -146,8 +147,8 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="contentType">The response content type that the endpoint accepts.</param>
         /// <param name="additionalContentTypes">Additional response content types the endpoint accepts</param>
         /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static DelegateEndpointConventionBuilder Accepts(this DelegateEndpointConventionBuilder builder, Type requestType,
-            string contentType, params string[] additionalContentTypes)
+        public static DelegateEndpointConventionBuilder Accepts(this DelegateEndpointConventionBuilder builder,
+            Type requestType, string contentType, params string[] additionalContentTypes)
         {
             builder.WithMetadata(new ConsumesAttribute(requestType, contentType, additionalContentTypes));
             return builder;
