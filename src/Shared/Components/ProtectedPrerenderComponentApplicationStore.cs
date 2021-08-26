@@ -2,8 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.DataProtection;
 
 namespace Microsoft.AspNetCore.Components
@@ -20,18 +23,13 @@ namespace Microsoft.AspNetCore.Components
         public ProtectedPrerenderComponentApplicationStore(string existingState, IDataProtectionProvider dataProtectionProvider)
         {
             CreateProtector(dataProtectionProvider);
-            ExistingState = JsonSerializer.Deserialize<Dictionary<string, byte[]>>(_protector.Unprotect(Convert.FromBase64String(existingState)));
+            DeserializeState(_protector.Unprotect(Convert.FromBase64String(existingState)));
         }
 
-        protected override byte[] SerializeState(IReadOnlyDictionary<string, byte[]> state)
+        protected override byte[] SerializeState(IReadOnlyDictionary<string, byte []> state)
         {
             var bytes = base.SerializeState(state);
-            if (_protector != null)
-            {
-                bytes = _protector.Protect(bytes);
-            }
-
-            return bytes;
+            return _protector != null ? _protector.Protect(bytes) : bytes;
         }
 
         private void CreateProtector(IDataProtectionProvider dataProtectionProvider) =>

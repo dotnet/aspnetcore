@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Lifetime;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             string baseUri,
             string uri,
             ClaimsPrincipal user,
-            IComponentApplicationStateStore store)
+            IPersistentComponentStateStore store)
         {
             var scope = _scopeFactory.CreateAsyncScope();
             var jsRuntime = (RemoteJSRuntime)scope.ServiceProvider.GetRequiredService<IJSRuntime>();
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 navigationManager.Initialize(baseUri, uri);
             }
 
-            var appLifetime = scope.ServiceProvider.GetRequiredService<ComponentApplicationLifetime>();
+            var appLifetime = scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
             await appLifetime.RestoreStateAsync(store);
 
             var jsComponentInterop = new CircuitJSComponentInterop(_options);
