@@ -387,7 +387,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return new ActionContext(GetHttpContext(), new RouteData(), new ActionDescriptor());
         }
 
-        private static byte[] GetWrittenBytes(HttpContext context)
+        protected static byte[] GetWrittenBytes(HttpContext context)
         {
             context.Response.Body.Seek(0, SeekOrigin.Begin);
             return Assert.IsType<MemoryStream>(context.Response.Body).ToArray();

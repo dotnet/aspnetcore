@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -253,6 +254,188 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
             // Assert
             Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
             Assert.Equal(StatusCodes.Status418ImATeapot, context.Response.StatusCode);
+        }
+
+        [Fact]
+        public async Task WriteAsJsonAsyncGeneric_AsyncEnumerable()
+        {
+            // Arrange
+            var body = new MemoryStream();
+            var context = new DefaultHttpContext();
+            context.Response.Body = body;
+
+            // Act
+            await context.Response.WriteAsJsonAsync(AsyncEnumerable());
+
+            // Assert
+            Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+            Assert.Equal("[1,2]", Encoding.UTF8.GetString(body.ToArray()));
+
+            async IAsyncEnumerable<int> AsyncEnumerable()
+            {
+                await Task.Yield();
+                yield return 1;
+                yield return 2;
+            }
+        }
+
+        [Fact]
+        public async Task WriteAsJsonAsync_AsyncEnumerable()
+        {
+            // Arrange
+            var body = new MemoryStream();
+            var context = new DefaultHttpContext();
+            context.Response.Body = body;
+
+            // Act
+            await context.Response.WriteAsJsonAsync(AsyncEnumerable(), typeof(IAsyncEnumerable<int>));
+
+            // Assert
+            Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+            Assert.Equal("[1,2]", Encoding.UTF8.GetString(body.ToArray()));
+
+            async IAsyncEnumerable<int> AsyncEnumerable()
+            {
+                await Task.Yield();
+                yield return 1;
+                yield return 2;
+            }
+        }
+
+        [Fact]
+        public async Task WriteAsJsonAsyncGeneric_AsyncEnumerable_ClosedConnecton()
+        {
+            // Arrange
+            var cts = new CancellationTokenSource();
+            var body = new MemoryStream();
+            var context = new DefaultHttpContext();
+            context.Response.Body = body;
+            context.RequestAborted = cts.Token;
+            var iterated = false;
+
+            // Act
+            await context.Response.WriteAsJsonAsync(AsyncEnumerable());
+
+            // Assert
+            Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+            Assert.InRange(body.ToArray().Length, 0, 1);
+            Assert.False(iterated);
+
+            async IAsyncEnumerable<int> AsyncEnumerable([EnumeratorCancellation] CancellationToken cancellationToken = default)
+            {
+                await Task.Yield();
+                cts.Cancel();
+                for (var i = 0; i < 100 && !cancellationToken.IsCancellationRequested; i++)
+                {
+                    iterated = true;
+                    yield return i;
+                }
+            }
+        }
+
+        [Fact]
+        public async Task WriteAsJsonAsync_AsyncEnumerable_ClosedConnecton()
+        {
+            // Arrange
+            var cts = new CancellationTokenSource();
+            var body = new MemoryStream();
+            var context = new DefaultHttpContext();
+            context.Response.Body = body;
+            context.RequestAborted = cts.Token;
+            var iterated = false;
+
+            // Act
+            await context.Response.WriteAsJsonAsync(AsyncEnumerable(), typeof(IAsyncEnumerable<int>));
+
+            // Assert
+            Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+            Assert.InRange(body.ToArray().Length, 0, 1);
+            Assert.False(iterated);
+
+            async IAsyncEnumerable<int> AsyncEnumerable([EnumeratorCancellation] CancellationToken cancellationToken = default)
+            {
+                await Task.Yield();
+                cts.Cancel();
+                for (var i = 0; i < 100 && !cancellationToken.IsCancellationRequested; i++)
+                {
+                    iterated = true;
+                    yield return i;
+                }
+            }
+        }
+
+        [Fact]
+        public async Task WriteAsJsonAsync_AsyncEnumerable_UserPassedTokenThrows()
+        {
+            // Arrange
+            var body = new MemoryStream();
+            var context = new DefaultHttpContext();
+            context.Response.Body = body;
+            context.RequestAborted = new CancellationToken(canceled: true);
+            var cts = new CancellationTokenSource();
+            var iterated = false;
+
+            // Act
+            await Assert.ThrowsAsync<TaskCanceledException>(() => context.Response.WriteAsJsonAsync(AsyncEnumerable(), typeof(IAsyncEnumerable<int>), cts.Token));
+
+            // Assert
+            Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+            Assert.InRange(body.ToArray().Length, 0, 1);
+            Assert.False(iterated);
+
+            async IAsyncEnumerable<int> AsyncEnumerable([EnumeratorCancellation] CancellationToken cancellationToken = default)
+            {
+                await Task.Yield();
+                cts.Cancel();
+                for (var i = 0; i < 100 && !cancellationToken.IsCancellationRequested; i++)
+                {
+                    iterated = true;
+                    yield return i;
+                }
+            }
+        }
+
+        [Fact]
+        public async Task WriteAsJsonAsyncGeneric_AsyncEnumerableG_UserPassedTokenThrows()
+        {
+            // Arrange
+            var body = new MemoryStream();
+            var context = new DefaultHttpContext();
+            context.Response.Body = body;
+            context.RequestAborted = new CancellationToken(canceled: true);
+            var cts = new CancellationTokenSource();
+            var iterated = false;
+
+            // Act
+            await Assert.ThrowsAsync<TaskCanceledException>(() => context.Response.WriteAsJsonAsync(AsyncEnumerable(), cts.Token));
+
+            // Assert
+            Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+            Assert.InRange(body.ToArray().Length, 0, 1);
+            Assert.False(iterated);
+
+            async IAsyncEnumerable<int> AsyncEnumerable([EnumeratorCancellation] CancellationToken cancellationToken = default)
+            {
+                await Task.Yield();
+                cts.Cancel();
+                for (var i = 0; i < 100 && !cancellationToken.IsCancellationRequested; i++)
+                {
+                    iterated = true;
+                    yield return i;
+                }
+            }
         }
 
         public class TestObject

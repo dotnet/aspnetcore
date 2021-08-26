@@ -25,16 +25,13 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private readonly JsonOptions _options;
         private readonly ILogger<SystemTextJsonResultExecutor> _logger;
-        private readonly AsyncEnumerableReader _asyncEnumerableReaderFactory;
 
         public SystemTextJsonResultExecutor(
             IOptions<JsonOptions> options,
-            ILogger<SystemTextJsonResultExecutor> logger,
-            IOptions<MvcOptions> mvcOptions)
+            ILogger<SystemTextJsonResultExecutor> logger)
         {
             _options = options.Value;
             _logger = logger;
-            _asyncEnumerableReaderFactory = new AsyncEnumerableReader(mvcOptions.Value);
         }
 
         public async Task ExecuteAsync(ActionContext context, JsonResult result)
@@ -77,7 +74,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var responseStream = response.Body;
             if (resolvedContentTypeEncoding.CodePage == Encoding.UTF8.CodePage)
             {
-                await JsonSerializer.SerializeAsync(responseStream, value, objectType, jsonSerializerOptions);
+                try
+                {
+                    await JsonSerializer.SerializeAsync(responseStream, value, objectType, jsonSerializerOptions, context.HttpContext.RequestAborted);
+                }
+                catch (OperationCanceledException) { }
                 await responseStream.FlushAsync();
             }
             else

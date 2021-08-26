@@ -79,7 +79,11 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var responseStream = httpContext.Response.Body;
             if (selectedEncoding.CodePage == Encoding.UTF8.CodePage)
             {
-                await JsonSerializer.SerializeAsync(responseStream, context.Object, objectType, SerializerOptions);
+                try
+                {
+                    await JsonSerializer.SerializeAsync(responseStream, context.Object, objectType, SerializerOptions, httpContext.RequestAborted);
+                }
+                catch (OperationCanceledException) { }
                 await responseStream.FlushAsync();
             }
             else

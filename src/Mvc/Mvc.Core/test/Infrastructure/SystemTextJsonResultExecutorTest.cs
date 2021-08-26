@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -18,8 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         {
             return new SystemTextJsonResultExecutor(
                 Options.Create(new JsonOptions()),
-                loggerFactory.CreateLogger<SystemTextJsonResultExecutor>(),
-                Options.Create(new MvcOptions()));
+                loggerFactory.CreateLogger<SystemTextJsonResultExecutor>());
         }
 
         [Fact]
@@ -36,6 +36,37 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             // Act & Assert
             await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => executor.ExecuteAsync(context, result));
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_AsyncEnumerableConnectionCloses()
+        {
+            var context = GetActionContext();
+            var cts = new CancellationTokenSource();
+            context.HttpContext.RequestAborted = cts.Token;
+            var result = new JsonResult(AsyncEnumerableClosedConnection());
+            var executor = CreateExecutor();
+            var iterated = false;
+
+            // Act
+            await executor.ExecuteAsync(context, result);
+
+            // Assert
+            var written = GetWrittenBytes(context.HttpContext);
+            // System.Text.Json might write the '[' before cancellation is observed
+            Assert.InRange(written.Length, 0, 1);
+            Assert.False(iterated);
+
+            async IAsyncEnumerable<int> AsyncEnumerableClosedConnection([EnumeratorCancellation] CancellationToken cancellationToken = default)
+            {
+                await Task.Yield();
+                cts.Cancel();
+                for (var i = 0; i < 100000 && !cancellationToken.IsCancellationRequested; i++)
+                {
+                    iterated = true;
+                    yield return i;
+                }
+            }
         }
 
         protected override object GetIndentedSettings()
