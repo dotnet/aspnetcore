@@ -194,7 +194,6 @@ namespace Microsoft.AspNetCore.Builder
 
             if (context.HostingEnvironment.IsDevelopment())
             {
-                // TODO: add test for this
                 app.UseDeveloperExceptionPage();
             }
 
