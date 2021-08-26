@@ -19,8 +19,8 @@ namespace Microsoft.AspNetCore.Http
         private readonly MethodInfo _enumTryParseMethod;
 
         // Since this is shared source, the cache won't be shared between RequestDelegateFactory and the ApiDescriptionProvider sadly :(
-        private readonly ConcurrentDictionary<Type, Func<Expression, Expression>?> _stringMethodCallCache = new();
-        private readonly ConcurrentDictionary<Type, Expression?> _bindAsyncMethodCallCache = new();
+        private readonly ConcurrentDictionary<Type, Func<ParameterExpression, Expression>?> _stringMethodCallCache = new();
+        private readonly ConcurrentDictionary<Type, Func<ParameterInfo, Expression>?> _bindAsyncMethodCallCache = new();
 
         internal readonly ParameterExpression TempSourceStringExpr = Expression.Variable(typeof(string), "tempSourceString");
         internal readonly ParameterExpression HttpContextExpr = Expression.Parameter(typeof(HttpContext), "httpContext");
@@ -46,9 +46,9 @@ namespace Microsoft.AspNetCore.Http
         public bool HasBindAsyncMethod(ParameterInfo parameter) =>
             FindBindAsyncMethod(parameter.ParameterType) is not null;
 
-        public Func<Expression, Expression>? FindTryParseStringMethod(Type type)
+        public Func<ParameterExpression, Expression>? FindTryParseStringMethod(Type type)
         {
-            Func<Expression, Expression>? Finder(Type type)
+            Func<ParameterExpression, Expression>? Finder(Type type)
             {
                 MethodInfo? methodInfo;
 
@@ -125,17 +125,17 @@ namespace Microsoft.AspNetCore.Http
             return _stringMethodCallCache.GetOrAdd(type, Finder);
         }
 
-        public Expression? FindBindAsyncMethod(Type type)
+        public Func<ParameterInfo, Expression>? FindBindAsyncMethod(Type type)
         {
-            Expression? Finder(Type type)
+            Func<ParameterInfo, Expression>? Finder(Type type)
             {
-                var methodInfo = type.GetMethod("BindAsync", BindingFlags.Public | BindingFlags.Static, new[] { typeof(HttpContext) });
+                var methodInfo = type.GetMethod("BindAsync", BindingFlags.Public | BindingFlags.Static, new[] { typeof(HttpContext), typeof(ParameterInfo) });
 
                 // We're looking for a method with the following signature:
-                // static ValueTask<object> BindAsync(HttpContext context)
+                // static ValueTask<object> BindAsync(HttpContext context, ParameterInfo parameter)
                 if (methodInfo is not null && methodInfo.ReturnType == typeof(ValueTask<object>))
                 {
-                    return Expression.Call(methodInfo, HttpContextExpr);
+                    return (parameter) => Expression.Call(methodInfo, HttpContextExpr, Expression.Constant(parameter));
                 }
 
                 return null;

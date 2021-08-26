@@ -172,18 +172,20 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         {
             var type = typeof(BindAsyncRecord);
             var cache = new TryParseMethodCache();
-            var methodFound = cache.FindBindAsyncMethod(type);
+            var methodFoundFunc = cache.FindBindAsyncMethod(type);
 
-            Assert.NotNull(methodFound);
+            Assert.NotNull(methodFoundFunc);
 
             var parsedValue = Expression.Variable(type, "parsedValue");
+            var methodFound = methodFoundFunc!(new MockParameterInfo(type, "bindAsyncRecord"));
             var call = methodFound as MethodCallExpression;
             Assert.NotNull(call);
             var method = call!.Method;
             var parameters = method.GetParameters();
 
-            Assert.Single(parameters);
+            Assert.Equal(2, parameters.Length);
             Assert.Equal(typeof(HttpContext), parameters[0].ParameterType);
+            Assert.Equal(typeof(ParameterInfo), parameters[1].ParameterType);
 
             var parseHttpContext = Expression.Lambda<Func<HttpContext, ValueTask<object>>>(Expression.Block(new[] { parsedValue },
                 call), cache.HttpContextExpr).Compile();
@@ -288,8 +290,11 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
 
         private record BindAsyncRecord(int Value)
         {
-            public static ValueTask<object?> BindAsync(HttpContext context)
+            public static ValueTask<object?> BindAsync(HttpContext context, ParameterInfo parameter)
             {
+                Assert.Equal(typeof(BindAsyncRecord), parameter.ParameterType);
+                Assert.Equal("bindAsyncRecord", parameter.Name);
+
                 if (!int.TryParse(context.Request.Headers.ETag, out var val))
                 {
                     return ValueTask.FromResult<object?>(null);
@@ -301,14 +306,26 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
 
         private record struct BindAsyncStruct(int Value)
         {
-            public static ValueTask<object?> BindAsync(HttpContext context)
+            public static ValueTask<object?> BindAsync(HttpContext context, ParameterInfo parameter)
             {
+                Assert.Equal(typeof(BindAsyncStruct), parameter.ParameterType);
+                Assert.Equal("bindAsyncStruct", parameter.Name);
+
                 if (!int.TryParse(context.Request.Headers.ETag, out var val))
                 {
                     return ValueTask.FromResult<object?>(null);
                 }
 
                 return ValueTask.FromResult<object?>(new BindAsyncRecord(val));
+            }
+        }
+
+        private class MockParameterInfo : ParameterInfo
+        {
+            public MockParameterInfo(Type type, string name)
+            {
+                ClassImpl = type;
+                NameImpl = name;
             }
         }
     }

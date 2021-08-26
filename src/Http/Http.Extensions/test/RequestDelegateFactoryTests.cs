@@ -519,7 +519,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         private class MyBindAsyncTypeThatThrows
         {
-            public static ValueTask<object?> BindAsync(HttpContext context)
+            public static ValueTask<object?> BindAsync(HttpContext context, ParameterInfo parameter)
             {
                 throw new InvalidOperationException("BindAsync failed");
             }
@@ -527,8 +527,11 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         private record MyBindAsyncRecord(Uri Uri)
         {
-            public static ValueTask<object?> BindAsync(HttpContext context)
+            public static ValueTask<object?> BindAsync(HttpContext context, ParameterInfo parameter)
             {
+                Assert.Equal(typeof(MyBindAsyncRecord), parameter.ParameterType);
+                Assert.StartsWith("myBindAsyncRecord", parameter.Name);
+
                 if (!Uri.TryCreate(context.Request.Headers.Referer, UriKind.Absolute, out var uri))
                 {
                     return ValueTask.FromResult<object?>(null);
@@ -547,8 +550,11 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         private record struct MyBindAsyncStruct(Uri Uri)
         {
-            public static ValueTask<object?> BindAsync(HttpContext context)
+            public static ValueTask<object?> BindAsync(HttpContext context, ParameterInfo parameter)
             {
+                Assert.Equal(typeof(MyBindAsyncStruct), parameter.ParameterType);
+                Assert.Equal("myBindAsyncStruct", parameter.Name);
+
                 if (!Uri.TryCreate(context.Request.Headers.Referer, UriKind.Absolute, out var uri))
                 {
                     return ValueTask.FromResult<object?>(null);
@@ -636,16 +642,16 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             httpContext.Request.Headers.Referer = "https://example.org";
 
-            var resultFactory = RequestDelegateFactory.Create((HttpContext httpContext, MyBindAsyncRecord tryParsable) =>
+            var resultFactory = RequestDelegateFactory.Create((HttpContext httpContext, MyBindAsyncRecord myBindAsyncRecord) =>
             {
-                httpContext.Items["tryParsable"] = tryParsable;
+                httpContext.Items["myBindAsyncRecord"] = myBindAsyncRecord;
             });
 
             var requestDelegate = resultFactory.RequestDelegate;
 
             await requestDelegate(httpContext);
 
-            Assert.Equal(new MyBindAsyncRecord(new Uri("https://example.org")), httpContext.Items["tryParsable"]);
+            Assert.Equal(new MyBindAsyncRecord(new Uri("https://example.org")), httpContext.Items["myBindAsyncRecord"]);
         }
 
         [Fact]
@@ -655,22 +661,22 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             httpContext.Request.Headers.Referer = "https://example.org";
 
-            var resultFactory = RequestDelegateFactory.Create((HttpContext httpContext, MyBindAsyncStruct tryParsable) =>
+            var resultFactory = RequestDelegateFactory.Create((HttpContext httpContext, MyBindAsyncStruct myBindAsyncStruct) =>
             {
-                httpContext.Items["tryParsable"] = tryParsable;
+                httpContext.Items["myBindAsyncStruct"] = myBindAsyncStruct;
             });
 
             var requestDelegate = resultFactory.RequestDelegate;
             await requestDelegate(httpContext);
 
-            Assert.Equal(new MyBindAsyncStruct(new Uri("https://example.org")), httpContext.Items["tryParsable"]);
+            Assert.Equal(new MyBindAsyncStruct(new Uri("https://example.org")), httpContext.Items["myBindAsyncStruct"]);
         }
 
         [Fact]
         public async Task RequestDelegateUsesTryParseStringoOverBindAsyncGivenExplicitAttribute()
         {
-            var fromRouteFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, [FromRoute] MyBindAsyncRecord tryParsable) => { });
-            var fromQueryFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, [FromQuery] MyBindAsyncRecord tryParsable) => { });
+            var fromRouteFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, [FromRoute] MyBindAsyncRecord myBindAsyncRecord) => { });
+            var fromQueryFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, [FromQuery] MyBindAsyncRecord myBindAsyncRecord) => { });
 
 
             var httpContext = new DefaultHttpContext
@@ -679,11 +685,11 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 {
                     RouteValues =
                     {
-                        ["tryParsable"] = "foo"
+                        ["myBindAsyncRecord"] = "foo"
                     },
                     Query = new QueryCollection(new Dictionary<string, StringValues>
                     {
-                        ["tryParsable"] = "foo"
+                        ["myBindAsyncRecord"] = "foo"
                     }),
                 },
             };
@@ -698,7 +704,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         [Fact]
         public async Task RequestDelegateUsesTryParseStringOverBindAsyncGivenNullableStruct()
         {
-            var fromRouteFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, MyBindAsyncStruct? tryParsable) => { });
+            var fromRouteFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, MyBindAsyncStruct? myBindAsyncRecord) => { });
 
             var httpContext = new DefaultHttpContext
             {
@@ -706,7 +712,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 {
                     RouteValues =
                     {
-                        ["tryParsable"] = "foo"
+                        ["myBindAsyncRecord"] = "foo"
                     },
                 },
             };
@@ -801,7 +807,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var invoked = false;
 
-            var factoryResult = RequestDelegateFactory.Create((MyBindAsyncRecord arg1, MyBindAsyncRecord arg2) =>
+            var factoryResult = RequestDelegateFactory.Create((MyBindAsyncRecord myBindAsyncRecord1, MyBindAsyncRecord myBindAsyncRecord2) =>
             {
                 invoked = true;
             });
@@ -819,11 +825,11 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[0].EventId);
             Assert.Equal(LogLevel.Debug, logs[0].LogLevel);
-            Assert.Equal(@"Required parameter ""MyBindAsyncRecord arg1"" was not provided.", logs[0].Message);
+            Assert.Equal(@"Required parameter ""MyBindAsyncRecord myBindAsyncRecord1"" was not provided.", logs[0].Message);
 
             Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[1].EventId);
             Assert.Equal(LogLevel.Debug, logs[1].LogLevel);
-            Assert.Equal(@"Required parameter ""MyBindAsyncRecord arg2"" was not provided.", logs[1].Message);
+            Assert.Equal(@"Required parameter ""MyBindAsyncRecord myBindAsyncRecord2"" was not provided.", logs[1].Message);
         }
 
         [Fact]
@@ -879,10 +885,10 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var invoked = false;
 
-            var factoryResult = RequestDelegateFactory.Create((HttpContext context, MyBindAsyncRecord arg1, Todo todo) =>
+            var factoryResult = RequestDelegateFactory.Create((HttpContext context, MyBindAsyncRecord myBindAsyncRecord, Todo todo) =>
             {
                 invoked = true;
-                context.Items[nameof(arg1)] = arg1;
+                context.Items[nameof(myBindAsyncRecord)] = myBindAsyncRecord;
                 context.Items[nameof(todo)] = todo;
             });
 
@@ -891,7 +897,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             await requestDelegate(httpContext);
 
             Assert.True(invoked);
-            var arg = httpContext.Items["arg1"] as MyBindAsyncRecord;
+            var arg = httpContext.Items["myBindAsyncRecord"] as MyBindAsyncRecord;
             Assert.NotNull(arg);
             Assert.Equal("https://example.org/", arg!.Uri.ToString());
             var todo = httpContext.Items["todo"] as Todo;
@@ -2027,8 +2033,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var invoked = false;
 
-            var factoryResult = RequestDelegateFactory.Create((MyBindAsyncRecord? arg1) =>
+            var factoryResult = RequestDelegateFactory.Create((MyBindAsyncRecord? myBindAsyncRecord) =>
             {
+                Assert.Null(myBindAsyncRecord);
                 invoked = true;
             });
 
@@ -2278,8 +2285,11 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         private class CustomTodo : Todo
         {
-            public static async ValueTask<object?> BindAsync(HttpContext context)
+            public static async ValueTask<object?> BindAsync(HttpContext context, ParameterInfo parameter)
             {
+                Assert.Equal(typeof(CustomTodo), parameter.ParameterType);
+                Assert.Equal("customTodo", parameter.Name);
+
                 var body = await context.Request.ReadFromJsonAsync<CustomTodo>();
                 context.Request.Body.Position = 0;
                 return body;
