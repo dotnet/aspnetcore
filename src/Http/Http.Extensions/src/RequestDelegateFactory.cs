@@ -818,11 +818,9 @@ namespace Microsoft.AspNetCore.Http
             var isOptional = IsOptionalParameter(parameter);
 
             // Get the BindAsync method for the type.
-            var bindAsyncWithoutParameterInfo = TryParseMethodCache.FindBindAsyncMethod(parameter.ParameterType);
+            var bindAsyncExpression = TryParseMethodCache.FindBindAsyncMethod(parameter);
             // We know BindAsync exists because there's no way to opt-in without defining the method on the type.
-            Debug.Assert(bindAsyncWithoutParameterInfo is not null);
-
-            var bindAsyncExpression = bindAsyncWithoutParameterInfo(parameter);
+            Debug.Assert(bindAsyncExpression is not null);
 
             // Compile the delegate to the BindAsync method for this parameter index
             var bindAsyncDelegate = Expression.Lambda<Func<HttpContext, ValueTask<object?>>>(bindAsyncExpression, HttpContextExpr).Compile();

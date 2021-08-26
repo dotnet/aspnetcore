@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         public bool HasBindAsyncMethod(ParameterInfo parameter) =>
-            FindBindAsyncMethod(parameter.ParameterType) is not null;
+            FindBindAsyncMethod(parameter) is not null;
 
         public Func<ParameterExpression, Expression>? FindTryParseStringMethod(Type type)
         {
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Http
             return _stringMethodCallCache.GetOrAdd(type, Finder);
         }
 
-        public Func<ParameterInfo, Expression>? FindBindAsyncMethod(Type type)
+        public Expression? FindBindAsyncMethod(ParameterInfo parameter)
         {
             Func<ParameterInfo, Expression>? Finder(Type type)
             {
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Http
                 return null;
             }
 
-            return _bindAsyncMethodCallCache.GetOrAdd(type, Finder);
+            return _bindAsyncMethodCallCache.GetOrAdd(parameter.ParameterType, Finder)?.Invoke(parameter);
         }
 
         private static MethodInfo GetEnumTryParseMethod(bool preferNonGenericEnumParseOverload)
