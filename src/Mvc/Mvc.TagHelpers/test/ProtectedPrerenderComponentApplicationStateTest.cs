@@ -26,16 +26,16 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expected = @"{""MyValue"":""AQIDBA==""}";
             var store = new ProtectedPrerenderComponentApplicationStore(_provider);
 
-            var state = new Dictionary<string, ReadOnlySequence<byte>>()
+            var state = new Dictionary<string, byte []>()
             {
-                ["MyValue"] = new ReadOnlySequence<byte>(new byte[] { 1, 2, 3, 4 })
+                ["MyValue"] = new byte[] { 1, 2, 3, 4 }
             };
 
             // Act
             await store.PersistStateAsync(state);
 
             // Assert
-            Assert.Equal(expected, _protector.Unprotect(store.PersistedState.Span.ToString()));
+            Assert.Equal(expected, _protector.Unprotect(store.PersistedState));
         }
 
         [Fact]

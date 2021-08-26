@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.Microbenchmarks
             var state = _tagHelper.ViewContext.HttpContext.RequestServices.GetRequiredService<PersistentComponentState>();
             foreach (var (key,value) in _entries)
             {
-                state.Persist(key, writer => writer.Write(value));
+                state.PersistAsJson(key, value);
             }
 
             _output = new TagHelperOutput("persist-component-state", _attributes, _childContent);

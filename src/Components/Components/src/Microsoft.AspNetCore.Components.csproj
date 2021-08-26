@@ -15,7 +15,6 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerializerOptionsProvider.cs" />
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)QueryStringEnumerable.cs" LinkBase="Shared" />
-    <Compile Include="$(RepoRoot)src\Shared\Components\PooledByteBufferWritter.cs" LinkBase="Infrastructure" />
   </ItemGroup>
 
   <ItemGroup>

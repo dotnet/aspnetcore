@@ -46,9 +46,9 @@
 
     protected override void OnInitialized()
     {
-        if (AppState.TryTake(State, out var preserved))
+        if (AppState.TryTakeFromJson<string>(State, out var preserved))
         {
-            _state = Encoding.UTF8.GetString(preserved);
+            _state = preserved;
             _restored = true;
         }
         else
@@ -63,29 +63,23 @@
 
             Task PersistState()
             {
-                AppState.Persist(State, writer => WriteUtf8Bytes(writer, _state));
+                AppState.PersistAsJson(State, _state);
                 if(ExtraState != null)
                 {
-                    AppState.Persist(ExtraState, writer => WriteUtf8Bytes(writer, _extraState));
+                    AppState.PersistAsJson(ExtraState, _extraState);
                 }
 
                 return Task.CompletedTask;
             }
         }
-
-        static void WriteUtf8Bytes(IBufferWriter<byte> writer, string state)
-        {
-            var bytes = Encoding.UTF8.GetBytes(state);
-            writer.Write(bytes);
-        }
     }
 
     public void DisplayExtraState()
     {
-        if (AppState.TryTake(ExtraState, out var extraState))
+        if (AppState.TryTakeFromJson<string>(ExtraState, out var extraState))
         {
             _extraStateAvailable = true;
-            _extraState = Encoding.UTF8.GetString(extraState);
+            _extraState = extraState;
         }
         else
         {

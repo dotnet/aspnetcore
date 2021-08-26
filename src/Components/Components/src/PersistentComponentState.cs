@@ -4,7 +4,6 @@
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using Microsoft.AspNetCore.Components.Infrastructure;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components
@@ -14,13 +13,13 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     public class PersistentComponentState
     {
-        private IDictionary<string, ReadOnlySequence<byte>>? _existingState;
-        private readonly IDictionary<string, PooledByteBufferWriter> _currentState;
+        private IDictionary<string, byte []>? _existingState;
+        private readonly IDictionary<string, byte[]> _currentState;
 
         private readonly List<Func<Task>> _registeredCallbacks;
 
         internal PersistentComponentState(
-            IDictionary<string, PooledByteBufferWriter> currentState,
+            IDictionary<string, byte[]> currentState,
             List<Func<Task>> pauseCallbacks)
         {
             _currentState = currentState;
@@ -29,7 +28,7 @@ namespace Microsoft.AspNetCore.Components
 
         internal bool PersistingState { get; set; }
 
-        internal void InitializeExistingState(IDictionary<string, ReadOnlySequence<byte>> existingState)
+        internal void InitializeExistingState(IDictionary<string, byte []> existingState)
         {
             if (_existingState != null)
             {
@@ -54,74 +53,6 @@ namespace Microsoft.AspNetCore.Components
             _registeredCallbacks.Add(callback);
 
             return new PersistingComponentStateSubscription(_registeredCallbacks, callback);
-        }
-
-        /// <summary>
-        /// Tries to retrieve the persisted state with the given <paramref name="key"/>.
-        /// When the key is present, the state is successfully returned via <paramref name="value"/>
-        /// and removed from the <see cref="PersistentComponentState"/>.
-        /// </summary>
-        /// <param name="key">The key used to persist the state.</param>
-        /// <param name="value">The persisted state.</param>
-        /// <returns><c>true</c> if the state was found; <c>false</c> otherwise.</returns>
-        public bool TryTake(string key, out ReadOnlySequence<byte> value)
-        {
-            if (key is null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            if (_existingState == null)
-            {
-                // Services during prerendering might try to access their state upon injection on the page
-                // and we don't want to fail in that case.
-                // When a service is prerendering there is no state to restore and in other cases the host
-                // is responsible for initializing the state before services or components can access it.
-                value = default;
-                return false;
-            }
-
-            if (_existingState.TryGetValue(key, out value))
-            {
-                _existingState.Remove(key);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Persists the serialized state <paramref name="valueWriter"/> for the given <paramref name="key"/>.
-        /// </summary>
-        /// <param name="key">The key to use to persist the state.</param>
-        /// <param name="valueWriter">The state to persist.</param>
-        public void Persist(string key, Action<IBufferWriter<byte>> valueWriter)
-        {
-            if (key is null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            if (valueWriter is null)
-            {
-                throw new ArgumentNullException(nameof(valueWriter));
-            }
-
-            if (!PersistingState)
-            {
-                throw new InvalidOperationException("Persisting state is only allowed during an OnPersisting callback.");
-            }
-
-            if (_currentState.ContainsKey(key))
-            {
-                throw new ArgumentException($"There is already a persisted object under the same key '{key}'");
-            }
-
-            var writer = new PooledByteBufferWriter();
-            _currentState.Add(key, writer);
-            valueWriter(writer);
         }
 
         /// <summary>
@@ -153,9 +84,7 @@ namespace Microsoft.AspNetCore.Components
                 throw new ArgumentException($"There is already a persisted object under the same key '{key}'");
             }
 
-            var writer = new PooledByteBufferWriter();
-            _currentState.Add(key, writer);
-            JsonSerializer.Serialize(new Utf8JsonWriter(writer), instance, JsonSerializerOptionsProvider.Options);
+            _currentState.Add(key, JsonSerializer.SerializeToUtf8Bytes(instance, JsonSerializerOptionsProvider.Options));
         }
 
         /// <summary>
@@ -183,7 +112,35 @@ namespace Microsoft.AspNetCore.Components
             }
             else
             {
-                instance = default(TValue);
+                instance = default;
+                return false;
+            }
+        }
+
+        private bool TryTake(string key, out byte []? value)
+        {
+            if (key is null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (_existingState == null)
+            {
+                // Services during prerendering might try to access their state upon injection on the page
+                // and we don't want to fail in that case.
+                // When a service is prerendering there is no state to restore and in other cases the host
+                // is responsible for initializing the state before services or components can access it.
+                value = default;
+                return false;
+            }
+
+            if (_existingState.TryGetValue(key, out value))
+            {
+                _existingState.Remove(key);
+                return true;
+            }
+            else
+            {
                 return false;
             }
         }
