@@ -17,11 +17,11 @@ namespace Microsoft.AspNetCore.Components.Infrastructure
     /// <summary>
     /// Manages the persistent state of components in an application.
     /// </summary>
-    public class ComponentStatePersistenceManager : IDisposable
+    public class ComponentStatePersistenceManager
     {
         private bool _stateIsPersisted;
         private readonly List<Func<Task>> _pauseCallbacks = new();
-        private readonly Dictionary<string, PooledByteBufferWriter> _currentState = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, byte []> _currentState = new(StringComparer.Ordinal);
         private readonly ILogger<ComponentStatePersistenceManager> _logger;
 
         /// <summary>
@@ -72,19 +72,7 @@ namespace Microsoft.AspNetCore.Components.Infrastructure
                 await PauseAsync();
                 State.PersistingState = false;
 
-                var data = new Dictionary<string, ReadOnlySequence<byte>>(StringComparer.Ordinal);
-                foreach (var (key, value) in _currentState)
-                {
-                    data[key] = new ReadOnlySequence<byte>(value.WrittenMemory);
-                }
-
-                await store.PersistStateAsync(data);
-
-                foreach (var value in _currentState.Values)
-                {
-                    value.Dispose();
-                }
-                _currentState.Clear();
+                await store.PersistStateAsync(_currentState);
             }
         }
 
@@ -145,15 +133,6 @@ namespace Microsoft.AspNetCore.Components.Infrastructure
                     }
                 }
             }
-        }
-
-        void IDisposable.Dispose()
-        {
-            foreach (var value in _currentState.Values)
-            {
-                value.Dispose();
-            }
-            _currentState.Clear();
         }
     }
 }

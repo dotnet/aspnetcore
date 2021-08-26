@@ -108,8 +108,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             {
                 if (_store != null)
                 {
-                    writer.Write(_store.PersistedState.Span);
-                    _store.Dispose();
+                    writer.Write(_store.PersistedState);
                     _store = null;
                 }
             }

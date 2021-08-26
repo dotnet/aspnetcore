@@ -26,17 +26,10 @@ namespace Microsoft.AspNetCore.Components
             DeserializeState(_protector.Unprotect(Convert.FromBase64String(existingState)));
         }
 
-        protected override PooledByteBufferWriter SerializeState(IReadOnlyDictionary<string, ReadOnlySequence<byte>> state)
+        protected override byte[] SerializeState(IReadOnlyDictionary<string, byte []> state)
         {
             var bytes = base.SerializeState(state);
-            if (_protector != null)
-            {
-                var newBuffer = new PooledByteBufferWriter(_protector.Protect(bytes.WrittenMemory.Span.ToArray()));
-                bytes.Dispose();
-                return newBuffer;
-            }
-
-            return bytes;
+            return _protector != null ? _protector.Protect(bytes) : bytes;
         }
 
         private void CreateProtector(IDataProtectionProvider dataProtectionProvider) =>

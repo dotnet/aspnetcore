@@ -16,6 +16,8 @@ Microsoft.AspNetCore.Components.ErrorBoundaryBase.ErrorContent.set -> void
 Microsoft.AspNetCore.Components.ErrorBoundaryBase.MaximumErrorCount.get -> int
 Microsoft.AspNetCore.Components.ErrorBoundaryBase.MaximumErrorCount.set -> void
 Microsoft.AspNetCore.Components.ErrorBoundaryBase.Recover() -> void
+Microsoft.AspNetCore.Components.IPersistentComponentStateStore.GetPersistedStateAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IDictionary<string!, byte[]!>!>!
+Microsoft.AspNetCore.Components.IPersistentComponentStateStore.PersistStateAsync(System.Collections.Generic.IReadOnlyDictionary<string!, byte[]!>! state) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string! uri, Microsoft.AspNetCore.Components.NavigationOptions options) -> void
 Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string! uri, bool forceLoad = false, bool replace = false) -> void
 Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string! uri, bool forceLoad) -> void
@@ -29,18 +31,14 @@ Microsoft.AspNetCore.Components.NavigationOptions.ReplaceHistoryEntry.init -> vo
 Microsoft.AspNetCore.Components.RenderHandle.IsRenderingOnMetadataUpdate.get -> bool
 Microsoft.AspNetCore.Components.RenderTree.Renderer.RemoveRootComponent(int componentId) -> void
 Microsoft.AspNetCore.Components.IPersistentComponentStateStore
-Microsoft.AspNetCore.Components.IPersistentComponentStateStore.GetPersistedStateAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IDictionary<string!, System.Buffers.ReadOnlySequence<byte>>!>!
-Microsoft.AspNetCore.Components.IPersistentComponentStateStore.PersistStateAsync(System.Collections.Generic.IReadOnlyDictionary<string!, System.Buffers.ReadOnlySequence<byte>>! state) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.ComponentStatePersistenceManager(Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager!>! logger) -> void
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.RenderTree.Renderer! renderer) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.RestoreStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.State.get -> Microsoft.AspNetCore.Components.PersistentComponentState!
 Microsoft.AspNetCore.Components.PersistentComponentState
-Microsoft.AspNetCore.Components.PersistentComponentState.Persist(string! key, System.Action<System.Buffers.IBufferWriter<byte>!>! valueWriter) -> void
 Microsoft.AspNetCore.Components.PersistentComponentState.PersistAsJson<TValue>(string! key, TValue instance) -> void
 Microsoft.AspNetCore.Components.PersistentComponentState.RegisterOnPersisting(System.Func<System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.PersistingComponentStateSubscription
-Microsoft.AspNetCore.Components.PersistentComponentState.TryTake(string! key, out System.Buffers.ReadOnlySequence<byte> value) -> bool
 Microsoft.AspNetCore.Components.PersistentComponentState.TryTakeFromJson<TValue>(string! key, out TValue? instance) -> bool
 Microsoft.AspNetCore.Components.PersistingComponentStateSubscription
 Microsoft.AspNetCore.Components.PersistingComponentStateSubscription.Dispose() -> void

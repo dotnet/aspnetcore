@@ -40,7 +40,6 @@
     <Compile Include="$(SharedSourceRoot)Components\PrerenderComponentApplicationStore.cs" />
     <Compile Include="$(SharedSourceRoot)Components\ProtectedPrerenderComponentApplicationStore.cs" />
     <Compile Include="$(SharedSourceRoot)\PooledArrayBufferWriter.cs" LinkBase="Infrastructure" />
-    <Compile Include="$(RepoRoot)src\Shared\Components\PooledByteBufferWritter.cs" />
   </ItemGroup>
 
 </Project>
