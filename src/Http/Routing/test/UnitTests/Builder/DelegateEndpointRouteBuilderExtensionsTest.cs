@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Builder
@@ -289,7 +288,7 @@ namespace Microsoft.AspNetCore.Builder
         public void MapPost_BuildsEndpointWithCorrectEndpointMetadata()
         {
             var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
-            _ = builder.MapPost("/", [ConsumesAttribute(typeof(Todo), "application/xml")] (Todo todo) => { });
+            _ = builder.MapPost("/", [TestConsumesAttribute(typeof(Todo), "application/xml")] (Todo todo) => { });
 
             var dataSource = GetBuilderEndpointDataSource(builder);
             // Trigger Endpoint build by calling getter.
@@ -299,7 +298,7 @@ namespace Microsoft.AspNetCore.Builder
             Assert.NotNull(endpointMetadata);
             Assert.Equal(2, endpointMetadata.Count);
 
-            var lastAddedMetadata = endpointMetadata[endpointMetadata.Count -1];
+            var lastAddedMetadata = endpointMetadata[^1];
   
             Assert.Equal(typeof(Todo), lastAddedMetadata.RequestType);
             Assert.Equal(new[] { "application/xml" }, lastAddedMetadata.ContentTypes);
@@ -484,9 +483,9 @@ namespace Microsoft.AspNetCore.Builder
             public string? Name { get; set; }
         }
 
-        class ConsumesAttribute : Attribute, IAcceptsMetadata
+        class TestConsumesAttribute : Attribute, IAcceptsMetadata
         {
-            public ConsumesAttribute(Type requestType, string contentType, params string[] otherContentTypes)
+            public TestConsumesAttribute(Type requestType, string contentType, params string[] otherContentTypes)
             {
                 if (contentType == null)
                 {
