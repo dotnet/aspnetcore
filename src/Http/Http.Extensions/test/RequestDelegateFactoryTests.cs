@@ -519,7 +519,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         private class MyBindAsyncTypeThatThrows
         {
-            public static ValueTask<object?> BindAsync(HttpContext context, ParameterInfo parameter)
+            public static ValueTask<MyBindAsyncTypeThatThrows?> BindAsync(HttpContext context, ParameterInfo parameter)
             {
                 throw new InvalidOperationException("BindAsync failed");
             }
@@ -527,17 +527,17 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         private record MyBindAsyncRecord(Uri Uri)
         {
-            public static ValueTask<object?> BindAsync(HttpContext context, ParameterInfo parameter)
+            public static ValueTask<MyBindAsyncRecord?> BindAsync(HttpContext context, ParameterInfo parameter)
             {
                 Assert.Equal(typeof(MyBindAsyncRecord), parameter.ParameterType);
                 Assert.StartsWith("myBindAsyncRecord", parameter.Name);
 
                 if (!Uri.TryCreate(context.Request.Headers.Referer, UriKind.Absolute, out var uri))
                 {
-                    return ValueTask.FromResult<object?>(null);
+                    return new(result: null);
                 }
 
-                return ValueTask.FromResult<object?>(new MyBindAsyncRecord(uri));
+                return new(result: new(uri));
             }
 
             // TryParse(HttpContext, ...) should be preferred over TryParse(string, ...) if there's
@@ -550,17 +550,17 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         private record struct MyBindAsyncStruct(Uri Uri)
         {
-            public static ValueTask<object?> BindAsync(HttpContext context, ParameterInfo parameter)
+            public static ValueTask<MyBindAsyncStruct?> BindAsync(HttpContext context, ParameterInfo parameter)
             {
                 Assert.Equal(typeof(MyBindAsyncStruct), parameter.ParameterType);
                 Assert.Equal("myBindAsyncStruct", parameter.Name);
 
                 if (!Uri.TryCreate(context.Request.Headers.Referer, UriKind.Absolute, out var uri))
                 {
-                    return ValueTask.FromResult<object?>(null);
+                    throw new BadHttpRequestException("The request is missing the required Referer header.");
                 }
 
-                return ValueTask.FromResult<object?>(new MyBindAsyncStruct(uri));
+                return new(result: new(uri));
             }
 
             // TryParse(HttpContext, ...) should be preferred over TryParse(string, ...) if there's
@@ -569,6 +569,41 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 throw new NotImplementedException();
         }
 
+        private record MyAwaitedBindAsyncRecord(Uri Uri)
+        {
+            public static async ValueTask<MyAwaitedBindAsyncRecord?> BindAsync(HttpContext context, ParameterInfo parameter)
+            {
+                Assert.Equal(typeof(MyAwaitedBindAsyncRecord), parameter.ParameterType);
+                Assert.StartsWith("myAwaitedBindAsyncRecord", parameter.Name);
+
+                await Task.Yield();
+
+                if (!Uri.TryCreate(context.Request.Headers.Referer, UriKind.Absolute, out var uri))
+                {
+                    return null;
+                }
+
+                return new(uri);
+            }
+        }
+
+        private record struct MyAwaitedBindAsyncStruct(Uri Uri)
+        {
+            public static async ValueTask<MyAwaitedBindAsyncStruct> BindAsync(HttpContext context, ParameterInfo parameter)
+            {
+                Assert.Equal(typeof(MyAwaitedBindAsyncStruct), parameter.ParameterType);
+                Assert.Equal("myAwaitedBindAsyncStruct", parameter.Name);
+
+                await Task.Yield();
+
+                if (!Uri.TryCreate(context.Request.Headers.Referer, UriKind.Absolute, out var uri))
+                {
+                    throw new BadHttpRequestException("The request is missing the required Referer header.");
+                }
+
+                return new(uri);
+            }
+        }
 
         [Theory]
         [MemberData(nameof(TryParsableParameters))]
@@ -719,6 +754,27 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var fromRouteRequestDelegate = fromRouteFactoryResult.RequestDelegate;
             await Assert.ThrowsAsync<NotImplementedException>(() => fromRouteRequestDelegate(httpContext));
+        }
+
+        [Fact]
+        public async Task RequestDelegateCanAwaitValueTasksThatAreNotImmediatelyCompleted()
+        {
+            var httpContext = new DefaultHttpContext();
+
+            httpContext.Request.Headers.Referer = "https://example.org";
+
+            var resultFactory = RequestDelegateFactory.Create(
+                (HttpContext httpContext, MyAwaitedBindAsyncRecord myAwaitedBindAsyncRecord, MyAwaitedBindAsyncStruct myAwaitedBindAsyncStruct) =>
+                {
+                    httpContext.Items["myAwaitedBindAsyncRecord"] = myAwaitedBindAsyncRecord;
+                    httpContext.Items["myAwaitedBindAsyncStruct"] = myAwaitedBindAsyncStruct;
+                });
+
+            var requestDelegate = resultFactory.RequestDelegate;
+            await requestDelegate(httpContext);
+
+            Assert.Equal(new MyAwaitedBindAsyncRecord(new Uri("https://example.org")), httpContext.Items["myAwaitedBindAsyncRecord"]);
+            Assert.Equal(new MyAwaitedBindAsyncStruct(new Uri("https://example.org")), httpContext.Items["myAwaitedBindAsyncStruct"]);
         }
 
         public static object[][] DelegatesWithAttributesOnNotTryParsableParameters
@@ -2285,7 +2341,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         private class CustomTodo : Todo
         {
-            public static async ValueTask<object?> BindAsync(HttpContext context, ParameterInfo parameter)
+            public static async ValueTask<CustomTodo?> BindAsync(HttpContext context, ParameterInfo parameter)
             {
                 Assert.Equal(typeof(CustomTodo), parameter.ParameterType);
                 Assert.Equal("customTodo", parameter.Name);
