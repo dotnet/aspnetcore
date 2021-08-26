@@ -142,6 +142,8 @@ namespace Microsoft.AspNetCore.Http
                 {
                     return (parameter) =>
                     {
+                        // parameter is being intentionally shadowed. We never want to use the outer ParameterInfo inside
+                        // this Func because the ParameterInfo varies after it's been cached for a given parameter type.
                         var typedCall = Expression.Call(methodInfo, HttpContextExpr, Expression.Constant(parameter));
                         return Expression.Call(ConvertValueTaskMethod.MakeGenericMethod(type), typedCall);
                     };
