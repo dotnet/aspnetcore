@@ -1200,7 +1200,7 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
-        public async Task DeveloperExceptionPageIsNotOnByInProduction()
+        public async Task DeveloperExceptionPageIsNotOnInProduction()
         {
             var builder = WebApplication.CreateBuilder(new WebApplicationOptions() { EnvironmentName = Environments.Production });
             builder.WebHost.UseTestServer();
