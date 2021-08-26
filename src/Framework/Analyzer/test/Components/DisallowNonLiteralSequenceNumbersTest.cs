@@ -17,8 +17,8 @@ public class DisallowNonLiteralSequenceNumbersTest
         var source = @"
 using Microsoft.AspNetCore.Components.Rendering;
 var renderTreeBuilder = new RenderTreeBuilder();
-renderTreeBuilder.OpenRegion(0);
-renderTreeBuilder.CloseRegion();
+renderTreeBuilder.OpenElement(0, ""div"");
+renderTreeBuilder.CloseElement();
 ";
         // Act
         var diagnostics = await Runner.GetDiagnosticsAsync(source);
@@ -76,8 +76,8 @@ renderTreeBuilder.CloseRegion();
         var source = TestSource.Read(@"
 using Microsoft.AspNetCore.Components.Rendering;
 var renderTreeBuilder = new RenderTreeBuilder();
-renderTreeBuilder.OpenRegion(/*MM*/ComputeSequenceNumber(0));
-renderTreeBuilder.CloseRegion();
+renderTreeBuilder.OpenElement(/*MM*/ComputeSequenceNumber(0), ""div"");
+renderTreeBuilder.CloseElement();
 static int ComputeSequenceNumber(int i) => i + 1;
 ");
         // Act
