@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Builder
@@ -286,6 +285,26 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         [Fact]
+        public void MapPost_BuildsEndpointWithCorrectEndpointMetadata()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            _ = builder.MapPost("/", [TestConsumesAttribute(typeof(Todo), "application/xml")] (Todo todo) => { });
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var endpointMetadata = endpoint.Metadata.GetOrderedMetadata<IAcceptsMetadata>();
+            Assert.NotNull(endpointMetadata);
+            Assert.Equal(2, endpointMetadata.Count);
+
+            var lastAddedMetadata = endpointMetadata[^1];
+  
+            Assert.Equal(typeof(Todo), lastAddedMetadata.RequestType);
+            Assert.Equal(new[] { "application/xml" }, lastAddedMetadata.ContentTypes);
+        }
+
+        [Fact]
         public void MapPut_BuildsEndpointWithCorrectMethod()
         {
             var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
@@ -462,6 +481,44 @@ namespace Microsoft.AspNetCore.Builder
         class FromRoute : Attribute, IFromRouteMetadata
         {
             public string? Name { get; set; }
+        }
+
+        class TestConsumesAttribute : Attribute, IAcceptsMetadata
+        {
+            public TestConsumesAttribute(Type requestType, string contentType, params string[] otherContentTypes)
+            {
+                if (contentType == null)
+                {
+                    throw new ArgumentNullException(nameof(contentType));
+                }
+
+                var contentTypes = new List<string>()
+                {
+                    contentType
+                };
+
+                for (var i = 0; i < otherContentTypes.Length; i++)
+                {
+                    contentTypes.Add(otherContentTypes[i]);
+                }
+
+                _requestType = requestType;
+                _contentTypes = contentTypes;
+            }
+
+            IReadOnlyList<string> IAcceptsMetadata.ContentTypes => _contentTypes;
+
+            Type? IAcceptsMetadata.RequestType => _requestType;
+
+            Type? _requestType;
+
+            List<string> _contentTypes = new();
+            
+        }
+
+        class Todo
+        {
+
         }
 
         private class HttpMethodAttribute : Attribute, IHttpMethodMetadata
