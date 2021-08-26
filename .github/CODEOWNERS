@@ -9,6 +9,7 @@
 /.github/                                                                         @dotnet/aspnet-build
 /.github/*_TEMPLATE/                                                              @dotnet/aspnet-build @mkArtakMSFT
 /.github/workflows/                                                               @dotnet/aspnet-build @tratcher
+/docs/                                                                            @captainsafia @mkArtakMSFT
 /eng/                                                                             @dotnet/aspnet-build
 /eng/common/                                                                      @dotnet-maestro-bot
 /eng/Versions.props                                                               @dotnet-maestro-bot @dougbu
