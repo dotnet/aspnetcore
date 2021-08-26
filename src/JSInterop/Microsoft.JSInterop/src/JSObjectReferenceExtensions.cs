@@ -28,7 +28,7 @@ namespace Microsoft.JSInterop
                 throw new ArgumentNullException(nameof(jsObjectReference));
             }
 
-            await jsObjectReference.InvokeAsync<object>(identifier, args);
+            await jsObjectReference.InvokeAsync<IJSVoidResult>(identifier, args);
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace Microsoft.JSInterop
                 throw new ArgumentNullException(nameof(jsObjectReference));
             }
 
-            await jsObjectReference.InvokeAsync<object>(identifier, cancellationToken, args);
+            await jsObjectReference.InvokeAsync<IJSVoidResult>(identifier, cancellationToken, args);
         }
 
         /// <summary>
@@ -135,7 +135,7 @@ namespace Microsoft.JSInterop
             using var cancellationTokenSource = timeout == Timeout.InfiniteTimeSpan ? null : new CancellationTokenSource(timeout);
             var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
 
-            await jsObjectReference.InvokeAsync<object>(identifier, cancellationToken, args);
+            await jsObjectReference.InvokeAsync<IJSVoidResult>(identifier, cancellationToken, args);
         }
     }
 }

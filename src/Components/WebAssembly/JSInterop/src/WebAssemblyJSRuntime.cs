@@ -91,6 +91,7 @@ namespace Microsoft.JSInterop.WebAssembly
             switch (resultType)
             {
                 case JSCallResultType.Default:
+                case JSCallResultType.JSVoidResult:
                     var result = InternalCalls.InvokeJS<T0, T1, T2, TResult>(out exception, ref callInfo, arg0, arg1, arg2);
                     return exception != null
                         ? throw new JSException(exception)
