@@ -70,10 +70,6 @@ namespace Microsoft.AspNetCore.Components.WebView
                 }
                 return _staticContentProvider;
             }
-            set
-            {
-                _staticContentProvider = value;
-            }
         }
 
         /// <summary>
