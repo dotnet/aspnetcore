@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             builder.OpenElement(0, "select");
             builder.AddMultipleAttributes(1, AdditionalAttributes);
-            builder.AddAttribute(2, "class", CssClass);
+            builder.AddAttributeIfNotNullOrEmpty(2, "class", CssClass);
             builder.AddAttribute(3, "multiple", _isMultipleSelect);
 
             if (_isMultipleSelect)
