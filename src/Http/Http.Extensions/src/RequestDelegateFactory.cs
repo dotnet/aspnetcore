@@ -4,7 +4,6 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Net.Http;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
@@ -818,11 +817,15 @@ namespace Microsoft.AspNetCore.Http
             var nullability = NullabilityContext.Create(parameter);
             var isOptional = IsOptionalParameter(parameter);
 
-            // Get the BindAsync method
-            var body = TryParseMethodCache.FindBindAsyncMethod(parameter.ParameterType)!;
+            // Get the BindAsync method for the type.
+            var bindAsyncWithoutParameterInfo = TryParseMethodCache.FindBindAsyncMethod(parameter.ParameterType);
+            // We know BindAsync exists because there's no way to opt-in without defining the method on the type.
+            Debug.Assert(bindAsyncWithoutParameterInfo is not null);
+
+            var bindAsyncExpression = bindAsyncWithoutParameterInfo(parameter);
 
             // Compile the delegate to the BindAsync method for this parameter index
-            var bindAsyncDelegate = Expression.Lambda<Func<HttpContext, ValueTask<object?>>>(body, HttpContextExpr).Compile();
+            var bindAsyncDelegate = Expression.Lambda<Func<HttpContext, ValueTask<object?>>>(bindAsyncExpression, HttpContextExpr).Compile();
             factoryContext.ParameterBinders.Add(bindAsyncDelegate);
 
             // boundValues[index]
