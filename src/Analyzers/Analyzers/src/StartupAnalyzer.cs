@@ -37,12 +37,12 @@ namespace Microsoft.AspNetCore.Analyzers
             }
 
             var main = context.Compilation.GetEntryPoint(default)?.ContainingType;
+            var mainName = context.Compilation.GetEntryPoint(default)?.Name;
 
             context.RegisterSymbolStartAction(context =>
             {
                 var type = (INamedTypeSymbol)context.Symbol;
-                var isMain = SymbolEqualityComparer.Default.Equals(main, type);
-                if (!StartupFacts.IsStartupClass(symbols, type) && !isMain)
+                if (!StartupFacts.IsStartupClass(symbols, type) && !SymbolEqualityComparer.Default.Equals(main, type))
                 {
                     // Not a startup class, nothing to do.
                     return;
@@ -69,6 +69,10 @@ namespace Microsoft.AspNetCore.Analyzers
                     {
                         OnConfigureServicesMethodFound(method);
                     }
+
+                    // In the future we can consider looking at more methods, but for now limit to Main, implicit Main, and Configure* methods
+                    var isMain = context.OwningSymbol.Name.Equals(mainName);
+
                     if (isConfigureServices || isMain)
                     {
                         services.AnalyzeConfigureServices(context);

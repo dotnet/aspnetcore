@@ -45,6 +45,120 @@ app.Run();");
             Assert.Empty(diagnostics);
         }
 
+        [Fact]
+        public async Task StartupAnalyzer_WorksWithNonImplicitMain()
+        {
+            // Arrange
+            var source = TestSource.Read(@"using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+        builder.Services.AddMvc();
+        var app = builder.Build();
+        app.UseStaticFiles();
+        app.UseMiddleware<AuthorizationMiddleware>();
+        /*MM*/app.UseMvc();
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
+        {
+        });
+        app.Run();
+    }
+}");
+
+            // Act
+            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+            // Assert
+            var optionsAnalysis = Assert.Single(Analyses.OfType<OptionsAnalysis>());
+            Assert.False(OptionsFacts.IsEndpointRoutingExplicitlyDisabled(optionsAnalysis));
+
+            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
+
+            Assert.Collection(
+                middlewareAnalysis.Middleware,
+                item => Assert.Equal("UseStaticFiles", item.UseMethod.Name),
+                item => Assert.Equal("UseMiddleware", item.UseMethod.Name),
+                item => Assert.Equal("UseMvc", item.UseMethod.Name),
+                item => Assert.Equal("UseRouting", item.UseMethod.Name),
+                item => Assert.Equal("UseEndpoints", item.UseMethod.Name));
+
+            Assert.Collection(
+                diagnostics,
+                diagnostic =>
+                {
+                    Assert.Same(StartupAnalyzer.Diagnostics.UnsupportedUseMvcWithEndpointRouting, diagnostic.Descriptor);
+                    AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
+                    Assert.Contains("inside 'Main", diagnostic.GetMessage());
+                });
+        }
+
+        [Fact]
+        public async Task StartupAnalyzer_WorksWithOtherMethodsInProgram()
+        {
+            // Arrange
+            var source = TestSource.Read(@"using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+        builder.Services.AddMvc();
+        var app = builder.Build();
+        app.UseStaticFiles();
+        app.UseMiddleware<AuthorizationMiddleware>();
+        /*MM*/app.UseMvc();
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
+        {
+        });
+        app.Run();
+    }
+
+    private static void MethodA()
+    {
+    }
+
+    private static void MethodB()
+    {
+    }
+}");
+
+            // Act
+            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+            // Assert
+            var optionsAnalysis = Assert.Single(Analyses.OfType<OptionsAnalysis>());
+            Assert.False(OptionsFacts.IsEndpointRoutingExplicitlyDisabled(optionsAnalysis));
+
+            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
+
+            Assert.Collection(
+                middlewareAnalysis.Middleware,
+                item => Assert.Equal("UseStaticFiles", item.UseMethod.Name),
+                item => Assert.Equal("UseMiddleware", item.UseMethod.Name),
+                item => Assert.Equal("UseMvc", item.UseMethod.Name),
+                item => Assert.Equal("UseRouting", item.UseMethod.Name),
+                item => Assert.Equal("UseEndpoints", item.UseMethod.Name));
+
+            Assert.Collection(
+                diagnostics,
+                diagnostic =>
+                {
+                    Assert.Same(StartupAnalyzer.Diagnostics.UnsupportedUseMvcWithEndpointRouting, diagnostic.Descriptor);
+                    AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
+                    Assert.Contains("inside 'Main", diagnostic.GetMessage());
+                });
+        }
+
         internal override TestSource GetSource(string scenario)
         {
             string source = null;
