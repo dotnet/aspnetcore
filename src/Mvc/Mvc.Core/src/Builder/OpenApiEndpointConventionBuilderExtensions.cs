@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="additionalContentTypes">Additional response content types the endpoint produces for the supplied status code.</param>
         /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static DelegateEndpointConventionBuilder Accepts<TRequest>(this DelegateEndpointConventionBuilder builder,
-            string contentType, params string[] additionalContentTypes) where TRequest : notnull
+            string contentType, params string[] additionalContentTypes)
         {
             Accepts(builder, typeof(TRequest), contentType, additionalContentTypes);
 
