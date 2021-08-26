@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.Http
 {
     internal sealed class TryParseMethodCache
     {
+        private static readonly MethodInfo ConvertValueTaskMethod = typeof(TryParseMethodCache).GetMethod(nameof(ConvertValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
+
         private readonly MethodInfo _enumTryParseMethod;
 
         // Since this is shared source, the cache won't be shared between RequestDelegateFactory and the ApiDescriptionProvider sadly :(
@@ -132,10 +134,17 @@ namespace Microsoft.AspNetCore.Http
                 var methodInfo = type.GetMethod("BindAsync", BindingFlags.Public | BindingFlags.Static, new[] { typeof(HttpContext), typeof(ParameterInfo) });
 
                 // We're looking for a method with the following signature:
-                // static ValueTask<object> BindAsync(HttpContext context, ParameterInfo parameter)
-                if (methodInfo is not null && methodInfo.ReturnType == typeof(ValueTask<object>))
+                // static ValueTask<{type}> BindAsync(HttpContext context, ParameterInfo parameter)
+                if (methodInfo is not null &&
+                    methodInfo.ReturnType.IsGenericType &&
+                    methodInfo.ReturnType.GetGenericTypeDefinition() == typeof(ValueTask<>) &&
+                    methodInfo.ReturnType.GetGenericArguments()[0] == type)
                 {
-                    return (parameter) => Expression.Call(methodInfo, HttpContextExpr, Expression.Constant(parameter));
+                    return (parameter) =>
+                    {
+                        var typedCall = Expression.Call(methodInfo, HttpContextExpr, Expression.Constant(parameter));
+                        return Expression.Call(ConvertValueTaskMethod.MakeGenericMethod(type), typedCall);
+                    };
                 }
 
                 return null;
@@ -321,6 +330,18 @@ namespace Microsoft.AspNetCore.Http
             }
 
             return method != null;
+        }
+
+        private static ValueTask<object?> ConvertValueTask<T>(ValueTask<T> typedValueTask)
+        {
+            if (typedValueTask.IsCompletedSuccessfully)
+            {
+                var result = typedValueTask.GetAwaiter().GetResult();
+                return new ValueTask<object?>(result);
+            }
+
+            static async ValueTask<object?> ConvertAwaited(ValueTask<T> typedValueTask) => await typedValueTask;
+            return ConvertAwaited(typedValueTask);
         }
     }
 }
