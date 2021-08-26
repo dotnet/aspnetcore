@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Net;
@@ -25,7 +24,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Internal
 {

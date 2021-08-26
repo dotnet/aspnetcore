@@ -3,11 +3,9 @@
 
 #nullable enable
 
-using System;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Http.Extensions.Tests
 {
@@ -172,15 +170,15 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         {
             var type = typeof(BindAsyncRecord);
             var cache = new TryParseMethodCache();
-            var methodFoundFunc = cache.FindBindAsyncMethod(type);
+            var parameter = new MockParameterInfo(type, "bindAsyncRecord");
+            var methodFound = cache.FindBindAsyncMethod(parameter);
 
-            Assert.NotNull(methodFoundFunc);
+            Assert.NotNull(methodFound);
 
             var parsedValue = Expression.Variable(type, "parsedValue");
-            var methodFound = methodFoundFunc!(new MockParameterInfo(type, "bindAsyncRecord"));
 
             var parseHttpContext = Expression.Lambda<Func<HttpContext, ValueTask<object>>>(
-                Expression.Block(new[] { parsedValue }, methodFound),
+                Expression.Block(new[] { parsedValue }, methodFound!),
                 cache.HttpContextExpr).Compile();
 
             var httpContext = new DefaultHttpContext
