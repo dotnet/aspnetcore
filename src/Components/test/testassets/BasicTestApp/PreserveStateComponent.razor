@@ -1,6 +1,8 @@
-﻿@inject ComponentApplicationState AppState
+﻿@inject PersistentComponentState AppState
 @inject PreserveStateService PreserveService
+@implements IDisposable
 @using System.Text
+@using System.Buffers
 
 <p id="@($"state-{State}")">@State: @_state</p>
 
@@ -40,38 +42,54 @@
     private string _extraState = null;
     private bool _restored;
     private bool? _extraStateAvailable;
+    private PersistingComponentStateSubscription _registration;
 
     protected override void OnInitialized()
     {
-        if (AppState.TryTakePersistedState(State, out var preserved))
+        if (AppState.TryTakeFromJson<string>(State, out var preserved))
         {
-            _state = Encoding.UTF8.GetString(preserved);
+            _state = preserved;
             _restored = true;
         }
         else
         {
-            _state = Guid.NewGuid().ToString();
-            AppState.PersistState(State, Encoding.UTF8.GetBytes(_state));
-            _extraState = Guid.NewGuid().ToString();
             if(ExtraState != null)
             {
                 _extraStateAvailable = true;
-                AppState.PersistState(ExtraState, Encoding.UTF8.GetBytes(_extraState));
+            }
+            _state = Guid.NewGuid().ToString();
+            _extraState = Guid.NewGuid().ToString();
+            _registration = AppState.RegisterOnPersisting(PersistState);
+
+            Task PersistState()
+            {
+                AppState.PersistAsJson(State, _state);
+                if(ExtraState != null)
+                {
+                    AppState.PersistAsJson(ExtraState, _extraState);
+                }
+
+                return Task.CompletedTask;
             }
         }
     }
 
     public void DisplayExtraState()
     {
-        if (AppState.TryTakePersistedState(ExtraState, out var extraState))
+        if (AppState.TryTakeFromJson<string>(ExtraState, out var extraState))
         {
             _extraStateAvailable = true;
-            _extraState = Encoding.UTF8.GetString(extraState);
+            _extraState = extraState;
         }
         else
         {
             _extraStateAvailable = false;
             _extraState = Guid.NewGuid().ToString();
         }
+    }
+
+    void IDisposable.Dispose()
+    {
+        _registration.Dispose();
     }
 }
