@@ -548,7 +548,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         private record struct MyBindAsyncStruct(Uri Uri)
         {
-            public static ValueTask<MyBindAsyncStruct?> BindAsync(HttpContext context, ParameterInfo parameter)
+            public static ValueTask<MyBindAsyncStruct> BindAsync(HttpContext context, ParameterInfo parameter)
             {
                 Assert.Equal(typeof(MyBindAsyncStruct), parameter.ParameterType);
                 Assert.Equal("myBindAsyncStruct", parameter.Name);

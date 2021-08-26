@@ -737,7 +737,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
         private record BindAsyncRecord(int Value)
         {
-            public static ValueTask<object> BindAsync(HttpContext context) =>
+            public static ValueTask<BindAsyncRecord> BindAsync(HttpContext context, ParameterInfo parameter) =>
                 throw new NotImplementedException();
             public static bool TryParse(string value, out BindAsyncRecord result) =>
                 throw new NotImplementedException();
