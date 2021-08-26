@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 ["asyncGenericInstanceMethod"] = @"""Updated value 1""",
                 ["requestDotNetStreamReferenceAsync"] = @"""Success""",
                 ["requestDotNetStreamWrapperReferenceAsync"] = @"""Success""",
-                ["invokeVoidAsyncReturnsWithoutSerializing"] = "null",
+                ["invokeVoidAsyncReturnsWithoutSerializing"] = "Success",
             };
 
             var expectedSyncValues = new Dictionary<string, string>

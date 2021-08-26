@@ -203,8 +203,16 @@
         ReturnValues["dotNetToJSReceiveDotNetStreamWrapperReferenceAsync"] = await JSRuntime.InvokeAsync<string>("jsInteropTests.receiveDotNetStreamWrapperReference", dotNetStreamReferenceWrapper);
 
         // Triger a non-serializable WindowProxy (https://developer.mozilla.org/en-US/docs/Web/API/Window/open)
-        ReturnValues["invokeVoidAsyncReturnsWithoutSerializing"] = await JSRuntime.InvokeVoidAsync("eval", "window.open('_self')");
-
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("eval", "window.open('_self')");
+            ReturnValues["invokeVoidAsyncReturnsWithoutSerializing"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["invokeVoidAsyncReturnsWithoutSerializing"] = $"Failure: {ex.Message}";
+        }
+        
         Invocations = invocations;
         DoneWithInterop = true;
     }
