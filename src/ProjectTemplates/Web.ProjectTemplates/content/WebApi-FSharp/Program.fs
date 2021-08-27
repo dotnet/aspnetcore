@@ -14,14 +14,24 @@ open Microsoft.Extensions.Logging
 module Program =
     let exitCode = 0
 
-    let CreateHostBuilder args =
-        Host.CreateDefaultBuilder(args)
-            .ConfigureWebHostDefaults(fun webBuilder ->
-                webBuilder.UseStartup<Startup>() |> ignore
-            )
-
     [<EntryPoint>]
     let main args =
-        CreateHostBuilder(args).Build().Run()
+
+        let builder = WebApplication.CreateBuilder(args)
+
+        let app = builder.Build()
+
+        if app.Environment.IsDevelopment() then
+            app.UseDeveloperExceptionPage() |> ignore
+
+#if (!NoHttps)
+        app.UseHttpsRedirection();
+#endif
+
+        app.UseRouting()
+        app.UseAuthorization()
+        app.MapControllers()
+
+        app.Run()
 
         exitCode
