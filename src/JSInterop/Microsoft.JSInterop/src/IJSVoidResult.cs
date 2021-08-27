@@ -8,7 +8,7 @@ namespace Microsoft.JSInterop
     /// <summary>
     /// Represents a void result from a JavaScript call.
     /// </summary>
-    public interface IJSVoidResult
+    internal interface IJSVoidResult
     {
     }
 }
