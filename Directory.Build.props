@@ -19,6 +19,7 @@
   <PropertyGroup>
     <EnablePackageValidation>true</EnablePackageValidation>
     <DisablePackageBaselineValidation Condition="'$(IsServicingBuild)' != 'true'">true</DisablePackageBaselineValidation>
+    <GenerateCompatibilitySuppressionFile>true</GenerateCompatibilitySuppressionFile>
   </PropertyGroup>
 
   <!-- Defines project type conventions. -->
