@@ -125,6 +125,17 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
             try
             {
+                var value = result.Value;
+                if (value != null && _asyncEnumerableReaderFactory.TryGetReader(value.GetType(), out var reader))
+                {
+                    Log.BufferingAsyncEnumerable(_logger, value);
+                    value = await reader(value, context.HttpContext.RequestAborted);
+                    if (context.HttpContext.RequestAborted.IsCancellationRequested)
+                    {
+                        return;
+                    }
+                }
+
                 await using (var writer = _writerFactory.CreateWriter(responseStream, resolvedContentTypeEncoding))
                 {
                     using var jsonWriter = new JsonTextWriter(writer);
@@ -133,12 +144,6 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
                     jsonWriter.AutoCompleteOnClose = false;
 
                     var jsonSerializer = JsonSerializer.Create(jsonSerializerSettings);
-                    var value = result.Value;
-                    if (value != null && _asyncEnumerableReaderFactory.TryGetReader(value.GetType(), out var reader))
-                    {
-                        Log.BufferingAsyncEnumerable(_logger, value);
-                        value = await reader(value);
-                    }
 
                     jsonSerializer.Serialize(jsonWriter, value);
                 }

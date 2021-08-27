@@ -324,6 +324,7 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
             Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
+            // System.Text.Json might write the '[' before cancellation is observed
             Assert.InRange(body.ToArray().Length, 0, 1);
             Assert.False(iterated);
 
@@ -357,6 +358,7 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
             Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
+            // System.Text.Json might write the '[' before cancellation is observed
             Assert.InRange(body.ToArray().Length, 0, 1);
             Assert.False(iterated);
 
@@ -384,12 +386,13 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
             var iterated = false;
 
             // Act
-            await Assert.ThrowsAsync<TaskCanceledException>(() => context.Response.WriteAsJsonAsync(AsyncEnumerable(), typeof(IAsyncEnumerable<int>), cts.Token));
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => context.Response.WriteAsJsonAsync(AsyncEnumerable(), typeof(IAsyncEnumerable<int>), cts.Token));
 
             // Assert
             Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
+            // System.Text.Json might write the '[' before cancellation is observed
             Assert.InRange(body.ToArray().Length, 0, 1);
             Assert.False(iterated);
 
@@ -417,12 +420,13 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
             var iterated = false;
 
             // Act
-            await Assert.ThrowsAsync<TaskCanceledException>(() => context.Response.WriteAsJsonAsync(AsyncEnumerable(), cts.Token));
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => context.Response.WriteAsJsonAsync(AsyncEnumerable(), cts.Token));
 
             // Assert
             Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
+            // System.Text.Json might write the '[' before cancellation is observed
             Assert.InRange(body.ToArray().Length, 0, 1);
             Assert.False(iterated);
 

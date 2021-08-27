@@ -1,22 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
@@ -433,6 +428,54 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
                 var content = new StreamReader(body, Encoding.UTF8).ReadToEnd();
                 Assert.Equal(expected, content);
+            }
+        }
+
+        [Fact]
+        public async Task WriteResponseBodyAsync_AsyncEnumerableConnectionCloses()
+        {
+            // Arrange
+            var formatter = GetOutputFormatter();
+            var mediaType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+
+            var body = new MemoryStream();
+            var actionContext = GetActionContext(mediaType, body);
+            var cts = new CancellationTokenSource();
+            actionContext.HttpContext.RequestAborted = cts.Token;
+            actionContext.HttpContext.RequestServices = new ServiceCollection().AddLogging().BuildServiceProvider();
+
+            var asyncEnumerable = AsyncEnumerableClosedConnection();
+            var outputFormatterContext = new OutputFormatterWriteContext(
+                actionContext.HttpContext,
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                asyncEnumerable.GetType(),
+                asyncEnumerable)
+            {
+                ContentType = new StringSegment(mediaType.ToString()),
+            };
+            var iterated = false;
+
+            // Act
+            await formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.GetEncoding("utf-8"));
+
+            // Assert
+            Assert.Empty(body.ToArray());
+            Assert.False(iterated);
+
+            async IAsyncEnumerable<int> AsyncEnumerableClosedConnection([EnumeratorCancellation] CancellationToken cancellationToken = default)
+            {
+                await Task.Yield();
+                cts.Cancel();
+                // MvcOptions.MaxIAsyncEnumerableBufferLimit is 8192. Pick some value larger than that.
+                foreach (var i in Enumerable.Range(0, 9000))
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        yield break;
+                    }
+                    iterated = true;
+                    yield return i;
+                }
             }
         }
 

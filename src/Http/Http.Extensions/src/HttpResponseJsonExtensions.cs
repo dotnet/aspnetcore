@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Http
             options ??= ResolveSerializerOptions(response.HttpContext);
 
             response.ContentType = contentType ?? JsonConstants.JsonContentTypeWithCharset;
-            // if no user provided token pass the RequestAborted token and ignore OperationCanceledException
+            // if no user provided token, pass the RequestAborted token and ignore OperationCanceledException
             if (!cancellationToken.CanBeCanceled)
             {
                 return WriteAsJsonAsyncSlow<TValue>(response.Body, value, options, response.HttpContext.RequestAborted);
@@ -177,11 +177,12 @@ namespace Microsoft.AspNetCore.Http
 
             response.ContentType = contentType ?? JsonConstants.JsonContentTypeWithCharset;
 
-            // if no user provided token pass the RequestAborted token and ignore OperationCanceledException
+            // if no user provided token, pass the RequestAborted token and ignore OperationCanceledException
             if (!cancellationToken.CanBeCanceled)
             {
                 return WriteAsJsonAsyncSlow(response.Body, value, type, options, response.HttpContext.RequestAborted);
             }
+
             return JsonSerializer.SerializeAsync(response.Body, value, type, options, cancellationToken);
         }
 
