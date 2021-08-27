@@ -23,9 +23,9 @@ namespace Microsoft.AspNetCore.Analyzers
 
         public DiagnosticAnalyzer Analyzer { get; }
 
-        public Task<Diagnostic[]> GetDiagnosticsAsync(string source)
+        public Task<Diagnostic[]> GetDiagnosticsAsync(params string[] sources)
         {
-            var project = CreateProjectWithReferencesInBinDir(GetType().Assembly, source);
+            var project = CreateProjectWithReferencesInBinDir(GetType().Assembly, sources);
 
             return GetDiagnosticsAsync(project);
         }

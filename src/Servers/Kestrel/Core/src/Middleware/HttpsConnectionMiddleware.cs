@@ -510,6 +510,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
         internal static SslServerAuthenticationOptions CreateHttp3Options(HttpsConnectionAdapterOptions httpsOptions)
         {
+            if (httpsOptions.OnAuthenticate != null)
+            {
+                throw new NotSupportedException($"The {nameof(HttpsConnectionAdapterOptions.OnAuthenticate)} callback is not supported with HTTP/3.");
+            }
+
             // TODO Set other relevant values on options
             var sslServerAuthenticationOptions = new SslServerAuthenticationOptions
             {

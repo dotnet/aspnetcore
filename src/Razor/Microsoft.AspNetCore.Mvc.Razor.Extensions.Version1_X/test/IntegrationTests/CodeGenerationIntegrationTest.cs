@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Razor.Language;
@@ -25,6 +25,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.IntegrationTests
         protected override CSharpCompilation BaseCompilation => DefaultBaseCompilation;
 
         protected override RazorConfiguration Configuration { get; }
+
+        protected override CSharpParseOptions CSharpParseOptions => base.CSharpParseOptions.WithLanguageVersion(LanguageVersion.CSharp8);
 
         [Fact]
         public void InvalidNamespaceAtEOF_DesignTime()

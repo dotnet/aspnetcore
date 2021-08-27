@@ -16,5 +16,14 @@ namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints
             DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
             helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+        internal static readonly DiagnosticDescriptor DoNotReturnActionResultsFromMapActions = new(
+            "ASP0004",
+            "Do not use action results with Map actions",
+            "IActionResult instances should not be returned from a {0} Delegate parameter. Consider returning an equivalent result from Microsoft.AspNetCore.Http.Results.",
+            "Usage",
+            DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
+            helpLinkUri: "https://aka.ms/aspnet/analyzers");
     }
 }

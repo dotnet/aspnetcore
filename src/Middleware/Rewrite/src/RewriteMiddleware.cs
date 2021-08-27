@@ -76,25 +76,10 @@ namespace Microsoft.AspNetCore.Rewrite
 
             var originalPath = context.Request.Path;
 
-            foreach (var rule in _options.Rules)
+            RunRules(rewriteContext, _options, context, _logger);
+            if (rewriteContext.Result == RuleResult.EndResponse)
             {
-                rule.ApplyRule(rewriteContext);
-                switch (rewriteContext.Result)
-                {
-                    case RuleResult.ContinueRules:
-                        _logger.RewriteMiddlewareRequestContinueResults(context.Request.GetEncodedUrl());
-                        break;
-                    case RuleResult.EndResponse:
-                        _logger.RewriteMiddlewareRequestResponseComplete(
-                            context.Response.Headers.Location,
-                            context.Response.StatusCode);
-                        return Task.CompletedTask;
-                    case RuleResult.SkipRemainingRules:
-                        _logger.RewriteMiddlewareRequestStopRules(context.Request.GetEncodedUrl());
-                        return _next(context);
-                    default:
-                        throw new ArgumentOutOfRangeException($"Invalid rule termination {rewriteContext.Result}");
-                }
+                return Task.CompletedTask;
             }
 
             // If a rule changed the path we want routing to find a new endpoint
@@ -115,6 +100,30 @@ namespace Microsoft.AspNetCore.Rewrite
             }
 
             return _next(context);
+        }
+
+        static void RunRules(RewriteContext rewriteContext, RewriteOptions options, HttpContext httpContext, ILogger logger)
+        {
+            foreach (var rule in options.Rules)
+            {
+                rule.ApplyRule(rewriteContext);
+                switch (rewriteContext.Result)
+                {
+                    case RuleResult.ContinueRules:
+                        logger.RewriteMiddlewareRequestContinueResults(httpContext.Request.GetEncodedUrl());
+                        break;
+                    case RuleResult.EndResponse:
+                        logger.RewriteMiddlewareRequestResponseComplete(
+                            httpContext.Response.Headers.Location,
+                            httpContext.Response.StatusCode);
+                        return;
+                    case RuleResult.SkipRemainingRules:
+                        logger.RewriteMiddlewareRequestStopRules(httpContext.Request.GetEncodedUrl());
+                        return;
+                    default:
+                        throw new ArgumentOutOfRangeException($"Invalid rule termination {rewriteContext.Result}");
+                }
+            }
         }
     }
 }

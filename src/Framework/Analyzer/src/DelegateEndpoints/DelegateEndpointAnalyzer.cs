@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -16,6 +17,7 @@ public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(new[]
     {
         DiagnosticDescriptors.DoNotUseModelBindingAttributesOnDelegateEndpointParameters,
+        DiagnosticDescriptors.DoNotReturnActionResultsFromMapActions,
     });
 
     public override void Initialize(AnalysisContext context)
@@ -28,6 +30,7 @@ public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
             var compilation = compilationStartAnalysisContext.Compilation;
             if (!WellKnownTypes.TryCreate(compilation, out var wellKnownTypes))
             {
+                Debug.Fail("One or more types could not be found. This usually means you are bad at spelling C# type names.");
                 return;
             }
 
@@ -50,11 +53,52 @@ public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
                 {
                     var lambda = ((IAnonymousFunctionOperation)delegateCreation.Target);
                     DisallowMvcBindArgumentsOnParameters(in operationAnalysisContext, wellKnownTypes, invocation, lambda.Symbol);
+                    DisallowReturningActionResultFromMapMethods(in operationAnalysisContext, wellKnownTypes, invocation, lambda);
                 }
                 else if (delegateCreation.Target.Kind == OperationKind.MethodReference)
                 {
                     var methodReference = (IMethodReferenceOperation)delegateCreation.Target;
                     DisallowMvcBindArgumentsOnParameters(in operationAnalysisContext, wellKnownTypes, invocation, methodReference.Method);
+
+                    var foundMethodReferenceBody = false;
+                    if (!methodReference.Method.DeclaringSyntaxReferences.IsEmpty)
+                    {
+                        var syntaxReference = methodReference.Method.DeclaringSyntaxReferences[0];
+                        var methodOperation = invocation.SemanticModel.GetOperation(syntaxReference.GetSyntax(operationAnalysisContext.CancellationToken));
+                        if (methodOperation is ILocalFunctionOperation { Body: not null } localFunction)
+                        {
+                            foundMethodReferenceBody = true;
+                            DisallowReturningActionResultFromMapMethods(
+                                in operationAnalysisContext,
+                                wellKnownTypes,
+                                invocation,
+                                methodReference.Method,
+                                localFunction.Body);
+                        }
+                        else if (methodOperation is IMethodBodyOperation methodBody)
+                        {
+                            foundMethodReferenceBody = true;
+                            DisallowReturningActionResultFromMapMethods(
+                                in operationAnalysisContext,
+                                wellKnownTypes,
+                                invocation,
+                                methodReference.Method,
+                                methodBody.BlockBody ?? methodBody.ExpressionBody);
+                        }
+                    }
+
+                    if (!foundMethodReferenceBody)
+                    {
+                        // it's possible we couldn't find the operation for the method reference. In this case,
+                        // try and provide less detailed diagnostics to the extent we can
+                        DisallowReturningActionResultFromMapMethods(
+                                in operationAnalysisContext,
+                                wellKnownTypes,
+                                invocation,
+                                methodReference.Method,
+                                methodBody: null);
+
+                    }
                 }
             }, OperationKind.Invocation);
         });

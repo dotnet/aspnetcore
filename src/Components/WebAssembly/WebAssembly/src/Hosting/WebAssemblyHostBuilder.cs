@@ -40,6 +40,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// <returns>A <see cref="WebAssemblyHostBuilder"/>.</returns>
         [DynamicDependency(nameof(JSInteropMethods.NotifyLocationChanged), typeof(JSInteropMethods))]
         [DynamicDependency(JsonSerialized, typeof(WebEventDescriptor))]
+        // The following dependency prevents HeadOutlet from getting trimmed away in
+        // WebAssembly prerendered apps.
+        [DynamicDependency(Component, typeof(HeadOutlet))]
         public static WebAssemblyHostBuilder CreateDefault(string[]? args = default)
         {
             // We don't use the args for anything right now, but we want to accept them
@@ -113,7 +116,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 var componentType = _rootComponentCache.GetRootComponent(registeredComponent.Assembly!, registeredComponent.TypeName!);
                 if (componentType is null)
                 {
-                    continue;
+                    throw new InvalidOperationException(
+                        $"Root component type '{registeredComponent.TypeName}' could not be found in the assembly '{registeredComponent.Assembly}'. " +
+                        $"This is likely a result of trimming (tree shaking).");
                 }
 
                 var definitions = componentDeserializer.GetParameterDefinitions(registeredComponent.ParameterDefinitions!);
