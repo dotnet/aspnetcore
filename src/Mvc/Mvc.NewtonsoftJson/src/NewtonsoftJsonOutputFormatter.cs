@@ -26,7 +26,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         private MvcNewtonsoftJsonOptions? _jsonOptions;
         private readonly AsyncEnumerableReader _asyncEnumerableReaderFactory;
         private JsonSerializerSettings? _serializerSettings;
-        private ILogger? _logger;
 
         /// <summary>
         /// Initializes a new <see cref="NewtonsoftJsonOutputFormatter"/> instance.
@@ -174,9 +173,13 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var value = context.Object;
             if (value is not null && _asyncEnumerableReaderFactory.TryGetReader(value.GetType(), out var reader))
             {
-                _logger ??= context.HttpContext.RequestServices.GetRequiredService<ILogger<NewtonsoftJsonOutputFormatter>>();
-                Log.BufferingAsyncEnumerable(_logger, value);
-                value = await reader(value);
+                var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<NewtonsoftJsonOutputFormatter>>();
+                Log.BufferingAsyncEnumerable(logger, value);
+                value = await reader(value, context.HttpContext.RequestAborted);
+                if (context.HttpContext.RequestAborted.IsCancellationRequested)
+                {
+                    return;
+                }
             }
 
             try
