@@ -438,7 +438,7 @@ namespace Interop.FunctionalTests.Http3
                 if (protocol == HttpProtocols.Http3)
                 {
                     var innerEx = Assert.IsType<QuicStreamAbortedException>(ex.InnerException);
-                    Assert.Equal(258, innerEx.ErrorCode);
+                    Assert.Equal(Http3ErrorCode.RequestCancelled, (Http3ErrorCode)innerEx.ErrorCode);
                 }
 
                 await cancelledTcs.Task.DefaultTimeout();
@@ -495,7 +495,7 @@ namespace Interop.FunctionalTests.Http3
                 if (protocol == HttpProtocols.Http3)
                 {
                     var innerEx = Assert.IsType<QuicStreamAbortedException>(ex.InnerException);
-                    Assert.Equal(258, innerEx.ErrorCode);
+                    Assert.Equal(Http3ErrorCode.RequestCancelled, (Http3ErrorCode)innerEx.ErrorCode);
                 }
 
                 await cancelledTcs.Task.DefaultTimeout();
