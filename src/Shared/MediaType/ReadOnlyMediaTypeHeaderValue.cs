@@ -25,7 +25,7 @@ internal readonly struct ReadOnlyMediaTypeHeaderValue
     /// </summary>
     /// <param name="mediaType">The <see cref="StringSegment"/> with the media type.</param>
     public ReadOnlyMediaTypeHeaderValue(StringSegment mediaType)
-        : this(mediaType.Buffer, mediaType.Offset, mediaType.Length)
+        : this(mediaType.Buffer ?? string.Empty, mediaType.Offset, mediaType.Length)
     {
     }
 
@@ -146,7 +146,7 @@ internal readonly struct ReadOnlyMediaTypeHeaderValue
         var startPos = subType.Offset + subType.Length - 1;
         for (var currentPos = startPos; currentPos >= subType.Offset; currentPos--)
         {
-            if (subType.Buffer[currentPos] == '+')
+            if (subType.Buffer![currentPos] == '+')
             {
                 suffixLength = startPos - currentPos;
                 return true;
@@ -357,7 +357,7 @@ internal readonly struct ReadOnlyMediaTypeHeaderValue
             // charset.Value might be an invalid encoding name as in charset=invalid.
             // For that reason, we catch the exception thrown by Encoding.GetEncoding
             // and return null instead.
-            return charset.HasValue ? Encoding.GetEncoding(charset.Value) : null;
+            return charset.HasValue ? Encoding.GetEncoding(charset.Value!) : null;
         }
         catch (Exception)
         {

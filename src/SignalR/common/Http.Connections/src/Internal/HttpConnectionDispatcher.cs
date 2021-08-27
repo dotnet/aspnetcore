@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             HttpConnectionContext? connectionContext = null;
             var connectionToken = GetConnectionToken(context);
-            if (connectionToken != null)
+            if (!StringValues.IsNullOrEmpty(connectionToken))
             {
                 _manager.TryGetConnection(connectionToken, out connectionContext);
             }
@@ -381,7 +381,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             return features.Get<IHttpWebSocketFeature>() != null;
         }
 
-        private static string GetConnectionToken(HttpContext context) => context.Request.Query["id"].ToString();
+        private static StringValues GetConnectionToken(HttpContext context) => context.Request.Query["id"];
 
         private async Task ProcessSend(HttpContext context, HttpConnectionDispatcherOptions options)
         {
