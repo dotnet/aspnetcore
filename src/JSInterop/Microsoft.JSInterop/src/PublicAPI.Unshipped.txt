@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.JSInterop.IJSVoidResult
 Microsoft.JSInterop.IJSStreamReference
 Microsoft.JSInterop.IJSStreamReference.Length.get -> long
 Microsoft.JSInterop.IJSStreamReference.OpenReadStreamAsync(long maxAllowedSize = 512000, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<System.IO.Stream!>
