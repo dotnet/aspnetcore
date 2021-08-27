@@ -482,7 +482,7 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http2ConnectionFaulted" xml:space="preserve">
     <value>The HTTP/2 connection faulted.</value>
   </data>
-  <data name="Http2StreamResetByClient" xml:space="preserve">
+  <data name="HttpStreamResetByClient" xml:space="preserve">
     <value>The client reset the request stream.</value>
   </data>
   <data name="Http2StreamAborted" xml:space="preserve">
