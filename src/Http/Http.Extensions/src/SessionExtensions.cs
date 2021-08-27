@@ -42,6 +42,59 @@ namespace Microsoft.AspNetCore.Http
             }
             return data[0] << 24 | data[1] << 16 | data[2] << 8 | data[3];
         }
+        
+		/// <summary>
+		/// Sets an int value in the <see cref="ISession"/>.
+		/// </summary>
+		/// <param name="session">The <see cref="ISession"/>.</param>
+		/// <param name="key">The key to assign.</param>
+		/// <param name="value">The value to assign.</param>
+		/// <summary>
+		public static void SetInt64(this ISession session, string key, long value)
+		{
+			byte[] bytes = BitConverter.GetBytes(value);
+			session.Set(key, bytes);
+		}
+
+		/// Gets a long value from <see cref="ISession"/>.
+		/// </summary>
+		/// <param name="session">The <see cref="ISession"/>.</param>
+		/// <param name="key">The key to read.</param>
+		public static long? GetInt64(this ISession session, string key)
+		{
+			var data = session.Get(key);
+			if (data == null || data.Length < 8)
+			{
+				return null;
+			}
+			return BitConverter.ToInt64(data, 0);
+		}
+
+		/// <summary>
+		/// Sets a DateTime value in the <see cref="ISession"/>.
+		/// </summary>
+		/// <param name="session">The <see cref="ISession"/>.</param>
+		/// <param name="key">The key to assign.</param>
+		/// <param name="value">The value to assign.</param>
+		/// <summary>
+		public static void SetDateTime(this ISession session, string key, DateTime value)
+		{
+			session.SetInt64(key, value.Ticks);
+		}
+
+		/// Gets a DateTime value from <see cref="ISession"/>.
+		/// </summary>
+		/// <param name="session">The <see cref="ISession"/>.</param>
+		/// <param name="key">The key to read.</param>
+		public static DateTime? GetDateTime(this ISession session, string key)
+		{
+			var data = session.GetInt64(key);
+			if (data == null)
+			{
+				return null;
+			}
+			return new DateTime(data.Value);
+		}
 
         /// <summary>
         /// Sets a <see cref="string"/> value in the <see cref="ISession"/>.
