@@ -48,7 +48,7 @@ void Hello() { }
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DetectMisplacedLambdaAttribute, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("'AuthorizeAttribute' should not be placed on 'Hello'. Place 'AuthorizeAttribute' on the endpoint delegate instead.", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("'AuthorizeAttribute' should be placed on the endpoint delegate to be effective", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -70,7 +70,7 @@ string Hello() { return ""foo""; }
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DetectMisplacedLambdaAttribute, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("'AuthorizeAttribute' should not be placed on 'Hello'. Place 'AuthorizeAttribute' on the endpoint delegate instead.", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("'AuthorizeAttribute' should be placed on the endpoint delegate to be effective", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -95,12 +95,12 @@ void Hello() { }
             diagnostic => {
                 Assert.Same(DiagnosticDescriptors.DetectMisplacedLambdaAttribute, diagnostic.Descriptor);
                 AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-                Assert.Equal("'AuthorizeAttribute' should not be placed on 'Hello'. Place 'AuthorizeAttribute' on the endpoint delegate instead.", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+                Assert.Equal("'AuthorizeAttribute' should be placed on the endpoint delegate to be effective", diagnostic.GetMessage(CultureInfo.InvariantCulture));
             },
             diagnostic => {
                 Assert.Same(DiagnosticDescriptors.DetectMisplacedLambdaAttribute, diagnostic.Descriptor);
                 AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-                Assert.Equal("'ProducesAttribute' should not be placed on 'Hello'. Place 'ProducesAttribute' on the endpoint delegate instead.", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+                Assert.Equal("'ProducesAttribute' should be placed on the endpoint delegate to be effective", diagnostic.GetMessage(CultureInfo.InvariantCulture));
             }
         );
     }
@@ -126,7 +126,7 @@ void Hello() { }
             diagnostic => {
                 Assert.Same(DiagnosticDescriptors.DetectMisplacedLambdaAttribute, diagnostic.Descriptor);
                 AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-                Assert.Equal("'ProducesAttribute' should not be placed on 'Hello'. Place 'ProducesAttribute' on the endpoint delegate instead.", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+                Assert.Equal("'ProducesAttribute' should be placed on the endpoint delegate to be effective", diagnostic.GetMessage(CultureInfo.InvariantCulture));
             }
         );
     }
@@ -146,6 +146,92 @@ app.MapGet(""/"", /*MM*/() => {
 });";
         // Act
         var diagnostics = await Runner.GetDiagnosticsAsync(source);
+
+        // Assert
+        Assert.Empty(diagnostics);
+    }
+
+    [Fact]
+    public async Task MinimalAction_DoesNotWarnOrErrorOnNonExistantLambdas()
+    {
+        // Arrange
+        var source = @"
+using System;
+using Microsoft.AspNetCore.Builder;
+var app = WebApplication.Create();
+app.MapGet(""/"", () => ThereIsNoMethod());";
+        // Act
+        var diagnostics = await Runner.GetDiagnosticsAsync(source);
+
+        // Assert that there is a singal error but it is not ours (CS0103)
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Equal("CS0103", diagnostic.Descriptor.Id);
+    }
+
+    [Fact]
+    public async Task MinimalAction_WithMisplacedAttributeOnMethodGroup_DoesNotProduceDiagnostics()
+    {
+        // Arrange
+        var source = TestSource.Read(@"
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+var app = WebApplication.Create();
+app.MapGet(""/"", Hello);
+[Authorize]
+void Hello() { }
+");
+        // Act
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        // Assert
+        Assert.Empty(diagnostics);
+    }
+
+    [Fact]
+    public async Task MinimalAction_WithMisplacedAttributeOnExternalReference_DoesNotProduceDiagnostics()
+    {
+        // Arrange
+        var source = TestSource.Read(@"
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+class Program {
+    public static void Main(string[] args)
+    {
+        var app = WebApplication.Create();
+        app.MapGet(""/"", /*MM*/() => Helpers.Hello());
+    }
+}
+
+public static class Helpers
+{
+    [Authorize]
+    public static void Hello() { }
+}
+");
+        // Act
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        // Assert
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Same(DiagnosticDescriptors.DetectMisplacedLambdaAttribute, diagnostic.Descriptor);
+        AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
+        Assert.Equal("'AuthorizeAttribute' should be placed on the endpoint delegate to be effective", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+    }
+
+    [Fact]
+    public async Task MinimalAction_OutOfScope_ProducesDiagnostics()
+    {
+        // Arrange
+        // WriteLine has nullability annotation attributes that should
+        // not warn
+        var source = TestSource.Read(@"
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+var app = WebApplication.Create();
+app.MapGet(""/"", /*MM*/() => System.Console.WriteLine(""foo""));
+");
+        // Act
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
 
         // Assert
         Assert.Empty(diagnostics);

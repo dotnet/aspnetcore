@@ -27,14 +27,13 @@ public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
 
         // () => Hello() has a single child which is a BlockOperation so we check to see if
         // expression associated with that operation is an invocation expression
-        if (lambda.Children.First().Syntax is InvocationExpressionSyntax innerInvocation)
+        if (lambda.Children.FirstOrDefault().Syntax is InvocationExpressionSyntax innerInvocation)
         {
             targetInvocation = innerInvocation;
         }
 
-        if (lambda.Children.First().Children.First() is IReturnOperation returnOperation
+        if (lambda.Children.FirstOrDefault().Children.FirstOrDefault() is IReturnOperation returnOperation
             && returnOperation.ReturnedValue is IInvocationOperation returnedInvocation)
-
         {
             targetInvocation = (InvocationExpressionSyntax)returnedInvocation.Syntax;
         }
@@ -44,19 +43,43 @@ public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-
         var methodOperation = invocation.SemanticModel.GetSymbolInfo(targetInvocation);
+        var methodSymbol = methodOperation.Symbol ?? methodOperation.CandidateSymbols.FirstOrDefault();
 
-        var attributes = methodOperation.Symbol.GetAttributes();
+        // If no method definition was found for the lambda, then abort.
+        if (methodSymbol is null)
+        {
+            return;
+        }
+
+        var attributes = methodSymbol.GetAttributes();
         var location = lambda.Syntax.GetLocation();
 
         foreach (var attribute in attributes)
         {
-            context.ReportDiagnostic(Diagnostic.Create(
-                DiagnosticDescriptors.DetectMisplacedLambdaAttribute,
-                location,
-                attribute.AttributeClass?.Name,
-                methodOperation.Symbol.Name));
+            if (IsInValidNamespace(attribute))
+            {
+                context.ReportDiagnostic(Diagnostic.Create(
+                    DiagnosticDescriptors.DetectMisplacedLambdaAttribute,
+                    location,
+                    attribute.AttributeClass?.Name,
+                    methodSymbol.Name));
+            }
+        }
+
+        bool IsInValidNamespace(AttributeData attribute)
+        {
+            var supportedNamespace = "Microsoft.AspNetCore";
+            var symbolDisplayFormat = new SymbolDisplayFormat(
+                typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
+
+            if (attribute.AttributeClass is null)
+            {
+                return false;
+            }
+
+            var fullyQualifiedName = attribute.AttributeClass.ContainingNamespace.ToDisplayString(symbolDisplayFormat);
+            return fullyQualifiedName.StartsWith(supportedNamespace, System.StringComparison.OrdinalIgnoreCase);
         }
     }
 }
