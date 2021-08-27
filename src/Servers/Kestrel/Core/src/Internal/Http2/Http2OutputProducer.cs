@@ -486,25 +486,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        private Memory<byte> GetFakeMemory(int sizeHint)
+        internal Memory<byte> GetFakeMemory(int sizeHint)
         {
-            if (_fakeMemoryOwner == null)
+            if (_fakeMemoryOwner == null || _fakeMemoryOwner.Memory.Length < sizeHint)
             {
-                // Requesting a bigger buffer could throw.
-                if (sizeHint <= _memoryPool.MaxBufferSize)
-                {
-                    // Use the specified pool as it fits.
-                    _fakeMemoryOwner = _memoryPool.Rent(sizeHint);
-                }
-                else
-                {
-                    // Use the array pool. Its MaxBufferSize is int.MaxValue.
-                    _fakeMemoryOwner = MemoryPool<byte>.Shared.Rent(sizeHint);
-                }
+                _fakeMemoryOwner?.Dispose();
+
+                _fakeMemoryOwner = HttpOutputProducerHelper.ReserveFakeMemory(_memoryPool, sizeHint);
             }
 
             return _fakeMemoryOwner.Memory;
         }
+
         [StackTraceHidden]
         private void ThrowIfSuffixSentOrCompleted()
         {
