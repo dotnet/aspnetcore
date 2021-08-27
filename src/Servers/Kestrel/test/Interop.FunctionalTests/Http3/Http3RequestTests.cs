@@ -517,7 +517,7 @@ namespace Interop.FunctionalTests.Http3
         // Verify HTTP/2 and HTTP/3 match behavior
         [ConditionalTheory]
         [MsQuicSupported]
-        [InlineData(HttpProtocols.Http3, Skip = "https://github.com/dotnet/runtime/issues/56129")]
+        [InlineData(HttpProtocols.Http3)]
         [InlineData(HttpProtocols.Http2)]
         public async Task POST_ClientCancellationBidirectional_RequestAbortRaised(HttpProtocols protocol)
         {
@@ -525,6 +525,8 @@ namespace Interop.FunctionalTests.Http3
             var cancelledTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var readAsyncTask = new TaskCompletionSource<Task>(TaskCreationOptions.RunContinuationsAsynchronously);
             var clientHasCancelledSyncPoint = new SyncPoint();
+
+            using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
 
             var builder = CreateHostBuilder(async context =>
             {
@@ -586,6 +588,7 @@ namespace Interop.FunctionalTests.Http3
                 await requestStream.FlushAsync().DefaultTimeout();
                 // Write content
                 await requestStream.WriteAsync(TestData).DefaultTimeout();
+                await requestStream.FlushAsync().DefaultTimeout();
 
                 var response = await responseTask.DefaultTimeout();
 
@@ -620,7 +623,7 @@ namespace Interop.FunctionalTests.Http3
         // Verify HTTP/2 and HTTP/3 match behavior
         [ConditionalTheory]
         [MsQuicSupported]
-        [InlineData(HttpProtocols.Http3, Skip = "https://github.com/dotnet/runtime/issues/56129")]
+        [InlineData(HttpProtocols.Http3)]
         [InlineData(HttpProtocols.Http2)]
         public async Task GET_ClientCancellationAfterResponseHeaders_RequestAbortRaised(HttpProtocols protocol)
         {

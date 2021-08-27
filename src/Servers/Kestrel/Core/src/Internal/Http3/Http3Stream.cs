@@ -124,6 +124,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
 
             _frameWriter.Reset(context.Transport.Output, context.ConnectionId);
+
+            // We register to connection closed to handle situation where the client
+            // aborts after data is already sent. Only its read-side of the stream is aborted
+            // which means Kestrel is only notified of the abort when it writes to the stream.
+            // This event immediately notifies Kestrel that the client has aborted the request
+            // and Kestrel will complete pipes and cancel the RequestAborted token.
+            //
+            // TODO: Consider a better way to provide this notification. For perf we want to
+            // make the ConnectionClosed CTS pay-for-play, and change this event to use
+            // something that is more lightweight than a CTS.
+            context.StreamContext.ConnectionClosed.Register(static s =>
+            {
+                var stream = (Http3Stream)s!;
+
+                if (!stream.IsCompleted)
+                {
+                    // An error code value other than -1 indicates a value was set and the request didn't gracefully complete.
+                    var errorCode = stream._errorCodeFeature.Error;
+                    if (errorCode >= 0)
+                    {
+                        stream.Abort(new ConnectionAbortedException(CoreStrings.Http2StreamResetByClient), (Http3ErrorCode)errorCode);
+                    }
+                }
+            }, this);
         }
 
         public void InitializeWithExistingContext(IDuplexPipe transport)
@@ -465,7 +489,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             catch (ConnectionResetException ex)
             {
                 error = ex;
-                Abort(new ConnectionAbortedException(ex.Message, ex), (Http3ErrorCode)_errorCodeFeature.Error);
+
+                var resolvedErrorCode = _errorCodeFeature.Error >= 0 ? _errorCodeFeature.Error : 0;
+                Abort(new ConnectionAbortedException(ex.Message, ex), (Http3ErrorCode)resolvedErrorCode);
             }
             catch (Exception ex)
             {

@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net.Quic;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -95,7 +96,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
             CanRead = _stream.CanRead;
             CanWrite = _stream.CanWrite;
-            Error = 0;
+            _error = null;
             StreamId = _stream.StreamId;
             PoolExpirationTicks = 0;
 
@@ -148,6 +149,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 // Streams may or may not have reading/writing, so only start tasks accordingly
                 var receiveTask = Task.CompletedTask;
                 var sendTask = Task.CompletedTask;
+                var sendCompletedTask = Task.CompletedTask;
 
                 if (_stream.CanRead)
                 {
@@ -157,15 +159,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 if (_stream.CanWrite)
                 {
                     sendTask = DoSend();
+                    sendCompletedTask = WaitForWritesCompleted();
                 }
 
                 // Now wait for both to complete
                 await receiveTask;
                 await sendTask;
+                await sendCompletedTask;
+
+                await FireStreamClosedAsync();
             }
             catch (Exception ex)
             {
                 _log.LogError(0, ex, $"Unexpected exception in {nameof(QuicStreamContext)}.{nameof(StartAsync)}.");
+            }
+        }
+
+        private async Task WaitForWritesCompleted()
+        {
+            Debug.Assert(_stream != null);
+
+            try
+            {
+                await _stream.WaitForWriteCompletionAsync();
+            }
+            catch (Exception ex)
+            {
+                // Send error to DoSend loop.
+                lock (_shutdownLock)
+                {
+                    _shutdownReason ??= ex;
+                }
+            }
+            finally
+            {
+                Output.CancelPendingRead();
             }
         }
 
@@ -204,6 +232,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                         if (completeTask.IsCompletedSuccessfully)
                         {
                             // Fast path. CompleteAsync completed immediately.
+                            // Most implementations of ValueTask reset state in GetResult.
+                            completeTask.GetAwaiter().GetResult();
+
                             flushTask = ValueTask.FromResult(new FlushResult(isCanceled: false, isCompleted: true));
                         }
                         else
@@ -240,7 +271,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             catch (QuicStreamAbortedException ex)
             {
                 // Abort from peer.
-                Error = ex.ErrorCode;
+                _error = ex.ErrorCode;
                 _log.StreamAborted(this, ex.ErrorCode, ex);
 
                 // This could be ignored if _shutdownReason is already set.
@@ -268,10 +299,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             {
                 // If Shutdown() has already bee called, assume that was the reason ProcessReceives() exited.
                 Input.Complete(ResolveCompleteReceiveException(error));
-
-                FireStreamClosed();
-
-                await _waitForConnectionClosedTcs.Task;
             }
 
             async static ValueTask<FlushResult> AwaitCompleteTaskAsync(ValueTask completeTask)
@@ -286,12 +313,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             return _shutdownReadReason ?? _shutdownReason ?? error;
         }
 
-        private void FireStreamClosed()
+        private Task FireStreamClosedAsync()
         {
             // Guard against scheduling this multiple times
             if (_streamClosed)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             _streamClosed = true;
@@ -304,6 +331,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             },
             this,
             preferLocal: false);
+
+            return _waitForConnectionClosedTcs.Task;
         }
 
         private void CancelConnectionClosedToken()
@@ -335,6 +364,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
                     if (result.IsCanceled)
                     {
+                        // WaitForWritesCompleted provides immediate notification that write-side of stream has completed.
+                        // If the stream or connection is aborted then exception will be available to rethrow.
+
+                        var ex = _shutdownWriteReason ?? _shutdownReason;
+                        if (ex != null)
+                        {
+                            ExceptionDispatchInfo.Throw(ex);
+                        }
+
                         break;
                     }
 
@@ -359,7 +397,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             catch (QuicStreamAbortedException ex)
             {
                 // Abort from peer.
-                Error = ex.ErrorCode;
+                _error = ex.ErrorCode;
                 _log.StreamAborted(this, ex.ErrorCode, ex);
 
                 // This could be ignored if _shutdownReason is already set.
@@ -370,7 +408,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             catch (QuicConnectionAbortedException ex)
             {
                 // Abort from peer.
-                Error = ex.ErrorCode;
+                _error = ex.ErrorCode;
                 _log.StreamAborted(this, ex.ErrorCode, ex);
 
                 // This could be ignored if _shutdownReason is already set.
@@ -383,6 +421,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 // AbortWrite has been called for the stream.
                 // Possibily might also get here from connection closing.
                 // System.Net.Quic exception handling not finalized.
+                unexpectedError = ex;
+            }
+            catch (ConnectionAbortedException ex)
+            {
                 unexpectedError = ex;
             }
             catch (Exception ex)
@@ -415,7 +457,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             _serverAborted = true;
             _shutdownReason = abortReason;
 
-            _log.StreamAbort(this, Error, abortReason.Message);
+            var resolvedErrorCode = _error ?? 0;
+            _log.StreamAbort(this, resolvedErrorCode, abortReason.Message);
 
             lock (_shutdownLock)
             {
@@ -423,11 +466,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 {
                     if (_stream.CanRead)
                     {
-                        _stream.AbortRead(Error);
+                        _stream.AbortRead(resolvedErrorCode);
                     }
                     if (_stream.CanWrite)
                     {
-                        _stream.AbortWrite(Error);
+                        _stream.AbortWrite(resolvedErrorCode);
                     }
                 }
             }
