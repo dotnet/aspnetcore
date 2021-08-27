@@ -13,7 +13,7 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)NullScope.cs" />
     <Compile Include="$(SharedSourceRoot)SyncPoint\SyncPoint.cs" Link="SyncPoint.cs" />
-    <Compile Include="$(SharedSourceRoot)runtime\Http3\**\*.cs" Link="Shared\runtime\Http3\%(Filename)%(Extension)" />
+    <Compile Include="$(SharedSourceRoot)runtime\Http3\Frames\Http3ErrorCode.cs" Link="Shared\runtime\Http3\%(Filename)%(Extension)" />
     <Compile Include="$(KestrelSharedSourceRoot)test\StreamExtensions.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\IHostPortExtensions.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\IWebHostPortExtensions.cs" LinkBase="shared" />
