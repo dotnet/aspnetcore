@@ -1215,7 +1215,7 @@ namespace Microsoft.AspNetCore.Http
             errorMessage.AppendLine("Below is the list of parameters that we found: ");
             errorMessage.AppendLine();
             errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}|{"Source",-30}"));
-            errorMessage.AppendLine("---------------------------------------------------------------------------------\n");
+            errorMessage.AppendLine("---------------------------------------------------------------------------------");
 
             foreach (var kv in factoryContext.TrackedParameters)
             {
