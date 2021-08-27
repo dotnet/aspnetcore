@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.Infrastructure
     {
         private bool _stateIsPersisted;
         private readonly List<Func<Task>> _pauseCallbacks = new();
-        private readonly Dictionary<string, byte []> _currentState = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, byte[]> _currentState = new(StringComparer.Ordinal);
         private readonly ILogger<ComponentStatePersistenceManager> _logger;
 
         /// <summary>

@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expected = @"{""MyValue"":""AQIDBA==""}";
             var store = new ProtectedPrerenderComponentApplicationStore(_provider);
 
-            var state = new Dictionary<string, byte []>()
+            var state = new Dictionary<string, byte[]>()
             {
                 ["MyValue"] = new byte[] { 1, 2, 3, 4 }
             };
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         public async Task GetPersistStateAsync_CanUnprotectPersistedState()
         {
             // Arrange
-            var expectedState = new Dictionary<string, byte []>()
+            var expectedState = new Dictionary<string, byte[]>()
             {
                 ["MyValue"] = new byte[] { 1, 2, 3, 4 }
             };

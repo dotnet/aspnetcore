@@ -19,9 +19,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Arrange
             var expected = "eyJNeVZhbHVlIjoiQVFJREJBPT0ifQ==";
             var store = new PrerenderComponentApplicationStore();
-            var state = new Dictionary<string, byte []>()
+            var state = new Dictionary<string, byte[]>()
             {
-                ["MyValue"] = new byte[] {1,2,3,4}
+                ["MyValue"] = new byte[] { 1, 2, 3, 4 }
             };
 
             // Act
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var store = new PrerenderComponentApplicationStore(persistedState);
             var expected = new Dictionary<string, ReadOnlySequence<byte>>()
             {
-                ["MyValue"] = new ReadOnlySequence<byte>(new byte [] { 1, 2, 3, 4 })
+                ["MyValue"] = new ReadOnlySequence<byte>(new byte[] { 1, 2, 3, 4 })
             };
 
             // Act

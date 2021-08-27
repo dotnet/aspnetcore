@@ -44,7 +44,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistForecasts);
-        if(!ApplicationState.TryTakeFromJson<WeatherForecast[]>("fetchdata", out var restored))
+        if (!ApplicationState.TryTakeFromJson<WeatherForecast[]>("fetchdata", out var restored))
         {
             forecasts = await WeatherForecastService.GetForecastAsync(DateTime.Now);
         }

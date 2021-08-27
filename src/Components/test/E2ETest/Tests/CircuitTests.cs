@@ -8,11 +8,11 @@ using BasicTestApp;
 using BasicTestApp.Reconnection;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit;
-using Microsoft.AspNetCore.Components.Infrastructure;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests

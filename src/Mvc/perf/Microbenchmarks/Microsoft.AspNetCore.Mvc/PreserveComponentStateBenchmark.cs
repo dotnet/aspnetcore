@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.Microbenchmarks
         {
             _tagHelper.ViewContext = GetViewContext();
             var state = _tagHelper.ViewContext.HttpContext.RequestServices.GetRequiredService<PersistentComponentState>();
-            foreach (var (key,value) in _entries)
+            foreach (var (key, value) in _entries)
             {
                 state.PersistAsJson(key, value);
             }

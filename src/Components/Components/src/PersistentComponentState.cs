@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     public class PersistentComponentState
     {
-        private IDictionary<string, byte []>? _existingState;
+        private IDictionary<string, byte[]>? _existingState;
         private readonly IDictionary<string, byte[]> _currentState;
 
         private readonly List<Func<Task>> _registeredCallbacks;
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Components
 
         internal bool PersistingState { get; set; }
 
-        internal void InitializeExistingState(IDictionary<string, byte []> existingState)
+        internal void InitializeExistingState(IDictionary<string, byte[]> existingState)
         {
             if (_existingState != null)
             {
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Components
             }
         }
 
-        private bool TryTake(string key, out byte []? value)
+        private bool TryTake(string key, out byte[]? value)
         {
             if (key is null)
             {

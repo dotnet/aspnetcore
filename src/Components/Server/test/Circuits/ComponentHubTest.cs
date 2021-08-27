@@ -132,12 +132,12 @@ namespace Microsoft.AspNetCore.Components.Server
         {
             private bool circuitSet = false;
 
-            public CircuitHandle GetCircuitHandle(IDictionary<object, object>   circuitHandles, object circuitKey)
+            public CircuitHandle GetCircuitHandle(IDictionary<object, object> circuitHandles, object circuitKey)
             {
                 return null;
             }
 
-            public CircuitHost GetCircuit(IDictionary<object, object>   circuitHandles, object circuitKey)
+            public CircuitHost GetCircuit(IDictionary<object, object> circuitHandles, object circuitKey)
             {
                 if (circuitSet)
                 {
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 return null;
             }
 
-            public void SetCircuit(IDictionary<object, object>   circuitHandles, object circuitKey, CircuitHost circuitHost)
+            public void SetCircuit(IDictionary<object, object> circuitHandles, object circuitKey, CircuitHost circuitHost)
             {
                 circuitSet = true;
                 return;
@@ -171,7 +171,8 @@ namespace Microsoft.AspNetCore.Components.Server
             IServiceScopeFactory scopeFactory,
             ILoggerFactory loggerFactory,
             CircuitIdFactory circuitIdFactory,
-            IOptions<CircuitOptions> options) { }
+            IOptions<CircuitOptions> options)
+            { }
 
             // Implement a `CreateCircuitHostAsync` that mocks the construction
             // of the CircuitHost.

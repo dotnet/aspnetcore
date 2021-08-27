@@ -41,18 +41,18 @@ namespace Microsoft.AspNetCore.Components
         public string? PersistedState { get; private set; }
 #nullable disable
 
-        public Dictionary<string, byte []> ExistingState { get; protected set; }
+        public Dictionary<string, byte[]> ExistingState { get; protected set; }
 
-        public Task<IDictionary<string, byte []>> GetPersistedStateAsync()
+        public Task<IDictionary<string, byte[]>> GetPersistedStateAsync()
         {
-            return Task.FromResult((IDictionary<string, byte []>)ExistingState);
+            return Task.FromResult((IDictionary<string, byte[]>)ExistingState);
         }
 
         [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "Simple serialize of primitive types.")]
         protected virtual byte[] SerializeState(IReadOnlyDictionary<string, byte[]> state) =>
             JsonSerializer.SerializeToUtf8Bytes(state);
 
-        public Task PersistStateAsync(IReadOnlyDictionary<string, byte []> state)
+        public Task PersistStateAsync(IReadOnlyDictionary<string, byte[]> state)
         {
             PersistedState = Convert.ToBase64String(SerializeState(state));
             return Task.CompletedTask;

@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Components
         {
             // Arrange
             var data = new byte[] { 0, 1, 2, 3, 4 };
-            var state = new Dictionary<string, byte []>
+            var state = new Dictionary<string, byte[]>
             {
                 ["MyState"] = JsonSerializer.SerializeToUtf8Bytes(data)
             };
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Components
             await lifetime.RestoreStateAsync(store);
 
             // Assert
-            Assert.True(lifetime.State.TryTakeFromJson<byte []>("MyState", out var retrieved));
+            Assert.True(lifetime.State.TryTakeFromJson<byte[]>("MyState", out var retrieved));
             Assert.Empty(state);
             Assert.Equal(data, retrieved);
         }
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Components
         public async Task RestoreStateAsync_ThrowsOnDoubleInitialization()
         {
             // Arrange
-            var state = new Dictionary<string, byte []>
+            var state = new Dictionary<string, byte[]>
             {
                 ["MyState"] = new byte[] { 0, 1, 2, 3, 4 }
             };
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Components
         public async Task PersistStateAsync_SavesPersistedStateToTheStore()
         {
             // Arrange
-            var state = new Dictionary<string, byte []>();
+            var state = new Dictionary<string, byte[]>();
             var store = new TestStore(state);
             var lifetime = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance);
 
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Components
         public async Task PersistStateAsync_InvokesPauseCallbacksDuringPersist()
         {
             // Arrange
-            var state = new Dictionary<string, byte []>();
+            var state = new Dictionary<string, byte[]>();
             var store = new TestStore(state);
             var lifetime = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance);
             var renderer = new TestRenderer();
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Components
         public async Task PersistStateAsync_FiresCallbacksInParallel()
         {
             // Arrange
-            var state = new Dictionary<string, byte []>();
+            var state = new Dictionary<string, byte[]>();
             var store = new TestStore(state);
             var lifetime = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance);
             var renderer = new TestRenderer();
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Components
         public async Task PersistStateAsync_CallbacksAreRemovedWhenSubscriptionsAreDisposed()
         {
             // Arrange
-            var state = new Dictionary<string, byte []>();
+            var state = new Dictionary<string, byte[]>();
             var store = new TestStore(state);
             var lifetime = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance);
             var renderer = new TestRenderer();
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Components
             var sink = new TestSink();
             var loggerFactory = new TestLoggerFactory(sink, true);
             var logger = loggerFactory.CreateLogger<ComponentStatePersistenceManager>();
-            var state = new Dictionary<string, byte []>();
+            var state = new Dictionary<string, byte[]>();
             var store = new TestStore(state);
             var lifetime = new ComponentStatePersistenceManager(logger);
             var renderer = new TestRenderer();
@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Components
             var sink = new TestSink();
             var loggerFactory = new TestLoggerFactory(sink, true);
             var logger = loggerFactory.CreateLogger<ComponentStatePersistenceManager>();
-            var state = new Dictionary<string, byte []>();
+            var state = new Dictionary<string, byte[]>();
             var store = new TestStore(state);
             var lifetime = new ComponentStatePersistenceManager(logger);
             var renderer = new TestRenderer();
@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Components
         public async Task PersistStateAsync_ThrowsWhenDeveloperTriesToPersistStateMultipleTimes()
         {
             // Arrange
-            var state = new Dictionary<string, byte []>();
+            var state = new Dictionary<string, byte[]>();
             var store = new TestStore(state);
             var lifetime = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance);
 
@@ -263,19 +263,19 @@ namespace Microsoft.AspNetCore.Components
 
         private class TestStore : IPersistentComponentStateStore
         {
-            public TestStore(IDictionary<string, byte []> initialState)
+            public TestStore(IDictionary<string, byte[]> initialState)
             {
                 State = initialState;
             }
 
-            public IDictionary<string, byte []> State { get; set; }
+            public IDictionary<string, byte[]> State { get; set; }
 
-            public Task<IDictionary<string, byte []>> GetPersistedStateAsync()
+            public Task<IDictionary<string, byte[]>> GetPersistedStateAsync()
             {
                 return Task.FromResult(State);
             }
 
-            public Task PersistStateAsync(IReadOnlyDictionary<string, byte []> state)
+            public Task PersistStateAsync(IReadOnlyDictionary<string, byte[]> state)
             {
                 // We copy the data here because it's no longer available after this call completes.
                 State = state.ToDictionary(k => k.Key, v => v.Value);

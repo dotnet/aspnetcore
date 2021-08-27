@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Components
             DeserializeState(_protector.Unprotect(Convert.FromBase64String(existingState)));
         }
 
-        protected override byte[] SerializeState(IReadOnlyDictionary<string, byte []> state)
+        protected override byte[] SerializeState(IReadOnlyDictionary<string, byte[]> state)
         {
             var bytes = base.SerializeState(state);
             return _protector != null ? _protector.Protect(bytes) : bytes;
