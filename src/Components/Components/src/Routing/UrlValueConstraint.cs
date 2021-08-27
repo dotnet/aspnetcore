@@ -43,6 +43,12 @@ namespace Microsoft.AspNetCore.Components.Routing
         private static bool TryParse(ReadOnlySpan<char> str, out DateTime result)
             => DateTime.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.None, out result);
 
+        private static bool TryParse(ReadOnlySpan<char> str, out DateOnly result)
+            => DateOnly.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.None, out result);
+
+        private static bool TryParse(ReadOnlySpan<char> str, out TimeOnly result)
+            => TimeOnly.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.None, out result);
+
         private static bool TryParse(ReadOnlySpan<char> str, out decimal result)
             => decimal.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out result);
 
@@ -65,6 +71,10 @@ namespace Microsoft.AspNetCore.Components.Routing
             var x when x == typeof(bool?) => new NullableTypedUrlValueConstraint<bool>(bool.TryParse),
             var x when x == typeof(DateTime) => new TypedUrlValueConstraint<DateTime>(TryParse),
             var x when x == typeof(DateTime?) => new NullableTypedUrlValueConstraint<DateTime>(TryParse),
+            var x when x == typeof(DateOnly) => new TypedUrlValueConstraint<DateOnly>(TryParse),
+            var x when x == typeof(DateOnly?) => new NullableTypedUrlValueConstraint<DateOnly>(TryParse),
+            var x when x == typeof(TimeOnly) => new TypedUrlValueConstraint<TimeOnly>(TryParse),
+            var x when x == typeof(TimeOnly?) => new NullableTypedUrlValueConstraint<TimeOnly>(TryParse),
             var x when x == typeof(decimal) => new TypedUrlValueConstraint<decimal>(TryParse),
             var x when x == typeof(decimal?) => new NullableTypedUrlValueConstraint<decimal>(TryParse),
             var x when x == typeof(double) => new TypedUrlValueConstraint<double>(TryParse),

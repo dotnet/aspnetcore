@@ -1620,9 +1620,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PhotinoPlatform", "PhotinoP
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testassets", "testassets", "{3EC71A0E-6515-4A5A-B759-F0BCF1BCFC56}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotinoTestApp", "src\Components\WebView\Samples\PhotinoPlatform\testassets\PhotinoTestApp\PhotinoTestApp.csproj", "{558C46DE-DE16-41D5-8DB7-D6D748E32977}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PhotinoTestApp", "src\Components\WebView\Samples\PhotinoPlatform\testassets\PhotinoTestApp\PhotinoTestApp.csproj", "{558C46DE-DE16-41D5-8DB7-D6D748E32977}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.WebView.Photino", "src\Components\WebView\Samples\PhotinoPlatform\src\Microsoft.AspNetCore.Components.WebView.Photino.csproj", "{B1AA24A4-5E02-4DC1-B57F-6EB03F91E4DD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebView.Photino", "src\Components\WebView\Samples\PhotinoPlatform\src\Microsoft.AspNetCore.Components.WebView.Photino.csproj", "{B1AA24A4-5E02-4DC1-B57F-6EB03F91E4DD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleWebSiteWithWebApplicationBuilderException", "src\Mvc\test\WebSites\SimpleWebSiteWithWebApplicationBuilderException\SimpleWebSiteWithWebApplicationBuilderException.csproj", "{5C641396-7E92-4F5C-A5A1-B4CDF480539B}"
 EndProject
@@ -1641,6 +1641,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testassets", "testassets", "{48526D13-69E2-4409-A57B-C3FA3C64B4F7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Identity.DefaultUI.WebSite", "src\Identity\testassets\Identity.DefaultUI.WebSite\Identity.DefaultUI.WebSite.csproj", "{835A4E0F-A697-4B69-9736-3E99D163C4B9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wasm.Prerendered.Client", "src\Components\WebAssembly\testassets\Wasm.Prerendered.Client\Wasm.Prerendered.Client.csproj", "{148A5B4F-C8A3-4468-92F6-51DB5641FB49}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wasm.Prerendered.Server", "src\Components\WebAssembly\testassets\Wasm.Prerendered.Server\Wasm.Prerendered.Server.csproj", "{6D365C86-3158-49F5-A21D-506C1E06E870}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.App.Analyzer", "src\Framework\Analyzer\src\Microsoft.AspNetCore.App.Analyzers.csproj", "{564CABB8-1B3F-4D9E-909D-260EF2B8614A}"
 EndProject
@@ -7839,6 +7843,30 @@ Global
 		{835A4E0F-A697-4B69-9736-3E99D163C4B9}.Release|x64.Build.0 = Release|Any CPU
 		{835A4E0F-A697-4B69-9736-3E99D163C4B9}.Release|x86.ActiveCfg = Release|Any CPU
 		{835A4E0F-A697-4B69-9736-3E99D163C4B9}.Release|x86.Build.0 = Release|Any CPU
+		{148A5B4F-C8A3-4468-92F6-51DB5641FB49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{148A5B4F-C8A3-4468-92F6-51DB5641FB49}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{148A5B4F-C8A3-4468-92F6-51DB5641FB49}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{148A5B4F-C8A3-4468-92F6-51DB5641FB49}.Debug|x64.Build.0 = Debug|Any CPU
+		{148A5B4F-C8A3-4468-92F6-51DB5641FB49}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{148A5B4F-C8A3-4468-92F6-51DB5641FB49}.Debug|x86.Build.0 = Debug|Any CPU
+		{148A5B4F-C8A3-4468-92F6-51DB5641FB49}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{148A5B4F-C8A3-4468-92F6-51DB5641FB49}.Release|Any CPU.Build.0 = Release|Any CPU
+		{148A5B4F-C8A3-4468-92F6-51DB5641FB49}.Release|x64.ActiveCfg = Release|Any CPU
+		{148A5B4F-C8A3-4468-92F6-51DB5641FB49}.Release|x64.Build.0 = Release|Any CPU
+		{148A5B4F-C8A3-4468-92F6-51DB5641FB49}.Release|x86.ActiveCfg = Release|Any CPU
+		{148A5B4F-C8A3-4468-92F6-51DB5641FB49}.Release|x86.Build.0 = Release|Any CPU
+		{6D365C86-3158-49F5-A21D-506C1E06E870}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D365C86-3158-49F5-A21D-506C1E06E870}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D365C86-3158-49F5-A21D-506C1E06E870}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6D365C86-3158-49F5-A21D-506C1E06E870}.Debug|x64.Build.0 = Debug|Any CPU
+		{6D365C86-3158-49F5-A21D-506C1E06E870}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6D365C86-3158-49F5-A21D-506C1E06E870}.Debug|x86.Build.0 = Debug|Any CPU
+		{6D365C86-3158-49F5-A21D-506C1E06E870}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D365C86-3158-49F5-A21D-506C1E06E870}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D365C86-3158-49F5-A21D-506C1E06E870}.Release|x64.ActiveCfg = Release|Any CPU
+		{6D365C86-3158-49F5-A21D-506C1E06E870}.Release|x64.Build.0 = Release|Any CPU
+		{6D365C86-3158-49F5-A21D-506C1E06E870}.Release|x86.ActiveCfg = Release|Any CPU
+		{6D365C86-3158-49F5-A21D-506C1E06E870}.Release|x86.Build.0 = Release|Any CPU
 		{564CABB8-1B3F-4D9E-909D-260EF2B8614A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{564CABB8-1B3F-4D9E-909D-260EF2B8614A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{564CABB8-1B3F-4D9E-909D-260EF2B8614A}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -8676,6 +8704,8 @@ Global
 		{514726D2-3D2E-44C1-B056-163E37DE3E8B} = {7B976D8F-EA31-4C0B-97BD-DFD9B3CC86FB}
 		{48526D13-69E2-4409-A57B-C3FA3C64B4F7} = {9F21A235-436E-4020-A076-1DF4F89D0CA0}
 		{835A4E0F-A697-4B69-9736-3E99D163C4B9} = {48526D13-69E2-4409-A57B-C3FA3C64B4F7}
+		{148A5B4F-C8A3-4468-92F6-51DB5641FB49} = {7D2B0799-A634-42AC-AE77-5D167BA51389}
+		{6D365C86-3158-49F5-A21D-506C1E06E870} = {7D2B0799-A634-42AC-AE77-5D167BA51389}
 		{564CABB8-1B3F-4D9E-909D-260EF2B8614A} = {EE39397E-E4AF-4D3F-9B9C-D637F9222CDD}
 		{EE39397E-E4AF-4D3F-9B9C-D637F9222CDD} = {A4C26078-B6D8-4FD8-87A6-7C15A3482038}
 		{CF4CEC18-798D-46EC-B0A0-98D97496590F} = {EE39397E-E4AF-4D3F-9B9C-D637F9222CDD}

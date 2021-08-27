@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         protected override void OnParametersSet()
         {
             var groupName = !string.IsNullOrEmpty(Name) ? Name : _defaultGroupName;
-            var fieldClass = EditContext.FieldCssClass(FieldIdentifier);
+            var fieldClass = EditContext?.FieldCssClass(FieldIdentifier) ?? string.Empty;
             var changeEventCallback = EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString);
 
             _context = new InputRadioContext(CascadedContext, groupName, CurrentValue, fieldClass, changeEventCallback);

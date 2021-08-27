@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Rewrite
 {
@@ -24,5 +25,7 @@ namespace Microsoft.AspNetCore.Rewrite
         /// Defaults to <see cref="IHostingEnvironment.WebRootFileProvider"/>.
         /// </value>
         public IFileProvider StaticFileProvider { get; set; } = default!;
+
+        internal RequestDelegate? BranchedNext { get; set; }
     }
 }

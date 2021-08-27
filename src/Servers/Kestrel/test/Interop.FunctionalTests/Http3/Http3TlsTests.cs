@@ -66,6 +66,7 @@ namespace Interop.FunctionalTests.Http3
         [InlineData(ClientCertificateMode.RequireCertificate)]
         [InlineData(ClientCertificateMode.AllowCertificate)]
         [MsQuicSupported]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/aspnetcore/issues/35800")]
         public async Task ClientCertificate_AllowOrRequire_Available_Accepted(ClientCertificateMode mode)
         {
             var builder = CreateHostBuilder(async context =>
@@ -108,6 +109,7 @@ namespace Interop.FunctionalTests.Http3
         [InlineData(ClientCertificateMode.NoCertificate)]
         [InlineData(ClientCertificateMode.DelayCertificate)]
         [MsQuicSupported]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/aspnetcore/issues/35800")]
         public async Task ClientCertificate_NoOrDelayed_Available_Ignored(ClientCertificateMode mode)
         {
             var builder = CreateHostBuilder(async context =>
@@ -150,6 +152,7 @@ namespace Interop.FunctionalTests.Http3
         [InlineData(ClientCertificateMode.RequireCertificate)]
         [InlineData(ClientCertificateMode.AllowCertificate)]
         [MsQuicSupported]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/aspnetcore/issues/35800")]
         public async Task ClientCertificate_AllowOrRequire_Available_Invalid_Refused(ClientCertificateMode mode)
         {
             var builder = CreateHostBuilder(async context =>
@@ -191,6 +194,7 @@ namespace Interop.FunctionalTests.Http3
 
         [ConditionalFact]
         [MsQuicSupported]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/aspnetcore/issues/35800")]
         public async Task ClientCertificate_Allow_NotAvailable_Optional()
         {
             var builder = CreateHostBuilder(async context =>
@@ -225,6 +229,33 @@ namespace Interop.FunctionalTests.Http3
             Assert.StartsWith("Connection has been shutdown by transport. Error Code: 0x80410100", ex.Message);
 
             await host.StopAsync().DefaultTimeout();
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task OnAuthentice_Available_Throws()
+        {
+            var builder = CreateHostBuilder(async context =>
+            {
+                await context.Response.WriteAsync("Hello World");
+            }, configureKestrel: kestrelOptions =>
+            {
+                kestrelOptions.ListenAnyIP(0, listenOptions =>
+                {
+                    listenOptions.Protocols = HttpProtocols.Http3;
+                    listenOptions.UseHttps(httpsOptions =>
+                    {
+                        httpsOptions.OnAuthenticate = (_, _) => { };
+                    });
+                });
+            });
+
+            using var host = builder.Build();
+            using var client = Http3Helpers.CreateClient();
+
+            var exception = await Assert.ThrowsAsync<NotSupportedException>(() =>
+                host.StartAsync().DefaultTimeout());
+            Assert.Equal("The OnAuthenticate callback is not supported with HTTP/3.", exception.Message);
         }
 
         private IHostBuilder CreateHostBuilder(RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null)

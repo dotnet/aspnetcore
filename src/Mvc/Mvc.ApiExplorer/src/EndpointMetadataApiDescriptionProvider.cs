@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -123,6 +122,22 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 apiDescription.ParameterDescriptions.Add(parameterDescription);
             }
 
+            // Get custom attributes for the handler. ConsumesAttribute is one of the examples. 
+            var acceptsRequestType = routeEndpoint.Metadata.GetMetadata<IAcceptsMetadata>()?.RequestType;
+            if (acceptsRequestType is not null)
+            {
+                var parameterDescription = new ApiParameterDescription
+                {
+                    Name = acceptsRequestType.Name,
+                    ModelMetadata = CreateModelMetadata(acceptsRequestType),
+                    Source = BindingSource.Body,
+                    Type = acceptsRequestType,
+                    IsRequired = true,
+                };
+
+                apiDescription.ParameterDescriptions.Add(parameterDescription);
+            }
+
             AddSupportedRequestFormats(apiDescription.SupportedRequestFormats, hasJsonBody, routeEndpoint.Metadata);
             AddSupportedResponseTypes(apiDescription.SupportedResponseTypes, methodInfo.ReturnType, routeEndpoint.Metadata);
 
@@ -143,7 +158,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             // Determine the "requiredness" based on nullability, default value or if allowEmpty is set
             var nullability = NullabilityContext.Create(parameter);
-            var isOptional = parameter.HasDefaultValue || nullability.ReadState == NullabilityState.Nullable || allowEmpty;
+            var isOptional = parameter.HasDefaultValue || nullability.ReadState != NullabilityState.NotNull || allowEmpty;
 
             return new ApiParameterDescription
             {

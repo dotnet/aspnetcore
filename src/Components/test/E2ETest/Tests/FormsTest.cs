@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("modified valid", () => renewalDateInput.GetAttribute("class"));
 
             // Can become invalid
-            ApplyInvalidInputDateValue(".renewal-date input", "11111-11-11");
+            renewalDateInput.SendKeys("11-11-11111\t");
             Browser.Equal("modified invalid", () => renewalDateInput.GetAttribute("class"));
             Browser.Equal(new[] { "The RenewalDate field must be a date." }, messagesAccessor);
 
@@ -236,11 +236,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Validates on edit
             Browser.Equal("valid", () => expiryDateInput.GetAttribute("class"));
-            expiryDateInput.SendKeys("01/01/2000\t");
+            expiryDateInput.SendKeys("01-01-2000\t");
             Browser.Equal("modified valid", () => expiryDateInput.GetAttribute("class"));
 
             // Can become invalid
-            ApplyInvalidInputDateValue(".expiry-date input", "11111-11-11");
+            expiryDateInput.SendKeys("11-11-11111\t");
             Browser.Equal("modified invalid", () => expiryDateInput.GetAttribute("class"));
             Browser.Equal(new[] { "The OptionalExpiryDate field must be a date." }, messagesAccessor);
 
@@ -255,8 +255,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void InputDateInteractsWithEditContext_TimeInput()
         {
             var appElement = MountTypicalValidationComponent();
-            var departureTimeInput = appElement.FindElement(By.ClassName("departure-time")).FindElement(By.TagName("input"));
             var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+            var departureTimeInput = appElement.FindElement(By.ClassName("departure-time")).FindElement(By.Id("time-input"));
+            var includeSecondsCheckbox = appElement.FindElement(By.ClassName("departure-time")).FindElement(By.Id("time-seconds-checkbox"));
+
+            // Ensure we're not using a custom step
+            if (includeSecondsCheckbox.Selected)
+            {
+                includeSecondsCheckbox.Click();
+            }
 
             // Validates on edit
             Browser.Equal("valid", () => departureTimeInput.GetAttribute("class"));
@@ -264,18 +271,43 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("modified valid", () => departureTimeInput.GetAttribute("class"));
 
             // Can become invalid
-            ApplyInvalidInputDateValue(".departure-time input", "01:234:56");
+            // Stricly speaking the following is equivalent to the empty state, because that's how incomplete input is represented
+            // We don't know of any way to produce a different (non-empty-equivalent) state using UI gestures, so there's nothing else to test
+            departureTimeInput.SendKeys($"20{Keys.Backspace}\t");
             Browser.Equal("modified invalid", () => departureTimeInput.GetAttribute("class"));
             Browser.Equal(new[] { "The DepartureTime field must be a time." }, messagesAccessor);
+        }
 
-            // Empty is invalid, because it's not nullable
-            departureTimeInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t");
-            Browser.Equal("modified invalid", () => departureTimeInput.GetAttribute("class"));
-            Browser.Equal(new[] { "The DepartureTime field must be a time." }, messagesAccessor);
+        [Fact]
+        public void InputDateInteractsWithEditContext_TimeInput_Step()
+        {
+            var appElement = MountTypicalValidationComponent();
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+            var departureTimeInput = appElement.FindElement(By.ClassName("departure-time")).FindElement(By.Id("time-input"));
+            var includeSecondsCheckbox = appElement.FindElement(By.ClassName("departure-time")).FindElement(By.Id("time-seconds-checkbox"));
 
-            departureTimeInput.SendKeys("07201\t");
+            // Ensure we're using a custom step
+            if (!includeSecondsCheckbox.Selected)
+            {
+                includeSecondsCheckbox.Click();
+            }
+
+            // Input works with seconds value of zero and has the expected final value
+            Browser.Equal("valid", () => departureTimeInput.GetAttribute("class"));
+            departureTimeInput.SendKeys("111111");
             Browser.Equal("modified valid", () => departureTimeInput.GetAttribute("class"));
-            Browser.Empty(messagesAccessor);
+            Browser.Equal("11:11:11", () => departureTimeInput.GetAttribute("value"));
+
+            // Input works with non-zero seconds value
+            // Move to the beginning of the input and put the new time
+            departureTimeInput.SendKeys(string.Concat(Enumerable.Repeat(Keys.ArrowLeft, 3)) + "101010");
+            Browser.Equal("modified valid", () => departureTimeInput.GetAttribute("class"));
+            Browser.Equal("10:10:10", () => departureTimeInput.GetAttribute("value"));
+
+            // Can become invalid
+            departureTimeInput.SendKeys(Keys.Backspace);
+            Browser.Equal("modified invalid", () => departureTimeInput.GetAttribute("class"));
+            Browser.Equal(new[] { "The DepartureTime field must be a time." }, messagesAccessor);
         }
 
         [Fact]
@@ -287,20 +319,22 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Validates on edit
             Browser.Equal("valid", () => visitMonthInput.GetAttribute("class"));
-            visitMonthInput.SendKeys("03\t2005\t");
+            visitMonthInput.SendKeys($"03{Keys.ArrowRight}2005\t");
             Browser.Equal("modified valid", () => visitMonthInput.GetAttribute("class"));
 
-            // Can become invalid
-            ApplyInvalidInputDateValue(".visit-month input", "05/1992");
+            // Empty is invalid because it's not nullable
+            visitMonthInput.Clear();
             Browser.Equal("modified invalid", () => visitMonthInput.GetAttribute("class"));
             Browser.Equal(new[] { "The VisitMonth field must be a year and month." }, messagesAccessor);
 
-            // Empty is invalid, because it's not nullable
-            visitMonthInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t");
+            // Invalid year (11111)
+            visitMonthInput.SendKeys($"11{Keys.ArrowRight}11111\t");
             Browser.Equal("modified invalid", () => visitMonthInput.GetAttribute("class"));
             Browser.Equal(new[] { "The VisitMonth field must be a year and month." }, messagesAccessor);
 
-            visitMonthInput.SendKeys("05\t2007\t");
+            // Can become valid again
+            visitMonthInput.Clear();
+            visitMonthInput.SendKeys($"11{Keys.ArrowRight}1111\t");
             Browser.Equal("modified valid", () => visitMonthInput.GetAttribute("class"));
             Browser.Empty(messagesAccessor);
         }
@@ -310,27 +344,68 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void InputDateInteractsWithEditContext_DateTimeLocalInput()
         {
             var appElement = MountTypicalValidationComponent();
-            var appointmentInput = appElement.FindElement(By.ClassName("appointment-date-time")).FindElement(By.TagName("input"));
             var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+            var appointmentInput = appElement.FindElement(By.ClassName("appointment-date-time")).FindElement(By.Id("datetime-local-input"));
+            var includeSecondsCheckbox = appElement.FindElement(By.ClassName("appointment-date-time")).FindElement(By.Id("datetime-local-seconds-checkbox"));
 
-            // Validates on edit
+            // Ensure we're not using a custom step
+            if (includeSecondsCheckbox.Selected)
+            {
+                includeSecondsCheckbox.Click();
+            }
+
+            // Validates on edit and has the expected value
             Browser.Equal("valid", () => appointmentInput.GetAttribute("class"));
-            appointmentInput.SendKeys("01\t02\t1988\t0523\t1");
+            appointmentInput.SendKeys($"01011970{Keys.ArrowRight}05421");
             Browser.Equal("modified valid", () => appointmentInput.GetAttribute("class"));
 
-            // Can become invalid
-            ApplyInvalidInputDateValue(".appointment-date-time input", "1234/567/89 33:44 FM");
+            // Empty is invalid because it's not nullable
+            appointmentInput.Clear();
             Browser.Equal("modified invalid", () => appointmentInput.GetAttribute("class"));
             Browser.Equal(new[] { "The AppointmentDateAndTime field must be a date and time." }, messagesAccessor);
 
-            // Empty is invalid, because it's not nullable
-            appointmentInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t");
+            // Invalid year (11111)
+            appointmentInput.SendKeys($"111111111{Keys.ArrowRight}11111");
             Browser.Equal("modified invalid", () => appointmentInput.GetAttribute("class"));
             Browser.Equal(new[] { "The AppointmentDateAndTime field must be a date and time." }, messagesAccessor);
 
-            appointmentInput.SendKeys("01234567\t11551\t");
+            // Can become valid again
+            appointmentInput.Clear();
+            appointmentInput.SendKeys($"11111111{Keys.ArrowRight}11111");
             Browser.Equal("modified valid", () => appointmentInput.GetAttribute("class"));
             Browser.Empty(messagesAccessor);
+        }
+
+        [Fact]
+        public void InputDateInteractsWithEditContext_DateTimeLocalInput_Step()
+        {
+            var appElement = MountTypicalValidationComponent();
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+            var appointmentInput = appElement.FindElement(By.ClassName("appointment-date-time")).FindElement(By.Id("datetime-local-input"));
+            var includeSecondsCheckbox = appElement.FindElement(By.ClassName("appointment-date-time")).FindElement(By.Id("datetime-local-seconds-checkbox"));
+
+            // Ensure we're using a custom step
+            if (!includeSecondsCheckbox.Selected)
+            {
+                includeSecondsCheckbox.Click();
+            }
+
+            // Input works with seconds value of zero and has the expected final value
+            Browser.Equal("valid", () => appointmentInput.GetAttribute("class"));
+            appointmentInput.SendKeys($"11111970{Keys.ArrowRight}114216");
+            Browser.Equal("modified valid", () => appointmentInput.GetAttribute("class"));
+            Browser.Equal("1970-11-11T11:42:16", () => appointmentInput.GetAttribute("value"));
+
+            // Input works with non-zero seconds value
+            // Move to the beginning of the input and put the new value
+            appointmentInput.SendKeys(string.Concat(Enumerable.Repeat(Keys.ArrowLeft, 6)) + $"10101970{Keys.ArrowRight}105321");
+            Browser.Equal("modified valid", () => appointmentInput.GetAttribute("class"));
+            Browser.Equal("1970-10-10T10:53:21", () => appointmentInput.GetAttribute("value"));
+
+            // Can become invalid
+            appointmentInput.SendKeys(Keys.Backspace);
+            Browser.Equal("modified invalid", () => appointmentInput.GetAttribute("class"));
+            Browser.Equal(new[] { "The AppointmentDateAndTime field must be a date and time." }, messagesAccessor);
         }
 
         [Fact]
@@ -854,6 +929,47 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("210", () => rangeWithValueLast.GetDomProperty("value"));
         }
 
+        [Fact]
+        public void InputSelectWorksWithoutEditContext()
+        {
+            var appElement = Browser.MountTestComponent<InputsWithoutEditForm>();
+            var selectElement = new SelectElement(appElement.FindElement(By.Id("selected-cities-input-select")));
+            var selectedElementText = appElement.FindElement(By.Id("selected-cities-text"));
+
+            // The bound value is expected and no class attribute exists
+            Browser.Equal("SanFrancisco", () => selectedElementText.Text);
+            Browser.False(() => ElementHasAttribute(selectElement.WrappedElement, "class"));
+
+            selectElement.SelectByIndex(2);
+            selectElement.SelectByIndex(3);
+
+            // Value binding continues to work without an edit context and the class attribute is unchanged
+            Browser.Equal("SanFrancisco, London, Madrid", () => selectedElementText.Text);
+            Browser.False(() => ElementHasAttribute(selectElement.WrappedElement, "class"));
+        }
+
+        [Fact]
+        public void InputRadioGroupWorksWithoutEditContext()
+        {
+            var appElement = Browser.MountTestComponent<InputsWithoutEditForm>();
+            var selectedInputText = appElement.FindElement(By.Id("selected-airline-text"));
+
+            // The bound value is expected and no inputs have a class attribute
+            Browser.True(() => FindRadioInputs().All(input => !ElementHasAttribute(input, "class")));
+            Browser.True(() => FindRadioInputs().First(input => input.GetAttribute("value") == "Unknown").Selected);
+            Browser.Equal("Unknown", () => selectedInputText.Text);
+
+            FindRadioInputs().First().Click();
+
+            // Value binding continues to work without an edit context and class attributes are unchanged
+            Browser.True(() => FindRadioInputs().All(input => !ElementHasAttribute(input, "class")));
+            Browser.True(() => FindRadioInputs().First(input => input.GetAttribute("value") == "BestAirline").Selected);
+            Browser.Equal("BestAirline", () => selectedInputText.Text);
+
+            IReadOnlyCollection<IWebElement> FindRadioInputs()
+                => appElement.FindElement(By.ClassName("airlines")).FindElements(By.TagName("input"));
+        }
+
         private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)
         {
             return () => appElement.FindElements(By.ClassName("validation-message"))
@@ -862,24 +978,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 .ToArray();
         }
 
-        private void ApplyInvalidInputDateValue(string cssSelector, string invalidValue)
-        {
-            // It's very difficult to enter an invalid value into an <input type=date>, because
-            // most combinations of keystrokes get normalized to something valid. Additionally,
-            // using Selenium's SendKeys interacts unpredictably with this normalization logic,
-            // most likely based on timings. As a workaround, use JS to apply the values. This
-            // should only be used when strictly necessary, as it doesn't represent actual user
-            // interaction as authentically as SendKeys in other cases.
-            var javascript = (IJavaScriptExecutor)Browser;
-            javascript.ExecuteScript(
-                $"document.querySelector('{cssSelector}').value = {JsonSerializer.Serialize(invalidValue, TestJsonSerializerOptionsProvider.Options)}");
-            javascript.ExecuteScript(
-                $"document.querySelector('{cssSelector}').dispatchEvent(new KeyboardEvent('change'))");
-        }
-
         private void EnsureAttributeRendering(IWebElement element, string attributeName, bool shouldBeRendered = true)
         {
             Browser.Equal(shouldBeRendered, () => element.GetAttribute(attributeName) != null);
+        }
+
+        private bool ElementHasAttribute(IWebElement webElement, string attribute)
+        {
+            var jsExecutor = (IJavaScriptExecutor)Browser;
+            return (bool)jsExecutor.ExecuteScript($"return arguments[0].attributes['{attribute}'] !== undefined;", webElement);
         }
     }
 }

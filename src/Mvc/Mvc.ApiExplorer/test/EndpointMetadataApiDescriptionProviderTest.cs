@@ -108,6 +108,20 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
+        public void AddsMultipleRequestFormatsFromMetadataWithRequestType()
+        {
+            var apiDescription = GetApiDescription(
+                [Consumes(typeof(InferredJsonClass), "application/custom0", "application/custom1")]
+                () => { });
+
+            Assert.Equal(2, apiDescription.SupportedRequestFormats.Count);
+
+            var apiParameterDescription = apiDescription.ParameterDescriptions[0];
+            Assert.Equal("InferredJsonClass", apiParameterDescription.Type.Name);
+            Assert.True(apiParameterDescription.IsRequired);
+        }
+
+        [Fact]
         public void AddsJsonResponseFormatWhenFromBodyInferred()
         {
             static void AssertJsonResponse(ApiDescription apiDescription, Type expectedType)
@@ -348,7 +362,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.Equal(typeof(InferredJsonClass), fromBodyParam.Type);
             Assert.Equal(typeof(InferredJsonClass), fromBodyParam.ModelMetadata.ModelType);
             Assert.Equal(BindingSource.Body, fromBodyParam.Source);
-            Assert.True(fromBodyParam.IsRequired);
+            Assert.False(fromBodyParam.IsRequired); // Reference type in oblivious nullability context
         }
 
         [Fact]
@@ -419,6 +433,27 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             Assert.NotNull(apiExplorerSettings);
             Assert.True(apiExplorerSettings.IgnoreApi);
+        }
+
+        [Fact]
+        public void TestParameterIsRequiredForObliviousNullabilityContext()
+        {
+            // In an oblivious nullability context, reference type parameters without
+            // annotations are optional. Value type parameters are always required.
+            var apiDescription = GetApiDescription((string foo, int bar) => { });
+            Assert.Equal(2, apiDescription.ParameterDescriptions.Count);
+
+            var fooParam = apiDescription.ParameterDescriptions[0];
+            Assert.Equal(typeof(string), fooParam.Type);
+            Assert.Equal(typeof(string), fooParam.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.Query, fooParam.Source);
+            Assert.False(fooParam.IsRequired);
+
+            var barParam = apiDescription.ParameterDescriptions[1];
+            Assert.Equal(typeof(int), barParam.Type);
+            Assert.Equal(typeof(int), barParam.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.Query, barParam.Source);
+            Assert.True(barParam.IsRequired);
         }
 
         [Fact]
@@ -585,6 +620,39 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 });
         }
 
+        [Fact]
+        public void HandleAcceptsMetadata()
+        {
+            // Arrange
+            var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(null));
+            builder.MapPost("/api/todos", () => "")
+                .Accepts<string>("application/json", "application/xml");
+            var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+            var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+            var hostEnvironment = new HostEnvironment
+            {
+                ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+            };
+            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+
+            // Act
+            provider.OnProvidersExecuting(context);
+            provider.OnProvidersExecuted(context);
+
+            // Assert
+            Assert.Collection(
+                context.Results.SelectMany(r => r.SupportedRequestFormats),
+                requestType =>
+                {
+                    Assert.Equal("application/json", requestType.MediaType);
+                },
+                requestType =>
+                {
+                    Assert.Equal("application/xml", requestType.MediaType);
+                });
+        }
+
         private static IEnumerable<string> GetSortedMediaTypes(ApiResponseType apiResponseType)
         {
             return apiResponseType.ApiResponseFormats
@@ -683,7 +751,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
         private record BindAsyncRecord(int Value)
         {
-            public static ValueTask<object> BindAsync(HttpContext context) =>
+            public static ValueTask<BindAsyncRecord> BindAsync(HttpContext context, ParameterInfo parameter) =>
                 throw new NotImplementedException();
             public static bool TryParse(string value, out BindAsyncRecord result) =>
                 throw new NotImplementedException();

@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
+using System.Net;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
@@ -883,7 +884,8 @@ namespace Microsoft.AspNetCore.Tests
             await using var app = builder.Build();
 
             var chosenEndpoint = string.Empty;
-            app.MapGet("/", async c => {
+            app.MapGet("/", async c =>
+            {
                 chosenEndpoint = c.GetEndpoint().DisplayName;
                 await c.Response.WriteAsync("Hello World");
             }).WithDisplayName("One");
@@ -917,7 +919,8 @@ namespace Microsoft.AspNetCore.Tests
 
             app.UseRouting();
 
-            app.MapGet("/1", async c => {
+            app.MapGet("/1", async c =>
+            {
                 chosenEndpoint = c.GetEndpoint().DisplayName;
                 await c.Response.WriteAsync("Hello World");
             }).WithDisplayName("One");
@@ -1156,6 +1159,78 @@ namespace Microsoft.AspNetCore.Tests
             ((IApplicationBuilder)app).Properties["didsomething"] = true;
 
             app.Start();
+        }
+
+        [Fact]
+        public async Task DeveloperExceptionPageIsOnByDefaltInDevelopment()
+        {
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions() { EnvironmentName = Environments.Development });
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            app.MapGet("/", void () => throw new InvalidOperationException("BOOM"));
+
+            await app.StartAsync();
+
+            var client = app.GetTestClient();
+
+            var response = await client.GetAsync("/");
+
+            Assert.False(response.IsSuccessStatusCode);
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+            Assert.Contains("BOOM", await response.Content.ReadAsStringAsync());
+            Assert.Contains("text/plain", response.Content.Headers.ContentType.MediaType);
+        }
+
+        [Fact]
+        public async Task DeveloperExceptionPageDoesNotGetCaughtByStartupFilters()
+        {
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions() { EnvironmentName = Environments.Development });
+            builder.WebHost.UseTestServer();
+            builder.Services.AddSingleton<IStartupFilter, ThrowingStartupFilter>();
+            await using var app = builder.Build();
+
+            await app.StartAsync();
+
+            var client = app.GetTestClient();
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetAsync("/"));
+
+            Assert.Equal("BOOM Filter", ex.Message);
+        }
+
+        [Fact]
+        public async Task DeveloperExceptionPageIsNotOnInProduction()
+        {
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions() { EnvironmentName = Environments.Production });
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            app.MapGet("/", void () => throw new InvalidOperationException("BOOM"));
+
+            await app.StartAsync();
+
+            var client = app.GetTestClient();
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetAsync("/"));
+
+            Assert.Equal("BOOM", ex.Message);
+        }
+
+        class ThrowingStartupFilter : IStartupFilter
+        {
+            public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+            {
+                return app =>
+                {
+                    app.Use((HttpContext context, RequestDelegate next) =>
+                    {
+                        throw new InvalidOperationException("BOOM Filter");
+                    });
+
+                    next(app);
+                };
+            }
         }
 
         class PropertyFilter : IStartupFilter
