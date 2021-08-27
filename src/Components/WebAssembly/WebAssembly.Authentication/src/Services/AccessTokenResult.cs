@@ -37,10 +37,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// Determines whether the token request was successful and makes the <see cref="AccessToken"/> available for use when it is.
         /// </summary>
         /// <param name="accessToken">The <see cref="AccessToken"/> if the request was successful.</param>
-        /// <returns><c>true</c> when the token request is successful; <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> when the token request is successful and the token isn't null; <c>false</c> otherwise.</returns>
         public bool TryGetToken(out AccessToken accessToken)
         {
-            if (Status == AccessTokenResultStatus.Success)
+            if (Status == AccessTokenResultStatus.Success && _token is not null)
             {
                 accessToken = _token;
                 return true;
