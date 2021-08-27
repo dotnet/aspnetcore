@@ -34,5 +34,14 @@ namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints
             DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
             helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+        internal static readonly DiagnosticDescriptor DetectMismatchedParameterOptionality = new(
+            "ASP0006",
+            "Parameter optionality is mismatched",
+            "'{0}' argument should be annotated as optional to match route parameter",
+            "Usage",
+            DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
+            helpLinkUri: "https://aka.ms/aspnet/analyzers");
     }
 }

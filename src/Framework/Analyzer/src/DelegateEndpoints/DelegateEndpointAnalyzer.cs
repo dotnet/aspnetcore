@@ -18,7 +18,8 @@ public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
     {
         DiagnosticDescriptors.DoNotUseModelBindingAttributesOnDelegateEndpointParameters,
         DiagnosticDescriptors.DoNotReturnActionResultsFromMapActions,
-        DiagnosticDescriptors.DetectMisplacedLambdaAttribute
+        DiagnosticDescriptors.DetectMisplacedLambdaAttribute,
+        DiagnosticDescriptors.DetectMismatchedParameterOptionality
     });
 
     public override void Initialize(AnalysisContext context)
@@ -56,11 +57,13 @@ public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
                     DisallowMvcBindArgumentsOnParameters(in operationAnalysisContext, wellKnownTypes, invocation, lambda.Symbol);
                     DisallowReturningActionResultFromMapMethods(in operationAnalysisContext, wellKnownTypes, invocation, lambda);
                     DetectMisplacedLambdaAttribute(operationAnalysisContext, invocation, lambda);
+                    DetectMismatchedParameterOptionality(in operationAnalysisContext, invocation, lambda.Symbol);
                 }
                 else if (delegateCreation.Target.Kind == OperationKind.MethodReference)
                 {
                     var methodReference = (IMethodReferenceOperation)delegateCreation.Target;
                     DisallowMvcBindArgumentsOnParameters(in operationAnalysisContext, wellKnownTypes, invocation, methodReference.Method);
+                    DetectMismatchedParameterOptionality(in operationAnalysisContext, invocation, methodReference.Method);
 
                     var foundMethodReferenceBody = false;
                     if (!methodReference.Method.DeclaringSyntaxReferences.IsEmpty)
