@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.JSInterop;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
@@ -265,7 +266,7 @@ namespace Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
         {
             // Arrange
             var jsRuntime = new TestJSRuntime();
-            jsRuntime.NextInvocationResult = new ValueTask<object>((object)null);
+            jsRuntime.NextInvocationResult = new ValueTask<IJSVoidResult>(Mock.Of<IJSVoidResult>());
             var dataProtectionProvider = new TestDataProtectionProvider();
             var protectedBrowserStorage = new TestProtectedBrowserStorage("testStore", jsRuntime, dataProtectionProvider);
 
