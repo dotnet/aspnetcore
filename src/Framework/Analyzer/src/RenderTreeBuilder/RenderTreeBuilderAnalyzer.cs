@@ -44,7 +44,10 @@ public partial class RenderTreeBuilderAnalyzer : DiagnosticAnalyzer
 
                 if (!sequenceArgument.Value.Syntax.IsKind(SyntaxKind.NumericLiteralExpression))
                 {
-                    DisallowNonLiteralSequenceNumbers(in operationAnalysisContext, sequenceArgument);
+                    operationAnalysisContext.ReportDiagnostic(Diagnostic.Create(
+                        DiagnosticDescriptors.DoNotUseNonLiteralSequenceNumbers,
+                        sequenceArgument.Syntax.GetLocation(),
+                        sequenceArgument.Syntax.ToString()));
                 }
             }, OperationKind.Invocation);
         });
