@@ -302,8 +302,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         {
             var uri = new Uri(address);
             var builder = new StringBuilder();
-            builder.Append($"{method} {path} HTTP/1.1\r\n");
-            builder.Append($"HOST: {uri.Authority}\r\n\r\n");
+            builder.Append(FormattableString.Invariant($"{method} {path} HTTP/1.1\r\n"));
+            builder.Append(FormattableString.Invariant($"HOST: {uri.Authority}\r\n\r\n"));
 
             byte[] request = Encoding.ASCII.GetBytes(builder.ToString());
 
