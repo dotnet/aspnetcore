@@ -6,7 +6,11 @@ open System.IO
 open System.Linq
 open System.Threading.Tasks
 open Microsoft.AspNetCore
+open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
+#if (!NoHttps)
+open Microsoft.AspNetCore.HttpsPolicy;
+#endif
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.Logging
@@ -23,7 +27,7 @@ module Program =
 
 
 #if (!NoHttps)
-        app.UseHttpsRedirection();
+        app.UseHttpsRedirection()
 #endif
 
         app.UseAuthorization()
