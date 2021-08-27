@@ -34,13 +34,27 @@
         Expiry date (optional): <InputDate @bind-Value="person.OptionalExpiryDate" />
     </p>
     <p class="departure-time">
-        Departure time: <InputDate Type="InputDateType.Time" @bind-Value="person.DepartureTime" placeholder="Enter the time" />
+        Departure time:<br>
+        <input id="time-seconds-checkbox" type="checkbox" @bind-value="includeTimeSeconds" />Include seconds<br>
+        <InputDate
+            id="time-input"
+            Type="InputDateType.Time"
+            @bind-Value="person.DepartureTime"
+            placeholder="Enter the time"
+            step="@(includeTimeSeconds ? 1 : 60)" />
     </p>
     <p class="visit-month">
         Month of visit: <InputDate Type="InputDateType.Month" @bind-Value="person.VisitMonth" placeholder="Enter the month of your visit" />
     </p>
     <p class="appointment-date-time">
-        Appointment date and time: <InputDate Type="InputDateType.DateTimeLocal" @bind-Value="person.AppointmentDateAndTime" placeholder="Enter the appointment date and time" />
+        Appointment date and time:<br>
+        <input id="datetime-local-seconds-checkbox" type="checkbox" @bind-value="includeDateTimeLocalSeconds" />Include seconds<br>
+        <InputDate
+            id="datetime-local-input"
+            Type="InputDateType.DateTimeLocal"
+            @bind-Value="person.AppointmentDateAndTime"
+            placeholder="Enter the appointment date and time"
+            step="@(includeDateTimeLocalSeconds ? 1 : 60)" />
     </p>
     <p class="ticket-class">
         Ticket class:
@@ -145,6 +159,8 @@
     EditContext editContext;
     ValidationMessageStore customValidationMessageStore;
     bool enableDataAnnotationsSupport = true;
+    bool includeTimeSeconds;
+    bool includeDateTimeLocalSeconds;
 
     protected override void OnInitialized()
     {

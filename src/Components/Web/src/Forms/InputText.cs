@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             builder.OpenElement(0, "input");
             builder.AddMultipleAttributes(1, AdditionalAttributes);
-            builder.AddAttribute(2, "class", CssClass);
+            builder.AddAttributeIfNotNullOrEmpty(2, "class", CssClass);
             builder.AddAttribute(3, "value", BindConverter.FormatValue(CurrentValue));
             builder.AddAttribute(4, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
             builder.AddElementReferenceCapture(5, __inputReference => Element = __inputReference);

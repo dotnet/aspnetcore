@@ -1,32 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Test.Helpers;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
     public class InputBaseTest
     {
-        [Fact]
-        public async Task ThrowsOnFirstRenderIfNoEditContextIsSupplied()
-        {
-            // Arrange
-            var inputComponent = new TestInputComponent<string>();
-            var testRenderer = new TestRenderer();
-            var componentId = testRenderer.AssignRootComponentId(inputComponent);
-
-            // Act/Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => testRenderer.RenderRootComponentAsync(componentId));
-            Assert.StartsWith($"{typeof(TestInputComponent<string>)} requires a cascading parameter of type {nameof(EditContext)}", ex.Message);
-        }
-
         [Fact]
         public async Task ThrowsIfEditContextChanges()
         {
@@ -129,6 +110,23 @@ namespace Microsoft.AspNetCore.Components.Forms
 
             // Assert
             Assert.Equal("new value", inputComponent.CurrentValue);
+        }
+
+        [Fact]
+        public async Task CanRenderWithoutEditContext()
+        {
+            // Arrange
+            var model = new TestModel();
+            var value = "some value";
+            var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>>
+            {
+                Value = value,
+                ValueExpression = () => value
+            };
+
+            // Act/Assert
+            var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+            Assert.Null(inputComponent.EditContext);
         }
 
         [Fact]

@@ -66,6 +66,7 @@ namespace Interop.FunctionalTests.Http3
         [InlineData(ClientCertificateMode.RequireCertificate)]
         [InlineData(ClientCertificateMode.AllowCertificate)]
         [MsQuicSupported]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/aspnetcore/issues/35800")]
         public async Task ClientCertificate_AllowOrRequire_Available_Accepted(ClientCertificateMode mode)
         {
             var builder = CreateHostBuilder(async context =>
@@ -108,6 +109,7 @@ namespace Interop.FunctionalTests.Http3
         [InlineData(ClientCertificateMode.NoCertificate)]
         [InlineData(ClientCertificateMode.DelayCertificate)]
         [MsQuicSupported]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/aspnetcore/issues/35800")]
         public async Task ClientCertificate_NoOrDelayed_Available_Ignored(ClientCertificateMode mode)
         {
             var builder = CreateHostBuilder(async context =>
@@ -150,6 +152,7 @@ namespace Interop.FunctionalTests.Http3
         [InlineData(ClientCertificateMode.RequireCertificate)]
         [InlineData(ClientCertificateMode.AllowCertificate)]
         [MsQuicSupported]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/aspnetcore/issues/35800")]
         public async Task ClientCertificate_AllowOrRequire_Available_Invalid_Refused(ClientCertificateMode mode)
         {
             var builder = CreateHostBuilder(async context =>
@@ -191,6 +194,7 @@ namespace Interop.FunctionalTests.Http3
 
         [ConditionalFact]
         [MsQuicSupported]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/aspnetcore/issues/35800")]
         public async Task ClientCertificate_Allow_NotAvailable_Optional()
         {
             var builder = CreateHostBuilder(async context =>
