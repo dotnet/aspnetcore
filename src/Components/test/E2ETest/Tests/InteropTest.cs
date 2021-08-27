@@ -93,6 +93,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 ["requestDotNetStreamReferenceAsync"] = @"""Success""",
                 ["requestDotNetStreamWrapperReferenceAsync"] = @"""Success""",
                 ["invokeVoidAsyncReturnsWithoutSerializing"] = "Success",
+                ["invokeVoidAsyncReturnsWithoutSerializingInJSObjectReference"] = "Success",
             };
 
             var expectedSyncValues = new Dictionary<string, string>
