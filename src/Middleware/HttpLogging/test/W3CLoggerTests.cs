@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     var elements = new string[W3CLoggingMiddleware._fieldsLength];
                     AddToList(elements, W3CLoggingMiddleware._dateIndex, _timestampOne.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
-                    AddToList(elements, W3CLoggingMiddleware._timeIndex, _timestampOne.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
+                    AddToList(elements, W3CLoggingMiddleware._timeIndex, _timestampOne.ToString("HH:mm:ss.fff", CultureInfo.InvariantCulture));
 
                     logger.Log(elements);
                     await logger.Processor.WaitForWrites(4).DefaultTimeout();
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         public async Task HandlesNullValuesAsync()
         {
             var path = Path.GetTempFileName() + "_";
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             var options = new W3CLoggerOptions()
             {
                 LoggingFields = W3CLoggingFields.UriQuery | W3CLoggingFields.Host | W3CLoggingFields.ProtocolStatus,
@@ -95,6 +95,48 @@ namespace Microsoft.AspNetCore.HttpLogging
 
                     Assert.Equal("#Fields: cs-uri-query sc-status cs-host", lines[2]);
                     Assert.Equal("- - -", lines[3]);
+                }
+            }
+            finally
+            {
+                Helpers.DisposeDirectory(path);
+            }
+        }
+
+        [Fact]
+        public async Task TimeTakenIsInMilliseconds()
+        {
+            var path = Path.GetTempFileName() + "_";
+            DateTime now;
+            var options = new W3CLoggerOptions()
+            {
+                LoggingFields = W3CLoggingFields.Date | W3CLoggingFields.Time | W3CLoggingFields.TimeTaken,
+                LogDirectory = path
+            };
+            try
+            {
+                await using (var logger = new TestW3CLogger(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
+                {
+                    var elements = new string[W3CLoggingMiddleware._fieldsLength];
+                    now = DateTime.UtcNow;
+                    AddToList(elements, W3CLoggingMiddleware._dateIndex, now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                    AddToList(elements, W3CLoggingMiddleware._timeIndex, now.ToString("HH:mm:ss.fff", CultureInfo.InvariantCulture));
+
+                    logger.Log(elements);
+                    await logger.Processor.WaitForWrites(4).DefaultTimeout();
+
+                    var lines = logger.Processor.Lines;
+                    Assert.Equal("#Version: 1.0", lines[0]);
+
+                    Assert.StartsWith("#Start-Date: ", lines[1]);
+                    var startDate = DateTime.Parse(lines[1].Substring(13), CultureInfo.InvariantCulture);
+                    // Assert that the log was written in the last 10 seconds
+                    Assert.True(now.Subtract(startDate).TotalSeconds < 10);
+
+                    Assert.Equal("#Fields: date time time-taken", lines[2]);
+
+                    // Should be faster than 10 milliseconds
+                    Assert.True(Convert.ToDouble(lines[3].Substring(20)) < 10);
                 }
             }
             finally

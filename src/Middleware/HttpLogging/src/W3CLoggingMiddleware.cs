@@ -98,7 +98,9 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             if (options.LoggingFields.HasFlag(W3CLoggingFields.Time))
             {
-                shouldLog |= AddToList(elements, _timeIndex, now.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
+                // Start time will be logged to second precision, but we store it to millisecond precision so we can use it
+                // to calculate time-taken later.
+                shouldLog |= AddToList(elements, _timeIndex, now.ToString("HH:mm:ss.fff", CultureInfo.InvariantCulture));
             }
 
             if (options.LoggingFields.HasFlag(W3CLoggingFields.ServerName))
