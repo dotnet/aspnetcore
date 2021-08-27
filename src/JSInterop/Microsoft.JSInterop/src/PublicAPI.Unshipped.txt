@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.JSInterop.IJSVoidResult
 Microsoft.JSInterop.IJSStreamReference
 Microsoft.JSInterop.IJSVoidResult
 Microsoft.JSInterop.IJSStreamReference.Length.get -> long
