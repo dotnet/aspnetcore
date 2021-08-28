@@ -65,9 +65,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             HttpConnectionContext? connectionContext = null;
             var connectionToken = GetConnectionToken(context);
+
             if (!StringValues.IsNullOrEmpty(connectionToken))
             {
-                _manager.TryGetConnection(connectionToken, out connectionContext);
+                // Use ToString; IsNullOrEmpty doesn't tell the compiler anything about implicit conversion to string.
+                _manager.TryGetConnection(connectionToken.ToString(), out connectionContext);
             }
 
             var logScope = new ConnectionLogScope(connectionContext?.ConnectionId);
@@ -700,7 +702,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 return null;
             }
 
-            if (!_manager.TryGetConnection(connectionToken, out var connection))
+            // Use ToString; IsNullOrEmpty doesn't tell the compiler anything about implicit conversion to string.
+            if (!_manager.TryGetConnection(connectionToken.ToString(), out var connection))
             {
                 // No connection with that ID: Not Found
                 context.Response.StatusCode = StatusCodes.Status404NotFound;
@@ -723,7 +726,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             {
                 connection = CreateConnection(options);
             }
-            else if (!_manager.TryGetConnection(connectionToken, out connection))
+            // Use ToString; IsNullOrEmpty doesn't tell the compiler anything about implicit conversion to string.
+            else if (!_manager.TryGetConnection(connectionToken.ToString(), out connection))
             {
                 // No connection with that ID: Not Found
                 context.Response.StatusCode = StatusCodes.Status404NotFound;

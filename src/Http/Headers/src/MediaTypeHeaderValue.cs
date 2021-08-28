@@ -115,7 +115,9 @@ namespace Microsoft.Net.Http.Headers
             get
             {
                 var charset = Charset;
-                if (!StringSegment.IsNullOrEmpty(charset))
+
+                // Check HasValue; IsNullOrEmpty lacks [MemberNotNullWhen(false, nameof(Value))].
+                if (charset.HasValue && !StringSegment.IsNullOrEmpty(charset))
                 {
                     try
                     {
