@@ -76,7 +76,7 @@ namespace Microsoft.Net.Http.Headers
         {
             get
             {
-                return NameValueHeaderValue.Find(_parameters, CharsetString)?.Value.Value;
+                return NameValueHeaderValue.Find(_parameters, CharsetString)?.Value ?? StringSegment.Empty;
             }
             set
             {
@@ -119,7 +119,7 @@ namespace Microsoft.Net.Http.Headers
                 {
                     try
                     {
-                        return Encoding.GetEncoding(charset.Value!);
+                        return Encoding.GetEncoding(charset.Value);
                     }
                     catch (ArgumentException)
                     {

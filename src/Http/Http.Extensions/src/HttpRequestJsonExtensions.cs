@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Http
             try
             {
                 // charset.Value might be an invalid encoding name as in charset=invalid.
-                return charset.HasValue ? Encoding.GetEncoding(charset.Value ?? string.Empty) : null;
+                return charset.HasValue ? Encoding.GetEncoding(charset.Value) : null;
             }
             catch (Exception ex)
             {

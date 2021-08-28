@@ -312,7 +312,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 // charset.Value might be an invalid encoding name as in charset=invalid.
                 // For that reason, we catch the exception thrown by Encoding.GetEncoding
                 // and return null instead.
-                return charset.HasValue ? Encoding.GetEncoding(charset.Value!) : null;
+                return charset.HasValue ? Encoding.GetEncoding(charset.Value) : null;
             }
             catch (Exception)
             {
