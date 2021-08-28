@@ -15,11 +15,11 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
-    public class OutputProducerTests : IDisposable
+    public class Http1OutputProducerTests : IDisposable
     {
         private readonly MemoryPool<byte> _memoryPool;
 
-        public OutputProducerTests()
+        public Http1OutputProducerTests()
         {
             _memoryPool = PinnedBlockMemoryPoolFactory.Create();
         }
