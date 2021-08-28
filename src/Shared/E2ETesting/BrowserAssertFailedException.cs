@@ -26,7 +26,7 @@ namespace OpenQA.Selenium
 
             if (File.Exists(screenShotPath))
             {
-                builder.AppendLine($"Screen shot captured at '{screenShotPath}'");
+                builder.AppendLine(FormattableString.Invariant($"Screen shot captured at '{screenShotPath}'"));
             }
 
             if (logs.Count > 0)

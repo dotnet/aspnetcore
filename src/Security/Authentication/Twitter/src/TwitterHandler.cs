@@ -388,7 +388,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 foreach (var error in errorResponse.Errors)
                 {
                     errorMessageStringBuilder.Append(Environment.NewLine);
-                    errorMessageStringBuilder.Append($"Code: {error.Code}, Message: '{error.Message}'");
+                    errorMessageStringBuilder.Append(FormattableString.Invariant($"Code: {error.Code}, Message: '{error.Message}'"));
                 }
             }
 

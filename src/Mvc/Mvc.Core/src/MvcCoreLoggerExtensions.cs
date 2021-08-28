@@ -772,11 +772,11 @@ namespace Microsoft.AspNetCore.Mvc
                 {
                     if (i == routeValues.Length - 1)
                     {
-                        stringBuilder.Append($"{routeKeys[i]} = \"{routeValues[i]}\"");
+                        stringBuilder.Append(FormattableString.Invariant($"{routeKeys[i]} = \"{routeValues[i]}\""));
                     }
                     else
                     {
-                        stringBuilder.Append($"{routeKeys[i]} = \"{routeValues[i]}\", ");
+                        stringBuilder.Append(FormattableString.Invariant($"{routeKeys[i]} = \"{routeValues[i]}\", "));
                     }
                 }
                 stringBuilder.Append('}');

@@ -918,7 +918,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             httpContext.Request.Body = stream;
 
             httpContext.Request.Headers["Content-Type"] = "application/json";
-            httpContext.Request.Headers["Content-Length"] = stream.Length.ToString();
+            httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
             httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
 
             var jsonOptions = new JsonOptions();
@@ -974,7 +974,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             httpContext.Request.Body = stream;
 
             httpContext.Request.Headers["Content-Type"] = "application/json";
-            httpContext.Request.Headers["Content-Length"] = stream.Length.ToString();
+            httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
             httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
 
             var jsonOptions = new JsonOptions();
@@ -1118,7 +1118,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             httpContext.Request.Body = stream;
 
             httpContext.Request.Headers["Content-Type"] = "application/json";
-            httpContext.Request.Headers["Content-Length"] = stream.Length.ToString();
+            httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
             httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
 
             var jsonOptions = new JsonOptions();
@@ -2558,7 +2558,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
     {
         public static IResult TestResult(this IResultExtensions resultExtensions, string name)
         {
-            return Results.Ok($"Hello {name}. This is from an extension method.");
+            return Results.Ok(FormattableString.Invariant($"Hello {name}. This is from an extension method."));
         }
     }
 }
