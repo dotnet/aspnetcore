@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Http.Metadata
         /// <summary>
         /// Creates a new instance of <see cref="AcceptsMetadata"/> with a type.
         /// </summary>
-        public AcceptsMetadata(Type? type, string[] contentTypes)
+        public AcceptsMetadata(Type? type, bool isRequired, string[] contentTypes)
         {
             RequestType = type ?? throw new ArgumentNullException(nameof(type));
 
@@ -39,6 +39,7 @@ namespace Microsoft.AspNetCore.Http.Metadata
             }
 
             ContentTypes = contentTypes;
+            IsRequired = isRequired;
         }
 
         /// <summary>
@@ -50,5 +51,10 @@ namespace Microsoft.AspNetCore.Http.Metadata
         /// Accepts request content types of any shape. 
         /// </summary>
         public Type? RequestType { get; }
+
+        /// <summary>
+        /// Indicates whether the request type is required or not
+        /// </summary>
+        public bool IsRequired { get;}
     }
 }

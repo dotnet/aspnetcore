@@ -510,10 +510,11 @@ namespace Microsoft.AspNetCore.Builder
 
             Type? IAcceptsMetadata.RequestType => _requestType;
 
+            public bool IsRequired => true;
+
             Type? _requestType;
 
-            List<string> _contentTypes = new();
-            
+            List<string> _contentTypes = new();           
         }
 
         class Todo

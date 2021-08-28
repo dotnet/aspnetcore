@@ -96,6 +96,11 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public MediaTypeCollection ContentTypes { get; set; }
 
+        /// <summary>
+        /// Indicates whether the request type is required or not
+        /// </summary>
+        public bool IsRequired { get; set; } = true;
+
         readonly Type? _requestType;
 
         readonly List<string> _contentTypes = new();

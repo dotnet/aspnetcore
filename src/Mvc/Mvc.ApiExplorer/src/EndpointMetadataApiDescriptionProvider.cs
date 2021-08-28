@@ -124,6 +124,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             // Get custom attributes for the handler. ConsumesAttribute is one of the examples. 
             var acceptsRequestType = routeEndpoint.Metadata.GetMetadata<IAcceptsMetadata>()?.RequestType;
+            var isRequired = routeEndpoint.Metadata.GetMetadata<IAcceptsMetadata>()?.IsRequired;
+
             if (acceptsRequestType is not null)
             {
                 var parameterDescription = new ApiParameterDescription
@@ -132,7 +134,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     ModelMetadata = CreateModelMetadata(acceptsRequestType),
                     Source = BindingSource.Body,
                     Type = acceptsRequestType,
-                    IsRequired = true,
+                    IsRequired = isRequired ?? true,
                 };
 
                 apiDescription.ParameterDescriptions.Add(parameterDescription);
@@ -227,17 +229,20 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             bool hasJsonBody,
             EndpointMetadataCollection endpointMetadata)
         {
-            var requestMetadata = endpointMetadata.GetOrderedMetadata<IApiRequestMetadataProvider>();
-            var declaredContentTypes = DefaultApiDescriptionProvider.GetDeclaredContentTypes(requestMetadata);
+            var requestMetadata = endpointMetadata.GetOrderedMetadata<IAcceptsMetadata>();
 
-            if (declaredContentTypes.Count > 0)
+            if (requestMetadata.Count > 0)
             {
-                foreach (var contentType in declaredContentTypes)
+                foreach (var metadataItem in requestMetadata)
                 {
-                    supportedRequestFormats.Add(new ApiRequestFormat
+                    foreach (var contentType in metadataItem.ContentTypes)
                     {
-                        MediaType = contentType,
-                    });
+                        supportedRequestFormats.Add(new ApiRequestFormat
+                        {
+                            MediaType = contentType
+                       });
+                    }
+  
                 }
             }
             else if (hasJsonBody)
