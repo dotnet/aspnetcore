@@ -674,8 +674,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             var newHttpContext = new DefaultHttpContext(features);
             newHttpContext.TraceIdentifier = context.TraceIdentifier;
 
-            var endpoint = context.GetEndpoint();
-            newHttpContext.SetEndpoint(endpoint);
+            newHttpContext.SetEndpoint(context.GetEndpoint());
 
             CloneUser(newHttpContext, context);
 
