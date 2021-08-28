@@ -4,7 +4,7 @@ Helix is the distributed test platform that we use to run tests.  We build a hel
 send a job with with this payload to a set of queues for the various combinations of OS that we want to test
 for example: `Windows.10.Amd64.ClientRS4.VS2017.Open`, `OSX.1012.Amd64.Open`, `Ubuntu.1804.Amd64.Open`. Helix takes care of unzipping, running the job, and reporting results.
 
-For more info about helix see: [SDK](https://github.com/dotnet/arcade/blob/master/src/Microsoft.DotNet.Helix/Sdk/Readme.md), [JobSender](https://github.com/dotnet/arcade/blob/master/src/Microsoft.DotNet.Helix/Sdk/Readme.md)
+For more info about helix see: [SDK](https://github.com/dotnet/arcade/blob/main/src/Microsoft.DotNet.Helix/Sdk/Readme.md), [JobSender](https://github.com/dotnet/arcade/blob/main/src/Microsoft.DotNet.Helix/Sdk/Readme.md)
 
 ## Running helix tests locally
 
@@ -134,4 +134,4 @@ Goal is to balance cost/flakiness against having some coverage of supported dist
 
 - Example PR: dotnet/dotnet-buildtools-prereqs-docker#398
 - Summary is to update [manifest.json](https://github.com/dotnet/dotnet-buildtools-prereqs-docker/blob/master/manifest.json) with an entry for the new dockerfiles, and then add the docker files as well to dotnet-buildtools-prereqs-docker
-- The resulting new docker queue id will be found in: [image-info.dotnet-dotnet-buildtools-prereqs-docker-master.json](https://github.com/dotnet/versions/blob/master/build-info/docker/image-info.dotnet-dotnet-buildtools-prereqs-docker-master.json)
+- The resulting new docker queue id will be found in: [image-info.dotnet-dotnet-buildtools-prereqs-docker-main.json](https://github.com/dotnet/versions/blob/main/build-info/docker/image-info.dotnet-dotnet-buildtools-prereqs-docker-main.json)
