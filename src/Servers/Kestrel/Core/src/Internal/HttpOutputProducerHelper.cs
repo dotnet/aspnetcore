@@ -5,18 +5,18 @@ namespace System.Buffers
 {
     internal class HttpOutputProducerHelper
     {
-        public static IMemoryOwner<byte> ReserveFakeMemory(MemoryPool<byte> memoryPool, int sizeHint)
+        public static IMemoryOwner<byte> ReserveFakeMemory(MemoryPool<byte> memoryPool, int minSize)
         {
             // Requesting a bigger buffer could throw.
-            if (sizeHint <= memoryPool.MaxBufferSize)
+            if (minSize <= memoryPool.MaxBufferSize)
             {
                 // Use the specified pool as it fits.
-                return memoryPool.Rent(sizeHint);
+                return memoryPool.Rent(minSize);
             }
             else
             {
                 // Use the array pool. Its MaxBufferSize is int.MaxValue.
-                return MemoryPool<byte>.Shared.Rent(sizeHint);
+                return MemoryPool<byte>.Shared.Rent(minSize);
             }
         }
     }

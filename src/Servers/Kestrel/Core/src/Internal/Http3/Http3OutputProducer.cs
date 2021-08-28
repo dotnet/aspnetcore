@@ -208,13 +208,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        internal Memory<byte> GetFakeMemory(int sizeHint)
+        internal Memory<byte> GetFakeMemory(int minSize)
         {
-            if (_fakeMemoryOwner == null || _fakeMemoryOwner.Memory.Length < sizeHint)
+            if (_fakeMemoryOwner == null || _fakeMemoryOwner.Memory.Length < minSize)
             {
                 _fakeMemoryOwner?.Dispose();
 
-                _fakeMemoryOwner = HttpOutputProducerHelper.ReserveFakeMemory(_memoryPool, sizeHint);
+                _fakeMemoryOwner = HttpOutputProducerHelper.ReserveFakeMemory(_memoryPool, minSize);
             }
 
             return _fakeMemoryOwner.Memory;
