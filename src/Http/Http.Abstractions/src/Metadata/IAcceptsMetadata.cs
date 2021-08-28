@@ -21,5 +21,10 @@ namespace Microsoft.AspNetCore.Http.Metadata
         /// Gets the type being read from the request. 
         /// </summary>
         Type? RequestType { get; }
+
+        /// <summary>
+        /// Indicate whether the request type is required or not. 
+        /// </summary>
+        bool IsRequired { get; }
     }
 }
