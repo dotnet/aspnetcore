@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         public void AddsMultipleRequestFormatsFromMetadataWithRequestType()
         {
             var apiDescription = GetApiDescription(
-                [Consumes(typeof(InferredJsonClass), "application/custom0", "application/custom1")]
+                [Consumes(typeof(InferredJsonClass), "application/custom0", "application/custom1", IsRequired= true)]
                 () => { });
 
             Assert.Equal(2, apiDescription.SupportedRequestFormats.Count);
