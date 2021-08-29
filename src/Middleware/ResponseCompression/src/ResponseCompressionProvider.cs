@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
 
             if (string.IsNullOrEmpty(mimeType))
             {
-                _logger.NoCompressionForContentType(mimeType);
+                _logger.NoCompressionForContentType(mimeType ?? "(null)");
                 return false;
             }
 
