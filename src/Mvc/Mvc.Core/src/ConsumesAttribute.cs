@@ -55,6 +55,7 @@ namespace Microsoft.AspNetCore.Mvc
             }
 
             ContentTypes = GetContentTypes(contentType, otherContentTypes);
+            _contentTypes = GetAllContentTypes(contentType, otherContentTypes);
         }
 
         /// <summary>
@@ -97,7 +98,7 @@ namespace Microsoft.AspNetCore.Mvc
         public MediaTypeCollection ContentTypes { get; set; }
 
         /// <summary>
-        /// Indicates whether the request type is required or not
+        /// Indicates whether the request body is required or not
         /// </summary>
         public bool IsRequired { get; set; } = true;
 

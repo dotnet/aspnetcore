@@ -122,9 +122,8 @@ namespace Microsoft.AspNetCore.Http
             return Produces<HttpValidationProblemDetails>(builder, statusCode, contentType);
         }
 
-#pragma warning disable CS0419 // Ambiguous reference in cref attribute
         /// <summary>
-        /// Adds the <see cref="Accepts"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+        /// Adds the <see cref="IAcceptsMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
         /// produced by <paramref name="builder"/>.
         /// </summary>
         /// <typeparam name="TRequest">The type of the request.</typeparam>
@@ -133,7 +132,6 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="additionalContentTypes">Additional response content types the endpoint produces for the supplied status code.</param>
         /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static DelegateEndpointConventionBuilder Accepts<TRequest>(this DelegateEndpointConventionBuilder builder,
-#pragma warning restore CS0419 // Ambiguous reference in cref attribute
             string contentType, params string[] additionalContentTypes) where TRequest : notnull
         {
             Accepts(builder, typeof(TRequest), contentType, additionalContentTypes);
@@ -141,19 +139,17 @@ namespace Microsoft.AspNetCore.Http
             return builder;
         }
 
-#pragma warning disable CS0419 // Ambiguous reference in cref attribute
         /// <summary>
-        /// Adds the <see cref="Accepts"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+        /// Adds the <see cref="IAcceptsMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
         /// produced by <paramref name="builder"/>.
         /// </summary>
         /// <typeparam name="TRequest">The type of the request.</typeparam>
         /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
-        /// <param name="isRequired"> Indicates whether the request Type is required or not.</param>
+        /// <param name="isRequired"> Indicates whether the request body is required or not.</param>
         /// <param name="contentType">The request content type. Defaults to "application/json" if empty.</param>
         /// <param name="additionalContentTypes">Additional response content types the endpoint produces for the supplied status code.</param>
         /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static DelegateEndpointConventionBuilder Accepts<TRequest>(this DelegateEndpointConventionBuilder builder,
-#pragma warning restore CS0419 // Ambiguous reference in cref attribute
             bool isRequired, string contentType, params string[] additionalContentTypes) where TRequest : notnull
         {
             Accepts(builder, typeof(TRequest), isRequired, contentType, additionalContentTypes);
@@ -161,18 +157,16 @@ namespace Microsoft.AspNetCore.Http
             return builder;
         }
 
-#pragma warning disable CS0419 // Ambiguous reference in cref attribute
         /// <summary>
-        /// Adds the <see cref="Accepts"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+        /// Adds the <see cref="IAcceptsMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
         /// produced by <paramref name="builder"/>.
         /// </summary>
         /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
         /// <param name="requestType">The type of the request. Defaults to null.</param>
-        /// <param name="contentType">The response content type that the endpoint accepts.</param>
+        /// <param name="contentType">The response content body that the endpoint accepts.</param>
         /// <param name="additionalContentTypes">Additional response content types the endpoint accepts</param>
         /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static DelegateEndpointConventionBuilder Accepts(this DelegateEndpointConventionBuilder builder,
-#pragma warning restore CS0419 // Ambiguous reference in cref attribute
             Type requestType, string contentType, params string[] additionalContentTypes)
         {
             builder.WithMetadata(new AcceptsMetadata(requestType, true, GetAllContentTypes(contentType, additionalContentTypes)));
@@ -180,19 +174,17 @@ namespace Microsoft.AspNetCore.Http
         }
 
 
-#pragma warning disable CS0419 // Ambiguous reference in cref attribute
         /// <summary>
-        /// Adds the <see cref="Accepts"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+        /// Adds the <see cref="IAcceptsMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
         /// produced by <paramref name="builder"/>.
         /// </summary>
         /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
         /// <param name="requestType">The type of the request. Defaults to null.</param>
         /// <param name="isRequired"> Indicates whether the request Type is required or not.</param>
-        /// <param name="contentType">The response content type that the endpoint accepts.</param>
+        /// <param name="contentType">The response content body that the endpoint accepts.</param>
         /// <param name="additionalContentTypes">Additional response content types the endpoint accepts</param>
         /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static DelegateEndpointConventionBuilder Accepts(this DelegateEndpointConventionBuilder builder,
-#pragma warning restore CS0419 // Ambiguous reference in cref attribute
             Type requestType, bool isRequired, string contentType, params string[] additionalContentTypes)
         {
 
@@ -202,17 +194,15 @@ namespace Microsoft.AspNetCore.Http
 
         private static string[] GetAllContentTypes(string contentType, string[] additionalContentTypes)
         {
-            var allContentTypes = new List<string>()
-            {
-                contentType
-            };
+            var allContentTypes = new string[additionalContentTypes.Length + 1];
+            allContentTypes[0] = contentType;
 
-            foreach (var item in additionalContentTypes)
+            for (var i = 0; i < additionalContentTypes.Length; i++)
             {
-                allContentTypes.Add(item);
+                allContentTypes[i + 1] = additionalContentTypes[i];
             }
 
-            return allContentTypes.ToArray();
+            return allContentTypes;
         }
     }
 }

@@ -122,9 +122,10 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 apiDescription.ParameterDescriptions.Add(parameterDescription);
             }
 
-            // Get custom attributes for the handler. ConsumesAttribute is one of the examples. 
-            var acceptsRequestType = routeEndpoint.Metadata.GetMetadata<IAcceptsMetadata>()?.RequestType;
-            var isRequired = routeEndpoint.Metadata.GetMetadata<IAcceptsMetadata>()?.IsRequired;
+            // Get IAcceptsMetadata.
+            var acceptsMetadata = routeEndpoint.Metadata.GetMetadata<IAcceptsMetadata>();
+            var acceptsRequestType = acceptsMetadata?.RequestType;
+            var isRequired = acceptsMetadata?.IsRequired;
 
             if (acceptsRequestType is not null)
             {
@@ -140,7 +141,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 apiDescription.ParameterDescriptions.Add(parameterDescription);
             }
 
-            AddSupportedRequestFormats(apiDescription.SupportedRequestFormats, hasJsonBody, routeEndpoint.Metadata);
+            AddSupportedRequestFormats(apiDescription.SupportedRequestFormats, hasJsonBody, acceptsMetadata);
             AddSupportedResponseTypes(apiDescription.SupportedResponseTypes, methodInfo.ReturnType, routeEndpoint.Metadata);
 
             AddActionDescriptorEndpointMetadata(apiDescription.ActionDescriptor, routeEndpoint.Metadata);
@@ -227,23 +228,17 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         private static void AddSupportedRequestFormats(
             IList<ApiRequestFormat> supportedRequestFormats,
             bool hasJsonBody,
-            EndpointMetadataCollection endpointMetadata)
+            IAcceptsMetadata? acceptsMetadata)
         {
-            var requestMetadata = endpointMetadata.GetOrderedMetadata<IAcceptsMetadata>();
-
-            if (requestMetadata.Count > 0)
+            if (acceptsMetadata is not null)
             {
-                foreach (var metadataItem in requestMetadata)
+                foreach (var contentType in acceptsMetadata.ContentTypes)
                 {
-                    foreach (var contentType in metadataItem.ContentTypes)
+                    supportedRequestFormats.Add(new ApiRequestFormat
                     {
-                        supportedRequestFormats.Add(new ApiRequestFormat
-                        {
-                            MediaType = contentType
-                       });
-                    }
-  
-                }
+                        MediaType = contentType
+                    });
+                }             
             }
             else if (hasJsonBody)
             {
