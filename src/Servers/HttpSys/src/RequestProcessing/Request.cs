@@ -135,13 +135,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     // Note Http.Sys adds the Transfer-Encoding: chunked header to HTTP/2 requests with bodies for back compat.
                     var transferEncoding = Headers[HeaderNames.TransferEncoding].ToString();
-                    if (string.Equals("chunked", transferEncoding?.Trim(), StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals("chunked", transferEncoding.Trim(), StringComparison.OrdinalIgnoreCase))
                     {
                         _contentBoundaryType = BoundaryType.Chunked;
                     }
                     else
                     {
-                        var length = Headers[HeaderNames.ContentLength].ToString();
+                        string? length = Headers[HeaderNames.ContentLength];
                         if (length != null &&
                             long.TryParse(length.Trim(), NumberStyles.None, CultureInfo.InvariantCulture.NumberFormat, out var value))
                         {

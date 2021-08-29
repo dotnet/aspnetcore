@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         public StaticFileContext(HttpContext context, StaticFileOptions options, ILogger logger, IFileProvider fileProvider, string? contentType, PathString subPath)
         {
-            if (!subPath.HasValue)
+            if (subPath.Value == null)
             {
                 throw new ArgumentNullException(nameof(subPath));
             }

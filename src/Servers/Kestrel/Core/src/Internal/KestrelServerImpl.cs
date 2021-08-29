@@ -327,9 +327,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         private static void TriggerRebind(object? state)
         {
-            if (state != null)
+            if (state is KestrelServerImpl server)
             {
-                var server = (KestrelServerImpl)state;
                 _ = server.RebindAsync();
             }
         }

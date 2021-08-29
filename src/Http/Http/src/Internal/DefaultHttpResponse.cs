@@ -90,11 +90,11 @@ namespace Microsoft.AspNetCore.Http
             set { Headers.ContentLength = value; }
         }
 
-        public override string ContentType
+        public override string? ContentType
         {
             get
             {
-                return Headers.ContentType.ToString();
+                return Headers.ContentType;
             }
             set
             {
