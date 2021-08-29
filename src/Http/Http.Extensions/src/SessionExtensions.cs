@@ -56,6 +56,7 @@ namespace Microsoft.AspNetCore.Http
 			session.Set(key, bytes);
 		}
 
+		/// <summary>
 		/// Gets a long value from <see cref="ISession"/>.
 		/// </summary>
 		/// <param name="session">The <see cref="ISession"/>.</param>
@@ -82,6 +83,7 @@ namespace Microsoft.AspNetCore.Http
 			session.SetInt64(key, value.Ticks);
 		}
 
+		/// <summary>
 		/// Gets a DateTime value from <see cref="ISession"/>.
 		/// </summary>
 		/// <param name="session">The <see cref="ISession"/>.</param>
