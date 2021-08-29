@@ -76,7 +76,7 @@ namespace Microsoft.Net.Http.Headers
         {
             get
             {
-                return NameValueHeaderValue.Find(_parameters, CharsetString)?.Value ?? StringSegment.Empty;
+                return NameValueHeaderValue.Find(_parameters, CharsetString)?.Value ?? default;
             }
             set
             {
