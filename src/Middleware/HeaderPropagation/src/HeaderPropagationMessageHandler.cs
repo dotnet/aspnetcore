@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
                     {
                         if (stringValues.Count == 1)
                         {
-                            var value = (string)stringValues;
+                            var value = stringValues.ToString();
                             if (!request.Headers.TryAddWithoutValidation(entry.OutboundHeaderName, value) && hasContent)
                             {
                                 request.Content!.Headers.TryAddWithoutValidation(entry.OutboundHeaderName, value);
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
                         }
                         else
                         {
-                            var values = (string[])stringValues;
+                            var values = stringValues.ToArray();
                             if (!request.Headers.TryAddWithoutValidation(entry.OutboundHeaderName, values) && hasContent)
                             {
                                 request.Content!.Headers.TryAddWithoutValidation(entry.OutboundHeaderName, values);

@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             if (selectedEncoding != null)
             {
                 // Override the content type value even if one already existed.
-                var mediaTypeWithCharset = GetMediaTypeWithCharset(selectedMediaType.Value, selectedEncoding);
+                var mediaTypeWithCharset = GetMediaTypeWithCharset(selectedMediaType.Value!, selectedEncoding);
                 selectedMediaType = new StringSegment(mediaTypeWithCharset);
             }
             else

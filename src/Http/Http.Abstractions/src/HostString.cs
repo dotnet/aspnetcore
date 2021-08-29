@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Http
                 GetParts(_value, out var host, out var port);
 
                 var mapping = new IdnMapping();
-                var encoded = mapping.GetAscii(host.Buffer, host.Offset, host.Length);
+                var encoded = mapping.GetAscii(host.Buffer!, host.Offset, host.Length);
 
                 return StringSegment.IsNullOrEmpty(port)
                     ? encoded

@@ -38,7 +38,7 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Manifest
 
         public string? PhysicalPath => null;
 
-        public string? Name => ManifestFile.Name;
+        public string Name => ManifestFile.Name;
 
         public DateTimeOffset LastModified { get; }
 

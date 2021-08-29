@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             AddHeaderValues(result.AllowedExposedHeaders, policy.ExposedHeaders);
 
             var allowedMethods = policy.AllowAnyMethod ?
-                new[] { result.IsPreflightRequest ? (string)headers.AccessControlRequestMethod : context.Request.Method } :
+                new[] { result.IsPreflightRequest ? headers.AccessControlRequestMethod.ToString() : context.Request.Method } :
                 policy.Methods;
             AddHeaderValues(result.AllowedMethods, allowedMethods);
 
@@ -253,14 +253,15 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 return false;
             }
 
-            _logger.RequestHasOriginHeader(origin);
-            if (policy.AllowAnyOrigin || policy.IsOriginAllowed(origin))
+            var originString = origin.ToString();
+            _logger.RequestHasOriginHeader(originString);
+            if (policy.AllowAnyOrigin || policy.IsOriginAllowed(originString))
             {
                 _logger.PolicySuccess();
                 return true;
             }
             _logger.PolicyFailure();
-            _logger.OriginNotAllowed(origin);
+            _logger.OriginNotAllowed(originString);
             return false;
         }
     }
