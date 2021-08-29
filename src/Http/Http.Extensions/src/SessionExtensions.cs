@@ -49,7 +49,6 @@ namespace Microsoft.AspNetCore.Http
 		/// <param name="session">The <see cref="ISession"/>.</param>
 		/// <param name="key">The key to assign.</param>
 		/// <param name="value">The value to assign.</param>
-		/// <summary>
 		public static void SetInt64(this ISession session, string key, long value)
 		{
 			byte[] bytes = BitConverter.GetBytes(value);
@@ -77,7 +76,6 @@ namespace Microsoft.AspNetCore.Http
 		/// <param name="session">The <see cref="ISession"/>.</param>
 		/// <param name="key">The key to assign.</param>
 		/// <param name="value">The value to assign.</param>
-		/// <summary>
 		public static void SetDateTime(this ISession session, string key, DateTime value)
 		{
 			session.SetInt64(key, value.Ticks);
