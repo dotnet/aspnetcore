@@ -8,13 +8,19 @@ using Microsoft.AspNetCore.Routing;
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// Extension methods for adding response type metadata to endpoints.
+    /// Extension methods for adding <see cref="Endpoint.Metadata"/> that is
+    /// meant to be consumed OpenAPI libraries.
     /// </summary>
     public static class OpenApiDelegateEndpointConventionBuilderExtensions
     {
         /// <summary>
         /// Adds the <see cref="ITagsMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
         /// produced by <paramref name="builder"/>.
+        /// <remarks>
+        /// The OpenAPI specification supports a tags classification to categorize operations
+        /// into related groups. These tags are typically included in the generated specification
+        /// and are typically used to group operations by tags in the UI.
+        /// </remarks>
         /// </summary>
         /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
         /// <param name="tags">A collection of tags to be associated with the endpoint.</param>
