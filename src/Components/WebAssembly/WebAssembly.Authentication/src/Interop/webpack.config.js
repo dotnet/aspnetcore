@@ -12,12 +12,9 @@ module.exports = (env, args) => ({
         rules: [{ test: /\.ts?$/, loader: 'ts-loader' }]
     },
     entry: {
-        'entry': './AuthenticationService.ts',
+        'AuthenticationService': './AuthenticationService.ts',
     },
-    output: {
-        filename: 'AuthenticationService.js',
-        path: path.resolve(__dirname, 'dist', env.configuration),
-    },
+    output: { path: path.join(__dirname, '/dist', args.mode == 'development' ? '/Debug' : '/Release'), filename: '[name].js' },
     performance: {
         maxAssetSize: 122880,
     },
