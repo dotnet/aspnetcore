@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Http
         /// <typeparam name="TRequest">The type of the request body.</typeparam>
         /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
         /// <param name="contentType">The request content type that the endpoint accepts.</param>
-        /// <param name="additionalContentTypes">Additional request content types that the endpoint accepts.</param>
+        /// <param name="additionalContentTypes">The list of additional request content types that the endpoint accepts.</param>
         /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static DelegateEndpointConventionBuilder Accepts<TRequest>(this DelegateEndpointConventionBuilder builder,
             string contentType, params string[] additionalContentTypes) where TRequest : notnull
@@ -145,9 +145,9 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <typeparam name="TRequest">The type of the request body.</typeparam>
         /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
-        /// <param name="isOptional">Indicates whether the request body is required or not.</param>
+        /// <param name="isOptional">Sets a value that determines if the request body is optional.</param>
         /// <param name="contentType">The request content type that the endpoint accepts.</param>
-        /// <param name="additionalContentTypes">Additional request content types that the endpoint accepts.</param>
+        /// <param name="additionalContentTypes">The list of additional request content types that the endpoint accepts.</param>
         /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static DelegateEndpointConventionBuilder Accepts<TRequest>(this DelegateEndpointConventionBuilder builder,
             bool isOptional, string contentType, params string[] additionalContentTypes) where TRequest : notnull
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
         /// <param name="requestType">The type of the request body.</param>
         /// <param name="contentType">The request content type that the endpoint accepts.</param>
-        /// <param name="additionalContentTypes">Additional request content types that the endpoint accepts.</param>
+        /// <param name="additionalContentTypes">The list of additional request content types that the endpoint accepts.</param>
         /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static DelegateEndpointConventionBuilder Accepts(this DelegateEndpointConventionBuilder builder,
             Type requestType, string contentType, params string[] additionalContentTypes)
@@ -180,9 +180,9 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
         /// <param name="requestType">The type of the request body.</param>
-        /// <param name="isOptional">Indicates whether the request body is required or not.</param>
+        /// <param name="isOptional">Sets a value that determines if the request body is optional.</param>
         /// <param name="contentType">The request content type that the endpoint accepts.</param>
-        /// <param name="additionalContentTypes">Additional request content types that the endpoint accepts.</param>
+        /// <param name="additionalContentTypes">The list of additional request content types that the endpoint accepts.</param>
         /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static DelegateEndpointConventionBuilder Accepts(this DelegateEndpointConventionBuilder builder,
             Type requestType, bool isOptional, string contentType, params string[] additionalContentTypes)

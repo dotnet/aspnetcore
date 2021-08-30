@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Http.Metadata
         Type? RequestType { get; }
 
         /// <summary>
-        /// Gets a value that determines if the request body is required or not.
+        /// Gets a value that determines if the request body is optional.
         /// </summary>
         bool IsOptional { get; }
     }
