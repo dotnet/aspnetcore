@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         private readonly ILoggerFactory _loggerFactory;
         private readonly hostfxr_main_fn _hostfxrMainFn;
 
-        private Uri BaseUri => new UriBuilder(_useHttps ? "https" : "http", "localhost", _currentPort).Uri;
+        private Uri BaseUri => new Uri("http://localhost:" + _currentPort);
         public HttpClient HttpClient { get; private set; }
         public TestConnection CreateConnection() => new TestConnection(_currentPort);
 
@@ -55,35 +55,33 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         private string _appHostConfigPath;
         private int _currentPort;
-        private bool _useHttps;
 
-        private TestServer(Action<IApplicationBuilder> appBuilder, ILoggerFactory loggerFactory, bool useHttps)
+        private TestServer(Action<IApplicationBuilder> appBuilder, ILoggerFactory loggerFactory)
         {
             _hostfxrMainFn = Main;
             _appBuilder = appBuilder;
             _loggerFactory = loggerFactory;
-            _useHttps = useHttps;
         }
 
-        public static async Task<TestServer> Create(Action<IApplicationBuilder> appBuilder, ILoggerFactory loggerFactory, IISServerOptions options, bool useHttps = false)
+        public static async Task<TestServer> Create(Action<IApplicationBuilder> appBuilder, ILoggerFactory loggerFactory, IISServerOptions options)
         {
             await WebCoreLock.WaitAsync();
             _options = options;
-            var server = new TestServer(appBuilder, loggerFactory, useHttps);
+            var server = new TestServer(appBuilder, loggerFactory);
             server.Start();
             (await server.HttpClient.GetAsync("/start")).EnsureSuccessStatusCode();
             await server._startedTaskCompletionSource.Task;
             return server;
         }
 
-        public static Task<TestServer> Create(RequestDelegate app, ILoggerFactory loggerFactory, bool useHttps = false)
+        public static Task<TestServer> Create(RequestDelegate app, ILoggerFactory loggerFactory)
         {
-            return Create(builder => builder.Run(app), loggerFactory, new IISServerOptions(), useHttps);
+            return Create(builder => builder.Run(app), loggerFactory, new IISServerOptions());
         }
 
-        public static Task<TestServer> Create(RequestDelegate app, ILoggerFactory loggerFactory, IISServerOptions options, bool useHttps = false)
+        public static Task<TestServer> Create(RequestDelegate app, ILoggerFactory loggerFactory, IISServerOptions options)
         {
-            return Create(builder => builder.Run(app), loggerFactory, options, useHttps);
+            return Create(builder => builder.Run(app), loggerFactory, options);
         }
 
         private void Start()
@@ -95,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
             Retry(() =>
             {
-                _currentPort = _useHttps ? TestPortHelper.GetNextSSLPort() : TestPortHelper.GetNextPort();
+                _currentPort = TestPortHelper.GetNextPort();
 
                 InitializeConfig(_currentPort);
 
@@ -127,13 +125,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 .RequiredElement("bindings")
                 .RequiredElement("binding")
                 .SetAttributeValue("bindingInformation", $":{port}:localhost");
-
-            if (_useHttps)
-            {
-                siteElement.Descendants("binding")
-                    .Single()
-                    .SetAttributeValue("protocol", "https");
-            }
 
             webHostConfig.Save(_appHostConfigPath);
         }
