@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc
 
         /// <summary>
         /// Creates a new instance of <see cref="ConsumesAttribute"/>.
-        /// <param name="contentType"> The request content type </param>
+        /// <param name="contentType">The request content type </param>
         /// <param name="otherContentTypes">The additional list of allowed request content types </param>
         /// </summary>
         public ConsumesAttribute(string contentType, params string[] otherContentTypes)
@@ -60,8 +60,8 @@ namespace Microsoft.AspNetCore.Mvc
 
         /// <summary>
         /// Creates a new instance of <see cref="ConsumesAttribute"/>.
-        /// <param name="requestType"> The type being read from the request.</param>
-        /// <param name="contentType"> The request content type.</param>
+        /// <param name="requestType">The type being read from the request.</param>
+        /// <param name="contentType">The request content type.</param>
         /// <param name="otherContentTypes">The additional list of allowed request content types.</param>
         /// </summary>
         public ConsumesAttribute(Type requestType, string contentType, params string[] otherContentTypes)
@@ -98,9 +98,9 @@ namespace Microsoft.AspNetCore.Mvc
         public MediaTypeCollection ContentTypes { get; set; }
 
         /// <summary>
-        /// Indicates whether the request body is required or not.
+        /// Gets or sets a value that determines if the request body is required or not.
         /// </summary>
-        public bool IsRequired { get; set; } = true;
+        public bool IsOptional { get; set; }
 
         readonly Type? _requestType;
 

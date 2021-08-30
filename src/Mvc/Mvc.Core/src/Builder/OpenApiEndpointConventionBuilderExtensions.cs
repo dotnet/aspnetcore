@@ -145,14 +145,14 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <typeparam name="TRequest">The type of the request body.</typeparam>
         /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
-        /// <param name="isRequired">Indicates whether the request body is required or not.</param>
+        /// <param name="isOptional">Indicates whether the request body is required or not.</param>
         /// <param name="contentType">The request content type that the endpoint accepts.</param>
         /// <param name="additionalContentTypes">Additional request content types that the endpoint accepts.</param>
         /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static DelegateEndpointConventionBuilder Accepts<TRequest>(this DelegateEndpointConventionBuilder builder,
-            bool isRequired, string contentType, params string[] additionalContentTypes) where TRequest : notnull
+            bool isOptional, string contentType, params string[] additionalContentTypes) where TRequest : notnull
         {
-            Accepts(builder, typeof(TRequest), isRequired, contentType, additionalContentTypes);
+            Accepts(builder, typeof(TRequest), isOptional, contentType, additionalContentTypes);
 
             return builder;
         }
@@ -180,14 +180,14 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
         /// <param name="requestType">The type of the request body.</param>
-        /// <param name="isRequired">Indicates whether the request body is required or not.</param>
+        /// <param name="isOptional">Indicates whether the request body is required or not.</param>
         /// <param name="contentType">The request content type that the endpoint accepts.</param>
         /// <param name="additionalContentTypes">Additional request content types that the endpoint accepts.</param>
         /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static DelegateEndpointConventionBuilder Accepts(this DelegateEndpointConventionBuilder builder,
-            Type requestType, bool isRequired, string contentType, params string[] additionalContentTypes)
+            Type requestType, bool isOptional, string contentType, params string[] additionalContentTypes)
         {
-            builder.WithMetadata(new AcceptsMetadata(requestType, isRequired, GetAllContentTypes(contentType, additionalContentTypes)));
+            builder.WithMetadata(new AcceptsMetadata(requestType, isOptional, GetAllContentTypes(contentType, additionalContentTypes)));
             return builder;
         }
 
