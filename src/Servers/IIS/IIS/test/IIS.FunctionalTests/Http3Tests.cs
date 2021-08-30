@@ -24,6 +24,7 @@ using Xunit;
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     [MsQuicSupported]
+    [Http3Supported]
     [Collection(IISHttpsTestSiteCollection.Name)]
     public class Http3Tests
     {
@@ -171,7 +172,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             response.EnsureSuccessStatusCode();
             var ex = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync());
             var qex = Assert.IsType<QuicStreamAbortedException>(ex.InnerException?.InnerException?.InnerException);
-            Debugger.Launch();
             Assert.Equal(0x0102, qex.ErrorCode); // H3_INTERNAL_ERROR
         }
 

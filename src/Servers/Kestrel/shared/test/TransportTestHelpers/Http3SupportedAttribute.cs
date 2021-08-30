@@ -3,10 +3,9 @@
 
 using System;
 using System.Net.Quic;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Win32;
 
-namespace Microsoft.AspNetCore.Server.HttpSys
+namespace Microsoft.AspNetCore.Testing
 {
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false)]
     public class Http3SupportedAttribute : Attribute, ITestCondition
