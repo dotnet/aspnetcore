@@ -288,12 +288,12 @@ export class BrowserRenderer {
   private trySetSelectValueFromOptionElement(optionElement: HTMLOptionElement) {
     const selectElem = this.findClosestAncestorSelectElement(optionElement);
 
-    if (!selectElem || !(deferredValuePropname in selectElem)) {
+    if (!isBlazorSelectElement(selectElem)) {
       return false;
     }
 
     if (isMultipleSelectElement(selectElem)) {
-      optionElement.selected = selectElem[deferredValuePropname].indexOf(optionElement.value) !== -1;
+      optionElement.selected = selectElem[deferredValuePropname]!.indexOf(optionElement.value) !== -1;
     } else {
       if (selectElem[deferredValuePropname] !== optionElement.value) {
         return false;
@@ -304,6 +304,10 @@ export class BrowserRenderer {
     }
 
     return true;
+
+    function isBlazorSelectElement(selectElem: HTMLSelectElement | null) : selectElem is BlazorHtmlSelectElement {
+      return !!selectElem  && (deferredValuePropname in selectElem);
+    }
   }
 
   private insertComponent(batch: RenderBatch, parent: LogicalElement, childIndex: number, frame: RenderTreeFrame) {
@@ -559,6 +563,8 @@ function stripOnPrefix(attributeName: string) {
 
   throw new Error(`Attribute should be an event name, but doesn't start with 'on'. Value: '${attributeName}'`);
 }
+
+type BlazorHtmlSelectElement = (HTMLSelectElement & { _blazorDeferredValue?: string })
 
 function isMultipleSelectElement(element: HTMLSelectElement) {
   return element.type === 'select-multiple';
