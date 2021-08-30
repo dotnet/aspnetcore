@@ -57,7 +57,7 @@ public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
 
         foreach (var attribute in attributes)
         {
-            if (IsInValidNamespace(attribute))
+            if (IsInValidNamespace(attribute.AttributeClass?.ContainingNamespace))
             {
                 context.ReportDiagnostic(Diagnostic.Create(
                     DiagnosticDescriptors.DetectMisplacedLambdaAttribute,
@@ -67,19 +67,21 @@ public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        bool IsInValidNamespace(AttributeData attribute)
+        static bool IsInValidNamespace(INamespaceSymbol? containingNamespace)
         {
             var supportedNamespace = "Microsoft.AspNetCore";
-            var symbolDisplayFormat = new SymbolDisplayFormat(
-                typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
 
-            if (attribute.AttributeClass is null)
+            if (containingNamespace != null)
             {
-                return false;
+                if (containingNamespace.ToString().Equals(supportedNamespace, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                return IsInValidNamespace(containingNamespace.ContainingNamespace);
             }
 
-            var fullyQualifiedName = attribute.AttributeClass.ContainingNamespace.ToDisplayString(symbolDisplayFormat);
-            return fullyQualifiedName.StartsWith(supportedNamespace, System.StringComparison.OrdinalIgnoreCase);
+            return false;
         }
     }
 }
