@@ -238,7 +238,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     {
                         MediaType = contentType
                     });
-                }             
+                }
             }
             else if (hasJsonBody)
             {
