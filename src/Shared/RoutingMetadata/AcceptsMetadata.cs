@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Http.Metadata
         public Type? RequestType { get; }
 
         /// <summary>
-        /// Indicates whether the request body is required or not
+        /// Indicates whether the request body is required or not.
         /// </summary>
         public bool IsRequired { get; }
     }
