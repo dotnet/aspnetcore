@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -119,6 +118,22 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 {
                     hasJsonBody = true;
                 }
+
+                apiDescription.ParameterDescriptions.Add(parameterDescription);
+            }
+
+            // Get custom attributes for the handler. ConsumesAttribute is one of the examples. 
+            var acceptsRequestType = routeEndpoint.Metadata.GetMetadata<IAcceptsMetadata>()?.RequestType;
+            if (acceptsRequestType is not null)
+            {
+                var parameterDescription = new ApiParameterDescription
+                {
+                    Name = acceptsRequestType.Name,
+                    ModelMetadata = CreateModelMetadata(acceptsRequestType),
+                    Source = BindingSource.Body,
+                    Type = acceptsRequestType,
+                    IsRequired = true,
+                };
 
                 apiDescription.ParameterDescriptions.Add(parameterDescription);
             }
