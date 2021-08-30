@@ -86,10 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
                 await Task.Yield();
                 cts.Cancel();
                 yield return "Hello";
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    yield break;
-                }
+                cancellationToken.ThrowIfCancellationRequested();
                 iterated = false;
                 yield return "world";
             }

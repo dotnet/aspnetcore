@@ -469,10 +469,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 // MvcOptions.MaxIAsyncEnumerableBufferLimit is 8192. Pick some value larger than that.
                 foreach (var i in Enumerable.Range(0, 9000))
                 {
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        yield break;
-                    }
+                    cancellationToken.ThrowIfCancellationRequested();
                     iterated = true;
                     yield return i;
                 }

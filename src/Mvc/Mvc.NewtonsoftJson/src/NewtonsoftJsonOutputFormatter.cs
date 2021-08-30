@@ -175,7 +175,11 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<NewtonsoftJsonOutputFormatter>>();
                 Log.BufferingAsyncEnumerable(logger, value);
-                value = await reader(value, context.HttpContext.RequestAborted);
+                try
+                {
+                    value = await reader(value, context.HttpContext.RequestAborted);
+                }
+                catch (OperationCanceledException) { }
                 if (context.HttpContext.RequestAborted.IsCancellationRequested)
                 {
                     return;
