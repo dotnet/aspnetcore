@@ -1,11 +1,13 @@
 ﻿@using System.Security.Principal
 @*#if (IndividualB2CAuth)
+@using Microsoft.AspNetCore.Authentication.OpenIdConnect
 @using Microsoft.Extensions.Options
 @using Microsoft.Identity.Web
-@inject IOptions<MicrosoftIdentityOptions> AzureADB2COptions
+
+@inject IOptionsMonitor<MicrosoftIdentityOptions> AzureADB2COptions
 
 @{
-var options = AzureADB2COptions.Value;
+    var options = AzureADB2COptions.Get(OpenIdConnectDefaults.AuthenticationScheme);
 }
 
     #endif *@

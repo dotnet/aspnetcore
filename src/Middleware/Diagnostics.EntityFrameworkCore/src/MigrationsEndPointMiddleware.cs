@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         private static async Task<DbContext?> GetDbContext(HttpContext context, ILogger logger)
         {
             var form = await context.Request.ReadFormAsync();
-            var contextTypeName = form["context"];
+            var contextTypeName = form["context"].ToString();
 
             if (string.IsNullOrWhiteSpace(contextTypeName))
             {

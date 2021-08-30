@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             foreach (var value in headerValues)
             {
-                ValidateHeaderCharacters(value);
+                ValidateHeaderCharacters(value!);
             }
         }
 

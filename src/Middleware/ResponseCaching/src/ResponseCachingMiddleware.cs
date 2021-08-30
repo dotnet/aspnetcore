@@ -309,7 +309,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     }
 
                     // Always overwrite the CachedVaryByRules to update the expiry information
-                    _logger.VaryByRulesUpdated(normalizedVaryHeaders, normalizedVaryQueryKeys);
+                    _logger.VaryByRulesUpdated(normalizedVaryHeaders.ToString(), normalizedVaryQueryKeys.ToString());
                     storeVaryByEntry = true;
 
                     context.StorageVaryKey = _keyProvider.CreateStorageVaryByKey(context);
@@ -515,7 +515,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
                 for (var i = 0; i < originalArray.Length; i++)
                 {
-                    newArray[i] = originalArray[i].ToUpperInvariant();
+                    newArray[i] = originalArray[i]!.ToUpperInvariant();
                 }
 
                 // Since the casing has already been normalized, use Ordinal comparison

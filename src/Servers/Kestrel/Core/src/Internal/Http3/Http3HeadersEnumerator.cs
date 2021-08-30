@@ -99,7 +99,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private bool MoveNextOnStringEnumerator(string key)
         {
             var result = _stringValuesEnumerator.MoveNext();
-            Current = result ? new KeyValuePair<string, string>(key, _stringValuesEnumerator.Current) : default;
+
+            // Current is null only when result is false.
+            Current = result ? new KeyValuePair<string, string>(key, _stringValuesEnumerator.Current!) : default;
             return result;
         }
 

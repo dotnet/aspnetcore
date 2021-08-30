@@ -313,7 +313,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 if (_formatted == null)
                 {
                     var builder = new StringBuilder();
-                    builder.AppendLine($"Health check data for {_name}:");
+                    builder.AppendLine(FormattableString.Invariant($"Health check data for {_name}:"));
 
                     var values = _values;
                     for (var i = 0; i < values.Count; i++)

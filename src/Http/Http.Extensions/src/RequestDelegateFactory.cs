@@ -4,7 +4,6 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Net.Http;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
@@ -818,11 +817,13 @@ namespace Microsoft.AspNetCore.Http
             var nullability = NullabilityContext.Create(parameter);
             var isOptional = IsOptionalParameter(parameter);
 
-            // Get the BindAsync method
-            var body = TryParseMethodCache.FindBindAsyncMethod(parameter.ParameterType)!;
+            // Get the BindAsync method for the type.
+            var bindAsyncExpression = TryParseMethodCache.FindBindAsyncMethod(parameter);
+            // We know BindAsync exists because there's no way to opt-in without defining the method on the type.
+            Debug.Assert(bindAsyncExpression is not null);
 
             // Compile the delegate to the BindAsync method for this parameter index
-            var bindAsyncDelegate = Expression.Lambda<Func<HttpContext, ValueTask<object?>>>(body, HttpContextExpr).Compile();
+            var bindAsyncDelegate = Expression.Lambda<Func<HttpContext, ValueTask<object?>>>(bindAsyncExpression, HttpContextExpr).Compile();
             factoryContext.ParameterBinders.Add(bindAsyncDelegate);
 
             // boundValues[index]
@@ -1210,17 +1211,19 @@ namespace Microsoft.AspNetCore.Http
         private static string BuildErrorMessageForMultipleBodyParameters(FactoryContext factoryContext)
         {
             var errorMessage = new StringBuilder();
-            errorMessage.Append($"Failure to infer one or more parameters.\n");
-            errorMessage.Append("Below is the list of parameters that we found: \n\n");
-            errorMessage.Append($"{"Parameter",-20}|{"Source",-30} \n");
-            errorMessage.Append("---------------------------------------------------------------------------------\n");
+            errorMessage.AppendLine("Failure to infer one or more parameters.");
+            errorMessage.AppendLine("Below is the list of parameters that we found: ");
+            errorMessage.AppendLine();
+            errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}|{"Source",-30}"));
+            errorMessage.AppendLine("---------------------------------------------------------------------------------");
 
             foreach (var kv in factoryContext.TrackedParameters)
             {
-                errorMessage.Append($"{kv.Key,-19} | {kv.Value,-15}\n");
+                errorMessage.AppendLine(FormattableString.Invariant($"{kv.Key,-19} | {kv.Value,-15}"));
             }
-            errorMessage.Append("\n\n");
-            errorMessage.Append("Did you mean to register the \"UNKNOWN\" parameters as a Service?\n\n");
+            errorMessage.AppendLine().AppendLine();
+            errorMessage.AppendLine("Did you mean to register the \"UNKNOWN\" parameters as a Service?")
+                .AppendLine();
             return errorMessage.ToString();
         }
     }

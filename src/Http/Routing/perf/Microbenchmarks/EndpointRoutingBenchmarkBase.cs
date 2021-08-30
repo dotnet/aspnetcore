@@ -73,10 +73,10 @@ namespace Microsoft.AspNetCore.Routing
             if (!object.ReferenceEquals(expected, actual))
             {
                 var message = new StringBuilder();
-                message.AppendLine($"Validation failed for request {Array.IndexOf(Requests, httpContext)}");
-                message.AppendLine($"{httpContext.Request.Method} {httpContext.Request.Path}");
-                message.AppendLine($"expected: '{((RouteEndpoint)expected)?.DisplayName ?? "null"}'");
-                message.AppendLine($"actual:   '{((RouteEndpoint)actual)?.DisplayName ?? "null"}'");
+                message.AppendLine(FormattableString.Invariant($"Validation failed for request {Array.IndexOf(Requests, httpContext)}"));
+                message.AppendLine(FormattableString.Invariant($"{httpContext.Request.Method} {httpContext.Request.Path}"));
+                message.AppendLine(FormattableString.Invariant($"expected: '{((RouteEndpoint)expected)?.DisplayName ?? "null"}'"));
+                message.AppendLine(FormattableString.Invariant($"actual:   '{((RouteEndpoint)actual)?.DisplayName ?? "null"}'"));
                 throw new InvalidOperationException(message.ToString());
             }
         }

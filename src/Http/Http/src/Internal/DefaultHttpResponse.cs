@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Http
             set { Headers.ContentLength = value; }
         }
 
-        public override string ContentType
+        public override string? ContentType
         {
             get
             {

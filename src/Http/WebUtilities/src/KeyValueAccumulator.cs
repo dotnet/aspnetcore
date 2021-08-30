@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             StringValues values;
             if (_accumulator.TryGetValue(key, out values))
             {
-                if (values.Count == 0)
+                if (StringValues.IsNullOrEmpty(values))
                 {
                     // Marker entry for this key to indicate entry already in expanding list dictionary
                     _expandingAccumulator[key].Add(value);
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 else if (values.Count == 1)
                 {
                     // Second value for this key
-                    _accumulator[key] = new string[] { values[0], value };
+                    _accumulator[key] = new string[] { values[0]!, value };
                 }
                 else
                 {
@@ -55,8 +55,8 @@ namespace Microsoft.AspNetCore.WebUtilities
                     var list = new List<string>(8);
                     var array = values.ToArray();
 
-                    list.Add(array[0]);
-                    list.Add(array[1]);
+                    list.Add(array[0]!);
+                    list.Add(array[1]!);
                     list.Add(value);
 
                     _expandingAccumulator[key] = list;

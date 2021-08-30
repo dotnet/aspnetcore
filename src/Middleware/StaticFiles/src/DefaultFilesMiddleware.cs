@@ -67,7 +67,8 @@ namespace Microsoft.AspNetCore.StaticFiles
                 && Helpers.IsGetOrHeadMethod(context.Request.Method)
                 && Helpers.TryMatchPath(context, _matchUrl, forDirectory: true, subpath: out var subpath))
             {
-                var dirContents = _fileProvider.GetDirectoryContents(subpath.Value);
+                // TryMatchPath will not output an empty subpath when it returns true.
+                var dirContents = _fileProvider.GetDirectoryContents(subpath.Value!);
                 if (dirContents.Exists)
                 {
                     // Check if any of our default files exist.

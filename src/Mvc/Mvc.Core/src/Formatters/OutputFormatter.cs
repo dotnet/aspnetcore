@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
 
             var response = context.HttpContext.Response;
-            response.ContentType = context.ContentType.Value;
+            response.ContentType = context.ContentType.Value ?? string.Empty;
         }
 
         /// <summary>

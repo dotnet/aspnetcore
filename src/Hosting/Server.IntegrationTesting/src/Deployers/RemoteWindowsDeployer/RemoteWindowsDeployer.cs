@@ -214,29 +214,29 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 }
 
                 var parameterBuilder = new StringBuilder();
-                parameterBuilder.Append($"\"{remotePSSessionHelperScript}\"");
-                parameterBuilder.Append($" -serverName {_deploymentParameters.ServerName}");
-                parameterBuilder.Append($" -accountName {_deploymentParameters.ServerAccountName}");
-                parameterBuilder.Append($" -accountPassword {_deploymentParameters.ServerAccountPassword}");
-                parameterBuilder.Append($" -deployedFolderPath {_deployedFolderPathInFileShare}");
+                parameterBuilder.Append(FormattableString.Invariant($"\"{remotePSSessionHelperScript}\""));
+                parameterBuilder.Append(FormattableString.Invariant($" -serverName {_deploymentParameters.ServerName}"));
+                parameterBuilder.Append(FormattableString.Invariant($" -accountName {_deploymentParameters.ServerAccountName}"));
+                parameterBuilder.Append(FormattableString.Invariant($" -accountPassword {_deploymentParameters.ServerAccountPassword}"));
+                parameterBuilder.Append(FormattableString.Invariant($" -deployedFolderPath {_deployedFolderPathInFileShare}"));
 
                 if (!string.IsNullOrEmpty(_deploymentParameters.DotnetRuntimePath))
                 {
-                    parameterBuilder.Append($" -dotnetRuntimePath \"{_deploymentParameters.DotnetRuntimePath}\"");
+                    parameterBuilder.Append(FormattableString.Invariant($" -dotnetRuntimePath \"{_deploymentParameters.DotnetRuntimePath}\""));
                 }
 
-                parameterBuilder.Append($" -executablePath \"{executablePath}\"");
+                parameterBuilder.Append(FormattableString.Invariant($" -executablePath \"{executablePath}\""));
 
                 if (!string.IsNullOrEmpty(executableParameters))
                 {
-                    parameterBuilder.Append($" -executableParameters \"{executableParameters}\"");
+                    parameterBuilder.Append(FormattableString.Invariant($" -executableParameters \"{executableParameters}\""));
                 }
 
-                parameterBuilder.Append($" -serverType {_deploymentParameters.ServerType}");
-                parameterBuilder.Append($" -serverAction {serverAction}");
-                parameterBuilder.Append($" -applicationBaseUrl {_deploymentParameters.ApplicationBaseUriHint}");
+                parameterBuilder.Append(FormattableString.Invariant($" -serverType {_deploymentParameters.ServerType}"));
+                parameterBuilder.Append(FormattableString.Invariant($" -serverAction {serverAction}"));
+                parameterBuilder.Append(FormattableString.Invariant($" -applicationBaseUrl {_deploymentParameters.ApplicationBaseUriHint}"));
                 var environmentVariables = string.Join("`,", _deploymentParameters.EnvironmentVariables.Select(envVariable => $"{envVariable.Key}={envVariable.Value}"));
-                parameterBuilder.Append($" -environmentVariables \"{environmentVariables}\"");
+                parameterBuilder.Append(FormattableString.Invariant($" -environmentVariables \"{environmentVariables}\""));
 
                 var startInfo = new ProcessStartInfo
                 {
