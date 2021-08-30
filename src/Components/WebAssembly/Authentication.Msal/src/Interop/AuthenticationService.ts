@@ -149,7 +149,7 @@ class MsalAuthorizeService implements AuthorizeService {
             this.purgeState();
 
             const request: Msal.AuthorizationUrlRequest = {
-                redirectUri: this._settings.auth?.redirectUri,
+                redirectUri: this._settings.auth.redirectUri,
                 state: await this.saveState(state),
                 scopes: []
             };
@@ -185,21 +185,21 @@ class MsalAuthorizeService implements AuthorizeService {
                     await this._msalApplication.acquireTokenSilent(silentRequest);
                 }
             } catch (e) {
-                return this.error(e.errorMessage);
+                return this.error((e as Msal.AuthError).errorMessage);
             }
 
             return this.success(state);
         } catch (e) {
-            return this.error(e.message);
+            return this.error((e as Error).message);
         }
     }
 
     async signInCore(request: Msal.AuthorizationUrlRequest): Promise<Msal.AuthenticationResult | Msal.AuthError | undefined> {
         const loginMode = this._settings.loginMode.toLowerCase();
         if (loginMode === 'redirect') {
-            return this.signInWithRedirect(<Msal.RedirectRequest> request);
+            return this.signInWithRedirect(request as Msal.RedirectRequest);
         } else {
-            return this.signInWithPopup(<Msal.PopupRequest> request);
+            return this.signInWithPopup(request as Msal.PopupRequest);
         }
     }
 
@@ -207,7 +207,7 @@ class MsalAuthorizeService implements AuthorizeService {
         try {
             return await this._msalApplication.loginRedirect(request);
         } catch (e) {
-            return e;
+            return e as any;
         }
     }
 
@@ -219,7 +219,7 @@ class MsalAuthorizeService implements AuthorizeService {
             if (this.isMsalError(e) && e.errorCode !== Msal.BrowserAuthErrorMessage.userCancelledError.code) {
                 this.signInWithRedirect(request);
             } else {
-                return e;
+                return e as any;
             }
         }
     }
