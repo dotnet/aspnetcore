@@ -123,13 +123,13 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Adds the <see cref="IAcceptsMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+        /// Adds <see cref="IAcceptsMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
         /// produced by <paramref name="builder"/>.
         /// </summary>
-        /// <typeparam name="TRequest">The type of the request.</typeparam>
+        /// <typeparam name="TRequest">The type of the request body.</typeparam>
         /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
-        /// <param name="contentType">The request content type. Defaults to "application/json" if empty.</param>
-        /// <param name="additionalContentTypes">Additional response content types the endpoint produces for the supplied status code.</param>
+        /// <param name="contentType">The request content type that the endpoint accepts.</param>
+        /// <param name="additionalContentTypes">Additional request content types that the endpoint accepts.</param>
         /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static DelegateEndpointConventionBuilder Accepts<TRequest>(this DelegateEndpointConventionBuilder builder,
             string contentType, params string[] additionalContentTypes) where TRequest : notnull
@@ -140,14 +140,14 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Adds the <see cref="IAcceptsMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+        /// Adds <see cref="IAcceptsMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
         /// produced by <paramref name="builder"/>.
         /// </summary>
-        /// <typeparam name="TRequest">The type of the request.</typeparam>
+        /// <typeparam name="TRequest">The type of the request body.</typeparam>
         /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
-        /// <param name="isRequired"> Indicates whether the request body is required or not.</param>
-        /// <param name="contentType">The request content type. Defaults to "application/json" if empty.</param>
-        /// <param name="additionalContentTypes">Additional response content types the endpoint produces for the supplied status code.</param>
+        /// <param name="isRequired">Indicates whether the request body is required or not.</param>
+        /// <param name="contentType">The request content type that the endpoint accepts.</param>
+        /// <param name="additionalContentTypes">Additional request content types that the endpoint accepts.</param>
         /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static DelegateEndpointConventionBuilder Accepts<TRequest>(this DelegateEndpointConventionBuilder builder,
             bool isRequired, string contentType, params string[] additionalContentTypes) where TRequest : notnull
@@ -158,13 +158,13 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Adds the <see cref="IAcceptsMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+        /// Adds <see cref="IAcceptsMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
         /// produced by <paramref name="builder"/>.
         /// </summary>
         /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
-        /// <param name="requestType">The type of the request. Defaults to null.</param>
-        /// <param name="contentType">The response content body that the endpoint accepts.</param>
-        /// <param name="additionalContentTypes">Additional response content types the endpoint accepts</param>
+        /// <param name="requestType">The type of the request body.</param>
+        /// <param name="contentType">The request content type that the endpoint accepts.</param>
+        /// <param name="additionalContentTypes">Additional request content types that the endpoint accepts.</param>
         /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static DelegateEndpointConventionBuilder Accepts(this DelegateEndpointConventionBuilder builder,
             Type requestType, string contentType, params string[] additionalContentTypes)
@@ -175,19 +175,18 @@ namespace Microsoft.AspNetCore.Http
 
 
         /// <summary>
-        /// Adds the <see cref="IAcceptsMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+        /// Adds <see cref="IAcceptsMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
         /// produced by <paramref name="builder"/>.
         /// </summary>
         /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
-        /// <param name="requestType">The type of the request. Defaults to null.</param>
-        /// <param name="isRequired"> Indicates whether the request Type is required or not.</param>
-        /// <param name="contentType">The response content body that the endpoint accepts.</param>
-        /// <param name="additionalContentTypes">Additional response content types the endpoint accepts</param>
+        /// <param name="requestType">The type of the request body.</param>
+        /// <param name="isRequired">Indicates whether the request body is required or not.</param>
+        /// <param name="contentType">The request content type that the endpoint accepts.</param>
+        /// <param name="additionalContentTypes">Additional request content types that the endpoint accepts.</param>
         /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static DelegateEndpointConventionBuilder Accepts(this DelegateEndpointConventionBuilder builder,
             Type requestType, bool isRequired, string contentType, params string[] additionalContentTypes)
         {
-
             builder.WithMetadata(new AcceptsMetadata(requestType, isRequired, GetAllContentTypes(contentType, additionalContentTypes)));
             return builder;
         }
