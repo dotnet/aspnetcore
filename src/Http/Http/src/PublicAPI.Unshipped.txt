@@ -9,8 +9,3 @@
 Microsoft.AspNetCore.Http.Features.IHttpActivityFeature
 Microsoft.AspNetCore.Http.Features.IHttpActivityFeature.Activity.get -> System.Diagnostics.Activity!
 Microsoft.AspNetCore.Http.Features.IHttpActivityFeature.Activity.set -> void
-Microsoft.AspNetCore.Http.ITagsMetadata
-Microsoft.AspNetCore.Http.ITagsMetadata.Tags.get -> System.Collections.Generic.IReadOnlyList<string!>!
-Microsoft.AspNetCore.Http.TagsAttribute
-Microsoft.AspNetCore.Http.TagsAttribute.TagsAttribute(params string![]! tags) -> void
-Microsoft.AspNetCore.Http.TagsAttribute.Tags.get -> System.Collections.Generic.IReadOnlyList<string!>!
