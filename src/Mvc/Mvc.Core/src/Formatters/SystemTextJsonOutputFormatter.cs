@@ -82,9 +82,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 try
                 {
                     await JsonSerializer.SerializeAsync(responseStream, context.Object, objectType, SerializerOptions, httpContext.RequestAborted);
+                    await responseStream.FlushAsync(httpContext.RequestAborted);
                 }
                 catch (OperationCanceledException) { }
-                await responseStream.FlushAsync();
             }
             else
             {

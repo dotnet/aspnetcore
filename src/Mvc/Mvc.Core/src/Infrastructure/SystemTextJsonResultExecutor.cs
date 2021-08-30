@@ -77,9 +77,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 try
                 {
                     await JsonSerializer.SerializeAsync(responseStream, value, objectType, jsonSerializerOptions, context.HttpContext.RequestAborted);
+                    await responseStream.FlushAsync(context.HttpContext.RequestAborted);
                 }
                 catch (OperationCanceledException) { }
-                await responseStream.FlushAsync();
             }
             else
             {

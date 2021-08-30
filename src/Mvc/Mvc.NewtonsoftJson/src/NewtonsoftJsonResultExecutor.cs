@@ -129,7 +129,11 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
                 if (value != null && _asyncEnumerableReaderFactory.TryGetReader(value.GetType(), out var reader))
                 {
                     Log.BufferingAsyncEnumerable(_logger, value);
-                    value = await reader(value, context.HttpContext.RequestAborted);
+                    try
+                    {
+                        value = await reader(value, context.HttpContext.RequestAborted);
+                    }
+                    catch (OperationCanceledException) { }
                     if (context.HttpContext.RequestAborted.IsCancellationRequested)
                     {
                         return;
