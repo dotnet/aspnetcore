@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Http.Metadata
         /// <summary>
         /// Creates a new instance of <see cref="AcceptsMetadata"/> with a type.
         /// </summary>
-        public AcceptsMetadata(Type? type, bool isRequired, string[] contentTypes)
+        public AcceptsMetadata(Type? type, bool isOptional, string[] contentTypes)
         {
             RequestType = type ?? throw new ArgumentNullException(nameof(type));
 
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Http.Metadata
             }
 
             ContentTypes = contentTypes;
-            IsRequired = isRequired;
+            IsOptional = isOptional;
         }
 
         /// <summary>
@@ -48,13 +48,13 @@ namespace Microsoft.AspNetCore.Http.Metadata
         public IReadOnlyList<string> ContentTypes { get; }
 
         /// <summary>
-        /// Accepts request content types of any shape. 
+        /// Gets the type being read from the request. 
         /// </summary>
         public Type? RequestType { get; }
 
         /// <summary>
-        /// Indicates whether the request body is required or not.
+        /// Gets a value that determines if the request body is optional or not.
         /// </summary>
-        public bool IsRequired { get; }
+        public bool IsOptional { get; }
     }
 }

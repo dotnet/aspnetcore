@@ -103,8 +103,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 },
             };
 
-            var hasJsonBody = false;
-
             foreach (var parameter in methodInfo.GetParameters())
             {
                 var parameterDescription = CreateApiParameterDescription(parameter, routeEndpoint.RoutePattern);
@@ -114,36 +112,33 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     continue;
                 }
 
-                if (parameterDescription.Source == BindingSource.Body)
-                {
-                    hasJsonBody = true;
-                }
-
                 apiDescription.ParameterDescriptions.Add(parameterDescription);
             }
 
             // Get IAcceptsMetadata.
             var acceptsMetadata = routeEndpoint.Metadata.GetMetadata<IAcceptsMetadata>();
-            var acceptsRequestType = acceptsMetadata?.RequestType;
-            var isRequired = acceptsMetadata?.IsRequired;
-
-            if (acceptsRequestType is not null)
+            if (acceptsMetadata is not null)
             {
-                var parameterDescription = new ApiParameterDescription
+                var acceptsRequestType = acceptsMetadata.RequestType;
+                var isOptional = acceptsMetadata.IsOptional;
+                if (acceptsRequestType is not null)
                 {
-                    Name = acceptsRequestType.Name,
-                    ModelMetadata = CreateModelMetadata(acceptsRequestType),
-                    Source = BindingSource.Body,
-                    Type = acceptsRequestType,
-                    IsRequired = isRequired ?? true,
-                };
+                    var parameterDescription = new ApiParameterDescription
+                    {
+                        Name = acceptsRequestType.Name,
+                        ModelMetadata = CreateModelMetadata(acceptsRequestType),
+                        Source = BindingSource.Body,
+                        Type = acceptsRequestType,
+                        IsRequired = !isOptional,
+                    };
 
-                apiDescription.ParameterDescriptions.Add(parameterDescription);
+                    apiDescription.ParameterDescriptions.Add(parameterDescription);
+                }
+
+                AddSupportedRequestFormats(apiDescription.SupportedRequestFormats, acceptsMetadata);
             }
 
-            AddSupportedRequestFormats(apiDescription.SupportedRequestFormats, hasJsonBody, acceptsMetadata);
             AddSupportedResponseTypes(apiDescription.SupportedResponseTypes, methodInfo.ReturnType, routeEndpoint.Metadata);
-
             AddActionDescriptorEndpointMetadata(apiDescription.ActionDescriptor, routeEndpoint.Metadata);
 
             return apiDescription;
@@ -225,26 +220,13 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
         }
 
-        private static void AddSupportedRequestFormats(
-            IList<ApiRequestFormat> supportedRequestFormats,
-            bool hasJsonBody,
-            IAcceptsMetadata? acceptsMetadata)
+        private static void AddSupportedRequestFormats(IList<ApiRequestFormat> supportedRequestFormats, IAcceptsMetadata acceptsMetadata)
         {
-            if (acceptsMetadata is not null)
-            {
-                foreach (var contentType in acceptsMetadata.ContentTypes)
-                {
-                    supportedRequestFormats.Add(new ApiRequestFormat
-                    {
-                        MediaType = contentType
-                    });
-                }
-            }
-            else if (hasJsonBody)
+            foreach (var contentType in acceptsMetadata.ContentTypes)
             {
                 supportedRequestFormats.Add(new ApiRequestFormat
                 {
-                    MediaType = "application/json",
+                    MediaType = contentType
                 });
             }
         }

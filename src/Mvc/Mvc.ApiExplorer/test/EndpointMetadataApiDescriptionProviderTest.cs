@@ -117,14 +117,14 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         public void AddsMultipleRequestFormatsFromMetadataWithRequestType()
         {
             var apiDescription = GetApiDescription(
-                [Consumes(typeof(InferredJsonClass), "application/custom0", "application/custom1", IsRequired= true)]
+                [Consumes(typeof(InferredJsonClass), "application/custom0", "application/custom1", IsOptional = true)]
                 () => { });
 
             Assert.Equal(2, apiDescription.SupportedRequestFormats.Count);
 
             var apiParameterDescription = apiDescription.ParameterDescriptions[0];
             Assert.Equal("InferredJsonClass", apiParameterDescription.Type.Name);
-            Assert.True(apiParameterDescription.IsRequired);
+            Assert.False(apiParameterDescription.IsRequired);
         }
 
         [Fact]
