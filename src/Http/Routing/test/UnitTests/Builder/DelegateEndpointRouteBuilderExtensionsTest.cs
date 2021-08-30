@@ -511,8 +511,6 @@ namespace Microsoft.AspNetCore.Builder
 
             bool IAcceptsMetadata.IsOptional => false;
 
-            public bool IsOptional;
-
             Type? _requestType;
 
             List<string> _contentTypes = new();           
