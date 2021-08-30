@@ -35,8 +35,8 @@ namespace Microsoft.AspNetCore.Mvc
 
         /// <summary>
         /// Creates a new instance of <see cref="ConsumesAttribute"/>.
-        /// <param name="contentType">The request content type </param>
-        /// <param name="otherContentTypes">The additional list of allowed request content types </param>
+        /// <param name="contentType">The request content type.</param>
+        /// <param name="otherContentTypes">The additional list of allowed request content types.</param>
         /// </summary>
         public ConsumesAttribute(string contentType, params string[] otherContentTypes)
         {
