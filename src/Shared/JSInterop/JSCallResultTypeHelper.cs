@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.JSInterop
 {
@@ -14,9 +15,9 @@ namespace Microsoft.JSInterop
         {
             if (typeof(TResult).Assembly == _currentAssembly)
             {
-                if (typeof(TResult) == typeof(IJSObjectReference)
-                    || typeof(TResult) == typeof(IJSInProcessObjectReference)
-                    || typeof(TResult) == typeof(IJSUnmarshalledObjectReference))
+                if (typeof(TResult) == typeof(IJSObjectReference) ||
+                    typeof(TResult) == typeof(IJSInProcessObjectReference) ||
+                    typeof(TResult) == typeof(IJSUnmarshalledObjectReference))
                 {
                     return JSCallResultType.JSObjectReference;
                 }

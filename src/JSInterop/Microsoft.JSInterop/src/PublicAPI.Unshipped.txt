@@ -1,5 +1,4 @@
 #nullable enable
-Microsoft.JSInterop.IJSVoidResult
 Microsoft.JSInterop.IJSStreamReference
 Microsoft.JSInterop.IJSStreamReference.Length.get -> long
 Microsoft.JSInterop.IJSStreamReference.OpenReadStreamAsync(long maxAllowedSize = 512000, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<System.IO.Stream!>
@@ -12,6 +11,7 @@ Microsoft.JSInterop.DotNetStreamReference.DotNetStreamReference(System.IO.Stream
 Microsoft.JSInterop.DotNetStreamReference.LeaveOpen.get -> bool
 Microsoft.JSInterop.DotNetStreamReference.Stream.get -> System.IO.Stream!
 Microsoft.JSInterop.Infrastructure.DotNetInvocationResult.ResultJson.get -> string?
+Microsoft.JSInterop.Infrastructure.IJSVoidResult
 Microsoft.JSInterop.JSCallResultType.JSStreamReference = 2 -> Microsoft.JSInterop.JSCallResultType
 Microsoft.JSInterop.JSCallResultType.JSVoidResult = 3 -> Microsoft.JSInterop.JSCallResultType
 Microsoft.JSInterop.JSRuntime.Dispose() -> void
