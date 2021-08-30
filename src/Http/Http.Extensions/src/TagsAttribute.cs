@@ -8,12 +8,12 @@ namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
     /// Specifies a collection of tags in <see cref="Endpoint.Metadata"/>.
+    /// </summary>
     /// <remarks>
     /// The OpenAPI specification supports a tags classification to categorize operations
     /// into related groups. These tags are typically included in the generated specification
     /// and are typically used to group operations by tags in the UI.
     /// </remarks>
-    /// </summary>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Delegate | AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
     public sealed class TagsAttribute : Attribute, ITagsMetadata
     {
