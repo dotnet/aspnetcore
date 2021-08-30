@@ -508,7 +508,10 @@ namespace Microsoft.AspNetCore.Builder
 
             IReadOnlyList<string> IAcceptsMetadata.ContentTypes => _contentTypes;
             Type? IAcceptsMetadata.RequestType => _requestType;
-            public bool IsOptional => true;
+
+            bool IAcceptsMetadata.IsOptional => false;
+
+            public bool IsOptional;
 
             Type? _requestType;
 
