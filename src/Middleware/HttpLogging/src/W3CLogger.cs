@@ -48,19 +48,10 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         private string Format(string[] elements)
         {
-            // Need to calculate TimeTaken now, if applicable
-            var date = elements[W3CLoggingMiddleware._dateIndex];
-            var time = elements[W3CLoggingMiddleware._timeIndex];
-            if (!string.IsNullOrEmpty(time))
+            if (_loggingFields.HasFlag(W3CLoggingFields.TimeTaken) && !string.IsNullOrEmpty(elements[W3CLoggingMiddleware._timeTakenIndex]))
             {
-                if (!string.IsNullOrEmpty(date) && _loggingFields.HasFlag(W3CLoggingFields.TimeTaken))
-                {
-                    DateTime start = DateTime.ParseExact(date + time, "yyyy-MM-ddHH:mm:ss.fff", CultureInfo.InvariantCulture);
-                    var elapsed = DateTime.UtcNow.Subtract(start);
-                    elements[W3CLoggingMiddleware._timeTakenIndex] = elapsed.TotalMilliseconds.ToString(CultureInfo.InvariantCulture);
-                }
-                // Trim milliseconds off of start-time
-                elements[W3CLoggingMiddleware._timeIndex] = time.Substring(0, 8);
+                // Need to calculate TimeTaken now, if applicable
+                elements[W3CLoggingMiddleware._timeTakenIndex] = (Environment.TickCount - Int32.Parse(elements[W3CLoggingMiddleware._timeTakenIndex])).ToString(CultureInfo.InvariantCulture);
             }
 
             // 200 is around the length of an average cookie-less entry

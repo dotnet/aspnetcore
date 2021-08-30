@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     var elements = new string[W3CLoggingMiddleware._fieldsLength];
                     now = DateTime.UtcNow;
                     AddToList(elements, W3CLoggingMiddleware._dateIndex, now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
-                    AddToList(elements, W3CLoggingMiddleware._timeIndex, now.ToString("HH:mm:ss.fff", CultureInfo.InvariantCulture));
+                    AddToList(elements, W3CLoggingMiddleware._timeIndex, now.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
 
                     logger.Log(elements);
                     await logger.Processor.WaitForWrites(4).DefaultTimeout();
