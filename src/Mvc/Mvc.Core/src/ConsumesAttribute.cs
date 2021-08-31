@@ -99,6 +99,7 @@ namespace Microsoft.AspNetCore.Mvc
 
         /// <summary>
         /// Gets or sets a value that determines if the request body is optional.
+        /// This value is only used to specify if the request body is required in API explorer.
         /// </summary>
         public bool IsOptional { get; set; }
 
