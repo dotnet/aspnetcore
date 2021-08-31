@@ -98,6 +98,10 @@ namespace Microsoft.Extensions.DependencyInjection
             //
             services.TryAddSingleton<TemplateBinderFactory, DefaultTemplateBinderFactory>();
             services.TryAddSingleton<RoutePatternTransformer, DefaultRoutePatternTransformer>();
+
+            // RouteHandlerOptions.ThrowOnBadRequest = _environment.IsDevelopment();
+            services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<RouteHandlerOptions>, ConfigureRouteHandlerOptions>());
+
             return services;
         }
 

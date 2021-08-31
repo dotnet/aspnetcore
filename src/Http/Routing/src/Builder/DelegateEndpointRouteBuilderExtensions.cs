@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -168,10 +170,14 @@ namespace Microsoft.AspNetCore.Builder
                 routeParams.Add(part.Name);
             }
 
+            // REVIEW: Should we just default ThrowOnBadRequest to false if Options is somehow missing?
+            var routeHandlerOptions = endpoints.ServiceProvider.GetRequiredService<IOptions<RouteHandlerOptions>>();
+
             var options = new RequestDelegateFactoryOptions
             {
                 ServiceProvider = endpoints.ServiceProvider,
-                RouteParameterNames = routeParams
+                RouteParameterNames = routeParams,
+                ThrowOnBadRequest = routeHandlerOptions.Value.ThrowOnBadRequest
             };
 
             var requestDelegateResult = RequestDelegateFactory.Create(handler, options);

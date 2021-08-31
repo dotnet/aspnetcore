@@ -163,6 +163,8 @@ Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteParameterNames.get 
 Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteParameterNames.init -> void
 Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.ServiceProvider.get -> System.IServiceProvider?
 Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.ServiceProvider.init -> void
+Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.ThrowOnBadRequest.get -> bool
+Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.ThrowOnBadRequest.init -> void
 Microsoft.AspNetCore.Mvc.ProblemDetails
 Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.get -> string?
 Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.set -> void
