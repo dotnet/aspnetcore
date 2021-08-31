@@ -14,12 +14,12 @@ namespace Microsoft.AspNetCore.Analyzers
 {
     internal class AnalyzersDiagnosticAnalyzerRunner : DiagnosticAnalyzerRunner
     {
-        private readonly OutputKind? _outputKind;
+        private readonly OutputKind _outputKind;
 
         public AnalyzersDiagnosticAnalyzerRunner(DiagnosticAnalyzer analyzer, OutputKind? outputKind = null)
         {
             Analyzer = analyzer;
-            _outputKind = outputKind;
+            _outputKind = outputKind ?? OutputKind.DynamicallyLinkedLibrary;
         }
 
         public DiagnosticAnalyzer Analyzer { get; }
@@ -57,11 +57,7 @@ namespace Microsoft.AspNetCore.Analyzers
 
         protected override CompilationOptions ConfigureCompilationOptions(CompilationOptions options)
         {
-            if (_outputKind is not null)
-            {
-                return options.WithOutputKind((OutputKind)(_outputKind));
-            }
-            return options.WithOutputKind(OutputKind.DynamicallyLinkedLibrary);
+            return options.WithOutputKind(_outputKind);
         }
     }
 }
