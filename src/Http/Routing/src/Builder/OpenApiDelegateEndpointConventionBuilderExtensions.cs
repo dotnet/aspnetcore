@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
     /// Extension methods for adding <see cref="Endpoint.Metadata"/> that is
-    /// meant to be consumed OpenAPI libraries.
+    /// meant to be consumed by OpenAPI libraries.
     /// </summary>
     public static class OpenApiDelegateEndpointConventionBuilderExtensions
     {
