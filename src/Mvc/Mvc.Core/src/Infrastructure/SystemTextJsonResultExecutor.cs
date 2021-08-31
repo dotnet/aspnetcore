@@ -90,9 +90,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 ExceptionDispatchInfo? exceptionDispatchInfo = null;
                 try
                 {
-                    await JsonSerializer.SerializeAsync(transcodingStream, value, objectType, jsonSerializerOptions);
-                    await transcodingStream.FlushAsync();
+                    await JsonSerializer.SerializeAsync(transcodingStream, value, objectType, jsonSerializerOptions, context.HttpContext.RequestAborted);
+                    await transcodingStream.FlushAsync(context.HttpContext.RequestAborted);
                 }
+                catch (OperationCanceledException)
+                { }
                 catch (Exception ex)
                 {
                     // TranscodingStream may write to the inner stream as part of it's disposal.

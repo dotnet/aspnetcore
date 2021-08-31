@@ -38,37 +38,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => executor.ExecuteAsync(context, result));
         }
 
-        [Fact]
-        public async Task ExecuteAsync_AsyncEnumerableConnectionCloses()
-        {
-            var context = GetActionContext();
-            var cts = new CancellationTokenSource();
-            context.HttpContext.RequestAborted = cts.Token;
-            var result = new JsonResult(AsyncEnumerableClosedConnection());
-            var executor = CreateExecutor();
-            var iterated = false;
-
-            // Act
-            await executor.ExecuteAsync(context, result);
-
-            // Assert
-            var written = GetWrittenBytes(context.HttpContext);
-            // System.Text.Json might write the '[' before cancellation is observed
-            Assert.InRange(written.Length, 0, 1);
-            Assert.False(iterated);
-
-            async IAsyncEnumerable<int> AsyncEnumerableClosedConnection([EnumeratorCancellation] CancellationToken cancellationToken = default)
-            {
-                await Task.Yield();
-                cts.Cancel();
-                for (var i = 0; i < 100000 && !cancellationToken.IsCancellationRequested; i++)
-                {
-                    iterated = true;
-                    yield return i;
-                }
-            }
-        }
-
         protected override object GetIndentedSettings()
         {
             return new JsonSerializerOptions { WriteIndented = true };
