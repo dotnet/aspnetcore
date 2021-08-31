@@ -2360,7 +2360,65 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.False(httpContext.RequestAborted.IsCancellationRequested);
             var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
             Assert.Equal(@"""Hello Tester. This is from an extension method.""", decodedResponseBody);
+        }
 
+        [Fact]
+        public async Task RequestDelegateRejectsNonJsonContent()
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Headers["Content-Type"] = "application/xml";
+            httpContext.Request.Headers["Content-Length"] = "1";
+            httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(LoggerFactory);
+            httpContext.RequestServices = serviceCollection.BuildServiceProvider();
+
+            var factoryResult = RequestDelegateFactory.Create((HttpContext context, Todo todo) =>
+            {
+            });
+            var requestDelegate = factoryResult.RequestDelegate;
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(415, httpContext.Response.StatusCode);
+            var logMessage = Assert.Single(TestSink.Writes);
+            Assert.Equal(new EventId(6, "UnexpectedContentType"), logMessage.EventId);
+            Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
+        }
+
+        [Fact]
+        public async Task RequestDelegateWithBindAndImplicitBodyRejectsNonJsonContent()
+        {
+            Todo originalTodo = new()
+            {
+                Name = "Write more tests!"
+            };
+
+            var httpContext = new DefaultHttpContext();
+
+            var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(originalTodo);
+            var stream = new MemoryStream(requestBodyBytes);
+            httpContext.Request.Body = stream;
+            httpContext.Request.Headers["Content-Type"] = "application/xml";
+            httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
+            httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(LoggerFactory);
+            httpContext.RequestServices = serviceCollection.BuildServiceProvider();
+
+            var factoryResult = RequestDelegateFactory.Create((HttpContext context, CustomTodo customTodo, Todo todo) =>
+            {
+            });
+            var requestDelegate = factoryResult.RequestDelegate;
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(415, httpContext.Response.StatusCode);
+            var logMessage = Assert.Single(TestSink.Writes);
+            Assert.Equal(new EventId(6, "UnexpectedContentType"), logMessage.EventId);
+            Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
         }
 
         private DefaultHttpContext CreateHttpContext()
@@ -2393,7 +2451,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 Assert.Equal(typeof(CustomTodo), parameter.ParameterType);
                 Assert.Equal("customTodo", parameter.Name);
 
-                var body = await context.Request.ReadFromJsonAsync<CustomTodo>();
+                var body = await JsonSerializer.DeserializeAsync<CustomTodo>(context.Request.Body);
                 context.Request.Body.Position = 0;
                 return body;
             }
