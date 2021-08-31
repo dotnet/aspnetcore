@@ -47,7 +47,7 @@ namespace RoutingSandbox
                         sb.AppendLine("Endpoints:");
                         foreach (var endpoint in dataSource.Endpoints.OfType<RouteEndpoint>().OrderBy(e => e.RoutePattern.RawText, StringComparer.OrdinalIgnoreCase))
                         {
-                            sb.AppendLine($"- {endpoint.RoutePattern.RawText}");
+                            sb.AppendLine(FormattableString.Invariant($"- {endpoint.RoutePattern.RawText}"));
                             foreach (var metadata in endpoint.Metadata)
                             {
                                 sb.AppendLine("    " + metadata);

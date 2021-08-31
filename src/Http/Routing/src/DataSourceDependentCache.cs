@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Routing
         private readonly EndpointDataSource _dataSource;
         private readonly Func<IReadOnlyList<Endpoint>, T> _initializeCore;
         private readonly Func<T> _initializer;
-        private readonly Action<object> _initializerWithState;
+        private readonly Action<object?> _initializerWithState;
 
         private object _lock;
         private bool _initialized;

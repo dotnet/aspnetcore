@@ -76,7 +76,7 @@ namespace Microsoft.Net.Http.Headers
         {
             get
             {
-                return NameValueHeaderValue.Find(_parameters, CharsetString)?.Value.Value;
+                return NameValueHeaderValue.Find(_parameters, CharsetString)?.Value ?? default;
             }
             set
             {
@@ -115,7 +115,9 @@ namespace Microsoft.Net.Http.Headers
             get
             {
                 var charset = Charset;
-                if (!StringSegment.IsNullOrEmpty(charset))
+
+                // Check HasValue; IsNullOrEmpty lacks [MemberNotNullWhen(false, nameof(Value))].
+                if (charset.HasValue && !StringSegment.IsNullOrEmpty(charset))
                 {
                     try
                     {

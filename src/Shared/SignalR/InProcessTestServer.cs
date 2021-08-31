@@ -134,13 +134,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var builder = new StringBuilder();
             foreach (var log in logs)
             {
-                builder.AppendLine($"{log.Timestamp:O} {log.Write.LoggerName} {log.Write.LogLevel}: {log.Write.Formatter(log.Write.State, log.Write.Exception)}");
+                builder.AppendLine(FormattableString.Invariant($"{log.Timestamp:O} {log.Write.LoggerName} {log.Write.LogLevel}: {log.Write.Formatter(log.Write.State, log.Write.Exception)}"));
                 if (log.Write.Exception != null)
                 {
                     var message = log.Write.Exception.ToString();
                     foreach (var line in message.Split(new[] { Environment.NewLine }, StringSplitOptions.None))
                     {
-                        builder.AppendLine($"| {line}");
+                        builder.AppendLine(FormattableString.Invariant($"| {line}"));
                     }
                 }
             }

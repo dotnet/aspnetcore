@@ -7,6 +7,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Data.Sqlite;
@@ -55,6 +56,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             services.AddLogging();
             services.AddSingleton<ILogger<UserManager<TUser>>>(new TestLogger<UserManager<TUser>>());
             services.AddSingleton<ILogger<RoleManager<TRole>>>(new TestLogger<RoleManager<TRole>>());
+            services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
             SetupAddIdentity(services);
         }
 

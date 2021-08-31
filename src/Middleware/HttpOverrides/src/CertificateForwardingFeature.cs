@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                 {
                     try
                     {
-                        _certificate = _options.HeaderConverter(_header);
+                        _certificate = _options.HeaderConverter(_header.ToString());
                     }
                     catch (Exception e)
                     {

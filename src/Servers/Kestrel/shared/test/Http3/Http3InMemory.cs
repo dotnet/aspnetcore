@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net.Http;
@@ -1069,7 +1070,7 @@ namespace Microsoft.AspNetCore.Testing
 
             StreamId = streamId;
             _testBase.Logger.LogInformation($"Initializing stream {streamId}");
-            ConnectionId = "TEST:" + streamId.ToString();
+            ConnectionId = "TEST:" + streamId.ToString(CultureInfo.InvariantCulture);
             AbortReadException = null;
             AbortWriteException = null;
 

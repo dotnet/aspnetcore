@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Runtime.InteropServices;
 using BasicTestApp;
 using BasicTestApp.RouterTest;
@@ -810,9 +811,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var app = Browser.MountTestComponent<TestRouter>();
             Assert.Equal("Hello Abc .", app.FindElement(By.Id("test-info")).Text);
             Assert.Equal("0", app.FindElement(By.Id("value-QueryInt")).Text);
-            Assert.Equal(dateTime.ToString("hh:mm:ss on yyyy-MM-dd"), app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
-            Assert.Equal(dateOnly.ToString("yyyy-MM-dd"), app.FindElement(By.Id("value-NullableDateOnlyValue")).Text);
-            Assert.Equal(timeOnly.ToString("hh:mm:ss"), app.FindElement(By.Id("value-NullableTimeOnlyValue")).Text);
+            Assert.Equal(dateTime.ToString("hh:mm:ss on yyyy-MM-dd", CultureInfo.InvariantCulture), app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
+            Assert.Equal(dateOnly.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), app.FindElement(By.Id("value-NullableDateOnlyValue")).Text);
+            Assert.Equal(timeOnly.ToString("hh:mm:ss", CultureInfo.InvariantCulture), app.FindElement(By.Id("value-NullableTimeOnlyValue")).Text);
             Assert.Equal(string.Empty, app.FindElement(By.Id("value-StringValue")).Text);
             Assert.Equal("0 values ()", app.FindElement(By.Id("value-LongValues")).Text);
 

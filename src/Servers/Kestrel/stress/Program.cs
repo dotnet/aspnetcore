@@ -721,7 +721,7 @@ public class Program
             {
                 if (_writer != null)
                 {
-                    var sb = new StringBuilder().Append($"[{eventData.EventName}] ");
+                    var sb = new StringBuilder().Append(FormattableString.Invariant($"[{eventData.EventName}] "));
                     for (int i = 0; i < eventData.Payload.Count; i++)
                     {
                         if (i > 0) sb.Append(", ");

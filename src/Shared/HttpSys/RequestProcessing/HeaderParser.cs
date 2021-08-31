@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 int start = 0;
                 bool inQuotes = false;
                 int current = 0;
-                for ( ; current < value.Length; current++)
+                for ( ; current < value!.Length; current++)
                 {
                     char ch = value[current];
                     if (inQuotes)

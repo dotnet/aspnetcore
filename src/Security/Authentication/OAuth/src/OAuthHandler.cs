@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                 return HandleRequestResult.Fail("Code was not found.", properties);
             }
 
-            var codeExchangeContext = new OAuthCodeExchangeContext(properties, code, BuildRedirectUri(Options.CallbackPath));
+            var codeExchangeContext = new OAuthCodeExchangeContext(properties, code.ToString(), BuildRedirectUri(Options.CallbackPath));
             using var tokens = await ExchangeCodeAsync(codeExchangeContext);
 
             if (tokens.Error != null)
@@ -275,12 +275,14 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             {
                 location = "(not set)";
             }
+
             var cookie = Context.Response.Headers.SetCookie;
             if (cookie == StringValues.Empty)
             {
                 cookie = "(not set)";
             }
-            Logger.HandleChallenge(location, cookie);
+
+            Logger.HandleChallenge(location.ToString(), cookie.ToString());
         }
 
         /// <summary>

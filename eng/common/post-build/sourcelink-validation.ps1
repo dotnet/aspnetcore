@@ -107,8 +107,12 @@ $ValidatePackage = {
                         try {
                           $Uri = $Link -as [System.URI]
                         
-                          # Only GitHub links are valid
-                          if ($Uri.AbsoluteURI -ne $null -and ($Uri.Host -match 'github' -or $Uri.Host -match 'githubusercontent')) {
+                          if ($Link -match "submodules") {
+                            # Skip submodule links until sourcelink properly handles submodules
+                            $Status = 200
+                          }
+                          elseif ($Uri.AbsoluteURI -ne $null -and ($Uri.Host -match 'github' -or $Uri.Host -match 'githubusercontent')) {
+                            # Only GitHub links are valid
                             $Status = (Invoke-WebRequest -Uri $Link -UseBasicParsing -Method HEAD -TimeoutSec 5).StatusCode
                           }
                           else {

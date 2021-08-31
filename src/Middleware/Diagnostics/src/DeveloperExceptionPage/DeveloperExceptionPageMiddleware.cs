@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                 sb.AppendLine("=======");
                 foreach (var pair in httpContext.Request.Headers)
                 {
-                    sb.AppendLine($"{pair.Key}: {pair.Value}");
+                    sb.AppendLine(FormattableString.Invariant($"{pair.Key}: {pair.Value}"));
                 }
 
                 return httpContext.Response.WriteAsync(sb.ToString());
