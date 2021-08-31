@@ -101,7 +101,8 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         private bool TryGetDirectoryInfo(PathString subpath, out IDirectoryContents contents)
         {
-            contents = _fileProvider.GetDirectoryContents(subpath.Value);
+            // TryMatchPath will not output an empty subpath when it returns true. This is called only in that case.
+            contents = _fileProvider.GetDirectoryContents(subpath.Value!);
             return contents.Exists;
         }
     }

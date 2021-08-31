@@ -95,7 +95,10 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
             if (HttpMethods.IsGet(Request.Method))
             {
-                message = new OpenIdConnectMessage(Request.Query.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
+                // ToArray handles the StringValues.IsNullOrEmpty case. We assume non-empty Value does not contain null elements.
+#pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
+                message = new OpenIdConnectMessage(Request.Query.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value.ToArray())));
+#pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
             }
 
             // assumption: if the ContentType is "application/x-www-form-urlencoded" it should be safe to read as it is small.
@@ -106,7 +109,11 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
               && Request.Body.CanRead)
             {
                 var form = await Request.ReadFormAsync(Context.RequestAborted);
-                message = new OpenIdConnectMessage(form.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
+
+                // ToArray handles the StringValues.IsNullOrEmpty case. We assume non-empty Value does not contain null elements.
+#pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
+                message = new OpenIdConnectMessage(form.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value.ToArray())));
+#pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
             }
 
             var remoteSignOutContext = new RemoteSignOutContext(Context, Scheme, Options, message);
@@ -292,7 +299,11 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <returns>A task executing the callback procedure</returns>
         protected virtual async Task<bool> HandleSignOutCallbackAsync()
         {
-            var message = new OpenIdConnectMessage(Request.Query.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
+            // ToArray handles the StringValues.IsNullOrEmpty case. We assume non-empty Value does not contain null elements.
+#pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
+            var message = new OpenIdConnectMessage(Request.Query.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value.ToArray())));
+#pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
+
             AuthenticationProperties? properties = null;
             if (!string.IsNullOrEmpty(message.State))
             {
@@ -344,12 +355,14 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             {
                 location = "(not set)";
             }
+
             var cookie = Context.Response.Headers.SetCookie;
             if (cookie == StringValues.Empty)
             {
                 cookie = "(not set)";
             }
-            Logger.HandleChallenge(location, cookie);
+
+            Logger.HandleChallenge(location.ToString(), cookie.ToString());
         }
 
         private async Task HandleChallengeAsyncInternal(AuthenticationProperties properties)
@@ -498,7 +511,10 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
             if (HttpMethods.IsGet(Request.Method))
             {
-                authorizationResponse = new OpenIdConnectMessage(Request.Query.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
+                // ToArray handles the StringValues.IsNullOrEmpty case. We assume non-empty Value does not contain null elements.
+#pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
+                authorizationResponse = new OpenIdConnectMessage(Request.Query.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value.ToArray())));
+#pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
 
                 // response_mode=query (explicit or not) and a response_type containing id_token
                 // or token are not considered as a safe combination and MUST be rejected.
@@ -522,7 +538,11 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
               && Request.Body.CanRead)
             {
                 var form = await Request.ReadFormAsync(Context.RequestAborted);
-                authorizationResponse = new OpenIdConnectMessage(form.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
+
+                // ToArray handles the StringValues.IsNullOrEmpty case. We assume non-empty Value does not contain null elements.
+#pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
+                authorizationResponse = new OpenIdConnectMessage(form.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value.ToArray())));
+#pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
             }
 
             if (authorizationResponse == null)

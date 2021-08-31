@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     !StringValues.IsNullOrEmpty(accessControlRequestMethod))
                 {
                     needs405Endpoint = false; // We don't return a 405 for a CORS preflight request when the endpoints accept CORS preflight.
-                    httpMethod = accessControlRequestMethod;
+                    httpMethod = accessControlRequestMethod.ToString();
                 }
 
                 var matched = false;

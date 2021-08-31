@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
             Response.Cookies.Delete(Options.StateCookie.Name!, cookieOptions);
 
-            var accessToken = await ObtainAccessTokenAsync(requestToken, oauthVerifier);
+            var accessToken = await ObtainAccessTokenAsync(requestToken, oauthVerifier.ToString());
 
             var identity = new ClaimsIdentity(new[]
             {
@@ -280,7 +280,12 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 throw new Exception("Twitter oauth_callback_confirmed is not true.");
             }
 
-            return new RequestToken { Token = Uri.UnescapeDataString(responseParameters["oauth_token"]), TokenSecret = Uri.UnescapeDataString(responseParameters["oauth_token_secret"]), CallbackConfirmed = true, Properties = properties };
+            return new RequestToken {
+                Token = Uri.UnescapeDataString(responseParameters["oauth_token"].ToString()),
+                TokenSecret = Uri.UnescapeDataString(responseParameters["oauth_token_secret"].ToString()),
+                CallbackConfirmed = true,
+                Properties = properties,
+            };
         }
 
         private async Task<AccessToken> ObtainAccessTokenAsync(RequestToken token, string verifier)
@@ -303,10 +308,10 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
             return new AccessToken
             {
-                Token = Uri.UnescapeDataString(responseParameters["oauth_token"]),
-                TokenSecret = Uri.UnescapeDataString(responseParameters["oauth_token_secret"]),
-                UserId = Uri.UnescapeDataString(responseParameters["user_id"]),
-                ScreenName = Uri.UnescapeDataString(responseParameters["screen_name"])
+                Token = Uri.UnescapeDataString(responseParameters["oauth_token"].ToString()),
+                TokenSecret = Uri.UnescapeDataString(responseParameters["oauth_token_secret"].ToString()),
+                UserId = Uri.UnescapeDataString(responseParameters["user_id"].ToString()),
+                ScreenName = Uri.UnescapeDataString(responseParameters["screen_name"].ToString()),
             };
         }
 
@@ -388,7 +393,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 foreach (var error in errorResponse.Errors)
                 {
                     errorMessageStringBuilder.Append(Environment.NewLine);
-                    errorMessageStringBuilder.Append($"Code: {error.Code}, Message: '{error.Message}'");
+                    errorMessageStringBuilder.Append(FormattableString.Invariant($"Code: {error.Code}, Message: '{error.Message}'"));
                 }
             }
 

@@ -241,24 +241,26 @@ namespace Microsoft.Net.Http.Headers
 
             for (var i = 0; i < headerValues.Count; i++)
             {
-                // Trim leading white space
-                var current = HttpRuleParser.GetWhitespaceLength(headerValues[i], 0);
+                var segment = headerValues[i]!;
 
-                while (current < headerValues[i].Length)
+                // Trim leading white space
+                var current = HttpRuleParser.GetWhitespaceLength(segment, 0);
+
+                while (current < segment.Length)
                 {
                     long seconds;
                     var initial = current;
                     var tokenLength = HttpRuleParser.GetTokenLength(headerValues[i], current);
                     if (tokenLength == targetValue.Length
                         && string.Compare(headerValues[i], current, targetValue, 0, tokenLength, StringComparison.OrdinalIgnoreCase) == 0
-                        && TryParseNonNegativeInt64FromHeaderValue(current + tokenLength, headerValues[i], out seconds))
+                        && TryParseNonNegativeInt64FromHeaderValue(current + tokenLength, segment, out seconds))
                     {
                         // Token matches target value and seconds were parsed
                         value = TimeSpan.FromSeconds(seconds);
                         return true;
                     }
 
-                    current = AdvanceCacheDirectiveIndex(current + tokenLength, headerValues[i]);
+                    current = AdvanceCacheDirectiveIndex(current + tokenLength, segment);
 
                     // Ensure index was advanced
                     if (current <= initial)
@@ -295,22 +297,24 @@ namespace Microsoft.Net.Http.Headers
 
             for (var i = 0; i < cacheControlDirectives.Count; i++)
             {
-                // Trim leading white space
-                var current = HttpRuleParser.GetWhitespaceLength(cacheControlDirectives[i], 0);
+                var segment = cacheControlDirectives[i]!;
 
-                while (current < cacheControlDirectives[i].Length)
+                // Trim leading white space
+                var current = HttpRuleParser.GetWhitespaceLength(segment, 0);
+
+                while (current < segment.Length)
                 {
                     var initial = current;
 
-                    var tokenLength = HttpRuleParser.GetTokenLength(cacheControlDirectives[i], current);
+                    var tokenLength = HttpRuleParser.GetTokenLength(segment, current);
                     if (tokenLength == targetDirectives.Length
-                        && string.Compare(cacheControlDirectives[i], current, targetDirectives, 0, tokenLength, StringComparison.OrdinalIgnoreCase) == 0)
+                        && string.Compare(segment, current, targetDirectives, 0, tokenLength, StringComparison.OrdinalIgnoreCase) == 0)
                     {
                         // Token matches target value
                         return true;
                     }
 
-                    current = AdvanceCacheDirectiveIndex(current + tokenLength, cacheControlDirectives[i]);
+                    current = AdvanceCacheDirectiveIndex(current + tokenLength, segment);
 
                     // Ensure index was advanced
                     if (current <= initial)

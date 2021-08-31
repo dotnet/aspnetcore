@@ -49,7 +49,6 @@ public class LongPollingTransportTest {
     }
 
     @Test
-    @Disabled("https://github.com/dotnet/aspnetcore/issues/35684")
     public void StatusCode204StopsLongPollingTriggersOnClosed() {
         AtomicBoolean firstPoll = new AtomicBoolean(true);
         CompletableSubject block = CompletableSubject.create();
@@ -72,7 +71,7 @@ public class LongPollingTransportTest {
 
         assertFalse(onClosedRan.get());
         transport.start("http://example.com").timeout(30, TimeUnit.SECONDS).blockingAwait();
-        assertTrue(block.blockingAwait(1, TimeUnit.SECONDS));
+        assertTrue(block.blockingAwait(30, TimeUnit.SECONDS));
         assertTrue(onClosedRan.get());
         assertFalse(transport.isActive());
     }
@@ -101,7 +100,7 @@ public class LongPollingTransportTest {
         });
 
         transport.start("http://example.com").timeout(30, TimeUnit.SECONDS).blockingAwait();
-        assertTrue(blocker.blockingAwait(1, TimeUnit.SECONDS));
+        assertTrue(blocker.blockingAwait(30, TimeUnit.SECONDS));
         assertFalse(transport.isActive());
         assertTrue(onClosedRan.get());
     }
@@ -159,7 +158,7 @@ public class LongPollingTransportTest {
         transport.setOnClose((error) -> {});
 
         transport.start("http://example.com").timeout(30, TimeUnit.SECONDS).blockingAwait();
-        assertTrue(block.blockingAwait(1,TimeUnit.SECONDS));
+        assertTrue(block.blockingAwait(30, TimeUnit.SECONDS));
         assertTrue(onReceiveCalled.get());
         assertEquals("TEST", message.get());
     }
@@ -204,7 +203,7 @@ public class LongPollingTransportTest {
         transport.setOnClose((error) -> {});
 
         transport.start("http://example.com").timeout(30, TimeUnit.SECONDS).blockingAwait();
-        assertTrue(blocker.blockingAwait(1, TimeUnit.SECONDS));
+        assertTrue(blocker.blockingAwait(30, TimeUnit.SECONDS));
         assertTrue(onReceiveCalled.get());
         assertEquals("FIRSTSECONDTHIRD", message.get());
     }
@@ -220,7 +219,7 @@ public class LongPollingTransportTest {
                         requestCount.incrementAndGet();
                         return Single.just(new HttpResponse(200, "", TestUtils.emptyByteBuffer));
                     }
-                    assertTrue(close.blockingAwait(1, TimeUnit.SECONDS));
+                    assertTrue(close.blockingAwait(30, TimeUnit.SECONDS));
                     return Single.just(new HttpResponse(204, "", TestUtils.emptyByteBuffer));
                 }).on("POST", (req) -> {
                     assertFalse(req.getHeaders().isEmpty());
@@ -235,7 +234,7 @@ public class LongPollingTransportTest {
 
         transport.start("http://example.com").timeout(30, TimeUnit.SECONDS).blockingAwait();
         ByteBuffer sendBuffer = TestUtils.stringToByteBuffer("TEST");
-        assertTrue(transport.send(sendBuffer).blockingAwait(1, TimeUnit.SECONDS));
+        assertTrue(transport.send(sendBuffer).blockingAwait(30, TimeUnit.SECONDS));
         close.onComplete();
         assertEquals(headerValue.get(), "VALUE");
     }
@@ -251,7 +250,7 @@ public class LongPollingTransportTest {
                         requestCount.incrementAndGet();
                         return Single.just(new HttpResponse(200, "", TestUtils.emptyByteBuffer));
                     }
-                    assertTrue(close.blockingAwait(1, TimeUnit.SECONDS));
+                    assertTrue(close.blockingAwait(30, TimeUnit.SECONDS));
                     return Single.just(new HttpResponse(204, "", TestUtils.emptyByteBuffer));
                 })
                 .on("POST", (req) -> {
@@ -267,7 +266,7 @@ public class LongPollingTransportTest {
 
         transport.start("http://example.com").timeout(30, TimeUnit.SECONDS).blockingAwait();
         ByteBuffer sendBuffer = TestUtils.stringToByteBuffer("TEST");
-        assertTrue(transport.send(sendBuffer).blockingAwait(1, TimeUnit.SECONDS));
+        assertTrue(transport.send(sendBuffer).blockingAwait(30, TimeUnit.SECONDS));
         assertEquals(headerValue.get(), "Bearer TOKEN");
         close.onComplete();
     }
@@ -286,7 +285,7 @@ public class LongPollingTransportTest {
                     }
                     assertEquals("Bearer TOKEN1", req.getHeaders().get("Authorization"));
                     secondGet.onComplete();
-                    assertTrue(close.blockingAwait(1, TimeUnit.SECONDS));
+                    assertTrue(close.blockingAwait(30, TimeUnit.SECONDS));
                     return Single.just(new HttpResponse(204, "", TestUtils.emptyByteBuffer));
                 })
                 .on("POST", (req) -> {
@@ -302,9 +301,9 @@ public class LongPollingTransportTest {
         transport.setOnClose((error) -> {});
 
         transport.start("http://example.com").timeout(30, TimeUnit.SECONDS).blockingAwait();
-        secondGet.blockingAwait(1, TimeUnit.SECONDS);
+        secondGet.blockingAwait(30, TimeUnit.SECONDS);
         ByteBuffer sendBuffer = TestUtils.stringToByteBuffer("TEST");
-        assertTrue(transport.send(sendBuffer).blockingAwait(1, TimeUnit.SECONDS));
+        assertTrue(transport.send(sendBuffer).blockingAwait(30, TimeUnit.SECONDS));
         assertEquals("Bearer TOKEN2", headerValue.get());
         close.onComplete();
     }
@@ -337,12 +336,12 @@ public class LongPollingTransportTest {
 
         assertFalse(onClosedRan.get());
         transport.start("http://example.com").timeout(30, TimeUnit.SECONDS).blockingAwait();
-        assertTrue(block.blockingAwait(1, TimeUnit.SECONDS));
+        assertTrue(block.blockingAwait(30, TimeUnit.SECONDS));
         assertEquals(1, onCloseCount.get());
         assertTrue(onClosedRan.get());
         assertFalse(transport.isActive());
 
-        assertTrue(transport.stop().blockingAwait(1, TimeUnit.SECONDS));
+        assertTrue(transport.stop().blockingAwait(30, TimeUnit.SECONDS));
         assertEquals(1, onCloseCount.get());
     }
 
@@ -356,7 +355,7 @@ public class LongPollingTransportTest {
                         firstPoll.set(false);
                         return Single.just(new HttpResponse(200, "", TestUtils.emptyByteBuffer));
                     } else {
-                        assertTrue(block.blockingAwait(1, TimeUnit.SECONDS));
+                        assertTrue(block.blockingAwait(30, TimeUnit.SECONDS));
                         return Single.just(new HttpResponse(204, "", TestUtils.emptyByteBuffer));
                     }
                 })
@@ -375,7 +374,7 @@ public class LongPollingTransportTest {
 
         assertEquals(0, onCloseCount.get());
         transport.start("http://example.com").timeout(30, TimeUnit.SECONDS).blockingAwait();
-        assertTrue(transport.stop().blockingAwait(1, TimeUnit.SECONDS));
+        assertTrue(transport.stop().blockingAwait(30, TimeUnit.SECONDS));
         assertEquals(1, onCloseCount.get());
         assertFalse(transport.isActive());
     }

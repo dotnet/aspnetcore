@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Gets or sets the value for the <c>Content-Type</c> response header.
         /// </summary>
-        public abstract string ContentType { get; set; }
+        public abstract string? ContentType { get; set; }
 
         /// <summary>
         /// Gets an object that can be used to manage cookies for this response.

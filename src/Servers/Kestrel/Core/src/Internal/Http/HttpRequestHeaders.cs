@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal sealed partial class HttpRequestHeaders : HttpHeaders
     {
+        private EnumeratorCache? _enumeratorCache;
         private long _previousBits;
 
         public bool ReuseHeaderValues { get; set; }
@@ -65,6 +66,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Clear ContentLength and any unknown headers as we will never reuse them
             _contentLength = null;
             MaybeUnknown?.Clear();
+            _enumeratorCache?.Reset();
         }
 
         private static long ParseContentLength(string value)
@@ -148,7 +150,73 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override IEnumerator<KeyValuePair<string, StringValues>> GetEnumeratorFast()
         {
-            return GetEnumerator();
+            // Get or create the cache.
+            var cache = _enumeratorCache ??= new();
+
+            EnumeratorBox enumerator;
+            if (cache.CachedEnumerator is not null)
+            {
+                // Previous enumerator, reuse that one.
+                enumerator = cache.InUseEnumerator = cache.CachedEnumerator;
+                // Set previous to null so if there is a second enumerator call
+                // during the same request it doesn't get the same one.
+                cache.CachedEnumerator = null;
+            }
+            else
+            {
+                // Create new enumerator box and store as in use.
+                enumerator = cache.InUseEnumerator = new();
+            }
+
+            // Set the underlying struct enumerator to a new one.
+            enumerator.Enumerator = new Enumerator(this);
+            return enumerator;
+        }
+
+        private class EnumeratorCache
+        {
+            /// <summary>
+            /// Enumerator created from previous request
+            /// </summary>
+            public EnumeratorBox? CachedEnumerator { get; set; }
+            /// <summary>
+            /// Enumerator used on this request
+            /// </summary>
+            public EnumeratorBox? InUseEnumerator { get; set; }
+
+            /// <summary>
+            /// Moves InUseEnumerator to CachedEnumerator
+            /// </summary>
+            public void Reset()
+            {
+                var enumerator = InUseEnumerator;
+                if (enumerator is not null)
+                {
+                    InUseEnumerator = null;
+                    enumerator.Enumerator = default;
+                    CachedEnumerator = enumerator;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Strong box enumerator for the IEnumerator interface to cache and amortizate the
+        /// IEnumerator allocations across requests if the header collection is commonly
+        /// enumerated for forwarding in a reverse-proxy type situation.
+        /// </summary>
+        private class EnumeratorBox : IEnumerator<KeyValuePair<string, StringValues>>
+        {
+            public Enumerator Enumerator;
+
+            public KeyValuePair<string, StringValues> Current => Enumerator.Current;
+
+            public bool MoveNext() => Enumerator.MoveNext();
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose() { }
+
+            public void Reset() => throw new NotSupportedException();
         }
 
         public partial struct Enumerator : IEnumerator<KeyValuePair<string, StringValues>>

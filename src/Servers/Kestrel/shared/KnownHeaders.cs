@@ -829,7 +829,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }}
             set
             {{
-                _contentLength = ParseContentLength(value);
+                _contentLength = ParseContentLength(value.ToString());
             }}" : $@"
             get
             {{
@@ -996,7 +996,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {{{(header.Name == HeaderNames.ContentLength ? $@"
                         if (!_contentLength.HasValue)
                         {{
-                            _contentLength = ParseContentLength(value);
+                            _contentLength = ParseContentLength(value.ToString());
                             return true;
                         }}
                         return false;" : $@"
@@ -1014,7 +1014,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {{{(header.Name == HeaderNames.ContentLength ? $@"
                         if (!_contentLength.HasValue)
                         {{
-                            _contentLength = ParseContentLength(value);
+                            _contentLength = ParseContentLength(value.ToString());
                             return true;
                         }}
                         return false;" : $@"
