@@ -23,6 +23,8 @@ module Program =
 
         let builder = WebApplication.CreateBuilder(args)
 
+        builder.Services.AddControllers()
+
         let app = builder.Build()
 
 
