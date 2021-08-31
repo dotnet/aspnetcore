@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.JSInterop.Infrastructure;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.JSInterop
@@ -28,7 +29,7 @@ namespace Microsoft.JSInterop
                 throw new ArgumentNullException(nameof(jsObjectReference));
             }
 
-            await jsObjectReference.InvokeAsync<object>(identifier, args);
+            await jsObjectReference.InvokeAsync<IJSVoidResult>(identifier, args);
         }
 
         /// <summary>
@@ -93,7 +94,7 @@ namespace Microsoft.JSInterop
                 throw new ArgumentNullException(nameof(jsObjectReference));
             }
 
-            await jsObjectReference.InvokeAsync<object>(identifier, cancellationToken, args);
+            await jsObjectReference.InvokeAsync<IJSVoidResult>(identifier, cancellationToken, args);
         }
 
         /// <summary>
@@ -135,7 +136,7 @@ namespace Microsoft.JSInterop
             using var cancellationTokenSource = timeout == Timeout.InfiniteTimeSpan ? null : new CancellationTokenSource(timeout);
             var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
 
-            await jsObjectReference.InvokeAsync<object>(identifier, cancellationToken, args);
+            await jsObjectReference.InvokeAsync<IJSVoidResult>(identifier, cancellationToken, args);
         }
     }
 }
