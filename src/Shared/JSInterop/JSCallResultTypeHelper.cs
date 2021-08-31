@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.JSInterop
 {
@@ -12,21 +13,25 @@ namespace Microsoft.JSInterop
 
         public static JSCallResultType FromGeneric<TResult>()
         {
-            if (typeof(TResult).Assembly == _currentAssembly
-                && (typeof(TResult) == typeof(IJSObjectReference)
-                || typeof(TResult) == typeof(IJSInProcessObjectReference)
-                || typeof(TResult) == typeof(IJSUnmarshalledObjectReference)))
+            if (typeof(TResult).Assembly == _currentAssembly)
             {
-                return JSCallResultType.JSObjectReference;
+                if (typeof(TResult) == typeof(IJSObjectReference) ||
+                    typeof(TResult) == typeof(IJSInProcessObjectReference) ||
+                    typeof(TResult) == typeof(IJSUnmarshalledObjectReference))
+                {
+                    return JSCallResultType.JSObjectReference;
+                }
+                else if (typeof(TResult) == typeof(IJSStreamReference))
+                {
+                    return JSCallResultType.JSStreamReference;
+                }
+                else if (typeof(TResult) == typeof(IJSVoidResult))
+                {
+                    return JSCallResultType.JSVoidResult;
+                }
             }
-            else if (typeof(TResult).Assembly == _currentAssembly && typeof(TResult) == typeof(IJSStreamReference))
-            {
-                return JSCallResultType.JSStreamReference;
-            }
-            else
-            {
-                return JSCallResultType.Default;
-            }
+
+            return JSCallResultType.Default;
         }
     }
 }
