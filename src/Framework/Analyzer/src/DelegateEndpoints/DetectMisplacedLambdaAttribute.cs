@@ -72,7 +72,7 @@ public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
             if (@namespace != null && !@namespace.IsGlobalNamespace)
             {
                 // Check for Microsoft.AspNetCore in the ContainingNamespaces for this type
-                if (@namespace.Name.Equals("AspNetCore", StringComparison.Ordinal) && @namespace.ContainingNamespace.Name.Equals("Microsoft", StringComparison.Ordinal))
+                if (@namespace.Name.Equals("AspNetCore", System.StringComparison.Ordinal) && @namespace.ContainingNamespace.Name.Equals("Microsoft", System.StringComparison.Ordinal))
                 {
                     return true;
                 }
