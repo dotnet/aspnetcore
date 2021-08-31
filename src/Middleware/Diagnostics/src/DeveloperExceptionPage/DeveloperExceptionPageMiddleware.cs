@@ -106,7 +106,16 @@ namespace Microsoft.AspNetCore.Diagnostics
                 try
                 {
                     context.Response.Clear();
-                    context.Response.StatusCode = 500;
+
+                    // Preserve the status code that would have been written by the server automatically when a BadHttpRequestException is thrown.
+                    if (ex is BadHttpRequestException badHttpRequestException)
+                    {
+                        context.Response.StatusCode = badHttpRequestException.StatusCode;
+                    }
+                    else
+                    {
+                        context.Response.StatusCode = 500;
+                    }
 
                     await _exceptionHandler(new ErrorContext(context, ex));
 
@@ -136,7 +145,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             // If the client does not ask for HTML just format the exception as plain text
             if (acceptHeader == null || !acceptHeader.Any(h => h.IsSubsetOf(_textHtmlMediaType)))
             {
-                httpContext.Response.ContentType = "text/plain";
+                httpContext.Response.ContentType = "text/plain; charset=utf-8";
 
                 var sb = new StringBuilder();
                 sb.AppendLine(errorContext.Exception.ToString());
@@ -165,10 +174,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         {
             var model = new CompilationErrorPageModel(_options);
 
-            var errorPage = new CompilationErrorPage
-            {
-                Model = model
-            };
+            var errorPage = new CompilationErrorPage(model);
 
             if (compilationException.CompilationFailures == null)
             {
@@ -248,6 +254,17 @@ namespace Microsoft.AspNetCore.Diagnostics
             }
 
             var request = context.Request;
+            var title = Resources.ErrorPageHtml_Title;
+
+            if (ex is BadHttpRequestException badHttpRequestException)
+            {
+                var badRequestReasonPhrase = WebUtilities.ReasonPhrases.GetReasonPhrase(badHttpRequestException.StatusCode);
+
+                if (!string.IsNullOrEmpty(badRequestReasonPhrase))
+                {
+                    title = badRequestReasonPhrase;
+                }
+            }
 
             var model = new ErrorPageModel
             {
@@ -257,7 +274,8 @@ namespace Microsoft.AspNetCore.Diagnostics
                 Cookies = request.Cookies,
                 Headers = request.Headers,
                 RouteValues = request.RouteValues,
-                Endpoint = endpointModel
+                Endpoint = endpointModel,
+                Title = title,
             };
 
             var errorPage = new ErrorPage(model);

@@ -14,6 +14,10 @@ Microsoft.AspNetCore.Routing.IDataTokensMetadata.DataTokens.get -> System.Collec
 Microsoft.AspNetCore.Routing.IRouteNameMetadata.RouteName.get -> string?
 Microsoft.AspNetCore.Routing.Matching.IParameterLiteralNodeMatchingPolicy
 Microsoft.AspNetCore.Routing.Matching.IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string! parameterName, string! literal) -> bool
+Microsoft.AspNetCore.Routing.RouteHandlerOptions
+Microsoft.AspNetCore.Routing.RouteHandlerOptions.RouteHandlerOptions() -> void
+Microsoft.AspNetCore.Routing.RouteHandlerOptions.ThrowOnBadRequest.get -> bool
+Microsoft.AspNetCore.Routing.RouteHandlerOptions.ThrowOnBadRequest.set -> void
 Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteName.get -> string?
 Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteNameMetadata(string? routeName) -> void
 Microsoft.AspNetCore.Routing.IEndpointGroupNameMetadata
