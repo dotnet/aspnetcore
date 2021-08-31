@@ -24,6 +24,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         {
             public const string FullTypeName = "Microsoft.AspNetCore.Components.ParameterAttribute";
             public const string MetadataName = FullTypeName;
+
+            public const string CaptureUnmatchedValues = nameof(CaptureUnmatchedValues);
         }
 
         public static class LayoutAttribute
@@ -41,6 +43,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             public const string FullTypeName = "Microsoft.AspNetCore.Components.IComponent";
 
             public const string MetadataName = FullTypeName;
+        }
+
+        public static class IPropertySetterProvider
+        {
+            public const string FullTypeName = "Microsoft.AspNetCore.Components.IPropertySetterProvider";
         }
 
         public static class IDictionary

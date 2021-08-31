@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components
@@ -225,7 +223,7 @@ namespace Microsoft.AspNetCore.Components
 
         private async Task RunInitAndSetParametersAsync()
         {
-           OnInitialized();
+            OnInitialized();
             var task = OnInitializedAsync();
 
             if (task.Status != TaskStatus.RanToCompletion && task.Status != TaskStatus.Canceled)
@@ -247,10 +245,10 @@ namespace Microsoft.AspNetCore.Components
                     // Awaiting a canceled task may produce either an OperationCanceledException (if produced as a consequence of
                     // CancellationToken.ThrowIfCancellationRequested()) or a TaskCanceledException (produced as a consequence of awaiting Task.FromCanceled).
                     // It's much easier to check the state of the Task (i.e. Task.IsCanceled) rather than catch two distinct exceptions.
-                     if (!task.IsCanceled)
-                     {
+                    if (!task.IsCanceled)
+                    {
                         throw;
-                     }
+                    }
                 }
 
                 // Don't call StateHasChanged here. CallOnParametersSetAsync should handle that for us.

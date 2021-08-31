@@ -195,6 +195,11 @@ namespace Microsoft.CodeAnalysis.Razor
                     pb.Metadata.Add(ComponentMetadata.Component.DelegateSignatureKey, bool.TrueString);
                 }
 
+                if (kind == PropertyKind.UnmatchedValues)
+                {
+                    pb.Metadata.Add(ComponentMetadata.Component.CapturesUnmatchedValuesKey, bool.TrueString);
+                }
+
                 if (HasTypeParameter(property.Type))
                 {
                     pb.Metadata.Add(ComponentMetadata.Component.GenericTypedKey, bool.TrueString);
@@ -433,7 +438,9 @@ namespace Microsoft.CodeAnalysis.Razor
                         kind = PropertyKind.Ignored;
                     }
 
-                    if (!property.GetAttributes().Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, symbols.ParameterAttribute)))
+                    var parameterAttribute = property.GetAttributes().FirstOrDefault(
+                        a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, symbols.ParameterAttribute));
+                    if (parameterAttribute is null)
                     {
                         if (property.IsOverride)
                         {
@@ -482,6 +489,19 @@ namespace Microsoft.CodeAnalysis.Razor
                         kind = PropertyKind.Delegate;
                     }
 
+                    if (kind == PropertyKind.Default)
+                    {
+                        var captureUnmatchedValuesArgument = parameterAttribute.NamedArguments.FirstOrDefault(
+                            kvp => kvp.Key == ComponentsApi.ParameterAttribute.CaptureUnmatchedValues);
+
+                        // The key will be null if the argument was not found.
+                        if (captureUnmatchedValuesArgument.Key is not null &&
+                            (bool)captureUnmatchedValuesArgument.Value.Value == true)
+                        {
+                            kind = PropertyKind.UnmatchedValues;
+                        }
+                    }
+
                     properties.Add(property.Name, (property, kind));
                 }
 
@@ -500,6 +520,7 @@ namespace Microsoft.CodeAnalysis.Razor
             ChildContent,
             Delegate,
             EventCallback,
+            UnmatchedValues,
         }
 
         private class ComponentSymbols

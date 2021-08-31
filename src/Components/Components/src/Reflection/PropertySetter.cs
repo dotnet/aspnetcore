@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace Microsoft.AspNetCore.Components.Reflection
 {
-    internal sealed class PropertySetter
+    internal class PropertySetter : IPropertySetter
     {
         private static readonly MethodInfo CallPropertySetterOpenGenericMethod =
             typeof(PropertySetter).GetMethod(nameof(CallPropertySetter), BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
                 callPropertySetterClosedGenericMethod.CreateDelegate(typeof(Action<object, object>), propertySetterAsAction);
         }
 
-        public bool Cascading { get; init;  }
+        public bool Cascading { get; init; }
 
         public void SetValue(object target, object value) => _setterDelegate(target, value);
 
@@ -55,6 +55,17 @@ namespace Microsoft.AspNetCore.Components.Reflection
             {
                 setter((TTarget)target, (TValue)value);
             }
+        }
+    }
+
+    internal class UnmatchedValuesPropertySetter : PropertySetter, IUnmatchedValuesPropertySetter
+    {
+        public string UnmatchedValuesPropertyName { get; }
+
+        public UnmatchedValuesPropertySetter(Type targetType, PropertyInfo property)
+            : base(targetType, property)
+        {
+            UnmatchedValuesPropertyName = property.Name;
         }
     }
 }

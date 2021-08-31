@@ -234,6 +234,20 @@ namespace Microsoft.AspNetCore.Components
     {
         System.Threading.Tasks.Task HandleEventAsync(Microsoft.AspNetCore.Components.EventCallbackWorkItem item, object arg);
     }
+    public partial interface IPropertySetter
+    {
+        bool Cascading { get; }
+        void SetValue(object target, object value);
+    }
+    public partial interface IUnmatchedValuesPropertySetter : IPropertySetter
+    {
+        string UnmatchedValuesPropertyName { get; }
+    }
+    public partial interface IPropertySetterProvider
+    {
+        IUnmatchedValuesPropertySetter UnmatchedValuesPropertySetter { get; }
+        bool TryGetSetter(string parameterName, out IPropertySetter writer);
+    }
     [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
     public sealed partial class InjectAttribute : System.Attribute
     {

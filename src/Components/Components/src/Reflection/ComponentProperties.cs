@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
@@ -17,8 +15,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
         // Right now it's not possible for a component to define a Parameter and a Cascading Parameter with
         // the same name. We don't give you a way to express this in code (would create duplicate properties),
         // and we don't have the ability to represent it in our data structures.
-        private static readonly ConcurrentDictionary<Type, WritersForType> _cachedWritersByType
-            = new ConcurrentDictionary<Type, WritersForType>();
+        private static readonly ConcurrentDictionary<Type, WritersForType> _cachedWritersByType = new();
 
         public static void ClearCache() => _cachedWritersByType.Clear();
 
@@ -30,20 +27,28 @@ namespace Microsoft.AspNetCore.Components.Reflection
             }
 
             var targetType = target.GetType();
-            if (!_cachedWritersByType.TryGetValue(targetType, out var writers))
+
+            if (target is not IPropertySetterProvider propertySetterProvider)
             {
-                writers = new WritersForType(targetType);
-                _cachedWritersByType[targetType] = writers;
+                if (!_cachedWritersByType.TryGetValue(targetType, out var writers))
+                {
+                    writers = new WritersForType(targetType);
+                    _cachedWritersByType[targetType] = writers;
+                }
+
+                propertySetterProvider = writers;
             }
 
+            var unmatchedValuesSetter = propertySetterProvider.UnmatchedValuesPropertySetter;
+
             // The logic is split up for simplicity now that we have CaptureUnmatchedValues parameters.
-            if (writers.CaptureUnmatchedValuesWriter == null)
+            if (unmatchedValuesSetter is null)
             {
                 // Logic for components without a CaptureUnmatchedValues parameter
                 foreach (var parameter in parameters)
                 {
                     var parameterName = parameter.Name;
-                    if (!writers.TryGetValue(parameterName, out var writer))
+                    if (!propertySetterProvider.TryGetSetter(parameterName, out var writer))
                     {
                         // Case 1: There is nowhere to put this value.
                         ThrowForUnknownIncomingParameterName(targetType, parameterName);
@@ -79,12 +84,12 @@ namespace Microsoft.AspNetCore.Components.Reflection
                 foreach (var parameter in parameters)
                 {
                     var parameterName = parameter.Name;
-                    if (string.Equals(parameterName, writers.CaptureUnmatchedValuesPropertyName, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(parameterName, unmatchedValuesSetter.UnmatchedValuesPropertyName, StringComparison.OrdinalIgnoreCase))
                     {
                         isCaptureUnmatchedValuesParameterSetExplicitly = true;
                     }
 
-                    if (writers.TryGetValue(parameterName, out var writer))
+                    if (propertySetterProvider.TryGetSetter(parameterName, out var writer))
                     {
                         if (!writer.Cascading && parameter.Cascading)
                         {
@@ -136,17 +141,17 @@ namespace Microsoft.AspNetCore.Components.Reflection
                     // 2. We also don't want to implicitly copy a value the user gives us.
                     //
                     // Either one of those implementation choices would do something unexpected.
-                    ThrowForCaptureUnmatchedValuesConflict(targetType, writers.CaptureUnmatchedValuesPropertyName!, unmatched);
+                    ThrowForCaptureUnmatchedValuesConflict(targetType, unmatchedValuesSetter.UnmatchedValuesPropertyName!, unmatched);
                     throw null; // Unreachable
                 }
                 else if (unmatched != null)
                 {
                     // We had some unmatched values, set the CaptureUnmatchedValues property
-                    SetProperty(target, writers.CaptureUnmatchedValuesWriter, writers.CaptureUnmatchedValuesPropertyName!, unmatched);
+                    SetProperty(target, unmatchedValuesSetter, unmatchedValuesSetter.UnmatchedValuesPropertyName, unmatched);
                 }
             }
 
-            static void SetProperty(object target, PropertySetter writer, string parameterName, object value)
+            static void SetProperty(object target, IPropertySetter writer, string parameterName, object value)
             {
                 try
                 {
@@ -249,16 +254,18 @@ namespace Microsoft.AspNetCore.Components.Reflection
                 $"The property must be assignable from 'Dictionary<string, object>'.");
         }
 
-        private class WritersForType
+        private class WritersForType : IPropertySetterProvider
         {
             private const int MaxCachedWriterLookups = 100;
-            private readonly Dictionary<string, PropertySetter> _underlyingWriters;
-            private readonly ConcurrentDictionary<string, PropertySetter?> _referenceEqualityWritersCache;
+            private readonly Dictionary<string, IPropertySetter> _underlyingWriters;
+            private readonly ConcurrentDictionary<string, IPropertySetter?> _referenceEqualityWritersCache;
+
+            public IUnmatchedValuesPropertySetter? UnmatchedValuesPropertySetter { get; }
 
             public WritersForType([DynamicallyAccessedMembers(Component)] Type targetType)
             {
-                _underlyingWriters = new Dictionary<string, PropertySetter>(StringComparer.OrdinalIgnoreCase);
-                _referenceEqualityWritersCache = new ConcurrentDictionary<string, PropertySetter?>(ReferenceEqualityComparer.Instance);
+                _underlyingWriters = new(StringComparer.OrdinalIgnoreCase);
+                _referenceEqualityWritersCache = new(ReferenceEqualityComparer.Instance);
 
                 foreach (var propertyInfo in GetCandidateBindableProperties(targetType))
                 {
@@ -296,7 +303,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
                         // This is an "Extra" parameter.
                         //
                         // There should only be one of these.
-                        if (CaptureUnmatchedValuesWriter != null)
+                        if (UnmatchedValuesPropertySetter is not null)
                         {
                             ThrowForMultipleCaptureUnmatchedValuesParameters(targetType);
                         }
@@ -307,17 +314,12 @@ namespace Microsoft.AspNetCore.Components.Reflection
                             ThrowForInvalidCaptureUnmatchedValuesParameterType(targetType, propertyInfo);
                         }
 
-                        CaptureUnmatchedValuesWriter = new PropertySetter(targetType, propertyInfo);
-                        CaptureUnmatchedValuesPropertyName = propertyInfo.Name;
+                        UnmatchedValuesPropertySetter = new UnmatchedValuesPropertySetter(targetType, propertyInfo);
                     }
                 }
             }
 
-            public PropertySetter? CaptureUnmatchedValuesWriter { get; }
-
-            public string? CaptureUnmatchedValuesPropertyName { get; }
-
-            public bool TryGetValue(string parameterName, [MaybeNullWhen(false)] out PropertySetter writer)
+            public bool TryGetSetter(string parameterName, [MaybeNullWhen(false)] out IPropertySetter writer)
             {
                 // In intensive parameter-passing scenarios, one of the most expensive things we do is the
                 // lookup from parameterName to writer. Pre-5.0 that was because of the string hashing.

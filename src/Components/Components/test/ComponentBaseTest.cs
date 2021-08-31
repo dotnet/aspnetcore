@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Metadata.Ecma335;
 using System.Runtime.ExceptionServices;
 using System.Threading;
@@ -498,6 +499,8 @@ namespace Microsoft.AspNetCore.Components.Test
 
             public int Counter { get; set; }
 
+            public IReadOnlyDictionary<string, object> AdditionalAttributes { get; set; }
+
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
                 builder.OpenElement(0, "p");
@@ -575,6 +578,28 @@ namespace Microsoft.AspNetCore.Components.Test
                 {
                     await OnAfterRenderAsyncLogic(this, firstRender);
                 }
+            }
+        }
+
+        private class TestComponentWithWriters : TestComponent, IPropertySetterProvider
+        {
+            private static readonly Lazy<Dictionary<string, ParameterWriter<TestComponentWithWriters>>> __parameterWriters
+                = new(static () => new()
+                {
+                    [nameof(RunsBaseOnInit)] = new(static (c, value) => c.RunsBaseOnInit = (bool)value),
+                    [nameof(Counter)] = new(static (c, value) => c.Counter = (int)value),
+                });
+
+            IUnmatchedValuesPropertySetter IPropertySetterProvider.UnmatchedValuesPropertySetter { get; }
+                = new UnmatchedValuesParameterWriter<TestComponentWithWriters>(
+                    nameof(AdditionalAttributes),
+                    static (c, value) => c.AdditionalAttributes = (IReadOnlyDictionary<string, object>)value);
+
+            bool IPropertySetterProvider.TryGetSetter(string parameterName, [NotNullWhen(true)] out IPropertySetter writer)
+            {
+                var success = __parameterWriters.Value.TryGetValue(parameterName, out var result);
+                writer = result;
+                return success;
             }
         }
     }

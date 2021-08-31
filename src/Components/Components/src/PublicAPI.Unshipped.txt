@@ -18,6 +18,9 @@ Microsoft.AspNetCore.Components.ErrorBoundaryBase.MaximumErrorCount.set -> void
 Microsoft.AspNetCore.Components.ErrorBoundaryBase.Recover() -> void
 Microsoft.AspNetCore.Components.IPersistentComponentStateStore.GetPersistedStateAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IDictionary<string!, byte[]!>!>!
 Microsoft.AspNetCore.Components.IPersistentComponentStateStore.PersistStateAsync(System.Collections.Generic.IReadOnlyDictionary<string!, byte[]!>! state) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.IPropertySetterProvider
+Microsoft.AspNetCore.Components.IPropertySetterProvider.TryGetSetter(string! parameterName, out Microsoft.AspNetCore.Components.IPropertySetter? writer) -> bool
+Microsoft.AspNetCore.Components.IPropertySetterProvider.UnmatchedValuesPropertySetter.get -> Microsoft.AspNetCore.Components.IUnmatchedValuesPropertySetter?
 Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string! uri, Microsoft.AspNetCore.Components.NavigationOptions options) -> void
 Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string! uri, bool forceLoad = false, bool replace = false) -> void
 Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string! uri, bool forceLoad) -> void

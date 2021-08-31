@@ -91,6 +91,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             public const string EventCallbackKey = "Components.EventCallback";
 
+            public const string CapturesUnmatchedValuesKey = "Components.CapturesUnmatchedValues";
+
             public const string WeaklyTypedKey = "Components.IsWeaklyTyped";
 
             public const string RuntimeName = "Components.IComponent";
