@@ -51,23 +51,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
-        public void AddsJsonRequestFormatWhenFromBodyInferred()
-        {
-            static void AssertJsonRequestFormat(ApiDescription apiDescription)
-            {
-                var requestFormat = Assert.Single(apiDescription.SupportedRequestFormats);
-                Assert.Equal("application/json", requestFormat.MediaType);
-                Assert.Null(requestFormat.Formatter);
-            }
-
-            AssertJsonRequestFormat(GetApiDescription(
-                (InferredJsonClass fromBody) => { }));
-
-            AssertJsonRequestFormat(GetApiDescription(
-                ([FromBody] int fromBody) => { }));
-        }
-
-        [Fact]
         public void AddsRequestFormatFromMetadata()
         {
             static void AssertCustomRequestFormat(ApiDescription apiDescription)
@@ -112,7 +95,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         {
             var apiDescription = GetApiDescription(
                 [Consumes(typeof(InferredJsonClass), "application/custom0", "application/custom1", IsOptional = true)]
-                () => { });
+            () =>
+                { });
 
             Assert.Equal(2, apiDescription.SupportedRequestFormats.Count);
 
@@ -127,7 +111,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         {
             var apiDescription = GetApiDescription(
                 [Consumes("application/custom0", "application/custom1", IsOptional = false)]
-            (InferredJsonClass fromBody) => { });
+            (InferredJsonClass fromBody) =>
+                { });
 
             Assert.Equal(2, apiDescription.SupportedRequestFormats.Count);
 
