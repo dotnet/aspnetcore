@@ -1,11 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
-using Microsoft.AspNetCore.Routing;
 
-namespace Microsoft.AspNetCore.Builder
+namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
     /// Extension methods for adding <see cref="Endpoint.Metadata"/> that is
