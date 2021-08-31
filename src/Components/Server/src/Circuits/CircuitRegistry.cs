@@ -388,9 +388,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             [LoggerMessage(107, LogLevel.Debug, "Failed to reconnect to a circuit with id {CircuitId}.", EventName = "FailedToReconnectToCircuit")]
             public static partial void FailedToReconnectToCircuit(ILogger logger, CircuitId circuitId, Exception exception = null);
 
-            [LoggerMessage(115, LogLevel.Debug, "Reconnect to circuit with id {CircuitId} succeeded.", EventName = "FailedToReconnectToCircuit")]
-            public static partial void ReconnectionSucceeded(ILogger logger, CircuitId circuitId);
-
             [LoggerMessage(108, LogLevel.Debug, "Attempting to disconnect circuit with id {CircuitId} from connection {ConnectionId}.", EventName = "CircuitDisconnectStarted")]
             public static partial void CircuitDisconnectStarted(ILogger logger, CircuitId circuitId, string connectionId);
 
@@ -403,14 +400,17 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             [LoggerMessage(111, LogLevel.Debug, "Circuit with id {CircuitId} is disconnected.", EventName = "CircuitMarkedDisconnected")]
             public static partial void CircuitMarkedDisconnected(ILogger logger, CircuitId circuitId);
 
-            [LoggerMessage(113, LogLevel.Debug, "Circuit with id {CircuitId} has been removed from the registry for permanent disconnection.", EventName = "CircuitDisconnectedPermanently")]
-            public static partial void CircuitDisconnectedPermanently(ILogger logger, CircuitId circuitId);
-
             [LoggerMessage(112, LogLevel.Debug, "Circuit with id {CircuitId} evicted due to {EvictionReason}.", EventName = "CircuitEvicted")]
             public static partial void CircuitEvicted(ILogger logger, CircuitId circuitId, EvictionReason evictionReason);
 
+            [LoggerMessage(113, LogLevel.Debug, "Circuit with id {CircuitId} has been removed from the registry for permanent disconnection.", EventName = "CircuitDisconnectedPermanently")]
+            public static partial void CircuitDisconnectedPermanently(ILogger logger, CircuitId circuitId);
+
             [LoggerMessage(114, LogLevel.Error, "Exception handler for {CircuitId} failed.", EventName = "CircuitExceptionHandlerFailed")]
             public static partial void CircuitExceptionHandlerFailed(ILogger logger, CircuitId circuitId, Exception exception);
+
+            [LoggerMessage(115, LogLevel.Debug, "Reconnect to circuit with id {CircuitId} succeeded.", EventName = "FailedToReconnectToCircuit")]
+            public static partial void ReconnectionSucceeded(ILogger logger, CircuitId circuitId);
         }
     }
 }

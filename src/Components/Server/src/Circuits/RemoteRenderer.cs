@@ -341,12 +341,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         private static partial class Log
         {
-            [LoggerMessage(103, LogLevel.Information, "Sending data for batch failed: {Message}", EventName = "SendBatchDataFailed")]
-            private static partial void SendBatchDataFailed(ILogger logger, string message, Exception exception);
-
-            public static void SendBatchDataFailed(ILogger logger, Exception exception)
-                => SendBatchDataFailed(logger, exception.Message, exception);
-
             [LoggerMessage(100, LogLevel.Warning, "Unhandled exception rendering component: {Message}", EventName = "ExceptionRenderingComponent")]
             private static partial void UnhandledExceptionRenderingComponent(ILogger logger, string message, Exception exception);
 
@@ -358,6 +352,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             [LoggerMessage(102, LogLevel.Debug, "Buffering remote render because the client on connection {ConnectionId} is disconnected.", EventName = "SkipUpdateDisplayAsync")]
             public static partial void BufferingRenderDisconnectedClient(ILogger logger, string connectionId);
+
+            [LoggerMessage(103, LogLevel.Information, "Sending data for batch failed: {Message}", EventName = "SendBatchDataFailed")]
+            private static partial void SendBatchDataFailed(ILogger logger, string message, Exception exception);
+
+            public static void SendBatchDataFailed(ILogger logger, Exception exception)
+                => SendBatchDataFailed(logger, exception.Message, exception);
 
             [LoggerMessage(104, LogLevel.Debug, "Completing batch {BatchId} with error: {ErrorMessage} in {ElapsedMilliseconds}ms.", EventName = "CompletingBatchWithError")]
             private static partial void CompletingBatchWithError(ILogger logger, long batchId, string errorMessage, double elapsedMilliseconds);

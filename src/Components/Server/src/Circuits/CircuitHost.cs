@@ -686,8 +686,29 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             [LoggerMessage(111, LogLevel.Error, "Unhandled exception in circuit '{CircuitId}'.", EventName = "CircuitUnhandledException")]
             public static partial void CircuitUnhandledException(ILogger logger, CircuitId circuitId, Exception exception);
 
+            [LoggerMessage(112, LogLevel.Debug, "About to notify client of an error in circuit '{CircuitId}'.", EventName = "CircuitTransmittingClientError")]
+            public static partial void CircuitTransmittingClientError(ILogger logger, CircuitId circuitId);
+
+            [LoggerMessage(113, LogLevel.Debug, "Successfully transmitted error to client in circuit '{CircuitId}'.", EventName = "CircuitTransmittedClientErrorSuccess")]
+            public static partial void CircuitTransmittedClientErrorSuccess(ILogger logger, CircuitId circuitId);
+
             [LoggerMessage(114, LogLevel.Debug, "Failed to transmit exception to client in circuit '{CircuitId}'.", EventName = "CircuitTransmitErrorFailed")]
             public static partial void CircuitTransmitErrorFailed(ILogger logger, CircuitId circuitId, Exception exception);
+
+            [LoggerMessage(115, LogLevel.Debug, "An exception occurred on the circuit host '{CircuitId}' while the client is disconnected.", EventName = "UnhandledExceptionClientDisconnected")]
+            public static partial void UnhandledExceptionClientDisconnected(ILogger logger, CircuitId circuitId, Exception exception);
+
+            [LoggerMessage(200, LogLevel.Debug, "Failed to parse the event data when trying to dispatch an event.", EventName = "DispatchEventFailedToParseEventData")]
+            public static partial void DispatchEventFailedToParseEventData(ILogger logger, Exception ex);
+
+            [LoggerMessage(201, LogLevel.Debug, "There was an error dispatching the event '{EventHandlerId}' to the application.", EventName = "DispatchEventFailedToDispatchEvent")]
+            public static partial void DispatchEventFailedToDispatchEvent(ILogger logger, string eventHandlerId, Exception ex);
+
+            [LoggerMessage(202, LogLevel.Debug, "Invoking instance method '{MethodIdentifier}' on instance '{DotNetObjectId}' with callback id '{CallId}'.", EventName = "BeginInvokeDotNet")]
+            private static partial void BeginInvokeDotNet(ILogger logger, string methodIdentifier, long dotNetObjectId, string callId);
+
+            [LoggerMessage(203, LogLevel.Debug, "Failed to invoke instance method '{MethodIdentifier}' on instance '{DotNetObjectId}' with callback id '{CallId}'.", EventName = "BeginInvokeDotNetFailed")]
+            private static partial void BeginInvokeDotNetFailed(ILogger logger, string methodIdentifier, long dotNetObjectId, string callId, Exception exception);
 
             [LoggerMessage(204, LogLevel.Debug, "There was an error invoking 'Microsoft.JSInterop.DotNetDispatcher.EndInvoke'.", EventName = "EndInvokeDispatchException")]
             public static partial void EndInvokeDispatchException(ILogger logger, Exception ex);
@@ -697,6 +718,18 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             [LoggerMessage(206, LogLevel.Debug, "The JS interop call with callback id '{AsyncCall}' succeeded.", EventName = "EndInvokeJSSucceeded")]
             public static partial void EndInvokeJSSucceeded(ILogger logger, long asyncCall);
+
+            [LoggerMessage(208, LogLevel.Debug, "Location changing to {URI} in circuit '{CircuitId}'.", EventName = "LocationChange")]
+            public static partial void LocationChange(ILogger logger, string uri, CircuitId circuitId);
+
+            [LoggerMessage(209, LogLevel.Debug, "Location change to '{URI}' in circuit '{CircuitId}' succeeded.", EventName = "LocationChangeSucceeded")]
+            public static partial void LocationChangeSucceeded(ILogger logger, string uri, CircuitId circuitId);
+
+            [LoggerMessage(210, LogLevel.Debug, "Location change to '{URI}' in circuit '{CircuitId}' failed.", EventName = "LocationChangeFailed")]
+            public static partial void LocationChangeFailed(ILogger logger, string uri, CircuitId circuitId, Exception exception);
+
+            [LoggerMessage(212, LogLevel.Debug, "Failed to complete render batch '{RenderId}' in circuit host '{CircuitId}'.", EventName = "OnRenderCompletedFailed")]
+            public static partial void OnRenderCompletedFailed(ILogger logger, long renderId, CircuitId circuitId, Exception e);
 
             [LoggerMessage(213, LogLevel.Debug, "The ReceiveByteArray call with id '{id}' succeeded.", EventName = "ReceiveByteArraySucceeded")]
             public static partial void ReceiveByteArraySuccess(ILogger logger, long id);
@@ -709,15 +742,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             [LoggerMessage(216, LogLevel.Debug, "The SendDotNetStreamAsync call with id '{id}' failed.", EventName = "SendDotNetStreamException")]
             public static partial void SendDotNetStreamException(ILogger logger, long id, Exception ex);
-
-            [LoggerMessage(200, LogLevel.Debug, "Failed to parse the event data when trying to dispatch an event.", EventName = "DispatchEventFailedToParseEventData")]
-            public static partial void DispatchEventFailedToParseEventData(ILogger logger, Exception ex);
-
-            [LoggerMessage(201, LogLevel.Debug, "There was an error dispatching the event '{EventHandlerId}' to the application.", EventName = "DispatchEventFailedToDispatchEvent")]
-            public static partial void DispatchEventFailedToDispatchEvent(ILogger logger, string eventHandlerId, Exception ex);
-
-            [LoggerMessage(202, LogLevel.Debug, "Invoking instance method '{MethodIdentifier}' on instance '{DotNetObjectId}' with callback id '{CallId}'.", EventName = "BeginInvokeDotNet")]
-            private static partial void BeginInvokeDotNet(ILogger logger, string methodIdentifier, long dotNetObjectId, string callId);
 
             [LoggerMessage(217, LogLevel.Debug, "Invoking static method with identifier '{MethodIdentifier}' on assembly '{Assembly}' with callback id '{CallId}'.", EventName = "BeginInvokeDotNetStatic")]
             private static partial void BeginInvokeDotNetStatic(ILogger logger, string methodIdentifier, string assembly, string callId);
@@ -734,9 +758,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 }
             }
 
-            [LoggerMessage(203, LogLevel.Debug, "Failed to invoke instance method '{MethodIdentifier}' on instance '{DotNetObjectId}' with callback id '{CallId}'.", EventName = "BeginInvokeDotNetFailed")]
-            private static partial void BeginInvokeDotNetFailed(ILogger logger, string methodIdentifier, long dotNetObjectId, string callId, Exception exception);
-
             [LoggerMessage(218, LogLevel.Debug, "Failed to invoke static method with identifier '{MethodIdentifier}' on assembly '{Assembly}' with callback id '{CallId}'.", EventName = "BeginInvokeDotNetFailed")]
             private static partial void BeginInvokeDotNetStaticFailed(ILogger logger, string methodIdentifier, string assembly, string callId, Exception exception);
 
@@ -752,29 +773,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 }
             }
 
-            [LoggerMessage(208, LogLevel.Debug, "Location changing to {URI} in circuit '{CircuitId}'.", EventName = "LocationChange")]
-            public static partial void LocationChange(ILogger logger, string uri, CircuitId circuitId);
-
-            [LoggerMessage(209, LogLevel.Debug, "Location change to '{URI}' in circuit '{CircuitId}' succeeded.", EventName = "LocationChangeSucceeded")]
-            public static partial void LocationChangeSucceeded(ILogger logger, string uri, CircuitId circuitId);
-
-            [LoggerMessage(210, LogLevel.Debug, "Location change to '{URI}' in circuit '{CircuitId}' failed.", EventName = "LocationChangeFailed")]
-            public static partial void LocationChangeFailed(ILogger logger, string uri, CircuitId circuitId, Exception exception);
-
             [LoggerMessage(219, LogLevel.Error, "Location change to '{URI}' in circuit '{CircuitId}' failed.", EventName = "LocationChangeFailed")]
             public static partial void LocationChangeFailedInCircuit(ILogger logger, string uri, CircuitId circuitId, Exception exception);
-
-            [LoggerMessage(115, LogLevel.Debug, "An exception occurred on the circuit host '{CircuitId}' while the client is disconnected.", EventName = "UnhandledExceptionClientDisconnected")]
-            public static partial void UnhandledExceptionClientDisconnected(ILogger logger, CircuitId circuitId, Exception exception);
-
-            [LoggerMessage(112, LogLevel.Debug, "About to notify client of an error in circuit '{CircuitId}'.", EventName = "CircuitTransmittingClientError")]
-            public static partial void CircuitTransmittingClientError(ILogger logger, CircuitId circuitId);
-
-            [LoggerMessage(113, LogLevel.Debug, "Successfully transmitted error to client in circuit '{CircuitId}'.", EventName = "CircuitTransmittedClientErrorSuccess")]
-            public static partial void CircuitTransmittedClientErrorSuccess(ILogger logger, CircuitId circuitId);
-
-            [LoggerMessage(212, LogLevel.Debug, "Failed to complete render batch '{RenderId}' in circuit host '{CircuitId}'.", EventName = "OnRenderCompletedFailed")]
-            public static partial void OnRenderCompletedFailed(ILogger logger, long renderId, CircuitId circuitId, Exception e);
         }
     }
 }

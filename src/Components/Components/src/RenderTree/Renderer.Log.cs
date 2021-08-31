@@ -36,7 +36,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
             public static void RenderingComponent(ILogger logger, ComponentState componentState)
             {
-
                 if (logger.IsEnabled(LogLevel.Debug)) // This is almost always false, so skip the evaluations
                 {
                     RenderingComponent(logger, componentState.ComponentId, componentState.Component.GetType());
