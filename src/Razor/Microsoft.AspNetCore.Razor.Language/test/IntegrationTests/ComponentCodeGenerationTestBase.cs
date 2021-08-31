@@ -232,6 +232,65 @@ namespace Test
         }
 
         [Fact]
+        public void ComponentWithTypeParameterArray()
+        {
+            // Arrange
+            var classes = @"
+public class Tag
+{
+    public string description { get; set; }
+}
+";
+
+            AdditionalSyntaxTrees.Add(Parse(classes));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components;
+@typeparam TItem
+
+<h1>Item</h1>
+
+<p>@ChildContent(Items1)</p>
+
+@foreach (var item in Items2)
+{
+    <p>@ChildContent(item)</p>
+}
+
+<p>@ChildContent(Items3())</p>
+
+@code {
+    [Parameter] public TItem[] Items1 { get; set; }
+    [Parameter] public List<TItem[]> Items2 { get; set; }
+    [Parameter] public Func<TItem[]> Items3 { get; set; }
+    [Parameter] public RenderFragment<TItem[]> ChildContent { get; set; }
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+
+            AdditionalSyntaxTrees.Add(Parse(generated.CodeDocument.GetCSharpDocument().GeneratedCode));
+            var useGenerated = CompileToCSharp("UseTestComponent.cshtml", @"
+@using Test
+<TestComponent Items1=items1 Items2=items2 Items3=items3>
+    <p>@context[0].description</p>
+</TestComponent>
+
+@code {
+    static Tag tag = new Tag() { description = ""A description.""};
+    Tag[] items1 = new [] { tag };
+    List<Tag[]> items2 = new List<Tag[]>() { new [] { tag } };
+    Tag[] items3() => new [] { tag };
+}");
+            AssertDocumentNodeMatchesBaseline(useGenerated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(useGenerated.CodeDocument);
+            CompileToAssembly(useGenerated);
+        }
+
+        [Fact]
         public void ComponentWithConstrainedTypeParameters()
         {
             // Arrange
