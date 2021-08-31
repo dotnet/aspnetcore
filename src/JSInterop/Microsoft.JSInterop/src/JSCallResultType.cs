@@ -22,5 +22,10 @@ namespace Microsoft.JSInterop
         /// Indicates that the returned value is to be treated as a JS data reference.
         /// </summary>
         JSStreamReference = 2,
+
+        /// <summary>
+        /// Indicates a void result type.
+        /// </summary>
+        JSVoidResult = 3,
     }
 }
