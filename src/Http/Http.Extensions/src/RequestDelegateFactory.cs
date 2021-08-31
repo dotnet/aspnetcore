@@ -1220,7 +1220,7 @@ namespace Microsoft.AspNetCore.Http
                 => UnexpectedContentType(GetLogger(httpContext), contentType ?? "(none)");
 
             [LoggerMessage(6, LogLevel.Debug,
-                @"Expected a supported JSON media type but got \"{ContentType}\".",
+                "Expected a supported JSON media type but got \"{ContentType}\".",
                 EventName = "UnexpectedContentType")]
             private static partial void UnexpectedContentType(ILogger logger, string contentType);
 
