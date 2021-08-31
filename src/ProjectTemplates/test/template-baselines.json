@@ -581,7 +581,6 @@
         "appsettings.Development.json",
         "appsettings.json",
         "Program.fs",
-        "Startup.fs",
         "WeatherForecast.fs",
         "Controllers/WeatherForecastController.fs",
         "Properties/launchSettings.json"
