@@ -67,18 +67,17 @@ public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        static bool IsInValidNamespace(INamespaceSymbol? containingNamespace)
+        bool IsInValidNamespace(INamespaceSymbol? @namespace)
         {
-            var supportedNamespace = "Microsoft.AspNetCore";
-
-            if (containingNamespace != null)
+            if (@namespace != null && !@namespace.IsGlobalNamespace)
             {
-                if (containingNamespace.ToString().Equals(supportedNamespace, System.StringComparison.OrdinalIgnoreCase))
+                // Check for Microsoft.AspNetCore in the ContainingNamespaces for this type
+                if (@namespace.Name.Equals("AspNetCore") && @namespace.ContainingNamespace.Name.Equals("Microsoft"))
                 {
                     return true;
                 }
 
-                return IsInValidNamespace(containingNamespace.ContainingNamespace);
+                return IsInValidNamespace(@namespace.ContainingNamespace);
             }
 
             return false;
