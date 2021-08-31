@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -10,13 +8,8 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
-    internal class RemoteErrorBoundaryLogger : IErrorBoundaryLogger
+    internal sealed partial class RemoteErrorBoundaryLogger : IErrorBoundaryLogger
     {
-        private static readonly Action<ILogger, string, Exception> _exceptionCaughtByErrorBoundary = LoggerMessage.Define<string>(
-            LogLevel.Warning,
-            100,
-            "Unhandled exception rendering component: {Message}");
-
         private readonly ILogger _logger;
         private readonly IJSRuntime _jsRuntime;
         private readonly CircuitOptions _options;
@@ -31,7 +24,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public ValueTask LogErrorAsync(Exception exception)
         {
             // We always log detailed information to the server-side log
-            _exceptionCaughtByErrorBoundary(_logger, exception.Message, exception);
+            Log.ExceptionCaughtByErrorBoundary(_logger, exception.Message, exception);
 
             // We log to the client only if the browser is connected interactively, and even then
             // we may suppress the details
@@ -47,6 +40,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 return ValueTask.CompletedTask;
             }
+        }
+
+        private static partial class Log
+        {
+            [LoggerMessage(100, LogLevel.Warning, "Unhandled exception rendering component: {Message}", EventName = "ExceptionCaughtByErrorBoundary")]
+            public static partial void ExceptionCaughtByErrorBoundary(ILogger logger, string message, Exception exception);
         }
     }
 }
