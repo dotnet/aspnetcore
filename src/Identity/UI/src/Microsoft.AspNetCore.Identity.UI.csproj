@@ -9,17 +9,20 @@
     <EnableDefaultRazorGenerateItems>false</EnableDefaultRazorGenerateItems>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
 
-    <DisableStaticWebAssetsBuildPropsFileGeneration>true</DisableStaticWebAssetsBuildPropsFileGeneration>
-    <StaticWebAssetsDisableProjectBuildPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildPropsFileGeneration>
-
     <PackageThirdPartyNoticesFile>$(MSBuildThisFileDirectory)THIRD-PARTY-NOTICES.TXT</PackageThirdPartyNoticesFile>
     <Nullable>disable</Nullable>
-    <GetBuildAssetsTargets>_UpdateIdentityAssets;GetCurrentProjectBuildStaticWebAssetItems</GetBuildAssetsTargets>
+
+    <StaticWebAssetBasePath>Identity</StaticWebAssetBasePath>
+    <ProvideApplicationPartFactoryAttributeTypeName>Microsoft.AspNetCore.Mvc.ApplicationParts.NullApplicationPartFactory, Microsoft.AspNetCore.Mvc.Core</ProvideApplicationPartFactoryAttributeTypeName>
+    <GenerateStaticWebAssetsPackTargetsDependsOn>_GenerateIdentityUIPackItems;$(GenerateStaticWebAssetsPackTargetsDependsOn)</GenerateStaticWebAssetsPackTargetsDependsOn>
+    <DisableStaticWebAssetsBuildPropsFileGeneration>true</DisableStaticWebAssetsBuildPropsFileGeneration>
+    <StaticWebAssetsDisableProjectBuildPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildPropsFileGeneration>
+    <StaticWebAssetsDisableProjectBuildMultiTargetingPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildMultiTargetingPropsFileGeneration>
+    <StaticWebAssetsDisableProjectBuildTransitivePropsFileGeneration>true</StaticWebAssetsDisableProjectBuildTransitivePropsFileGeneration>
+    <StaticWebAssetsGetBuildAssetsTargets>GetIdentityUIAssets</StaticWebAssetsGetBuildAssetsTargets>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="@(Content)" />
-    <Content Include="wwwroot\**\*" Pack="true" />
     <None Include="build\*" Pack="true" PackagePath="build\" />
     <None Include="buildMultiTargeting\*" Pack="true" PackagePath="buildMultiTargeting\" />
     <None Include="buildTransitive\*" Pack="true" PackagePath="buildTransitive\" />
@@ -41,16 +44,64 @@
     </ItemGroup>
   </Target>
 
-  <!-- This is only needed for tests and the tests will always look for V5 -->
-  <Target Name="_UpdateIdentityAssets">
+  <Target Name="GetIdentityUIAssets" Returns="@(ReferenceAsset)">
     <ItemGroup>
-      <_IdentityUIAssets Include="@(StaticWebAsset)" Condition="'%(SourceId)' == 'Microsoft.AspNetCore.Identity.UI'">
-        <ContentRoot>%(StaticWebAsset.ContentRoot)V5\</ContentRoot>
-        <RelativePath>$([System.String]::Copy('%(StaticWebAsset.RelativePath)').Replace('V5/',''))</RelativePath>
-      </_IdentityUIAssets>
-      <StaticWebAsset Remove="@(_IdentityUIAssets)" />
-      <StaticWebAsset Include="@(_IdentityUIAssets)" />
+      <ReferenceAssetCandidates Include="assets\V4\**" />
+      <ReferenceAssetCandidates>
+        <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
+      </ReferenceAssetCandidates>
     </ItemGroup>
-    </Target>
+    <DefineStaticWebAssets Condition="'@(ReferenceAssetCandidates-&gt;Count())' != '0'" CandidateAssets="@(ReferenceAssetCandidates)" SourceId="$(PackageId)" SourceType="Project" AssetKind="All" ContentRoot="assets/V4" BasePath="$(StaticWebAssetBasePath)">
+      <Output TaskParameter="Assets" ItemName="ReferenceAsset" />
+    </DefineStaticWebAssets>
+    <ItemGroup>
+      <ReferenceAsset>
+        <ResultType>StaticWebAsset</ResultType>
+      </ReferenceAsset>
+    </ItemGroup>
+  </Target>
 
+  <Target Name="_GenerateIdentityUIPackItems">
+    <ItemGroup>
+      <V4AssetsCandidates Include="assets\V4\**" />
+      <V4AssetsCandidates>
+        <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
+      </V4AssetsCandidates>
+      <V5AssetsCandidates Include="assets\V5\**" />
+      <V5AssetsCandidates>
+        <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
+      </V5AssetsCandidates>
+    </ItemGroup>
+    <DefineStaticWebAssets Condition="'@(V4AssetsCandidates-&gt;Count())' != '0'" CandidateAssets="@(V4AssetsCandidates)" SourceId="$(PackageId)" SourceType="Project" AssetKind="All" ContentRoot="assets/V4" BasePath="$(StaticWebAssetBasePath)">
+      <Output TaskParameter="Assets" ItemName="V4Assets" />
+    </DefineStaticWebAssets>
+    <DefineStaticWebAssets Condition="'@(V5AssetsCandidates-&gt;Count())' != '0'" CandidateAssets="@(V5AssetsCandidates)" SourceId="$(PackageId)" SourceType="Project" AssetKind="All" ContentRoot="assets/V5" BasePath="$(StaticWebAssetBasePath)">
+      <Output TaskParameter="Assets" ItemName="V5Assets" />
+    </DefineStaticWebAssets>
+    
+    <GenerateStaticWebAsssetsPropsFile StaticWebAssets="@(V4Assets)" PackagePathPrefix="staticwebassets/V4" TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V4.targets" />
+    <GenerateStaticWebAsssetsPropsFile StaticWebAssets="@(V5Assets)" PackagePathPrefix="staticwebassets/V5" TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V5.targets" />
+    
+    <ComputeStaticWebAssetsTargetPaths Assets="@(V4Assets)" PathPrefix="staticwebassets/V4" AdjustPathsForPack="true">
+      <Output TaskParameter="AssetsWithTargetPath" ItemName="_PackV4Asset" />
+    </ComputeStaticWebAssetsTargetPaths>
+    <ComputeStaticWebAssetsTargetPaths Assets="@(V5Assets)" PathPrefix="staticwebassets/V5" AdjustPathsForPack="true">
+      <Output TaskParameter="AssetsWithTargetPath" ItemName="_PackV5Asset" />
+    </ComputeStaticWebAssetsTargetPaths>
+    
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(IntermediateOutputPath)IdentityUI.V4.targets">
+        <PackagePath>build\Microsoft.AspNetCore.StaticWebAssets.V4.targets</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="%(_PackV4Asset.Identity)">
+        <PackagePath>%(_PackV4Asset.TargetPath)</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(IntermediateOutputPath)IdentityUI.V5.targets">
+        <PackagePath>build\Microsoft.AspNetCore.StaticWebAssets.V5.targets</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="%(_PackV5Asset.Identity)">
+        <PackagePath>%(_PackV5Asset.TargetPath)</PackagePath>
+      </TfmSpecificPackageFile>
+    </ItemGroup>
+  </Target>
 </Project>

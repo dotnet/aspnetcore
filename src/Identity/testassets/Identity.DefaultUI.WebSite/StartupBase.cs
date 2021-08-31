@@ -114,8 +114,10 @@ namespace Identity.DefaultUI.WebSite
                             pendingProviders.Push(childFileProvider);
                         }
                         break;
+                    case NullFileProvider:
+                        break;
                     default:
-                        throw new InvalidOperationException("Unknown provider");
+                        throw new InvalidOperationException($"Unknown provider '{currentProvider.GetType().Name}'");
                 }
             }
         }
