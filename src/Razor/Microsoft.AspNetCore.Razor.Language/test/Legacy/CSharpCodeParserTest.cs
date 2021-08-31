@@ -211,5 +211,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
             var diagnostic = Assert.Single(chunkGenerator.Diagnostics);
             Assert.Equal(expectedDiagnostic, diagnostic);
         }
+
+        [Fact]
+        public void MapDirectives_HandlesDuplicates()
+        {
+            // Arrange
+            var source = TestRazorSourceDocument.Create();
+            var options = RazorParserOptions.CreateDefault();
+            var context = new ParserContext(source, options);
+            var parser = new CSharpCodeParser(context);
+
+            // Act & Assert (Does not throw)
+            parser.MapDirectives((b, t) => { }, "test");
+            parser.MapDirectives((b, t) => { }, "test");
+        }
     }
 }

@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildPassed(result);
             var summary = ParseTaskPerformanceSummary(result.Output);
 
-            Assert.Equal(1, summary.First(f => f.Name == "RazorGenerate").Calls);
-            Assert.Equal(1, summary.First(f => f.Name == "RazorTagHelper").Calls);
+            Assert.Equal(1, summary.First(f => f.Name == "SdkRazorGenerate").Calls);
+            Assert.Equal(1, summary.First(f => f.Name == "SdkRazorTagHelper").Calls);
 
             // Incremental builds
             for (var i = 0; i < 2; i++)
@@ -37,8 +37,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 Assert.BuildPassed(result);
                 summary = ParseTaskPerformanceSummary(result.Output);
 
-                Assert.DoesNotContain(summary, item => item.Name == "RazorGenerate");
-                Assert.DoesNotContain(summary, item => item.Name == "RazorTagHelper");
+                Assert.DoesNotContain(summary, item => item.Name == "SdkRazorGenerate");
+                Assert.DoesNotContain(summary, item => item.Name == "SdkRazorTagHelper");
             }
         }
 
@@ -52,8 +52,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var summary = ParseTaskPerformanceSummary(result.Output);
 
             // One for declaration build, one for the "real" code gen
-            Assert.Equal(2, summary.First(f => f.Name == "RazorGenerate").Calls);
-            Assert.Equal(1, summary.First(f => f.Name == "RazorTagHelper").Calls);
+            Assert.Equal(2, summary.First(f => f.Name == "SdkRazorGenerate").Calls);
+            Assert.Equal(1, summary.First(f => f.Name == "SdkRazorTagHelper").Calls);
 
             // Incremental builds
             for (var i = 0; i < 2; i++)
@@ -63,8 +63,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 Assert.BuildPassed(result);
                 summary = ParseTaskPerformanceSummary(result.Output);
 
-                Assert.DoesNotContain(summary, item => item.Name == "RazorGenerate");
-                Assert.DoesNotContain(summary, item => item.Name == "RazorTagHelper");
+                Assert.DoesNotContain(summary, item => item.Name == "SdkRazorGenerate");
+                Assert.DoesNotContain(summary, item => item.Name == "SdkRazorTagHelper");
             }
         }
 

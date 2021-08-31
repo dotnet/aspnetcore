@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <!--
-  This project references a shipped version of MVC and should not reference local builds of
-  the CodeGeneration targets, rzc, or any of the test shims.
+  This project references a shipped version of MVC and should not reference local builds of the test shims.
   -->
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <RazorSdkDirectoryRoot>$(RazorSdkArtifactsDirectory)$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
   </PropertyGroup>
 
   <ItemGroup>

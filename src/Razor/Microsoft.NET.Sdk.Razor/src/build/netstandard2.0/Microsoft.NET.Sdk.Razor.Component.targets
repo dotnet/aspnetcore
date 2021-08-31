@@ -104,7 +104,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_RazorComponentDeclarationManifest>$(IntermediateOutputPath)$(MSBuildProjectName).RazorComponents.declaration.json</_RazorComponentDeclarationManifest>
     </PropertyGroup>
 
-    <RazorGenerate
+    <SdkRazorGenerate
       Debug="$(_RazorDebugGenerateCodeTask)"
       DebugTool="$(_RazorDebugGenerateCodeTool)"
       ToolExe="$(_RazorSdkDotNetHostFileName)"

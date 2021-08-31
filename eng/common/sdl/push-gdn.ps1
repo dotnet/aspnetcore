@@ -9,7 +9,7 @@ Param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 2.0
 $disableConfigureToolsetImport = $true
-$LASTEXITCODE = 0
+$global:LASTEXITCODE = 0
 
 try {
   # `tools.ps1` checks $ci to perform some actions. Since the SDL
@@ -46,19 +46,26 @@ try {
     Write-PipelineTelemetryError -Force -Category 'Sdl' -Message "Git add failed with exit code $LASTEXITCODE."
     ExitWithExitCode $LASTEXITCODE
   }
-  Write-Host "git -c user.email=`"dn-bot@microsoft.com`" -c user.name=`"Dotnet Bot`" commit -m `"$PushReason for $Repository/$BranchName`""
-  git -c user.email="dn-bot@microsoft.com" -c user.name="Dotnet Bot" commit -m "$PushReason for $Repository/$BranchName"
+  # check if there are any staged changes (0 = no changes, 1 = changes)
+  # if we don't do this and there's nothing to commit `git commit` will return
+  # exit code 1 and we will fail
+  Write-Host "git diff --cached --exit-code"
+  git diff --cached --exit-code
+  Write-Host "git diff exit code: $LASTEXITCODE"
   if ($LASTEXITCODE -ne 0) {
-    Write-PipelineTelemetryError -Force -Category 'Sdl' -Message "Git commit failed with exit code $LASTEXITCODE."
-    ExitWithExitCode $LASTEXITCODE
+    Write-Host "git -c user.email=`"dn-bot@microsoft.com`" -c user.name=`"Dotnet Bot`" commit -m `"$PushReason for $Repository/$BranchName`""
+    git -c user.email="dn-bot@microsoft.com" -c user.name="Dotnet Bot" commit -m "$PushReason for $Repository/$BranchName"
+    if ($LASTEXITCODE -ne 0) {
+      Write-PipelineTelemetryError -Force -Category 'Sdl' -Message "Git commit failed with exit code $LASTEXITCODE."
+      ExitWithExitCode $LASTEXITCODE
+    }
+    Write-Host 'git push'
+    git push
+    if ($LASTEXITCODE -ne 0) {
+      Write-PipelineTelemetryError -Force -Category 'Sdl' -Message "Git push failed with exit code $LASTEXITCODE."
+      ExitWithExitCode $LASTEXITCODE
+    }
   }
-  Write-Host 'git push'
-  git push
-  if ($LASTEXITCODE -ne 0) {
-    Write-PipelineTelemetryError -Force -Category 'Sdl' -Message "Git push failed with exit code $LASTEXITCODE."
-    ExitWithExitCode $LASTEXITCODE
-  }
-
   # Return to the original directory
   Pop-Location
 }
