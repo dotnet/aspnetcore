@@ -1,4 +1,5 @@
 <Project>
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.StaticWebAssets.targets"/>
 
   <Target Name="ValidateIdentityUIFrameworkVersion" BeforeTargets="Build">
 
