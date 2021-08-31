@@ -59,37 +59,5 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
                 yield return "world";
             }
         }
-
-        [Fact]
-        public async Task ExecuteAsync_AsyncEnumerableClosedConnection()
-        {
-            // Arrange
-            var expected = System.Text.Json.JsonSerializer.Serialize(new[] { "Hello", "world" });
-
-            var cts = new CancellationTokenSource();
-            var context = GetActionContext();
-            context.HttpContext.RequestAborted = cts.Token;
-            var result = new JsonResult(TestAsyncEnumerable());
-            var executor = CreateExecutor();
-            var iterated = false;
-
-            // Act
-            await executor.ExecuteAsync(context, result);
-
-            // Assert
-            var written = GetWrittenBytes(context.HttpContext);
-            Assert.Empty(written);
-            Assert.False(iterated);
-
-            async IAsyncEnumerable<string> TestAsyncEnumerable([EnumeratorCancellation] CancellationToken cancellationToken = default)
-            {
-                await Task.Yield();
-                cts.Cancel();
-                yield return "Hello";
-                cancellationToken.ThrowIfCancellationRequested();
-                iterated = false;
-                yield return "world";
-            }
-        }
     }
 }
