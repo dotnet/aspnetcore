@@ -515,7 +515,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             DecrementActiveClientStreamCount();
 
             ApplyCompletionFlag(StreamCompletionFlags.RstStreamReceived);
-            Abort(new IOException(CoreStrings.Http2StreamResetByClient));
+            Abort(new IOException(CoreStrings.HttpStreamResetByClient));
         }
 
         public void Abort(IOException abortReason)

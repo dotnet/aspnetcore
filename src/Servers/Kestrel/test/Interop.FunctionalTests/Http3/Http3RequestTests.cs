@@ -380,9 +380,76 @@ namespace Interop.FunctionalTests.Http3
 
                 await cancelledTcs.Task.DefaultTimeout();
 
-                var serverWriteTask = await readAsyncTask.Task.DefaultTimeout();
+                var serverReadTask = await readAsyncTask.Task.DefaultTimeout();
 
-                await Assert.ThrowsAnyAsync<Exception>(() => serverWriteTask).DefaultTimeout();
+                var serverEx = await Assert.ThrowsAsync<IOException>(() => serverReadTask).DefaultTimeout();
+                Assert.Equal("The client reset the request stream.", serverEx.Message);
+
+                await host.StopAsync().DefaultTimeout();
+            }
+        }
+
+        // Verify HTTP/2 and HTTP/3 match behavior
+        [ConditionalTheory]
+        [MsQuicSupported]
+        [InlineData(HttpProtocols.Http3)]
+        [InlineData(HttpProtocols.Http2)]
+        public async Task POST_ServerAbort_ClientReceivesAbort(HttpProtocols protocol)
+        {
+            // Arrange
+            var syncPoint = new SyncPoint();
+            var cancelledTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var readAsyncTask = new TaskCompletionSource<Task>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var builder = CreateHostBuilder(async context =>
+            {
+                context.RequestAborted.Register(() => cancelledTcs.SetResult());
+
+                context.Abort();
+
+                // Sync with client
+                await syncPoint.WaitToContinue();
+
+                readAsyncTask.SetResult(context.Request.Body.ReadAsync(new byte[1024]).AsTask());
+            }, protocol: protocol);
+
+            using (var host = builder.Build())
+            using (var client = Http3Helpers.CreateClient())
+            {
+                await host.StartAsync().DefaultTimeout();
+
+                var requestContent = new StreamingHttpContext();
+
+                var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
+                request.Content = requestContent;
+                request.Version = GetProtocol(protocol);
+                request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                // Act
+                var sendTask = client.SendAsync(request, CancellationToken.None);
+
+                var requestStream = await requestContent.GetStreamAsync().DefaultTimeout();
+                Logger.LogInformation("Client sending request headers");
+                await requestStream.FlushAsync().DefaultTimeout();
+
+                var ex = await Assert.ThrowsAsync<HttpRequestException>(() => sendTask).DefaultTimeout();
+
+                // Assert
+                if (protocol == HttpProtocols.Http3)
+                {
+                    var innerEx = Assert.IsType<QuicStreamAbortedException>(ex.InnerException);
+                    Assert.Equal(Http3ErrorCode.RequestCancelled, (Http3ErrorCode)innerEx.ErrorCode);
+                }
+
+                await cancelledTcs.Task.DefaultTimeout();
+
+                // Sync with server to ensure RequestDelegate is still running
+                await syncPoint.WaitForSyncPoint().DefaultTimeout();
+                syncPoint.Continue();
+
+                var serverReadTask = await readAsyncTask.Task.DefaultTimeout();
+                var serverEx = await Assert.ThrowsAsync<ConnectionAbortedException>(() => serverReadTask).DefaultTimeout();
+                Assert.Equal("The connection was aborted by the application.", serverEx.Message);
 
                 await host.StopAsync().DefaultTimeout();
             }
@@ -428,7 +495,7 @@ namespace Interop.FunctionalTests.Http3
                 if (protocol == HttpProtocols.Http3)
                 {
                     var innerEx = Assert.IsType<QuicStreamAbortedException>(ex.InnerException);
-                    Assert.Equal(258, innerEx.ErrorCode);
+                    Assert.Equal(Http3ErrorCode.RequestCancelled, (Http3ErrorCode)innerEx.ErrorCode);
                 }
 
                 await cancelledTcs.Task.DefaultTimeout();
@@ -517,7 +584,7 @@ namespace Interop.FunctionalTests.Http3
         // Verify HTTP/2 and HTTP/3 match behavior
         [ConditionalTheory]
         [MsQuicSupported]
-        [InlineData(HttpProtocols.Http3, Skip = "https://github.com/dotnet/runtime/issues/56129")]
+        [InlineData(HttpProtocols.Http3)]
         [InlineData(HttpProtocols.Http2)]
         public async Task POST_ClientCancellationBidirectional_RequestAbortRaised(HttpProtocols protocol)
         {
@@ -538,24 +605,17 @@ namespace Interop.FunctionalTests.Http3
                 var responseBody = context.Response.Body;
 
                 // Read content
+                Logger.LogInformation("Server reading request body.");
                 var data = await requestBody.ReadAtLeastLengthAsync(TestData.Length);
 
+                Logger.LogInformation("Server writing response body.");
                 await responseBody.WriteAsync(data);
                 await responseBody.FlushAsync();
 
                 await clientHasCancelledSyncPoint.WaitForSyncPoint().DefaultTimeout();
                 clientHasCancelledSyncPoint.Continue();
 
-                for (var i = 0; i < 5; i++)
-                {
-                    await Task.Delay(100);
-
-                    Logger.LogInformation($"Server writing to response after cancellation {i}.");
-                    await responseBody.WriteAsync(data);
-                    await responseBody.FlushAsync();
-                }
-
-                // Wait for task cancellation
+                Logger.LogInformation("Server waiting for cancellation.");
                 await cancelledTcs.Task;
 
                 readAsyncTask.SetResult(requestBody.ReadAsync(data).AsTask());
@@ -586,11 +646,13 @@ namespace Interop.FunctionalTests.Http3
                 await requestStream.FlushAsync().DefaultTimeout();
                 // Write content
                 await requestStream.WriteAsync(TestData).DefaultTimeout();
+                await requestStream.FlushAsync().DefaultTimeout();
 
                 var response = await responseTask.DefaultTimeout();
 
                 var responseStream = await response.Content.ReadAsStreamAsync().DefaultTimeout();
 
+                Logger.LogInformation("Client reading response.");
                 var data = await responseStream.ReadAtLeastLengthAsync(TestData.Length).DefaultTimeout();
 
                 Logger.LogInformation("Client canceled request.");
@@ -601,9 +663,10 @@ namespace Interop.FunctionalTests.Http3
                 // Assert
                 await cancelledTcs.Task.DefaultTimeout();
 
-                var serverWriteTask = await readAsyncTask.Task.DefaultTimeout();
+                var serverReadTask = await readAsyncTask.Task.DefaultTimeout();
 
-                await Assert.ThrowsAnyAsync<Exception>(() => serverWriteTask).DefaultTimeout();
+                var serverEx = await Assert.ThrowsAsync<IOException>(() => serverReadTask).DefaultTimeout();
+                Assert.Equal("The client reset the request stream.", serverEx.Message);
 
                 await host.StopAsync().DefaultTimeout();
             }

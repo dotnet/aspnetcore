@@ -153,16 +153,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 _errorCodeFeature.Error = (long)errorCode;
                 _frameWriter.Abort(abortReason);
 
-                // Call _http3Output.Stop() prior to poisoning the request body stream or pipe to
-                // ensure that an app that completes early due to the abort doesn't result in header frames being sent.
-                _http3Output.Stop();
-
-                CancelRequestAbortedToken();
-
-                // Unblock the request body.
-                PoisonBody(abortReason);
-                RequestBodyPipe.Writer.Complete(abortReason);
+                AbortCore(abortReason);
             }
+        }
+
+        private void AbortCore(Exception exception)
+        {
+            // Call _http3Output.Stop() prior to poisoning the request body stream or pipe to
+            // ensure that an app that completes early due to the abort doesn't result in header frames being sent.
+            _http3Output.Stop();
+
+            CancelRequestAbortedToken();
+
+            // Unblock the request body.
+            PoisonBody(exception);
+            RequestBodyPipe.Writer.Complete(exception);
         }
 
         protected override void OnErrorAfterResponseStarted()
@@ -465,7 +470,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             catch (ConnectionResetException ex)
             {
                 error = ex;
-                Abort(new ConnectionAbortedException(ex.Message, ex), (Http3ErrorCode)_errorCodeFeature.Error);
+                AbortCore(new IOException(CoreStrings.HttpStreamResetByClient, ex));
             }
             catch (Exception ex)
             {
