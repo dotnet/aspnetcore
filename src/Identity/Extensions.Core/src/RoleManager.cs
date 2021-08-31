@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(roleName));
             }
 
-            return await FindByNameAsync(NormalizeKey(roleName)) != null;
+            return await FindByNameAsync(roleName) != null;
         }
 
         /// <summary>
