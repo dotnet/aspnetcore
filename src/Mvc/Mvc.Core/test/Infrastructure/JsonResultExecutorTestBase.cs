@@ -415,8 +415,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             // Assert
             var written = GetWrittenBytes(context.HttpContext);
-            // System.Text.Json might write the '[' before cancellation is observed
-            Assert.InRange(written.Length, 0, 1);
+            // System.Text.Json might write the '[' before cancellation is observed (utf-16 means 2 bytes per character)
+            Assert.InRange(written.Length, 0, 2);
             Assert.False(iterated);
 
             async IAsyncEnumerable<int> AsyncEnumerableClosedConnection([EnumeratorCancellation] CancellationToken cancellationToken = default)
