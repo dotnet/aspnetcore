@@ -1,16 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Text.Json.Serialization;
+using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.JSInterop.Implementation
 {
     /// <summary>
     /// Implements functionality for <see cref="IJSStreamReference"/>.
     /// </summary>
+    [JsonConverter(typeof(JSStreamReferenceJsonConverter))]
     public sealed class JSStreamReference : JSObjectReference, IJSStreamReference
     {
         private readonly JSRuntime _jsRuntime;

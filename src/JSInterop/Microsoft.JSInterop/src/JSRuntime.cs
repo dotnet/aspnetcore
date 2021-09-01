@@ -35,10 +35,8 @@ namespace Microsoft.JSInterop
                 PropertyNameCaseInsensitive = true,
                 Converters =
                 {
+                    new JSRuntimeProvider(this),
                     new DotNetObjectReferenceJsonConverterFactory(this),
-                    new JSObjectReferenceJsonConverter(this),
-                    new JSStreamReferenceJsonConverter(this),
-                    new DotNetStreamReferenceJsonConverter(this),
                     new ByteArrayJsonConverter(this),
                 }
             };

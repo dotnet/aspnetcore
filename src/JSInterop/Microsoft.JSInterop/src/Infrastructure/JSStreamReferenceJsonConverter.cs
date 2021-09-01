@@ -12,18 +12,13 @@ namespace Microsoft.JSInterop.Infrastructure
     {
         private static readonly JsonEncodedText _jsStreamReferenceLengthKey = JsonEncodedText.Encode("__jsStreamReferenceLength");
 
-        private readonly JSRuntime _jsRuntime;
-
-        public JSStreamReferenceJsonConverter(JSRuntime jsRuntime)
-        {
-            _jsRuntime = jsRuntime;
-        }
-
         public override bool CanConvert(Type typeToConvert)
             => typeToConvert == typeof(IJSStreamReference) || typeToConvert == typeof(JSStreamReference);
 
         public override IJSStreamReference? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
+            var jsRuntime = JSRuntimeProvider.GetJSRuntime(options);
+
             long? id = null;
             long? length = null;
 
@@ -62,7 +57,7 @@ namespace Microsoft.JSInterop.Infrastructure
                 throw new JsonException($"Required property {_jsStreamReferenceLengthKey} not found.");
             }
 
-            return new JSStreamReference(_jsRuntime, id.Value, length.Value);
+            return new JSStreamReference(jsRuntime, id.Value, length.Value);
         }
 
         public override void Write(Utf8JsonWriter writer, IJSStreamReference value, JsonSerializerOptions options)

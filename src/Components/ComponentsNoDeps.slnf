@@ -54,7 +54,8 @@
       "src\\Components\\test\\testassets\\ComponentsApp.Server\\ComponentsApp.Server.csproj",
       "src\\Components\\test\\testassets\\GlobalizationWasmApp\\GlobalizationWasmApp.csproj",
       "src\\Components\\test\\testassets\\TestContentPackage\\TestContentPackage.csproj",
-      "src\\Components\\test\\testassets\\TestServer\\Components.TestServer.csproj"
+      "src\\Components\\test\\testassets\\TestServer\\Components.TestServer.csproj",
+      "src\\JSInterop\\Microsoft.JSInterop\\src\\Microsoft.JSInterop.csproj"
     ]
   }
 }
