@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Testing
         {
             if (actual != expected)
             {
-                throw new InvalidOperationException($"Expected {actual} frame. Got {expected}.");
+                throw new InvalidOperationException($"Expected {expected} frame. Got {actual}.");
             }
         }
 
