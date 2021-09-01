@@ -174,10 +174,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         {
             var model = new CompilationErrorPageModel(_options);
 
-            var errorPage = new CompilationErrorPage
-            {
-                Model = model
-            };
+            var errorPage = new CompilationErrorPage(model);
 
             if (compilationException.CompilationFailures == null)
             {
@@ -257,6 +254,17 @@ namespace Microsoft.AspNetCore.Diagnostics
             }
 
             var request = context.Request;
+            var title = Resources.ErrorPageHtml_Title;
+
+            if (ex is BadHttpRequestException badHttpRequestException)
+            {
+                var badRequestReasonPhrase = WebUtilities.ReasonPhrases.GetReasonPhrase(badHttpRequestException.StatusCode);
+
+                if (!string.IsNullOrEmpty(badRequestReasonPhrase))
+                {
+                    title = badRequestReasonPhrase;
+                }
+            }
 
             var model = new ErrorPageModel
             {
@@ -266,7 +274,8 @@ namespace Microsoft.AspNetCore.Diagnostics
                 Cookies = request.Cookies,
                 Headers = request.Headers,
                 RouteValues = request.RouteValues,
-                Endpoint = endpointModel
+                Endpoint = endpointModel,
+                Title = title,
             };
 
             var errorPage = new ErrorPage(model);
