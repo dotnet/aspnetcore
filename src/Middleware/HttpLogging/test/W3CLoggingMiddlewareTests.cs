@@ -141,8 +141,8 @@ namespace Microsoft.AspNetCore.HttpLogging
             Assert.True(now.Subtract(startDate).TotalSeconds < 10);
 
             Assert.Equal("#Fields: time-taken", lines[2]);
-            // Time taken should be less than 10 milliseconds
-            Assert.True(Double.Parse(lines[3]) < 10);
+            // Time taken should be less than 50 milliseconds
+            Assert.True(Double.Parse(lines[3], CultureInfo.InvariantCulture) < 50);
         }
 
         private IOptionsMonitor<W3CLoggerOptions> CreateOptionsAccessor()
