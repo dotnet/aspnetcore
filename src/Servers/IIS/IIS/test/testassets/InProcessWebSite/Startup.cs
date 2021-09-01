@@ -1583,17 +1583,17 @@ namespace TestSite
             return Http3_AltSvcHeader_UpgradeFromHttp1(context);
         }
 
-        public Task Http3_ResponseTrailers(HttpContext context)
+        public async Task Http3_ResponseTrailers(HttpContext context)
         {
             try
             {
                 Assert.True(context.Request.IsHttps);
+                await context.Response.WriteAsync(context.Request.Protocol);
                 context.Response.AppendTrailer("custom", "value");
-                return context.Response.WriteAsync(context.Request.Protocol);
             }
             catch (Exception ex)
             {
-                return context.Response.WriteAsync(ex.ToString());
+                await context.Response.WriteAsync(ex.ToString());
             }
         }
 

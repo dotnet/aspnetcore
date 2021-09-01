@@ -24,7 +24,7 @@ using Xunit;
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     [MsQuicSupported]
-    [Http3Supported]
+    [HttpSysHttp3Supported]
     [Collection(IISHttpsTestSiteCollection.Name)]
     public class Http3Tests
     {
@@ -42,10 +42,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [ConditionalFact]
         public async Task Http3_Direct()
         {
-            var handler = new HttpClientHandler();
-            handler.MaxResponseHeadersLength = 128;
-            handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-            using var client = new HttpClient(handler);
+            using var client = SetUpClient();
             client.DefaultRequestVersion = HttpVersion.Version30;
             client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
             var response = await client.GetAsync(Fixture.Client.BaseAddress.ToString() + "Http3_Direct");
@@ -61,10 +58,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var address = Fixture.Client.BaseAddress.ToString() + "Http3_AltSvcHeader_UpgradeFromHttp1";
 
             var altsvc = $@"h3="":{new Uri(address).Port}""";
-            var handler = new HttpClientHandler();
-            // Needed on CI, the IIS Express cert we use isn't trusted there.
-            handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-            using var client = new HttpClient(handler);
+            using var client = SetUpClient();
             client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
 
             // First request is HTTP/1.1, gets an alt-svc response
@@ -88,10 +82,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var address = Fixture.Client.BaseAddress.ToString() + "Http3_AltSvcHeader_UpgradeFromHttp2";
 
             var altsvc = $@"h3="":{new Uri(address).Port}""";
-            var handler = new HttpClientHandler();
-            // Needed on CI, the IIS Express cert we use isn't trusted there.
-            handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-            using var client = new HttpClient(handler);
+            using var client = SetUpClient();
             client.DefaultRequestVersion = HttpVersion.Version20;
             client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
 
@@ -110,10 +101,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         public async Task Http3_ResponseTrailers()
         {
             var address = Fixture.Client.BaseAddress.ToString() + "Http3_ResponseTrailers";
-            var handler = new HttpClientHandler();
-            // Needed on CI, the IIS Express cert we use isn't trusted there.
-            handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-            using var client = new HttpClient(handler);
+            using var client = SetUpClient();
             client.DefaultRequestVersion = HttpVersion.Version30;
             client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
             var response = await client.GetAsync(address);
@@ -127,10 +115,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         public async Task Http3_ResetBeforeHeaders()
         {
             var address = Fixture.Client.BaseAddress.ToString() + "Http3_ResetBeforeHeaders";
-            var handler = new HttpClientHandler();
-            // Needed on CI, the IIS Express cert we use isn't trusted there.
-            handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-            using var client = new HttpClient(handler);
+            using var client = SetUpClient();
             client.DefaultRequestVersion = HttpVersion.Version30;
             client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
             var ex = await Assert.ThrowsAsync<HttpRequestException>(() => client.GetAsync(address));
@@ -142,10 +127,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         public async Task Http3_ResetAfterHeaders()
         {
             var address = Fixture.Client.BaseAddress.ToString() + "Http3_ResetAfterHeaders";
-            var handler = new HttpClientHandler();
-            // Needed on CI, the IIS Express cert we use isn't trusted there.
-            handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-            using var client = new HttpClient(handler);
+            using var client = SetUpClient();
             client.DefaultRequestVersion = HttpVersion.Version30;
             client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
             var response = await client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
@@ -160,10 +142,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         public async Task Http3_AppExceptionAfterHeaders_InternalError()
         {
             var address = Fixture.Client.BaseAddress.ToString() + "Http3_AppExceptionAfterHeaders_InternalError";
-            var handler = new HttpClientHandler();
-            // Needed on CI, the IIS Express cert we use isn't trusted there.
-            handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-            using var client = new HttpClient(handler);
+            using var client = SetUpClient();
             client.DefaultRequestVersion = HttpVersion.Version30;
             client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
@@ -179,16 +158,21 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         public async Task Http3_Abort_Cancel()
         {
             var address = Fixture.Client.BaseAddress.ToString() + "Http3_Abort_Cancel";
-            var handler = new HttpClientHandler();
-            // Needed on CI, the IIS Express cert we use isn't trusted there.
-            handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-            using var client = new HttpClient(handler);
+            using var client = SetUpClient();
             client.DefaultRequestVersion = HttpVersion.Version30;
             client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
             var ex = await Assert.ThrowsAsync<HttpRequestException>(() => client.GetAsync(address));
             var qex = Assert.IsType<QuicStreamAbortedException>(ex.InnerException);
             Assert.Equal(0x010c, qex.ErrorCode); // H3_REQUEST_CANCELLED
+        }
+
+        private HttpClient SetUpClient()
+        {
+            var handler = new HttpClientHandler();
+            // Needed on CI, the IIS Express cert we use isn't trusted there.
+            handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            return new HttpClient(handler);
         }
     }
 }

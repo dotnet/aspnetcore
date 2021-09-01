@@ -35,7 +35,7 @@
     <Compile Remove="$(SharedSourceRoot)ServerInfrastructure\DuplexPipe.cs" />
     <Compile Include="$(SharedSourceRoot)TaskToApm.cs" Link="Shared\TaskToApm.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\MsQuicSupportedAttribute.cs" LinkBase="Shared\" />
-    <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\Http3SupportedAttribute.cs" LinkBase="shared\" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\HttpSysHttp3SupportedAttribute.cs" LinkBase="shared\" />
   </ItemGroup>
 
   <ItemGroup>
