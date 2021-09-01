@@ -107,7 +107,42 @@ namespace Microsoft.AspNetCore.HttpLogging
             Assert.True(now.Subtract(startDate).TotalSeconds < 10);
 
             Assert.Equal("#Fields: date time c-ip s-computername s-ip s-port cs-method cs-uri-stem cs-uri-query sc-status time-taken cs-version cs-host cs(User-Agent) cs(Referer)", lines[2]);
-            Assert.DoesNotContain(lines[2], "Snickerdoodle");
+            Assert.DoesNotContain(lines[3], "Snickerdoodle");
+        }
+
+        [Fact]
+        public async Task TimeTakenIsInMilliseconds()
+        {
+            var options = CreateOptionsAccessor();
+            options.CurrentValue.LoggingFields = W3CLoggingFields.TimeTaken;
+            var logger = new TestW3CLogger(options, new HostingEnvironment(), NullLoggerFactory.Instance);
+
+            var middleware = new W3CLoggingMiddleware(
+                c =>
+                {
+                    c.Response.StatusCode = 200;
+                    return Task.CompletedTask;
+                },
+                options,
+                logger);
+
+            var httpContext = new DefaultHttpContext();
+
+            var now = DateTime.Now;
+            await middleware.Invoke(httpContext);
+            await logger.Processor.WaitForWrites(4).DefaultTimeout();
+
+            var lines = logger.Processor.Lines;
+            Assert.Equal("#Version: 1.0", lines[0]);
+
+            Assert.StartsWith("#Start-Date: ", lines[1]);
+            var startDate = DateTime.Parse(lines[1].Substring(13), CultureInfo.InvariantCulture);
+            // Assert that the log was written in the last 10 seconds
+            Assert.True(now.Subtract(startDate).TotalSeconds < 10);
+
+            Assert.Equal("#Fields: time-taken", lines[2]);
+            // Time taken should be less than 10 milliseconds
+            Assert.True(Double.Parse(lines[3]) < 10);
         }
 
         private IOptionsMonitor<W3CLoggerOptions> CreateOptionsAccessor()

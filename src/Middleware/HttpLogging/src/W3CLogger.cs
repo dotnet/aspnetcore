@@ -48,12 +48,6 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         private string Format(string[] elements)
         {
-            if (_loggingFields.HasFlag(W3CLoggingFields.TimeTaken) && !string.IsNullOrEmpty(elements[W3CLoggingMiddleware._timeTakenIndex]))
-            {
-                // Need to calculate TimeTaken now, if applicable
-                elements[W3CLoggingMiddleware._timeTakenIndex] = (Environment.TickCount - Int32.Parse(elements[W3CLoggingMiddleware._timeTakenIndex])).ToString(CultureInfo.InvariantCulture);
-            }
-
             // 200 is around the length of an average cookie-less entry
             var sb = new ValueStringBuilder(200);
             var firstElement = true;
