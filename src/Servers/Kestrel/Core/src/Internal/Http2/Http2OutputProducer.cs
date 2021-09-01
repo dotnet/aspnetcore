@@ -486,7 +486,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        internal Memory<byte> GetFakeMemory(int minSize)
+        private Memory<byte> GetFakeMemory(int minSize)
         {
             if (_fakeMemoryOwner == null || _fakeMemoryOwner.Memory.Length < minSize)
             {
