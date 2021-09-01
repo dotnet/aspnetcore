@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
@@ -93,10 +94,11 @@ namespace Microsoft.AspNetCore.Builder
                 applicationName = ApplicationName;
             }
 
-            if (applicationName is not null)
-            {
-                webHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, applicationName);
-            }
+            // We need to override the application name since the call to Configure will set it to
+            // be the calling assembly's name.
+            applicationName ??= Assembly.GetEntryAssembly()?.GetName()?.Name ?? string.Empty;
+
+            webHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, applicationName);
         }
     }
 }
