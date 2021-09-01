@@ -106,7 +106,16 @@ namespace Microsoft.AspNetCore.Diagnostics
                 try
                 {
                     context.Response.Clear();
-                    context.Response.StatusCode = 500;
+
+                    // Preserve the status code that would have been written by the server automatically when a BadHttpRequestException is thrown.
+                    if (ex is BadHttpRequestException badHttpRequestException)
+                    {
+                        context.Response.StatusCode = badHttpRequestException.StatusCode;
+                    }
+                    else
+                    {
+                        context.Response.StatusCode = 500;
+                    }
 
                     await _exceptionHandler(new ErrorContext(context, ex));
 

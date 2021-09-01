@@ -1,18 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http.Headers;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Diagnostics
 {
@@ -84,6 +80,8 @@ namespace Microsoft.AspNetCore.Diagnostics
             var response = await client.GetAsync("/path");
 
             // Assert
+            Assert.Equal(StatusCodes.Status500InternalServerError, (int)response.StatusCode);
+
             var responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal("text/html", response.Content.Headers.ContentType.MediaType);
             Assert.Contains("<html", responseText);
@@ -117,10 +115,45 @@ namespace Microsoft.AspNetCore.Diagnostics
             var response = await server.CreateClient().GetAsync("/path");
 
             // Assert
+            Assert.Equal(StatusCodes.Status500InternalServerError, (int)response.StatusCode);
+
             var responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal("text/plain", response.Content.Headers.ContentType.MediaType);
             Assert.Contains("Test exception", responseText);
             Assert.DoesNotContain("<html", responseText);
+        }
+
+        [Fact]
+        public async Task StatusCodeFromBadHttpRequestExceptionIsPreserved()
+        {
+            // Arrange
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseDeveloperExceptionPage();
+                        app.Run(context =>
+                        {
+                            throw new BadHttpRequestException("Not found!", 404);
+                        });
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
+
+            // Act
+            var response = await server.CreateClient().GetAsync("/path");
+
+            // Assert
+            Assert.Equal(StatusCodes.Status404NotFound, (int)response.StatusCode);
+
+            var responseText = await response.Content.ReadAsStringAsync();
+            Assert.Contains("Not found!", responseText);
         }
 
         [Fact]
