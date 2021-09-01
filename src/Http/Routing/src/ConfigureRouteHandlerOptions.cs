@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    internal class ConfigureRouteHandlerOptions : IConfigureOptions<RouteHandlerOptions>
+    internal sealed class ConfigureRouteHandlerOptions : IConfigureOptions<RouteHandlerOptions>
     {
         private readonly IHostEnvironment _environment;
 
@@ -22,7 +22,10 @@ namespace Microsoft.AspNetCore.Routing
 
         public void Configure(RouteHandlerOptions options)
         {
-            options.ThrowOnBadRequest = _environment.IsDevelopment();
+            if (_environment.IsDevelopment())
+            {
+                options.ThrowOnBadRequest = true;
+            }
         }
     }
 }
