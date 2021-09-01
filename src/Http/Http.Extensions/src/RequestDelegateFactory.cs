@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Http
             //     return default;
             // }
 
-            var arguments = CreateArguments(methodInfo.GetParameters(), factoryContext);
+            var arguments = CreateArguments(methodInfo.GetParameters(), factoryContext, options);
 
             var responseWritingMethodCall = factoryContext.ParamCheckExpressions.Count > 0 ?
                 CreateParamCheckingResponseWritingMethodCall(methodInfo, targetExpression, arguments, factoryContext) :
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Http
             return HandleRequestBodyAndCompileRequestDelegate(responseWritingMethodCall, factoryContext);
         }
 
-        private static Expression[] CreateArguments(ParameterInfo[]? parameters, FactoryContext factoryContext)
+        private static Expression[] CreateArguments(ParameterInfo[]? parameters, FactoryContext factoryContext, RequestDelegateFactoryOptions? options)
         {
             if (parameters is null || parameters.Length == 0)
             {
@@ -183,9 +183,14 @@ namespace Microsoft.AspNetCore.Http
 
             for (var i = 0; i < parameters.Length; i++)
             {
-                args[i] = CreateArgument(parameters[i], factoryContext);
+                args[i] = CreateArgument(parameters[i], factoryContext, options);
             }
 
+            if (factoryContext.HasImplicitBody && (!options?.AllowImplicitFromBody ?? false))
+            {
+                var errorMessage = BuildErrorMessageForInferredBodyParameter(factoryContext);
+                throw new InvalidOperationException(errorMessage);
+            }
             if (factoryContext.HasMultipleBodyParameters)
             {
                 var errorMessage = BuildErrorMessageForMultipleBodyParameters(factoryContext);
@@ -195,7 +200,7 @@ namespace Microsoft.AspNetCore.Http
             return args;
         }
 
-        private static Expression CreateArgument(ParameterInfo parameter, FactoryContext factoryContext)
+        private static Expression CreateArgument(ParameterInfo parameter, FactoryContext factoryContext, RequestDelegateFactoryOptions? options)
         {
             if (parameter.Name is null)
             {
@@ -294,6 +299,7 @@ namespace Microsoft.AspNetCore.Http
                     }
                 }
 
+                factoryContext.HasImplicitBody = true;
                 factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.BodyParameter);
                 return BindParameterFromBody(parameter, allowEmpty: false, factoryContext);
             }
@@ -920,7 +926,25 @@ namespace Microsoft.AspNetCore.Http
             }
 
             // Convert(bodyValue, Todo)
-            return Expression.Convert(BodyValueExpr, parameter.ParameterType);
+            var convert = Expression.Convert(BodyValueExpr, parameter.ParameterType);
+
+            if (factoryContext.HasImplicitBody && !factoryContext.AllowEmptyRequestBody)
+            {
+                // if (bodyValue == null)
+                // {
+                //    throw new InvalidOperationException("Implicit body inferred but no body was provided. Did you mean to use a Service instead?");
+                // }
+                factoryContext.ParamCheckExpressions.Add(Expression.Block(
+                    Expression.IfThen(
+                        Expression.Equal(BodyValueExpr, Expression.Constant(null)),
+                        Expression.Block(
+                            Expression.Throw(Expression.Constant(new InvalidOperationException("Implicit body inferred but no body was provided. Did you mean to use a Service instead?")))
+                        )
+                    )
+                ));
+            }
+
+            return convert;
         }
 
         private static bool IsOptionalParameter(ParameterInfo parameter, FactoryContext factoryContext)
@@ -1137,6 +1161,7 @@ namespace Microsoft.AspNetCore.Http
 
             public Dictionary<string, string> TrackedParameters { get; } = new();
             public bool HasMultipleBodyParameters { get; set; }
+            public bool HasImplicitBody { get; set; }
 
             public List<object> Metadata { get; } = new();
 
@@ -1286,6 +1311,25 @@ namespace Microsoft.AspNetCore.Http
             }
             errorMessage.AppendLine().AppendLine();
             errorMessage.AppendLine("Did you mean to register the \"UNKNOWN\" parameters as a Service?")
+                .AppendLine();
+            return errorMessage.ToString();
+        }
+
+        private static string BuildErrorMessageForInferredBodyParameter(FactoryContext factoryContext)
+        {
+            var errorMessage = new StringBuilder();
+            errorMessage.AppendLine("Body was inferred but the method does not allow inferred body parameters.");
+            errorMessage.AppendLine("Below is the list of parameters that we found: ");
+            errorMessage.AppendLine();
+            errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}|{"Source",-30}"));
+            errorMessage.AppendLine("---------------------------------------------------------------------------------");
+
+            foreach (var kv in factoryContext.TrackedParameters)
+            {
+                errorMessage.AppendLine(FormattableString.Invariant($"{kv.Key,-19} | {kv.Value,-15}"));
+            }
+            errorMessage.AppendLine().AppendLine();
+            errorMessage.AppendLine("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromService] or [FromBody] attribute?")
                 .AppendLine();
             return errorMessage.ToString();
         }

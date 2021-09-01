@@ -25,5 +25,10 @@ namespace Microsoft.AspNetCore.Http
         /// writing a <see cref="LogLevel.Debug"/> log when handling invalid requests.
         /// </summary>
         public bool ThrowOnBadRequest { get; init; }
+
+        /// <summary>
+        /// Allow the delegate to infer a parameter as from the request body.
+        /// </summary>
+        public bool AllowImplicitFromBody { get; set; }
     }
 }

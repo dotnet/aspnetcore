@@ -1371,7 +1371,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestBothInvalidAction));
         }
 
-        public static object[][] FromServiceActions
+        public static object[][] ExplicitFromServiceActions
         {
             get
             {
@@ -1385,6 +1385,24 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     httpContext.Items.Add("service", myServices.Single());
                 }
 
+                void TestExplicitMultipleFromService(HttpContext httpContext, [FromService] MyService myService, [FromService] IEnumerable<MyService> myServices)
+                {
+                    httpContext.Items.Add("service", myService);
+                }
+
+                return new object[][]
+                {
+                    new[] { (Action<HttpContext, MyService>)TestExplicitFromService },
+                    new[] { (Action<HttpContext, IEnumerable<MyService>>)TestExplicitFromIEnumerableService },
+                    new[] { (Action<HttpContext, MyService, IEnumerable<MyService>>)TestExplicitMultipleFromService },
+                };
+            }
+        }
+
+        public static object[][] ImplicitFromServiceActions
+        {
+            get
+            {
                 void TestImpliedFromService(HttpContext httpContext, IMyService myService)
                 {
                     httpContext.Items.Add("service", myService);
@@ -1402,12 +1420,18 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
                 return new object[][]
                 {
-                    new[] { (Action<HttpContext, MyService>)TestExplicitFromService },
-                    new[] { (Action<HttpContext, IEnumerable<MyService>>)TestExplicitFromIEnumerableService },
                     new[] { (Action<HttpContext, IMyService>)TestImpliedFromService },
                     new[] { (Action<HttpContext, IEnumerable<MyService>>)TestImpliedIEnumerableFromService },
                     new[] { (Action<HttpContext, MyService>)TestImpliedFromServiceBasedOnContainer },
                 };
+            }
+        }
+
+        public static object[][] FromServiceActions
+        {
+            get
+            {
+                return ImplicitFromServiceActions.Concat(ExplicitFromServiceActions).ToArray();
             }
         }
 
@@ -1416,12 +1440,11 @@ namespace Microsoft.AspNetCore.Routing.Internal
         public async Task RequestDelegateRequiresServiceForAllFromServiceParameters(Delegate action)
         {
             var httpContext = CreateHttpContext();
-            httpContext.RequestServices = new EmptyServiceProvider();
 
             var factoryResult = RequestDelegateFactory.Create(action);
             var requestDelegate = factoryResult.RequestDelegate;
 
-            await Assert.ThrowsAsync<InvalidOperationException>(() => requestDelegate(httpContext));
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => requestDelegate(httpContext));
         }
 
         [Theory]
@@ -2119,13 +2142,12 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var factoryResult = RequestDelegateFactory.Create(@delegate);
             var requestDelegate = factoryResult.RequestDelegate;
 
-            await requestDelegate(httpContext);
-
-            var logs = TestSink.Writes.ToArray();
+            var request = requestDelegate(httpContext);
 
             if (isInvalid)
             {
-                Assert.Equal(400, httpContext.Response.StatusCode);
+                await Assert.ThrowsAsync<InvalidOperationException>(() => request);
+                var logs = TestSink.Writes.ToArray();
                 var log = Assert.Single(logs);
                 Assert.Equal(LogLevel.Debug, log.LogLevel);
                 Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), log.EventId);
@@ -2133,6 +2155,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             }
             else
             {
+                await request;
                 Assert.Equal(200, httpContext.Response.StatusCode);
                 Assert.False(httpContext.RequestAborted.IsCancellationRequested);
                 var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
