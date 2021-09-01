@@ -583,15 +583,14 @@ namespace Microsoft.AspNetCore.Components.Test
 
         private class TestComponentWithWriters : TestComponent, IPropertySetterProvider
         {
-            private static readonly Lazy<Dictionary<string, ParameterWriter<TestComponentWithWriters>>> __parameterWriters
-                = new(static () => new()
-                {
-                    [nameof(RunsBaseOnInit)] = new(static (c, value) => c.RunsBaseOnInit = (bool)value),
-                    [nameof(Counter)] = new(static (c, value) => c.Counter = (int)value),
-                });
+            private static readonly Lazy<Dictionary<string, DelegatePropertySetter<TestComponentWithWriters>>> __parameterWriters = new(static () => new()
+            {
+                [nameof(RunsBaseOnInit)] = new(static (c, value) => c.RunsBaseOnInit = (bool)value),
+                [nameof(Counter)] = new(static (c, value) => c.Counter = (int)value),
+            });
 
             IUnmatchedValuesPropertySetter IPropertySetterProvider.UnmatchedValuesPropertySetter { get; }
-                = new UnmatchedValuesParameterWriter<TestComponentWithWriters>(
+                = new UnmatchedValuesDelegatePropertySetter<TestComponentWithWriters>(
                     nameof(AdditionalAttributes),
                     static (c, value) => c.AdditionalAttributes = (IReadOnlyDictionary<string, object>)value);
 

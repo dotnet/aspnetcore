@@ -239,14 +239,20 @@ namespace Microsoft.AspNetCore.Components
         bool Cascading { get; }
         void SetValue(object target, object value);
     }
-    public partial interface IUnmatchedValuesPropertySetter : IPropertySetter
+    public partial interface IUnmatchedValuesPropertySetter : Microsoft.AspNetCore.Components.IPropertySetter
     {
         string UnmatchedValuesPropertyName { get; }
     }
     public partial interface IPropertySetterProvider
     {
-        IUnmatchedValuesPropertySetter UnmatchedValuesPropertySetter { get; }
-        bool TryGetSetter(string parameterName, out IPropertySetter writer);
+        Microsoft.AspNetCore.Components.IUnmatchedValuesPropertySetter UnmatchedValuesPropertySetter { get; }
+        bool TryGetSetter(string propertyName, out Microsoft.AspNetCore.Components.IPropertySetter propertySetter);
+    }
+    public partial class DelegatePropertySetter<TComponent> : Microsoft.AspNetCore.Components.IPropertySetter
+    {
+        public DelegatePropertySetter(Action<TComponent, object> propertySetter, bool cascading = false) { }
+        public bool Cascading { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public void SetValue(object target, object value) { throw null; }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
     public sealed partial class InjectAttribute : System.Attribute

@@ -50,20 +50,34 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             public const string FullTypeName = "Microsoft.AspNetCore.Components.IPropertySetter";
         }
 
+        public static class IUnmatchedValuesPropertySetter
+        {
+            public const string FullTypeName = "Microsoft.AspNetCore.Components.IUnmatchedValuesPropertySetter";
+        }
+
         public static class IPropertySetterProvider
         {
             public const string FullTypeName = "Microsoft.AspNetCore.Components.IPropertySetterProvider";
 
             public const string TryGetSetter = nameof(TryGetSetter);
 
-            public const string ParameterNameParameter = "parameterName";
+            public const string UnmatchedValuesPropertySetter = nameof(UnmatchedValuesPropertySetter);
 
-            public const string PropertySetterParameter = "writer";
+            public const string PropertyNameParameter = "propertyName";
+
+            public const string PropertySetterParameter = "propertySetter";
+
+            public const string PropertySettersField = "__propertySetters";
         }
 
         public static class IDictionary
         {
             public const string MetadataName = "System.Collection.IDictionary`2";
+        }
+
+        public static class DelegatePropertySetter
+        {
+            public const string FullTypeName = "Microsoft.AspNetCore.Components.DelegatePropertySetter";
         }
 
         public static class RenderFragment

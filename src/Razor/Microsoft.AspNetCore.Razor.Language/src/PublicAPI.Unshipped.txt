@@ -6,7 +6,6 @@ Microsoft.AspNetCore.Razor.Language.Extensions.IMetadataIdentifierFeature
 Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter
 Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.CascadingGenericTypeParameter() -> void
 Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentParameterDataIntermediateNode
-Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentParameterDataIntermediateNode.ComponentParameterDataIntermediateNode() -> void
 ~Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeWriter.CodeWriter(string newLine, Microsoft.AspNetCore.Razor.Language.RazorCodeGenerationOptions options) -> void
 ~Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeWriter.Indent(int size) -> Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeWriter
 ~Microsoft.AspNetCore.Razor.Language.Extensions.IMetadataIdentifierFeature.GetIdentifier(Microsoft.AspNetCore.Razor.Language.RazorCodeDocument codeDocument, Microsoft.AspNetCore.Razor.Language.RazorSourceDocument sourceDocument) -> string
@@ -15,11 +14,14 @@ Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentParameterDataIntermedi
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentIntermediateNode.ProvidesCascadingGenericTypes.get -> System.Collections.Generic.Dictionary<string, Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter>
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentIntermediateNode.ProvidesCascadingGenericTypes.set -> void
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentParameterDataIntermediateNode.AddParameterData(Microsoft.AspNetCore.Razor.Language.BoundAttributeDescriptor descriptor) -> void
+~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentParameterDataIntermediateNode.ComponentFullTypeName.get -> string
+~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentParameterDataIntermediateNode.ComponentParameterDataIntermediateNode(string componentFullTypeName) -> void
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentParameterDataIntermediateNode.ParameterData.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Razor.Language.BoundAttributeDescriptor>
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentTypeInferenceMethodIntermediateNode.ReceivesCascadingGenericTypes.get -> System.Collections.Generic.List<Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter>
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentTypeInferenceMethodIntermediateNode.ReceivesCascadingGenericTypes.set -> void
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentTypeInferenceMethodIntermediateNode.GenericTypeConstraints.get -> System.Collections.Generic.IEnumerable<string>
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentTypeInferenceMethodIntermediateNode.GenericTypeConstraints.set -> void
+~override Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentParameterDataIntermediateNode.FormatNode(Microsoft.AspNetCore.Razor.Language.Intermediate.IntermediateNodeFormatter formatter) -> void
 ~virtual Microsoft.AspNetCore.Razor.Language.CodeGeneration.IntermediateNodeWriter.WriteComponentParameterData(Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeRenderingContext context, Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentParameterDataIntermediateNode node) -> void
 ~virtual Microsoft.AspNetCore.Razor.Language.Intermediate.IntermediateNodeVisitor.VisitComponentParameterData(Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentParameterDataIntermediateNode node) -> void
 abstract Microsoft.AspNetCore.Razor.Language.RazorConfiguration.UseConsolidatedMvcViews.get -> bool

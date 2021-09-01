@@ -806,7 +806,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         public override void WriteComponentParameterData(CodeRenderingContext context, ComponentParameterDataIntermediateNode node)
         {
-            // TODO
+            WriteUnmatchedValuesPropertySetterProperty(context);
+            WriteTryGetSetterSignature(context);
+            WriteTryGetSetterDefaultBody(context);
         }
 
         public override void WriteTemplate(CodeRenderingContext context, TemplateIntermediateNode node)

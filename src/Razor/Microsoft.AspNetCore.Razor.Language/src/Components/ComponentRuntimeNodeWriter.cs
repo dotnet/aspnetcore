@@ -737,7 +737,67 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         public override void WriteComponentParameterData(CodeRenderingContext context, ComponentParameterDataIntermediateNode node)
         {
-            // TODO
+            // TODO:
+            // 1. Handle cascading properties
+            // 2. Handle properties capturing unmatched values.
+            // 3. Utilize existing CodeWriter extensions where possible.
+
+            var hasParameters = node.ParameterData.Count > 0;
+
+            if (hasParameters)
+            {
+                // Writes something like:
+                // private static readonly Lazy<Dictionary<string, DelegatePropertySetter<MyComponent>>> __propertyWriters = new(static () => new()
+                // {
+                //     [nameof(Param1)] = new(static (c, v) => c.Param1 = (bool)value),
+                //     ...
+                // });
+                context.CodeWriter.Write("private static readonly Lazy<Dictionary<string, ");
+                context.CodeWriter.Write(ComponentsApi.DelegatePropertySetter.FullTypeName);
+                context.CodeWriter.Write("<");
+                context.CodeWriter.Write(node.ComponentFullTypeName);
+                context.CodeWriter.Write(">>> ");
+                context.CodeWriter.Write(ComponentsApi.IPropertySetterProvider.PropertySettersField);
+                context.CodeWriter.WriteLine("= new(static () => new()");
+                context.CodeWriter.WriteLine("{");
+                context.CodeWriter.CurrentIndent += context.CodeWriter.TabSize;
+
+                foreach (var parameterData in node.ParameterData)
+                {
+                    context.CodeWriter.Write("[nameof(");
+                    context.CodeWriter.Write(parameterData.Name);
+                    context.CodeWriter.Write(")] = new(static (c, value) => c.");
+                    context.CodeWriter.Write(parameterData.Name);
+                    context.CodeWriter.Write(" = (");
+                    context.CodeWriter.Write(parameterData.TypeName);
+                    context.CodeWriter.WriteLine(")value),");
+                }
+
+                context.CodeWriter.CurrentIndent -= context.CodeWriter.TabSize;
+                context.CodeWriter.WriteLine("});");
+            }
+
+            WriteUnmatchedValuesPropertySetterProperty(context);
+            WriteTryGetSetterSignature(context);
+
+            using (context.CodeWriter.BuildScope())
+            {
+                if (hasParameters)
+                {
+                    context.CodeWriter.Write("var success = ");
+                    context.CodeWriter.Write(ComponentsApi.IPropertySetterProvider.PropertySettersField);
+                    context.CodeWriter.Write(".Value.TryGetValue(");
+                    context.CodeWriter.Write(ComponentsApi.IPropertySetterProvider.PropertyNameParameter);
+                    context.CodeWriter.WriteLine(", out var result);");
+                    context.CodeWriter.Write(ComponentsApi.IPropertySetterProvider.PropertySetterParameter);
+                    context.CodeWriter.WriteLine(" = result;");
+                    context.CodeWriter.WriteLine("return success;");
+                }
+                else
+                {
+                    WriteTryGetSetterDefaultBody(context);
+                }
+            }
         }
 
         public override void WriteTemplate(CodeRenderingContext context, TemplateIntermediateNode node)

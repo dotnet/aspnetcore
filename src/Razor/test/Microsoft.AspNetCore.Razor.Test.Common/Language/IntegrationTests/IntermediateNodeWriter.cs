@@ -164,6 +164,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             WriteContentNode(node, node.FullTypeName, node.MethodName);
         }
 
+        public override void VisitComponentParameterData(ComponentParameterDataIntermediateNode node)
+        {
+            WriteContentNode(node, node.FormatParameterData());
+        }
+
         public override void VisitMarkupElement(MarkupElementIntermediateNode node)
         {
             WriteContentNode(node, node.TagName);

@@ -4,6 +4,10 @@
 *REMOVED*readonly Microsoft.AspNetCore.Components.RenderTree.RenderTreeEdit.RemovedAttributeName -> string!
 *REMOVED*Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string! uri, bool forceLoad = false) -> void
 *REMOVED*abstract Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(string! uri, bool forceLoad) -> void
+Microsoft.AspNetCore.Components.DelegatePropertySetter<TComponent>
+Microsoft.AspNetCore.Components.DelegatePropertySetter<TComponent>.Cascading.get -> bool
+Microsoft.AspNetCore.Components.DelegatePropertySetter<TComponent>.DelegatePropertySetter(System.Action<TComponent, object!>! propertySetterDelegate, bool cascading = false) -> void
+Microsoft.AspNetCore.Components.DelegatePropertySetter<TComponent>.SetValue(object! target, object! value) -> void
 Microsoft.AspNetCore.Components.EditorRequiredAttribute
 Microsoft.AspNetCore.Components.EditorRequiredAttribute.EditorRequiredAttribute() -> void
 Microsoft.AspNetCore.Components.ErrorBoundaryBase
@@ -18,9 +22,14 @@ Microsoft.AspNetCore.Components.ErrorBoundaryBase.MaximumErrorCount.set -> void
 Microsoft.AspNetCore.Components.ErrorBoundaryBase.Recover() -> void
 Microsoft.AspNetCore.Components.IPersistentComponentStateStore.GetPersistedStateAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IDictionary<string!, byte[]!>!>!
 Microsoft.AspNetCore.Components.IPersistentComponentStateStore.PersistStateAsync(System.Collections.Generic.IReadOnlyDictionary<string!, byte[]!>! state) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.IPropertySetter
+Microsoft.AspNetCore.Components.IPropertySetter.Cascading.get -> bool
+Microsoft.AspNetCore.Components.IPropertySetter.SetValue(object! target, object! value) -> void
 Microsoft.AspNetCore.Components.IPropertySetterProvider
-Microsoft.AspNetCore.Components.IPropertySetterProvider.TryGetSetter(string! parameterName, out Microsoft.AspNetCore.Components.IPropertySetter? writer) -> bool
+Microsoft.AspNetCore.Components.IPropertySetterProvider.TryGetSetter(string! propertyName, out Microsoft.AspNetCore.Components.IPropertySetter? propertySetter) -> bool
 Microsoft.AspNetCore.Components.IPropertySetterProvider.UnmatchedValuesPropertySetter.get -> Microsoft.AspNetCore.Components.IUnmatchedValuesPropertySetter?
+Microsoft.AspNetCore.Components.IUnmatchedValuesPropertySetter
+Microsoft.AspNetCore.Components.IUnmatchedValuesPropertySetter.UnmatchedValuesPropertyName.get -> string!
 Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string! uri, Microsoft.AspNetCore.Components.NavigationOptions options) -> void
 Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string! uri, bool forceLoad = false, bool replace = false) -> void
 Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string! uri, bool forceLoad) -> void
@@ -65,6 +74,9 @@ Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute
 Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute.Name.get -> string?
 Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute.Name.set -> void
 Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute.SupplyParameterFromQueryAttribute() -> void
+Microsoft.AspNetCore.Components.UnmatchedValuesDelegatePropertySetter<TComponent>
+Microsoft.AspNetCore.Components.UnmatchedValuesDelegatePropertySetter<TComponent>.UnmatchedValuesDelegatePropertySetter(string! unmatchedValuesPropertyName, System.Action<TComponent, object!>! propertySetter) -> void
+Microsoft.AspNetCore.Components.UnmatchedValuesDelegatePropertySetter<TComponent>.UnmatchedValuesPropertyName.get -> string!
 abstract Microsoft.AspNetCore.Components.ErrorBoundaryBase.OnErrorAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.LayoutComponentBase.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Components.BindConverter.FormatValue(System.DateOnly value, System.Globalization.CultureInfo? culture = null) -> string!

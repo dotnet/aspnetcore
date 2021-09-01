@@ -19,20 +19,31 @@ internal class ComponentPropertySetterProviderPass : ComponentIntermediateNodePa
             return;
         }
 
-        var tagHelperContext = codeDocument.GetTagHelperContext();
+        var primaryNamespace = documentNode.FindPrimaryNamespace();
+        var primaryClass = documentNode.FindPrimaryClass();
+        var componentTypeName = GetTypeName(primaryNamespace, primaryClass);
+        var componentParameterDataNode = new ComponentParameterDataIntermediateNode(componentTypeName);
 
+        BuildComponentParameterData(codeDocument.GetTagHelperContext(), componentParameterDataNode);
+
+        primaryClass.Interfaces.Add(ComponentsApi.IPropertySetterProvider.FullTypeName);
+
+        var nodeParameterDataBuilder = IntermediateNodeBuilder.Create(primaryClass);
+        nodeParameterDataBuilder.Add(componentParameterDataNode);
+    }
+
+    private static void BuildComponentParameterData(
+        TagHelperDocumentContext tagHelperContext,
+        ComponentParameterDataIntermediateNode parameterDataNode)
+    {
         if (tagHelperContext is null)
         {
             return;
         }
 
-        var primaryNamespace = documentNode.FindPrimaryNamespace();
-        var primaryClass = documentNode.FindPrimaryClass();
-        var primaryClassTypeName = GetTypeName(primaryNamespace, primaryClass);
-
         var tagHelper = tagHelperContext.TagHelpers
             .Where(th => th.IsComponentTagHelper())
-            .FirstOrDefault(th => th.Name == primaryClassTypeName);
+            .FirstOrDefault(th => th.Name == parameterDataNode.ComponentFullTypeName);
 
         if (tagHelper is null)
         {
@@ -44,15 +55,10 @@ internal class ComponentPropertySetterProviderPass : ComponentIntermediateNodePa
             && IsMetadataValueFalsey(bad, ComponentMetadata.Component.TypeParameterKey)
             && IsMetadataValueFalsey(bad, ComponentMetadata.Component.ChildContentParameterNameKey));
 
-        var componentParameterDataNode = new ComponentParameterDataIntermediateNode();
-
         foreach (var descriptor in parameterDescriptors)
         {
-            componentParameterDataNode.AddParameterData(descriptor);
+            parameterDataNode.AddParameterData(descriptor);
         }
-
-        var nodeParameterDataBuilder = IntermediateNodeBuilder.Create(primaryClass);
-        nodeParameterDataBuilder.Add(componentParameterDataNode);
     }
 
     private static string GetTypeName(
