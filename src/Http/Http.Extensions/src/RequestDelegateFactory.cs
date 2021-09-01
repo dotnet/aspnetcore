@@ -635,7 +635,7 @@ namespace Microsoft.AspNetCore.Http
 
             var argument = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
 
-            var parameterTypeNameConstant = Expression.Constant(parameter.ParameterType.Name);
+            var parameterTypeNameConstant = Expression.Constant(TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false));
             var parameterNameConstant = Expression.Constant(parameter.Name);
             var sourceConstant = Expression.Constant(source);
 
@@ -697,7 +697,8 @@ namespace Microsoft.AspNetCore.Http
 
             if (tryParseMethodCall is null)
             {
-                throw new InvalidOperationException($"No public static bool {parameter.ParameterType.Name}.TryParse(string, out {parameter.ParameterType.Name}) method found for {parameter.Name}.");
+                var typeName = TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false);
+                throw new InvalidOperationException($"No public static bool {typeName}.TryParse(string, out {typeName}) method found for {parameter.Name}.");
             }
 
             // string tempSourceString;
@@ -831,6 +832,7 @@ namespace Microsoft.AspNetCore.Http
 
             if (!isOptional)
             {
+                var typeName = TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false);
                 var checkRequiredBodyBlock = Expression.Block(
                         Expression.IfThen(
                         Expression.Equal(boundValueExpr, Expression.Constant(null)),
@@ -838,9 +840,9 @@ namespace Microsoft.AspNetCore.Http
                                 Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
                                 Expression.Call(LogRequiredParameterNotProvidedMethod,
                                         HttpContextExpr,
-                                        Expression.Constant(parameter.ParameterType.Name),
+                                        Expression.Constant(typeName),
                                         Expression.Constant(parameter.Name),
-                                        Expression.Constant($"{parameter.ParameterType.Name}.BindAsync(HttpContext, ParameterInfo)"),
+                                        Expression.Constant($"{typeName}.BindAsync(HttpContext, ParameterInfo)"),
                                         Expression.Constant(factoryContext.ThrowOnBadRequest))
                             )
                         )
@@ -889,7 +891,7 @@ namespace Microsoft.AspNetCore.Http
                             Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
                             Expression.Call(LogRequiredParameterNotProvidedMethod,
                                     HttpContextExpr,
-                                    Expression.Constant(parameter.ParameterType.Name),
+                                    Expression.Constant(TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false)),
                                     Expression.Constant(parameter.Name),
                                     Expression.Constant("body"),
                                     Expression.Constant(factoryContext.ThrowOnBadRequest))

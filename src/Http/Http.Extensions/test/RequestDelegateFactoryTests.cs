@@ -770,7 +770,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         public void CreateThrowsInvalidOperationExceptionWhenAttributeRequiresTryParseMethodThatDoesNotExist(Delegate action)
         {
             var ex = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(action));
-            Assert.Equal("No public static bool Object.TryParse(string, out Object) method found for notTryParsable.", ex.Message);
+            Assert.Equal("No public static bool object.TryParse(string, out object) method found for notTryParsable.", ex.Message);
         }
 
         [Fact]
@@ -812,11 +812,11 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             Assert.Equal(new EventId(3, "ParameterBindingFailed"), logs[0].EventId);
             Assert.Equal(LogLevel.Debug, logs[0].LogLevel);
-            Assert.Equal(@"Failed to bind parameter ""Int32 tryParsable"" from ""invalid!"".", logs[0].Message);
+            Assert.Equal(@"Failed to bind parameter ""int tryParsable"" from ""invalid!"".", logs[0].Message);
 
             Assert.Equal(new EventId(3, "ParameterBindingFailed"), logs[1].EventId);
             Assert.Equal(LogLevel.Debug, logs[1].LogLevel);
-            Assert.Equal(@"Failed to bind parameter ""Int32 tryParsable2"" from ""invalid again!"".", logs[1].Message);
+            Assert.Equal(@"Failed to bind parameter ""int tryParsable2"" from ""invalid again!"".", logs[1].Message);
         }
 
         [Fact]
@@ -852,7 +852,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             Assert.Equal(new EventId(3, "ParameterBindingFailed"), logMessage.EventId);
             Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
-            Assert.Equal(@"Failed to bind parameter ""Int32 tryParsable"" from ""invalid!"".", logMessage.Message);
+            Assert.Equal(@"Failed to bind parameter ""int tryParsable"" from ""invalid!"".", logMessage.Message);
 
             Assert.Equal(logMessage.Message, badHttpRequestException.Message);
             Assert.Equal(400, badHttpRequestException.StatusCode);
@@ -1979,7 +1979,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 var log = Assert.Single(logs);
                 Assert.Equal(LogLevel.Debug, log.LogLevel);
                 Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), log.EventId);
-                var expectedType = paramName == "age" ? "Int32 age" : "String name";
+                var expectedType = paramName == "age" ? "int age" : "string name";
                 Assert.Equal($@"Required parameter ""{expectedType}"" was not provided from route or query string.", log.Message);
             }
             else
@@ -2051,7 +2051,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 var log = Assert.Single(logs);
                 Assert.Equal(LogLevel.Debug, log.LogLevel);
                 Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), log.EventId);
-                var expectedType = paramName == "age" ? "Int32 age" : "String name";
+                var expectedType = paramName == "age" ? "int age" : "string name";
                 Assert.Equal($@"Required parameter ""{expectedType}"" was not provided from query string.", log.Message);
             }
             else
