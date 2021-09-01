@@ -41,7 +41,10 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>the associated values from the collection separated into individual values, or StringValues.Empty if the key is not present.</returns>
         public static string[] GetCommaSeparatedValues(this IHeaderDictionary headers, string key)
         {
+            // GetHeaderSplit will return only non-null elements of the given IHeaderDictionary.
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
             return ParsingHelpers.GetHeaderSplit(headers, key).ToArray();
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
         }
 
         /// <summary>

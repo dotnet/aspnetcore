@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             // Http/1.x requests with bodies require either a Content-Length or Transfer-Encoding header.
             // Note Http.Sys adds the Transfer-Encoding: chunked header to HTTP/2 requests with bodies for back compat.
             // Transfer-Encoding takes priority over Content-Length.
-            string transferEncoding = RequestHeaders.TransferEncoding;
+            string transferEncoding = RequestHeaders.TransferEncoding.ToString();
             if (string.Equals("chunked", transferEncoding?.Trim(), StringComparison.OrdinalIgnoreCase))
             {
                 return true;
@@ -437,7 +437,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     }
 
                     var isFirst = i == 0;
-                    var headerValueBytes = Encoding.UTF8.GetBytes(headerValues[i]);
+                    var headerValueBytes = Encoding.UTF8.GetBytes(headerValues[i]!);
                     fixed (byte* pHeaderValue = headerValueBytes)
                     {
                         if (knownHeaderIndex == -1)

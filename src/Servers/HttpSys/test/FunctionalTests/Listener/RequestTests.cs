@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         {
             var uri = new Uri(address);
             StringBuilder builder = new StringBuilder();
-            builder.AppendLine($"{method} {path} HTTP/1.1");
+            builder.AppendLine(FormattableString.Invariant($"{method} {path} HTTP/1.1"));
             builder.AppendLine("Connection: close");
             builder.Append("HOST: ");
             builder.AppendLine(uri.Authority);

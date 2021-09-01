@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         {
             get
             {
-                return HostString.FromUriComponent(Headers.Host);
+                return HostString.FromUriComponent(Headers.Host.ToString());
             }
             set
             {

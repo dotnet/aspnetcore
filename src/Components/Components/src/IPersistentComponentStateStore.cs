@@ -1,15 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-namespace Microsoft.AspNetCore.Components.Lifetime
+namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
     /// Manages the storage for components and services that are part of a Blazor application.
     /// </summary>
-    public interface IComponentApplicationStateStore
+    public interface IPersistentComponentStateStore
     {
         /// <summary>
         /// Gets the persisted state from the store.

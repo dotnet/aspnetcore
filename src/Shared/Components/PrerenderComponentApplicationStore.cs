@@ -1,17 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Lifetime;
 
 namespace Microsoft.AspNetCore.Components
 {
-    internal class PrerenderComponentApplicationStore : IComponentApplicationStateStore
+    internal class PrerenderComponentApplicationStore : IPersistentComponentStateStore
     {
+
         public PrerenderComponentApplicationStore()
         {
             ExistingState = new();
@@ -25,8 +22,19 @@ namespace Microsoft.AspNetCore.Components
                 throw new ArgumentNullException(nameof(existingState));
             }
 
-            ExistingState = JsonSerializer.Deserialize<Dictionary<string, byte[]>>(Convert.FromBase64String(existingState)) ??
-                throw new ArgumentNullException(nameof(existingState));
+            DeserializeState(Convert.FromBase64String(existingState));
+        }
+
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "Simple deserialize of primitive types.")]
+        protected void DeserializeState(byte[] existingState)
+        {
+            var state = JsonSerializer.Deserialize<Dictionary<string, byte[]>>(existingState);
+            if (state == null)
+            {
+                throw new ArgumentException("Could not deserialize state correctly", nameof(existingState));
+            }
+
+            ExistingState = state;
         }
 
 #nullable enable
@@ -41,17 +49,12 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "Simple serialize of primitive types.")]
-        protected virtual byte[] SerializeState(IReadOnlyDictionary<string, byte[]> state)
-        {
-            return JsonSerializer.SerializeToUtf8Bytes(state);
-        }
+        protected virtual byte[] SerializeState(IReadOnlyDictionary<string, byte[]> state) =>
+            JsonSerializer.SerializeToUtf8Bytes(state);
 
         public Task PersistStateAsync(IReadOnlyDictionary<string, byte[]> state)
         {
-            var bytes = SerializeState(state);
-
-            var result = Convert.ToBase64String(bytes);
-            PersistedState = result;
+            PersistedState = Convert.ToBase64String(SerializeState(state));
             return Task.CompletedTask;
         }
     }

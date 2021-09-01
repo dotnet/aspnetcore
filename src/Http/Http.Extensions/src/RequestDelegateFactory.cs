@@ -1211,17 +1211,19 @@ namespace Microsoft.AspNetCore.Http
         private static string BuildErrorMessageForMultipleBodyParameters(FactoryContext factoryContext)
         {
             var errorMessage = new StringBuilder();
-            errorMessage.Append($"Failure to infer one or more parameters.\n");
-            errorMessage.Append("Below is the list of parameters that we found: \n\n");
-            errorMessage.Append($"{"Parameter",-20}|{"Source",-30} \n");
-            errorMessage.Append("---------------------------------------------------------------------------------\n");
+            errorMessage.AppendLine("Failure to infer one or more parameters.");
+            errorMessage.AppendLine("Below is the list of parameters that we found: ");
+            errorMessage.AppendLine();
+            errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}|{"Source",-30}"));
+            errorMessage.AppendLine("---------------------------------------------------------------------------------");
 
             foreach (var kv in factoryContext.TrackedParameters)
             {
-                errorMessage.Append($"{kv.Key,-19} | {kv.Value,-15}\n");
+                errorMessage.AppendLine(FormattableString.Invariant($"{kv.Key,-19} | {kv.Value,-15}"));
             }
-            errorMessage.Append("\n\n");
-            errorMessage.Append("Did you mean to register the \"UNKNOWN\" parameters as a Service?\n\n");
+            errorMessage.AppendLine().AppendLine();
+            errorMessage.AppendLine("Did you mean to register the \"UNKNOWN\" parameters as a Service?")
+                .AppendLine();
             return errorMessage.ToString();
         }
     }

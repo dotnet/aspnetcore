@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         public override bool Exists => FileInfo.Exists;
 
         /// <inheritdoc/>
-        public override string PhysicalPath => FileInfo.PhysicalPath;
+        public override string PhysicalPath => FileInfo.PhysicalPath ?? string.Empty;
 
         /// <inheritdoc/>
         public override string? RelativePhysicalPath

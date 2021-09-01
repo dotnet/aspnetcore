@@ -1287,7 +1287,7 @@ namespace Microsoft.AspNetCore.Internal.Tests
             var dict = new AdaptiveCapacityDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             for (var i = 0; i < 11; i++)
             {
-                dict[i.ToString()] = i;
+                dict[i.ToString(CultureInfo.InvariantCulture)] = i;
             }
 
             Assert.NotNull(dict._dictionaryStorage);

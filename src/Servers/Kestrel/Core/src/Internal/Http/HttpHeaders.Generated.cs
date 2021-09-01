@@ -345,7 +345,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _contentLength = ParseContentLength(value);
+                _contentLength = ParseContentLength(value.ToString());
             }
         }
         
@@ -4779,7 +4779,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         if (!_contentLength.HasValue)
                         {
-                            _contentLength = ParseContentLength(value);
+                            _contentLength = ParseContentLength(value.ToString());
                             return true;
                         }
                         return false;
@@ -4799,7 +4799,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         if (!_contentLength.HasValue)
                         {
-                            _contentLength = ParseContentLength(value);
+                            _contentLength = ParseContentLength(value.ToString());
                             return true;
                         }
                         return false;
@@ -8273,7 +8273,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _contentLength = ParseContentLength(value);
+                _contentLength = ParseContentLength(value.ToString());
             }
         }
         
@@ -12296,7 +12296,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         if (!_contentLength.HasValue)
                         {
-                            _contentLength = ParseContentLength(value);
+                            _contentLength = ParseContentLength(value.ToString());
                             return true;
                         }
                         return false;
@@ -12306,7 +12306,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         if (!_contentLength.HasValue)
                         {
-                            _contentLength = ParseContentLength(value);
+                            _contentLength = ParseContentLength(value.ToString());
                             return true;
                         }
                         return false;

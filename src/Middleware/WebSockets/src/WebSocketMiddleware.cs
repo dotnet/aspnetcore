@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.WebSockets
                         // Check allowed origins to see if request is allowed
                         if (!_allowedOrigins.Contains(originHeader.ToString(), StringComparer.Ordinal))
                         {
-                            _logger.LogDebug("Request origin {Origin} is not in the list of allowed origins.", originHeader);
+                            _logger.LogDebug("Request origin {Origin} is not in the list of allowed origins.", originHeader.ToString());
                             context.Response.StatusCode = StatusCodes.Status403Forbidden;
                             return Task.CompletedTask;
                         }
@@ -158,8 +158,7 @@ namespace Microsoft.AspNetCore.WebSockets
                     }
                 }
 
-                string key = _context.Request.Headers.SecWebSocketKey;
-
+                var key = _context.Request.Headers.SecWebSocketKey.ToString();
                 HandshakeHelpers.GenerateResponseHeaders(key, subProtocol, _context.Response.Headers);
 
                 WebSocketDeflateOptions? deflateOptions = null;

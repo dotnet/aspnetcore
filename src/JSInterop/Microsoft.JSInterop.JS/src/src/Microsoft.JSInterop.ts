@@ -280,6 +280,7 @@ export module DotNet {
     Default = 0,
     JSObjectReference = 1,
     JSStreamReference = 2,
+    JSVoidResult = 3,
   }
 
   /**
@@ -566,6 +567,8 @@ export module DotNet {
         return createJSObjectReference(returnValue);
       case JSCallResultType.JSStreamReference:
         return createJSStreamReference(returnValue);
+      case JSCallResultType.JSVoidResult:
+        return null;
       default:
         throw new Error(`Invalid JS call result type '${resultType}'.`);
     }
