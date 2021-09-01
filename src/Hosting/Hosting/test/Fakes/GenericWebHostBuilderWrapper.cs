@@ -27,6 +27,12 @@ namespace Microsoft.AspNetCore.Hosting.Tests.Fakes
             return new GenericWebHost(_hostBuilder.Build());
         }
 
+        public IWebHostBuilder Configure(Action<IApplicationBuilder> configure)
+        {
+            _builder.Configure(configure);
+            return this;
+        }
+
         public IWebHostBuilder Configure(Action<WebHostBuilderContext, IApplicationBuilder> configure)
         {
             _builder.Configure(configure);
