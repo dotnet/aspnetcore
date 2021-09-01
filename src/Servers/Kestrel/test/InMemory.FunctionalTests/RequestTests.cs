@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -88,12 +89,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             await using (var server = new TestServer(async context =>
             {
-                var buffer = new byte[1024];
+                var data = new byte[6];
                 try
                 {
-                    await context.Request.Body.ReadUntilLengthAsync(buffer, 6, cts.Token).DefaultTimeout();
+                    await context.Request.Body.FillEntireBufferAsync(data, cts.Token).DefaultTimeout();
 
-                    Assert.Equal("Hello ", Encoding.ASCII.GetString(buffer, 0, 6));
+                    Assert.Equal("Hello ", Encoding.ASCII.GetString(data));
 
                     helloTcs.TrySetResult();
                 }
@@ -105,7 +106,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 try
                 {
-                    var task = context.Request.Body.ReadAsync(buffer, 0, buffer.Length, cts.Token);
+                    var task = context.Request.Body.ReadAsync(data, 0, data.Length, cts.Token);
                     readTcs.TrySetResult();
                     await task;
 
@@ -155,11 +156,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             await using (var server = new TestServer(async context =>
             {
                 var stream = await context.Features.Get<IHttpUpgradeFeature>().UpgradeAsync();
+
                 var data = new byte[3];
+                await stream.FillEntireBufferAsync(data).DefaultTimeout();
 
-                await stream.ReadUntilLengthAsync(data, 3).DefaultTimeout();
-
-                dataRead = Encoding.ASCII.GetString(data, 0, 3) == "abc";
+                dataRead = Encoding.ASCII.GetString(data) == "abc";
             }, new TestServiceContext(LoggerFactory)))
             {
                 using (var connection = server.CreateConnection())
@@ -719,6 +720,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34992")]
         [Fact]
         public async Task Http10KeepAliveNotHonoredIfResponseContentLengthNotSet()
         {
@@ -1283,11 +1285,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
                 var duplexStream = await upgradeFeature.UpgradeAsync();
 
-                var buffer = new byte[message.Length];
+                var data = new byte[message.Length];
+                await duplexStream.FillEntireBufferAsync(data).DefaultTimeout();
 
-                await duplexStream.ReadUntilLengthAsync(buffer, message.Length).DefaultTimeout();
-
-                await duplexStream.WriteAsync(buffer, 0, buffer.Length);
+                await duplexStream.WriteAsync(data, 0, data.Length);
             }, testContext))
             {
                 using (var connection = server.CreateConnection())
@@ -1724,9 +1725,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Assert.Equal(CoreStrings.SynchronousReadsDisallowed, ioEx2.Message);
 
                 var buffer = new byte[5];
-                var read = await context.Request.Body.ReadUntilEndAsync(buffer).DefaultTimeout();
+                var length = await context.Request.Body.FillBufferUntilEndAsync(buffer).DefaultTimeout();
 
-                Assert.Equal("Hello", Encoding.ASCII.GetString(buffer, 0, read));
+                Assert.Equal(5, length);
+                Assert.Equal("Hello", Encoding.ASCII.GetString(buffer));
             }, testContext))
             {
                 using (var connection = server.CreateConnection())
@@ -2051,6 +2053,68 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     Assert.NotSame(initialCustomHeaderValue, customHeaderValue);
                     Assert.Same(initialContentTypeValue, contentTypeHeaderValue);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task PersistentStateBetweenRequests()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+            object persistedState = null;
+            var requestCount = 0;
+
+            await using (var server = new TestServer(context =>
+            {
+                requestCount++;
+                var persistentStateCollection = context.Features.Get<IPersistentStateFeature>().State;
+                if (persistentStateCollection.TryGetValue("Counter", out var value))
+                {
+                    persistedState = value;
+                }
+                persistentStateCollection["Counter"] = requestCount;
+                return Task.CompletedTask;
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    // First request
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "Content-Type: application/test",
+                        "X-CustomHeader: customvalue",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "",
+                        "");
+                    var firstRequestState = persistedState;
+
+                    // Second request
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "Content-Type: application/test",
+                        "X-CustomHeader: customvalue",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "",
+                        "");
+                    var secondRequestState = persistedState;
+
+                    // First request has no persisted state
+                    Assert.Null(firstRequestState);
+
+                    // State persisted on first request was available on the second request
+                    Assert.Equal(1, secondRequestState);
                 }
             }
         }

@@ -1,17 +1,24 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Net;
 using System.Net.Quic;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 {
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35070")]
     public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
     {
+        private static readonly byte[] TestData = Encoding.UTF8.GetBytes("Hello world");
+
         [ConditionalFact]
         [MsQuicSupported]
         public async Task AcceptAsync_AfterUnbind_Error()
@@ -38,17 +45,77 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
             var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
 
-            using var quicConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
-            await quicConnection.ConnectAsync().DefaultTimeout();
+            using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+            await clientConnection.ConnectAsync().DefaultTimeout();
 
             // Assert
-            await using var connection = await acceptTask.DefaultTimeout();
-            Assert.False(connection.ConnectionClosed.IsCancellationRequested);
+            await using var serverConnection = await acceptTask.DefaultTimeout();
+            Assert.False(serverConnection.ConnectionClosed.IsCancellationRequested);
 
-            await connection.DisposeAsync().AsTask().DefaultTimeout();
+            await serverConnection.DisposeAsync().AsTask().DefaultTimeout();
 
             // ConnectionClosed isn't triggered because the server initiated close.
-            Assert.False(connection.ConnectionClosed.IsCancellationRequested);
+            Assert.False(serverConnection.ConnectionClosed.IsCancellationRequested);
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        public async Task ClientCertificate_Required_Sent_Populated()
+        {
+            // Arrange
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory, clientCertificateRequired: true);
+
+            var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+            var testCert = TestResources.GetTestCertificate();
+            options.ClientAuthenticationOptions.ClientCertificates = new X509CertificateCollection { testCert };
+
+            // Act
+            using var quicConnection = new QuicConnection(options);
+            await quicConnection.ConnectAsync().DefaultTimeout();
+
+            var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+            // Server waits for stream from client
+            var serverStreamTask = serverConnection.AcceptAsync().DefaultTimeout();
+
+            // Client creates stream
+            using var clientStream = quicConnection.OpenBidirectionalStream();
+            await clientStream.WriteAsync(TestData).DefaultTimeout();
+
+            // Server finishes accepting
+            var serverStream = await serverStreamTask.DefaultTimeout();
+
+            // Assert
+            AssertTlsConnectionFeature(serverConnection.Features, testCert);
+            AssertTlsConnectionFeature(serverStream.Features, testCert);
+
+            static void AssertTlsConnectionFeature(IFeatureCollection features, X509Certificate2 testCert)
+            {
+                var tlsFeature = features.Get<ITlsConnectionFeature>();
+                Assert.NotNull(tlsFeature);
+                Assert.NotNull(tlsFeature.ClientCertificate);
+                Assert.Equal(testCert, tlsFeature.ClientCertificate);
+            }
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
+        // https://github.com/dotnet/runtime/issues/57308, RemoteCertificateValidationCallback should allow us to accept a null cert,
+        // but it doesn't right now.
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        public async Task ClientCertificate_Required_NotSent_ConnectionAborted()
+        {
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory, clientCertificateRequired: true);
+
+            var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+            using var clientConnection = new QuicConnection(options);
+
+            var qex = await Assert.ThrowsAsync<QuicException>(async () => await clientConnection.ConnectAsync().DefaultTimeout());
+            Assert.Equal("Connection has been shutdown by transport. Error Code: 0x80410100", qex.Message);
+
+            // https://github.com/dotnet/runtime/issues/57246 The accept still completes even though the connection was rejected, but it's already failed.
+            var serverContext = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+            await Assert.ThrowsAsync<QuicException>(() => serverContext.ConnectAsync().DefaultTimeout());
         }
     }
 }

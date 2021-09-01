@@ -1,8 +1,7 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -27,6 +26,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         private readonly EndpointDataSource _endpointDataSource;
         private readonly IHostEnvironment _environment;
         private readonly IServiceProviderIsService? _serviceProviderIsService;
+        private readonly TryParseMethodCache TryParseMethodCache = new();
+        private readonly NullabilityInfoContext NullabilityContext = new();
 
         // Executes before MVC's DefaultApiDescriptionProvider and GrpcHttpApiDescriptionProvider for no particular reason.
         public int Order => -1100;
@@ -52,7 +53,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 if (endpoint is RouteEndpoint routeEndpoint &&
                     routeEndpoint.Metadata.GetMetadata<MethodInfo>() is { } methodInfo &&
-                    routeEndpoint.Metadata.GetMetadata<IHttpMethodMetadata>() is { } httpMethodMetadata)
+                    routeEndpoint.Metadata.GetMetadata<IHttpMethodMetadata>() is { } httpMethodMetadata &&
+                    routeEndpoint.Metadata.GetMetadata<IExcludeFromDescriptionMetadata>() is null or { ExcludeFromDescription: false })
                 {
                     // REVIEW: Should we add an ApiDescription for endpoints without IHttpMethodMetadata? Swagger doesn't handle
                     // a null HttpMethod even though it's nullable on ApiDescription, so we'd need to define "default" HTTP methods.
@@ -75,7 +77,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             // For now, put all methods defined the same declaring type together.
             string controllerName;
 
-            if (methodInfo.DeclaringType is not null && !IsCompilerGenerated(methodInfo.DeclaringType))
+            if (methodInfo.DeclaringType is not null && !TypeHelper.IsCompilerGeneratedType(methodInfo.DeclaringType))
             {
                 controllerName = methodInfo.DeclaringType.Name;
             }
@@ -89,6 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var apiDescription = new ApiDescription
             {
                 HttpMethod = httpMethod,
+                GroupName = routeEndpoint.Metadata.GetMetadata<IEndpointGroupNameMetadata>()?.EndpointGroupName,
                 RelativePath = routeEndpoint.RoutePattern.RawText?.TrimStart('/'),
                 ActionDescriptor = new ActionDescriptor
                 {
@@ -119,6 +122,22 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 apiDescription.ParameterDescriptions.Add(parameterDescription);
             }
 
+            // Get custom attributes for the handler. ConsumesAttribute is one of the examples. 
+            var acceptsRequestType = routeEndpoint.Metadata.GetMetadata<IAcceptsMetadata>()?.RequestType;
+            if (acceptsRequestType is not null)
+            {
+                var parameterDescription = new ApiParameterDescription
+                {
+                    Name = acceptsRequestType.Name,
+                    ModelMetadata = CreateModelMetadata(acceptsRequestType),
+                    Source = BindingSource.Body,
+                    Type = acceptsRequestType,
+                    IsRequired = true,
+                };
+
+                apiDescription.ParameterDescriptions.Add(parameterDescription);
+            }
+
             AddSupportedRequestFormats(apiDescription.SupportedRequestFormats, hasJsonBody, routeEndpoint.Metadata);
             AddSupportedResponseTypes(apiDescription.SupportedResponseTypes, methodInfo.ReturnType, routeEndpoint.Metadata);
 
@@ -129,13 +148,17 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
         private ApiParameterDescription? CreateApiParameterDescription(ParameterInfo parameter, RoutePattern pattern)
         {
-            var (source, name) = GetBindingSourceAndName(parameter, pattern);
+            var (source, name, allowEmpty) = GetBindingSourceAndName(parameter, pattern);
 
             // Services are ignored because they are not request parameters.
             if (source == BindingSource.Services)
             {
                 return null;
             }
+
+            // Determine the "requiredness" based on nullability, default value or if allowEmpty is set
+            var nullability = NullabilityContext.Create(parameter);
+            var isOptional = parameter.HasDefaultValue || nullability.ReadState != NullabilityState.NotNull || allowEmpty;
 
             return new ApiParameterDescription
             {
@@ -144,30 +167,31 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 Source = source,
                 DefaultValue = parameter.DefaultValue,
                 Type = parameter.ParameterType,
+                IsRequired = !isOptional
             };
         }
 
         // TODO: Share more of this logic with RequestDelegateFactory.CreateArgument(...) using RequestDelegateFactoryUtilities
         // which is shared source.
-        private (BindingSource, string) GetBindingSourceAndName(ParameterInfo parameter, RoutePattern pattern)
+        private (BindingSource, string, bool) GetBindingSourceAndName(ParameterInfo parameter, RoutePattern pattern)
         {
             var attributes = parameter.GetCustomAttributes();
 
             if (attributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
             {
-                return (BindingSource.Path, routeAttribute.Name ?? parameter.Name ?? string.Empty);
+                return (BindingSource.Path, routeAttribute.Name ?? parameter.Name ?? string.Empty, false);
             }
             else if (attributes.OfType<IFromQueryMetadata>().FirstOrDefault() is { } queryAttribute)
             {
-                return (BindingSource.Query, queryAttribute.Name ?? parameter.Name ?? string.Empty);
+                return (BindingSource.Query, queryAttribute.Name ?? parameter.Name ?? string.Empty, false);
             }
             else if (attributes.OfType<IFromHeaderMetadata>().FirstOrDefault() is { } headerAttribute)
             {
-                return (BindingSource.Header, headerAttribute.Name ?? parameter.Name ?? string.Empty);
+                return (BindingSource.Header, headerAttribute.Name ?? parameter.Name ?? string.Empty, false);
             }
-            else if (parameter.CustomAttributes.Any(a => typeof(IFromBodyMetadata).IsAssignableFrom(a.AttributeType)))
+            else if (attributes.OfType<IFromBodyMetadata>().FirstOrDefault() is { } fromBodyAttribute)
             {
-                return (BindingSource.Body, parameter.Name ?? string.Empty);
+                return (BindingSource.Body, parameter.Name ?? string.Empty, fromBodyAttribute.AllowEmpty);
             }
             else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)) ||
                      parameter.ParameterType == typeof(HttpContext) ||
@@ -175,25 +199,26 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                      parameter.ParameterType == typeof(HttpResponse) ||
                      parameter.ParameterType == typeof(ClaimsPrincipal) ||
                      parameter.ParameterType == typeof(CancellationToken) ||
+                     TryParseMethodCache.HasBindAsyncMethod(parameter) ||
                      _serviceProviderIsService?.IsService(parameter.ParameterType) == true)
             {
-                return (BindingSource.Services, parameter.Name ?? string.Empty);
+                return (BindingSource.Services, parameter.Name ?? string.Empty, false);
             }
-            else if (parameter.ParameterType == typeof(string) || TryParseMethodCache.HasTryParseMethod(parameter))
+            else if (parameter.ParameterType == typeof(string) || TryParseMethodCache.HasTryParseStringMethod(parameter))
             {
                 // Path vs query cannot be determined by RequestDelegateFactory at startup currently because of the layering, but can be done here.
                 if (parameter.Name is { } name && pattern.GetParameter(name) is not null)
                 {
-                    return (BindingSource.Path, name);
+                    return (BindingSource.Path, name, false);
                 }
                 else
                 {
-                    return (BindingSource.Query, parameter.Name ?? string.Empty);
+                    return (BindingSource.Query, parameter.Name ?? string.Empty, false);
                 }
             }
             else
             {
-                return (BindingSource.Body, parameter.Name ?? string.Empty);
+                return (BindingSource.Body, parameter.Name ?? string.Empty, false);
             }
         }
 
@@ -267,7 +292,9 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     {
                         AddResponseContentTypes(apiResponseType.ApiResponseFormats, contentTypes);
                     }
-                    else if (CreateDefaultApiResponseFormat(apiResponseType.Type) is { } defaultResponseFormat)
+                    // Only set the default response type if it hasn't already been set via a
+                    // ProducesResponseTypeAttribute.
+                    else if (apiResponseType.ApiResponseFormats.Count == 0 && CreateDefaultApiResponseFormat(apiResponseType.Type) is { } defaultResponseFormat)
                     {
                         apiResponseType.ApiResponseFormats.Add(defaultResponseFormat);
                     }
@@ -352,11 +379,5 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 actionDescriptor.EndpointMetadata = new List<object>(endpointMetadata);
             }
         }
-
-        // The CompilerGeneratedAttribute doesn't always get added so we also check if the type name starts with "<"
-        // For example, "<>c" is a "declaring" type the C# compiler will generate without the attribute for a top-level lambda
-        // REVIEW: Is there a better way to do this?
-        private static bool IsCompilerGenerated(Type type) =>
-            Attribute.IsDefined(type, typeof(CompilerGeneratedAttribute)) || type.Name.StartsWith('<');
     }
 }

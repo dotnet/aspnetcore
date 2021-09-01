@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Net;
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
             // Make sure we are using the right startup
             var configuration = _host.Services.GetService<IConfiguration>();
             var startupName = configuration["Startup"];
-            Assert.Equal(nameof(Benchmarks.StartupUsingEndpointRouting), startupName);           
+            Assert.Equal(nameof(Benchmarks.StartupUsingEndpointRouting), startupName);
 
             _testServer = _host.GetTestServer();
             _host.Start();

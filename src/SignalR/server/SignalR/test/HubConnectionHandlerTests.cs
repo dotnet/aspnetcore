@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -2729,11 +2729,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartVerifiableLog())
             {
-                var interval = 100;
+                var intervalInMS = 100;
                 var clock = new MockSystemClock();
                 var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                     services.Configure<HubOptions>(options =>
-                        options.KeepAliveInterval = TimeSpan.FromMilliseconds(interval)), LoggerFactory);
+                        options.KeepAliveInterval = TimeSpan.FromMilliseconds(intervalInMS)), LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
                 connectionHandler.SystemClock = clock;
 
@@ -2746,7 +2746,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var heartbeatCount = 5;
                     for (var i = 0; i < heartbeatCount; i++)
                     {
-                        clock.UtcNow = clock.UtcNow.AddMilliseconds(interval + 1);
+                        clock.CurrentTicks = clock.CurrentTicks + intervalInMS + 1;
                         client.TickHeartbeat();
                     }
 
@@ -2791,11 +2791,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartVerifiableLog())
             {
-                var timeout = 100;
+                var timeoutInMS = 100;
                 var clock = new MockSystemClock();
                 var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                     services.Configure<HubOptions>(options =>
-                        options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(timeout)), LoggerFactory);
+                        options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(timeoutInMS)), LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
                 connectionHandler.SystemClock = clock;
 
@@ -2808,7 +2808,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     // We go over the 100 ms timeout interval multiple times
                     for (var i = 0; i < 3; i++)
                     {
-                        clock.UtcNow = clock.UtcNow.AddMilliseconds(timeout + 1);
+                        clock.CurrentTicks = clock.CurrentTicks + timeoutInMS + 1;
                         client.TickHeartbeat();
                     }
 
@@ -2827,11 +2827,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartVerifiableLog())
             {
-                var timeout = 100;
+                var timeoutInMS = 100;
                 var clock = new MockSystemClock();
                 var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                     services.Configure<HubOptions>(options =>
-                        options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(timeout)), LoggerFactory);
+                        options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(timeoutInMS)), LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
                 connectionHandler.SystemClock = clock;
 
@@ -2841,7 +2841,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     await client.Connected.DefaultTimeout();
                     await client.SendHubMessageAsync(PingMessage.Instance);
 
-                    clock.UtcNow = clock.UtcNow.AddMilliseconds(timeout + 1);
+                    clock.CurrentTicks = clock.CurrentTicks + timeoutInMS + 1;
                     client.TickHeartbeat();
 
                     await connectionHandlerTask.DefaultTimeout();
@@ -2854,11 +2854,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartVerifiableLog())
             {
-                var timeout = 300;
+                var timeoutInMS = 300;
                 var clock = new MockSystemClock();
                 var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                     services.Configure<HubOptions>(options =>
-                        options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(timeout)), LoggerFactory);
+                        options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(timeoutInMS)), LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
                 connectionHandler.SystemClock = clock;
 
@@ -2870,7 +2870,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     for (int i = 0; i < 10; i++)
                     {
-                        clock.UtcNow = clock.UtcNow.AddMilliseconds(timeout - 1);
+                        clock.CurrentTicks = clock.CurrentTicks + timeoutInMS - 1;
                         client.TickHeartbeat();
                         await client.SendHubMessageAsync(PingMessage.Instance);
                     }

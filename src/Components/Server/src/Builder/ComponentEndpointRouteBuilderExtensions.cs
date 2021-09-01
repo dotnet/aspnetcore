@@ -1,11 +1,14 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.Components.Server;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -49,7 +52,8 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(path));
             }
 
-            return endpoints.MapBlazorHub(path, configureOptions: _ => { });
+            // Only support the WebSockets transport type by default
+            return endpoints.MapBlazorHub(path, configureOptions: options => { options.Transports = HttpTransportType.WebSockets; });
         }
 
         /// <summary>
@@ -109,7 +113,12 @@ namespace Microsoft.AspNetCore.Builder
                 endpoints.CreateApplicationBuilder().UseMiddleware<CircuitDisconnectMiddleware>().Build())
                 .WithDisplayName("Blazor disconnect");
 
-            return new ComponentEndpointConventionBuilder(hubEndpoint, disconnectEndpoint);
+            var jsInitializersEndpoint = endpoints.Map(
+                (path.EndsWith('/') ? path : path + "/") + "initializers/",
+                endpoints.CreateApplicationBuilder().UseMiddleware<CircuitJavaScriptInitializationMiddleware>().Build())
+                .WithDisplayName("Blazor initializers");
+
+            return new ComponentEndpointConventionBuilder(hubEndpoint, disconnectEndpoint, jsInitializersEndpoint);
         }
     }
 }

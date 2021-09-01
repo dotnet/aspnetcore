@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -172,6 +172,54 @@ namespace Microsoft.AspNetCore.Authorization.Test
                 context.Fail();
                 return Task.FromResult(0);
             }
+        }
+
+        private class ReasonableFailHandler : IAuthorizationHandler
+        {
+            private string _reason;
+
+            public ReasonableFailHandler(string reason) => _reason = reason;
+
+            public bool Invoked { get; set; }
+
+            public Task HandleAsync(AuthorizationHandlerContext context)
+            {
+                Invoked = true;
+                context.Fail(new AuthorizationFailureReason(this, _reason));
+                return Task.FromResult(0);
+            }
+        }
+
+        [Fact]
+        public async Task CanFailWithReasons()
+        {
+            var handler1 = new ReasonableFailHandler("1");
+            var handler2 = new FailHandler();
+            var handler3 = new ReasonableFailHandler("3");
+            var authorizationService = BuildAuthorizationService(services =>
+            {
+                services.AddSingleton<IAuthorizationHandler>(handler1);
+                services.AddSingleton<IAuthorizationHandler>(handler2);
+                services.AddSingleton<IAuthorizationHandler>(handler3);
+                services.AddAuthorization(options =>
+                {
+                    options.AddPolicy("Custom", policy => policy.Requirements.Add(new CustomRequirement()));
+                });
+            });
+
+            // Act
+            var allowed = await authorizationService.AuthorizeAsync(new ClaimsPrincipal(), "Custom");
+
+            // Assert
+            Assert.False(allowed.Succeeded);
+            Assert.NotNull(allowed.Failure);
+            Assert.Equal(2, allowed.Failure.FailureReasons.Count());
+            var first = allowed.Failure.FailureReasons.First();
+            Assert.Equal("1", first.Message);
+            Assert.Equal(handler1, first.Handler);
+            var second = allowed.Failure.FailureReasons.Last();
+            Assert.Equal("3", second.Message);
+            Assert.Equal(handler3, second.Handler);
         }
 
         [Fact]

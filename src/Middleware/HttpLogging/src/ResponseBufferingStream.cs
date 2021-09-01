@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -20,7 +20,7 @@ using static Microsoft.AspNetCore.HttpLogging.MediaTypeOptions;
 namespace Microsoft.AspNetCore.HttpLogging
 {
     /// <summary>
-    /// Stream that buffers reads 
+    /// Stream that buffers reads
     /// </summary>
     internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBodyFeature
     {
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             OnFirstWrite();
 
             if (innerCount > 0)
-            {    
+            {
                 if (span.Slice(0, innerCount).TryCopyTo(_tailMemory.Span))
                 {
                     _tailBytesBuffered += innerCount;

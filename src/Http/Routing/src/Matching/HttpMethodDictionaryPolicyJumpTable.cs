@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var httpMethod = httpContext.Request.Method;
             if (_supportsCorsPreflight && HttpMethodMatcherPolicy.IsCorsPreflightRequest(httpContext, httpMethod, out var accessControlRequestMethod))
             {
-                return _corsPreflightDestinations!.TryGetValue(accessControlRequestMethod, out destination)
+                return _corsPreflightDestinations!.TryGetValue(accessControlRequestMethod.ToString(), out destination)
                     ? destination
                     : _corsPreflightExitDestination;
             }

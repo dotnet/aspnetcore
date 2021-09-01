@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -100,7 +100,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private bool MoveNextOnStringEnumerator(string key)
         {
             var result = _stringValuesEnumerator.MoveNext();
-            Current = result ? new KeyValuePair<string, string>(key, _stringValuesEnumerator.Current) : default;
+
+            // Current is null only when result is false.
+            Current = result ? new KeyValuePair<string, string>(key, _stringValuesEnumerator.Current!) : default;
             return result;
         }
 

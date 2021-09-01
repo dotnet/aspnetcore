@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
@@ -423,7 +423,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Equal(eventIndex, events.Count);
         }
 
-        private string GetProperty(EventSnapshot data, string propName) => data.Payload[propName];
+        private string GetProperty(EventSnapshot data, string propName) => data.Payload.TryGetValue(propName, out var value) ? value : null;
 
         private class TestEventListener : EventListener
         {

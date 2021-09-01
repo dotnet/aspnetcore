@@ -1,8 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -13,33 +13,23 @@ namespace Microsoft.AspNetCore.Builder
     /// A non-buildable <see cref="IHostBuilder"/> for <see cref="WebApplicationBuilder"/>.
     /// Use <see cref="WebApplicationBuilder.Build"/> to build the <see cref="WebApplicationBuilder"/>.
     /// </summary>
-    public sealed class ConfigureHostBuilder : IHostBuilder
+    public sealed class ConfigureHostBuilder : IHostBuilder, ISupportsConfigureWebHost
     {
-        private readonly List<Action<IHostBuilder>> _operations = new();
-
-        /// <inheritdoc />
-        public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
-
-        private readonly WebHostEnvironment _environment;
         private readonly ConfigurationManager _configuration;
         private readonly IServiceCollection _services;
-
         private readonly HostBuilderContext _context;
 
-        internal ConfigureHostBuilder(ConfigurationManager configuration, WebHostEnvironment environment, IServiceCollection services)
+        private readonly List<Action<IHostBuilder>> _operations = new();
+
+        internal ConfigureHostBuilder(HostBuilderContext context, ConfigurationManager configuration, IServiceCollection services)
         {
             _configuration = configuration;
-            _environment = environment;
             _services = services;
-
-            _context = new HostBuilderContext(Properties)
-            {
-                Configuration = _configuration,
-                HostingEnvironment = _environment
-            };
+            _context = context;
         }
 
-        internal bool ConfigurationEnabled { get; set; }
+        /// <inheritdoc />
+        public IDictionary<object, object> Properties => _context.Properties;
 
         IHost IHostBuilder.Build()
         {
@@ -49,13 +39,8 @@ namespace Microsoft.AspNetCore.Builder
         /// <inheritdoc />
         public IHostBuilder ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> configureDelegate)
         {
-            if (ConfigurationEnabled)
-            {
-                // Run these immediately so that they are observable by the imperative code
-                configureDelegate(_context, _configuration);
-                _environment.ApplyConfigurationSettings(_configuration);
-            }
-
+            // Run these immediately so that they are observable by the imperative code
+            configureDelegate(_context, _configuration);
             return this;
         }
 
@@ -74,11 +59,28 @@ namespace Microsoft.AspNetCore.Builder
         /// <inheritdoc />
         public IHostBuilder ConfigureHostConfiguration(Action<IConfigurationBuilder> configureDelegate)
         {
-            if (ConfigurationEnabled)
+            var previousApplicationName = _configuration[HostDefaults.ApplicationKey];
+            var previousContentRoot = _configuration[HostDefaults.ContentRootKey];
+            var previousEnvironment = _configuration[HostDefaults.EnvironmentKey];
+
+            // Run these immediately so that they are observable by the imperative code
+            configureDelegate(_configuration);
+
+            // Disallow changing any host settings this late in the cycle, the reasoning is that we've already loaded the default configuration
+            // and done other things based on environment name, application name or content root.
+            if (!string.Equals(previousApplicationName, _configuration[HostDefaults.ApplicationKey], StringComparison.OrdinalIgnoreCase))
             {
-                // Run these immediately so that they are observable by the imperative code
-                configureDelegate(_configuration);
-                _environment.ApplyConfigurationSettings(_configuration);
+                throw new NotSupportedException("The application name changed. Changing the host configuration is not supported");
+            }
+
+            if (!string.Equals(previousContentRoot, _configuration[HostDefaults.ContentRootKey], StringComparison.OrdinalIgnoreCase))
+            {
+                throw new NotSupportedException("The content root changed. Changing the host configuration is not supported");
+            }
+
+            if (!string.Equals(previousEnvironment, _configuration[HostDefaults.EnvironmentKey], StringComparison.OrdinalIgnoreCase))
+            {
+                throw new NotSupportedException("The environment changed. Changing the host configuration is not supported");
             }
 
             return this;
@@ -89,7 +91,6 @@ namespace Microsoft.AspNetCore.Builder
         {
             // Run these immediately so that they are observable by the imperative code
             configureDelegate(_context, _services);
-
             return this;
         }
 
@@ -123,6 +124,11 @@ namespace Microsoft.AspNetCore.Builder
             {
                 operation(hostBuilder);
             }
+        }
+
+        IHostBuilder ISupportsConfigureWebHost.ConfigureWebHost(Action<IWebHostBuilder> configure, Action<WebHostBuilderOptions> configureOptions)
+        {
+            throw new NotSupportedException($"ConfigureWebHost() is not supported by WebApplicationBuilder.Host. Use the WebApplication returned by WebApplicationBuilder.Build() instead.");
         }
     }
 }

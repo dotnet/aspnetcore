@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
 
@@ -18,14 +18,14 @@ namespace Microsoft.AspNetCore.Routing
         /// <param name="address">The address value. Used to resolve endpoints.</param>
         /// <param name="path">The URI path to parse.</param>
         /// <returns>
-        /// A <see cref="RouteValueDictionary"/> with the parsed values if parsing is successful; 
+        /// A <see cref="RouteValueDictionary"/> with the parsed values if parsing is successful;
         /// otherwise <c>null</c>.
         /// </returns>
         /// <remarks>
         /// <para>
         /// <see cref="ParsePathByAddress{TAddress}(TAddress, PathString)"/> will attempt to first resolve
         /// <see cref="Endpoint"/> instances that match <paramref name="address"/> and then use the route
-        /// pattern associated with each endpoint to parse the URL path. 
+        /// pattern associated with each endpoint to parse the URL path.
         /// </para>
         /// <para>
         /// The parsing operation will fail and return <c>null</c> if either no endpoints are found or none

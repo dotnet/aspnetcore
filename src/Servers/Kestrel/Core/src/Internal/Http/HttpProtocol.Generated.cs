@@ -1,11 +1,12 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
@@ -28,7 +29,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                           IHttpRequestLifetimeFeature,
                                           IHttpBodyControlFeature,
                                           IHttpMaxRequestBodySizeFeature,
-                                          IHttpRequestBodyDetectionFeature
+                                          IHttpRequestBodyDetectionFeature,
+                                          IBadRequestExceptionFeature
     {
         // Implemented features
         internal protected IHttpRequestFeature? _currentIHttpRequestFeature;
@@ -45,6 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         internal protected IHttpBodyControlFeature? _currentIHttpBodyControlFeature;
         internal protected IHttpMaxRequestBodySizeFeature? _currentIHttpMaxRequestBodySizeFeature;
         internal protected IHttpRequestBodyDetectionFeature? _currentIHttpRequestBodyDetectionFeature;
+        internal protected IBadRequestExceptionFeature? _currentIBadRequestExceptionFeature;
 
         // Other reserved feature slots
         internal protected IServiceProvidersFeature? _currentIServiceProvidersFeature;
@@ -62,6 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         internal protected IHttpMinRequestBodyDataRateFeature? _currentIHttpMinRequestBodyDataRateFeature;
         internal protected IHttpMinResponseDataRateFeature? _currentIHttpMinResponseDataRateFeature;
         internal protected IHttpResetFeature? _currentIHttpResetFeature;
+        internal protected IPersistentStateFeature? _currentIPersistentStateFeature;
 
         private int _featureRevision;
 
@@ -83,6 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentIHttpBodyControlFeature = this;
             _currentIHttpMaxRequestBodySizeFeature = this;
             _currentIHttpRequestBodyDetectionFeature = this;
+            _currentIBadRequestExceptionFeature = this;
 
             _currentIServiceProvidersFeature = null;
             _currentIHttpActivityFeature = null;
@@ -99,6 +104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentIHttpMinRequestBodyDataRateFeature = null;
             _currentIHttpMinResponseDataRateFeature = null;
             _currentIHttpResetFeature = null;
+            _currentIPersistentStateFeature = null;
         }
 
         // Internal for testing
@@ -254,6 +260,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     feature = _currentIHttpWebSocketFeature;
                 }
+                else if (key == typeof(IBadRequestExceptionFeature))
+                {
+                    feature = _currentIBadRequestExceptionFeature;
+                }
                 else if (key == typeof(IHttp2StreamIdFeature))
                 {
                     feature = _currentIHttp2StreamIdFeature;
@@ -286,12 +296,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     feature = _currentIHttpResetFeature;
                 }
+                else if (key == typeof(IPersistentStateFeature))
+                {
+                    feature = _currentIPersistentStateFeature;
+                }
                 else if (MaybeExtra != null)
                 {
                     feature = ExtraFeatureGet(key);
                 }
 
-                return feature ?? ConnectionFeatures[key];
+                return feature ?? ConnectionFeatures?[key];
             }
 
             set
@@ -382,6 +396,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     _currentIHttpWebSocketFeature = (IHttpWebSocketFeature?)value;
                 }
+                else if (key == typeof(IBadRequestExceptionFeature))
+                {
+                    _currentIBadRequestExceptionFeature = (IBadRequestExceptionFeature?)value;
+                }
                 else if (key == typeof(IHttp2StreamIdFeature))
                 {
                     _currentIHttp2StreamIdFeature = (IHttp2StreamIdFeature?)value;
@@ -413,6 +431,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else if (key == typeof(IHttpResetFeature))
                 {
                     _currentIHttpResetFeature = (IHttpResetFeature?)value;
+                }
+                else if (key == typeof(IPersistentStateFeature))
+                {
+                    _currentIPersistentStateFeature = (IPersistentStateFeature?)value;
                 }
                 else
                 {
@@ -512,6 +534,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 feature = Unsafe.As<IHttpWebSocketFeature?, TFeature?>(ref _currentIHttpWebSocketFeature);
             }
+            else if (typeof(TFeature) == typeof(IBadRequestExceptionFeature))
+            {
+                feature = Unsafe.As<IBadRequestExceptionFeature?, TFeature?>(ref _currentIBadRequestExceptionFeature);
+            }
             else if (typeof(TFeature) == typeof(IHttp2StreamIdFeature))
             {
                 feature = Unsafe.As<IHttp2StreamIdFeature?, TFeature?>(ref _currentIHttp2StreamIdFeature);
@@ -544,12 +570,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 feature = Unsafe.As<IHttpResetFeature?, TFeature?>(ref _currentIHttpResetFeature);
             }
+            else if (typeof(TFeature) == typeof(IPersistentStateFeature))
+            {
+                feature = Unsafe.As<IPersistentStateFeature?, TFeature?>(ref _currentIPersistentStateFeature);
+            }
             else if (MaybeExtra != null)
             {
                 feature = (TFeature?)(ExtraFeatureGet(typeof(TFeature)));
             }
 
-            if (feature == null)
+            if (feature == null && ConnectionFeatures != null)
             {
                 feature = ConnectionFeatures.Get<TFeature>();
             }
@@ -648,6 +678,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _currentIHttpWebSocketFeature = Unsafe.As<TFeature?, IHttpWebSocketFeature?>(ref feature);
             }
+            else if (typeof(TFeature) == typeof(IBadRequestExceptionFeature))
+            {
+                _currentIBadRequestExceptionFeature = Unsafe.As<TFeature?, IBadRequestExceptionFeature?>(ref feature);
+            }
             else if (typeof(TFeature) == typeof(IHttp2StreamIdFeature))
             {
                 _currentIHttp2StreamIdFeature = Unsafe.As<TFeature?, IHttp2StreamIdFeature?>(ref feature);
@@ -679,6 +713,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else if (typeof(TFeature) == typeof(IHttpResetFeature))
             {
                 _currentIHttpResetFeature = Unsafe.As<TFeature?, IHttpResetFeature?>(ref feature);
+            }
+            else if (typeof(TFeature) == typeof(IPersistentStateFeature))
+            {
+                _currentIPersistentStateFeature = Unsafe.As<TFeature?, IPersistentStateFeature?>(ref feature);
             }
             else
             {
@@ -772,6 +810,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 yield return new KeyValuePair<Type, object>(typeof(IHttpWebSocketFeature), _currentIHttpWebSocketFeature);
             }
+            if (_currentIBadRequestExceptionFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IBadRequestExceptionFeature), _currentIBadRequestExceptionFeature);
+            }
             if (_currentIHttp2StreamIdFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(typeof(IHttp2StreamIdFeature), _currentIHttp2StreamIdFeature);
@@ -803,6 +845,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (_currentIHttpResetFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(typeof(IHttpResetFeature), _currentIHttpResetFeature);
+            }
+            if (_currentIPersistentStateFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IPersistentStateFeature), _currentIPersistentStateFeature);
             }
 
             if (MaybeExtra != null)

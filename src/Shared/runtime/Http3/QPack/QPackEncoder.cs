@@ -317,7 +317,7 @@ namespace System.Net.Http.QPack
 
                 if (ch > 127)
                 {
-                    throw new QPackEncodingException("ASCII header value.");
+                    throw new QPackEncodingException(SR.net_http_request_invalid_char_encoding);
                 }
 
                 buffer[i] = (byte)ch;

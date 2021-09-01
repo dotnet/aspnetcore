@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -17,11 +17,13 @@ namespace Microsoft.AspNetCore.Http.Connections
     {
         // Selected because this is the default value of PipeWriter.PauseWriterThreshold.
         // There maybe the opportunity for performance gains by tuning this default.
-        private const int DefaultPipeBufferSize = 32768;
+        private const int DefaultBufferSize = 65536;
 
         private PipeOptions? _transportPipeOptions;
         private PipeOptions? _appPipeOptions;
         private TimeSpan _transportSendTimeout;
+        private long _transportMaxBufferSize;
+        private long _applicationMaxBufferSize;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpConnectionDispatcherOptions"/> class.
@@ -32,8 +34,8 @@ namespace Microsoft.AspNetCore.Http.Connections
             Transports = HttpTransports.All;
             WebSockets = new WebSocketOptions();
             LongPolling = new LongPollingOptions();
-            TransportMaxBufferSize = DefaultPipeBufferSize;
-            ApplicationMaxBufferSize = DefaultPipeBufferSize;
+            TransportMaxBufferSize = DefaultBufferSize;
+            ApplicationMaxBufferSize = DefaultBufferSize;
             TransportSendTimeout = TimeSpan.FromSeconds(10);
         }
 
@@ -58,14 +60,44 @@ namespace Microsoft.AspNetCore.Http.Connections
         public LongPollingOptions LongPolling { get; }
 
         /// <summary>
-        /// Gets or sets the maximum buffer size of the transport writer.
+        /// Gets or sets the maximum buffer size for data read by the application before backpressure is applied.
         /// </summary>
-        public long TransportMaxBufferSize { get; set; }
+        /// <remarks>
+        /// The default value is 65KB.
+        /// </remarks>
+        public long TransportMaxBufferSize
+        {
+            get => _transportMaxBufferSize;
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                _transportMaxBufferSize = value;
+            }
+        }
 
         /// <summary>
-        /// Gets or sets the maximum buffer size of the application writer.
+        /// Gets or sets the maximum buffer size for data written by the application before backpressure is applied.
         /// </summary>
-        public long ApplicationMaxBufferSize { get; set; }
+        /// <remarks>
+        /// The default value is 65KB.
+        /// </remarks>
+        public long ApplicationMaxBufferSize
+        {
+            get => _applicationMaxBufferSize;
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                _applicationMaxBufferSize = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the minimum protocol verison supported by the server.

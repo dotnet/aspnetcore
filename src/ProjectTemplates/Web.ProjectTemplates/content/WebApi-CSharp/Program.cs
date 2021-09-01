@@ -8,10 +8,9 @@ using Graph = Microsoft.Graph;
 #if (OrganizationalAuth || IndividualB2CAuth)
 using Microsoft.Identity.Web;
 #endif
-#if (EnableOpenAPI)
-using Microsoft.OpenApi.Models;
-#endif
+#if (OrganizationalAuth || IndividualB2CAuth || GenerateGraph)
 
+#endif
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -53,14 +52,13 @@ builder.Services.AddSwaggerGen(c =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (builder.Environment.IsDevelopment())
+#if (EnableOpenAPI)
+if (app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage();
-    #if (EnableOpenAPI)
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Company.WebApplication1 v1"));
-    #endif
 }
+#endif
 #if (RequiresHttps)
 
 app.UseHttpsRedirection();

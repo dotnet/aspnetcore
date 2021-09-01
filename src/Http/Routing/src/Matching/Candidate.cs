@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         // we can just operate on an array, which is much much faster.
         public readonly KeyValuePair<string, object>[] Slots;
 
-        // List of parameters to capture. Segment is the segment index, index is the 
+        // List of parameters to capture. Segment is the segment index, index is the
         // index into the values array.
         public readonly (string parameterName, int segmentIndex, int slotIndex)[] Captures;
 
@@ -40,8 +40,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
         // applied to endpoints not in the set.
         //
         // The score concept boils down the system of comparisons done when ordering Endpoints
-        // to a single value that can be compared easily. This can be defeated by having 
-        // int32.MaxValue + 1 endpoints in a single set, but you would have other problems by 
+        // to a single value that can be compared easily. This can be defeated by having
+        // int32.MaxValue + 1 endpoints in a single set, but you would have other problems by
         // that point.
         //
         // Score is not part of the Endpoint itself, because it's contextual based on where

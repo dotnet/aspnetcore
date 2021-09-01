@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -531,7 +531,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [ConditionalTheory]
         [InlineData(HttpProtocols.Http1)]
         [InlineData(HttpProtocols.Http1AndHttp2)] // Make sure turning on Http/2 doesn't regress HTTP/1
-        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Not supported yet.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing platform support.")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
         public async Task CanRenegotiateForClientCertificate(HttpProtocols httpProtocols)
         {
             void ConfigureListenOptions(ListenOptions listenOptions)
@@ -540,6 +541,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 listenOptions.UseHttps(options =>
                 {
                     options.ServerCertificate = _x509Certificate2;
+                    options.SslProtocols = SslProtocols.Tls12; // Linux doesn't support renegotiate on TLS1.3 yet. https://github.com/dotnet/runtime/issues/55757
                     options.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
                     options.AllowAnyClientCertificate();
                 });
@@ -612,7 +614,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Not supported yet.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing platform support.")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
         public async Task CanRenegotiateForTlsCallbackOptions()
         {
             void ConfigureListenOptions(ListenOptions listenOptions)
@@ -625,6 +628,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         return ValueTask.FromResult(new SslServerAuthenticationOptions()
                         {
                             ServerCertificate = _x509Certificate2,
+                            EnabledSslProtocols = SslProtocols.Tls12, // Linux doesn't support renegotiate on TLS1.3 yet. https://github.com/dotnet/runtime/issues/55757
                             ClientCertificateRequired = false,
                             RemoteCertificateValidationCallback = (_, _, _, _) => true,
                         });
@@ -658,7 +662,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Not supported yet.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing platform support.")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
         public async Task CanRenegotiateForClientCertificateOnHttp1CanReturnNoCert()
         {
             void ConfigureListenOptions(ListenOptions listenOptions)
@@ -667,6 +672,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 listenOptions.UseHttps(options =>
                 {
                     options.ServerCertificate = _x509Certificate2;
+                    options.SslProtocols = SslProtocols.Tls12; // Linux doesn't support renegotiate on TLS1.3 yet. https://github.com/dotnet/runtime/issues/55757
                     options.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
                     options.AllowAnyClientCertificate();
                 });
@@ -707,7 +713,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [ConditionalFact]
         // TLS 1.2 and lower have to renegotiate the whole connection to get a client cert, and if that hits an error
         // then the connection is aborted.
-        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Not supported yet.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing platform support.")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
         public async Task RenegotiateForClientCertificateOnPostWithoutBufferingThrows_TLS12()
         {
             void ConfigureListenOptions(ListenOptions listenOptions)
@@ -733,7 +740,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Assert.Null(context.Connection.ClientCertificate);
 
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.Connection.GetClientCertificateAsync());
-                Assert.Equal("Received data during renegotiation.", ex.Message);
+                Assert.Equal("Client stream needs to be drained before renegotiation.", ex.Message);
                 Assert.Null(tlsFeature.ClientCertificate);
                 Assert.Null(context.Connection.ClientCertificate);
             }, new TestServiceContext(LoggerFactory), ConfigureListenOptions);
@@ -745,14 +752,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             // Use a random host name to avoid the TLS session resumption cache.
             var stream = OpenSslStreamWithCert(connection.Stream);
             await stream.AuthenticateAsClientAsync(Guid.NewGuid().ToString());
-            await AssertConnectionResult(stream, false, expectedBody);
+            await AssertConnectionResult(stream, true, expectedBody);
         }
 
         [ConditionalFact]
         // TLS 1.3 uses a new client cert negotiation extension that doesn't cause the connection to abort
         // for this error.
         [MinimumOSVersion(OperatingSystems.Windows, "10.0.20145")] // Needs a preview version with TLS 1.3 enabled.
-        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Not supported yet.")]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/runtime/issues/55757")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
         public async Task RenegotiateForClientCertificateOnPostWithoutBufferingThrows_TLS13()
         {
             void ConfigureListenOptions(ListenOptions listenOptions)
@@ -778,7 +786,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Assert.Null(context.Connection.ClientCertificate);
 
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.Connection.GetClientCertificateAsync());
-                Assert.Equal("Received data during renegotiation.", ex.Message);
+                Assert.Equal("Client stream needs to be drained before renegotiation.", ex.Message);
                 Assert.Null(tlsFeature.ClientCertificate);
                 Assert.Null(context.Connection.ClientCertificate);
             }, new TestServiceContext(LoggerFactory), ConfigureListenOptions);
@@ -794,6 +802,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [ConditionalFact]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)] // HTTP/2 requires Win10
         [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "ALPN not supported")]
         public async Task ServerOptionsSelectionCallback_SetsALPN()
         {
@@ -821,6 +830,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [ConditionalFact]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)] // HTTP/2 requires Win10
         [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "ALPN not supported")]
         public async Task TlsHandshakeCallbackOptionsOverload_SetsALPN()
         {
@@ -886,7 +896,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Not supported yet.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing platform support.")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
         public async Task CanRenegotiateForClientCertificateOnPostIfDrained()
         {
             void ConfigureListenOptions(ListenOptions listenOptions)
@@ -895,6 +906,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 listenOptions.UseHttps(options =>
                 {
                     options.ServerCertificate = _x509Certificate2;
+                    options.SslProtocols = SslProtocols.Tls12; // Linux doesn't support renegotiate on TLS1.3 yet. https://github.com/dotnet/runtime/issues/55757
                     options.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
                     options.AllowAnyClientCertificate();
                 });

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     Server.RequestQueue.Handle,
                     _requestContext.RequestId,
                     // Small perf impact by not using HTTP_RECEIVE_REQUEST_FLAG_COPY_BODY
-                    // if the request sends header+body in a single TCP packet 
+                    // if the request sends header+body in a single TCP packet
                     (uint)HttpApiTypes.HTTP_FLAGS.NONE,
                     _requestContext.NativeRequest,
                     _requestContext.Size,

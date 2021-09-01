@@ -1,25 +1,12 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.HttpLogging
 {
-    internal static class HttpLoggingExtensions
+    internal static partial class HttpLoggingExtensions
     {
-        private static readonly Action<ILogger, string, Exception?> _requestBody =
-            LoggerMessage.Define<string>(LogLevel.Information, new EventId(3, "RequestBody"), "RequestBody: {Body}");
-
-        private static readonly Action<ILogger, string, Exception?> _responseBody =
-            LoggerMessage.Define<string>(LogLevel.Information, new EventId(4, "ResponseBody"), "ResponseBody: {Body}");
-
-        private static readonly Action<ILogger, Exception?> _decodeFailure =
-            LoggerMessage.Define(LogLevel.Debug, new EventId(5, "DecodeFaulure"), "Decode failure while converting body.");
-
-        private static readonly Action<ILogger, Exception?> _unrecognizedMediaType =
-            LoggerMessage.Define(LogLevel.Debug, new EventId(6, "UnrecognizedMediaType"), "Unrecognized Content-Type for body.");
-
         public static void RequestLog(this ILogger logger, HttpRequestLog requestLog) => logger.Log(
             LogLevel.Information,
             new EventId(1, "RequestLogLog"),
@@ -32,9 +19,17 @@ namespace Microsoft.AspNetCore.HttpLogging
             responseLog,
             exception: null,
             formatter: HttpResponseLog.Callback);
-        public static void RequestBody(this ILogger logger, string body) => _requestBody(logger, body, null);
-        public static void ResponseBody(this ILogger logger, string body) => _responseBody(logger, body, null);
-        public static void DecodeFailure(this ILogger logger, Exception ex) => _decodeFailure(logger, ex);
-        public static void UnrecognizedMediaType(this ILogger logger) => _unrecognizedMediaType(logger, null);
+
+        [LoggerMessage(3, LogLevel.Information, "RequestBody: {Body}", EventName = "RequestBody")]
+        public static partial void RequestBody(this ILogger logger, string body);
+
+        [LoggerMessage(4, LogLevel.Information, "ResponseBody: {Body}", EventName = "ResponseBody")]
+        public static partial void ResponseBody(this ILogger logger, string body);
+
+        [LoggerMessage(5, LogLevel.Debug, "Decode failure while converting body.", EventName = "DecodeFaulure")]
+        public static partial void DecodeFailure(this ILogger logger, Exception ex);
+
+        [LoggerMessage(6, LogLevel.Debug, "Unrecognized Content-Type for body.", EventName = "UnrecognizedMediaType")]
+        public static partial void UnrecognizedMediaType(this ILogger logger);
     }
 }

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             builder.OpenElement(0, "select");
             builder.AddMultipleAttributes(1, AdditionalAttributes);
-            builder.AddAttribute(2, "class", CssClass);
+            builder.AddAttributeIfNotNullOrEmpty(2, "class", CssClass);
             builder.AddAttribute(3, "multiple", _isMultipleSelect);
 
             if (_isMultipleSelect)
@@ -63,6 +63,22 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <inheritdoc />
         protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
             => this.TryParseSelectableValueFromString(value, out result, out validationErrorMessage);
+
+        /// <inheritdoc />
+        protected override string? FormatValueAsString(TValue? value)
+        {
+            // We special-case bool values because BindConverter reserves bool conversion for conditional attributes.
+            if (typeof(TValue) == typeof(bool))
+            {
+                return (bool)(object)value! ? "true" : "false";
+            }
+            else if (typeof(TValue) == typeof(bool?))
+            {
+                return value is not null && (bool)(object)value ? "true" : "false";
+            }
+
+            return base.FormatValueAsString(value);
+        }
 
         private void SetCurrentValueAsStringArray(string?[]? value)
         {

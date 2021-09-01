@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.Components.Routing;
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
         /// (as returned by <see cref="BaseUri"/>).</param>
         /// <param name="forceLoad">If true, bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.</param>
-        /// <param name="replace">If true, replaces the currently entry in the history stack. If false, appends the new entry to the history stack.</param>
+        /// <param name="replace">If true, replaces the current entry in the history stack. If false, appends the new entry to the history stack.</param>
         public void NavigateTo(string uri, bool forceLoad = false, bool replace = false)
         {
             AssertInitialized();

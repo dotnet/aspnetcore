@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Security.Claims;
 using System.Text;
@@ -377,7 +377,7 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
         public static IResult LocalRedirect(string localUrl, bool permanent = false, bool preserveMethod = false)
             => new LocalRedirectResult(localUrl, permanent, preserveMethod);
- 
+
         /// <summary>
         /// Redirects to the specified route.
         /// <list type="bullet">
@@ -479,14 +479,19 @@ namespace Microsoft.AspNetCore.Http
             string? title = null,
             string? type = null)
         {
-            return new ObjectResult(new ProblemDetails
+            var problemDetails = new ProblemDetails
             {
                 Detail = detail,
                 Instance = instance,
                 Status = statusCode,
                 Title = title,
                 Type = type
-            });
+            };
+
+            return new ObjectResult(problemDetails)
+            {
+                ContentType = "application/problem+json",
+            };
         }
 
         /// <summary>
@@ -517,7 +522,10 @@ namespace Microsoft.AspNetCore.Http
                 Status = statusCode,
             };
 
-            return new ObjectResult(problemDetails);
+            return new ObjectResult(problemDetails)
+            {
+                ContentType = "application/problem+json",
+            };
         }
 
         /// <summary>
@@ -580,5 +588,11 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
         public static IResult AcceptedAtRoute(string? routeName = null, object? routeValues = null, object? value = null)
             => new AcceptedAtRouteResult(routeName, routeValues, value);
+
+        /// <summary>
+        /// Provides a container for external libraries to extend
+        /// the default `Results` set with their own samples.
+        /// </summary>
+        public static IResultExtensions Extensions { get; } = new ResultExtensions();
     }
 }

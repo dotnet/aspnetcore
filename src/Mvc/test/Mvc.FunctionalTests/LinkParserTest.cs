@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
 using System.Net;
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             builder.UseStartup<RoutingWebSite.StartupForLinkGenerator>();
 
         public HttpClient Client { get; }
-        
+
         [Fact]
         public async Task ParsePathByEndpoint_CanParsedWithDefaultRoute()
         {
@@ -36,17 +36,17 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Collection(
                 values.Properties().OrderBy(p => p.Name),
-                p => 
+                p =>
                 {
                     Assert.Equal("action", p.Name);
                     Assert.Equal("Index", p.Value.Value<string>());
                 },
-                p => 
+                p =>
                 {
                     Assert.Equal("controller", p.Name);
                     Assert.Equal("LinkParser", p.Value.Value<string>());
                 },
-                p => 
+                p =>
                 {
                     Assert.Equal("id", p.Name);
                     Assert.Equal("18", p.Value.Value<string>());

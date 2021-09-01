@@ -24,10 +24,10 @@
 
   <PropertyGroup>
     <YarnWorkingDir>$(MSBuildThisFileDirectory)Interop\</YarnWorkingDir>
-    <ResolveCurrentProjectStaticWebAssetsInputsDependsOn>
+    <ResolveStaticWebAssetsInputsDependsOn>
       CompileInterop;
-      $(ResolveCurrentProjectStaticWebAssetsInputsDependsOn)
-    </ResolveCurrentProjectStaticWebAssetsInputsDependsOn>
+      $(ResolveStaticWebAssetsInputsDependsOn)
+    </ResolveStaticWebAssetsInputsDependsOn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -69,11 +69,15 @@
       <_InteropBuildOutput Include="$(YarnWorkingDir)dist\$(Configuration)\**" Exclude="$(YarnWorkingDir)dist\.gitignore" />
 
       <StaticWebAsset Include="@(_InteropBuildOutput->'%(FullPath)')">
-        <SourceType></SourceType>
+        <SourceType>Computed</SourceType>
         <SourceId>$(PackageId)</SourceId>
         <ContentRoot>$([MSBuild]::NormalizeDirectory('$(YarnWorkingDir)\dist\$(Configuration)'))</ContentRoot>
         <BasePath>_content/$(PackageId)</BasePath>
         <RelativePath>$([System.String]::Copy('%(RecursiveDir)%(FileName)%(Extension)').Replace('\','/'))</RelativePath>
+        <AssetKind>All</AssetKind>
+        <AssetMode>All</AssetMode>
+        <AssetRole>Primary</AssetRole>
+        <OriginalItemSpec>@(_InteropBuildOutput->'%(Identity)'))</OriginalItemSpec>
       </StaticWebAsset>
 
       <FileWrites Include="$(_InteropBuildOutput)" />

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -292,7 +292,7 @@ namespace Microsoft.AspNetCore.Hosting
                 },
                 out var requestId,
                 out var traceState);
-            
+
             if (!string.IsNullOrEmpty(requestId))
             {
                 activity.SetParentId(requestId);
@@ -307,6 +307,8 @@ namespace Microsoft.AspNetCore.Hosting
                     fieldValue = headers[fieldName];
                 });
 
+                // AddBaggage adds items at the beginning  of the list, so we need to add them in reverse to keep the same order as the client
+                // By contract, the propagator has already reversed the order of items so we need not reverse it again 
                 // Order could be important if baggage has two items with the same key (that is allowed by the contract)
                 if (baggage is not null)
                 {

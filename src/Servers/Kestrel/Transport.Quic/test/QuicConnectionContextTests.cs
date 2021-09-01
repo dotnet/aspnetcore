@@ -1,25 +1,96 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Quic;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
-using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 {
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35070")]
     public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
     {
         private static readonly byte[] TestData = Encoding.UTF8.GetBytes("Hello world");
+
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task AcceptAsync_CancellationThenAccept_AcceptStreamAfterCancellation()
+        {
+            // Arrange
+            var connectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
+
+            // Act
+            var acceptTask = connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+
+            var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+
+            using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+            await clientConnection.ConnectAsync().DefaultTimeout();
+
+            await using var serverConnection = await acceptTask.DefaultTimeout();
+
+            // Wait for stream and then cancel
+            var cts = new CancellationTokenSource();
+            var acceptStreamTask = serverConnection.AcceptAsync(cts.Token);
+            cts.Cancel();
+
+            var serverStream = await acceptStreamTask.DefaultTimeout();
+            Assert.Null(serverStream);
+
+            // Wait for stream after cancellation
+            acceptStreamTask = serverConnection.AcceptAsync();
+
+            await using var clientStream = clientConnection.OpenBidirectionalStream();
+            await clientStream.WriteAsync(TestData);
+
+            // Assert
+            serverStream = await acceptStreamTask.DefaultTimeout();
+            Assert.NotNull(serverStream);
+
+            var read = await serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
+            Assert.Equal(TestData, read.Buffer.ToArray());
+            serverStream.Transport.Input.AdvanceTo(read.Buffer.End);
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task AcceptAsync_ClientClosesConnection_ServerNotified()
+        {
+            // Arrange
+            var connectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
+
+            // Act
+            var acceptTask = connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+
+            var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+
+            using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+            await clientConnection.ConnectAsync().DefaultTimeout();
+
+            await using var serverConnection = await acceptTask.DefaultTimeout();
+            serverConnection.ConnectionClosed.Register(() => connectionClosedTcs.SetResult());
+
+            var acceptStreamTask = serverConnection.AcceptAsync();
+
+            await clientConnection.CloseAsync(256);
+
+            // Assert
+            var ex = await Assert.ThrowsAsync<ConnectionResetException>(() => acceptStreamTask.AsTask()).DefaultTimeout();
+            var innerEx = Assert.IsType<QuicConnectionAbortedException>(ex.InnerException);
+            Assert.Equal(256, innerEx.ErrorCode);
+
+            await connectionClosedTcs.Task.DefaultTimeout();
+        }
 
         [ConditionalFact]
         [MsQuicSupported]
@@ -99,17 +170,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             serverStream.Transport.Input.AdvanceTo(read.Buffer.End);
 
             // Read data from server.
-            var data = new List<byte>();
-            var buffer = new byte[1024];
-            var readCount = 0;
-            while ((readCount = await clientStream.ReadAsync(buffer).DefaultTimeout()) != -1)
-            {
-                data.AddRange(buffer.AsMemory(0, readCount).ToArray());
-                if (data.Count == TestData.Length)
-                {
-                    break;
-                }
-            }
+            var data = await clientStream.ReadAtLeastLengthAsync(TestData.Length).DefaultTimeout();
+
             Assert.Equal(TestData, data);
 
             // Shutdown from client.
@@ -170,6 +232,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
         [ConditionalFact]
         [MsQuicSupported]
+        public async Task AcceptAsync_ClientClosesConnection_ExceptionThrown()
+        {
+            // Arrange
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
+
+            var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+            using var quicConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+            await quicConnection.ConnectAsync().DefaultTimeout();
+
+            var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+
+            // Act
+            var acceptTask = serverConnection.AcceptAsync().AsTask();
+
+            await quicConnection.CloseAsync((long)Http3ErrorCode.NoError).DefaultTimeout();
+
+            // Assert
+            var ex = await Assert.ThrowsAsync<ConnectionResetException>(() => acceptTask).DefaultTimeout();
+            var innerEx = Assert.IsType<QuicConnectionAbortedException>(ex.InnerException);
+            Assert.Equal((long)Http3ErrorCode.NoError, innerEx.ErrorCode);
+
+            Assert.Equal((long)Http3ErrorCode.NoError, serverConnection.Features.Get<IProtocolErrorCodeFeature>().Error);
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
         public async Task StreamPool_StreamAbortedOnServer_NotPooled()
         {
             // Arrange
@@ -206,6 +294,52 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
             // Both send and receive loops have exited.
             await quicStreamContext._processingTask.DefaultTimeout();
+
+            await quicStreamContext.DisposeAsync();
+
+            Assert.Equal(0, quicConnectionContext.StreamPool.Count);
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task StreamPool_StreamAbortedOnServerAfterComplete_NotPooled()
+        {
+            // Arrange
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
+
+            var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+            using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+            await clientConnection.ConnectAsync().DefaultTimeout();
+
+            await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+
+            var testHeartbeatFeature = new TestHeartbeatFeature();
+            serverConnection.Features.Set<IConnectionHeartbeatFeature>(testHeartbeatFeature);
+
+            // Act & Assert
+            var quicConnectionContext = Assert.IsType<QuicConnectionContext>(serverConnection);
+            Assert.Equal(0, quicConnectionContext.StreamPool.Count);
+
+            var clientStream = clientConnection.OpenBidirectionalStream();
+            await clientStream.WriteAsync(TestData, endStream: true).DefaultTimeout();
+            var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
+            var readResult = await serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
+            serverStream.Transport.Input.AdvanceTo(readResult.Buffer.End);
+
+            // Input should be completed.
+            readResult = await serverStream.Transport.Input.ReadAsync();
+            Assert.True(readResult.IsCompleted);
+
+            // Complete reading and writing.
+            await serverStream.Transport.Input.CompleteAsync();
+            await serverStream.Transport.Output.CompleteAsync();
+
+            var quicStreamContext = Assert.IsType<QuicStreamContext>(serverStream);
+
+            // Both send and receive loops have exited.
+            await quicStreamContext._processingTask.DefaultTimeout();
+
+            serverStream.Abort(new ConnectionAbortedException("Test message"));
 
             await quicStreamContext.DisposeAsync();
 
@@ -400,10 +534,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             const int StreamsSent = 101;
             for (var i = 0; i < StreamsSent; i++)
             {
-                // TODO: Race condition in QUIC library.
-                // Delay between sending streams to avoid
-                // https://github.com/dotnet/runtime/issues/55249
-                await Task.Delay(50);
                 streamTasks.Add(SendStream(requestState));
             }
 
@@ -448,7 +578,72 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
                 // Both send and receive loops have exited.
                 await quicStreamContext._processingTask.DefaultTimeout();
                 await quicStreamContext.DisposeAsync();
+                quicStreamContext.Dispose();
             }
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task PersistentState_StreamsReused_StatePersisted()
+        {
+            // Arrange
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
+
+            var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+            using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+            await clientConnection.ConnectAsync().DefaultTimeout();
+
+            await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+
+            // Act
+            var clientStream1 = clientConnection.OpenBidirectionalStream();
+            await clientStream1.WriteAsync(TestData, endStream: true).DefaultTimeout();
+            var serverStream1 = await serverConnection.AcceptAsync().DefaultTimeout();
+            var readResult1 = await serverStream1.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
+            serverStream1.Transport.Input.AdvanceTo(readResult1.Buffer.End);
+
+            serverStream1.Features.Get<IPersistentStateFeature>().State["test"] = true;
+
+            // Input should be completed.
+            readResult1 = await serverStream1.Transport.Input.ReadAsync();
+            Assert.True(readResult1.IsCompleted);
+
+            // Complete reading and writing.
+            await serverStream1.Transport.Input.CompleteAsync();
+            await serverStream1.Transport.Output.CompleteAsync();
+
+            var quicStreamContext1 = Assert.IsType<QuicStreamContext>(serverStream1);
+            await quicStreamContext1._processingTask.DefaultTimeout();
+            await quicStreamContext1.DisposeAsync();
+            quicStreamContext1.Dispose();
+
+            var clientStream2 = clientConnection.OpenBidirectionalStream();
+            await clientStream2.WriteAsync(TestData, endStream: true).DefaultTimeout();
+            var serverStream2 = await serverConnection.AcceptAsync().DefaultTimeout();
+            var readResult2 = await serverStream2.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
+            serverStream2.Transport.Input.AdvanceTo(readResult2.Buffer.End);
+
+            object state = serverStream2.Features.Get<IPersistentStateFeature>().State["test"];
+
+            // Input should be completed.
+            readResult2 = await serverStream2.Transport.Input.ReadAsync();
+            Assert.True(readResult2.IsCompleted);
+
+            // Complete reading and writing.
+            await serverStream2.Transport.Input.CompleteAsync();
+            await serverStream2.Transport.Output.CompleteAsync();
+
+            var quicStreamContext2 = Assert.IsType<QuicStreamContext>(serverStream2);
+            await quicStreamContext2._processingTask.DefaultTimeout();
+            await quicStreamContext2.DisposeAsync();
+            quicStreamContext2.Dispose();
+
+            Assert.Same(quicStreamContext1, quicStreamContext2);
+
+            var quicConnectionContext = Assert.IsType<QuicConnectionContext>(serverConnection);
+            Assert.Equal(1, quicConnectionContext.StreamPool.Count);
+
+            Assert.Equal(true, state);
         }
 
         private record RequestState(

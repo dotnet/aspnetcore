@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -14,9 +14,12 @@ namespace Microsoft.AspNetCore.Analyzers
 {
     internal class AnalyzersDiagnosticAnalyzerRunner : DiagnosticAnalyzerRunner
     {
-        public AnalyzersDiagnosticAnalyzerRunner(DiagnosticAnalyzer analyzer)
+        private readonly OutputKind _outputKind;
+
+        public AnalyzersDiagnosticAnalyzerRunner(DiagnosticAnalyzer analyzer, OutputKind? outputKind = null)
         {
             Analyzer = analyzer;
+            _outputKind = outputKind ?? OutputKind.DynamicallyLinkedLibrary;
         }
 
         public DiagnosticAnalyzer Analyzer { get; }
@@ -50,6 +53,11 @@ namespace Microsoft.AspNetCore.Analyzers
         public Task<Diagnostic[]> GetDiagnosticsAsync(Project project)
         {
             return GetDiagnosticsAsync(new[] { project }, Analyzer, Array.Empty<string>());
+        }
+
+        protected override CompilationOptions ConfigureCompilationOptions(CompilationOptions options)
+        {
+            return options.WithOutputKind(_outputKind);
         }
     }
 }

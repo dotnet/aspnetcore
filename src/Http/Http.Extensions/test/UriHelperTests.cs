@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Xunit;
@@ -128,11 +128,11 @@ namespace Microsoft.AspNetCore.Http.Extensions
         [InlineData("http://[1080:0:0:0:8:800:200C:417A]/index.html", "http", "[1080:0:0:0:8:800:200C:417A]", "/index.html", "", "")]
         [InlineData("http://example.com///", "http", "example.com", "///", "", "")]
         public void FromAbsoluteUriParsingChecks(
-            string uri, 
-            string expectedScheme, 
-            string expectedHost, 
-            string expectedPath, 
-            string expectedQuery, 
+            string uri,
+            string expectedScheme,
+            string expectedHost,
+            string expectedPath,
+            string expectedQuery,
             string expectedFragment)
         {
             string scheme = null;

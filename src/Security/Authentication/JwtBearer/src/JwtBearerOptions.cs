@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         {
             SecurityTokenValidators = new List<ISecurityTokenValidator> { _defaultHandler };
         }
-    
+
         /// <summary>
         /// Gets or sets if HTTPS is required for the metadata address or authority.
         /// The default is true. This should be disabled only in development environments.
@@ -126,10 +126,10 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         /// from returning an error and an error_description in the WWW-Authenticate header.
         /// </summary>
         public bool IncludeErrorDetails { get; set; } = true;
-        
+
         /// <summary>
-        /// Gets or sets the <see cref="MapInboundClaims"/> property on the default instance of <see cref="JwtSecurityTokenHandler"/> in SecurityTokenValidators, which is used when determining 
-        /// whether or not to map claim types that are extracted when validating a <see cref="JwtSecurityToken"/>. 
+        /// Gets or sets the <see cref="MapInboundClaims"/> property on the default instance of <see cref="JwtSecurityTokenHandler"/> in SecurityTokenValidators, which is used when determining
+        /// whether or not to map claim types that are extracted when validating a <see cref="JwtSecurityToken"/>.
         /// <para>If this is set to true, the Claim Type is set to the JSON claim 'name' after translating using this mapping. Otherwise, no mapping occurs.</para>
         /// <para>The default value is true.</para>
         /// </summary>

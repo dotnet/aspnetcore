@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -29,17 +29,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private readonly object _writeLock = new object();
 
         private readonly int _maxTotalHeaderSize;
-        private readonly PipeWriter _outputWriter;
         private readonly ConnectionContext _connectionContext;
         private readonly ITimeoutControl _timeoutControl;
         private readonly MinDataRate? _minResponseDataRate;
-        private readonly string _connectionId;
         private readonly MemoryPool<byte> _memoryPool;
         private readonly IKestrelTrace _log;
         private readonly IStreamIdFeature _streamIdFeature;
         private readonly IHttp3Stream _http3Stream;
         private readonly Http3RawFrame _outgoingFrame;
         private readonly TimingPipeFlusher _flusher;
+
+        private PipeWriter _outputWriter = default!;
+        private string _connectionId = default!;
 
         // HTTP/3 doesn't have a max frame size (peer can optionally specify a size).
         // Write headers to a buffer that can grow. Possible performance improvement
@@ -52,19 +53,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private bool _completed;
         private bool _aborted;
 
-        public Http3FrameWriter(PipeWriter output, ConnectionContext connectionContext, ITimeoutControl timeoutControl, MinDataRate? minResponseDataRate, string connectionId, MemoryPool<byte> memoryPool, IKestrelTrace log, IStreamIdFeature streamIdFeature, Http3PeerSettings clientPeerSettings, IHttp3Stream http3Stream)
+        public Http3FrameWriter(ConnectionContext connectionContext, ITimeoutControl timeoutControl, MinDataRate? minResponseDataRate, MemoryPool<byte> memoryPool, IKestrelTrace log, IStreamIdFeature streamIdFeature, Http3PeerSettings clientPeerSettings, IHttp3Stream http3Stream)
         {
-            _outputWriter = output;
             _connectionContext = connectionContext;
             _timeoutControl = timeoutControl;
             _minResponseDataRate = minResponseDataRate;
-            _connectionId = connectionId;
             _memoryPool = memoryPool;
             _log = log;
             _streamIdFeature = streamIdFeature;
             _http3Stream = http3Stream;
             _outgoingFrame = new Http3RawFrame();
-            _flusher = new TimingPipeFlusher(_outputWriter, timeoutControl, log);
+            _flusher = new TimingPipeFlusher(timeoutControl, log);
             _headerEncodingBuffer = new ArrayBufferWriter<byte>(HeaderBufferSize);
 
             // Note that max total header size value doesn't react to settings change during a stream.
@@ -74,6 +73,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _maxTotalHeaderSize = clientPeerSettings.MaxRequestHeaderFieldSectionSize > int.MaxValue
                 ? int.MaxValue
                 : (int)clientPeerSettings.MaxRequestHeaderFieldSectionSize;
+        }
+
+        public void Reset(PipeWriter output, string connectionId)
+        {
+            _outputWriter = output;
+            _flusher.Initialize(output);
+            _connectionId = connectionId;
+
+            _headersTotalSize = 0;
+            _headerEncodingBuffer.Clear();
+            _unflushedBytes = 0;
+            _completed = false;
+            _aborted = false;
         }
 
         internal Task WriteSettingsAsync(List<Http3PeerSetting> settings)
@@ -238,22 +250,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private void WriteHeaderUnsynchronized()
         {
             _log.Http3FrameSending(_connectionId, _streamIdFeature.StreamId, _outgoingFrame);
-            var headerLength = WriteHeader(_outgoingFrame, _outputWriter);
+            var headerLength = WriteHeader(_outgoingFrame.Type, _outgoingFrame.Length, _outputWriter);
 
             // We assume the payload will be written prior to the next flush.
             _unflushedBytes += headerLength + _outgoingFrame.Length;
         }
 
-        internal static int WriteHeader(Http3RawFrame frame, PipeWriter output)
+        internal static int WriteHeader(Http3FrameType frameType, long frameLength, PipeWriter output)
         {
             // max size of the header is 16, most likely it will be smaller.
             var buffer = output.GetSpan(16);
 
-            var typeLength = VariableLengthIntegerHelper.WriteInteger(buffer, (int)frame.Type);
+            var typeLength = VariableLengthIntegerHelper.WriteInteger(buffer, (int)frameType);
 
             buffer = buffer.Slice(typeLength);
 
-            var lengthLength = VariableLengthIntegerHelper.WriteInteger(buffer, (int)frame.Length);
+            var lengthLength = VariableLengthIntegerHelper.WriteInteger(buffer, (int)frameLength);
 
             var totalLength = typeLength + lengthLength;
             output.Advance(typeLength + lengthLength);

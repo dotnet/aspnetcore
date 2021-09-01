@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -26,7 +26,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         private MvcNewtonsoftJsonOptions? _jsonOptions;
         private readonly AsyncEnumerableReader _asyncEnumerableReaderFactory;
         private JsonSerializerSettings? _serializerSettings;
-        private ILogger? _logger;
 
         /// <summary>
         /// Initializes a new <see cref="NewtonsoftJsonOutputFormatter"/> instance.
@@ -174,9 +173,17 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var value = context.Object;
             if (value is not null && _asyncEnumerableReaderFactory.TryGetReader(value.GetType(), out var reader))
             {
-                _logger ??= context.HttpContext.RequestServices.GetRequiredService<ILogger<NewtonsoftJsonOutputFormatter>>();
-                Log.BufferingAsyncEnumerable(_logger, value);
-                value = await reader(value);
+                var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<NewtonsoftJsonOutputFormatter>>();
+                Log.BufferingAsyncEnumerable(logger, value);
+                try
+                {
+                    value = await reader(value, context.HttpContext.RequestAborted);
+                }
+                catch (OperationCanceledException) { }
+                if (context.HttpContext.RequestAborted.IsCancellationRequested)
+                {
+                    return;
+                }
             }
 
             try

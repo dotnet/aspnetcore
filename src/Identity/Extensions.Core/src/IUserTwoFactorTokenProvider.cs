@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 
@@ -18,15 +18,15 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="manager">The <see cref="UserManager{TUser}"/> that can be used to retrieve user properties.</param>
         /// <param name="user">The user a token should be generated for.</param>
         /// <returns>
-        /// The <see cref="Task"/> that represents the asynchronous operation, containing the token for the specified 
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the token for the specified
         /// <paramref name="user"/> and <paramref name="purpose"/>.
         /// </returns>
         /// <remarks>
         /// The <paramref name="purpose"/> parameter allows a token generator to be used for multiple types of token whilst
-        /// insuring a token for one purpose cannot be used for another. For example if you specified a purpose of "Email" 
+        /// insuring a token for one purpose cannot be used for another. For example if you specified a purpose of "Email"
         /// and validated it with the same purpose a token with the purpose of TOTP would not pass the check even if it was
         /// for the same user.
-        /// 
+        ///
         /// Implementations of <see cref="IUserTwoFactorTokenProvider{TUser}"/> should validate that purpose is not null or empty to
         /// help with token separation.
         /// </remarks>

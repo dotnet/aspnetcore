@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -82,8 +82,8 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         /// the middleware will apply headers to the HTTP response that instruct clients to avoid caching.
         /// </para>
         /// <para>
-        /// If the value is <c>false</c> the health check middleware will set or override the 
-        /// <c>Cache-Control</c>, <c>Expires</c>, and <c>Pragma</c> headers to prevent response caching. If the value 
+        /// If the value is <c>false</c> the health check middleware will set or override the
+        /// <c>Cache-Control</c>, <c>Expires</c>, and <c>Pragma</c> headers to prevent response caching. If the value
         /// is <c>true</c> the health check middleware will not modify the cache headers of the response.
         /// </para>
         /// </remarks>

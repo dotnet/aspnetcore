@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -167,14 +167,16 @@ namespace CodeGenerator
                 HeaderNames.Connection,
                 HeaderNames.Server,
                 HeaderNames.Date,
-                HeaderNames.TransferEncoding
+                HeaderNames.TransferEncoding,
+                HeaderNames.AltSvc
             };
             var enhancedHeaders = new[]
             {
                 HeaderNames.Connection,
                 HeaderNames.Server,
                 HeaderNames.Date,
-                HeaderNames.TransferEncoding
+                HeaderNames.TransferEncoding,
+                HeaderNames.AltSvc
             };
             // http://www.w3.org/TR/cors/#syntax
             var corsResponseHeaders = new[]
@@ -311,7 +313,7 @@ namespace CodeGenerator
                 }}
 
                 // We didn't have a previous matching header value, or have already added a header, so get the string for this value.
-                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector);
+                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector, checkForNewlineChars);
                 if ((_bits & flag) == 0)
                 {{
                     // We didn't already have a header set, so add a new one.
@@ -481,7 +483,7 @@ namespace CodeGenerator
                     }
                     else
                     {
-                        return $"(Unsafe.ReadUnaligned<{type}>(ref nameStart) & 0x{mask:x}{suffix})";
+                        return $"(ReadUnalignedLittleEndian_{type}(ref nameStart) & 0x{mask:x}{suffix})";
                     }
                 }
                 else
@@ -492,11 +494,11 @@ namespace CodeGenerator
                     }
                     else if ((offset / count) == 1)
                     {
-                        return $"(Unsafe.ReadUnaligned<{type}>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof({type}))) & 0x{mask:x}{suffix})";
+                        return $"(ReadUnalignedLittleEndian_{type}(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof({type}))) & 0x{mask:x}{suffix})";
                     }
                     else
                     {
-                        return $"(Unsafe.ReadUnaligned<{type}>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)({offset / count} * sizeof({type})))) & 0x{mask:x}{suffix})";
+                        return $"(ReadUnalignedLittleEndian_{type}(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)({offset / count} * sizeof({type})))) & 0x{mask:x}{suffix})";
                     }
                 }
 
@@ -768,13 +770,14 @@ namespace CodeGenerator
                     offset += header.BytesCount;
                 }
             }
-            return $@"// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+            var s = $@"// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.IO.Pipelines;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -827,7 +830,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }}
             set
             {{
-                _contentLength = ParseContentLength(value);
+                _contentLength = ParseContentLength(value.ToString());
             }}" : $@"
             get
             {{
@@ -994,7 +997,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {{{(header.Name == HeaderNames.ContentLength ? $@"
                         if (!_contentLength.HasValue)
                         {{
-                            _contentLength = ParseContentLength(value);
+                            _contentLength = ParseContentLength(value.ToString());
                             return true;
                         }}
                         return false;" : $@"
@@ -1012,7 +1015,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {{{(header.Name == HeaderNames.ContentLength ? $@"
                         if (!_contentLength.HasValue)
                         {{
-                            _contentLength = ParseContentLength(value);
+                            _contentLength = ParseContentLength(value.ToString());
                             return true;
                         }}
                         return false;" : $@"
@@ -1238,8 +1241,19 @@ $@"        private void Clear(long bitsToClear)
                 }}
             }} while (tempBits != 0);
         }}" : "")}{(loop.ClassName == "HttpRequestHeaders" ? $@"
+        {Each(new string[] {"ushort", "uint", "ulong"}, type => $@"
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static unsafe {type} ReadUnalignedLittleEndian_{type}(ref byte source)
+        {{
+            {type} result = Unsafe.ReadUnaligned<{type}>(ref source);
+            if (!BitConverter.IsLittleEndian)
+            {{
+                result = BinaryPrimitives.ReverseEndianness(result);
+            }}
+            return result;
+        }}")}
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public unsafe void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        public unsafe void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value, bool checkForNewlineChars)
         {{
             ref byte nameStart = ref MemoryMarshal.GetReference(name);
             var nameStr = string.Empty;
@@ -1256,10 +1270,10 @@ $@"        private void Clear(long bitsToClear)
             else
             {{
                 // The header was not one of the ""known"" headers.
-                // Convert value to string first, because passing two spans causes 8 bytes stack zeroing in 
+                // Convert value to string first, because passing two spans causes 8 bytes stack zeroing in
                 // this method with rep stosd, which is slower than necessary.
                 nameStr = name.GetHeaderName();
-                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector);
+                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector, checkForNewlineChars);
                 AppendUnknownHeaders(nameStr, valueStr);
             }}
         }}
@@ -1270,6 +1284,7 @@ $@"        private void Clear(long bitsToClear)
             ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
             var nameStr = string.Empty;
             var flag = 0L;
+            var checkForNewlineChars = true;
 
             // Does the HPack static index match any ""known"" headers
             {AppendHPackSwitch(GroupHPack(loop.Headers))}
@@ -1337,6 +1352,8 @@ $@"        private void Clear(long bitsToClear)
         }}
     }}
 ")}}}";
+
+            return s;
         }
 
         private static string GetHeaderLookup()

@@ -1,10 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,50 +17,78 @@ namespace Microsoft.AspNetCore.Builder
     public sealed class WebApplicationBuilder
     {
         private readonly HostBuilder _hostBuilder = new();
-        private readonly ConfigureHostBuilder _deferredHostBuilder;
-        private readonly ConfigureWebHostBuilder _deferredWebHostBuilder;
-        private readonly WebHostEnvironment _environment;
+        private readonly BootstrapHostBuilder _bootstrapHostBuilder;
+        private readonly WebApplicationServiceCollection _services = new();
+        private const string EndpointRouteBuilderKey = "__EndpointRouteBuilder";
+
         private WebApplication? _builtApplication;
 
-        internal WebApplicationBuilder(Assembly? callingAssembly, string[]? args = null)
+        internal WebApplicationBuilder(WebApplicationOptions options, Action<IHostBuilder>? configureDefaults = null)
         {
-            // HACK: MVC and Identity do this horrible thing to get the hosting environment as an instance
-            // from the service collection before it is built. That needs to be fixed...
-            Environment = _environment = new WebHostEnvironment(callingAssembly);
+            Services = _services;
 
-            Configuration.SetBasePath(_environment.ContentRootPath);
-            Services.AddSingleton(Environment);
+            var args = options.Args;
 
             // Run methods to configure both generic and web host defaults early to populate config from appsettings.json
             // environment variables (both DOTNET_ and ASPNETCORE_ prefixed) and other possible default sources to prepopulate
             // the correct defaults.
-            var bootstrapBuilder = new BootstrapHostBuilder(Configuration, _environment);
-            bootstrapBuilder.ConfigureDefaults(args);
-            bootstrapBuilder.ConfigureWebHostDefaults(configure: _ => { });
-            bootstrapBuilder.RunConfigurationCallbacks();
+            _bootstrapHostBuilder = new BootstrapHostBuilder(Services, _hostBuilder.Properties);
 
-            Logging = new LoggingBuilder(Services);
-            WebHost = _deferredWebHostBuilder = new ConfigureWebHostBuilder(Configuration, _environment, Services);
-            Host = _deferredHostBuilder = new ConfigureHostBuilder(Configuration, _environment, Services);
+            // Don't specify the args here since we want to apply them later so that args
+            // can override the defaults specified by ConfigureWebHostDefaults
+            _bootstrapHostBuilder.ConfigureDefaults(args: null);
 
-            // Register Configuration as IConfiguration so updates can be observed even after the WebApplication is built.
-            Services.AddSingleton<IConfiguration>(Configuration);
+            // This is for testing purposes
+            configureDefaults?.Invoke(_bootstrapHostBuilder);
 
-            // Add default services
-            _deferredHostBuilder.ConfigureDefaults(args);
-            _deferredHostBuilder.ConfigureWebHostDefaults(configure: _ => { });
-
-            // This is important because GenericWebHostBuilder does the following and we want to preserve the WebHostBuilderContext:
-            // context.Properties[typeof(WebHostBuilderContext)] = webHostBuilderContext;
-            // context.Properties[typeof(WebHostOptions)] = options;
-            foreach (var (key, value) in _deferredHostBuilder.Properties)
+            // We specify the command line here last since we skipped the one in the call to ConfigureDefaults.
+            // The args can contain both host and application settings so we want to make sure
+            // we order those configuration providers appropriately without duplicating them
+            if (args is { Length: > 0 })
             {
-                _hostBuilder.Properties[key] = value;
+                _bootstrapHostBuilder.ConfigureAppConfiguration(config =>
+                {
+                    config.AddCommandLine(args);
+                });
             }
 
-            // Configuration changes made by ConfigureDefaults(args) were already picked up by the BootstrapHostBuilder,
-            // so we ignore changes to config until ConfigureDefaults completes.
-            _deferredHostBuilder.ConfigurationEnabled = true;
+            _bootstrapHostBuilder.ConfigureWebHostDefaults(webHostBuilder =>
+            {
+                // Runs inline.
+                webHostBuilder.Configure(ConfigureApplication);
+
+                // We need to override the application name since the call to Configure will set it to
+                // be the calling assembly's name.
+                webHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, (Assembly.GetEntryAssembly())?.GetName()?.Name ?? string.Empty);
+            });
+
+            // Apply the args to host configuration last since ConfigureWebHostDefaults overrides a host specific setting (the application name).
+
+            _bootstrapHostBuilder.ConfigureHostConfiguration(config =>
+            {
+                if (args is { Length: > 0 })
+                {
+                    config.AddCommandLine(args);
+                }
+
+                // Apply the options after the args
+                options.ApplyHostConfiguration(config);
+            });
+
+
+            Configuration = new();
+
+            // This is the application configuration
+            var hostContext = _bootstrapHostBuilder.RunDefaultCallbacks(Configuration, _hostBuilder);
+
+            // Grab the WebHostBuilderContext from the property bag to use in the ConfigureWebHostBuilder
+            var webHostContext = (WebHostBuilderContext)hostContext.Properties[typeof(WebHostBuilderContext)];
+
+            // Grab the IWebHostEnvironment from the webHostContext. This also matches the instance in the IServiceCollection.
+            Environment = webHostContext.HostingEnvironment;
+            Logging = new LoggingBuilder(Services);
+            Host = new ConfigureHostBuilder(hostContext, Configuration, Services);
+            WebHost = new ConfigureWebHostBuilder(webHostContext, Configuration, Services);
         }
 
         /// <summary>
@@ -72,12 +99,12 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// A collection of services for the application to compose. This is useful for adding user provided or framework provided services.
         /// </summary>
-        public IServiceCollection Services { get; } = new ServiceCollection();
+        public IServiceCollection Services { get; }
 
         /// <summary>
         /// A collection of configuration providers for the application to compose. This is useful for adding new configuration sources and providers.
         /// </summary>
-        public ConfigurationManager Configuration { get; } = new();
+        public ConfigurationManager Configuration { get; }
 
         /// <summary>
         /// A collection of logging providers for the application to compose. This is useful for adding new logging providers.
@@ -85,13 +112,13 @@ namespace Microsoft.AspNetCore.Builder
         public ILoggingBuilder Logging { get; }
 
         /// <summary>
-        /// An <see cref="IHostBuilder"/> for configuring server specific properties, but not building.
+        /// An <see cref="IWebHostBuilder"/> for configuring server specific properties, but not building.
         /// To build after configuration, call <see cref="Build"/>.
         /// </summary>
         public ConfigureWebHostBuilder WebHost { get; }
 
         /// <summary>
-        /// An <see cref="IWebHostBuilder"/> for configuring host specific properties, but not building.
+        /// An <see cref="IHostBuilder"/> for configuring host specific properties, but not building.
         /// To build after configuration, call <see cref="Build"/>.
         /// </summary>
         public ConfigureHostBuilder Host { get; }
@@ -102,68 +129,108 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>A configured <see cref="WebApplication"/>.</returns>
         public WebApplication Build()
         {
-            // We call ConfigureWebHostDefaults AGAIN because config might be added like "ForwardedHeaders_Enabled"
-            // which can add even more services. If not for that, we probably call _hostBuilder.ConfigureWebHost(ConfigureWebHost)
-            // instead in order to avoid duplicate service registration.
-            _hostBuilder.ConfigureWebHostDefaults(ConfigureWebHost);
-            return _builtApplication = new WebApplication(_hostBuilder.Build());
+            // Copy the configuration sources into the final IConfigurationBuilder
+            _hostBuilder.ConfigureHostConfiguration(builder =>
+            {
+                foreach (var source in ((IConfigurationBuilder)Configuration).Sources)
+                {
+                    builder.Sources.Add(source);
+                }
+
+                foreach (var (key, value) in ((IConfigurationBuilder)Configuration).Properties)
+                {
+                    builder.Properties[key] = value;
+                }
+            });
+
+            // This needs to go here to avoid adding the IHostedService that boots the server twice (the GenericWebHostService).
+            // Copy the services that were added via WebApplicationBuilder.Services into the final IServiceCollection
+            _hostBuilder.ConfigureServices((context, services) =>
+            {
+                // We've only added services configured by the GenericWebHostBuilder and WebHost.ConfigureWebDefaults
+                // at this point. HostBuilder news up a new ServiceCollection in HostBuilder.Build() we haven't seen
+                // until now, so we cannot clear these services even though some are redundant because
+                // we called ConfigureWebHostDefaults on both the _deferredHostBuilder and _hostBuilder.
+                foreach (var s in _services)
+                {
+                    services.Add(s);
+                }
+
+                // Add any services to the user visible service collection so that they are observable
+                // just in case users capture the Services property. Orchard does this to get a "blueprint"
+                // of the service collection
+
+                // Drop the reference to the existing collection and set the inner collection
+                // to the new one. This allows code that has references to the service collection to still function.
+                _services.InnerCollection = services;
+            });
+
+            // Run the other callbacks on the final host builder
+            Host.RunDeferredCallbacks(_hostBuilder);
+
+            _builtApplication = new WebApplication(_hostBuilder.Build());
+
+            // Make builder.Configuration match the final configuration. To do that
+            // we clear the sources and add the built configuration as a source
+            ((IConfigurationBuilder)Configuration).Sources.Clear();
+            Configuration.AddConfiguration(_builtApplication.Configuration);
+
+            // Mark the service collection as read-only to prevent future modifications
+            _services.IsReadOnly = true;
+
+            return _builtApplication;
         }
 
         private void ConfigureApplication(WebHostBuilderContext context, IApplicationBuilder app)
         {
             Debug.Assert(_builtApplication is not null);
 
-            // The endpoints were already added on the outside
+            // UseRouting called before WebApplication such as in a StartupFilter
+            // lets remove the property and reset it at the end so we don't mess with the routes in the filter
+            if (app.Properties.TryGetValue(EndpointRouteBuilderKey, out var priorRouteBuilder))
+            {
+                app.Properties.Remove(EndpointRouteBuilderKey);
+            }
+
+            if (context.HostingEnvironment.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+
+            // Wrap the entire destination pipeline in UseRouting() and UseEndpoints(), essentially:
+            // destination.UseRouting()
+            // destination.Run(source)
+            // destination.UseEndpoints()
+
+            // Set the route builder so that UseRouting will use the WebApplication as the IEndpointRouteBuilder for route matching
+            app.Properties.Add(WebApplication.GlobalEndpointRouteBuilderKey, _builtApplication);
+
+            // Only call UseRouting() if there are endpoints configured and UseRouting() wasn't called on the global route builder already
             if (_builtApplication.DataSources.Count > 0)
             {
-                // The user did not register the routing middleware so wrap the entire
-                // destination pipeline in UseRouting() and UseEndpoints(), essentially:
-                // destination.UseRouting()
-                // destination.Run(source)
-                // destination.UseEndpoints()
-                if (_builtApplication.RouteBuilder == null)
+                // If this is set, someone called UseRouting() when a global route builder was already set
+                if (!_builtApplication.Properties.TryGetValue(EndpointRouteBuilderKey, out var localRouteBuilder))
                 {
                     app.UseRouting();
-
-                    // Copy the route data sources over to the destination pipeline, this should be available since we just called
-                    // UseRouting()
-                    var routes = (IEndpointRouteBuilder)app.Properties[WebApplication.EndpointRouteBuilder]!;
-
-                    foreach (var ds in _builtApplication.DataSources)
-                    {
-                        routes.DataSources.Add(ds);
-                    }
-
-                    // Chain the execution of the source pipeline into the destination pipeline
-                    app.Use(next =>
-                    {
-                        _builtApplication.Run(next);
-                        return _builtApplication.BuildRequestDelegate();
-                    });
-
-                    // Add a UseEndpoints at the end
-                    app.UseEndpoints(e => { });
                 }
                 else
                 {
-                    // Since we register routes into the source pipeline's route builder directly,
-                    // if the user called UseRouting, we need to copy the data sources
-                    foreach (var ds in _builtApplication.DataSources)
-                    {
-                        _builtApplication.RouteBuilder.DataSources.Add(ds);
-                    }
-
-                    // We then implicitly call UseEndpoints at the end of the pipeline
-                    _builtApplication.UseEndpoints(_ => { });
-
-                    // Wire the source pipeline to run in the destination pipeline
-                    app.Run(_builtApplication.BuildRequestDelegate());
+                    // UseEndpoints will be looking for the RouteBuilder so make sure it's set
+                    app.Properties[EndpointRouteBuilderKey] = localRouteBuilder;
                 }
             }
-            else
+
+            // Wire the source pipeline to run in the destination pipeline
+            app.Use(next =>
             {
-                // Wire the source pipeline to run in the destination pipeline
-                app.Run(_builtApplication.BuildRequestDelegate());
+                _builtApplication.Run(next);
+                return _builtApplication.BuildRequestDelegate();
+            });
+
+            if (_builtApplication.DataSources.Count > 0)
+            {
+                // We don't know if user code called UseEndpoints(), so we will call it just in case, UseEndpoints() will ignore duplicate DataSources
+                app.UseEndpoints(_ => { });
             }
 
             // Copy the properties to the destination app builder
@@ -171,58 +238,15 @@ namespace Microsoft.AspNetCore.Builder
             {
                 app.Properties[item.Key] = item.Value;
             }
-        }
 
-        private void ConfigureWebHost(IWebHostBuilder genericWebHostBuilder)
-        {
-            _hostBuilder.ConfigureHostConfiguration(builder =>
+            // Remove the route builder to clean up the properties, we're done adding routes to the pipeline
+            app.Properties.Remove(WebApplication.GlobalEndpointRouteBuilderKey);
+
+            // reset route builder if it existed, this is needed for StartupFilters
+            if (priorRouteBuilder is not null)
             {
-                // All the sources in builder.Sources should be in Configuration.Sources
-                // already thanks to the BootstrapHostBuilder.
-                builder.Sources.Clear();
-
-                foreach (var (key, value) in ((IConfigurationBuilder)Configuration).Properties)
-                {
-                    builder.Properties[key] = value;
-                }
-
-                builder.AddConfiguration(Configuration, shouldDisposeConfiguration: true);
-            });
-
-            genericWebHostBuilder.ConfigureServices((context, services) =>
-            {
-                // We've only added services configured by the GenericWebHostBuilder and WebHost.ConfigureWebDefaults
-                // at this point. HostBuilder news up a new ServiceCollection in HostBuilder.Build() we haven't seen
-                // until now, so we cannot clear these services even though some are redundant because
-                // we called ConfigureWebHostDefaults on both the _deferredHostBuilder and _hostBuilder.
-
-                // Ideally, we'd only call _hostBuilder.ConfigureWebHost(ConfigureWebHost) instead of
-                // _hostBuilder.ConfigureWebHostDefaults(ConfigureWebHost) to avoid some duplicate service descriptors,
-                // but we want to add services in the WebApplicationBuilder constructor so code can inspect
-                // WebApplicationBuilder.Services. At the same time, we want to be able which services are loaded
-                // to react to config changes (e.g. ForwardedHeadersStartupFilter).
-                foreach (var s in Services)
-                {
-                    services.Add(s);
-                }
-
-                // Add any services to the user visible service collection so that they are observable
-                // just in case users capture the Services property. Orchard does this to get a "blueprint"
-                // of the service collection. The order needs to be preserved here so we clear the original
-                // collection and add all of the services in order.
-                Services.Clear();
-                foreach (var s in services)
-                {
-                    Services.Add(s);
-                }
-            });
-
-            genericWebHostBuilder.Configure(ConfigureApplication);
-
-            _deferredHostBuilder.RunDeferredCallbacks(_hostBuilder);
-            _deferredWebHostBuilder.ApplySettings(genericWebHostBuilder);
-
-            _environment.ApplyEnvironmentSettings(genericWebHostBuilder);
+                app.Properties[EndpointRouteBuilderKey] = priorRouteBuilder;
+            }
         }
 
         private class LoggingBuilder : ILoggingBuilder

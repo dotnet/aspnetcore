@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc.Abstractions;
 
@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
     /// <remarks>
     /// <para>
     /// On the first query for <see cref="ActionDescriptor"/>, MVC invokes all registered instances of <see cref="IApiDescriptionProvider"/>
-    /// in the ascending sort order of <see cref="Order"/>. 
+    /// in the ascending sort order of <see cref="Order"/>.
     /// </para>
     /// <para>
     /// Each provider has its <see cref="OnProvidersExecuting"/> method
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
     /// </para>
     /// <para>
     /// As providers are called in a predefined sequence, each provider has a chance to observe and decorate the
-    /// result of the providers that have already run. 
+    /// result of the providers that have already run.
     /// </para>
     /// </remarks>
     public interface IApiDescriptionProvider

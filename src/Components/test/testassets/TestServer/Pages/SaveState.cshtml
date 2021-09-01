@@ -122,35 +122,27 @@
     *@
     <hr />
 
-
     @if (script == "server")
     {
         <script src="_framework/blazor.server.js" autostart="false"></script>
-        <script>
-            function start() {
-                Blazor.start({
-                    logLevel: 1 // LogLevel.Debug
-                });
-            }
-        </script>
     }
     else
     {
         <script src="_framework/blazor.webassembly.js" autostart="false"></script>
-        <script>
-            function start() {
-                Blazor.start({
-                    logLevel: 1 // LogLevel.Debug
-                });
-            }
-
-            function getCurrentUrl() {
-                return location.href;
-            }
-
-        </script>
     }
 
+    <script src="js/jsRootComponentInitializers.js"></script>
+    <script>
+        function start() {
+            Blazor.start({
+                logLevel: 1 // LogLevel.Debug
+            });
+        }
+
+        function getCurrentUrl() {
+            return location.href;
+        }
+    </script>
     <button id="load-boot-script" onclick="start()">Load boot script</button>
 </body>
 </html>

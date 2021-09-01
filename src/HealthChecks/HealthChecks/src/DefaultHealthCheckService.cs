@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -313,7 +313,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 if (_formatted == null)
                 {
                     var builder = new StringBuilder();
-                    builder.AppendLine($"Health check data for {_name}:");
+                    builder.AppendLine(FormattableString.Invariant($"Health check data for {_name}:"));
 
                     var values = _values;
                     for (var i = 0; i < values.Count; i++)

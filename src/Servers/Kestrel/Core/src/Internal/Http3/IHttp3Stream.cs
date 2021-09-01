@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Http;
 using Microsoft.AspNetCore.Connections;
@@ -14,19 +14,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         long StreamId { get; }
 
         /// <summary>
-        /// Used to track the timeout between when the stream was started by the client, and getting a header.
-        /// Value is driven by <see cref="KestrelServerLimits.RequestHeadersTimeout"/>.
+        /// Used to track the timeout in two situations:
+        /// 1. Between when the stream was started by the client, and getting a header.
+        ///    Value is driven by <see cref="KestrelServerLimits.RequestHeadersTimeout"/>.
+        /// 2. Between when the request delegate is complete and the transport draining.
+        ///    Value is driven by <see cref="KestrelServerLimits.MinResponseDataRate"/>.
         /// </summary>
-        long HeaderTimeoutTicks { get; set; }
+        long StreamTimeoutTicks { get; set; }
 
         /// <summary>
-        /// The stream has received and parsed the header frame.
+        /// The stream is receiving the header frame.
         /// - Request streams = HEADERS frame.
         /// - Control streams = unidirectional stream header.
         /// </summary>
-        bool ReceivedHeader { get; }
+        bool IsReceivingHeader { get; }
+
+        /// <summary>
+        /// The stream request delegate is complete and the transport is draining.
+        /// </summary>
+        bool IsDraining { get; }
 
         bool IsRequestStream { get; }
+
+        string TraceIdentifier { get; }
 
         void Abort(ConnectionAbortedException abortReason, Http3ErrorCode errorCode);
     }

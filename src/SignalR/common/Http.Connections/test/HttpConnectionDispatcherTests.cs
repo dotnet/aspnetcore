@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -504,7 +504,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         {
             using (StartVerifiableLog())
             {
-                var manager = CreateConnectionManager(LoggerFactory, TimeSpan.FromSeconds(5));
+                var disconnectTimeout = TimeSpan.FromSeconds(5);
+                var manager = CreateConnectionManager(LoggerFactory, disconnectTimeout);
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
                 var connection = manager.CreateConnection();
                 connection.TransportType = HttpTransportType.LongPolling;
@@ -550,7 +551,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     await task.DefaultTimeout();
 
                     // We've been gone longer than the expiration time
-                    connection.LastSeenUtc = DateTime.UtcNow.Subtract(TimeSpan.FromSeconds(10));
+                    connection.LastSeenTicks = Environment.TickCount64 - (long)disconnectTimeout.TotalMilliseconds - 1;
 
                     // The application is still running here because the poll is only killed
                     // by the heartbeat so we pretend to do a scan and this should force the application task to complete

@@ -27,24 +27,14 @@
       "applicationUrl": "http://localhost:5000",
       //#endif
       "environmentVariables": {
-        //#if(RazorRuntimeCompilation)
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation"
-        //#else
         "ASPNETCORE_ENVIRONMENT": "Development"
-        //#endif
       }
     },
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
       "environmentVariables": {
-        //#if(RazorRuntimeCompilation)
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation"
-        //#else
         "ASPNETCORE_ENVIRONMENT": "Development"
-        //#endif
       }
     }
   }

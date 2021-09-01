@@ -25,7 +25,9 @@ using Graph = Microsoft.Graph;
 #if (IndividualLocalAuth)
 using Company.WebApplication1.Data;
 #endif
+#if (OrganizationalAuth || IndividualB2CAuth || IndividualLocalAuth || MultiOrgAuth || GenerateGraph)
 
+#endif
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -94,14 +96,15 @@ builder.Services.AddRazorPages();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+#if (IndividualLocalAuth)
 if (app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage();
-#if (IndividualLocalAuth)
     app.UseMigrationsEndPoint();
-#endif
 }
 else
+#else
+if (!app.Environment.IsDevelopment())
+#endif
 {
     app.UseExceptionHandler("/Error");
 #if (RequiresHttps)

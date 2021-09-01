@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 {
                     // We add 'identity' to the list of "candidates" with a very low priority and no provider.
                     // This will allow it to be ordered based on its quality (and priority) later in the method.
-                    candidates.Add(new ProviderCandidate(encodingName.Value, quality, priority: int.MaxValue, provider: null));
+                    candidates.Add(new ProviderCandidate("identity", quality, priority: int.MaxValue, provider: null));
                 }
             }
 
@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
 
             if (string.IsNullOrEmpty(mimeType))
             {
-                _logger.NoCompressionForContentType(mimeType);
+                _logger.NoCompressionForContentType(mimeType ?? "(null)");
                 return false;
             }
 

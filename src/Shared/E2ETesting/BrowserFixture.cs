@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
@@ -34,6 +34,8 @@ namespace Microsoft.AspNetCore.E2ETesting
         public IMessageSink DiagnosticsMessageSink { get; }
 
         public string UserProfileDir { get; private set; }
+
+        public bool EnsureNotHeadless { get; set; }
 
         public static void EnforceSupportedConfigurations()
         {
@@ -143,7 +145,8 @@ namespace Microsoft.AspNetCore.E2ETesting
             // Force language to english for tests
             opts.AddUserProfilePreference("intl.accept_languages", "en");
 
-            if (!Debugger.IsAttached &&
+            if (!EnsureNotHeadless &&
+                !Debugger.IsAttached &&
                 !string.Equals(Environment.GetEnvironmentVariable("E2E_TEST_VISIBLE"), "true", StringComparison.OrdinalIgnoreCase))
             {
                 opts.AddArgument("--headless");

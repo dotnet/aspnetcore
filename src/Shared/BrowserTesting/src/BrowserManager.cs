@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -23,9 +23,9 @@ namespace Microsoft.AspNetCore.BrowserTesting
         private bool _disposed;
         private readonly ILoggerFactory _loggerFactory;
 
-        private BrowserManager(IConfiguration configuration, ILoggerFactory loggerFactory)
+        private BrowserManager(BrowserManagerConfiguration configuration, ILoggerFactory loggerFactory)
         {
-            _browserManagerConfiguration = new BrowserManagerConfiguration(configuration);
+            _browserManagerConfiguration = configuration;
             _loggerFactory = loggerFactory;
         }
 
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.BrowserTesting
 
         public bool HasFailedTests { get; set; }
 
-        public static async Task<BrowserManager> CreateAsync(IConfiguration configuration, ILoggerFactory loggerFactory)
+        public static async Task<BrowserManager> CreateAsync(BrowserManagerConfiguration configuration, ILoggerFactory loggerFactory)
         {
             var manager = new BrowserManager(configuration, loggerFactory);
             await manager.InitializeAsync();
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.BrowserTesting
             async Task InitializeCore()
             {
                 var driverPath = Environment.GetEnvironmentVariable("PLAYWRIGHT_DRIVER_PATH");
-                if (!string.IsNullOrEmpty(driverPath)) 
+                if (!string.IsNullOrEmpty(driverPath))
                 {
                     Playwright = await PlaywrightSharp.Playwright.CreateAsync(_loggerFactory, driverExecutablePath: driverPath, debug: "pw:api");
                 }

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -309,7 +309,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     }
 
                     // Always overwrite the CachedVaryByRules to update the expiry information
-                    _logger.VaryByRulesUpdated(normalizedVaryHeaders, normalizedVaryQueryKeys);
+                    _logger.VaryByRulesUpdated(normalizedVaryHeaders.ToString(), normalizedVaryQueryKeys.ToString());
                     storeVaryByEntry = true;
 
                     context.StorageVaryKey = _keyProvider.CreateStorageVaryByKey(context);
@@ -461,8 +461,8 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 }
 
                 EntityTagHeaderValue eTag;
-                if (!StringValues.IsNullOrEmpty(cachedResponseHeaders[HeaderNames.ETag])
-                    && EntityTagHeaderValue.TryParse(cachedResponseHeaders[HeaderNames.ETag].ToString(), out eTag)
+                if (!StringValues.IsNullOrEmpty(cachedResponseHeaders.ETag)
+                    && EntityTagHeaderValue.TryParse(cachedResponseHeaders.ETag.ToString(), out eTag)
                     && EntityTagHeaderValue.TryParseList(ifNoneMatchHeader, out var ifNoneMatchEtags))
                 {
                     for (var i = 0; i < ifNoneMatchEtags.Count; i++)
@@ -482,8 +482,8 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 if (!StringValues.IsNullOrEmpty(ifModifiedSince))
                 {
                     DateTimeOffset modified;
-                    if (!HeaderUtilities.TryParseDate(cachedResponseHeaders[HeaderNames.LastModified].ToString(), out modified) &&
-                        !HeaderUtilities.TryParseDate(cachedResponseHeaders[HeaderNames.Date].ToString(), out modified))
+                    if (!HeaderUtilities.TryParseDate(cachedResponseHeaders.LastModified.ToString(), out modified) &&
+                        !HeaderUtilities.TryParseDate(cachedResponseHeaders.Date.ToString(), out modified))
                     {
                         return false;
                     }
@@ -515,7 +515,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
                 for (var i = 0; i < originalArray.Length; i++)
                 {
-                    newArray[i] = originalArray[i].ToUpperInvariant();
+                    newArray[i] = originalArray[i]!.ToUpperInvariant();
                 }
 
                 // Since the casing has already been normalized, use Ordinal comparison

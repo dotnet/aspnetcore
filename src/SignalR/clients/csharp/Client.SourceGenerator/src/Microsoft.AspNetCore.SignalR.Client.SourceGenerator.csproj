@@ -10,7 +10,6 @@
     </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Client.Core" />
   </ItemGroup>

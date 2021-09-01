@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
     // When we group endpoints we don't consider the route template, because we're trying
     // to group endpoints not separate them.
     //
-    // TLDR: 
+    // TLDR:
     //  IComparer implementation considers the template string as a tiebreaker.
     //  IEqualityComparer implementation does not.
     //  This is cool and good.
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             return CompareCore(x, y) == 0;
         }
-        
+
         public int GetHashCode(Endpoint obj)
         {
             // This should not be possible to call publicly.

@@ -528,6 +528,7 @@
 *REMOVED*~virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.Content(string contentPath) -> string
 *REMOVED*~virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.IsLocalUrl(string url) -> bool
 *REMOVED*~virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.Link(string routeName, object values) -> string
+Microsoft.AspNetCore.Mvc.ConsumesAttribute.ConsumesAttribute(System.Type! requestType, string! contentType, params string![]! otherContentTypes) -> void
 Microsoft.AspNetCore.Mvc.JsonOptions.AllowInputFormatterExceptionMessages.get -> bool
 Microsoft.AspNetCore.Mvc.JsonOptions.AllowInputFormatterExceptionMessages.set -> void
 Microsoft.AspNetCore.Mvc.Controllers.ControllerActivatorProvider.CreateAsyncReleaser(Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor! descriptor) -> System.Func<Microsoft.AspNetCore.Mvc.ControllerContext!, object!, System.Threading.Tasks.ValueTask>?
@@ -544,6 +545,13 @@ Microsoft.AspNetCore.Mvc.Infrastructure.ActionDescriptorCollection.Items.get -> 
 Microsoft.AspNetCore.Mvc.Infrastructure.AmbiguousActionException.AmbiguousActionException(System.Runtime.Serialization.SerializationInfo! info, System.Runtime.Serialization.StreamingContext context) -> void
 Microsoft.AspNetCore.Mvc.Infrastructure.AmbiguousActionException.AmbiguousActionException(string? message) -> void
 Microsoft.AspNetCore.Mvc.Infrastructure.ContentResultExecutor.ContentResultExecutor(Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Mvc.Infrastructure.ContentResultExecutor!>! logger, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory! httpResponseStreamWriterFactory) -> void
+static Microsoft.AspNetCore.Http.OpenApiEndpointConventionBuilderExtensions.Accepts(this Microsoft.AspNetCore.Builder.DelegateEndpointConventionBuilder! builder, System.Type! requestType, string! contentType, params string![]! additionalContentTypes) -> Microsoft.AspNetCore.Builder.DelegateEndpointConventionBuilder!
+static Microsoft.AspNetCore.Http.OpenApiEndpointConventionBuilderExtensions.Accepts<TRequest>(this Microsoft.AspNetCore.Builder.DelegateEndpointConventionBuilder! builder, string! contentType, params string![]! additionalContentTypes) -> Microsoft.AspNetCore.Builder.DelegateEndpointConventionBuilder!
+static Microsoft.AspNetCore.Http.OpenApiEndpointConventionBuilderExtensions.ExcludeFromDescription(this Microsoft.AspNetCore.Builder.DelegateEndpointConventionBuilder! builder) -> Microsoft.AspNetCore.Builder.DelegateEndpointConventionBuilder!
+static Microsoft.AspNetCore.Http.OpenApiEndpointConventionBuilderExtensions.Produces(this Microsoft.AspNetCore.Builder.DelegateEndpointConventionBuilder! builder, int statusCode, System.Type? responseType = null, string? contentType = null, params string![]! additionalContentTypes) -> Microsoft.AspNetCore.Builder.DelegateEndpointConventionBuilder!
+static Microsoft.AspNetCore.Http.OpenApiEndpointConventionBuilderExtensions.Produces<TResponse>(this Microsoft.AspNetCore.Builder.DelegateEndpointConventionBuilder! builder, int statusCode = 200, string? contentType = null, params string![]! additionalContentTypes) -> Microsoft.AspNetCore.Builder.DelegateEndpointConventionBuilder!
+static Microsoft.AspNetCore.Http.OpenApiEndpointConventionBuilderExtensions.ProducesProblem(this Microsoft.AspNetCore.Builder.DelegateEndpointConventionBuilder! builder, int statusCode, string? contentType = null) -> Microsoft.AspNetCore.Builder.DelegateEndpointConventionBuilder!
+static Microsoft.AspNetCore.Http.OpenApiEndpointConventionBuilderExtensions.ProducesValidationProblem(this Microsoft.AspNetCore.Builder.DelegateEndpointConventionBuilder! builder, int statusCode = 400, string? contentType = null) -> Microsoft.AspNetCore.Builder.DelegateEndpointConventionBuilder!
 ~Microsoft.AspNetCore.Mvc.Infrastructure.DefaultOutputFormatterSelector.DefaultOutputFormatterSelector(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.Mvc.Infrastructure.FileContentResultExecutor.FileContentResultExecutor(Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.Mvc.Infrastructure.FileResultExecutorBase.FileResultExecutorBase(Microsoft.Extensions.Logging.ILogger! logger) -> void
@@ -3219,4 +3227,5 @@ virtual Microsoft.AspNetCore.Mvc.ProducesAttribute.OnResultExecuted(Microsoft.As
 virtual Microsoft.AspNetCore.Mvc.ProducesAttribute.OnResultExecuting(Microsoft.AspNetCore.Mvc.Filters.ResultExecutingContext! context) -> void
 virtual Microsoft.AspNetCore.Mvc.RequireHttpsAttribute.HandleNonHttpsRequest(Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext! filterContext) -> void
 virtual Microsoft.AspNetCore.Mvc.RequireHttpsAttribute.OnAuthorization(Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext! filterContext) -> void
-
+Microsoft.AspNetCore.Mvc.ProducesResponseTypeAttribute.ProducesResponseTypeAttribute(System.Type! type, int statusCode, string! contentType, params string![]! additionalContentTypes) -> void
+Microsoft.AspNetCore.Http.OpenApiEndpointConventionBuilderExtensions

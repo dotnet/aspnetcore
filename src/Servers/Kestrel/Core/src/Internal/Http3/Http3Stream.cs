@@ -1,15 +1,12 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Http;
 using System.Net.Http.QPack;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -36,18 +33,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private const PseudoHeaderFields _mandatoryRequestPseudoHeaderFields =
             PseudoHeaderFields.Method | PseudoHeaderFields.Path | PseudoHeaderFields.Scheme;
 
-        private readonly Http3FrameWriter _frameWriter;
-        private readonly Http3OutputProducer _http3Output;
+        private Http3FrameWriter _frameWriter = default!;
+        private Http3OutputProducer _http3Output = default!;
+        private Http3StreamContext _context = default!;
+        private IProtocolErrorCodeFeature _errorCodeFeature = default!;
+        private IStreamIdFeature _streamIdFeature = default!;
+        private IStreamAbortFeature _streamAbortFeature = default!;
         private int _isClosed;
-        private readonly Http3StreamContext _context;
-        private readonly IProtocolErrorCodeFeature _errorCodeFeature;
-        private readonly IStreamIdFeature _streamIdFeature;
         private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
         protected RequestHeaderParsingState _requestHeaderParsingState;
         private PseudoHeaderFields _parsedPseudoHeaderFields;
         private int _totalParsedHeaderSize;
         private bool _isMethodConnect;
 
+        // TODO: Change to resetable ValueTask source
         private TaskCompletionSource? _appCompleted;
 
         private StreamCompletionFlags _completionState;
@@ -55,49 +54,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public bool EndStreamReceived => (_completionState & StreamCompletionFlags.EndStreamReceived) == StreamCompletionFlags.EndStreamReceived;
         private bool IsAborted => (_completionState & StreamCompletionFlags.Aborted) == StreamCompletionFlags.Aborted;
-        internal bool RstStreamReceived => (_completionState & StreamCompletionFlags.RstStreamReceived) == StreamCompletionFlags.RstStreamReceived;
+        private bool IsCompleted => (_completionState & StreamCompletionFlags.Completed) == StreamCompletionFlags.Completed;
 
-        public Pipe RequestBodyPipe { get; }
-
-        public Http3Stream(Http3StreamContext context)
-        {
-            Initialize(context);
-
-            InputRemaining = null;
-
-            _context = context;
-
-            _errorCodeFeature = _context.ConnectionFeatures.Get<IProtocolErrorCodeFeature>()!;
-            _streamIdFeature = _context.ConnectionFeatures.Get<IStreamIdFeature>()!;
-
-            _frameWriter = new Http3FrameWriter(
-                context.Transport.Output,
-                context.StreamContext,
-                context.TimeoutControl,
-                context.ServiceContext.ServerOptions.Limits.MinResponseDataRate,
-                context.ConnectionId,
-                context.MemoryPool,
-                context.ServiceContext.Log,
-                _streamIdFeature,
-                context.ClientPeerSettings,
-                this);
-
-            // ResponseHeaders aren't set, kind of ugly that we need to reset.
-            Reset();
-
-            _http3Output = new Http3OutputProducer(
-                _frameWriter,
-                context.MemoryPool,
-                this,
-                context.ServiceContext.Log);
-            RequestBodyPipe = CreateRequestBodyPipe(64 * 1024); // windowSize?
-            Output = _http3Output;
-            QPackDecoder = new QPackDecoder(_context.ServiceContext.ServerOptions.Limits.Http3.MaxRequestHeaderFieldSize);
-        }
+        public Pipe RequestBodyPipe { get; private set; } = default!;
 
         public long? InputRemaining { get; internal set; }
 
-        public QPackDecoder QPackDecoder { get; }
+        public QPackDecoder QPackDecoder { get; private set; } = default!;
 
         public PipeReader Input => _context.Transport.Input;
 
@@ -105,25 +68,97 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         public KestrelServerLimits Limits => _context.ServiceContext.ServerOptions.Limits;
         public long StreamId => _streamIdFeature.StreamId;
 
-        public long HeaderTimeoutTicks { get; set; }
-        public bool ReceivedHeader => _appCompleted != null; // TCS is assigned once headers are received
+        public long StreamTimeoutTicks { get; set; }
+        public bool IsReceivingHeader => _appCompleted == null; // TCS is assigned once headers are received
+        public bool IsDraining => _appCompleted?.Task.IsCompleted ?? false; // Draining starts once app is complete
 
         public bool IsRequestStream => true;
 
-        public void Abort(ConnectionAbortedException abortReason, Http3ErrorCode errorCode)
+        public void Initialize(Http3StreamContext context)
         {
-            var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
+            base.Initialize(context);
 
-            if (oldState == newState)
+            InputRemaining = null;
+
+            _context = context;
+
+            _errorCodeFeature = _context.ConnectionFeatures.Get<IProtocolErrorCodeFeature>()!;
+            _streamIdFeature = _context.ConnectionFeatures.Get<IStreamIdFeature>()!;
+            _streamAbortFeature = _context.ConnectionFeatures.Get<IStreamAbortFeature>()!;
+
+            _appCompleted = null;
+            _isClosed = 0;
+            _requestHeaderParsingState = default;
+            _parsedPseudoHeaderFields = default;
+            _totalParsedHeaderSize = 0;
+            _isMethodConnect = false;
+            _completionState = default;
+            StreamTimeoutTicks = 0;
+
+            if (_frameWriter == null)
             {
-                return;
+                _frameWriter = new Http3FrameWriter(
+                    context.StreamContext,
+                    context.TimeoutControl,
+                    context.ServiceContext.ServerOptions.Limits.MinResponseDataRate,
+                    context.MemoryPool,
+                    context.ServiceContext.Log,
+                    _streamIdFeature,
+                    context.ClientPeerSettings,
+                    this);
+
+                _http3Output = new Http3OutputProducer(
+                    _frameWriter,
+                    context.MemoryPool,
+                    this,
+                    context.ServiceContext.Log);
+                Output = _http3Output;
+                RequestBodyPipe = CreateRequestBodyPipe(64 * 1024); // windowSize?
+                QPackDecoder = new QPackDecoder(_context.ServiceContext.ServerOptions.Limits.Http3.MaxRequestHeaderFieldSize);
+            }
+            else
+            {
+                _http3Output.StreamReset();
+                RequestBodyPipe.Reset();
+                QPackDecoder.Reset();
             }
 
-            Log.Http3StreamAbort(TraceIdentifier, errorCode, abortReason);
+            _frameWriter.Reset(context.Transport.Output, context.ConnectionId);
+        }
 
-            _errorCodeFeature.Error = (long)errorCode;
-            _frameWriter.Abort(abortReason);
+        public void InitializeWithExistingContext(IDuplexPipe transport)
+        {
+            _context.Transport = transport;
+            Initialize(_context);
+        }
 
+        public void Abort(ConnectionAbortedException abortReason, Http3ErrorCode errorCode)
+        {
+            lock (_completionLock)
+            {
+                if (IsCompleted)
+                {
+                    return;
+                }
+
+                var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
+
+                if (oldState == newState)
+                {
+                    return;
+                }
+
+                Log.Http3StreamAbort(TraceIdentifier, errorCode, abortReason);
+
+                _errorCodeFeature.Error = (long)errorCode;
+                _frameWriter.Abort(abortReason);
+
+                AbortCore(abortReason);
+            }
+        }
+
+        private void AbortCore(Exception exception)
+        {
             // Call _http3Output.Stop() prior to poisoning the request body stream or pipe to
             // ensure that an app that completes early due to the abort doesn't result in header frames being sent.
             _http3Output.Stop();
@@ -131,8 +166,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             CancelRequestAbortedToken();
 
             // Unblock the request body.
-            PoisonBody(abortReason);
-            RequestBodyPipe.Writer.Complete(abortReason);
+            PoisonBody(exception);
+            RequestBodyPipe.Writer.Complete(exception);
         }
 
         protected override void OnErrorAfterResponseStarted()
@@ -159,7 +194,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             OnHeader(knownHeader.Name, value);
         }
 
-        public override void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value) => OnHeader(name, value, checkForNewlineChars : true);
+
+        public override void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value, bool checkForNewlineChars)
         {
             // https://tools.ietf.org/html/rfc7540#section-6.5.2
             // "The value is based on the uncompressed size of header fields, including the length of the name and value in octets plus an overhead of 32 octets for each header field.";
@@ -180,7 +217,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 {
                     // Throws BadRequest for header count limit breaches.
                     // Throws InvalidOperation for bad encoding.
-                    base.OnHeader(name, value);
+                    base.OnHeader(name, value, checkForNewlineChars);
                 }
             }
             catch (Microsoft.AspNetCore.Http.BadHttpRequestException bre)
@@ -335,9 +372,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private void CompleteStream(bool errored)
         {
-            Debug.Assert(_appCompleted != null);
-            _appCompleted.SetResult();
-
             if (!EndStreamReceived)
             {
                 if (!errored)
@@ -345,7 +379,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     Log.RequestBodyNotEntirelyRead(ConnectionIdFeature, TraceIdentifier);
                 }
 
-                var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
+                var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.AbortedRead);
                 if (oldState != newState)
                 {
                     // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1-15
@@ -353,15 +387,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     // the request stream, send a complete response, and cleanly close the sending part of the stream.
                     // The error code H3_NO_ERROR SHOULD be used when requesting that the client stop sending on the
                     // request stream.
-
-                    // TODO(JamesNK): Abort the read half of the stream with H3_NO_ERROR
-                    // https://github.com/dotnet/aspnetcore/issues/33575
-
+                    _streamAbortFeature.AbortRead((long)Http3ErrorCode.NoError, new ConnectionAbortedException("The application completed without reading the entire request body."));
                     RequestBodyPipe.Writer.Complete();
                 }
 
                 TryClose();
             }
+
+            // Stream will be pooled after app completed.
+            // Wait to signal app completed after any potential aborts on the stream.
+            Debug.Assert(_appCompleted != null);
+            _appCompleted.SetResult();
         }
 
         private bool TryClose()
@@ -374,7 +410,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 return true;
             }
 
-            // TODO make this actually close the Http3Stream by telling quic to close the stream.
             return false;
         }
 
@@ -416,7 +451,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     }
                 }
             }
-            // catch ConnectionResetException here?
             catch (Http3StreamErrorException ex)
             {
                 error = ex;
@@ -428,6 +462,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 _errorCodeFeature.Error = (long)ex.ErrorCode;
 
                 _context.StreamLifetimeHandler.OnStreamConnectionError(ex);
+            }
+            catch (ConnectionAbortedException ex)
+            {
+                error = ex;
+            }
+            catch (ConnectionResetException ex)
+            {
+                error = ex;
+                AbortCore(new IOException(CoreStrings.HttpStreamResetByClient, ex));
             }
             catch (Exception ex)
             {
@@ -458,9 +501,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 }
                 finally
                 {
+                    // Drain transports and dispose.
                     await _context.StreamContext.DisposeAsync();
 
+                    // Tells the connection to remove the stream from its active collection.
+                    ApplyCompletionFlag(StreamCompletionFlags.Completed);
                     _context.StreamLifetimeHandler.OnStreamCompleted(this);
+
+                    // TODO this is a hack for .NET 6 pooling.
+                    //
+                    // Pooling needs to happen after transports have been drained and stream
+                    // has been completed and is no longer active. All of this logic can't
+                    // be placed in ConnectionContext.DisposeAsync. Instead, QuicStreamContext
+                    // has pooling happen in QuicStreamContext.Dispose.
+                    //
+                    // ConnectionContext only implements IDisposableAsync by default. Only
+                    // QuicStreamContext should pass this check.
+                    if (_context.StreamContext is IDisposable disposableStream)
+                    {
+                        disposableStream.Dispose();
+                    }
                 }
             }
         }
@@ -553,8 +613,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 case RequestHeaderParsingState.Headers:
                     break;
                 case RequestHeaderParsingState.Trailers:
-                    // trailers
-                    // TODO figure out if there is anything else to do here.
                     return;
                 default:
                     Debug.Fail("Unexpected header parsing state.");
@@ -580,6 +638,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
 
             _appCompleted = new TaskCompletionSource();
+            StreamTimeoutTicks = default;
             _context.StreamLifetimeHandler.OnStreamHeaderReceived(this);
 
             ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
@@ -624,6 +683,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         protected override void OnReset()
         {
+            _keepAlive = true;
+            _connectionAborted = false;
+
             // Reset Http3 Features
             _currentIHttpMinRequestBodyDataRateFeature = this;
             _currentIHttpResponseTrailersFeature = this;
@@ -639,13 +701,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         protected override string CreateRequestId()
         {
-            // TODO include stream id.
-            return ConnectionId;
+            return _context.StreamContext.ConnectionId;
         }
 
         protected override MessageBody CreateMessageBody()
             => Http3MessageBody.For(this);
-
 
         protected override bool TryParseRequest(ReadResult result, out bool endConnection)
         {
@@ -903,9 +963,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private enum StreamCompletionFlags
         {
             None = 0,
-            RstStreamReceived = 1,
-            EndStreamReceived = 2,
+            EndStreamReceived = 1,
+            AbortedRead = 2,
             Aborted = 4,
+            Completed = 8,
         }
 
         private static class GracefulCloseInitiator

@@ -1,10 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -108,25 +109,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public static string GetAsciiOrUTF8StringNonNullCharacters(this ReadOnlySpan<byte> span)
             => StringUtilities.GetAsciiOrUTF8StringNonNullCharacters(span, DefaultRequestHeaderEncoding);
 
-        public static string GetRequestHeaderString(this ReadOnlySpan<byte> span, string name, Func<string, Encoding?> encodingSelector)
+        public static string GetRequestHeaderString(this ReadOnlySpan<byte> span, string name, Func<string, Encoding?> encodingSelector, bool checkForNewlineChars)
         {
+            string result;
             if (ReferenceEquals(KestrelServerOptions.DefaultHeaderEncodingSelector, encodingSelector))
             {
-                return span.GetAsciiOrUTF8StringNonNullCharacters(DefaultRequestHeaderEncoding);
+                result = span.GetAsciiOrUTF8StringNonNullCharacters(DefaultRequestHeaderEncoding);
+            }
+            else
+            {
+                result = span.GetRequestHeaderStringWithoutDefaultEncodingCore(name, encodingSelector);
             }
 
+            // New Line characters (CR, LF) are considered invalid at this point.
+            if (checkForNewlineChars && ((ReadOnlySpan<char>)result).IndexOfAny('\r', '\n') >= 0)
+            {
+                throw new InvalidOperationException("Newline characters (CR/LF) are not allowed in request headers.");
+            }
+
+            return result;
+        }
+
+        private static string GetRequestHeaderStringWithoutDefaultEncodingCore(this ReadOnlySpan<byte> span, string name, Func<string, Encoding?> encodingSelector)
+        {
             var encoding = encodingSelector(name);
 
             if (encoding is null)
             {
                 return span.GetAsciiOrUTF8StringNonNullCharacters(DefaultRequestHeaderEncoding);
             }
-
             if (ReferenceEquals(encoding, Encoding.Latin1))
             {
                 return span.GetLatin1StringNonNullCharacters();
             }
-
             try
             {
                 return encoding.GetString(span);
@@ -299,43 +314,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
         public static bool GetKnownVersion(this ReadOnlySpan<byte> span, out HttpVersion knownVersion, out byte length)
         {
-            knownVersion = GetKnownVersionAndConfirmCR(span);
-            if (knownVersion != HttpVersion.Unknown)
+            if (span.Length > sizeof(ulong) && span[sizeof(ulong)] == (byte)'\r')
             {
-                length = sizeof(ulong);
-                return true;
+                knownVersion = GetKnownVersion(span);
+                if (knownVersion != HttpVersion.Unknown)
+                {
+                    length = sizeof(ulong);
+                    return true;
+                }
             }
 
+            knownVersion = HttpVersion.Unknown;
             length = 0;
             return false;
         }
 
         /// <summary>
-        /// Checks 9 bytes from <paramref name="location"/>  correspond to a known HTTP version.
+        /// Checks 8 bytes from <paramref name="span"/>  correspond to a known HTTP version.
         /// </summary>
         /// <remarks>
         /// A "known HTTP version" Is is either HTTP/1.0 or HTTP/1.1.
         /// Since those fit in 8 bytes, they can be optimally looked up by reading those bytes as a long. Once
         /// in that format, it can be checked against the known versions.
-        /// The Known versions will be checked with the required '\r'.
         /// To optimize performance the HTTP/1.1 will be checked first.
         /// </remarks>
-        /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
+        /// <returns>the HTTP version if the input matches a known string, <c>Unknown</c> otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static HttpVersion GetKnownVersionAndConfirmCR(this ReadOnlySpan<byte> location)
+        internal static HttpVersion GetKnownVersion(this ReadOnlySpan<byte> span)
         {
-            if (location.Length < sizeof(ulong))
+            if (BinaryPrimitives.TryReadUInt64LittleEndian(span, out var version))
             {
-                return HttpVersion.Unknown;
-            }
-            else
-            {
-                var version = BinaryPrimitives.ReadUInt64LittleEndian(location);
-                if (sizeof(ulong) >= (uint)location.Length || location[sizeof(ulong)] != (byte)'\r')
-                {
-                    return HttpVersion.Unknown;
-                }
-                else if (version == _http11VersionLong)
+                if (version == _http11VersionLong)
                 {
                     return HttpVersion.Http11;
                 }
@@ -344,7 +353,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     return HttpVersion.Http10;
                 }
             }
-
             return HttpVersion.Unknown;
         }
 
@@ -524,5 +532,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 // Check if less than 6 representing chars 'a' - 'f'
                 || (uint)((ch | 32) - 'a') < 6u;
         }
+
+        public static AltSvcHeader? GetEndpointAltSvc(System.Net.IPEndPoint endpoint, HttpProtocols protocols)
+        {
+            var hasHttp1OrHttp2 = protocols.HasFlag(HttpProtocols.Http1) || protocols.HasFlag(HttpProtocols.Http2);
+            var hasHttp3 = protocols.HasFlag(HttpProtocols.Http3);
+
+            if (hasHttp1OrHttp2 && hasHttp3)
+            {
+                // 86400 is a cache of 24 hours.
+                // This is the default cache if none is specified with Alt-Svc, but it appears that all
+                // popular HTTP/3 websites explicitly specifies a cache duration in the header.
+                // Specify a value to be consistent.
+                var text = "h3=\":" + endpoint.Port.ToString(CultureInfo.InvariantCulture) + "\"; ma=86400";
+                var bytes = Encoding.ASCII.GetBytes($"\r\nAlt-Svc: " + text);
+                return new AltSvcHeader(text, bytes);
+            }
+
+            return null;
+        }
     }
+
+    internal record AltSvcHeader(string Value, byte[] RawBytes);
 }

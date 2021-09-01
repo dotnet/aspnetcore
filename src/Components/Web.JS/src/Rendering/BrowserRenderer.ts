@@ -1,6 +1,6 @@
 import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './Events/EventDelegator';
-import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd, permuteLogicalChildren, getClosestDomElement } from './LogicalElements';
+import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
 const deferredValuePropname = '_blazorDeferredValue';
@@ -14,6 +14,7 @@ const eventStopPropagationAttributeNamePrefix = 'stopPropagation_';
 export class BrowserRenderer {
   public eventDelegator: EventDelegator;
 
+  private rootComponentIds = new Set<number>();
   private childComponentLocations: { [componentId: number]: LogicalElement } = {};
 
   public constructor(browserRendererId: number) {
@@ -27,6 +28,7 @@ export class BrowserRenderer {
 
   public attachRootComponentToLogicalElement(componentId: number, element: LogicalElement, appendContent: boolean): void {
     this.attachComponentToElement(componentId, element);
+    this.rootComponentIds.add(componentId);
 
     // If we want to preserve existing HTML content of the root element, we don't apply the mechanism for
     // clearing existing children. Rendered content will then append rather than replace the existing HTML content.
@@ -54,7 +56,7 @@ export class BrowserRenderer {
       }
     }
 
-    const ownerDocument = getClosestDomElement(element)?.ownerDocument;
+    const ownerDocument = getClosestDomElement(element)?.getRootNode() as Document;
     const activeElementBefore = ownerDocument && ownerDocument.activeElement;
 
     this.applyEdits(batch, componentId, element, 0, edits, referenceFrames);
@@ -66,6 +68,13 @@ export class BrowserRenderer {
   }
 
   public disposeComponent(componentId: number) {
+    if (this.rootComponentIds.delete(componentId)) {
+      // When disposing a root component, the container element won't be removed from the DOM (because there's
+      // no parent to remove that child), so we empty it to restore it to the state it was in before the root
+      // component was added.
+      emptyLogicalElement(this.childComponentLocations[componentId]);
+    }
+
     delete this.childComponentLocations[componentId];
   }
 
@@ -381,20 +390,16 @@ export class BrowserRenderer {
     // Certain elements have built-in behaviour for their 'value' property
     const frameReader = batch.frameReader;
 
-    if (element.tagName === 'INPUT' && element.getAttribute('type') === 'time' && !element.getAttribute('step')) {
-      const timeValue = attributeFrame ? frameReader.attributeValue(attributeFrame) : null;
-      if (timeValue) {
-        element['value'] = timeValue.substring(0, 5);
-        return true;
-      }
+    let value = attributeFrame ? frameReader.attributeValue(attributeFrame) : null;
+
+    if (value && element.tagName === 'INPUT') {
+      value = normalizeInputValue(value, element.getAttribute('type'));
     }
 
     switch (element.tagName) {
       case 'INPUT':
       case 'SELECT':
       case 'TEXTAREA': {
-        let value = attributeFrame ? frameReader.attributeValue(attributeFrame) : null;
-
         // <select> is special, in that anything we write to .value will be lost if there
         // isn't yet a matching <option>. To maintain the expected behavior no matter the
         // element insertion/update order, preserve the desired value separately so
@@ -416,7 +421,6 @@ export class BrowserRenderer {
         return true;
       }
       case 'OPTION': {
-        const value = attributeFrame ? frameReader.attributeValue(attributeFrame) : null;
         if (value || value === '') {
           element.setAttribute('value', value);
         } else {
@@ -483,6 +487,27 @@ function parseMarkup(markup: string, isSvg: boolean) {
   } else {
     sharedTemplateElemForParsing.innerHTML = markup || ' ';
     return sharedTemplateElemForParsing.content;
+  }
+}
+
+function normalizeInputValue(value: string, type: string | null): string {
+  // Time inputs (e.g. 'time' and 'datetime-local') misbehave on chromium-based
+  // browsers when a time is set that includes a seconds value of '00', most notably
+  // when entered from keyboard input. This behavior is not limited to specific
+  // 'step' attribute values, so we always remove the trailing seconds value if the
+  // time ends in '00'.
+
+  switch (type) {
+    case 'time':
+      return value.length === 8 && value.endsWith('00')
+        ? value.substring(0, 5)
+        : value;
+    case 'datetime-local':
+      return value.length === 19 && value.endsWith('00')
+        ? value.substring(0, 16)
+        : value;
+    default:
+      return value;
   }
 }
 

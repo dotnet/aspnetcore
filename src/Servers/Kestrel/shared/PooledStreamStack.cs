@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         void DisposeCore();
     }
 
-    // See https://github.com/dotnet/runtime/blob/master/src/libraries/System.IO.Pipelines/src/System/IO/Pipelines/BufferSegmentStack.cs
+    // See https://github.com/dotnet/runtime/blob/da9b16f2804e87c9c1ca9dcd9036e7b53e724f5d/src/libraries/System.IO.Pipelines/src/System/IO/Pipelines/BufferSegmentStack.cs
     internal struct PooledStreamStack<TValue> where TValue : class, IPooledStream
     {
         // Internal for testing
@@ -139,6 +139,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             return size;
         }
 
+        // See https://github.com/dotnet/runtime/blob/da9b16f2804e87c9c1ca9dcd9036e7b53e724f5d/src/libraries/System.IO.Pipelines/src/System/IO/Pipelines/BufferSegmentStack.cs#L68-L79
         internal readonly struct StreamAsValueType
         {
             private readonly TValue _value;

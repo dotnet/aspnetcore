@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -10,17 +10,17 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.Extensions.Diagnostics.HealthChecks
 {
     /// <summary>
-    /// A service which can be used to check the status of <see cref="IHealthCheck"/> instances 
+    /// A service which can be used to check the status of <see cref="IHealthCheck"/> instances
     /// registered in the application.
     /// </summary>
     /// <remarks>
     /// <para>
     /// The default implementation of <see cref="HealthCheckService"/> is registered in the dependency
-    /// injection container as a singleton service by calling 
+    /// injection container as a singleton service by calling
     /// <see cref="HealthCheckServiceCollectionExtensions.AddHealthChecks(IServiceCollection)"/>.
     /// </para>
     /// <para>
-    /// The <see cref="IHealthChecksBuilder"/> returned by 
+    /// The <see cref="IHealthChecksBuilder"/> returned by
     /// <see cref="HealthCheckServiceCollectionExtensions.AddHealthChecks(IServiceCollection)"/>
     /// provides a convenience API for registering health checks.
     /// </para>

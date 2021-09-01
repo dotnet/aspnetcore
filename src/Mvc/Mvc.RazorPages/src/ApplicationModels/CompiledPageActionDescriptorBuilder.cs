@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             // It is criticial to get the order in which metadata appears in endpoint metadata correct. More significant metadata
             // must appear later in the sequence.
-            // In this case, handlerMetadata is attributes on the Page \ PageModel, and endPointMetadata is configured via conventions. and 
+            // In this case, handlerMetadata is attributes on the Page \ PageModel, and endPointMetadata is configured via conventions. and
             // We consider the latter to be more significant.
             return Enumerable.Concat(handlerMetatdata, endpointMetadata).ToList();
         }

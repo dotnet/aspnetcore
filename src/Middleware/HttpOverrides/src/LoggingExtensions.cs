@@ -1,25 +1,13 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 
 namespace Microsoft.Extensions.Logging
 {
-    internal static class LoggingExtensions
+    internal static partial class LoggingExtensions
     {
-        private static readonly Action<ILogger, Exception?> _noCertificate;
-
-        static LoggingExtensions()
-        {
-            _noCertificate = LoggerMessage.Define(
-                eventId: new EventId(0, "NoCertificate"),
-                logLevel: LogLevel.Warning,
-                formatString: "Could not read certificate from header.");
-        }
-
-        public static void NoCertificate(this ILogger logger, Exception exception)
-        {
-            _noCertificate(logger, exception);
-        }
+        [LoggerMessage(0, LogLevel.Warning, "Could not read certificate from header.", EventName = "NoCertificate")]
+        public static partial void NoCertificate(this ILogger logger, Exception exception);
     }
 }

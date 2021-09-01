@@ -4,6 +4,10 @@ html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
+h1:focus {
+    outline: none;
+}
+
 a, .btn-link {
     color: #0077cc;
 }

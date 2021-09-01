@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -1277,6 +1277,42 @@ namespace Microsoft.AspNetCore.Internal.Tests
             Assert.Equal("value", storage[0].Value);
             Assert.Equal("key3", storage[1].Key);
             Assert.Equal("value3", storage[1].Value);
+        }
+
+        [Fact]
+        public void UpgradeToDictionary_KeepsComparer()
+        {
+            // Arrange
+            var comparer = StringComparer.OrdinalIgnoreCase;
+            var dict = new AdaptiveCapacityDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            for (var i = 0; i < 11; i++)
+            {
+                dict[i.ToString(CultureInfo.InvariantCulture)] = i;
+            }
+
+            Assert.NotNull(dict._dictionaryStorage);
+            Assert.Equal(comparer, dict._dictionaryStorage.Comparer);
+
+            dict["K"] = 1;
+            dict["k"] = 2;
+
+            Assert.Equal(2, dict["K"]);
+        }
+
+        [Fact]
+        public void StartAsDictionary_UsesComparer()
+        {
+            // Arrange
+            var comparer = StringComparer.OrdinalIgnoreCase;
+            var dict = new AdaptiveCapacityDictionary<string, object>(11, StringComparer.OrdinalIgnoreCase);
+
+            Assert.NotNull(dict._dictionaryStorage);
+            Assert.Equal(comparer, dict._dictionaryStorage.Comparer);
+
+            dict["K"] = 1;
+            dict["k"] = 2;
+
+            Assert.Equal(2, dict["K"]);
         }
 
         private void AssertEmptyArrayStorage(AdaptiveCapacityDictionary<string, string> value)

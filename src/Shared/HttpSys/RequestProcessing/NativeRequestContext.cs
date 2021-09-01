@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         private bool PermanentlyPinned => _permanentlyPinned;
 
         // To be used by HttpSys
-        internal NativeRequestContext(MemoryPool<byte> memoryPool, uint? bufferSize, ulong requestId)
+        internal NativeRequestContext(MemoryPool<byte> memoryPool, uint? bufferSize, ulong requestId, bool useLatin1)
         {
             // TODO:
             // Apparently the HttpReceiveHttpRequest memory alignment requirements for non - ARM processors
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             // virtual x64/x86 machines which were accepted by HttpReceiveHttpRequest without errors. In
             // these cases the buffer alignment may cause reading values at invalid offset. Setting buffer
             // alignment to 0 for now.
-            // 
+            //
             // _bufferAlignment = (int)(requestAddress.ToInt64() & 0x07);
             _bufferAlignment = 0;
 
@@ -60,6 +61,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             _nativeRequest = (HttpApiTypes.HTTP_REQUEST*)((long)_memoryHandle.Pointer + _bufferAlignment);
 
             RequestId = requestId;
+            _useLatin1 = useLatin1;
         }
 
         // To be used by IIS Integration.
@@ -114,6 +116,8 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         }
 
         internal bool IsHttp2 => NativeRequest->Flags.HasFlag(HttpApiTypes.HTTP_REQUEST_FLAGS.Http2);
+
+        internal bool IsHttp3 => NativeRequest->Flags.HasFlag(HttpApiTypes.HTTP_REQUEST_FLAGS.Http3);
 
         // Assumes memory isn't pinned. Will fail if called by IIS.
         internal uint Size
@@ -191,19 +195,23 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         internal Version GetVersion()
         {
+            if (IsHttp3)
+            {
+                return HttpVersion.Version30;
+            }
             if (IsHttp2)
             {
-                return Constants.V2;
+                return HttpVersion.Version20;
             }
             var major = NativeRequest->Version.MajorVersion;
             var minor = NativeRequest->Version.MinorVersion;
             if (major == 1 && minor == 1)
             {
-                return Constants.V1_1;
+                return HttpVersion.Version11;
             }
             else if (major == 1 && minor == 0)
             {
-                return Constants.V1_0;
+                return HttpVersion.Version10;
             }
             return new Version(major, minor);
         }

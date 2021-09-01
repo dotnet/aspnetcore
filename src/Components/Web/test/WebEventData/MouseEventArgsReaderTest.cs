@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
 using Xunit;
@@ -24,6 +24,8 @@ namespace Microsoft.AspNetCore.Components.Web
                 MetaKey = true,
                 OffsetX = 8.2,
                 OffsetY = 7.1,
+                PageX = 5.6,
+                PageY = 7.8,
                 ScreenX = 0.1,
                 ScreenY = 4.4,
                 ShiftKey = false,
@@ -49,6 +51,8 @@ namespace Microsoft.AspNetCore.Components.Web
             Assert.Equal(expected.MetaKey, actual.MetaKey);
             Assert.Equal(expected.OffsetX, actual.OffsetX);
             Assert.Equal(expected.OffsetY, actual.OffsetY);
+            Assert.Equal(expected.PageX, actual.PageX);
+            Assert.Equal(expected.PageY, actual.PageY);
             Assert.Equal(expected.ScreenX, actual.ScreenX);
             Assert.Equal(expected.ScreenY, actual.ScreenY);
             Assert.Equal(expected.ShiftKey, actual.ShiftKey);

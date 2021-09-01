@@ -5,6 +5,7 @@ import { attachRootComponentToElement, renderBatch } from '../../Rendering/Rende
 import { setApplicationIsTerminated, tryDeserializeMessage } from './WebViewIpcCommon';
 import { sendRenderCompleted } from './WebViewIpcSender';
 import { internalFunctions as navigationManagerFunctions } from '../../Services/NavigationManager';
+import { receiveDotNetDataStream } from '../../StreamingInterop';
 
 export function startIpcReceiver() {
   const messageHandlers = {

@@ -1,23 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using System;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.Extensions.Logging
 {
-    internal static class LoggingExtensions
+    internal static partial class LoggingExtensions
     {
-        private static readonly Action<ILogger, string, string, Exception?> _handleChallenge;
-
-        static LoggingExtensions()
-        {
-            _handleChallenge = LoggerMessage.Define<string, string>(
-                eventId: new EventId(1, "HandleChallenge"),
-                logLevel: LogLevel.Debug,
-                formatString: "HandleChallenge with Location: {Location}; and Set-Cookie: {Cookie}.");
-        }
-
-        public static void HandleChallenge(this ILogger logger, string location, string cookie)
-            => _handleChallenge(logger, location, cookie, null);
+        [LoggerMessage(1, LogLevel.Debug, "HandleChallenge with Location: {Location}; and Set-Cookie: {Cookie}.", EventName = "HandleChallenge")]
+        public static partial void HandleChallenge(this ILogger logger, string location, string cookie);
     }
 }

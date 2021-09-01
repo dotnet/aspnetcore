@@ -1,8 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
+using System.Runtime.Versioning;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
 
@@ -11,6 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
     /// <summary>
     /// Options for Quic based connections.
     /// </summary>
+    [RequiresPreviewFeatures]
     public class QuicTransportOptions
     {
         /// <summary>
@@ -24,14 +26,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
         public ushort MaxUnidirectionalStreamCount { get; set; } = 10;
 
         /// <summary>
-        /// The Application Layer Protocol Negotiation string.
-        /// </summary>
-        public string? Alpn { get; set; }
-
-        /// <summary>
         /// Sets the idle timeout for connections and streams.
         /// </summary>
-        public TimeSpan IdleTimeout { get; set; }
+        public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromSeconds(130); // Matches KestrelServerLimits.KeepAliveTimeout.
 
         /// <summary>
         /// The maximum read size.
@@ -42,6 +39,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
         /// The maximum write size.
         /// </summary>
         public long? MaxWriteBufferSize { get; set; } = 64 * 1024;
+
+        /// <summary>
+        /// The maximum length of the pending connection queue.
+        /// </summary>
+        public int Backlog { get; set; } = 512;
 
         internal ISystemClock SystemClock = new SystemClock();
     }

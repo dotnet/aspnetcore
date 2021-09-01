@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// </summary>
         /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
         /// <returns>A <see cref="Task"/> that represents the asynchronous start.</returns>
-        public async Task StartAsync(CancellationToken cancellationToken = default)
+        public virtual async Task StartAsync(CancellationToken cancellationToken = default)
         {
             CheckDisposed();
             using (_logger.BeginScope(_logScope))
@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// </summary>
         /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
         /// <returns>A <see cref="Task"/> that represents the asynchronous stop.</returns>
-        public async Task StopAsync(CancellationToken cancellationToken = default)
+        public virtual async Task StopAsync(CancellationToken cancellationToken = default)
         {
             CheckDisposed();
             using (_logger.BeginScope(_logScope))
@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// Disposes the <see cref="HubConnection"/>.
         /// </summary>
         /// <returns>A <see cref="ValueTask"/> that represents the asynchronous dispose.</returns>
-        public async ValueTask DisposeAsync()
+        public virtual async ValueTask DisposeAsync()
         {
             if (!_disposed)
             {
@@ -349,7 +349,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// Removes all handlers associated with the method with the specified method name.
         /// </summary>
         /// <param name="methodName">The name of the hub method from which handlers are being removed</param>
-        public void Remove(string methodName)
+        public virtual void Remove(string methodName)
         {
             CheckDisposed();
             Log.RemovingHandlers(_logger, methodName);
@@ -1354,7 +1354,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             var previousReconnectAttempts = 0;
             var reconnectStartTime = DateTime.UtcNow;
             var retryReason = closeException;
-            var nextRetryDelay = GetNextRetryDelay(previousReconnectAttempts++, TimeSpan.Zero, retryReason);
+            var nextRetryDelay = GetNextRetryDelay(previousReconnectAttempts, TimeSpan.Zero, retryReason);
 
             // We still have the connection lock from the caller, HandleConnectionClose.
             _state.AssertInConnectionLock();
@@ -1384,7 +1384,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             while (nextRetryDelay != null)
             {
-                Log.AwaitingReconnectRetryDelay(_logger, previousReconnectAttempts, nextRetryDelay.Value);
+                Log.AwaitingReconnectRetryDelay(_logger, previousReconnectAttempts + 1, nextRetryDelay.Value);
 
                 try
                 {
@@ -1439,13 +1439,15 @@ namespace Microsoft.AspNetCore.SignalR.Client
                         CompleteClose(GetOperationCanceledException("Connection stopped during reconnect attempt. Done reconnecting.", ex, _state.StopCts.Token));
                         return;
                     }
+
+                    previousReconnectAttempts++;
                 }
                 finally
                 {
                     _state.ReleaseConnectionLock();
                 }
 
-                nextRetryDelay = GetNextRetryDelay(previousReconnectAttempts++, DateTime.UtcNow - reconnectStartTime, retryReason);
+                nextRetryDelay = GetNextRetryDelay(previousReconnectAttempts, DateTime.UtcNow - reconnectStartTime, retryReason);
             }
 
             await _state.WaitConnectionLockAsync(token: default);

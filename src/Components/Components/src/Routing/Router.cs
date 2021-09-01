@@ -1,15 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable warnings
 
-using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Runtime.ExceptionServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.Extensions.Logging;
 
@@ -18,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.Routing
     /// <summary>
     /// A component that supplies route data corresponding to the current navigation state.
     /// </summary>
-    public class Router : IComponent, IHandleAfterRender, IDisposable
+    public partial class Router : IComponent, IHandleAfterRender, IDisposable
     {
         static readonly char[] _queryOrHashStartChar = new[] { '?', '#' };
         // Dictionary is intentionally used instead of ReadOnlyDictionary to reduce Blazor size
@@ -292,31 +288,16 @@ namespace Microsoft.AspNetCore.Components.Routing
             return Task.CompletedTask;
         }
 
-        private static class Log
+        private static partial class Log
         {
-            private static readonly Action<ILogger, string, string, Exception> _displayingNotFound =
-                LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(1, "DisplayingNotFound"), $"Displaying {nameof(NotFound)} because path '{{Path}}' with base URI '{{BaseUri}}' does not match any component route");
+            [LoggerMessage(1, LogLevel.Debug, $"Displaying {nameof(NotFound)} because path '{{Path}}' with base URI '{{BaseUri}}' does not match any component route", EventName = "DisplayingNotFound")]
+            internal static partial void DisplayingNotFound(ILogger logger, string path, string baseUri);
 
-            private static readonly Action<ILogger, Type, string, string, Exception> _navigatingToComponent =
-                LoggerMessage.Define<Type, string, string>(LogLevel.Debug, new EventId(2, "NavigatingToComponent"), "Navigating to component {ComponentType} in response to path '{Path}' with base URI '{BaseUri}'");
+            [LoggerMessage(2, LogLevel.Debug, "Navigating to component {ComponentType} in response to path '{Path}' with base URI '{BaseUri}'", EventName = "NavigatingToComponent")]
+            internal static partial void NavigatingToComponent(ILogger logger, Type componentType, string path, string baseUri);
 
-            private static readonly Action<ILogger, string, string, string, Exception> _navigatingToExternalUri =
-                LoggerMessage.Define<string, string, string>(LogLevel.Debug, new EventId(3, "NavigatingToExternalUri"), "Navigating to non-component URI '{ExternalUri}' in response to path '{Path}' with base URI '{BaseUri}'");
-
-            internal static void DisplayingNotFound(ILogger logger, string path, string baseUri)
-            {
-                _displayingNotFound(logger, path, baseUri, null);
-            }
-
-            internal static void NavigatingToComponent(ILogger logger, Type componentType, string path, string baseUri)
-            {
-                _navigatingToComponent(logger, componentType, path, baseUri, null);
-            }
-
-            internal static void NavigatingToExternalUri(ILogger logger, string externalUri, string path, string baseUri)
-            {
-                _navigatingToExternalUri(logger, externalUri, path, baseUri, null);
-            }
+            [LoggerMessage(3, LogLevel.Debug, "Navigating to non-component URI '{ExternalUri}' in response to path '{Path}' with base URI '{BaseUri}'", EventName = "NavigatingToExternalUri")]
+            internal static partial void NavigatingToExternalUri(ILogger logger, string externalUri, string path, string baseUri);
         }
     }
 }

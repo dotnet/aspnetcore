@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Authorization
         public IList<IAuthorizationRequirement> Requirements { get; set; } = new List<IAuthorizationRequirement>();
 
         /// <summary>
-        /// Gets or sets a list authentication schemes the <see cref="AuthorizationPolicyBuilder.Requirements"/> 
+        /// Gets or sets a list authentication schemes the <see cref="AuthorizationPolicyBuilder.Requirements"/>
         /// are evaluated against.
         /// <para>
         /// When not specified, the requirements are evaluated against default schemes.
@@ -238,7 +238,7 @@ namespace Microsoft.AspNetCore.Authorization
         }
 
         /// <summary>
-        /// Builds a new <see cref="AuthorizationPolicy"/> from the requirements 
+        /// Builds a new <see cref="AuthorizationPolicy"/> from the requirements
         /// in this instance.
         /// </summary>
         /// <returns>

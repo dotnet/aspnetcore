@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -24,15 +24,15 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public HttpClient Client { get; }
 
         [Fact]
-        public Task AsyncEnumerableReturnedWorks() => AsyncEnumerableWorks();
+        public Task AsyncEnumerableReturnedWorks() => AsyncEnumerableWorks("getallprojects");
 
         [Fact]
-        public Task AsyncEnumerableWrappedInTask() => AsyncEnumerableWorks();
+        public Task AsyncEnumerableWrappedInTask() => AsyncEnumerableWorks("getallprojectsastask");
 
-        private async Task AsyncEnumerableWorks()
+        private async Task AsyncEnumerableWorks(string action)
         {
             // Act
-            var response = await Client.GetAsync("asyncenumerable/getallprojects");
+            var response = await Client.GetAsync($"asyncenumerable/{action}");
 
             // Assert
             await response.AssertStatusCodeAsync(HttpStatusCode.OK);

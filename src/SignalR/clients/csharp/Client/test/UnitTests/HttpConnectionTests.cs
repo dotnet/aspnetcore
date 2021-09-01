@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Tests;
@@ -21,6 +22,25 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
     public partial class HttpConnectionTests : VerifiableLoggedTest
     {
+        [Fact]
+        public void HttpConnectionOptionsDefaults()
+        {
+            var httpOptions = new HttpConnectionOptions();
+            Assert.Equal(1024 * 1024, httpOptions.TransportMaxBufferSize);
+            Assert.Equal(1024 * 1024, httpOptions.ApplicationMaxBufferSize);
+            Assert.Equal(TimeSpan.FromSeconds(5), httpOptions.CloseTimeout);
+            Assert.Equal(TransferFormat.Binary, httpOptions.DefaultTransferFormat);
+            Assert.Equal(HttpTransports.All, httpOptions.Transports);
+        }
+
+        [Fact]
+        public void HttpConnectionOptionsNegativeBufferSizeThrows()
+        {
+            var httpOptions = new HttpConnectionOptions();
+            Assert.Throws<ArgumentOutOfRangeException>(() => httpOptions.TransportMaxBufferSize = -1);
+            Assert.Throws<ArgumentOutOfRangeException>(() => httpOptions.ApplicationMaxBufferSize = -1);
+        }
+
         [Fact]
         public void CannotCreateConnectionWithNullUrl()
         {

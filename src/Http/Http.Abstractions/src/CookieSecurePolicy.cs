@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -9,10 +9,10 @@ namespace Microsoft.AspNetCore.Http
     public enum CookieSecurePolicy
     {
         /// <summary>
-        /// If the URI that provides the cookie is HTTPS, then the cookie will only be returned to the server on 
-        /// subsequent HTTPS requests. Otherwise if the URI that provides the cookie is HTTP, then the cookie will 
+        /// If the URI that provides the cookie is HTTPS, then the cookie will only be returned to the server on
+        /// subsequent HTTPS requests. Otherwise if the URI that provides the cookie is HTTP, then the cookie will
         /// be returned to the server on all HTTP and HTTPS requests. This value ensures
-        /// HTTPS for all authenticated requests on deployed servers, and also supports HTTP for localhost development 
+        /// HTTPS for all authenticated requests on deployed servers, and also supports HTTP for localhost development
         /// and for servers that do not have HTTPS support.
         /// </summary>
         SameAsRequest,

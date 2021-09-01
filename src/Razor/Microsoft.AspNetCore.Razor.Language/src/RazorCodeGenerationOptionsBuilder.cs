@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public virtual string RootNamespace { get; set; }
 
         /// <summary>
-        /// Gets or sets a value that indicates whether to suppress the default <c>#pragma checksum</c> directive in the 
+        /// Gets or sets a value that indicates whether to suppress the default <c>#pragma checksum</c> directive in the
         /// generated C# code. If <c>false</c> the checkum directive will be included, otherwise it will not be
         /// generated. Defaults to <c>false</c>, meaning that the checksum will be included.
         /// </summary>
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public abstract bool SuppressChecksum { get; set; }
 
         /// <summary>
-        /// Gets or setsa value that indicates whether to suppress the default metadata attributes in the generated 
+        /// Gets or setsa value that indicates whether to suppress the default metadata attributes in the generated
         /// C# code. If <c>false</c> the default attributes will be included, otherwise they will not be generated.
         /// Defaults to <c>false</c> at run time, meaning that the attributes will be included. Defaults to
         /// <c>true</c> at design time, meaning that the attributes will not be included.

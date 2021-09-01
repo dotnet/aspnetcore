@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 import { MessageHeaders } from "../src/IHubProtocol";
 import { TransferFormat } from "../src/ITransport";
@@ -12,13 +12,15 @@ import { VerifyLogger } from "./Common";
 import { TestEventSource, TestMessageEvent } from "./TestEventSource";
 import { TestHttpClient } from "./TestHttpClient";
 import { registerUnhandledRejectionHandler } from "./Utils";
+import { IHttpConnectionOptions } from "signalr/src/IHttpConnectionOptions";
 
 registerUnhandledRejectionHandler();
 
 describe("ServerSentEventsTransport", () => {
     it("does not allow non-text formats", async () => {
         await VerifyLogger.run(async (logger) => {
-            const sse = new ServerSentEventsTransport(new TestHttpClient(), undefined, logger, true, TestEventSource, true, {});
+            const sse = new ServerSentEventsTransport(new TestHttpClient(), undefined, logger,
+                { logMessageContent: true, EventSource: TestEventSource, withCredentials: true, headers: {} });
 
             await expect(sse.connect("", TransferFormat.Binary))
                 .rejects
@@ -28,7 +30,8 @@ describe("ServerSentEventsTransport", () => {
 
     it("connect waits for EventSource to be connected", async () => {
         await VerifyLogger.run(async (logger) => {
-            const sse = new ServerSentEventsTransport(new TestHttpClient(), undefined, logger, true, TestEventSource, true, {});
+            const sse = new ServerSentEventsTransport(new TestHttpClient(), undefined, logger,
+                { logMessageContent: true, EventSource: TestEventSource, withCredentials: true, headers: {} });
 
             let connectComplete: boolean = false;
             const connectPromise = (async () => {
@@ -49,7 +52,8 @@ describe("ServerSentEventsTransport", () => {
 
     it("connect failure does not call onclose handler", async () => {
         await VerifyLogger.run(async (logger) => {
-            const sse = new ServerSentEventsTransport(new TestHttpClient(), undefined, logger, true, TestEventSource, true, {});
+            const sse = new ServerSentEventsTransport(new TestHttpClient(), undefined, logger,
+                { logMessageContent: true, EventSource: TestEventSource, withCredentials: true, headers: {} });
             let closeCalled = false;
             sse.onclose = () => closeCalled = true;
 
@@ -88,7 +92,7 @@ describe("ServerSentEventsTransport", () => {
                 return "";
             });
 
-            const sse = await createAndStartSSE(logger, "http://example.com", () => "secretToken", httpClient);
+            const sse = await createAndStartSSE(logger, "http://example.com", () => "secretToken", { httpClient });
 
             await sse.send("");
 
@@ -105,7 +109,7 @@ describe("ServerSentEventsTransport", () => {
                 return "";
             });
 
-            const sse = await createAndStartSSE(logger, "http://example.com", undefined, httpClient);
+            const sse = await createAndStartSSE(logger, "http://example.com", undefined, { httpClient });
 
             await sse.send("send data");
 
@@ -170,7 +174,8 @@ describe("ServerSentEventsTransport", () => {
 
     it("send throws if not connected", async () => {
         await VerifyLogger.run(async (logger) => {
-            const sse = new ServerSentEventsTransport(new TestHttpClient(), undefined, logger, true, TestEventSource, true, {});
+            const sse = new ServerSentEventsTransport(new TestHttpClient(), undefined, logger,
+                { logMessageContent: true, EventSource: TestEventSource, withCredentials: true, headers: {} });
 
             await expect(sse.send(""))
                 .rejects
@@ -211,7 +216,7 @@ describe("ServerSentEventsTransport", () => {
                 return "";
             });
 
-            const sse = await createAndStartSSE(logger, "http://example.com", undefined, httpClient);
+            const sse = await createAndStartSSE(logger, "http://example.com", undefined, { httpClient });
 
             let [, value] = getUserAgentHeader();
             expect((TestEventSource.eventSource.eventSourceInitDict as any).headers[`User-Agent`]).toEqual(value);
@@ -232,7 +237,7 @@ describe("ServerSentEventsTransport", () => {
             });
 
             const headers = { "User-Agent": "Custom Agent", "X-HEADER": "VALUE" };
-            const sse = await createAndStartSSE(logger, "http://example.com", undefined, httpClient, headers);
+            const sse = await createAndStartSSE(logger, "http://example.com", undefined, { httpClient, headers });
 
             expect((TestEventSource.eventSource.eventSourceInitDict as any).headers["User-Agent"]).toEqual("Custom Agent");
             expect((TestEventSource.eventSource.eventSourceInitDict as any).headers["X-HEADER"]).toEqual("VALUE");
@@ -243,10 +248,27 @@ describe("ServerSentEventsTransport", () => {
             expect(request!.url).toBe("http://example.com");
         });
     });
+
+    it("sets timeout on sends", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let request: HttpRequest;
+            const httpClient = new TestHttpClient().on((r) => {
+                request = r;
+                return "";
+            });
+
+            const sse = await createAndStartSSE(logger, "http://example.com", undefined, { httpClient, timeout: 123 });
+
+            await sse.send("");
+
+            expect(request!.timeout).toEqual(123);
+        });
+    });
 });
 
-async function createAndStartSSE(logger: ILogger, url?: string, accessTokenFactory?: (() => string | Promise<string>), httpClient?: HttpClient, headers?: MessageHeaders): Promise<ServerSentEventsTransport> {
-    const sse = new ServerSentEventsTransport(httpClient || new TestHttpClient(), accessTokenFactory, logger, true, TestEventSource, true, headers || {});
+async function createAndStartSSE(logger: ILogger, url?: string, accessTokenFactory?: (() => string | Promise<string>), options?: IHttpConnectionOptions): Promise<ServerSentEventsTransport> {
+    const sse = new ServerSentEventsTransport(options?.httpClient || new TestHttpClient(), accessTokenFactory, logger,
+        { logMessageContent: true, EventSource: TestEventSource, withCredentials: true, timeout: 10205, ...options });
 
     const connectPromise = sse.connect(url || "http://example.com", TransferFormat.Text);
     await TestEventSource.eventSource.openSet;

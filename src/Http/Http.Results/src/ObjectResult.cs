@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
@@ -37,6 +37,11 @@ namespace Microsoft.AspNetCore.Http.Result
         /// </summary>
         public int? StatusCode { get; set; }
 
+        /// <summary>
+        /// Gets the value for the <c>Content-Type</c> header.
+        /// </summary>
+        public string? ContentType { get; set; }
+
         public Task ExecuteAsync(HttpContext httpContext)
         {
             var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
@@ -61,7 +66,7 @@ namespace Microsoft.AspNetCore.Http.Result
             }
 
             OnFormatting(httpContext);
-            return httpContext.Response.WriteAsJsonAsync(Value);
+            return httpContext.Response.WriteAsJsonAsync(Value, Value.GetType(), options: null, contentType: ContentType);
         }
 
         protected virtual void OnFormatting(HttpContext httpContext)

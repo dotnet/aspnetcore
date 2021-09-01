@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         // In general documents will have a relative path (relative to the project root).
         // We can only really compute a nice namespace when we know a relative path.
         //
-        // However all kinds of thing are possible in tools. We shouldn't barf here if the document isn't 
+        // However all kinds of thing are possible in tools. We shouldn't barf here if the document isn't
         // set up correctly.
         public static bool TryComputeNamespace(this RazorCodeDocument document, bool fallbackToRootNamespace, out string @namespace)
         {
@@ -378,7 +378,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // both 'view engine' style paths and absolute paths.
             //
             // We also don't normalize the separators here. We expect that all documents are using a consistent style of path.
-            // 
+            //
             // If we can't normalize the path, we just return null so it will be ignored.
             StringSegment NormalizeDirectory(string path)
             {

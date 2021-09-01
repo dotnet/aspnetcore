@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -650,6 +650,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             var streamContext = new Http2StreamContext(
                 ConnectionId,
                 protocols: default,
+                _context.AltSvcHeader,
                 _context.ServiceContext,
                 _context.ConnectionFeatures,
                 _context.MemoryPool,
@@ -1307,7 +1308,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
                     else
                     {
-                        _currentHeadersStream.OnHeader(name, value);
+                        _currentHeadersStream.OnHeader(name, value, checkForNewlineChars : true);
                     }
                 }
             }

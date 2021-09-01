@@ -1,4 +1,4 @@
-﻿#if (OrganizationalAuth || IndividualB2CAuth || IndividualLocalAuth)
+#if (OrganizationalAuth || IndividualB2CAuth || IndividualLocalAuth)
 using Microsoft.AspNetCore.Authentication;
 #endif
 #if (OrganizationalAuth || IndividualB2CAuth)
@@ -76,7 +76,6 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage();
 #if (IndividualLocalAuth)
     app.UseMigrationsEndPoint();
 #endif
@@ -88,14 +87,13 @@ else
 #if (RequiresHttps)
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
+#endif
 }
 
+#if (RequiresHttps)
 app.UseHttpsRedirection();
-#else
-}
 
 #endif
-
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 

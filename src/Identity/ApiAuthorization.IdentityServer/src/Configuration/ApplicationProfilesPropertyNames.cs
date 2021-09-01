@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Duende.IdentityServer.Models;
 
@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
     public static class ApplicationProfilesPropertyNames
     {
         /// <summary>
-        /// Key to the Profile on <see cref="Client.Properties"/> or <see cref="Resource.Properties"/>. 
+        /// Key to the Profile on <see cref="Client.Properties"/> or <see cref="Resource.Properties"/>.
         /// The Profile value will be one of the constants in <see cref="ApplicationProfiles"/>.
         /// </summary>
         public const string Profile = nameof(Profile);

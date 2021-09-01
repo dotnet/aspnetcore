@@ -33,5 +33,17 @@ Microsoft.AspNetCore.Builder.WebApplicationBuilder.Host.get -> Microsoft.AspNetC
 Microsoft.AspNetCore.Builder.WebApplicationBuilder.Logging.get -> Microsoft.Extensions.Logging.ILoggingBuilder!
 Microsoft.AspNetCore.Builder.WebApplicationBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 Microsoft.AspNetCore.Builder.WebApplicationBuilder.WebHost.get -> Microsoft.AspNetCore.Builder.ConfigureWebHostBuilder!
+Microsoft.AspNetCore.Builder.WebApplicationOptions
+Microsoft.AspNetCore.Builder.WebApplicationOptions.ApplicationName.get -> string?
+Microsoft.AspNetCore.Builder.WebApplicationOptions.ApplicationName.init -> void
+Microsoft.AspNetCore.Builder.WebApplicationOptions.Args.get -> string![]?
+Microsoft.AspNetCore.Builder.WebApplicationOptions.Args.init -> void
+Microsoft.AspNetCore.Builder.WebApplicationOptions.ContentRootPath.get -> string?
+Microsoft.AspNetCore.Builder.WebApplicationOptions.ContentRootPath.init -> void
+Microsoft.AspNetCore.Builder.WebApplicationOptions.EnvironmentName.get -> string?
+Microsoft.AspNetCore.Builder.WebApplicationOptions.EnvironmentName.init -> void
+Microsoft.AspNetCore.Builder.WebApplicationOptions.WebApplicationOptions() -> void
 static Microsoft.AspNetCore.Builder.WebApplication.Create(string![]? args = null) -> Microsoft.AspNetCore.Builder.WebApplication!
-static Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(string![]? args = null) -> Microsoft.AspNetCore.Builder.WebApplicationBuilder!
+static Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder() -> Microsoft.AspNetCore.Builder.WebApplicationBuilder!
+static Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(Microsoft.AspNetCore.Builder.WebApplicationOptions! options) -> Microsoft.AspNetCore.Builder.WebApplicationBuilder!
+static Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(string![]! args) -> Microsoft.AspNetCore.Builder.WebApplicationBuilder!

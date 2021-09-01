@@ -1,4 +1,7 @@
-﻿using System;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
@@ -50,25 +53,25 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
                         case Expectation.Fail:
                             if (!caseResult.BehaviorIs("FAILED"))
                             {
-                                failures.AppendLine($"Case {serverResult.Name}:{caseResult.Name}. Expected 'FAILED', but got '{caseResult.ActualBehavior}'");
+                                failures.AppendLine(FormattableString.Invariant($"Case {serverResult.Name}:{caseResult.Name}. Expected 'FAILED', but got '{caseResult.ActualBehavior}'"));
                             }
                             break;
                         case Expectation.NonStrict:
                             if (!caseResult.BehaviorIs("NON-STRICT"))
                             {
-                                failures.AppendLine($"Case {serverResult.Name}:{caseResult.Name}. Expected 'NON-STRICT', but got '{caseResult.ActualBehavior}'");
+                                failures.AppendLine(FormattableString.Invariant($"Case {serverResult.Name}:{caseResult.Name}. Expected 'NON-STRICT', but got '{caseResult.ActualBehavior}'"));
                             }
                             break;
                         case Expectation.Ok:
                             if (!caseResult.BehaviorIs("NON-STRICT") && !caseResult.BehaviorIs("OK"))
                             {
-                                failures.AppendLine($"Case {serverResult.Name}:{caseResult.Name}. Expected 'NON-STRICT' or 'OK', but got '{caseResult.ActualBehavior}'");
+                                failures.AppendLine(FormattableString.Invariant($"Case {serverResult.Name}:{caseResult.Name}. Expected 'NON-STRICT' or 'OK', but got '{caseResult.ActualBehavior}'"));
                             }
                             break;
                         case Expectation.OkOrFail:
                             if (!caseResult.BehaviorIs("NON-STRICT") && !caseResult.BehaviorIs("FAILED") && !caseResult.BehaviorIs("OK"))
                             {
-                                failures.AppendLine($"Case {serverResult.Name}:{caseResult.Name}. Expected 'FAILED', 'NON-STRICT' or 'OK', but got '{caseResult.ActualBehavior}'");
+                                failures.AppendLine(FormattableString.Invariant($"Case {serverResult.Name}:{caseResult.Name}. Expected 'FAILED', 'NON-STRICT' or 'OK', but got '{caseResult.ActualBehavior}'"));
                             }
                             break;
                         default:

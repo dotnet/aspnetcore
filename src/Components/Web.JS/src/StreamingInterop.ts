@@ -1,3 +1,5 @@
+import { DotNet } from '@microsoft/dotnet-js-interop';
+
 export async function getNextChunk(data: ArrayBufferView | Blob, position: number, nextChunkSize: number): Promise<Uint8Array> {
     if (data instanceof Blob) {
         return await getChunkFromBlob(data, position, nextChunkSize);
@@ -16,4 +18,29 @@ async function getChunkFromBlob(data: Blob, position: number, nextChunkSize: num
 function getChunkFromArrayBufferView(data: ArrayBufferView, position: number, nextChunkSize: number): Uint8Array {
     const nextChunkData = new Uint8Array(data.buffer, data.byteOffset + position, nextChunkSize);
     return nextChunkData;
+}
+
+const transmittingDotNetToJSStreams = new Map<number, ReadableStreamController<any>>();
+export function receiveDotNetDataStream(streamId: number, data: Uint8Array, bytesRead: number, errorMessage: string): void {
+  let streamController = transmittingDotNetToJSStreams.get(streamId);
+  if (!streamController) {
+    const readableStream = new ReadableStream({
+      start(controller) {
+        transmittingDotNetToJSStreams.set(streamId, controller);
+        streamController = controller;
+      }
+    });
+
+    DotNet.jsCallDispatcher.supplyDotNetStream(streamId, readableStream);
+  }
+
+  if (errorMessage) {
+    streamController!.error(errorMessage);
+    transmittingDotNetToJSStreams.delete(streamId);
+  } else if (bytesRead === 0) {
+    streamController!.close();
+    transmittingDotNetToJSStreams.delete(streamId);
+  } else {
+    streamController!.enqueue(data.length === bytesRead ? data : data.subarray(0, bytesRead));
+  }
 }

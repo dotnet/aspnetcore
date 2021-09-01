@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     /// <summary>
     /// A Server-Side Blazor implementation of <see cref="NavigationManager"/>.
     /// </summary>
-    internal class RemoteNavigationManager : NavigationManager, IHostEnvironmentNavigationManager
+    internal sealed partial class RemoteNavigationManager : NavigationManager, IHostEnvironmentNavigationManager
     {
         private readonly ILogger<RemoteNavigationManager> _logger;
         private IJSRuntime _jsRuntime;
@@ -80,23 +80,17 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _jsRuntime.InvokeVoidAsync(Interop.NavigateTo, uri, options).Preserve();
         }
 
-        private static class Log
+        private static partial class Log
         {
-            private static readonly Action<ILogger, string, bool, bool, Exception> _requestingNavigation =
-                LoggerMessage.Define<string, bool, bool>(LogLevel.Debug, new EventId(1, "RequestingNavigation"), "Requesting navigation to URI {Uri} with forceLoad={ForceLoad}, replace={Replace}");
-
-            private static readonly Action<ILogger, string, bool, Exception> _receivedLocationChangedNotification =
-                LoggerMessage.Define<string, bool>(LogLevel.Debug, new EventId(2, "ReceivedLocationChangedNotification"), "Received notification that the URI has changed to {Uri} with isIntercepted={IsIntercepted}");
+            [LoggerMessage(1, LogLevel.Debug, "Requesting navigation to URI {Uri} with forceLoad={ForceLoad}, replace={Replace}", EventName = "RequestingNavigation")]
+            private static partial void RequestingNavigation(ILogger logger, string uri, bool forceLoad, bool replace);
 
             public static void RequestingNavigation(ILogger logger, string uri, NavigationOptions options)
-            {
-                _requestingNavigation(logger, uri, options.ForceLoad, options.ReplaceHistoryEntry, null);
-            }
+                => RequestingNavigation(logger, uri, options.ForceLoad, options.ReplaceHistoryEntry);
 
-            public static void ReceivedLocationChangedNotification(ILogger logger, string uri, bool isIntercepted)
-            {
-                _receivedLocationChangedNotification(logger, uri, isIntercepted, null);
-            }
+            [LoggerMessage(2, LogLevel.Debug, "Received notification that the URI has changed to {Uri} with isIntercepted={IsIntercepted}", EventName = "ReceivedLocationChangedNotification")]
+            public static partial void ReceivedLocationChangedNotification(ILogger logger, string uri, bool isIntercepted);
+
         }
     }
 }

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
@@ -3930,15 +3930,24 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void DisposingRenderer_RejectsAttemptsToStartMoreRenderBatches()
+        public void DisposingRenderer_DisregardsAttemptsToStartMoreRenderBatches()
         {
             // Arrange
             var renderer = new TestRenderer();
-            renderer.Dispose();
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenElement(0, "my element");
+                builder.AddContent(1, "some text");
+                builder.CloseElement();
+            });
 
-            // Act/Assert
-            var ex = Assert.Throws<ObjectDisposedException>(() => renderer.ProcessPendingRender());
-            Assert.Contains("Cannot process pending renders after the renderer has been disposed.", ex.Message);
+            // Act
+            renderer.AssignRootComponentId(component);
+            renderer.Dispose();
+            component.TriggerRender();
+
+            // Assert
+            Assert.Empty(renderer.Batches);
         }
 
         [Fact]
@@ -4579,6 +4588,35 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public async Task CannotRemoveSameRootComponentMultipleTimesSynchronously()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var rootComponent = new AsyncDisposableComponent
+            {
+                // Show that, even if the component tries to delay its disposal by returning
+                // a task that never completes, it still gets removed from the renderer synchronously
+                AsyncDisposeAction = () => new ValueTask(new TaskCompletionSource().Task)
+            };
+            var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+
+            // Act/Assert
+            var didRunTestLogic = false; // Don't just trust the dispatcher here - verify it runs our callback
+            await renderer.Dispatcher.InvokeAsync(() =>
+            {
+                renderer.RemoveRootComponent(rootComponentId);
+
+                // Even though we didn't await anything, it's synchronously unavailable for re-removal
+                var ex = Assert.Throws<ArgumentException>(() =>
+                    renderer.RemoveRootComponent(rootComponentId));
+                Assert.Equal($"The renderer does not have a component with ID {rootComponentId}.", ex.Message);
+                didRunTestLogic = true;
+            });
+
+            Assert.True(didRunTestLogic);
+        }
+
+        [Fact]
         public async Task CannotRemoveNonRootComponentsDirectly()
         {
             // Arrange
@@ -4648,6 +4686,51 @@ namespace Microsoft.AspNetCore.Components.Test
             autoResetEvent.WaitOne();
             Assert.Equal(2, renderer.HandledExceptions.Count);
             Assert.Same(exception2, renderer.HandledExceptions[1]);
+        }
+
+        [Fact]
+        public void DisposeCallsComponentDisposeOnSyncContext()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var wasOnSyncContext = false;
+            var component = new DisposableComponent
+            {
+                DisposeAction = () =>
+                {
+                    wasOnSyncContext = renderer.Dispatcher.CheckAccess();
+                }
+            };
+
+            // Act
+            var componentId = renderer.AssignRootComponentId(component);
+            renderer.Dispose();
+
+            // Assert
+            Assert.True(wasOnSyncContext);
+        }
+
+        [Fact]
+        public async Task DisposeAsyncCallsComponentDisposeAsyncOnSyncContext()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var wasOnSyncContext = false;
+            var component = new AsyncDisposableComponent
+            {
+                AsyncDisposeAction = () =>
+                {
+                    wasOnSyncContext = renderer.Dispatcher.CheckAccess();
+                    return ValueTask.CompletedTask;
+                }
+            };
+
+            // Act
+            var componentId = renderer.AssignRootComponentId(component);
+            await renderer.DisposeAsync();
+
+            // Assert
+            Assert.True(wasOnSyncContext);
         }
 
         private class TestComponentActivator<TResult> : IComponentActivator where TResult : IComponent, new()

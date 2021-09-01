@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         public sealed override void WriteCSharpCodeAttributeValue(CodeRenderingContext context, CSharpCodeAttributeValueIntermediateNode node)
         {
-            // We used to support syntaxes like <elem onsomeevent=@{ /* some C# code */ } /> but this is no longer the 
+            // We used to support syntaxes like <elem onsomeevent=@{ /* some C# code */ } /> but this is no longer the
             // case.
             //
             // We provide an error for this case just to be friendly.
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             var parameters = GetTypeInferenceMethodParameters(node);
 
             // This is really similar to the code in WriteComponentAttribute and WriteComponentChildContent - except simpler because
-            // attributes and child contents look like variables. 
+            // attributes and child contents look like variables.
             //
             // Looks like:
             //
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // them verbatim.
             //
             // The problem is that RenderTreeBuilder wants an Action<object>. The caller can't write the type
-            // name if it contains generics, and we can't write the variable they want to assign to. 
+            // name if it contains generics, and we can't write the variable they want to assign to.
             var writer = context.CodeWriter;
 
             writer.Write("public static void ");
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 writer.WriteLine();
                 writer.Indent(writer.CurrentIndent + writer.TabSize);
                 writer.Write(constraint);
-                
+
             }
 
             writer.WriteLine();

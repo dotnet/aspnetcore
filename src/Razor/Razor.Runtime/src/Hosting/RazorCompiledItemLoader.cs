@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Hosting
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Inherit from <see cref="RazorCompiledItemLoader"/> to customize the behavior when loading 
+    /// Inherit from <see cref="RazorCompiledItemLoader"/> to customize the behavior when loading
     /// <see cref="RazorCompiledItem"/> objects from an <see cref="Assembly"/>. The default implementations of methods
     /// defined by this class use reflection in a trivial way to load attributes from the assembly.
     /// </para>

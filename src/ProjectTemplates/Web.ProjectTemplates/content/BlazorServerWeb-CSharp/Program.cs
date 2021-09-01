@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 #endif
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 #if (IndividualLocalAuth)
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -107,14 +108,15 @@ builder.Services.AddSingleton<WeatherForecastService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+#if (IndividualLocalAuth)
 if (app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage();
-#if (IndividualLocalAuth)
     app.UseMigrationsEndPoint();
-#endif
 }
 else
+#else
+if (!app.Environment.IsDevelopment())
+#endif
 {
     app.UseExceptionHandler("/Error");
 #if (RequiresHttps)

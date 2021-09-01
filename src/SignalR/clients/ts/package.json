@@ -12,5 +12,5 @@
     "coverage": "node ./common/node_modules/jest/bin/jest.js --config ./jest.config.js --coverage"
   },
   "author": "Microsoft",
-  "license": "Apache-2.0"
+  "license": "MIT"
 }

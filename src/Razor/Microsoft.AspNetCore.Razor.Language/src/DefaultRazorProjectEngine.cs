@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -66,8 +66,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         protected RazorCodeDocument CreateCodeDocumentCore(
-            RazorProjectItem projectItem, 
-            Action<RazorParserOptionsBuilder> configureParser, 
+            RazorProjectItem projectItem,
+            Action<RazorParserOptionsBuilder> configureParser,
             Action<RazorCodeGenerationOptionsBuilder> configureCodeGeneration)
         {
             if (projectItem == null)
@@ -89,9 +89,9 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         protected internal RazorCodeDocument CreateCodeDocumentCore(
-            RazorSourceDocument sourceDocument, 
-            string fileKind = null, 
-            IReadOnlyList<RazorSourceDocument> importSourceDocuments = null, 
+            RazorSourceDocument sourceDocument,
+            string fileKind = null,
+            IReadOnlyList<RazorSourceDocument> importSourceDocuments = null,
             IReadOnlyList<TagHelperDescriptor> tagHelpers = null,
             Action<RazorParserOptionsBuilder> configureParser = null,
             Action<RazorCodeGenerationOptionsBuilder> configureCodeGeneration = null,
@@ -165,9 +165,9 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         protected RazorCodeDocument CreateCodeDocumentDesignTimeCore(
-            RazorSourceDocument sourceDocument, 
-            string fileKind, 
-            IReadOnlyList<RazorSourceDocument> importSourceDocuments, 
+            RazorSourceDocument sourceDocument,
+            string fileKind,
+            IReadOnlyList<RazorSourceDocument> importSourceDocuments,
             IReadOnlyList<TagHelperDescriptor> tagHelpers,
             Action<RazorParserOptionsBuilder> configureParser,
             Action<RazorCodeGenerationOptionsBuilder> configureCodeGeneration)

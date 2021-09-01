@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 
 using System;
@@ -16,7 +16,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
-    internal sealed class SystemTextJsonResultExecutor : IActionResultExecutor<JsonResult>
+    internal sealed partial class SystemTextJsonResultExecutor : IActionResultExecutor<JsonResult>
     {
         private static readonly string DefaultContentType = new MediaTypeHeaderValue("application/json")
         {
@@ -25,16 +25,13 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private readonly JsonOptions _options;
         private readonly ILogger<SystemTextJsonResultExecutor> _logger;
-        private readonly AsyncEnumerableReader _asyncEnumerableReaderFactory;
 
         public SystemTextJsonResultExecutor(
             IOptions<JsonOptions> options,
-            ILogger<SystemTextJsonResultExecutor> logger,
-            IOptions<MvcOptions> mvcOptions)
+            ILogger<SystemTextJsonResultExecutor> logger)
         {
             _options = options.Value;
             _logger = logger;
-            _asyncEnumerableReaderFactory = new AsyncEnumerableReader(mvcOptions.Value);
         }
 
         public async Task ExecuteAsync(ActionContext context, JsonResult result)
@@ -77,8 +74,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var responseStream = response.Body;
             if (resolvedContentTypeEncoding.CodePage == Encoding.UTF8.CodePage)
             {
-                await JsonSerializer.SerializeAsync(responseStream, value, objectType, jsonSerializerOptions);
-                await responseStream.FlushAsync();
+                try
+                {
+                    await JsonSerializer.SerializeAsync(responseStream, value, objectType, jsonSerializerOptions, context.HttpContext.RequestAborted);
+                    await responseStream.FlushAsync(context.HttpContext.RequestAborted);
+                }
+                catch (OperationCanceledException) { }
             }
             else
             {
@@ -89,9 +90,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 ExceptionDispatchInfo? exceptionDispatchInfo = null;
                 try
                 {
-                    await JsonSerializer.SerializeAsync(transcodingStream, value, objectType, jsonSerializerOptions);
-                    await transcodingStream.FlushAsync();
+                    await JsonSerializer.SerializeAsync(transcodingStream, value, objectType, jsonSerializerOptions, context.HttpContext.RequestAborted);
+                    await transcodingStream.FlushAsync(context.HttpContext.RequestAborted);
                 }
+                catch (OperationCanceledException)
+                { }
                 catch (Exception ex)
                 {
                     // TranscodingStream may write to the inner stream as part of it's disposal.
@@ -135,26 +138,21 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        private static class Log
+        private static partial class Log
         {
-            private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
-
-            private static readonly Action<ILogger, string?, Exception?> _jsonResultExecuting = LoggerMessage.Define<string?>(
-                LogLevel.Information,
-                new EventId(1, "JsonResultExecuting"),
-                "Executing JsonResult, writing value of type '{Type}'.",
-                SkipEnabledCheckLogOptions);
-
-            // EventId 2 BufferingAsyncEnumerable
+            [LoggerMessage(1, LogLevel.Information, "Executing JsonResult, writing value of type '{Type}'.", EventName = "JsonResultExecuting", SkipEnabledCheck = true)]
+            private static partial void JsonResultExecuting(ILogger logger, string? type);
 
             public static void JsonResultExecuting(ILogger logger, object? value)
             {
                 if (logger.IsEnabled(LogLevel.Information))
                 {
                     var type = value == null ? "null" : value.GetType().FullName;
-                    _jsonResultExecuting(logger, type, null);
+                    JsonResultExecuting(logger, type);
                 }
             }
+
+            // EventId 2 BufferingAsyncEnumerable
         }
     }
 }

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 import { HandshakeProtocol, HandshakeRequestMessage, HandshakeResponseMessage } from "./HandshakeProtocol";
 import { IConnection } from "./IConnection";
@@ -8,7 +8,7 @@ import { ILogger, LogLevel } from "./ILogger";
 import { IRetryPolicy } from "./IRetryPolicy";
 import { IStreamResult } from "./Stream";
 import { Subject } from "./Subject";
-import { Arg, getErrorString } from "./Utils";
+import { Arg, getErrorString, Platform } from "./Utils";
 
 const DEFAULT_TIMEOUT_IN_MS: number = 30 * 1000;
 const DEFAULT_PING_INTERVAL_IN_MS: number = 15 * 1000;
@@ -64,6 +64,11 @@ export class HubConnection {
     private _reconnectDelayHandle?: any;
     private _timeoutHandle?: any;
     private _pingServerHandle?: any;
+
+    private _freezeEventListener = () =>
+    {
+        this._logger.log(LogLevel.Warning, "The page is being frozen, this will likely lead to the connection being closed and messages being lost. For more information see the docs at https://docs.microsoft.com/aspnet/core/signalr/javascript-client#bsleep");
+    };
 
     /** The server timeout in milliseconds.
      *
@@ -173,6 +178,13 @@ export class HubConnection {
 
         try {
             await this._startInternal();
+
+            if (Platform.isBrowser) {
+                if (document) {
+                    // Log when the browser freezes the tab so users know why their connection unexpectedly stopped working
+                    document.addEventListener("freeze", this._freezeEventListener);
+                }
+            }
 
             this._connectionState = HubConnectionState.Connected;
             this._connectionStarted = true;
@@ -720,6 +732,12 @@ export class HubConnection {
         if (this._connectionStarted) {
             this._connectionState = HubConnectionState.Disconnected;
             this._connectionStarted = false;
+
+            if (Platform.isBrowser) {
+                if (document) {
+                    document.removeEventListener("freeze", this._freezeEventListener);
+                }
+            }
 
             try {
                 this._closedCallbacks.forEach((c) => c.apply(this, [error]));

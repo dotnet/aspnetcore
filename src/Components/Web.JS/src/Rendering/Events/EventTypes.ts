@@ -224,6 +224,8 @@ function parseMouseEvent(event: MouseEvent): MouseEventArgs {
     clientY: event.clientY,
     offsetX: event.offsetX,
     offsetY: event.offsetY,
+    pageX: event.pageX,
+    pageY: event.pageY,
     button: event.button,
     buttons: event.buttons,
     ctrlKey: event.ctrlKey,
@@ -258,9 +260,10 @@ function normalizeTimeBasedValue(element: HTMLInputElement): string {
   const type = element.type;
   switch (type) {
     case 'date':
-    case 'datetime-local':
     case 'month':
       return value;
+    case 'datetime-local':
+      return value.length === 16 ? value + ':00' : value; // Convert yyyy-MM-ddTHH:mm to yyyy-MM-ddTHH:mm:00
     case 'time':
       return value.length === 5 ? value + ':00' : value; // Convert hh:mm to hh:mm:00
     case 'week':
@@ -334,6 +337,8 @@ interface MouseEventArgs {
   clientY: number;
   offsetX: number;
   offsetY: number;
+  pageX: number;
+  pageY: number;
   button: number;
   buttons: number;
   ctrlKey: boolean;

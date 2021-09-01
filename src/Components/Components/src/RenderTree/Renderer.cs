@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable warnings
 
@@ -43,6 +43,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         private ulong _lastEventHandlerId;
         private List<Task>? _pendingTasks;
         private Task? _disposeTask;
+        private bool _rendererIsDisposed;
 
         /// <summary>
         /// Allows the caller to handle exceptions from the SynchronizationContext when one is available.
@@ -128,7 +129,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <summary>
         /// Gets whether the renderer has been disposed.
         /// </summary>
-        internal bool Disposed { get; private set; }
+        internal bool Disposed => _rendererIsDisposed;
 
         private async void RenderRootComponentsOnHotReload()
         {
@@ -219,7 +220,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// Rendering a root component is an asynchronous operation. Clients may choose to not await the returned task to
         /// start, but not wait for the entire render to complete.
         /// </remarks>
-        protected async Task RenderRootComponentAsync(int componentId, ParameterView initialParameters)
+        protected internal async Task RenderRootComponentAsync(int componentId, ParameterView initialParameters)
         {
             Dispatcher.AssertAccess();
 
@@ -230,7 +231,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // Having a nonnull value for _pendingTasks is what signals that we should be capturing the async tasks.
             _pendingTasks ??= new();
 
-            var componentState = GetRequiredComponentState(componentId);
+            var componentState = GetRequiredRootComponentState(componentId);
             if (TestableMetadataUpdate.IsSupported)
             {
                 // When we're doing hot-reload, stash away the parameters used while rendering root components.
@@ -250,15 +251,12 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// descendants to be disposed.
         /// </summary>
         /// <param name="componentId">The ID of the root component.</param>
-        protected void RemoveRootComponent(int componentId)
+        protected internal void RemoveRootComponent(int componentId)
         {
             Dispatcher.AssertAccess();
 
-            var rootComponentState = GetRequiredComponentState(componentId);
-            if (rootComponentState.ParentComponentState is not null)
-            {
-                throw new InvalidOperationException("The specified component is not a root component");
-            }
+            // Asserts it's a root component
+            _ = GetRequiredRootComponentState(componentId);
 
             // This assumes there isn't currently a batch in progress, and will throw if there is.
             // Currently there's no known scenario where we need to support calling RemoveRootComponentAsync
@@ -271,6 +269,14 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
             ProcessRenderQueue();
         }
+
+        /// <summary>
+        /// Gets the type of the specified root component.
+        /// </summary>
+        /// <param name="componentId">The root component ID.</param>
+        /// <returns>The type of the component.</returns>
+        internal Type GetRootComponentType(int componentId)
+            => GetRequiredRootComponentState(componentId).Component.GetType();
 
         /// <summary>
         /// Allows derived types to handle exceptions during rendering. Defaults to rethrowing the original exception.
@@ -294,7 +300,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             }
             finally
             {
-                Debug.Assert(_pendingTasks.Count == 0);
+                Debug.Assert(_pendingTasks is null || _pendingTasks.Count == 0);
                 _pendingTasks = null;
                 _ongoingQuiescenceTask = null;
             }
@@ -303,7 +309,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 // Child components SetParametersAsync are stored in the queue of pending tasks,
                 // which might trigger further renders.
-                while (_pendingTasks.Count > 0)
+                while (_pendingTasks?.Count > 0)
                 {
                     // Create a Task that represents the remaining ongoing work for the rendering process
                     var pendingWork = Task.WhenAll(_pendingTasks);
@@ -561,14 +567,26 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 ? componentState
                 : null;
 
+        private ComponentState GetRequiredRootComponentState(int componentId)
+        {
+            var componentState = GetRequiredComponentState(componentId);
+            if (componentState.ParentComponentState is not null)
+            {
+                throw new InvalidOperationException("The specified component is not a root component");
+            }
+
+            return componentState;
+        }
+
         /// <summary>
         /// Processes pending renders requests from components if there are any.
         /// </summary>
         protected virtual void ProcessPendingRender()
         {
-            if (Disposed)
+            if (_rendererIsDisposed)
             {
-                throw new ObjectDisposedException(nameof(Renderer), "Cannot process pending renders after the renderer has been disposed.");
+                // Once we're disposed, we'll disregard further attempts to render anything
+                return;
             }
 
             ProcessRenderQueue();
@@ -958,7 +976,22 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <param name="disposing"><see langword="true"/> if this method is being invoked by <see cref="IDisposable.Dispose"/>, otherwise <see langword="false"/>.</param>
         protected virtual void Dispose(bool disposing)
         {
-            Disposed = true;
+            if (!Dispatcher.CheckAccess())
+            {
+                // It's important that we only call the components' Dispose/DisposeAsync lifecycle methods
+                // on the sync context, like other lifecycle methods. In almost all cases we'd already be
+                // on the sync context here since DisposeAsync dispatches, but just in case someone is using
+                // Dispose directly, we'll dispatch and block.
+                Dispatcher.InvokeAsync(() => Dispose(disposing)).Wait();
+                return;
+            }
+
+            _rendererIsDisposed = true;
+
+            if (TestableMetadataUpdate.IsSupported)
+            {
+                HotReloadManager.OnDeltaApplied -= RenderRootComponentsOnHotReload;
+            }
 
             // It's important that we handle all exceptions here before reporting any of them.
             // This way we can dispose all components before an error handler kicks in.
@@ -1058,12 +1091,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <inheritdoc />
         public async ValueTask DisposeAsync()
         {
-            if (TestableMetadataUpdate.IsSupported)
-            {
-                HotReloadManager.OnDeltaApplied -= RenderRootComponentsOnHotReload;
-            }
-
-            if (Disposed)
+            if (_rendererIsDisposed)
             {
                 return;
             }
@@ -1074,7 +1102,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             }
             else
             {
-                Dispose();
+                await Dispatcher.InvokeAsync(Dispose);
+
                 if (_disposeTask != null)
                 {
                     await _disposeTask;

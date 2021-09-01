@@ -1,25 +1,18 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Microsoft.Extensions.Logging
 {
-    internal static class LoggingExtensions
+    internal static partial class LoggingExtensions
     {
-        private static readonly Action<ILogger, string, Exception?> _userAuthorizationFailed = LoggerMessage.Define<string>(
-            eventId: new EventId(2, "UserAuthorizationFailed"),
-            logLevel: LogLevel.Information,
-            formatString: "Authorization failed. {0}");
+        [LoggerMessage(1, LogLevel.Debug, "Authorization was successful.", EventName = "UserAuthorizationSucceeded")]
+        public static partial void UserAuthorizationSucceeded(this ILogger logger);
 
-        private static readonly Action<ILogger, Exception?> _userAuthorizationSucceeded = LoggerMessage.Define(
-            eventId: new EventId(1, "UserAuthorizationSucceeded"),
-            logLevel: LogLevel.Debug,
-            formatString: "Authorization was successful.");
-
-        public static void UserAuthorizationSucceeded(this ILogger logger)
-            => _userAuthorizationSucceeded(logger, null);
+        [LoggerMessage(2, LogLevel.Information, "Authorization failed. {Reason}", EventName = "UserAuthorizationFailed")]
+        private static partial void UserAuthorizationFailed(this ILogger logger, string reason);
 
         public static void UserAuthorizationFailed(this ILogger logger, AuthorizationFailure failure)
         {
@@ -27,7 +20,7 @@ namespace Microsoft.Extensions.Logging
                 ? "Fail() was explicitly called."
                 : "These requirements were not met:" + Environment.NewLine + string.Join(Environment.NewLine, failure.FailedRequirements);
 
-            _userAuthorizationFailed(logger, reason, null);
+            UserAuthorizationFailed(logger, reason);
         }
     }
 }

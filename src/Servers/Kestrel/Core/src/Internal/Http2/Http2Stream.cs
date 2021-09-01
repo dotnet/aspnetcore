@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -41,7 +41,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             base.Initialize(context);
 
-            CanReuse = false;
             _decrementCalled = false;
             _completionState = StreamCompletionFlags.None;
             InputRemaining = null;
@@ -107,7 +106,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public bool CanReuse { get; private set; }
+        // We only want to reuse a stream that was not aborted and has completely finished writing.
+        // This ensures Http2OutputProducer.ProcessDataWrites is in the correct state to be reused.
+
+        // CanReuse must be evaluated on the main frame-processing looping after the stream is removed
+        // from the connection's active streams collection. This is required because a RST_STREAM
+        // frame could arrive after the END_STREAM flag is received. Only once the stream is removed
+        // from the connection's active stream collection can no longer be reset, and is safe to
+        // evaluate for pooling.
+
+        public bool CanReuse => !_connectionAborted && HasResponseCompleted;
 
         protected override void OnReset()
         {
@@ -119,6 +127,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _currentIHttp2StreamIdFeature = this;
             _currentIHttpResponseTrailersFeature = this;
             _currentIHttpResetFeature = this;
+            _currentIPersistentStateFeature = this;
         }
 
         protected override void OnRequestProcessingEnded()
@@ -163,9 +172,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // connection's flow-control window.
                 _inputFlowControl.Abort();
 
-                // We only want to reuse a stream that was not aborted and has completely finished writing.
-                // This ensures Http2OutputProducer.ProcessDataWrites is in the correct state to be reused.
-                CanReuse = !_connectionAborted && HasResponseCompleted;
             }
             finally
             {
@@ -457,7 +463,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                             // It shouldn't be possible for the RequestBodyPipe to fill up an return an incomplete task if
                             // _inputFlowControl.Advance() didn't throw.
                             Debug.Assert(flushTask.IsCompletedSuccessfully);
-                            
+
                             // If it's a IValueTaskSource backed ValueTask,
                             // inform it its result has been read so it can reset
                             flushTask.GetAwaiter().GetResult();
@@ -509,7 +515,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             DecrementActiveClientStreamCount();
 
             ApplyCompletionFlag(StreamCompletionFlags.RstStreamReceived);
-            Abort(new IOException(CoreStrings.Http2StreamResetByClient));
+            Abort(new IOException(CoreStrings.HttpStreamResetByClient));
         }
 
         public void Abort(IOException abortReason)
@@ -585,7 +591,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 _decrementCalled = true;
             }
-          
+
             _context.StreamLifetimeHandler.DecrementActiveClientStreamCount();
         }
 
@@ -673,7 +679,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void AppendHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
-            HttpRequestHeaders.Append(name, value);
+            HttpRequestHeaders.Append(name, value, checkForNewlineChars : true);
         }
 
         void IPooledStream.DisposeCore()

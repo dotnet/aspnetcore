@@ -1,11 +1,13 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
-using Microsoft.AspNetCore.Components.Lifetime;
+using System.Linq;
+using System.Text.Json;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
@@ -25,6 +27,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
     /// </summary>
     public sealed class WebAssemblyHostBuilder
     {
+        private readonly JsonSerializerOptions _jsonOptions;
         private Func<IServiceProvider> _createServiceProvider;
         private RootComponentTypeCache? _rootComponentCache;
         private string? _persistedState;
@@ -36,14 +39,18 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// <param name="args">The argument passed to the application's main method.</param>
         /// <returns>A <see cref="WebAssemblyHostBuilder"/>.</returns>
         [DynamicDependency(nameof(JSInteropMethods.NotifyLocationChanged), typeof(JSInteropMethods))]
-        [DynamicDependency(nameof(JSInteropMethods.DispatchEvent), typeof(JSInteropMethods))]
         [DynamicDependency(JsonSerialized, typeof(WebEventDescriptor))]
+        // The following dependency prevents HeadOutlet from getting trimmed away in
+        // WebAssembly prerendered apps.
+        [DynamicDependency(Component, typeof(HeadOutlet))]
         public static WebAssemblyHostBuilder CreateDefault(string[]? args = default)
         {
             // We don't use the args for anything right now, but we want to accept them
             // here so that it shows up this way in the project templates.
-            args ??= Array.Empty<string>();
-            var builder = new WebAssemblyHostBuilder(DefaultWebAssemblyJSRuntime.Instance);
+            var jsRuntime = DefaultWebAssemblyJSRuntime.Instance;
+            var builder = new WebAssemblyHostBuilder(
+                jsRuntime,
+                jsRuntime.ReadJsonSerializerOptions());
 
             WebAssemblyCultureProvider.Initialize();
 
@@ -57,11 +64,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// <summary>
         /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> with the minimal configuration.
         /// </summary>
-        internal WebAssemblyHostBuilder(IJSUnmarshalledRuntime jsRuntime)
+        internal WebAssemblyHostBuilder(IJSUnmarshalledRuntime jsRuntime, JsonSerializerOptions jsonOptions)
         {
             // Private right now because we don't have much reason to expose it. This can be exposed
             // in the future if we want to give people a choice between CreateDefault and something
             // less opinionated.
+            _jsonOptions = jsonOptions;
             Configuration = new WebAssemblyHostConfiguration();
             RootComponents = new RootComponentMappingCollection();
             Services = new ServiceCollection();
@@ -108,7 +116,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 var componentType = _rootComponentCache.GetRootComponent(registeredComponent.Assembly!, registeredComponent.TypeName!);
                 if (componentType is null)
                 {
-                    continue;
+                    throw new InvalidOperationException(
+                        $"Root component type '{registeredComponent.TypeName}' could not be found in the assembly '{registeredComponent.Assembly}'. " +
+                        $"This is likely a result of trimming (tree shaking).");
                 }
 
                 var definitions = componentDeserializer.GetParameterDefinitions(registeredComponent.ParameterDefinitions!);
@@ -236,7 +246,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             var services = _createServiceProvider();
             var scope = services.GetRequiredService<IServiceScopeFactory>().CreateAsyncScope();
 
-            return new WebAssemblyHost(services, scope, Configuration, RootComponents, _persistedState);
+            return new WebAssemblyHost(this, services, scope, _persistedState);
         }
 
         internal void InitializeDefaultServices()
@@ -245,8 +255,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             Services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);
             Services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
             Services.AddSingleton(new LazyAssemblyLoader(DefaultWebAssemblyJSRuntime.Instance));
-            Services.AddSingleton<ComponentApplicationLifetime>();
-            Services.AddSingleton<ComponentApplicationState>(sp => sp.GetRequiredService<ComponentApplicationLifetime>().State);
+            Services.AddSingleton<ComponentStatePersistenceManager>();
+            Services.AddSingleton<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
             Services.AddSingleton<IErrorBoundaryLogger, WebAssemblyErrorBoundaryLogger>();
             Services.AddLogging(builder =>
             {

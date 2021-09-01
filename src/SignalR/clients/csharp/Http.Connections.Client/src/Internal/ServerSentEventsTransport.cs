@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger _logger;
-
+        private readonly HttpConnectionOptions _httpConnectionOptions;
         // Volatile so that the SSE loop sees the updated value set from a different thread
         private volatile Exception? _error;
         private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
@@ -33,11 +33,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
         public PipeWriter Output => _transport!.Output;
 
-        public ServerSentEventsTransport(HttpClient httpClient)
-            : this(httpClient, null)
-        { }
-
-        public ServerSentEventsTransport(HttpClient httpClient, ILoggerFactory? loggerFactory)
+        public ServerSentEventsTransport(HttpClient httpClient, HttpConnectionOptions? httpConnectionOptions = null, ILoggerFactory? loggerFactory = null)
         {
             if (httpClient == null)
             {
@@ -46,6 +42,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
             _httpClient = httpClient;
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<ServerSentEventsTransport>();
+            _httpConnectionOptions = httpConnectionOptions ?? new();
         }
 
         public async Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken = default)
@@ -77,8 +74,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             }
 
             // Create the pipe pair (Application's writer is connected to Transport's reader, and vice versa)
-            var options = ClientPipeOptions.DefaultOptions;
-            var pair = DuplexPipe.CreateConnectionPair(options, options);
+            var pair = DuplexPipe.CreateConnectionPair(_httpConnectionOptions.TransportPipeOptions, _httpConnectionOptions.AppPipeOptions);
 
             _transport = pair.Transport;
             _application = pair.Application;

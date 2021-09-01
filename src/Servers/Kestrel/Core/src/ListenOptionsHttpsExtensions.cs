@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -256,6 +256,10 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="ListenOptions"/>.</returns>
         public static ListenOptions UseHttps(this ListenOptions listenOptions, ServerOptionsSelectionCallback serverOptionsSelectionCallback, object state, TimeSpan handshakeTimeout)
         {
+            if (listenOptions.Protocols.HasFlag(HttpProtocols.Http3))
+            {
+                throw new NotSupportedException($"{nameof(UseHttps)} with {nameof(ServerOptionsSelectionCallback)} is not supported with HTTP/3.");
+            }
             return listenOptions.UseHttps(new TlsHandshakeCallbackOptions()
             {
                 OnConnection = context => serverOptionsSelectionCallback(context.SslStream, context.ClientHelloInfo, context.State, context.CancellationToken),
@@ -281,6 +285,11 @@ namespace Microsoft.AspNetCore.Hosting
             if (callbackOptions.OnConnection is null)
             {
                 throw new ArgumentException($"{nameof(TlsHandshakeCallbackOptions.OnConnection)} must not be null.");
+            }
+
+            if (listenOptions.Protocols.HasFlag(HttpProtocols.Http3))
+            {
+                throw new NotSupportedException($"{nameof(UseHttps)} with {nameof(TlsHandshakeCallbackOptions)} is not supported with HTTP/3.");
             }
 
             var loggerFactory = listenOptions.KestrelServerOptions?.ApplicationServices.GetRequiredService<ILoggerFactory>() ?? NullLoggerFactory.Instance;

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.ObjectModel;
@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     public class MediaTypeCollection : Collection<string>
     {
         /// <summary>
-        /// Adds an object to the end of the <see cref="MediaTypeCollection"/>. 
+        /// Adds an object to the end of the <see cref="MediaTypeCollection"/>.
         /// </summary>
         /// <param name="item">The media type to be added to the end of the <see cref="MediaTypeCollection"/>.</param>
         public void Add(MediaTypeHeaderValue item)
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// </summary>
         /// <param name="item"></param>
         /// <returns><see langword="true" /> if <paramref name="item"/> is successfully removed; otherwise, <see langword="false" />.
-        /// This method also returns <see langword="false" /> if <paramref name="item"/> was not found in the original 
+        /// This method also returns <see langword="false" /> if <paramref name="item"/> was not found in the original
         /// <see cref="MediaTypeCollection"/>.</returns>
         public bool Remove(MediaTypeHeaderValue item)
         {

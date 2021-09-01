@@ -1,16 +1,17 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Matching;
 
 namespace Microsoft.AspNetCore.Routing.Constraints
 {
     /// <summary>
     /// Constrains a route parameter to contain only a specified string.
     /// </summary>
-    public class StringRouteConstraint : IRouteConstraint
+    public class StringRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
     {
         private readonly string _value;
 
@@ -45,11 +46,20 @@ namespace Microsoft.AspNetCore.Routing.Constraints
                 && routeValue != null)
             {
                 var parameterValueString = Convert.ToString(routeValue, CultureInfo.InvariantCulture)!;
-
-                return parameterValueString.Equals(_value, StringComparison.OrdinalIgnoreCase);
+                return CheckConstraintCore(parameterValueString);
             }
 
             return false;
+        }
+
+        private bool CheckConstraintCore(string parameterValueString)
+        {
+            return parameterValueString.Equals(_value, StringComparison.OrdinalIgnoreCase);
+        }
+
+        bool IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string parameterName, string literal)
+        {
+            return CheckConstraintCore(literal);
         }
     }
 }
