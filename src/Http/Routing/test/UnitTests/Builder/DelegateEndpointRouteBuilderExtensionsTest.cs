@@ -478,6 +478,20 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Null(endpointName);
         }
 
+        [Fact]
+        public void WithTags_CanSetTagsForEndpoint()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            _ = builder.MapDelete("/", GetString).WithTags("Some", "Test", "Tags");
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var tagsMetadata = endpoint.Metadata.GetMetadata<ITagsMetadata>();
+            Assert.Equal(new[] { "Some", "Test", "Tags" }, tagsMetadata?.Tags);
+        }
+
         class FromRoute : Attribute, IFromRouteMetadata
         {
             public string? Name { get; set; }
