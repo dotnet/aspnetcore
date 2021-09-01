@@ -16,8 +16,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
     {
         private X509Certificate2? _clientCert;
         private Task<X509Certificate2?>? _clientCertTask;
+        private long? _error;
 
-        public long Error { get; set; }
+        public long Error
+        {
+            get => _error ?? -1;
+            set => _error = value;
+        }
 
         public X509Certificate2? ClientCertificate
         {
