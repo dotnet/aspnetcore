@@ -845,16 +845,10 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(200, httpContext.Response.StatusCode);
             Assert.False(httpContext.Response.HasStarted);
 
-            // Only the first invalid parameter is currently logged if ThrowOnBadRequest=true
-            // We don't attempt to create an aggregate BadHttpRequestException which would likely be more confusing
-            // than just throwing on the first bad parameter.
-            var logMessage = Assert.Single(TestSink.Writes);
+            // We don't log bad requests when we throw.
+            Assert.Empty(TestSink.Writes);
 
-            Assert.Equal(new EventId(3, "ParameterBindingFailed"), logMessage.EventId);
-            Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
-            Assert.Equal(@"Failed to bind parameter ""int tryParsable"" from ""invalid!"".", logMessage.Message);
-
-            Assert.Equal(logMessage.Message, badHttpRequestException.Message);
+            Assert.Equal(@"Failed to bind parameter ""int tryParsable"" from ""invalid!"".", badHttpRequestException.Message);
             Assert.Equal(400, badHttpRequestException.StatusCode);
         }
 
@@ -912,16 +906,10 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(200, httpContext.Response.StatusCode);
             Assert.False(httpContext.Response.HasStarted);
 
-            // Only the first invalid parameter is currently logged if ThrowOnBadRequest=true
-            // We don't attempt to create an aggregate BadHttpRequestException which would likely be more confusing
-            // than just throwing on the first bad parameter.
-            var logMessage = Assert.Single(TestSink.Writes);
+            // We don't log bad requests when we throw.
+            Assert.Empty(TestSink.Writes);
 
-            Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logMessage.EventId);
-            Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
-            Assert.Equal(@"Required parameter ""MyBindAsyncRecord myBindAsyncRecord1"" was not provided from MyBindAsyncRecord.BindAsync(HttpContext, ParameterInfo).", logMessage.Message);
-
-            Assert.Equal(logMessage.Message, badHttpRequestException.Message);
+            Assert.Equal(@"Required parameter ""MyBindAsyncRecord myBindAsyncRecord1"" was not provided from MyBindAsyncRecord.BindAsync(HttpContext, ParameterInfo).", badHttpRequestException.Message);
             Assert.Equal(400, badHttpRequestException.StatusCode);
         }
 
@@ -1276,6 +1264,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var logMessage = Assert.Single(TestSink.Writes);
             Assert.Equal(new EventId(1, "RequestBodyIOException"), logMessage.EventId);
             Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
+            Assert.Equal("Reading the request body failed with an IOException.", logMessage.Message);
             Assert.Same(ioException, logMessage.Exception);
         }
 
@@ -1310,6 +1299,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var logMessage = Assert.Single(TestSink.Writes);
             Assert.Equal(new EventId(2, "RequestBodyInvalidDataException"), logMessage.EventId);
             Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
+            Assert.Equal("Reading the request body failed with an InvalidDataException.", logMessage.Message);
             Assert.Same(invalidDataException, logMessage.Exception);
         }
 
@@ -1343,12 +1333,10 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(200, httpContext.Response.StatusCode);
             Assert.False(httpContext.Response.HasStarted);
 
-            var logMessage = Assert.Single(TestSink.Writes);
-            Assert.Equal(new EventId(2, "RequestBodyInvalidDataException"), logMessage.EventId);
-            Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
-            Assert.Same(invalidDataException, logMessage.Exception);
+            // We don't log bad requests when we throw.
+            Assert.Empty(TestSink.Writes);
 
-            Assert.Equal(logMessage.Message, badHttpRequestException.Message);
+            Assert.Equal("Reading the request body failed with an InvalidDataException.", badHttpRequestException.Message);
             Assert.Equal(400, badHttpRequestException.StatusCode);
             Assert.Same(invalidDataException, badHttpRequestException.InnerException);
         }

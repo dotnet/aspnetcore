@@ -1165,12 +1165,12 @@ namespace Microsoft.AspNetCore.Http
 
             public static void RequestBodyInvalidDataException(HttpContext httpContext, InvalidDataException exception, bool shouldThrow)
             {
-                RequestBodyInvalidDataException(GetLogger(httpContext), exception);
-
                 if (shouldThrow)
                 {
                     throw new BadHttpRequestException(RequestBodyInvalidDataExceptionMessage, exception);
                 }
+
+                RequestBodyInvalidDataException(GetLogger(httpContext), exception);
             }
 
             [LoggerMessage(2, LogLevel.Debug, RequestBodyInvalidDataExceptionMessage, EventName = "RequestBodyInvalidDataException")]
@@ -1178,13 +1178,13 @@ namespace Microsoft.AspNetCore.Http
 
             public static void ParameterBindingFailed(HttpContext httpContext, string parameterTypeName, string parameterName, string sourceValue, bool shouldThrow)
             {
-                ParameterBindingFailed(GetLogger(httpContext), parameterTypeName, parameterName, sourceValue);
-
                 if (shouldThrow)
                 {
                     var message = string.Format(CultureInfo.InvariantCulture, ParameterBindingFailedExceptionMessage, parameterTypeName, parameterName, sourceValue);
                     throw new BadHttpRequestException(message);
                 }
+
+                ParameterBindingFailed(GetLogger(httpContext), parameterTypeName, parameterName, sourceValue);
             }
 
             [LoggerMessage(3, LogLevel.Debug, ParameterBindingFailedLogMessage, EventName = "ParameterBindingFailed")]
@@ -1192,13 +1192,13 @@ namespace Microsoft.AspNetCore.Http
 
             public static void RequiredParameterNotProvided(HttpContext httpContext, string parameterTypeName, string parameterName, string source, bool shouldThrow)
             {
-                RequiredParameterNotProvided(GetLogger(httpContext), parameterTypeName, parameterName, source);
-
                 if (shouldThrow)
                 {
                     var message = string.Format(CultureInfo.InvariantCulture, RequiredParameterNotProvidedExceptionMessage, parameterTypeName, parameterName, source);
                     throw new BadHttpRequestException(message);
                 }
+
+                RequiredParameterNotProvided(GetLogger(httpContext), parameterTypeName, parameterName, source);
             }
 
             [LoggerMessage(4, LogLevel.Debug, RequiredParameterNotProvidedLogMessage, EventName = "RequiredParameterNotProvided")]
