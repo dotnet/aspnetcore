@@ -69,11 +69,6 @@ namespace Microsoft.AspNetCore.Builder
         {
             string? applicationName = null;
 
-            if (ApplicationName is not null)
-            {
-                applicationName = ApplicationName;
-            }
-
             // We need to "parse" the args here since
             // we need to set the application name via UseSetting
             if (Args is not null)
@@ -90,6 +85,12 @@ namespace Microsoft.AspNetCore.Builder
                 {
                     disposable.Dispose();
                 }
+            }
+
+            // Application name overrides args
+            if (ApplicationName is not null)
+            {
+                applicationName = ApplicationName;
             }
 
             if (applicationName is not null)

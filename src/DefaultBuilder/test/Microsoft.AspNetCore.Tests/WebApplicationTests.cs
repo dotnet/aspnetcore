@@ -1238,6 +1238,20 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Equal("value", app.Configuration["testhostingstartup:config"]);
         }
 
+        [Fact]
+        public async Task HostingStartupRunsWhenApplicationIsNotEntryPointApplicationNameWinsOverArgs()
+        {
+            var options = new WebApplicationOptions
+            {
+                Args = new[] { "--applicationName", typeof(WebApplication).Assembly.FullName },
+                ApplicationName = typeof(WebApplicationTests).Assembly.FullName,
+            };
+            var builder = WebApplication.CreateBuilder(options);
+            await using var app = builder.Build();
+
+            Assert.Equal("value", app.Configuration["testhostingstartup:config"]);
+        }
+
         class ThrowingStartupFilter : IStartupFilter
         {
             public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
