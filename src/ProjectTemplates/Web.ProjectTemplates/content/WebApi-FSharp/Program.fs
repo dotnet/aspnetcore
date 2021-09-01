@@ -27,6 +27,9 @@ module Program =
 
         let app = builder.Build()
 
+        if builder.Environment.IsDevelopment() then
+            app.UseDeveloperExceptionPage() |> ignore
+
 
 #if (!NoHttps)
         app.UseHttpsRedirection()
