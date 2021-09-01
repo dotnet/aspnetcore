@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             // If the client does not ask for HTML just format the exception as plain text
             if (acceptHeader == null || !acceptHeader.Any(h => h.IsSubsetOf(_textHtmlMediaType)))
             {
-                httpContext.Response.ContentType = "text/plain";
+                httpContext.Response.ContentType = "text/plain; charset=utf-8";
 
                 var sb = new StringBuilder();
                 sb.AppendLine(errorContext.Exception.ToString());

@@ -119,6 +119,7 @@ namespace Microsoft.AspNetCore.Diagnostics
 
             var responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal("text/plain", response.Content.Headers.ContentType.MediaType);
+            Assert.Equal("utf-8", response.Content.Headers.ContentType.CharSet);
             Assert.Contains("Test exception", responseText);
             Assert.DoesNotContain("<html", responseText);
         }
@@ -126,6 +127,8 @@ namespace Microsoft.AspNetCore.Diagnostics
         [Fact]
         public async Task StatusCodeFromBadHttpRequestExceptionIsPreserved()
         {
+            const int statusCode = 418;
+
             // Arrange
             using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
@@ -137,7 +140,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                         app.UseDeveloperExceptionPage();
                         app.Run(context =>
                         {
-                            throw new BadHttpRequestException("Not found!", 404);
+                            throw new BadHttpRequestException("Not found!", statusCode);
                         });
                     });
                 }).Build();
@@ -150,7 +153,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             var response = await server.CreateClient().GetAsync("/path");
 
             // Assert
-            Assert.Equal(StatusCodes.Status404NotFound, (int)response.StatusCode);
+            Assert.Equal(statusCode, (int)response.StatusCode);
 
             var responseText = await response.Content.ReadAsStringAsync();
             Assert.Contains("Not found!", responseText);
