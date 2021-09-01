@@ -119,8 +119,6 @@ app.UseHttpsRedirection();
 #endif
 app.UseStaticFiles();
 
-app.UseRouting();
-
 #if (OrganizationalAuth || IndividualAuth)
 app.UseAuthentication();
 #endif
