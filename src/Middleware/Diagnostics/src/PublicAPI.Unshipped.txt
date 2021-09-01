@@ -56,6 +56,10 @@ Microsoft.AspNetCore.Diagnostics.ExceptionHandlerFeature.Endpoint.get -> Microso
 Microsoft.AspNetCore.Diagnostics.ExceptionHandlerFeature.Endpoint.set -> void
 Microsoft.AspNetCore.Diagnostics.ExceptionHandlerFeature.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary?
 Microsoft.AspNetCore.Diagnostics.ExceptionHandlerFeature.RouteValues.set -> void
+Microsoft.AspNetCore.Diagnostics.StatusCodeReExecuteFeature.Endpoint.get -> Microsoft.AspNetCore.Http.Endpoint?
+Microsoft.AspNetCore.Diagnostics.StatusCodeReExecuteFeature.Endpoint.set -> void
+Microsoft.AspNetCore.Diagnostics.StatusCodeReExecuteFeature.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary?
+Microsoft.AspNetCore.Diagnostics.StatusCodeReExecuteFeature.RouteValues.set -> void
 ~Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware.DeveloperExceptionPageMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.DeveloperExceptionPageOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.AspNetCore.Hosting.IWebHostEnvironment! hostingEnvironment, System.Diagnostics.DiagnosticSource! diagnosticSource, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Diagnostics.IDeveloperPageExceptionFilter!>! filters) -> void
 Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Diagnostics.ExceptionHandlerFeature.Error.get -> System.Exception!
