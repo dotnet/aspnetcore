@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Http
 
             for (var i = 0; i < parameters.Length; i++)
             {
-                args[i] = CreateArgument(parameters[i], factoryContext, options);
+                args[i] = CreateArgument(parameters[i], factoryContext);
             }
 
             if (factoryContext.HasImplicitBody && (!options?.AllowImplicitFromBody ?? false))
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Http
             return args;
         }
 
-        private static Expression CreateArgument(ParameterInfo parameter, FactoryContext factoryContext, RequestDelegateFactoryOptions? options)
+        private static Expression CreateArgument(ParameterInfo parameter, FactoryContext factoryContext)
         {
             if (parameter.Name is null)
             {
@@ -640,9 +640,20 @@ namespace Microsoft.AspNetCore.Http
         {
             var isOptional = IsOptionalParameter(parameter, factoryContext);
 
-            return isOptional
-                ? Expression.Call(GetServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr)
-                : Expression.Call(GetRequiredServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
+            if (isOptional)
+            {
+                return Expression.Call(GetServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
+            }
+            if (factoryContext.ServiceProviderIsService is IServiceProviderIsService serviceProviderIsService)
+            {
+                if (serviceProviderIsService.IsService(parameter.ParameterType))
+                {
+                    return Expression.Call(GetRequiredServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
+                }
+            }
+
+            var errorMessage = BuildErrorMessageForMissingService(factoryContext);
+            throw new InvalidOperationException(errorMessage);
         }
 
         private static Expression BindParameterFromValue(ParameterInfo parameter, Expression valueExpression, FactoryContext factoryContext, string source)
@@ -892,30 +903,48 @@ namespace Microsoft.AspNetCore.Http
 
             if (!factoryContext.AllowEmptyRequestBody)
             {
-                // If the parameter is required or the user has not explicitly
-                // set allowBody to be empty then validate that it is required.
-                //
-                // if (bodyValue == null)
-                // {
-                //      wasParamCheckFailure = true;
-                //      Log.RequiredParameterNotProvided(httpContext, "Todo", "body");
-                // }
-                var checkRequiredBodyBlock = Expression.Block(
-                    Expression.IfThen(
-                    Expression.Equal(BodyValueExpr, Expression.Constant(null)),
-                        Expression.Block(
-                            Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
-                            Expression.Call(LogRequiredParameterNotProvidedMethod,
+                if (factoryContext.HasImplicitBody)
+                {
+                    // if (bodyValue == null)
+                    // {
+                    //    throw new InvalidOperationException("Implicit body inferred but no body was provided. Did you mean to use a Service instead?");
+                    // }
+                    factoryContext.ParamCheckExpressions.Add(Expression.Block(
+                        Expression.IfThen(
+                            Expression.Equal(BodyValueExpr, Expression.Constant(null)),
+                            Expression.Block(
+                                Expression.Throw(Expression.Constant(new InvalidOperationException("Implicit body inferred but no body was provided. Did you mean to use a Service instead?")))
+                            )
+                        )
+                    ));
+                }
+                else
+                {
+                    // If the parameter is required or the user has not explicitly
+                    // set allowBody to be empty then validate that it is required.
+                    //
+                    // if (bodyValue == null)
+                    // {
+                    //      wasParamCheckFailure = true;
+                    //      Log.RequiredParameterNotProvided(httpContext, "Todo", "body");
+                    // }
+                    var checkRequiredBodyBlock = Expression.Block(
+                        Expression.IfThen(
+                        Expression.Equal(BodyValueExpr, Expression.Constant(null)),
+                            Expression.Block(
+                                Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
+                                Expression.Call(LogRequiredParameterNotProvidedMethod,
                                     HttpContextExpr,
                                     Expression.Constant(TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false)),
                                     Expression.Constant(parameter.Name),
                                     Expression.Constant("body"),
                                     Expression.Constant(factoryContext.ThrowOnBadRequest))
+                            )
                         )
-                    )
-                );
+                    );
+                    factoryContext.ParamCheckExpressions.Add(checkRequiredBodyBlock);
+                }
 
-                factoryContext.ParamCheckExpressions.Add(checkRequiredBodyBlock);
             }
             else if (parameter.HasDefaultValue)
             {
@@ -926,25 +955,7 @@ namespace Microsoft.AspNetCore.Http
             }
 
             // Convert(bodyValue, Todo)
-            var convert = Expression.Convert(BodyValueExpr, parameter.ParameterType);
-
-            if (factoryContext.HasImplicitBody && !factoryContext.AllowEmptyRequestBody)
-            {
-                // if (bodyValue == null)
-                // {
-                //    throw new InvalidOperationException("Implicit body inferred but no body was provided. Did you mean to use a Service instead?");
-                // }
-                factoryContext.ParamCheckExpressions.Add(Expression.Block(
-                    Expression.IfThen(
-                        Expression.Equal(BodyValueExpr, Expression.Constant(null)),
-                        Expression.Block(
-                            Expression.Throw(Expression.Constant(new InvalidOperationException("Implicit body inferred but no body was provided. Did you mean to use a Service instead?")))
-                        )
-                    )
-                ));
-            }
-
-            return convert;
+            return Expression.Convert(BodyValueExpr, parameter.ParameterType);
         }
 
         private static bool IsOptionalParameter(ParameterInfo parameter, FactoryContext factoryContext)
@@ -1330,6 +1341,25 @@ namespace Microsoft.AspNetCore.Http
             }
             errorMessage.AppendLine().AppendLine();
             errorMessage.AppendLine("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromService] or [FromBody] attribute?")
+                .AppendLine();
+            return errorMessage.ToString();
+        }
+
+        private static string BuildErrorMessageForMissingService(FactoryContext factoryContext)
+        {
+            var errorMessage = new StringBuilder();
+            errorMessage.AppendLine("Parameter must be a service but no service was found.");
+            errorMessage.AppendLine("Below is the list of parameters that we found: ");
+            errorMessage.AppendLine();
+            errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}|{"Source",-30}"));
+            errorMessage.AppendLine("---------------------------------------------------------------------------------");
+
+            foreach (var kv in factoryContext.TrackedParameters)
+            {
+                errorMessage.AppendLine(FormattableString.Invariant($"{kv.Key,-19} | {kv.Value,-15}"));
+            }
+            errorMessage.AppendLine().AppendLine();
+            errorMessage.AppendLine("Did you mean to register the \"Service (Attribute)\" parameter(s) as a Service or does your DI container not support IServiceProviderIsService?")
                 .AppendLine();
             return errorMessage.ToString();
         }

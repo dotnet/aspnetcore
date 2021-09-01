@@ -1110,15 +1110,10 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(originalHeaderParam, deserializedRouteParam);
         }
 
-        public static object[][] FromBodyActions
+        public static object[][] ImplicitFromBodyActions
         {
             get
             {
-                void TestExplicitFromBody(HttpContext httpContext, [FromBody] Todo todo)
-                {
-                    httpContext.Items.Add("body", todo);
-                }
-
                 void TestImpliedFromBody(HttpContext httpContext, Todo todo)
                 {
                     httpContext.Items.Add("body", todo);
@@ -1136,11 +1131,34 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
                 return new[]
                 {
-                    new[] { (Action<HttpContext, Todo>)TestExplicitFromBody },
                     new[] { (Action<HttpContext, Todo>)TestImpliedFromBody },
                     new[] { (Action<HttpContext, ITodo>)TestImpliedFromBodyInterface },
                     new object[] { (Action<HttpContext, TodoStruct>)TestImpliedFromBodyStruct },
                 };
+            }
+        }
+
+        public static object[][] ExplicitFromBodyActions
+        {
+            get
+            {
+                void TestExplicitFromBody(HttpContext httpContext, [FromBody] Todo todo)
+                {
+                    httpContext.Items.Add("body", todo);
+                }
+
+                return new[]
+                {
+                    new[] { (Action<HttpContext, Todo>)TestExplicitFromBody },
+                };
+            }
+        }
+
+        public static object[][] FromBodyActions
+        {
+            get
+            {
+                return ExplicitFromBodyActions.Concat(ImplicitFromBodyActions).ToArray();
             }
         }
 
@@ -1188,8 +1206,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Theory]
-        [MemberData(nameof(FromBodyActions))]
-        public async Task RequestDelegateRejectsEmptyBodyGivenFromBodyParameter(Delegate action)
+        [MemberData(nameof(ExplicitFromBodyActions))]
+        public async Task RequestDelegateRejectsEmptyBodyGivenExplicitFromBodyParameter(Delegate action)
         {
             var httpContext = CreateHttpContext();
             httpContext.Request.Headers["Content-Type"] = "application/json";
@@ -1202,6 +1220,26 @@ namespace Microsoft.AspNetCore.Routing.Internal
             await requestDelegate(httpContext);
 
             Assert.Equal(400, httpContext.Response.StatusCode);
+        }
+
+        [Theory]
+        [MemberData(nameof(ImplicitFromBodyActions))]
+        public async Task RequestDelegateRejectsEmptyBodyGivenImplicitFromBodyParameter(Delegate action)
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Headers["Content-Type"] = "application/json";
+            httpContext.Request.Headers["Content-Length"] = "0";
+            httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(false));
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(LoggerFactory);
+            httpContext.RequestServices = serviceCollection.BuildServiceProvider();
+
+            var factoryResult = RequestDelegateFactory.Create(action);
+            var requestDelegate = factoryResult.RequestDelegate;
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => requestDelegate(httpContext));
+            Assert.Equal("Implicit body inferred but no body was provided. Did you mean to use a Service instead?", ex.Message);
         }
 
         [Fact]
@@ -1436,8 +1474,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Theory]
-        [MemberData(nameof(FromServiceActions))]
-        public async Task RequestDelegateRequiresServiceForAllFromServiceParameters(Delegate action)
+        [MemberData(nameof(ImplicitFromServiceActions))]
+        public async Task RequestDelegateRequiresServiceForAllImplicitFromServiceParameters(Delegate action)
         {
             var httpContext = CreateHttpContext();
 
@@ -1445,6 +1483,18 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var requestDelegate = factoryResult.RequestDelegate;
 
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => requestDelegate(httpContext));
+            Assert.Equal("Implicit body inferred but no body was provided. Did you mean to use a Service instead?", ex.Message);
+        }
+
+        [Theory]
+        [MemberData(nameof(ExplicitFromServiceActions))]
+        public void RequestDelegateRequiresServiceForAllExplicitFromServiceParameters(Delegate action)
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.RequestServices = new ServiceCollection().AddLogging().BuildServiceProvider();
+
+            var ex = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(action));
+            Assert.Contains("Parameter must be a service but no service was found.", ex.Message);
         }
 
         [Theory]
@@ -2146,12 +2196,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             if (isInvalid)
             {
-                await Assert.ThrowsAsync<InvalidOperationException>(() => request);
-                var logs = TestSink.Writes.ToArray();
-                var log = Assert.Single(logs);
-                Assert.Equal(LogLevel.Debug, log.LogLevel);
-                Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), log.EventId);
-                Assert.Equal(@"Required parameter ""Todo todo"" was not provided from body.", log.Message);
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => request);
+                Assert.Equal("Implicit body inferred but no body was provided. Did you mean to use a Service instead?", ex.Message);
             }
             else
             {
@@ -2306,6 +2352,12 @@ namespace Microsoft.AspNetCore.Routing.Internal
             httpContext.RequestServices = services;
             RequestDelegateFactoryOptions options = new() { ServiceProvider = services };
 
+            if (!hasService && isInvalid)
+            {
+                var ex = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(@delegate, options));
+                Assert.Contains("Parameter must be a service but no service was found.", ex.Message);
+                return;
+            }
             var factoryResult = RequestDelegateFactory.Create(@delegate, options);
             var requestDelegate = factoryResult.RequestDelegate;
 

@@ -227,10 +227,10 @@ namespace Microsoft.AspNetCore.Builder
             var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
             Assert.NotNull(methodMetadata);
             var method = Assert.Single(methodMetadata!.HttpMethods);
-            Assert.Equal("GET", method);
+            Assert.Equal("DELETE", method);
 
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal("HTTP: GET /", routeEndpointBuilder.DisplayName);
+            Assert.Equal("HTTP: DELETE /", routeEndpointBuilder.DisplayName);
             Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
         }
 
@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.Builder
         [Fact]
         public void MapGet_ExplicitFromService()
         {
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().AddSingleton<Todo>().BuildServiceProvider()));
             _ = builder.MapGet("/", ([TestFromServiceAttribute] Todo todo) => { });
 
             var dataSource = GetBuilderEndpointDataSource(builder);
@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.Builder
         [Fact]
         public void MapDelete_ExplicitFromService()
         {
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().AddSingleton<Todo>().BuildServiceProvider()));
             _ = builder.MapDelete("/", ([TestFromServiceAttribute] Todo todo) => { });
 
             var dataSource = GetBuilderEndpointDataSource(builder);
