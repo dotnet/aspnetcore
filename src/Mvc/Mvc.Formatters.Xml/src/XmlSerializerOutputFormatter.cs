@@ -236,8 +236,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 Log.BufferingAsyncEnumerable(_logger, value);
 
-                value = await reader(value);
+                value = await reader(value, context.HttpContext.RequestAborted);
                 valueType = value.GetType();
+                if (context.HttpContext.RequestAborted.IsCancellationRequested)
+                {
+                    return;
+                }
             }
 
             // Wrap the object only if there is a wrapping type.

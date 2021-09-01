@@ -25,16 +25,13 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private readonly JsonOptions _options;
         private readonly ILogger<SystemTextJsonResultExecutor> _logger;
-        private readonly AsyncEnumerableReader _asyncEnumerableReaderFactory;
 
         public SystemTextJsonResultExecutor(
             IOptions<JsonOptions> options,
-            ILogger<SystemTextJsonResultExecutor> logger,
-            IOptions<MvcOptions> mvcOptions)
+            ILogger<SystemTextJsonResultExecutor> logger)
         {
             _options = options.Value;
             _logger = logger;
-            _asyncEnumerableReaderFactory = new AsyncEnumerableReader(mvcOptions.Value);
         }
 
         public async Task ExecuteAsync(ActionContext context, JsonResult result)
@@ -77,8 +74,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var responseStream = response.Body;
             if (resolvedContentTypeEncoding.CodePage == Encoding.UTF8.CodePage)
             {
-                await JsonSerializer.SerializeAsync(responseStream, value, objectType, jsonSerializerOptions);
-                await responseStream.FlushAsync();
+                try
+                {
+                    await JsonSerializer.SerializeAsync(responseStream, value, objectType, jsonSerializerOptions, context.HttpContext.RequestAborted);
+                    await responseStream.FlushAsync(context.HttpContext.RequestAborted);
+                }
+                catch (OperationCanceledException) { }
             }
             else
             {
@@ -89,9 +90,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 ExceptionDispatchInfo? exceptionDispatchInfo = null;
                 try
                 {
-                    await JsonSerializer.SerializeAsync(transcodingStream, value, objectType, jsonSerializerOptions);
-                    await transcodingStream.FlushAsync();
+                    await JsonSerializer.SerializeAsync(transcodingStream, value, objectType, jsonSerializerOptions, context.HttpContext.RequestAborted);
+                    await transcodingStream.FlushAsync(context.HttpContext.RequestAborted);
                 }
+                catch (OperationCanceledException)
+                { }
                 catch (Exception ex)
                 {
                     // TranscodingStream may write to the inner stream as part of it's disposal.
