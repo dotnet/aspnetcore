@@ -40,3 +40,5 @@ Microsoft.AspNetCore.Routing.IExcludeFromDescriptionMetadata.ExcludeFromDescript
 Microsoft.AspNetCore.Routing.ExcludeFromDescriptionAttribute
 Microsoft.AspNetCore.Routing.ExcludeFromDescriptionAttribute.ExcludeFromDescriptionAttribute() -> void
 Microsoft.AspNetCore.Routing.ExcludeFromDescriptionAttribute.ExcludeFromDescription.get -> bool
+Microsoft.AspNetCore.Http.OpenApiDelegateEndpointConventionBuilderExtensions
+static Microsoft.AspNetCore.Http.OpenApiDelegateEndpointConventionBuilderExtensions.WithTags(this Microsoft.AspNetCore.Builder.DelegateEndpointConventionBuilder! builder, params string![]! tags) -> Microsoft.AspNetCore.Builder.DelegateEndpointConventionBuilder!
