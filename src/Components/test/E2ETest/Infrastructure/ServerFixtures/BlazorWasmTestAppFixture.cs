@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
@@ -74,6 +75,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
                     .UseContentRoot(contentRoot)
                     .UseStartup(_ => new StaticSiteStartup { PathBase = PathBase })
                     .UseUrls($"http://{host}:0"))
+                .ConfigureLogging((hostingContext, logging) => logging.AddConsole())
                 .Build();
         }
 
@@ -88,7 +90,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
 
             public void Configure(IApplicationBuilder app)
             {
-                app.UseBlazorFrameworkFiles();
+                if (!string.IsNullOrEmpty(PathBase))
+                {
+                    app.UsePathBase(PathBase);
+                }
+
                 app.UseStaticFiles(new StaticFileOptions
                 {
                     ServeUnknownFileTypes = true,
@@ -98,13 +104,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
 
                 app.UseEndpoints(endpoints =>
                 {
-                    var fallback = "index.html";
-                    if (!string.IsNullOrEmpty(PathBase))
-                    {
-                        fallback = PathBase + '/' + fallback;
-                    }
-
-                    endpoints.MapFallbackToFile(fallback);
+                    endpoints.MapFallbackToFile("index.html");
                 });
             }
         }

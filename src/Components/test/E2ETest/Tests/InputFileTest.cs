@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             private TempFile(string tempDirectory, string extension, byte[] contents)
             {
                 Name = $"{Guid.NewGuid():N}.{extension}";
-                Path = $"{tempDirectory}\\{Name}";
+                Path = $"{tempDirectory}{System.IO.Path.DirectorySeparatorChar}{Name}";
                 Contents = contents;
             }
 
