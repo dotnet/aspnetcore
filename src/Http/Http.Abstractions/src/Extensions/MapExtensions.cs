@@ -20,6 +20,19 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="pathMatch">The request path to match.</param>
         /// <param name="configuration">The branch to take for positive path matches.</param>
         /// <returns>The <see cref="IApplicationBuilder"/> instance.</returns>
+        public static IApplicationBuilder Map(this IApplicationBuilder app, string pathMatch, Action<IApplicationBuilder> configuration)
+        {
+            return Map(app, pathMatch, preserveMatchedPathSegment: false, configuration);
+        }
+
+        /// <summary>
+        /// Branches the request pipeline based on matches of the given request path. If the request path starts with
+        /// the given path, the branch is executed.
+        /// </summary>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> instance.</param>
+        /// <param name="pathMatch">The request path to match.</param>
+        /// <param name="configuration">The branch to take for positive path matches.</param>
+        /// <returns>The <see cref="IApplicationBuilder"/> instance.</returns>
         public static IApplicationBuilder Map(this IApplicationBuilder app, PathString pathMatch, Action<IApplicationBuilder> configuration)
         {
             return Map(app, pathMatch, preserveMatchedPathSegment: false, configuration);

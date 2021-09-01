@@ -27,6 +27,7 @@ Microsoft.AspNetCore.Http.RequestDelegateResult.EndpointMetadata.get -> System.C
 Microsoft.AspNetCore.Http.RequestDelegateResult.RequestDelegate.get -> Microsoft.AspNetCore.Http.RequestDelegate!
 Microsoft.AspNetCore.Http.RequestDelegateResult.RequestDelegateResult(Microsoft.AspNetCore.Http.RequestDelegate! requestDelegate, System.Collections.Generic.IReadOnlyList<object!>! metadata) -> void
 Microsoft.AspNetCore.Routing.RouteValueDictionary.TryAdd(string! key, object? value) -> bool
+static Microsoft.AspNetCore.Builder.MapExtensions.Map(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! pathMatch, System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder!>! configuration) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 abstract Microsoft.AspNetCore.Http.HttpResponse.ContentType.get -> string?
 static readonly Microsoft.AspNetCore.Http.HttpProtocol.Http09 -> string!
 static Microsoft.AspNetCore.Http.HttpProtocol.IsHttp09(string! protocol) -> bool
