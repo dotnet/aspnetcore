@@ -1550,6 +1550,111 @@ namespace TestSite
             return Task.CompletedTask;
         }
 
+        public Task Http3_Direct(HttpContext context)
+        {
+            try
+            {
+                Assert.True(context.Request.IsHttps);
+                return context.Response.WriteAsync(context.Request.Protocol);
+            }
+            catch (Exception ex)
+            {
+                return context.Response.WriteAsync(ex.ToString());
+            }
+        }
+
+        public Task Http3_AltSvcHeader_UpgradeFromHttp1(HttpContext context)
+        {
+            var altsvc = $@"h3="":{context.Connection.LocalPort}""";
+            try
+            {
+                Assert.True(context.Request.IsHttps);
+                context.Response.Headers.AltSvc = altsvc;
+                return context.Response.WriteAsync(context.Request.Protocol);
+            }
+            catch (Exception ex)
+            {
+                return context.Response.WriteAsync(ex.ToString());
+            }
+        }
+
+        public Task Http3_AltSvcHeader_UpgradeFromHttp2(HttpContext context)
+        {
+            return Http3_AltSvcHeader_UpgradeFromHttp1(context);
+        }
+
+        public async Task Http3_ResponseTrailers(HttpContext context)
+        {
+            try
+            {
+                Assert.True(context.Request.IsHttps);
+                await context.Response.WriteAsync(context.Request.Protocol);
+                context.Response.AppendTrailer("custom", "value");
+            }
+            catch (Exception ex)
+            {
+                await context.Response.WriteAsync(ex.ToString());
+            }
+        }
+
+        public Task Http3_ResetBeforeHeaders(HttpContext context)
+        {
+            try
+            {
+                Assert.True(context.Request.IsHttps);
+                context.Features.Get<IHttpResetFeature>().Reset(0x010b); // H3_REQUEST_REJECTED
+                return Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                return context.Response.WriteAsync(ex.ToString());
+            }
+        }
+
+        private TaskCompletionSource _http3_ResetAfterHeadersCts = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public async Task Http3_ResetAfterHeaders(HttpContext context)
+        {
+            try
+            {
+                Assert.True(context.Request.IsHttps);
+                await context.Response.Body.FlushAsync();
+                await _http3_ResetAfterHeadersCts.Task;
+                context.Features.Get<IHttpResetFeature>().Reset(0x010c); // H3_REQUEST_CANCELLED
+            }
+            catch (Exception ex)
+            {
+                await context.Response.WriteAsync(ex.ToString());
+            }
+        }
+
+        public Task Http3_ResetAfterHeaders_SetResult(HttpContext context)
+        {
+            _http3_ResetAfterHeadersCts.SetResult();
+            return Task.CompletedTask;
+        }
+
+        private TaskCompletionSource _http3_AppExceptionAfterHeaders_InternalErrorCts = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public async Task Http3_AppExceptionAfterHeaders_InternalError(HttpContext context)
+        {
+            await context.Response.Body.FlushAsync();
+            await _http3_AppExceptionAfterHeaders_InternalErrorCts.Task;
+            throw new Exception("App Exception");
+        }
+
+        public Task Http3_AppExceptionAfterHeaders_InternalError_SetResult(HttpContext context)
+        {
+            _http3_AppExceptionAfterHeaders_InternalErrorCts.SetResult();
+            return Task.CompletedTask;
+        }
+
+        public Task Http3_Abort_Cancel(HttpContext context)
+        {
+            context.Abort();
+            return Task.CompletedTask;
+        }
+
         internal static readonly HashSet<(string, StringValues, StringValues)> NullTrailers = new HashSet<(string, StringValues, StringValues)>()
         {
             ("NullString", (string)null, (string)null),
