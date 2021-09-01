@@ -1313,7 +1313,7 @@ namespace Microsoft.AspNetCore.Http
             errorMessage.AppendLine("Failure to infer one or more parameters.");
             errorMessage.AppendLine("Below is the list of parameters that we found: ");
             errorMessage.AppendLine();
-            errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}|{"Source",-30}"));
+            errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}| {"Source",-30}"));
             errorMessage.AppendLine("---------------------------------------------------------------------------------");
 
             foreach (var kv in factoryContext.TrackedParameters)
@@ -1332,7 +1332,7 @@ namespace Microsoft.AspNetCore.Http
             errorMessage.AppendLine("Body was inferred but the method does not allow inferred body parameters.");
             errorMessage.AppendLine("Below is the list of parameters that we found: ");
             errorMessage.AppendLine();
-            errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}|{"Source",-30}"));
+            errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}| {"Source",-30}"));
             errorMessage.AppendLine("---------------------------------------------------------------------------------");
 
             foreach (var kv in factoryContext.TrackedParameters)
@@ -1351,7 +1351,7 @@ namespace Microsoft.AspNetCore.Http
             errorMessage.AppendLine("Parameter must be a service but no service was found.");
             errorMessage.AppendLine("Below is the list of parameters that we found: ");
             errorMessage.AppendLine();
-            errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}|{"Source",-30}"));
+            errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}| {"Source",-30}"));
             errorMessage.AppendLine("---------------------------------------------------------------------------------");
 
             foreach (var kv in factoryContext.TrackedParameters)
