@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             bool shouldLog = false;
 
             var now = DateTime.UtcNow;
-            ValueStopwatch stopWatch = ValueStopwatch.StartNew();
+            var stopWatch = ValueStopwatch.StartNew();
             if (options.LoggingFields.HasFlag(W3CLoggingFields.Date))
             {
                 shouldLog |= AddToList(elements, _dateIndex, now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
