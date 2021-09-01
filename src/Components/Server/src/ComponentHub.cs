@@ -1,19 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
-using System.Threading.Channels;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.Server
 {
@@ -39,7 +33,7 @@ namespace Microsoft.AspNetCore.Components.Server
     // needs access to the circuit/application state to unblock the message loop. Using async in our
     // Hub methods allows us to ensure message delivery to the client before we abort the connection
     // in error cases.
-    internal sealed class ComponentHub : Hub
+    internal sealed partial class ComponentHub : Hub
     {
         private static readonly object CircuitKey = new();
         private readonly IServerComponentDeserializer _serverComponentSerializer;
@@ -336,43 +330,28 @@ namespace Microsoft.AspNetCore.Components.Server
 
         private static Task NotifyClientError(IClientProxy client, string error) => client.SendAsync("JS.Error", error);
 
-        private static class Log
+        private static partial class Log
         {
-            private static readonly Action<ILogger, long, Exception> _receivedConfirmationForBatch =
-                LoggerMessage.Define<long>(LogLevel.Debug, new EventId(1, "ReceivedConfirmationForBatch"), "Received confirmation for batch {BatchId}");
+            [LoggerMessage(1, LogLevel.Debug, "Received confirmation for batch {BatchId}", EventName = "ReceivedConfirmationForBatch")]
+            public static partial void ReceivedConfirmationForBatch(ILogger logger, long batchId);
 
-            private static readonly Action<ILogger, CircuitId, Exception> _circuitAlreadyInitialized =
-                LoggerMessage.Define<CircuitId>(LogLevel.Debug, new EventId(2, "CircuitAlreadyInitialized"), "The circuit host '{CircuitId}' has already been initialized");
+            [LoggerMessage(2, LogLevel.Debug, "The circuit host '{CircuitId}' has already been initialized", EventName = "CircuitAlreadyInitialized")]
+            public static partial void CircuitAlreadyInitialized(ILogger logger, CircuitId circuitId);
 
-            private static readonly Action<ILogger, string, Exception> _circuitHostNotInitialized =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(3, "CircuitHostNotInitialized"), "Call to '{CallSite}' received before the circuit host initialization");
+            [LoggerMessage(3, LogLevel.Debug, "Call to '{CallSite}' received before the circuit host initialization", EventName = "CircuitHostNotInitialized")]
+            public static partial void CircuitHostNotInitialized(ILogger logger, [CallerMemberName] string callSite = "");
 
-            private static readonly Action<ILogger, string, Exception> _circuitHostShutdown =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(4, "CircuitHostShutdown"), "Call to '{CallSite}' received after the circuit was shut down");
+            [LoggerMessage(4, LogLevel.Debug, "Call to '{CallSite}' received after the circuit was shut down", EventName = "CircuitHostShutdown")]
+            public static partial void CircuitHostShutdown(ILogger logger, [CallerMemberName] string callSite = "");
 
-            private static readonly Action<ILogger, string, Exception> _invalidInputData =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, "InvalidInputData"), "Call to '{CallSite}' received invalid input data");
+            [LoggerMessage(5, LogLevel.Debug, "Call to '{CallSite}' received invalid input data", EventName = "InvalidInputData")]
+            public static partial void InvalidInputData(ILogger logger, [CallerMemberName] string callSite = "");
 
-            private static readonly Action<ILogger, Exception> _circuitInitializationFailed =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(6, "CircuitInitializationFailed"), "Circuit initialization failed");
+            [LoggerMessage(6, LogLevel.Debug, "Circuit initialization failed", EventName = "CircuitInitializationFailed")]
+            public static partial void CircuitInitializationFailed(ILogger logger, Exception exception);
 
-            private static readonly Action<ILogger, CircuitId, string, string, Exception> _createdCircuit =
-                LoggerMessage.Define<CircuitId, string, string>(LogLevel.Debug, new EventId(7, "CreatedCircuit"), "Created circuit '{CircuitId}' with secret '{CircuitIdSecret}' for '{ConnectionId}'");
-
-            private static readonly Action<ILogger, string, Exception> _invalidCircuitId =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(8, "InvalidCircuitId"), "ConnectAsync received an invalid circuit id '{CircuitIdSecret}'");
-
-            public static void ReceivedConfirmationForBatch(ILogger logger, long batchId) => _receivedConfirmationForBatch(logger, batchId, null);
-
-            public static void CircuitAlreadyInitialized(ILogger logger, CircuitId circuitId) => _circuitAlreadyInitialized(logger, circuitId, null);
-
-            public static void CircuitHostNotInitialized(ILogger logger, [CallerMemberName] string callSite = "") => _circuitHostNotInitialized(logger, callSite, null);
-
-            public static void CircuitHostShutdown(ILogger logger, [CallerMemberName] string callSite = "") => _circuitHostShutdown(logger, callSite, null);
-
-            public static void InvalidInputData(ILogger logger, [CallerMemberName] string callSite = "") => _invalidInputData(logger, callSite, null);
-
-            public static void CircuitInitializationFailed(ILogger logger, Exception exception) => _circuitInitializationFailed(logger, exception);
+            [LoggerMessage(7, LogLevel.Debug, "Created circuit '{CircuitId}' with secret '{CircuitIdSecret}' for '{ConnectionId}'", EventName = "CreatedCircuit")]
+            private static partial void CreatedCircuitCore(ILogger logger, CircuitId circuitId, string circuitIdSecret, string connectionId);
 
             public static void CreatedCircuit(ILogger logger, CircuitId circuitId, string circuitSecret, string connectionId)
             {
@@ -382,8 +361,11 @@ namespace Microsoft.AspNetCore.Components.Server
                     circuitSecret = "(redacted)";
                 }
 
-                _createdCircuit(logger, circuitId, circuitSecret, connectionId, null);
+                CreatedCircuitCore(logger, circuitId, circuitSecret, connectionId);
             }
+
+            [LoggerMessage(8, LogLevel.Debug, "ConnectAsync received an invalid circuit id '{CircuitIdSecret}'", EventName = "InvalidCircuitId")]
+            private static partial void InvalidCircuitIdCore(ILogger logger, string circuitIdSecret);
 
             public static void InvalidCircuitId(ILogger logger, string circuitSecret)
             {
@@ -393,7 +375,7 @@ namespace Microsoft.AspNetCore.Components.Server
                     circuitSecret = "(redacted)";
                 }
 
-                _invalidCircuitId(logger, circuitSecret, null);
+                InvalidCircuitIdCore(logger, circuitSecret);
             }
         }
     }

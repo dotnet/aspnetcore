@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -365,6 +366,71 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             Assert.Equal(expected, written);
         }
 
+        [Fact]
+        public async Task ExecuteAsync_AsyncEnumerableConnectionCloses()
+        {
+            var context = GetActionContext();
+            var cts = new CancellationTokenSource();
+            context.HttpContext.RequestAborted = cts.Token;
+            var result = new JsonResult(AsyncEnumerableClosedConnection());
+            var executor = CreateExecutor();
+            var iterated = false;
+
+            // Act
+            await executor.ExecuteAsync(context, result);
+
+            // Assert
+            var written = GetWrittenBytes(context.HttpContext);
+            // System.Text.Json might write the '[' before cancellation is observed
+            Assert.InRange(written.Length, 0, 1);
+            Assert.False(iterated);
+
+            async IAsyncEnumerable<int> AsyncEnumerableClosedConnection([EnumeratorCancellation] CancellationToken cancellationToken = default)
+            {
+                await Task.Yield();
+                cts.Cancel();
+                for (var i = 0; i < 100000 && !cancellationToken.IsCancellationRequested; i++)
+                {
+                    iterated = true;
+                    yield return i;
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ExecuteAsyncWithDifferentContentType_AsyncEnumerableConnectionCloses()
+        {
+            var context = GetActionContext();
+            var cts = new CancellationTokenSource();
+            context.HttpContext.RequestAborted = cts.Token;
+            var result = new JsonResult(AsyncEnumerableClosedConnection())
+            {
+                ContentType = "text/json; charset=utf-16",
+            };
+            var executor = CreateExecutor();
+            var iterated = false;
+
+            // Act
+            await executor.ExecuteAsync(context, result);
+
+            // Assert
+            var written = GetWrittenBytes(context.HttpContext);
+            // System.Text.Json might write the '[' before cancellation is observed (utf-16 means 2 bytes per character)
+            Assert.InRange(written.Length, 0, 2);
+            Assert.False(iterated);
+
+            async IAsyncEnumerable<int> AsyncEnumerableClosedConnection([EnumeratorCancellation] CancellationToken cancellationToken = default)
+            {
+                await Task.Yield();
+                cts.Cancel();
+                for (var i = 0; i < 100000 && !cancellationToken.IsCancellationRequested; i++)
+                {
+                    iterated = true;
+                    yield return i;
+                }
+            }
+        }
+
         protected IActionResultExecutor<JsonResult> CreateExecutor() => CreateExecutor(NullLoggerFactory.Instance);
 
         protected abstract IActionResultExecutor<JsonResult> CreateExecutor(ILoggerFactory loggerFactory);
@@ -387,7 +453,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return new ActionContext(GetHttpContext(), new RouteData(), new ActionDescriptor());
         }
 
-        private static byte[] GetWrittenBytes(HttpContext context)
+        protected static byte[] GetWrittenBytes(HttpContext context)
         {
             context.Response.Body.Seek(0, SeekOrigin.Begin);
             return Assert.IsType<MemoryStream>(context.Response.Body).ToArray();

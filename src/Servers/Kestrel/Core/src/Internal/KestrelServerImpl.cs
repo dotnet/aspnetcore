@@ -153,11 +153,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         {
             try
             {
-                if (!BitConverter.IsLittleEndian)
-                {
-                    throw new PlatformNotSupportedException(CoreStrings.BigEndianNotSupported);
-                }
-
                 ValidateOptions();
 
                 if (_hasStarted)

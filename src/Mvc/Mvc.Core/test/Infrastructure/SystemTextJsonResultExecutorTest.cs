@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -18,8 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         {
             return new SystemTextJsonResultExecutor(
                 Options.Create(new JsonOptions()),
-                loggerFactory.CreateLogger<SystemTextJsonResultExecutor>(),
-                Options.Create(new MvcOptions()));
+                loggerFactory.CreateLogger<SystemTextJsonResultExecutor>());
         }
 
         [Fact]
