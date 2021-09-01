@@ -488,13 +488,6 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal(new[] { "Some", "Test", "Tags" }, tagsMetadata?.Tags);
         }
 
-        [Fact]
-        public void MapMethod_ThrowsIfItCannotResolveRouteHandlerOptions()
-        {
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));
-            Assert.Throws<InvalidOperationException>(() => builder.Map("/", () => { }));
-        }
-
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
@@ -524,6 +517,25 @@ namespace Microsoft.AspNetCore.Builder
                 await endpoint.RequestDelegate!(httpContext);
                 Assert.Equal(400, httpContext.Response.StatusCode);
             }
+        }
+
+        [Fact]
+        public async Task MapMethod_DefaultsToNotThrowOnBadHttpRequestIfItCannotResolveRouteHandlerOptions()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));
+
+            _ = builder.Map("/{id}", (int id) => { });
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.RequestServices = new ServiceCollection().AddLogging().BuildServiceProvider();
+            httpContext.Request.RouteValues["id"] = "invalid!";
+
+            await endpoint.RequestDelegate!(httpContext);
+            Assert.Equal(400, httpContext.Response.StatusCode);
         }
 
         class FromRoute : Attribute, IFromRouteMetadata

@@ -1297,7 +1297,6 @@ namespace Microsoft.AspNetCore.Tests
 
             app.MapGet("/{parameterName}", (int parameterName) => { });
 
-
             await app.StartAsync();
 
             var client = app.GetTestClient();

@@ -170,14 +170,13 @@ namespace Microsoft.AspNetCore.Builder
                 routeParams.Add(part.Name);
             }
 
-            // REVIEW: Should we just default ThrowOnBadRequest to false if Options is somehow missing?
-            var routeHandlerOptions = endpoints.ServiceProvider.GetRequiredService<IOptions<RouteHandlerOptions>>();
+            var routeHandlerOptions = endpoints.ServiceProvider?.GetService<IOptions<RouteHandlerOptions>>();
 
             var options = new RequestDelegateFactoryOptions
             {
                 ServiceProvider = endpoints.ServiceProvider,
                 RouteParameterNames = routeParams,
-                ThrowOnBadRequest = routeHandlerOptions.Value.ThrowOnBadRequest
+                ThrowOnBadRequest = routeHandlerOptions?.Value.ThrowOnBadRequest ?? false,
             };
 
             var requestDelegateResult = RequestDelegateFactory.Create(handler, options);
