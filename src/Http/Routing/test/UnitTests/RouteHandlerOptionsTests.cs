@@ -36,6 +36,30 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
+        public void ThrowOnBadRequestIsNotOverwrittenIfNotInDevelopmentEnvironment()
+        {
+            var services = new ServiceCollection();
+
+            services.Configure<RouteHandlerOptions>(options =>
+            {
+                options.ThrowOnBadRequest = true;
+            });
+
+            services.AddSingleton<IHostEnvironment>(new HostEnvironment
+            {
+                EnvironmentName = "Production",
+            });
+
+            services.AddOptions();
+            services.AddRouting();
+
+            var serviceProvider = services.BuildServiceProvider();
+
+            var options = serviceProvider.GetRequiredService<IOptions<RouteHandlerOptions>>().Value;
+            Assert.True(options.ThrowOnBadRequest);
+        }
+
+        [Fact]
         public void RouteHandlerOptionsFailsToResolveWithoutHostEnvironment()
         {
             var services = new ServiceCollection();
