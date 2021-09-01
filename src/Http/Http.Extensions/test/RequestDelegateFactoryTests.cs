@@ -440,10 +440,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = CreateHttpContext();
             httpContext.Request.RouteValues[unmatchedName] = unmatchedRouteParam.ToString(NumberFormatInfo.InvariantInfo);
 
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton(LoggerFactory);
-            httpContext.RequestServices = serviceCollection.BuildServiceProvider();
-
             var factoryResult = RequestDelegateFactory.Create(TestAction);
             var requestDelegate = factoryResult.RequestDelegate;
 
@@ -611,10 +607,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = CreateHttpContext();
             httpContext.Request.RouteValues["tryParsable"] = routeValue;
 
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton(LoggerFactory);
-            httpContext.RequestServices = serviceCollection.BuildServiceProvider();
-
             var factoryResult = RequestDelegateFactory.Create(action);
             var requestDelegate = factoryResult.RequestDelegate;
 
@@ -632,10 +624,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
             {
                 ["tryParsable"] = routeValue
             });
-
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton(LoggerFactory);
-            httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
             var factoryResult = RequestDelegateFactory.Create(action);
             var requestDelegate = factoryResult.RequestDelegate;
