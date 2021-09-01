@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -45,6 +45,11 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         }
 
         public virtual void WriteComponentTypeInferenceMethod(CodeRenderingContext context, ComponentTypeInferenceMethodIntermediateNode node)
+        {
+            throw new NotSupportedException("This writer does not support components.");
+        }
+
+        public virtual void WriteComponentParameterData(CodeRenderingContext context, ComponentParameterDataIntermediateNode node)
         {
             throw new NotSupportedException("This writer does not support components.");
         }

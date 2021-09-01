@@ -99,7 +99,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             else
             {
                 @class.BaseType = ComponentsApi.ComponentBase.FullTypeName;
-                //@class.Interfaces.Add(ComponentsApi.IPropertySetterProvider.FullTypeName);
 
                 // Constrained type parameters are only supported in Razor language versions v6.0
                 var razorLanguageVersion = codeDocument.GetParserOptions()?.Version ?? RazorLanguageVersion.Latest;

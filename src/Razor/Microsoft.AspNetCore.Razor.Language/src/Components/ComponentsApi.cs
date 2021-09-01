@@ -45,9 +45,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             public const string MetadataName = FullTypeName;
         }
 
+        public static class IPropertySetter
+        {
+            public const string FullTypeName = "Microsoft.AspNetCore.Components.IPropertySetter";
+        }
+
         public static class IPropertySetterProvider
         {
             public const string FullTypeName = "Microsoft.AspNetCore.Components.IPropertySetterProvider";
+
+            public const string TryGetSetter = nameof(TryGetSetter);
+
+            public const string ParameterNameParameter = "parameterName";
+
+            public const string PropertySetterParameter = "writer";
         }
 
         public static class IDictionary

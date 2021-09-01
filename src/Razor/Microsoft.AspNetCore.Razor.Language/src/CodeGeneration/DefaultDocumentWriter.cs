@@ -284,6 +284,11 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 Context.NodeWriter.WriteComponentTypeInferenceMethod(Context, node);
             }
 
+            public override void VisitComponentParameterData(ComponentParameterDataIntermediateNode node)
+            {
+                Context.NodeWriter.WriteComponentParameterData(Context, node);
+            }
+
             public override void VisitMarkupElement(MarkupElementIntermediateNode node)
             {
                 Context.NodeWriter.WriteMarkupElement(Context, node);

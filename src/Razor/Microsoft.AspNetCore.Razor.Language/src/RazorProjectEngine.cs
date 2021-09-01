@@ -241,6 +241,11 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Document Classifier
             builder.Features.Add(new ComponentDocumentClassifierPass());
 
+            if (razorLanguageVersion.CompareTo(RazorLanguageVersion.Version_6_0) >= 0)
+            {
+                builder.Features.Add(new ComponentPropertySetterProviderPass());
+            }
+
             // Directive Classifier
             builder.Features.Add(new ComponentWhitespacePass());
 

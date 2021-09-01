@@ -735,6 +735,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // type/parameter declarations.
         }
 
+        public override void WriteComponentParameterData(CodeRenderingContext context, ComponentParameterDataIntermediateNode node)
+        {
+            // TODO
+        }
+
         public override void WriteTemplate(CodeRenderingContext context, TemplateIntermediateNode node)
         {
             if (context == null)
