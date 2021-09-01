@@ -1,5 +1,5 @@
 namespace Company.WebApplication1
-
+#nowarn "20"
 open System
 open System.Collections.Generic
 open System.IO
@@ -26,10 +26,6 @@ module Program =
         builder.Services.AddControllers()
 
         let app = builder.Build()
-
-        if builder.Environment.IsDevelopment() then
-            app.UseDeveloperExceptionPage() |> ignore
-
 
 #if (!NoHttps)
         app.UseHttpsRedirection()
