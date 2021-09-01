@@ -60,6 +60,9 @@ namespace Microsoft.AspNetCore.Builder
                 // We need to override the application name since the call to Configure will set it to
                 // be the calling assembly's name.
                 webHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, (Assembly.GetEntryAssembly())?.GetName()?.Name ?? string.Empty);
+
+                // Attempt to set the application name from options
+                options.ApplyApplicationName(webHostBuilder);
             });
 
             // Apply the args to host configuration last since ConfigureWebHostDefaults overrides a host specific setting (the application name).

@@ -64,5 +64,38 @@ namespace Microsoft.AspNetCore.Builder
                 builder.AddInMemoryCollection(config);
             }
         }
+
+        internal void ApplyApplicationName(IWebHostBuilder webHostBuilder)
+        {
+            string? applicationName = null;
+
+            if (ApplicationName is not null)
+            {
+                applicationName = ApplicationName;
+            }
+
+            // We need to "parse" the args here since
+            // we need to set the application name via UseSetting
+            if (Args is not null)
+            {
+                var config = new ConfigurationBuilder()
+                        .AddCommandLine(Args)
+                        .Build();
+
+                applicationName = config[WebHostDefaults.ApplicationKey];
+
+                // This isn't super important since we're not adding any disposable sources
+                // but just in case
+                if (config is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+            }
+
+            if (applicationName is not null)
+            {
+                webHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, applicationName);
+            }
+        }
     }
 }
