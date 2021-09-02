@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Tests;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -23,6 +24,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
+
+[assembly: HostingStartup(typeof(WebApplicationTests.TestHostingStartup))]
 
 namespace Microsoft.AspNetCore.Tests
 {
@@ -1229,6 +1232,38 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Equal("BOOM", ex.Message);
         }
 
+        [Fact]
+        public async Task HostingStartupRunsWhenApplicationIsNotEntryPoint()
+        {
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions { ApplicationName = typeof(WebApplicationTests).Assembly.FullName });
+            await using var app = builder.Build();
+
+            Assert.Equal("value", app.Configuration["testhostingstartup:config"]);
+        }
+
+        [Fact]
+        public async Task HostingStartupRunsWhenApplicationIsNotEntryPointWithArgs()
+        {
+            var builder = WebApplication.CreateBuilder(new[] { "--applicationName", typeof(WebApplicationTests).Assembly.FullName });
+            await using var app = builder.Build();
+
+            Assert.Equal("value", app.Configuration["testhostingstartup:config"]);
+        }
+
+        [Fact]
+        public async Task HostingStartupRunsWhenApplicationIsNotEntryPointApplicationNameWinsOverArgs()
+        {
+            var options = new WebApplicationOptions
+            {
+                Args = new[] { "--applicationName", typeof(WebApplication).Assembly.FullName },
+                ApplicationName = typeof(WebApplicationTests).Assembly.FullName,
+            };
+            var builder = WebApplication.CreateBuilder(options);
+            await using var app = builder.Build();
+
+            Assert.Equal("value", app.Configuration["testhostingstartup:config"]);
+        }
+
         class ThrowingStartupFilter : IStartupFilter
         {
             public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
@@ -1242,6 +1277,19 @@ namespace Microsoft.AspNetCore.Tests
 
                     next(app);
                 };
+            }
+        }
+
+        public class TestHostingStartup : IHostingStartup
+        {
+            public void Configure(IWebHostBuilder builder)
+            {
+                builder
+                    .ConfigureAppConfiguration((context, configurationBuilder) => configurationBuilder.AddInMemoryCollection(
+                        new[]
+                        {
+                            new KeyValuePair<string,string>("testhostingstartup:config", "value")
+                        }));
             }
         }
 
