@@ -477,7 +477,7 @@ namespace Microsoft.AspNetCore.Builder
         [Fact]
         public void WithTags_CanSetTagsForEndpoint()
         {
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
             _ = builder.MapDelete("/", GetString).WithTags("Some", "Test", "Tags");
 
             var dataSource = GetBuilderEndpointDataSource(builder);
