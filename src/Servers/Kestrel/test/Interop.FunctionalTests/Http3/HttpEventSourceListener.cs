@@ -24,8 +24,7 @@ namespace Interop.FunctionalTests.Http3
         {
             base.OnEventSourceCreated(eventSource);
 
-            if (eventSource.Name.Contains("System.Net.Quic") ||
-                eventSource.Name.Contains("System.Net.Http"))
+            if (IsHttpEventSource(eventSource))
             {
                 lock (_lock)
                 {
@@ -37,9 +36,19 @@ namespace Interop.FunctionalTests.Http3
             }
         }
 
+        private static bool IsHttpEventSource(EventSource eventSource)
+        {
+            return eventSource.Name.Contains("System.Net.Quic") || eventSource.Name.Contains("System.Net.Http");
+        }
+
         protected override void OnEventWritten(EventWrittenEventArgs eventData)
         {
             base.OnEventWritten(eventData);
+
+            if (!IsHttpEventSource(eventData.EventSource))
+            {
+                return;
+            }
 
             string message;
             lock (_messageBuilder)
