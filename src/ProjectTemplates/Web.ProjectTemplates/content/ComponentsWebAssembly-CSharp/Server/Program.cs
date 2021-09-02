@@ -97,8 +97,6 @@ app.UseHttpsRedirection();
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
-app.UseRouting();
-
 #if (IndividualLocalAuth)
 app.UseIdentityServer();
 #endif
