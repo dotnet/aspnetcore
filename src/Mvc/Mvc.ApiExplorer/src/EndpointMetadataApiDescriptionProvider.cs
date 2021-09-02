@@ -27,7 +27,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         private readonly IHostEnvironment _environment;
         private readonly IServiceProviderIsService? _serviceProviderIsService;
         private readonly TryParseMethodCache TryParseMethodCache = new();
-        private readonly NullabilityInfoContext NullabilityContext = new();
 
         // Executes before MVC's DefaultApiDescriptionProvider and GrpcHttpApiDescriptionProvider for no particular reason.
         public int Order => -1100;
@@ -122,7 +121,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 apiDescription.ParameterDescriptions.Add(parameterDescription);
             }
 
-            // Get custom attributes for the handler. ConsumesAttribute is one of the examples. 
+            // Get custom attributes for the handler. ConsumesAttribute is one of the examples.
             var acceptsRequestType = routeEndpoint.Metadata.GetMetadata<IAcceptsMetadata>()?.RequestType;
             if (acceptsRequestType is not null)
             {
@@ -157,7 +156,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
 
             // Determine the "requiredness" based on nullability, default value or if allowEmpty is set
-            var nullability = NullabilityContext.Create(parameter);
+            var nullabilityContext = new NullabilityInfoContext();
+            var nullability = nullabilityContext.Create(parameter);
             var isOptional = parameter.HasDefaultValue || nullability.ReadState != NullabilityState.NotNull || allowEmpty;
 
             return new ApiParameterDescription
