@@ -1,20 +1,17 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using Microsoft.AspNetCore.Http.Metadata;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Net.Http.Headers;
-using Resources = Microsoft.AspNetCore.Mvc.Core.Resources;
+using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Mvc.Formatters;
 
-namespace Microsoft.AspNetCore.Mvc
+namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
     /// A filter that specifies the type of the value and status code returned by the action.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
-    public class ProducesResponseTypeAttribute : Attribute, IApiResponseMetadataProvider, IProducesResponseTypeMetadata
+    internal class ProducesResponseTypeAttribute : IProducesResponseTypeMetadata
     {
         private readonly MediaTypeCollection? _contentTypes;
 
@@ -92,12 +89,7 @@ namespace Microsoft.AspNetCore.Mvc
         // Internal for testing
         internal MediaTypeCollection? ContentTypes => _contentTypes;
 
-        /// <inheritdoc />
-        void IApiResponseMetadataProvider.SetContentTypes(MediaTypeCollection contentTypes) => SetContentTypesInner(contentTypes);
-
-        void IProducesResponseTypeMetadata.SetContentTypes(MediaTypeCollection contentTypes) => SetContentTypesInner(contentTypes);
-
-        private void SetContentTypesInner(MediaTypeCollection contentTypes)
+        void IProducesResponseTypeMetadata.SetContentTypes(MediaTypeCollection contentTypes)
         {
             if (_contentTypes is not null)
             {
@@ -117,10 +109,9 @@ namespace Microsoft.AspNetCore.Mvc
             MediaTypeCollection contentTypes = new();
             foreach (var type in completeContentTypes)
             {
-                var mediaType = new MediaType(type);
-                if (mediaType.HasWildcard)
+                if (type.Contains('*', StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new InvalidOperationException(Resources.FormatGetContentTypes_WildcardsNotSupported(type));
+                    throw new InvalidOperationException($"Could not parse '{type}'. Content types with wildcards are not supported.");
                 }
 
                 contentTypes.Add(type);

@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 responseType = typeof(void);
             }
 
-            var responseMetadata = endpointMetadata.GetOrderedMetadata<IApiResponseMetadataProvider>();
+            var responseMetadata = endpointMetadata.GetOrderedMetadata<IProducesResponseTypeMetadata>();
             var errorMetadata = endpointMetadata.GetMetadata<ProducesErrorResponseTypeAttribute>();
             var defaultErrorType = errorMetadata?.Type ?? typeof(void);
             var contentTypes = new MediaTypeCollection();
