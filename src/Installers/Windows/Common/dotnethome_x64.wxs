@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <?ifndef Platform ?>
+    <?define Platform = "$(sys.BUILDARCH)" ?>
+  <?endif ?>
+
+  <!-- The following match the expected values for PROCESSOR_ARCHITECTURE
+          https://docs.microsoft.com/en-us/windows/win32/winprog64/wow64-implementation-details -->
+  <?if $(var.Platform)=x86?>
+    <?define InstallerArchitecture="X86"?>
+  <?elseif $(var.Platform)=x64?>
+    <?define InstallerArchitecture="AMD64"?>
+  <?elseif $(var.Platform)=ARM64?>
+    <?define InstallerArchitecture="ARM64"?>
+  <?endif?>
+
+  <Fragment>
+    <!-- Identify when installing in emulation as when PROCESSOR_ARCHITECTURE does not match the installer architecture
+          https://docs.microsoft.com/en-us/windows/win32/winprog64/wow64-implementation-details -->
+    <SetProperty Action="Set_INSTALLING_IN_EMULATION" Id="INSTALLING_IN_EMULATION" Value="true" Before="CostFinalize">
+      NOT %PROCESSOR_ARCHITECTURE="$(var.InstallerArchitecture)"
+    </SetProperty>
+  </Fragment>
+    
+  <?if $(var.Platform)=x64?>
+  <Fragment>
+    <!-- When running in x64 emulation and user hasn't specified install directory, install to an x64 subdirectory-->
+    <SetProperty Action="Set_DOTNETHOME_x64" Id="DOTNETHOME" Value="[ProgramFiles64Folder]dotnet\x64\" After="Set_INSTALLING_IN_EMULATION">
+      INSTALLING_IN_EMULATION AND NOT DOTNETHOME
+    </SetProperty>
+  </Fragment>
+  <?endif?>
+</Wix>
