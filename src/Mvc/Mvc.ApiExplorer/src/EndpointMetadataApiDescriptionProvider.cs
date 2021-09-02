@@ -131,7 +131,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                         Type = acceptsRequestType,
                         IsRequired = !isOptional,
                     };
-
                     apiDescription.ParameterDescriptions.Add(parameterDescription);
                 }
 
@@ -149,7 +148,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var (source, name, allowEmpty) = GetBindingSourceAndName(parameter, pattern);
 
             // Services are ignored because they are not request parameters.
-            if (source == BindingSource.Services)
+            if (source == BindingSource.Services || source == BindingSource.Body)
             {
                 return null;
             }
