@@ -51,17 +51,7 @@ namespace Microsoft.AspNetCore.Http
 		/// <param name="value">The value to assign.</param>
 		public static void SetInt64(this ISession session, string key, long value)
 		{
-			var bytes = new byte[]
-			{
-				(byte)(value >> 56),
-				(byte)(0xFF & value >> 48),
-				(byte)(0xFF & value >> 40),
-				(byte)(0xFF & value >> 32),
-				(byte)(0xFF & value >> 24),
-				(byte)(0xFF & (value >> 16)),
-				(byte)(0xFF & (value >> 8)),
-				(byte)(0xFF & value)
-			};
+			var bytes = BitConverter.GetBytes(value);
 			session.Set(key, bytes);
 		}
 
@@ -77,7 +67,10 @@ namespace Microsoft.AspNetCore.Http
 			{
 				return null;
 			}
-			return data[0] << 56 | data[1] << 48 | data[2] << 40 | data[3] << 32 | data[4] << 24 | data[5] << 16 | data[6] << 8 | data[7];
+
+			return BitConverter.IsLittleEndian
+                ? BitConverter.ToInt64(data, 0)
+                : BitConverter.ToInt64(data.Reverse().ToArray(), 0);
 		}
 
 		/// <summary>
