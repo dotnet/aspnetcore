@@ -29,6 +29,23 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
   const jsInitializer = await fetchAndInvokeInitializers(options);
 
   const logger = new ConsoleLogger(options.logLevel);
+
+  Blazor.reconnect = async (existingConnection?: HubConnection): Promise<boolean> => {
+    if (renderingFailed) {
+      // We can't reconnect after a failure, so exit early.
+      return false;
+    }
+
+    const reconnection = existingConnection || await initializeConnection(options, logger, circuit);
+    if (!(await circuit.reconnect(reconnection))) {
+      logger.log(LogLevel.Information, 'Reconnection attempt to the circuit was rejected by the server. This may indicate that the associated state is no longer available on the server.');
+      return false;
+    }
+
+    options.reconnectionHandler!.onConnectionUp();
+
+    return true;
+  };
   Blazor.defaultReconnectionHandler = new DefaultReconnectionHandler(logger);
 
   options.reconnectionHandler = options.reconnectionHandler || Blazor.defaultReconnectionHandler;
@@ -45,23 +62,6 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
     return;
   }
 
-  const reconnect = async (existingConnection?: HubConnection): Promise<boolean> => {
-    if (renderingFailed) {
-      // We can't reconnect after a failure, so exit early.
-      return false;
-    }
-
-    const reconnection = existingConnection || await initializeConnection(options, logger, circuit);
-    if (!(await circuit.reconnect(reconnection))) {
-      logger.log(LogLevel.Information, 'Reconnection attempt to the circuit was rejected by the server. This may indicate that the associated state is no longer available on the server.');
-      return false;
-    }
-
-    options.reconnectionHandler!.onConnectionUp();
-
-    return true;
-  };
-
   let disconnectSent = false;
   const cleanup = () => {
     if (!disconnectSent) {
@@ -75,8 +75,6 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
   Blazor.disconnect = cleanup;
 
   window.addEventListener('unload', cleanup, { capture: false, once: true });
-
-  Blazor.reconnect = reconnect;
 
   logger.log(LogLevel.Information, 'Blazor server-side application started.');
 
@@ -148,6 +146,11 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
     } else if (ex.innerErrors && ex.innerErrors.some(e => e.errorType === 'DisabledTransportError' && e.transport === HttpTransportType.LongPolling)) {
       logger.log(LogLevel.Error, 'Unable to initiate a SignalR connection to the server. This might be because the server is not configured to support WebSockets. To troubleshoot this, visit https://aka.ms/blazor-server-websockets-error.');
       showErrorNotification();
+    } else if (ex.errorType === 'FailedToNegotiateWithServerError') {
+      // Connection with the server has been interrupted, and we're in the process of reconnecting.
+      // Throw this exception so it can be handled at the reconnection layer, and don't show the
+      // error notification.
+      throw ex;
     } else {
       showErrorNotification();
     }
