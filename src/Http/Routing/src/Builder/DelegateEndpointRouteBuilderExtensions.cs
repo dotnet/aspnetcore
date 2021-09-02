@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -168,10 +170,13 @@ namespace Microsoft.AspNetCore.Builder
                 routeParams.Add(part.Name);
             }
 
+            var routeHandlerOptions = endpoints.ServiceProvider?.GetService<IOptions<RouteHandlerOptions>>();
+
             var options = new RequestDelegateFactoryOptions
             {
                 ServiceProvider = endpoints.ServiceProvider,
-                RouteParameterNames = routeParams
+                RouteParameterNames = routeParams,
+                ThrowOnBadRequest = routeHandlerOptions?.Value.ThrowOnBadRequest ?? false,
             };
 
             var requestDelegateResult = RequestDelegateFactory.Create(handler, options);

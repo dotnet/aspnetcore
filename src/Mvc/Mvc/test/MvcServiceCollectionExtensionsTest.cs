@@ -30,6 +30,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -379,7 +380,9 @@ namespace Microsoft.AspNetCore.Mvc
             // Arrange
             var services = new ServiceCollection();
 
-            services.AddSingleton<IWebHostEnvironment>(GetHostingEnvironment());
+            var hostEnvironment = GetHostingEnvironment();
+            services.AddSingleton<IWebHostEnvironment>(hostEnvironment);
+            services.AddSingleton<IHostEnvironment>(hostEnvironment);
 
             var diagnosticListener = new DiagnosticListener("Microsoft.AspNet");
             services.AddSingleton<DiagnosticSource>(diagnosticListener);
