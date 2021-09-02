@@ -119,6 +119,9 @@ namespace Templates.Test
             // Add template name, value has form of "new name"
             text += argumentsArray[0].Substring("new ".Length);
 
+            // Sort arguments to ensure definitions that differ only by arguments order are caught
+            Array.Sort(argumentsArray, StringComparer.Ordinal);
+
             foreach (var argValue in argumentsArray)
             {
                 var argSegments = argValue.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
