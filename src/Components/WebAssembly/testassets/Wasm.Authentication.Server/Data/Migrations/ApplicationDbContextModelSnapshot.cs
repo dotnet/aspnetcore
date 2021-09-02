@@ -15,7 +15,7 @@ namespace Wasm.Authentication.Server.Data.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "7.0.0-alpha.1.21427.1");
+            modelBuilder.HasAnnotation("ProductVersion", "7.0.0-alpha.1.21451.8");
 
             modelBuilder.Entity("Duende.IdentityServer.EntityFramework.Entities.DeviceFlowCodes", b =>
                 {
