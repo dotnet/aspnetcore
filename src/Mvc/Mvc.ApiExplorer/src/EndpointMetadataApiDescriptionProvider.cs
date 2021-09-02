@@ -148,6 +148,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var (source, name, allowEmpty) = GetBindingSourceAndName(parameter, pattern);
 
             // Services are ignored because they are not request parameters.
+            // We ignore/skip body parameter because the value will be retrieved from the IAcceptsMetadata.
             if (source == BindingSource.Services || source == BindingSource.Body)
             {
                 return null;
