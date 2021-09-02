@@ -539,6 +539,22 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 throw new NotImplementedException();
         }
 
+        private record struct MyNullableBindAsyncStruct(Uri Uri)
+        {
+            public static ValueTask<MyNullableBindAsyncStruct?> BindAsync(HttpContext context, ParameterInfo parameter)
+            {
+                Assert.True(parameter.ParameterType == typeof(MyNullableBindAsyncStruct) || parameter.ParameterType == typeof(MyNullableBindAsyncStruct?));
+                Assert.Equal("myNullableBindAsyncStruct", parameter.Name);
+
+                if (!Uri.TryCreate(context.Request.Headers.Referer, UriKind.Absolute, out var uri))
+                {
+                    return new(result: null);
+                }
+
+                return new(result: new(uri));
+            }
+        }
+
         private record struct MyBindAsyncStruct(Uri Uri)
         {
             public static ValueTask<MyBindAsyncStruct> BindAsync(HttpContext context, ParameterInfo parameter)
@@ -916,9 +932,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Fact]
-        public async Task BindAsyncExceptionsThrowException()
+        public async Task BindAsyncExceptionsAreUncaught()
         {
-            // Not supplying any headers will cause the HttpContext TryParse overload to fail.
+            // Not supplying any headers will cause the HttpContext BindAsync overload to fail.
             var httpContext = CreateHttpContext();
 
             var factoryResult = RequestDelegateFactory.Create((MyBindAsyncTypeThatThrows arg1) => { });
@@ -2124,22 +2140,107 @@ namespace Microsoft.AspNetCore.Routing.Internal
             }
         }
 
-        [Fact]
-        public async Task RequestDelegateDoesSupportBindAsyncOptionality()
+        public static IEnumerable<object?[]> BindAsyncParamOptionalityData
+        {
+            get
+            {
+                void requiredReferenceType(HttpContext context, MyBindAsyncRecord myBindAsyncRecord)
+                {
+                    context.Items["uri"] = myBindAsyncRecord.Uri;
+                }
+                void defaultReferenceType(HttpContext context, MyBindAsyncRecord? myBindAsyncRecord = null)
+                {
+                    context.Items["uri"] = myBindAsyncRecord?.Uri;
+                }
+                void nullableReferenceType(HttpContext context, MyBindAsyncRecord? myBindAsyncRecord)
+                {
+                    context.Items["uri"] = myBindAsyncRecord?.Uri;
+                }
+
+
+                void requiredValueType(HttpContext context, MyNullableBindAsyncStruct myNullableBindAsyncStruct)
+                {
+                    context.Items["uri"] = myNullableBindAsyncStruct.Uri;
+                }
+                void defaultValueType(HttpContext context, MyNullableBindAsyncStruct? myNullableBindAsyncStruct = null)
+                {
+                    context.Items["uri"] = myNullableBindAsyncStruct?.Uri;
+                }
+                void nullableValueType(HttpContext context, MyNullableBindAsyncStruct? myNullableBindAsyncStruct)
+                {
+                    context.Items["uri"] = myNullableBindAsyncStruct?.Uri;
+                }
+
+                return new object?[][]
+                {
+                    new object?[] { (Action<HttpContext, MyBindAsyncRecord>)requiredReferenceType, false, true, false },
+                    new object?[] { (Action<HttpContext, MyBindAsyncRecord>)requiredReferenceType, true, false, false, },
+
+                    new object?[] { (Action<HttpContext, MyBindAsyncRecord?>)defaultReferenceType, false, false, false, },
+                    new object?[] { (Action<HttpContext, MyBindAsyncRecord?>)defaultReferenceType, true, false, false },
+
+                    new object?[] { (Action<HttpContext, MyBindAsyncRecord?>)nullableReferenceType, false, false, false },
+                    new object?[] { (Action<HttpContext, MyBindAsyncRecord?>)nullableReferenceType, true, false, false },
+
+                    new object?[] { (Action<HttpContext, MyNullableBindAsyncStruct>)requiredValueType, false, true, true },
+                    new object?[] { (Action<HttpContext, MyNullableBindAsyncStruct>)requiredValueType, true, false, true },
+
+                    new object?[] { (Action<HttpContext, MyNullableBindAsyncStruct?>)defaultValueType, false, false, true },
+                    new object?[] { (Action<HttpContext, MyNullableBindAsyncStruct?>)defaultValueType, true, false, true },
+
+                    new object?[] { (Action<HttpContext, MyNullableBindAsyncStruct?>)nullableValueType, false, false, true },
+                    new object?[] { (Action<HttpContext, MyNullableBindAsyncStruct?>)nullableValueType, true, false, true },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(BindAsyncParamOptionalityData))]
+        public async Task RequestDelegateHandlesBindAsyncOptionality(Delegate routeHandler, bool includeReferer, bool isInvalid, bool isStruct)
         {
             var httpContext = CreateHttpContext();
-            var invoked = false;
 
-            var factoryResult = RequestDelegateFactory.Create((MyBindAsyncRecord? myBindAsyncRecord) =>
+            if (includeReferer)
             {
-                Assert.Null(myBindAsyncRecord);
-                invoked = true;
-            });
+                httpContext.Request.Headers.Referer = "https://example.org";
+            }
+
+            var factoryResult = RequestDelegateFactory.Create(routeHandler);
 
             var requestDelegate = factoryResult.RequestDelegate;
             await requestDelegate(httpContext);
 
-            Assert.True(invoked);
+            Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+
+            if (isInvalid)
+            {
+                Assert.Equal(400, httpContext.Response.StatusCode);
+                var log = Assert.Single(TestSink.Writes);
+                Assert.Equal(LogLevel.Debug, log.LogLevel);
+                Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), log.EventId);
+
+                if (isStruct)
+                {
+                    Assert.Equal(@"Required parameter ""MyNullableBindAsyncStruct myNullableBindAsyncStruct"" was not provided from MyNullableBindAsyncStruct.BindAsync(HttpContext, ParameterInfo).", log.Message);
+                }
+                else
+                {
+                    Assert.Equal(@"Required parameter ""MyBindAsyncRecord myBindAsyncRecord"" was not provided from MyBindAsyncRecord.BindAsync(HttpContext, ParameterInfo).", log.Message);
+                }
+            }
+            else
+            {
+                Assert.Equal(200, httpContext.Response.StatusCode);
+
+                if (includeReferer)
+                {
+                    Assert.Equal(new Uri("https://example.org"), httpContext.Items["uri"]);
+                }
+                else
+                {
+                    Assert.Null(httpContext.Items["uri"]);
+                }
+            }
         }
 
         public static IEnumerable<object?[]> ServiceParamOptionalityData
