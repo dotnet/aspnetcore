@@ -1235,11 +1235,12 @@ namespace Microsoft.AspNetCore.Routing.Internal
             serviceCollection.AddSingleton(LoggerFactory);
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var factoryResult = RequestDelegateFactory.Create(action);
+            var factoryResult = RequestDelegateFactory.Create(action, new RequestDelegateFactoryOptions() { ThrowOnBadRequest = true });
             var requestDelegate = factoryResult.RequestDelegate;
 
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => requestDelegate(httpContext));
-            Assert.Equal("Implicit body inferred but no body was provided. Did you mean to use a Service instead?", ex.Message);
+            var ex = await Assert.ThrowsAsync<BadHttpRequestException>(() => requestDelegate(httpContext));
+            Assert.StartsWith("Implicit body inferred for parameter", ex.Message);
+            Assert.EndsWith("but no body was provided. Did you mean to use a Service instead?", ex.Message);
         }
 
         [Fact]
@@ -1482,8 +1483,11 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var factoryResult = RequestDelegateFactory.Create(action);
             var requestDelegate = factoryResult.RequestDelegate;
 
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => requestDelegate(httpContext));
-            Assert.Equal("Implicit body inferred but no body was provided. Did you mean to use a Service instead?", ex.Message);
+            await requestDelegate(httpContext);
+
+            var message = Assert.Single(TestSink.Writes).Message;
+            Assert.StartsWith("Implicit body inferred for parameter", message);
+            Assert.EndsWith("but no body was provided. Did you mean to use a Service instead?", message);
         }
 
         [Theory]
@@ -2196,8 +2200,12 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             if (isInvalid)
             {
-                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => request);
-                Assert.Equal("Implicit body inferred but no body was provided. Did you mean to use a Service instead?", ex.Message);
+                var logs = TestSink.Writes.ToArray();
+                Assert.Equal(400, httpContext.Response.StatusCode);
+                var log = Assert.Single(logs);
+                Assert.Equal(LogLevel.Debug, log.LogLevel);
+                Assert.Equal(new EventId(5, "ImplicitBodyNotProvided"), log.EventId);
+                Assert.Equal(@"Implicit body inferred for parameter ""todo"" but no body was provided. Did you mean to use a Service instead?", log.Message);
             }
             else
             {

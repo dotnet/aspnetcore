@@ -158,8 +158,8 @@ Microsoft.AspNetCore.Http.Headers.ResponseHeaders.SetCookie.set -> void
 Microsoft.AspNetCore.Http.Headers.ResponseHeaders.SetList<T>(string! name, System.Collections.Generic.IList<T>? values) -> void
 Microsoft.AspNetCore.Http.RequestDelegateFactory
 Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions
-Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.DisableImplicitFromBody.get -> bool
-Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.DisableImplicitFromBody.set -> void
+Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.DisableInferredBody.get -> bool
+Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.DisableInferredBody.set -> void
 Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RequestDelegateFactoryOptions() -> void
 Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteParameterNames.get -> System.Collections.Generic.IEnumerable<string!>?
 Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteParameterNames.init -> void

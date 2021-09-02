@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Builder
             this IEndpointRouteBuilder endpoints,
             RoutePattern pattern,
             Delegate handler,
-            bool disableImplicitFromBody)
+            bool disableInferredBody)
         {
             if (endpoints is null)
             {
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Builder
                 ServiceProvider = endpoints.ServiceProvider,
                 RouteParameterNames = routeParams,
                 ThrowOnBadRequest = routeHandlerOptions?.Value.ThrowOnBadRequest ?? false,
-                DisableImplicitFromBody = disableImplicitFromBody,
+                DisableInferredBody = disableInferredBody,
             };
 
             var requestDelegateResult = RequestDelegateFactory.Create(handler, options);
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(httpMethods));
             }
 
-            var disableImplicitFromBody = false;
+            var disableInferredBody = false;
             // GET, DELETE, HEAD, CONNECT, TRACE, and OPTIONS normally do not contain bodies
             if (!httpMethods.Any(method => !(method.Equals(HttpMethods.Get, StringComparison.Ordinal) ||
                 method.Equals(HttpMethods.Delete, StringComparison.Ordinal) ||
@@ -216,10 +216,10 @@ namespace Microsoft.AspNetCore.Builder
                 method.Equals(HttpMethods.Trace, StringComparison.Ordinal) ||
                 method.Equals(HttpMethods.Connect, StringComparison.Ordinal))))
             {
-                disableImplicitFromBody = true;
+                disableInferredBody = true;
             }
 
-            var builder = endpoints.Map(RoutePatternFactory.Parse(pattern), handler, disableImplicitFromBody);
+            var builder = endpoints.Map(RoutePatternFactory.Parse(pattern), handler, disableInferredBody);
             // Prepends the HTTP method to the DisplayName produced with pattern + method name
             builder.Add(b => b.DisplayName = $"HTTP: {string.Join(", ", httpMethods)} {b.DisplayName}");
             builder.WithMetadata(new HttpMethodMetadata(httpMethods));
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Builder
             RoutePattern pattern,
             Delegate handler)
         {
-            return Map(endpoints, pattern, handler, disableImplicitFromBody: false);
+            return Map(endpoints, pattern, handler, disableInferredBody: false);
         }
 
         /// <summary>
