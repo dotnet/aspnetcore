@@ -148,10 +148,9 @@ class MsalAuthorizeService implements AuthorizeService {
             // Before we start any sign-in flow, clear out any previous state so that it doesn't pile up.
             this.purgeState();
 
-            const request: Msal.AuthorizationUrlRequest = {
-                redirectUri: this._settings.auth.redirectUri,
-                state: await this.saveState(state),
-                scopes: []
+            const request: Partial<Msal.AuthorizationUrlRequest> = {
+                redirectUri: this._settings.auth.redirectUri!,
+                state: await this.saveState(state)
             };
 
             if (this._settings.defaultAccessTokenScopes && this._settings.defaultAccessTokenScopes.length > 0) {
@@ -194,7 +193,7 @@ class MsalAuthorizeService implements AuthorizeService {
         }
     }
 
-    async signInCore(request: Msal.AuthorizationUrlRequest): Promise<Msal.AuthenticationResult | Msal.AuthError | undefined> {
+    async signInCore(request: Partial<Msal.AuthorizationUrlRequest>): Promise<Msal.AuthenticationResult | Msal.AuthError | undefined> {
         const loginMode = this._settings.loginMode.toLowerCase();
         if (loginMode === 'redirect') {
             return this.signInWithRedirect(request as Msal.RedirectRequest);
