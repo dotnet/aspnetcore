@@ -1264,6 +1264,53 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Equal("value", app.Configuration["testhostingstartup:config"]);
         }
 
+        [Fact]
+        public async Task DeveloperExceptionPageWritesBadRequestDetailsToResponseByDefaltInDevelopment()
+        {
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions() { EnvironmentName = Environments.Development });
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            app.MapGet("/{parameterName}", (int parameterName) => { });
+
+            await app.StartAsync();
+
+            var client = app.GetTestClient();
+
+            var response = await client.GetAsync("/notAnInt");
+
+            Assert.False(response.IsSuccessStatusCode);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Contains("text/plain", response.Content.Headers.ContentType.MediaType);
+
+            var responseBody = await response.Content.ReadAsStringAsync();
+            Assert.Contains("parameterName", responseBody);
+            Assert.Contains("notAnInt", responseBody);
+        }
+
+        [Fact]
+        public async Task NoExceptionAreThrownForBadRequestsInProduction()
+        {
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions() { EnvironmentName = Environments.Production });
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            app.MapGet("/{parameterName}", (int parameterName) => { });
+
+            await app.StartAsync();
+
+            var client = app.GetTestClient();
+
+            var response = await client.GetAsync("/notAnInt");
+
+            Assert.False(response.IsSuccessStatusCode);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Null(response.Content.Headers.ContentType);
+
+            var responseBody = await response.Content.ReadAsStringAsync();
+            Assert.Equal(string.Empty, responseBody);
+        }
+
         class ThrowingStartupFilter : IStartupFilter
         {
             public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
