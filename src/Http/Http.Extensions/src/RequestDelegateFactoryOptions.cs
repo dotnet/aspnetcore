@@ -27,8 +27,8 @@ namespace Microsoft.AspNetCore.Http
         public bool ThrowOnBadRequest { get; init; }
 
         /// <summary>
-        /// Allow the delegate to infer a parameter as from the request body.
+        /// Prevent the <see cref="RequestDelegateFactory" /> from inferring a parameter should be bound from the request body without an attribute.
         /// </summary>
-        public bool AllowImplicitFromBody { get; set; }
+        public bool DisableImplicitFromBody { get; set; }
     }
 }

@@ -194,6 +194,32 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Contains("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromService] or [FromBody] attribute?", ex.Message);
         }
 
+        public static object[][] NonImplicitFromBodyMethods
+        {
+            get
+            {
+                return new[]
+                {
+                    new[] { HttpMethods.Delete },
+                    new[] { HttpMethods.Connect },
+                    new[] { HttpMethods.Trace },
+                    new[] { HttpMethods.Get },
+                    new[] { HttpMethods.Head },
+                    new[] { HttpMethods.Options },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(NonImplicitFromBodyMethods))]
+        public void MapVerb_ThrowsWithImplicitFromBody(string method)
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+            var ex = Assert.Throws<InvalidOperationException>(() => builder.MapMethods("/", new[] { method }, (Todo todo) => { }));
+            Assert.Contains("Body was inferred but the method does not allow inferred body parameters.", ex.Message);
+            Assert.Contains("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromService] or [FromBody] attribute?", ex.Message);
+        }
+
         [Fact]
         public void MapGet_ImplicitFromService()
         {

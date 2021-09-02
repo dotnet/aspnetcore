@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Http
                 args[i] = CreateArgument(parameters[i], factoryContext);
             }
 
-            if (factoryContext.HasImplicitBody && (!options?.AllowImplicitFromBody ?? false))
+            if (factoryContext.HasImplicitBody && (options?.DisableImplicitFromBody ?? false))
             {
                 var errorMessage = BuildErrorMessageForInferredBodyParameter(factoryContext);
                 throw new InvalidOperationException(errorMessage);
