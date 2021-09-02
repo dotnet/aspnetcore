@@ -489,7 +489,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     new object[] { (Action<HttpContext, AssemblyFlags>)Store, "PublicKey,Retargetable", AssemblyFlags.PublicKey | AssemblyFlags.Retargetable },
                     new object[] { (Action<HttpContext, int?>)Store, "42", 42 },
                     new object[] { (Action<HttpContext, MyEnum>)Store, "ValueB", MyEnum.ValueB },
-                    new object[] { (Action<HttpContext, MyTryParsableRecord>)Store, "https://example.org", new MyTryParsableRecord(new Uri("https://example.org")) },
+                    new object[] { (Action<HttpContext, MyTryParseRecord>)Store, "https://example.org", new MyTryParseRecord(new Uri("https://example.org")) },
                     new object?[] { (Action<HttpContext, int?>)Store, null, null },
                 };
             }
@@ -497,9 +497,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         private enum MyEnum { ValueA, ValueB, }
 
-        private record MyTryParsableRecord(Uri Uri)
+        private record MyTryParseRecord(Uri Uri)
         {
-            public static bool TryParse(string? value, out MyTryParsableRecord? result)
+            public static bool TryParse(string? value, out MyTryParseRecord? result)
             {
                 if (!Uri.TryCreate(value, UriKind.Absolute, out var uri))
                 {
@@ -507,17 +507,15 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     return false;
                 }
 
-                result = new MyTryParsableRecord(uri);
+                result = new MyTryParseRecord(uri);
                 return true;
             }
         }
 
         private class MyBindAsyncTypeThatThrows
         {
-            public static ValueTask<MyBindAsyncTypeThatThrows?> BindAsync(HttpContext context, ParameterInfo parameter)
-            {
+            public static ValueTask<MyBindAsyncTypeThatThrows?> BindAsync(HttpContext context, ParameterInfo parameter) =>
                 throw new InvalidOperationException("BindAsync failed");
-            }
         }
 
         private record MyBindAsyncRecord(Uri Uri)
@@ -535,12 +533,10 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 return new(result: new(uri));
             }
 
-            // TryParse(HttpContext, ...) should be preferred over TryParse(string, ...) if there's
+            // BindAsync(HttpContext, ParameterInfo) should be preferred over TryParse(string, ...) if there's
             // no [FromRoute] or [FromQuery] attributes.
-            public static bool TryParse(string? value, out MyBindAsyncRecord? result)
-            {
+            public static bool TryParse(string? value, out MyBindAsyncRecord? result) =>
                 throw new NotImplementedException();
-            }
         }
 
         private record struct MyBindAsyncStruct(Uri Uri)
@@ -558,7 +554,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 return new(result: new(uri));
             }
 
-            // TryParse(HttpContext, ...) should be preferred over TryParse(string, ...) if there's
+            // BindAsync(HttpContext, ParameterInfo) should be preferred over TryParse(string, ...) if there's
             // no [FromRoute] or [FromQuery] attributes.
             public static bool TryParse(string? value, out MyBindAsyncStruct result) =>
                 throw new NotImplementedException();
@@ -658,7 +654,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Fact]
-        public async Task RequestDelegatePrefersBindAsyncOverTryParseString()
+        public async Task RequestDelegatePrefersBindAsyncOverTryParse()
         {
             var httpContext = CreateHttpContext();
 
@@ -677,7 +673,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Fact]
-        public async Task RequestDelegatePrefersBindAsyncOverTryParseStringForNonNullableStruct()
+        public async Task RequestDelegatePrefersBindAsyncOverTryParseForNonNullableStruct()
         {
             var httpContext = CreateHttpContext();
 
@@ -695,7 +691,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Fact]
-        public async Task RequestDelegateUsesTryParseStringoOverBindAsyncGivenExplicitAttribute()
+        public async Task RequestDelegateUsesTryParseOverBindAsyncGivenExplicitAttribute()
         {
             var fromRouteFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, [FromRoute] MyBindAsyncRecord myBindAsyncRecord) => { });
             var fromQueryFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, [FromQuery] MyBindAsyncRecord myBindAsyncRecord) => { });
@@ -716,7 +712,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Fact]
-        public async Task RequestDelegateUsesTryParseStringOverBindAsyncGivenNullableStruct()
+        public async Task RequestDelegateUsesTryParseOverBindAsyncGivenNullableStruct()
         {
             var fromRouteFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, MyBindAsyncStruct? myBindAsyncRecord) => { });
 

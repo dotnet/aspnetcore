@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Http
     public static partial class RequestDelegateFactory
     {
         private static readonly NullabilityInfoContext NullabilityContext = new();
-        private static readonly TryParseMethodCache TryParseMethodCache = new();
+        private static readonly ParameterBindingMethodCache ParameterBindingMethodCache = new();
 
         private static readonly MethodInfo ExecuteTaskOfTMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTask), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo ExecuteTaskOfStringMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskOfString), BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Http
         private static readonly ParameterExpression WasParamCheckFailureExpr = Expression.Variable(typeof(bool), "wasParamCheckFailure");
         private static readonly ParameterExpression BoundValuesArrayExpr = Expression.Parameter(typeof(object[]), "boundValues");
 
-        private static ParameterExpression HttpContextExpr => TryParseMethodCache.HttpContextExpr;
+        private static ParameterExpression HttpContextExpr => ParameterBindingMethodCache.HttpContextExpr;
         private static readonly MemberExpression RequestServicesExpr = Expression.Property(HttpContextExpr, typeof(HttpContext).GetProperty(nameof(HttpContext.RequestServices))!);
         private static readonly MemberExpression HttpRequestExpr = Expression.Property(HttpContextExpr, typeof(HttpContext).GetProperty(nameof(HttpContext.Request))!);
         private static readonly MemberExpression HttpResponseExpr = Expression.Property(HttpContextExpr, typeof(HttpContext).GetProperty(nameof(HttpContext.Response))!);
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Http
         private static readonly MemberExpression StatusCodeExpr = Expression.Property(HttpResponseExpr, typeof(HttpResponse).GetProperty(nameof(HttpResponse.StatusCode))!);
         private static readonly MemberExpression CompletedTaskExpr = Expression.Property(null, (PropertyInfo)GetMemberInfo<Func<Task>>(() => Task.CompletedTask));
 
-        private static ParameterExpression TempSourceStringExpr => TryParseMethodCache.TempSourceStringExpr;
+        private static ParameterExpression TempSourceStringExpr => ParameterBindingMethodCache.TempSourceStringExpr;
         private static readonly BinaryExpression TempSourceStringNotNullExpr = Expression.NotEqual(TempSourceStringExpr, Expression.Constant(null));
         private static readonly BinaryExpression TempSourceStringNullExpr = Expression.Equal(TempSourceStringExpr, Expression.Constant(null));
 
@@ -256,11 +256,11 @@ namespace Microsoft.AspNetCore.Http
             {
                 return RequestAbortedExpr;
             }
-            else if (TryParseMethodCache.HasBindAsyncMethod(parameter))
+            else if (ParameterBindingMethodCache.HasBindAsyncMethod(parameter))
             {
                 return BindParameterFromBindAsync(parameter, factoryContext);
             }
-            else if (parameter.ParameterType == typeof(string) || TryParseMethodCache.HasTryParseStringMethod(parameter))
+            else if (parameter.ParameterType == typeof(string) || ParameterBindingMethodCache.HasTryParseMethod(parameter))
             {
                 // 1. We bind from route values only, if route parameters are non-null and the parameter name is in that set.
                 // 2. We bind from query only, if route parameters are non-null and the parameter name is NOT in that set.
@@ -693,7 +693,7 @@ namespace Microsoft.AspNetCore.Http
             var isNotNullable = underlyingNullableType is null;
 
             var nonNullableParameterType = underlyingNullableType ?? parameter.ParameterType;
-            var tryParseMethodCall = TryParseMethodCache.FindTryParseStringMethod(nonNullableParameterType);
+            var tryParseMethodCall = ParameterBindingMethodCache.FindTryParseMethod(nonNullableParameterType);
 
             if (tryParseMethodCall is null)
             {
@@ -819,7 +819,7 @@ namespace Microsoft.AspNetCore.Http
             var isOptional = IsOptionalParameter(parameter);
 
             // Get the BindAsync method for the type.
-            var bindAsyncExpression = TryParseMethodCache.FindBindAsyncMethod(parameter);
+            var bindAsyncExpression = ParameterBindingMethodCache.FindBindAsyncMethod(parameter);
             // We know BindAsync exists because there's no way to opt-in without defining the method on the type.
             Debug.Assert(bindAsyncExpression is not null);
 

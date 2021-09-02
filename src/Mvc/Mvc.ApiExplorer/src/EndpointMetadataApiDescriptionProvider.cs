@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         private readonly EndpointDataSource _endpointDataSource;
         private readonly IHostEnvironment _environment;
         private readonly IServiceProviderIsService? _serviceProviderIsService;
-        private readonly TryParseMethodCache TryParseMethodCache = new();
+        private readonly ParameterBindingMethodCache ParameterBindingMethodCache = new();
         private readonly NullabilityInfoContext NullabilityContext = new();
 
         // Executes before MVC's DefaultApiDescriptionProvider and GrpcHttpApiDescriptionProvider for no particular reason.
@@ -199,12 +199,12 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                      parameter.ParameterType == typeof(HttpResponse) ||
                      parameter.ParameterType == typeof(ClaimsPrincipal) ||
                      parameter.ParameterType == typeof(CancellationToken) ||
-                     TryParseMethodCache.HasBindAsyncMethod(parameter) ||
+                     ParameterBindingMethodCache.HasBindAsyncMethod(parameter) ||
                      _serviceProviderIsService?.IsService(parameter.ParameterType) == true)
             {
                 return (BindingSource.Services, parameter.Name ?? string.Empty, false);
             }
-            else if (parameter.ParameterType == typeof(string) || TryParseMethodCache.HasTryParseStringMethod(parameter))
+            else if (parameter.ParameterType == typeof(string) || ParameterBindingMethodCache.HasTryParseMethod(parameter))
             {
                 // Path vs query cannot be determined by RequestDelegateFactory at startup currently because of the layering, but can be done here.
                 if (parameter.Name is { } name && pattern.GetParameter(name) is not null)

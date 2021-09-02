@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace Microsoft.AspNetCore.Http.Extensions.Tests
 {
-    public class TryParseMethodCacheTests
+    public class ParameterBindingMethodCacheTests
     {
         [Theory]
         [InlineData(typeof(int))]
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         [InlineData(typeof(ulong))]
         public void FindTryParseStringMethod_ReturnsTheExpectedTryParseMethodWithInvariantCulture(Type type)
         {
-            var methodFound = new TryParseMethodCache().FindTryParseStringMethod(@type);
+            var methodFound = new ParameterBindingMethodCache().FindTryParseMethod(@type);
 
             Assert.NotNull(methodFound);
 
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         [InlineData(typeof(TimeSpan))]
         public void FindTryParseStringMethod_ReturnsTheExpectedTryParseMethodWithInvariantCultureDateType(Type type)
         {
-            var methodFound = new TryParseMethodCache().FindTryParseStringMethod(@type);
+            var methodFound = new ParameterBindingMethodCache().FindTryParseMethod(@type);
 
             Assert.NotNull(methodFound);
 
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         [InlineData(typeof(TryParseStringStruct))]
         public void FindTryParseStringMethod_ReturnsTheExpectedTryParseMethodWithInvariantCultureCustomType(Type type)
         {
-            var methodFound = new TryParseMethodCache().FindTryParseStringMethod(@type);
+            var methodFound = new ParameterBindingMethodCache().FindTryParseMethod(@type);
 
             Assert.NotNull(methodFound);
 
@@ -119,14 +119,14 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         [MemberData(nameof(TryParseStringParameterInfoData))]
         public void HasTryParseStringMethod_ReturnsTrueWhenMethodExists(ParameterInfo parameterInfo)
         {
-            Assert.True(new TryParseMethodCache().HasTryParseStringMethod(parameterInfo));
+            Assert.True(new ParameterBindingMethodCache().HasTryParseMethod(parameterInfo));
         }
 
         [Fact]
         public void FindTryParseStringMethod_WorksForEnums()
         {
             var type = typeof(Choice);
-            var methodFound = new TryParseMethodCache().FindTryParseStringMethod(type);
+            var methodFound = new ParameterBindingMethodCache().FindTryParseMethod(type);
 
             Assert.NotNull(methodFound);
 
@@ -146,8 +146,8 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         public void FindTryParseStringMethod_WorksForEnumsWhenNonGenericEnumParseIsUsed()
         {
             var type = typeof(Choice);
-            var cache = new TryParseMethodCache(preferNonGenericEnumParseOverload: true);
-            var methodFound = cache.FindTryParseStringMethod(type);
+            var cache = new ParameterBindingMethodCache(preferNonGenericEnumParseOverload: true);
+            var methodFound = cache.FindTryParseMethod(type);
 
             Assert.NotNull(methodFound);
 
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         public async Task FindBindAsyncMethod_FindsCorrectMethodOnClass()
         {
             var type = typeof(BindAsyncRecord);
-            var cache = new TryParseMethodCache();
+            var cache = new ParameterBindingMethodCache();
             var parameter = new MockParameterInfo(type, "bindAsyncRecord");
             var methodFound = cache.FindBindAsyncMethod(parameter);
 
@@ -217,21 +217,21 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         [MemberData(nameof(BindAsyncParameterInfoData))]
         public void HasBindAsyncMethod_ReturnsTrueWhenMethodExists(ParameterInfo parameterInfo)
         {
-            Assert.True(new TryParseMethodCache().HasBindAsyncMethod(parameterInfo));
+            Assert.True(new ParameterBindingMethodCache().HasBindAsyncMethod(parameterInfo));
         }
 
         [Fact]
         public void HasBindAsyncMethod_ReturnsFalseForNullableReturningBindAsyncStructMethod()
         {
             var parameterInfo = GetFirstParameter((NullableReturningBindAsyncStruct arg) => NullableReturningBindAsyncStructMethod(arg));
-            Assert.False(new TryParseMethodCache().HasBindAsyncMethod(parameterInfo));
+            Assert.False(new ParameterBindingMethodCache().HasBindAsyncMethod(parameterInfo));
         }
 
         [Fact]
         public void FindBindAsyncMethod_DoesNotFindMethodGivenNullableType()
         {
             var parameterInfo = GetFirstParameter((BindAsyncStruct? arg) => BindAsyncNullableStructMethod(arg));
-            Assert.False(new TryParseMethodCache().HasBindAsyncMethod(parameterInfo));
+            Assert.False(new ParameterBindingMethodCache().HasBindAsyncMethod(parameterInfo));
         }
 
         enum Choice

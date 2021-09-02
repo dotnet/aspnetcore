@@ -14,9 +14,9 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Http
 {
-    internal sealed class TryParseMethodCache
+    internal sealed class ParameterBindingMethodCache
     {
-        private static readonly MethodInfo ConvertValueTaskMethod = typeof(TryParseMethodCache).GetMethod(nameof(ConvertValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo ConvertValueTaskMethod = typeof(ParameterBindingMethodCache).GetMethod(nameof(ConvertValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
 
         private readonly MethodInfo _enumTryParseMethod;
 
@@ -29,26 +29,26 @@ namespace Microsoft.AspNetCore.Http
 
         // If IsDynamicCodeSupported is false, we can't use the static Enum.TryParse<T> since there's no easy way for
         // this code to generate the specific instantiation for any enums used
-        public TryParseMethodCache() : this(preferNonGenericEnumParseOverload: !RuntimeFeature.IsDynamicCodeSupported)
+        public ParameterBindingMethodCache() : this(preferNonGenericEnumParseOverload: !RuntimeFeature.IsDynamicCodeSupported)
         {
         }
 
         // This is for testing
-        public TryParseMethodCache(bool preferNonGenericEnumParseOverload)
+        public ParameterBindingMethodCache(bool preferNonGenericEnumParseOverload)
         {
             _enumTryParseMethod = GetEnumTryParseMethod(preferNonGenericEnumParseOverload);
         }
 
-        public bool HasTryParseStringMethod(ParameterInfo parameter)
+        public bool HasTryParseMethod(ParameterInfo parameter)
         {
             var nonNullableParameterType = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
-            return FindTryParseStringMethod(nonNullableParameterType) is not null;
+            return FindTryParseMethod(nonNullableParameterType) is not null;
         }
 
         public bool HasBindAsyncMethod(ParameterInfo parameter) =>
             FindBindAsyncMethod(parameter) is not null;
 
-        public Func<ParameterExpression, Expression>? FindTryParseStringMethod(Type type)
+        public Func<ParameterExpression, Expression>? FindTryParseMethod(Type type)
         {
             Func<ParameterExpression, Expression>? Finder(Type type)
             {
