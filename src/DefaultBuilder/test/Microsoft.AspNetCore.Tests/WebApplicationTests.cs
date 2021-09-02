@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
+using System.Net;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
@@ -15,6 +16,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Tests;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -22,6 +24,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
+
+[assembly: HostingStartup(typeof(WebApplicationTests.TestHostingStartup))]
 
 namespace Microsoft.AspNetCore.Tests
 {
@@ -1168,6 +1172,123 @@ namespace Microsoft.AspNetCore.Tests
             ((IApplicationBuilder)app).Properties["didsomething"] = true;
 
             app.Start();
+        }
+
+        [Fact]
+        public async Task DeveloperExceptionPageIsOnByDefaltInDevelopment()
+        {
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions() { EnvironmentName = Environments.Development });
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            app.MapGet("/", void () => throw new InvalidOperationException("BOOM"));
+
+            await app.StartAsync();
+
+            var client = app.GetTestClient();
+
+            var response = await client.GetAsync("/");
+
+            Assert.False(response.IsSuccessStatusCode);
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+            Assert.Contains("BOOM", await response.Content.ReadAsStringAsync());
+            Assert.Contains("text/plain", response.Content.Headers.ContentType.MediaType);
+        }
+
+        [Fact]
+        public async Task DeveloperExceptionPageDoesNotGetCaughtByStartupFilters()
+        {
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions() { EnvironmentName = Environments.Development });
+            builder.WebHost.UseTestServer();
+            builder.Services.AddSingleton<IStartupFilter, ThrowingStartupFilter>();
+            await using var app = builder.Build();
+
+            await app.StartAsync();
+
+            var client = app.GetTestClient();
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetAsync("/"));
+
+            Assert.Equal("BOOM Filter", ex.Message);
+        }
+
+        [Fact]
+        public async Task DeveloperExceptionPageIsNotOnInProduction()
+        {
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions() { EnvironmentName = Environments.Production });
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            app.MapGet("/", void () => throw new InvalidOperationException("BOOM"));
+
+            await app.StartAsync();
+
+            var client = app.GetTestClient();
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetAsync("/"));
+
+            Assert.Equal("BOOM", ex.Message);
+        }
+
+        [Fact]
+        public async Task HostingStartupRunsWhenApplicationIsNotEntryPoint()
+        {
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions { ApplicationName = typeof(WebApplicationTests).Assembly.FullName });
+            await using var app = builder.Build();
+
+            Assert.Equal("value", app.Configuration["testhostingstartup:config"]);
+        }
+
+        [Fact]
+        public async Task HostingStartupRunsWhenApplicationIsNotEntryPointWithArgs()
+        {
+            var builder = WebApplication.CreateBuilder(new[] { "--applicationName", typeof(WebApplicationTests).Assembly.FullName });
+            await using var app = builder.Build();
+
+            Assert.Equal("value", app.Configuration["testhostingstartup:config"]);
+        }
+
+        [Fact]
+        public async Task HostingStartupRunsWhenApplicationIsNotEntryPointApplicationNameWinsOverArgs()
+        {
+            var options = new WebApplicationOptions
+            {
+                Args = new[] { "--applicationName", typeof(WebApplication).Assembly.FullName },
+                ApplicationName = typeof(WebApplicationTests).Assembly.FullName,
+            };
+            var builder = WebApplication.CreateBuilder(options);
+            await using var app = builder.Build();
+
+            Assert.Equal("value", app.Configuration["testhostingstartup:config"]);
+        }
+
+        public class TestHostingStartup : IHostingStartup
+        {
+            public void Configure(IWebHostBuilder builder)
+            {
+                builder
+                    .ConfigureAppConfiguration((context, configurationBuilder) => configurationBuilder.AddInMemoryCollection(
+                        new[]
+                        {
+                            new KeyValuePair<string,string>("testhostingstartup:config", "value")
+                        }));
+            }
+        }
+
+        class ThrowingStartupFilter : IStartupFilter
+        {
+            public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+            {
+                return app =>
+                {
+                    app.Use((HttpContext context, RequestDelegate next) =>
+                    {
+                        throw new InvalidOperationException("BOOM Filter");
+                    });
+
+                    next(app);
+                };
+            }
         }
 
         class PropertyFilter : IStartupFilter
