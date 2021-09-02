@@ -7,11 +7,11 @@
 
   <!-- The following match the expected values for PROCESSOR_ARCHITECTURE
           https://docs.microsoft.com/en-us/windows/win32/winprog64/wow64-implementation-details -->
-  <?if $(var.Platform)=x86?>
+  <?if $(var.Platform)~=x86?>
     <?define InstallerArchitecture="X86"?>
-  <?elseif $(var.Platform)=x64?>
+  <?elseif $(var.Platform)~=x64?>
     <?define InstallerArchitecture="AMD64"?>
-  <?elseif $(var.Platform)=ARM64?>
+  <?elseif $(var.Platform)~=arm64?>
     <?define InstallerArchitecture="ARM64"?>
   <?endif?>
 
@@ -22,7 +22,7 @@
       NOT %PROCESSOR_ARCHITECTURE="$(var.InstallerArchitecture)"
     </SetProperty>
   </Fragment>
-    
+
   <?if $(var.Platform)=x64?>
   <Fragment>
     <!-- When running in x64 emulation and user hasn't specified install directory, install to an x64 subdirectory-->
