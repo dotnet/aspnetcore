@@ -205,3 +205,6 @@ static Microsoft.AspNetCore.Http.SessionExtensions.GetInt32(this Microsoft.AspNe
 static Microsoft.AspNetCore.Http.SessionExtensions.GetString(this Microsoft.AspNetCore.Http.ISession! session, string! key) -> string?
 static Microsoft.AspNetCore.Http.SessionExtensions.SetInt32(this Microsoft.AspNetCore.Http.ISession! session, string! key, int value) -> void
 static Microsoft.AspNetCore.Http.SessionExtensions.SetString(this Microsoft.AspNetCore.Http.ISession! session, string! key, string! value) -> void
+Microsoft.AspNetCore.Http.TagsAttribute
+Microsoft.AspNetCore.Http.TagsAttribute.TagsAttribute(params string![]! tags) -> void
+Microsoft.AspNetCore.Http.TagsAttribute.Tags.get -> System.Collections.Generic.IReadOnlyList<string!>!
