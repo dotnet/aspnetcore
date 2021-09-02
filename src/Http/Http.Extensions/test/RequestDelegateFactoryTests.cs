@@ -543,7 +543,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             public static ValueTask<MyBindAsyncStruct> BindAsync(HttpContext context, ParameterInfo parameter)
             {
-                Assert.Equal(typeof(MyBindAsyncStruct), parameter.ParameterType);
+                Assert.True(parameter.ParameterType == typeof(MyBindAsyncStruct) || parameter.ParameterType == typeof(MyBindAsyncStruct?));
                 Assert.Equal("myBindAsyncStruct", parameter.Name);
 
                 if (!Uri.TryCreate(context.Request.Headers.Referer, UriKind.Absolute, out var uri))
@@ -691,6 +691,24 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Fact]
+        public async Task RequestDelegateUsesBindAsyncOverTryParseGivenNullableStruct()
+        {
+            var httpContext = CreateHttpContext();
+
+            httpContext.Request.Headers.Referer = "https://example.org";
+
+            var resultFactory = RequestDelegateFactory.Create((HttpContext httpContext, MyBindAsyncStruct? myBindAsyncStruct) =>
+            {
+                httpContext.Items["myBindAsyncStruct"] = myBindAsyncStruct;
+            });
+
+            var requestDelegate = resultFactory.RequestDelegate;
+            await requestDelegate(httpContext);
+
+            Assert.Equal(new MyBindAsyncStruct(new Uri("https://example.org")), httpContext.Items["myBindAsyncStruct"]);
+        }
+
+        [Fact]
         public async Task RequestDelegateUsesTryParseOverBindAsyncGivenExplicitAttribute()
         {
             var fromRouteFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, [FromRoute] MyBindAsyncRecord myBindAsyncRecord) => { });
@@ -709,18 +727,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             await Assert.ThrowsAsync<NotImplementedException>(() => fromRouteRequestDelegate(httpContext));
             await Assert.ThrowsAsync<NotImplementedException>(() => fromQueryRequestDelegate(httpContext));
-        }
-
-        [Fact]
-        public async Task RequestDelegateUsesTryParseOverBindAsyncGivenNullableStruct()
-        {
-            var fromRouteFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, MyBindAsyncStruct? myBindAsyncRecord) => { });
-
-            var httpContext = CreateHttpContext();
-            httpContext.Request.RouteValues["myBindAsyncRecord"] = "foo";
-
-            var fromRouteRequestDelegate = fromRouteFactoryResult.RequestDelegate;
-            await Assert.ThrowsAsync<NotImplementedException>(() => fromRouteRequestDelegate(httpContext));
         }
 
         [Fact]

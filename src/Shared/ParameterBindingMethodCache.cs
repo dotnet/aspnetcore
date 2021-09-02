@@ -17,15 +17,16 @@ namespace Microsoft.AspNetCore.Http
     internal sealed class ParameterBindingMethodCache
     {
         private static readonly MethodInfo ConvertValueTaskMethod = typeof(ParameterBindingMethodCache).GetMethod(nameof(ConvertValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo ConvertValueTaskOfNullableResultMethod = typeof(ParameterBindingMethodCache).GetMethod(nameof(ConvertValueTaskOfNullableResult), BindingFlags.NonPublic | BindingFlags.Static)!;
+
+        internal static readonly ParameterExpression TempSourceStringExpr = Expression.Variable(typeof(string), "tempSourceString");
+        internal static readonly ParameterExpression HttpContextExpr = Expression.Parameter(typeof(HttpContext), "httpContext");
 
         private readonly MethodInfo _enumTryParseMethod;
 
         // Since this is shared source, the cache won't be shared between RequestDelegateFactory and the ApiDescriptionProvider sadly :(
         private readonly ConcurrentDictionary<Type, Func<ParameterExpression, Expression>?> _stringMethodCallCache = new();
         private readonly ConcurrentDictionary<Type, Func<ParameterInfo, Expression>?> _bindAsyncMethodCallCache = new();
-
-        internal readonly ParameterExpression TempSourceStringExpr = Expression.Variable(typeof(string), "tempSourceString");
-        internal readonly ParameterExpression HttpContextExpr = Expression.Parameter(typeof(HttpContext), "httpContext");
 
         // If IsDynamicCodeSupported is false, we can't use the static Enum.TryParse<T> since there's no easy way for
         // this code to generate the specific instantiation for any enums used
@@ -129,30 +130,51 @@ namespace Microsoft.AspNetCore.Http
 
         public Expression? FindBindAsyncMethod(ParameterInfo parameter)
         {
-            Func<ParameterInfo, Expression>? Finder(Type type)
+            static Func<ParameterInfo, Expression>? Finder(Type nonNullableParameterType)
             {
-                var methodInfo = type.GetMethod("BindAsync", BindingFlags.Public | BindingFlags.Static, new[] { typeof(HttpContext), typeof(ParameterInfo) });
+                // There should only be one BindAsync method with these parameters since C# does not allow overloading on return type.
+                var methodInfo = nonNullableParameterType.GetMethod("BindAsync", BindingFlags.Public | BindingFlags.Static, new[] { typeof(HttpContext), typeof(ParameterInfo) });
 
-                // We're looking for a method with the following signature:
-                // static ValueTask<{type}> BindAsync(HttpContext context, ParameterInfo parameter)
+                // We're looking for a method with the following signatures:
+                // public static ValueTask<{type}> BindAsync(HttpContext context, ParameterInfo parameter)
+                // public static ValueTask<Nullable<{type}>> BindAsync(HttpContext context, ParameterInfo parameter)
                 if (methodInfo is not null &&
                     methodInfo.ReturnType.IsGenericType &&
-                    methodInfo.ReturnType.GetGenericTypeDefinition() == typeof(ValueTask<>) &&
-                    methodInfo.ReturnType.GetGenericArguments()[0] == type)
+                    methodInfo.ReturnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
                 {
-                    return (parameter) =>
+                    var valueTaskResultType = methodInfo.ReturnType.GetGenericArguments()[0];
+
+                    // ValueTask<{type}>?
+                    if (valueTaskResultType == nonNullableParameterType)
                     {
-                        // parameter is being intentionally shadowed. We never want to use the outer ParameterInfo inside
-                        // this Func because the ParameterInfo varies after it's been cached for a given parameter type.
-                        var typedCall = Expression.Call(methodInfo, HttpContextExpr, Expression.Constant(parameter));
-                        return Expression.Call(ConvertValueTaskMethod.MakeGenericMethod(type), typedCall);
-                    };
+                        return (parameter) =>
+                        {
+                            // parameter is being intentionally shadowed. We never want to use the outer ParameterInfo inside
+                            // this Func because the ParameterInfo varies after it's been cached for a given parameter type.
+                            var typedCall = Expression.Call(methodInfo, HttpContextExpr, Expression.Constant(parameter));
+                            return Expression.Call(ConvertValueTaskMethod.MakeGenericMethod(nonNullableParameterType), typedCall);
+                        };
+                    }
+                    // ValueTask<Nullable<{type}>>?
+                    else if (valueTaskResultType.IsGenericType &&
+                             valueTaskResultType.GetGenericTypeDefinition() == typeof(Nullable<>) &&
+                             valueTaskResultType.GetGenericArguments()[0] == nonNullableParameterType)
+                    {
+                        return (parameter) =>
+                        {
+                            // parameter is being intentionally shadowed. We never want to use the outer ParameterInfo inside
+                            // this Func because the ParameterInfo varies after it's been cached for a given parameter type.
+                            var typedCall = Expression.Call(methodInfo, HttpContextExpr, Expression.Constant(parameter));
+                            return Expression.Call(ConvertValueTaskOfNullableResultMethod.MakeGenericMethod(nonNullableParameterType), typedCall);
+                        };
+                    }
                 }
 
                 return null;
             }
 
-            return _bindAsyncMethodCallCache.GetOrAdd(parameter.ParameterType, Finder)?.Invoke(parameter);
+            var nonNullableParameterType = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
+            return _bindAsyncMethodCallCache.GetOrAdd(nonNullableParameterType, Finder)?.Invoke(parameter);
         }
 
         private static MethodInfo GetEnumTryParseMethod(bool preferNonGenericEnumParseOverload)
@@ -343,6 +365,18 @@ namespace Microsoft.AspNetCore.Http
             }
 
             static async ValueTask<object?> ConvertAwaited(ValueTask<T> typedValueTask) => await typedValueTask;
+            return ConvertAwaited(typedValueTask);
+        }
+
+        private static ValueTask<object?> ConvertValueTaskOfNullableResult<T>(ValueTask<Nullable<T>> typedValueTask) where T : struct
+        {
+            if (typedValueTask.IsCompletedSuccessfully)
+            {
+                var result = typedValueTask.GetAwaiter().GetResult();
+                return new ValueTask<object?>(result);
+            }
+
+            static async ValueTask<object?> ConvertAwaited(ValueTask<Nullable<T>> typedValueTask) => await typedValueTask;
             return ConvertAwaited(typedValueTask);
         }
     }
