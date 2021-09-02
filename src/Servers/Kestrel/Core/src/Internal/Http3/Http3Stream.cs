@@ -506,6 +506,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     // avoid interactions between reading that is in-progress and an abort.
                     // This means while reading, read-side abort will handle getting abort notifications.
                     //
+                    // We don't need to hang on to the CancellationTokenRegistration from register.
+                    // The CTS is cleaned up in StreamContext.DisposeAsync.
+                    //
                     // TODO: Consider a better way to provide this notification. For perf we want to
                     // make the ConnectionClosed CTS pay-for-play, and change this event to use
                     // something that is more lightweight than a CTS.
