@@ -64,8 +64,6 @@ namespace Microsoft.AspNetCore.Http
         private static readonly BinaryExpression TempSourceStringNotNullExpr = Expression.NotEqual(TempSourceStringExpr, Expression.Constant(null));
         private static readonly BinaryExpression TempSourceStringNullExpr = Expression.Equal(TempSourceStringExpr, Expression.Constant(null));
 
-        private static readonly AcceptsMetadata DefaultAcceptsMetadata = new(new[] { "application/json" });
-
         /// <summary>
         /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="handler"/>.
         /// </summary>
@@ -880,8 +878,9 @@ namespace Microsoft.AspNetCore.Http
                 }
             }
 
-            factoryContext.Metadata.Add(DefaultAcceptsMetadata);
             var isOptional = IsOptionalParameter(parameter);
+
+            factoryContext.Metadata.Add(new AcceptsMetadata(parameter.ParameterType, isOptional, new string[] {"application/json"}));
 
             factoryContext.JsonRequestBodyType = parameter.ParameterType;
             factoryContext.AllowEmptyRequestBody = allowEmpty || isOptional;
