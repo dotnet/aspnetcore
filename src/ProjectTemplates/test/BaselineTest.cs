@@ -51,11 +51,11 @@ namespace Templates.Test
                         var data = new TheoryData<string, string[]>();
                         foreach (var template in baseline)
                         {
-                            foreach (var authOption in (JObject)template.Value)
+                            foreach (var scenarioName in (JObject)template.Value)
                             {
                                 data.Add(
-                                    (string)authOption.Value["Arguments"],
-                                    ((JArray)authOption.Value["Files"]).Select(s => (string)s).ToArray());
+                                    (string)scenarioName.Value["Arguments"],
+                                    ((JArray)scenarioName.Value["Files"]).Select(s => (string)s).ToArray());
                             }
                         }
 
@@ -142,6 +142,11 @@ namespace Templates.Test
             if (arguments.Contains("--pwa"))
             {
                 text += "pwa";
+            }
+
+            if (arguments.Contains("-minimal"))
+            {
+                text += "Minimal";
             }
 
             return text;

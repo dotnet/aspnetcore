@@ -569,7 +569,7 @@
     },
     "MinimalIndividualB2C": {
       "Template": "webapi",
-      "Arguments": "new webapi -au IndividualB2C --aad-b2c-instance https://login.microsoftonline.com/tfp/ --domain fake-b2c-domain.onmicrosoft.com --client-id 64f31f76-2750-49e4-aab9-f5de105b5172 -ssp B2C_1_SiUpIn -minimal",
+      "Arguments": "new webapi -minimal -au IndividualB2C --aad-b2c-instance https://login.microsoftonline.com/tfp/ --domain fake-b2c-domain.onmicrosoft.com --client-id 64f31f76-2750-49e4-aab9-f5de105b5172 -ssp B2C_1_SiUpIn",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
@@ -580,7 +580,7 @@
     },
     "MinimalSingleOrg": {
       "Template": "webapi",
-      "Arguments": "new webapi -au SingleOrg --aad-instance https://login.microsoftonline.com/ --domain fake-aad-domain.onmicrosoft.com --client-id db33c356-12cc-4953-9167-00ad56c2e8b2 --tenant-id 7e511586-66ec-4108-bc9c-a68dee0dc2aa -minimal",
+      "Arguments": "new webapi -minimal -au SingleOrg --aad-instance https://login.microsoftonline.com/ --domain fake-aad-domain.onmicrosoft.com --client-id db33c356-12cc-4953-9167-00ad56c2e8b2 --tenant-id 7e511586-66ec-4108-bc9c-a68dee0dc2aa",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
@@ -591,7 +591,7 @@
     },
     "Minimal": {
       "Template": "webapi",
-      "Arguments": "new webapi -au None -minimal",
+      "Arguments": "new webapi -minimal -au None",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
