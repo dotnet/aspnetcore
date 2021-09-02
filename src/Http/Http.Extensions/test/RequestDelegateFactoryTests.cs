@@ -2408,7 +2408,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             serviceCollection.AddSingleton(LoggerFactory);
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var factoryResult = RequestDelegateFactory.Create((HttpContext context, CustomTodo customTodo, Todo todo) =>
+            var factoryResult = RequestDelegateFactory.Create((HttpContext context, JsonTodo customTodo, Todo todo) =>
             {
             });
             var requestDelegate = factoryResult.RequestDelegate;
@@ -2451,7 +2451,18 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 Assert.Equal(typeof(CustomTodo), parameter.ParameterType);
                 Assert.Equal("customTodo", parameter.Name);
 
-                var body = await JsonSerializer.DeserializeAsync<CustomTodo>(context.Request.Body);
+                var body = await context.Request.ReadFromJsonAsync<CustomTodo>();
+                context.Request.Body.Position = 0;
+                return body;
+            }
+        }
+
+        private class JsonTodo : Todo
+        {
+            public static async ValueTask<JsonTodo?> BindAsync(HttpContext context, ParameterInfo parameter)
+            {
+                // manually call deserialize so we don't check content type
+                var body = await JsonSerializer.DeserializeAsync<JsonTodo>(context.Request.Body);
                 context.Request.Body.Position = 0;
                 return body;
             }
