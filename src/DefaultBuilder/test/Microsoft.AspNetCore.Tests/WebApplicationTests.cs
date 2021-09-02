@@ -140,6 +140,67 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
+        public async Task HostedServicesRunBeforeTheServerStarts()
+        {
+            var builder = WebApplication.CreateBuilder();
+            var startOrder = new List<object>();
+            var server = new MockServer(startOrder);
+            var hostedService = new HostedService(startOrder);
+            builder.Services.AddSingleton<IHostedService>(hostedService);
+            builder.Services.AddSingleton<IServer>(server);
+            await using var app = builder.Build();
+
+            await app.StartAsync();
+
+            Assert.Equal(2, startOrder.Count);
+            Assert.Same(hostedService, startOrder[0]);
+            Assert.Same(server, startOrder[1]);
+        }
+
+        class HostedService : IHostedService
+        {
+            private readonly List<object> _startOrder;
+
+            public HostedService(List<object> startOrder)
+            {
+                _startOrder = startOrder;
+            }
+
+            public Task StartAsync(CancellationToken cancellationToken)
+            {
+                _startOrder.Add(this);
+                return Task.CompletedTask;
+            }
+
+            public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+        }
+
+        class MockServer : IServer
+        {
+            private readonly List<object> _startOrder;
+
+            public MockServer(List<object> startOrder)
+            {
+                _startOrder = startOrder;
+            }
+
+            public IFeatureCollection Features { get; } = new FeatureCollection();
+
+            public void Dispose() { }
+
+            public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken) where TContext : notnull
+            {
+                _startOrder.Add(this);
+                return Task.CompletedTask;
+            }
+
+            public Task StopAsync(CancellationToken cancellationToken)
+            {
+                return Task.CompletedTask;
+            }
+        }
+
+        [Fact]
         public async Task WebApplicationRunUrls_ThrowsInvalidOperationExceptionIfThereIsNoIServerAddressesFeature()
         {
             var builder = WebApplication.CreateBuilder();
@@ -364,9 +425,9 @@ namespace Microsoft.AspNetCore.Tests
                     // Verify the defaults observed by the boostrap host builder we use internally to populate
                     // the defaults
                     bootstrapBuilder.ConfigureAppConfiguration((context, config) =>
-                    {
-                        Assert.Equal(assemblyName, context.HostingEnvironment.ApplicationName);
-                    });
+                {
+                    Assert.Equal(assemblyName, context.HostingEnvironment.ApplicationName);
+                });
                 });
 
             Assert.Equal(assemblyName, builder.Environment.ApplicationName);
@@ -405,9 +466,9 @@ namespace Microsoft.AspNetCore.Tests
                     // Verify the defaults observed by the boostrap host builder we use internally to populate
                     // the defaults
                     bootstrapBuilder.ConfigureAppConfiguration((context, config) =>
-                    {
-                        Assert.Equal(assemblyName, context.HostingEnvironment.ApplicationName);
-                    });
+                {
+                    Assert.Equal(assemblyName, context.HostingEnvironment.ApplicationName);
+                });
                 });
 
             Assert.Equal(assemblyName, builder.Environment.ApplicationName);
