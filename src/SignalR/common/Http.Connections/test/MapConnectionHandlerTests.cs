@@ -265,7 +265,47 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     endpoint =>
                     {
                         Assert.Equal("/path/negotiate", endpoint.DisplayName);
-                        Assert.NotNull(endpoint.Metadata.GetMetadata<NegotiateMetadata>());
+                        var metaData = endpoint.Metadata.GetMetadata<NegotiateMetadata>();
+                        Assert.NotNull(metaData);
+                        Assert.NotNull(metaData.Options);
+                    },
+                    endpoint =>
+                    {
+                        Assert.Equal("/path", endpoint.DisplayName);
+                        Assert.Null(endpoint.Metadata.GetMetadata<NegotiateMetadata>());
+                    });
+            }
+        }
+
+        [Fact]
+        public void MapConnectionHandlerNegotiateMetadataContainsOptions()
+        {
+            void ConfigureRoutes(IEndpointRouteBuilder endpoints)
+            {
+                endpoints.MapConnectionHandler<AuthConnectionHandler>("/path", options =>
+                {
+                    options.Transports = HttpTransportType.ServerSentEvents;
+                    options.ApplicationMaxBufferSize = 2;
+                    options.CloseOnAuthenticationExpiration = true;
+                });
+            }
+
+            using (var host = BuildWebHost(ConfigureRoutes))
+            {
+                host.Start();
+
+                var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+                // We register 2 endpoints (/negotiate and /)
+                Assert.Collection(dataSource.Endpoints,
+                    endpoint =>
+                    {
+                        Assert.Equal("/path/negotiate", endpoint.DisplayName);
+                        var metaData = endpoint.Metadata.GetMetadata<NegotiateMetadata>();
+                        Assert.NotNull(metaData);
+                        Assert.NotNull(metaData.Options);
+                        Assert.Equal(HttpTransportType.ServerSentEvents, metaData.Options.Transports);
+                        Assert.Equal(2, metaData.Options.ApplicationMaxBufferSize);
+                        Assert.True(metaData.Options.CloseOnAuthenticationExpiration);
                     },
                     endpoint =>
                     {
