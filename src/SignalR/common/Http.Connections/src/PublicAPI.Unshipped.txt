@@ -1,7 +1,11 @@
 #nullable enable
 *REMOVED*Microsoft.AspNetCore.Http.Connections.Features.IHttpContextFeature.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+*REMOVED*Microsoft.AspNetCore.Http.Connections.NegotiateMetadata.NegotiateMetadata() -> void
 Microsoft.AspNetCore.Http.Connections.Features.IHttpContextFeature.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext?
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.CloseOnAuthenticationExpiration.get -> bool
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.CloseOnAuthenticationExpiration.set -> void
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.TransportSendTimeout.get -> System.TimeSpan
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.TransportSendTimeout.set -> void
+Microsoft.AspNetCore.Http.Connections.NegotiateMetadata.NegotiateMetadata(Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions! options) -> void
+Microsoft.AspNetCore.Http.Connections.NegotiateMetadata.Options.get -> Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions!
+Microsoft.AspNetCore.Http.Connections.NegotiateMetadata.Options.init -> void
