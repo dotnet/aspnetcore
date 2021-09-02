@@ -494,6 +494,12 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         [Fact]
         public void HandlesProducesWithProducesProblem()
         {
+            Console.WriteLine($"Waiting for debugger to attach on {System.Environment.ProcessId}");
+            while (!System.Diagnostics.Debugger.IsAttached)
+            {
+                Thread.Sleep(1000);
+            }
+            Console.WriteLine("Debugger attached");
             // Arrange
             var builder = CreateBuilder();
             builder.MapGet("/api/todos", () => "")

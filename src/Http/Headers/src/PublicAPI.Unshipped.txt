@@ -10,3 +10,8 @@ static readonly Microsoft.Net.Http.Headers.HeaderNames.XContentTypeOptions -> st
 static readonly Microsoft.Net.Http.Headers.HeaderNames.XPoweredBy -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.XUACompatible -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.XXSSProtection -> string!
+Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection
+Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection.MediaTypeCollection() -> void
+Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection.Add(Microsoft.Net.Http.Headers.MediaTypeHeaderValue! item) -> void
+Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection.Insert(int index, Microsoft.Net.Http.Headers.MediaTypeHeaderValue! item) -> void
+Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection.Remove(Microsoft.Net.Http.Headers.MediaTypeHeaderValue! item) -> bool

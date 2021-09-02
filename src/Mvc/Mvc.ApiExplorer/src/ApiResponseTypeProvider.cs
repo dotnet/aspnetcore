@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -56,25 +57,25 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             return apiResponseTypes;
         }
 
-        private static List<IApiResponseMetadataProvider> GetResponseMetadataAttributes(ControllerActionDescriptor action)
+        private static List<IProducesResponseTypeMetadata> GetResponseMetadataAttributes(ControllerActionDescriptor action)
         {
             if (action.FilterDescriptors == null)
             {
-                return new List<IApiResponseMetadataProvider>();
+                return new List<IProducesResponseTypeMetadata>();
             }
 
             // This technique for enumerating filters will intentionally ignore any filter that is an IFilterFactory
-            // while searching for a filter that implements IApiResponseMetadataProvider.
+            // while searching for a filter that implements IProducesResponseTypeMetadata.
             //
             // The workaround for that is to implement the metadata interface on the IFilterFactory.
             return action.FilterDescriptors
                 .Select(fd => fd.Filter)
-                .OfType<IApiResponseMetadataProvider>()
+                .OfType<IProducesResponseTypeMetadata>()
                 .ToList();
         }
 
         private ICollection<ApiResponseType> GetApiResponseTypes(
-           IReadOnlyList<IApiResponseMetadataProvider> responseMetadataAttributes,
+           IReadOnlyList<IProducesResponseTypeMetadata> responseMetadataAttributes,
            Type? type,
            Type defaultErrorType)
         {
@@ -118,7 +119,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
         // Shared with EndpointMetadataApiDescriptionProvider
         internal static List<ApiResponseType> ReadResponseMetadata(
-            IReadOnlyList<IApiResponseMetadataProvider> responseMetadataAttributes,
+            IReadOnlyList<IProducesResponseTypeMetadata> responseMetadataAttributes,
             Type? type,
             Type defaultErrorType,
             MediaTypeCollection contentTypes,
@@ -322,7 +323,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             return statusCode >= 400 && statusCode < 500;
         }
 
-        private static bool HasSignificantMetadataProvider(IReadOnlyList<IApiResponseMetadataProvider> providers)
+        private static bool HasSignificantMetadataProvider(IReadOnlyList<IProducesResponseTypeMetadata> providers)
         {
             for (var i = 0; i < providers.Count; i++)
             {

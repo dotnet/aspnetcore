@@ -40,3 +40,7 @@ static Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.UseMiddleware(this M
 static Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.UseMiddleware<TMiddleware>(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, params object?[]! args) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 virtual Microsoft.AspNetCore.Http.ConnectionInfo.RequestClose() -> void
 virtual Microsoft.AspNetCore.Http.WebSocketManager.AcceptWebSocketAsync(Microsoft.AspNetCore.Http.WebSocketAcceptContext! acceptContext) -> System.Threading.Tasks.Task<System.Net.WebSockets.WebSocket!>!
+Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata
+Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.StatusCode.get -> int
+Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.Type.get -> System.Type?
+Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.SetContentTypes(Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection! contentTypes) -> void

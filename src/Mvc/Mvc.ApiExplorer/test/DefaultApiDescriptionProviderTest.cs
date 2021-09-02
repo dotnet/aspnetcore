@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -2544,7 +2545,8 @@ namespace Microsoft.AspNetCore.Mvc.Description
             Attribute,
             IFilterMetadata,
             IApiResponseMetadataProvider,
-            IApiRequestMetadataProvider
+            IApiRequestMetadataProvider,
+            IProducesResponseTypeMetadata
         {
             public ContentTypeAttribute(string mediaType)
             {
