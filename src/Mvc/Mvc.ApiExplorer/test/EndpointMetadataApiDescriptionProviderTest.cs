@@ -318,14 +318,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
-        public void AddsFromBodyParameterAsBody()
+        public void DoesNotAddFromBodyParameterInTheAPIDescription()
         {
             static void AssertBodyParameter(ApiDescription apiDescription, Type expectedType)
             {
-                var param = Assert.Single(apiDescription.ParameterDescriptions);
-                Assert.Equal(expectedType, param.Type);
-                Assert.Equal(expectedType, param.ModelMetadata.ModelType);
-                Assert.Equal(BindingSource.Body, param.Source);
+                Assert.Empty(apiDescription.ParameterDescriptions);
             }
 
             AssertBodyParameter(GetApiDescription((InferredJsonClass foo) => { }), typeof(InferredJsonClass));
@@ -345,7 +342,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         public void AddsMultipleParameters()
         {
             var apiDescription = GetApiDescription(([FromRoute] int foo, int bar, InferredJsonClass fromBody) => { });
-            Assert.Equal(3, apiDescription.ParameterDescriptions.Count);
+            Assert.Equal(2, apiDescription.ParameterDescriptions.Count);
 
             var fooParam = apiDescription.ParameterDescriptions[0];
             Assert.Equal(typeof(int), fooParam.Type);
@@ -358,12 +355,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.Equal(typeof(int), barParam.ModelMetadata.ModelType);
             Assert.Equal(BindingSource.Query, barParam.Source);
             Assert.True(barParam.IsRequired);
-
-            var fromBodyParam = apiDescription.ParameterDescriptions[2];
-            Assert.Equal(typeof(InferredJsonClass), fromBodyParam.Type);
-            Assert.Equal(typeof(InferredJsonClass), fromBodyParam.ModelMetadata.ModelType);
-            Assert.Equal(BindingSource.Body, fromBodyParam.Source);
-            Assert.False(fromBodyParam.IsRequired); // Reference type in oblivious nullability context
         }
 
         [Fact]
@@ -384,34 +375,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.Equal(BindingSource.Query, barParam.Source);
             Assert.False(barParam.IsRequired);
         }
-
-#nullable enable
-
-        [Fact]
-        public void TestIsRequiredFromBody()
-        {
-            var apiDescription0 = GetApiDescription(([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] InferredJsonClass fromBody) => { });
-            var apiDescription1 = GetApiDescription((InferredJsonClass? fromBody) => { });
-            Assert.Equal(1, apiDescription0.ParameterDescriptions.Count);
-            Assert.Equal(1, apiDescription1.ParameterDescriptions.Count);
-
-            var fromBodyParam0 = apiDescription0.ParameterDescriptions[0];
-            Assert.Equal(typeof(InferredJsonClass), fromBodyParam0.Type);
-            Assert.Equal(typeof(InferredJsonClass), fromBodyParam0.ModelMetadata.ModelType);
-            Assert.Equal(BindingSource.Body, fromBodyParam0.Source);
-            Assert.False(fromBodyParam0.IsRequired);
-
-            var fromBodyParam1 = apiDescription1.ParameterDescriptions[0];
-            Assert.Equal(typeof(InferredJsonClass), fromBodyParam1.Type);
-            Assert.Equal(typeof(InferredJsonClass), fromBodyParam1.ModelMetadata.ModelType);
-            Assert.Equal(BindingSource.Body, fromBodyParam1.Source);
-            Assert.False(fromBodyParam1.IsRequired);
-        }
-
-        // This is necessary for TestIsRequiredFromBody to pass until https://github.com/dotnet/roslyn/issues/55254 is resolved.
-        private object RandomMethod() => throw new NotImplementedException();
-
-#nullable disable
 
         [Fact]
         public void AddsDisplayNameFromRouteEndpoint()
