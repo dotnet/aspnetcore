@@ -1492,13 +1492,39 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         [Theory]
         [MemberData(nameof(ExplicitFromServiceActions))]
-        public void RequestDelegateRequiresServiceForAllExplicitFromServiceParameters(Delegate action)
+        public void RequestDelegateWithExplicitFromServiceParametersAndIsServiceContainer(Delegate action)
         {
-            var httpContext = new DefaultHttpContext();
-            httpContext.RequestServices = new ServiceCollection().AddLogging().BuildServiceProvider();
+            // IEnumerable<T> always resolves from DI, so ignore it in this test
+            if (action.Method.Name.Contains("TestExplicitFromIEnumerableService", StringComparison.Ordinal))
+            {
+                return;
+            }
 
-            var ex = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(action));
+            var httpContext = CreateHttpContext();
+
+            var ex = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(action, new RequestDelegateFactoryOptions()
+            {
+                // pass a service container in so the IServiceProviderIsService check is tested
+                ServiceProvider = httpContext.RequestServices
+            }));
             Assert.Contains("Parameter must be a service but no service was found.", ex.Message);
+        }
+
+        [Theory]
+        [MemberData(nameof(ExplicitFromServiceActions))]
+        public async Task RequestDelegateWithExplicitFromServiceParametersAndNoIsServiceContainer(Delegate action)
+        {
+            // IEnumerable<T> always resolves from DI, so ignore it in this test
+            if (action.Method.Name.Contains("TestExplicitFromIEnumerableService", StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            var httpContext = CreateHttpContext();
+
+            var requestDelegateResult = RequestDelegateFactory.Create(action);
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => requestDelegateResult.RequestDelegate(httpContext));
+            Assert.Equal("No service for type 'Microsoft.AspNetCore.Routing.Internal.RequestDelegateFactoryTests+MyService' has been registered.", ex.Message);
         }
 
         [Theory]

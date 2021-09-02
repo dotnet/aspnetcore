@@ -654,6 +654,11 @@ namespace Microsoft.AspNetCore.Http
                     return Expression.Call(GetRequiredServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
                 }
             }
+            else
+            {
+                // If the DI container does not implement IServiceProviderIsService then we can't error early about the service not being in the container
+                return Expression.Call(GetRequiredServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
+            }
 
             var errorMessage = BuildErrorMessageForMissingService(factoryContext);
             throw new InvalidOperationException(errorMessage);
