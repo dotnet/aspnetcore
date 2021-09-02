@@ -2,9 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
 using Newtonsoft.Json;
@@ -17,20 +17,7 @@ namespace Templates.Test
 {
     public class BaselineTest : LoggedTest
     {
-        private static readonly Regex TemplateNameRegex = new Regex(
-            "new (?<template>[a-zA-Z]+)",
-            RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.Singleline,
-            TimeSpan.FromSeconds(1));
-
-        private static readonly Regex AuthenticationOptionRegex = new Regex(
-            "-au (?<auth>[a-zA-Z]+)",
-            RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.Singleline,
-            TimeSpan.FromSeconds(1));
-
-        private static readonly Regex LanguageRegex = new Regex(
-            "--language (?<language>\\w+)",
-            RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.Singleline,
-            TimeSpan.FromSeconds(1));
+        private static readonly string BaselineDefinitionFileResourceName = "ProjectTemplates.Tests.template-baselines.json";
 
         public BaselineTest(ProjectFactoryFixture projectFactory)
         {
@@ -43,7 +30,7 @@ namespace Templates.Test
         {
             get
             {
-                using (var stream = typeof(BaselineTest).Assembly.GetManifestResourceStream("ProjectTemplates.Tests.template-baselines.json"))
+                using (var stream = typeof(BaselineTest).Assembly.GetManifestResourceStream(BaselineDefinitionFileResourceName))
                 {
                     using (var jsonReader = new JsonTextReader(new StreamReader(stream)))
                     {
@@ -84,7 +71,7 @@ namespace Templates.Test
         [MemberData(nameof(TemplateBaselines))]
         public async Task Template_Produces_The_Right_Set_Of_FilesAsync(string arguments, string[] expectedFiles)
         {
-            Project = await ProjectFactory.GetOrCreateProject("baseline" + SanitizeArgs(arguments), Output);
+            Project = await ProjectFactory.GetOrCreateProject(CreateProjectKey(arguments), Output);
             var createResult = await Project.RunDotNetNewRawAsync(arguments);
             Assert.True(createResult.ExitCode == 0, createResult.GetFormattedOutput());
 
@@ -116,37 +103,58 @@ namespace Templates.Test
             }
         }
 
-        private string SanitizeArgs(string arguments)
+        private static ConcurrentDictionary<string, object> _projectKeys = new();
+
+        private string CreateProjectKey(string arguments)
         {
-            var text = TemplateNameRegex.Match(arguments)
-                .Groups.TryGetValue("template", out var template) ? template.Value : "";
+            var text = "baseline";
 
-            text += AuthenticationOptionRegex.Match(arguments)
-                .Groups.TryGetValue("auth", out var auth) ? auth.Value : "";
+            // Turn string like "new templatename -minimal -au SingleOrg --another-option OptionValue"
+            // into array like [ "new templatename", "minimal", "au SingleOrg", "another-option OptionValue" ]
+            var argumentsArray = arguments
+                .Split(" --", int.MaxValue, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+                .SelectMany(e => e.Split(" -", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+                .ToArray();
 
-            text += arguments.Contains("--uld") ? "uld" : "";
+            // Add template name, value has form of "new name"
+            text += argumentsArray[0].Substring("new ".Length);
 
-            text += LanguageRegex.Match(arguments)
-                .Groups.TryGetValue("language", out var language) ? language.Value.Replace("#", "Sharp") : "";
-
-            if (arguments.Contains("--support-pages-and-views true"))
+            foreach (var argValue in argumentsArray)
             {
-                text += "supportpagesandviewstrue";
+                var argSegments = argValue.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
+                if (argSegments.Length == 0)
+                {
+                    continue;
+                }
+                else if (argSegments.Length == 1)
+                {
+                    text += argSegments[0] switch
+                    {
+                        "ho" => "hosted",
+                        "p" => "pwa",
+                        _ => argSegments[0].Replace("-","")
+                    };
+                }
+                else
+                {
+                    text += argSegments[0] switch
+                    {
+                        "au" => argSegments[1],
+                        "uld" => "uld",
+                        "language" => argSegments[1].Replace("#", "Sharp"),
+                        "support-pages-and-views" when argSegments[1] == "true" => "supportpagesandviewstrue",
+                        _ => ""
+                    };
+                }
             }
 
-            if (arguments.Contains("-ho"))
+            if (!_projectKeys.TryAdd(text, null))
             {
-                text += "hosted";
-            }
-
-            if (arguments.Contains("--pwa"))
-            {
-                text += "pwa";
-            }
-
-            if (arguments.Contains("-minimal"))
-            {
-                text += "Minimal";
+                throw new InvalidOperationException(
+                    $"Project key for template with args '{arguments}' already exists. " +
+                    $"Check that the metadata specified in {BaselineDefinitionFileResourceName} is correct and that " +
+                    $"the {nameof(CreateProjectKey)} method is considering enough template arguments to ensure uniqueness.");
             }
 
             return text;
