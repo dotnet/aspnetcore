@@ -171,7 +171,6 @@ export class FailedToNegotiateWithServerError extends Error {
     /** Constructs a new instance of {@link @microsoft/signalr.FailedToNegotiateWithServerError}.
      *
      * @param {string} message A descriptive error message.
-     * @param {HttpTransportType} transport The {@link @microsoft/signalr.HttpTransportType} this error occured on.
      */
     constructor(message: string) {
         const trueProto = new.target.prototype;
