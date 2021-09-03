@@ -558,6 +558,12 @@ namespace Microsoft.AspNetCore.Http
                     var feature = httpContext.Features.Get<IHttpRequestBodyDetectionFeature>();
                     if (feature?.CanHaveBody == true)
                     {
+                        if (!httpContext.Request.HasJsonContentType())
+                        {
+                            Log.UnexpectedContentType(httpContext, httpContext.Request.ContentType, factoryContext.ThrowOnBadRequest);
+                            httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
+                            return;
+                        }
                         try
                         {
                             bodyValue = await httpContext.Request.ReadFromJsonAsync(bodyType);
@@ -590,6 +596,12 @@ namespace Microsoft.AspNetCore.Http
                     var feature = httpContext.Features.Get<IHttpRequestBodyDetectionFeature>();
                     if (feature?.CanHaveBody == true)
                     {
+                        if (!httpContext.Request.HasJsonContentType())
+                        {
+                            Log.UnexpectedContentType(httpContext, httpContext.Request.ContentType, factoryContext.ThrowOnBadRequest);
+                            httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
+                            return;
+                        }
                         try
                         {
                             bodyValue = await httpContext.Request.ReadFromJsonAsync(bodyType);
@@ -603,7 +615,7 @@ namespace Microsoft.AspNetCore.Http
                         {
 
                             Log.RequestBodyInvalidDataException(httpContext, ex, factoryContext.ThrowOnBadRequest);
-                            httpContext.Response.StatusCode = 400;
+                            httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                             return;
                         }
                     }
@@ -1155,6 +1167,9 @@ namespace Microsoft.AspNetCore.Http
             private const string RequiredParameterNotProvidedLogMessage = @"Required parameter ""{ParameterType} {ParameterName}"" was not provided from {Source}.";
             private const string RequiredParameterNotProvidedExceptionMessage = @"Required parameter ""{0} {1}"" was not provided from {2}.";
 
+            private const string UnexpectedContentTypeLogMessage = @"Expected a supported JSON media type but got ""{ContentType}"".";
+            private const string UnexpectedContentTypeExceptionMessage = @"Expected a supported JSON media type but got ""{0}"".";
+
             // This doesn't take a shouldThrow parameter because an IOException indicates an aborted request rather than a "bad" request so
             // a BadHttpRequestException feels wrong. The client shouldn't be able to read the Developer Exception Page at any rate.
             public static void RequestBodyIOException(HttpContext httpContext, IOException exception)
@@ -1203,6 +1218,20 @@ namespace Microsoft.AspNetCore.Http
 
             [LoggerMessage(4, LogLevel.Debug, RequiredParameterNotProvidedLogMessage, EventName = "RequiredParameterNotProvided")]
             private static partial void RequiredParameterNotProvided(ILogger logger, string parameterType, string parameterName, string source);
+
+            public static void UnexpectedContentType(HttpContext httpContext, string? contentType, bool shouldThrow)
+            {
+                if (shouldThrow)
+                {
+                    var message = string.Format(CultureInfo.InvariantCulture, UnexpectedContentTypeExceptionMessage, contentType);
+                    throw new BadHttpRequestException(message, StatusCodes.Status415UnsupportedMediaType);
+                }
+
+                UnexpectedContentType(GetLogger(httpContext), contentType ?? "(none)");
+            }
+
+            [LoggerMessage(6, LogLevel.Debug, UnexpectedContentTypeLogMessage, EventName = "UnexpectedContentType")]
+            private static partial void UnexpectedContentType(ILogger logger, string contentType);
 
             private static ILogger GetLogger(HttpContext httpContext)
             {
