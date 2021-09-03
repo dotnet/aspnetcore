@@ -8,17 +8,5 @@ namespace Microsoft.AspNetCore.Http.Connections
     /// </summary>
     public class NegotiateMetadata
     {
-        /// <summary>
-        /// </summary>
-        /// <param name="options"></param>
-        public NegotiateMetadata(HttpConnectionDispatcherOptions options)
-        {
-            Options = options;
-        }
-
-        /// <summary>
-        /// The options that apply to the endpoint the <see cref="NegotiateMetadata"/> is on.
-        /// </summary>
-        public HttpConnectionDispatcherOptions Options { get; init; }
     }
 }
