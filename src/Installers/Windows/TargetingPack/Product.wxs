@@ -40,8 +40,8 @@
             </Directory>
         </Directory>
 
-        <?if $(var.Platform) = x64 ?>
-        <CustomActionRef Id="Set_DOTNETHOME_x64" />
+        <?if $(var.Platform)=x64?>
+        <CustomActionRef Id="Set_DOTNETHOME_NON_NATIVE_ARCHITECTURE" />
         <?endif?>
     </Fragment>
 
@@ -66,7 +66,7 @@
             <?undef ProductVersionKey?>
             <?endif?>
 
-            <!-- TODO: the following keys will collde between x64 and ARM64.
+            <!-- TODO: the following keys will collide between x64 and ARM64.
                  They are actually *already* colliding between x86 and x64 since these will be writing to the x86 registry hive.
                  Any interest in fixing this? -->
 
