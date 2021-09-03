@@ -121,19 +121,15 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 var acceptsRequestType = acceptsMetadata.RequestType;
                 var isOptional = acceptsMetadata.IsOptional;
-                if (acceptsRequestType is not null)
+                var parameterDescription = new ApiParameterDescription
                 {
-                    var parameterDescription = new ApiParameterDescription
-                    {
-                        Name = acceptsRequestType.Name,
-                        ModelMetadata = CreateModelMetadata(acceptsRequestType),
-                        Source = BindingSource.Body,
-                        Type = acceptsRequestType,
-                        IsRequired = !isOptional,
-                    };
-                    apiDescription.ParameterDescriptions.Add(parameterDescription);
-                }
-
+                    Name = acceptsRequestType is not null ? acceptsRequestType.Name : typeof(void).Name,
+                    ModelMetadata = CreateModelMetadata(acceptsRequestType ?? typeof(void)),
+                    Source = BindingSource.Body,
+                    Type = acceptsRequestType ?? typeof(void),
+                    IsRequired = !isOptional,
+                };
+                apiDescription.ParameterDescriptions.Add(parameterDescription);
                 AddSupportedRequestFormats(apiDescription.SupportedRequestFormats, acceptsMetadata);
             }
 

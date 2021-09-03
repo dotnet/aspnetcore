@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Http
         public static DelegateEndpointConventionBuilder Accepts(this DelegateEndpointConventionBuilder builder,
             Type requestType, string contentType, params string[] additionalContentTypes)
         {
-            builder.WithMetadata(new AcceptsMetadata(requestType, true, GetAllContentTypes(contentType, additionalContentTypes)));
+            builder.WithMetadata(new AcceptsMetadata(requestType, false, GetAllContentTypes(contentType, additionalContentTypes)));
             return builder;
         }
 

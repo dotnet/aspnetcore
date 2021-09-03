@@ -105,7 +105,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.False(apiParameterDescription.IsRequired);
         }
 
-#nullable enable 
         [Fact]
         public void AddsMultipleRequestFormatsFromMetadataWithRequiredBodyParameter()
         {
@@ -120,7 +119,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.Equal("InferredJsonClass", apiParameterDescription.Type.Name);
             Assert.True(apiParameterDescription.IsRequired);
         }
-#nullable restore
 
         [Fact]
         public void AddsJsonResponseFormatWhenFromBodyInferred()
@@ -622,8 +620,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         {
             // Arrange
             var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(null));
-            builder.MapPost("/api/todos", () => "")
-                .Accepts(typeof(string), "application/json", "application/xml");
+            builder.MapPost("/api/todos", (InferredJsonClass inferredJsonClass) => "")
+                .Accepts(typeof(InferredJsonClass), "application/json");
             var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
 
             var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
@@ -638,17 +636,88 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             provider.OnProvidersExecuted(context);
 
             // Assert
-            Assert.Collection(
-                context.Results.SelectMany(r => r.SupportedRequestFormats),
-                requestType =>
-                {
-                    Assert.Equal("application/json", requestType.MediaType);
-                },
-                requestType =>
-                {
-                    Assert.Equal("application/xml", requestType.MediaType);
-                });
+            var parameterDescriptions = context.Results.SelectMany(r => r.ParameterDescriptions);
+            var bodyParameterDescription = parameterDescriptions.Single();
+            Assert.Equal(typeof(InferredJsonClass), bodyParameterDescription.Type);
+            Assert.Equal(typeof(InferredJsonClass).Name, bodyParameterDescription.Name);
+            Assert.True(bodyParameterDescription.IsRequired);
         }
+
+#nullable enable
+
+        [Fact]
+        public void HandleDefaultIAcceptsMetadataForRequiredBodyParameter()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var serviceProvider = services.BuildServiceProvider();
+            var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+            builder.MapPost("/api/todos", (InferredJsonClass inferredJsonClass) => "");
+            var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+            var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+            var hostEnvironment = new HostEnvironment
+            {
+                ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+            };
+            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+
+            // Act
+            provider.OnProvidersExecuting(context);
+            provider.OnProvidersExecuted(context);
+
+            // Assert
+            var parameterDescriptions = context.Results.SelectMany(r => r.ParameterDescriptions);
+            var bodyParameterDescription = parameterDescriptions.Single();
+            Assert.Equal(typeof(InferredJsonClass), bodyParameterDescription.Type);
+            Assert.Equal(typeof(InferredJsonClass).Name, bodyParameterDescription.Name);
+            Assert.True(bodyParameterDescription.IsRequired);
+
+            // Assert
+            var requestFormats = context.Results.SelectMany(r => r.SupportedRequestFormats);
+            var defaultRequestFormat = requestFormats.Single();
+            Assert.Equal("application/json", defaultRequestFormat.MediaType);
+        }
+
+#nullable restore
+
+#nullable enable
+
+        [Fact]
+        public void HandleDefaultIAcceptsMetadataForOptionalBodyParameter()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var serviceProvider = services.BuildServiceProvider();
+            var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+            builder.MapPost("/api/todos", (InferredJsonClass? inferredJsonClass) => "");
+            var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+            var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+            var hostEnvironment = new HostEnvironment
+            {
+                ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+            };
+            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+
+            // Act
+            provider.OnProvidersExecuting(context);
+            provider.OnProvidersExecuted(context);
+
+            // Assert
+            var parameterDescriptions = context.Results.SelectMany(r => r.ParameterDescriptions);
+            var bodyParameterDescription = parameterDescriptions.Single();
+            Assert.Equal(typeof(InferredJsonClass), bodyParameterDescription.Type);
+            Assert.Equal(typeof(InferredJsonClass).Name, bodyParameterDescription.Name);
+            Assert.False(bodyParameterDescription.IsRequired);
+
+            // Assert
+            var requestFormats = context.Results.SelectMany(r => r.SupportedRequestFormats);
+            var defaultRequestFormat = requestFormats.Single();
+            Assert.Equal("application/json", defaultRequestFormat.MediaType);
+        }
+
+#nullable restore
 
         private static IEnumerable<string> GetSortedMediaTypes(ApiResponseType apiResponseType)
         {
