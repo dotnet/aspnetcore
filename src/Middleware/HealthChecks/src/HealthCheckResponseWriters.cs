@@ -18,17 +18,11 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             httpContext.Response.ContentType = "text/plain";
             return result.Status switch
             {
-                HealthStatus.Degraded => Write(httpContext, DegradedBytes),
-                HealthStatus.Healthy => Write(httpContext, HealthyBytes),
-                HealthStatus.Unhealthy => Write(httpContext, UnhealthyBytes),
+                HealthStatus.Degraded => httpContext.Response.Body.WriteAsync(DegradedBytes.AsMemory()).AsTask(),
+                HealthStatus.Healthy => httpContext.Response.Body.WriteAsync(HealthyBytes.AsMemory()).AsTask(),
+                HealthStatus.Unhealthy => httpContext.Response.Body.WriteAsync(UnhealthyBytes.AsMemory()).AsTask(),
                 _ => httpContext.Response.WriteAsync(result.Status.ToString())
             };
-
-            async static Task Write(HttpContext context, byte[] bytes)
-            {
-                await context.Response.Body.WriteAsync(bytes.AsMemory());
-                await context.Response.Body.FlushAsync();
-            }
         }
     }
 }
