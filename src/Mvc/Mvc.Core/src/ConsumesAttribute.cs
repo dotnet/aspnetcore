@@ -35,8 +35,8 @@ namespace Microsoft.AspNetCore.Mvc
 
         /// <summary>
         /// Creates a new instance of <see cref="ConsumesAttribute"/>.
-        /// <param name="contentType"> The request content type </param>
-        /// <param name="otherContentTypes">The additional list of allowed request content types </param>
+        /// <param name="contentType">The request content type.</param>
+        /// <param name="otherContentTypes">The additional list of allowed request content types.</param>
         /// </summary>
         public ConsumesAttribute(string contentType, params string[] otherContentTypes)
         {
@@ -55,13 +55,14 @@ namespace Microsoft.AspNetCore.Mvc
             }
 
             ContentTypes = GetContentTypes(contentType, otherContentTypes);
+            _contentTypes = GetAllContentTypes(contentType, otherContentTypes);
         }
 
         /// <summary>
         /// Creates a new instance of <see cref="ConsumesAttribute"/>.
-        /// <param name="requestType"> The type being read from the request </param>
-        /// <param name="contentType"> The request content type </param>
-        /// <param name="otherContentTypes">The additional list of allowed request content types </param>
+        /// <param name="requestType">The type being read from the request.</param>
+        /// <param name="contentType">The request content type.</param>
+        /// <param name="otherContentTypes">The additional list of allowed request content types.</param>
         /// </summary>
         public ConsumesAttribute(Type requestType, string contentType, params string[] otherContentTypes)
         {
@@ -95,6 +96,12 @@ namespace Microsoft.AspNetCore.Mvc
         /// multiple matches.
         /// </summary>
         public MediaTypeCollection ContentTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value that determines if the request body is optional.
+        /// This value is only used to specify if the request body is required in API explorer.
+        /// </summary>
+        public bool IsOptional { get; set; }
 
         readonly Type? _requestType;
 
