@@ -30,8 +30,10 @@
 
   <PropertyGroup>
     <TargetFileName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion).rpm</TargetFileName>
+    <CblMarinerTargetFileName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion)-cm.1.rpm</CblMarinerTargetFileName>
     <TargetPath>$(InstallersOutputPath)$(TargetFileName)</TargetPath>
-
+    <CblMarinerTargetPath>$(InstallersOutputPath)$(CblMarinerTargetFileName)</CblMarinerTargetPath>
+    
     <PackageVersion>$(TargetingPackVersionPrefix)</PackageVersion>
 
     <!-- Set package revision to '1' for RTM releases, but include the build number in pre-releases -->
