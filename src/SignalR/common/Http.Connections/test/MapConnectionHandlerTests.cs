@@ -267,7 +267,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                         Assert.Equal("/path/negotiate", endpoint.DisplayName);
                         var metaData = endpoint.Metadata.GetMetadata<NegotiateMetadata>();
                         Assert.NotNull(metaData);
-                        Assert.NotNull(metaData.Options);
+                        var optionsMetaData = endpoint.Metadata.GetMetadata<HttpConnectionDispatcherOptions>();
+                        Assert.NotNull(optionsMetaData);
                     },
                     endpoint =>
                     {
@@ -302,10 +303,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                         Assert.Equal("/path/negotiate", endpoint.DisplayName);
                         var metaData = endpoint.Metadata.GetMetadata<NegotiateMetadata>();
                         Assert.NotNull(metaData);
-                        Assert.NotNull(metaData.Options);
-                        Assert.Equal(HttpTransportType.ServerSentEvents, metaData.Options.Transports);
-                        Assert.Equal(2, metaData.Options.ApplicationMaxBufferSize);
-                        Assert.True(metaData.Options.CloseOnAuthenticationExpiration);
+                        var optionsMetaData = endpoint.Metadata.GetMetadata<HttpConnectionDispatcherOptions>();
+                        Assert.NotNull(optionsMetaData);
+                        Assert.Equal(HttpTransportType.ServerSentEvents, optionsMetaData.Transports);
+                        Assert.Equal(2, optionsMetaData.ApplicationMaxBufferSize);
+                        Assert.True(optionsMetaData.CloseOnAuthenticationExpiration);
                     },
                     endpoint =>
                     {
