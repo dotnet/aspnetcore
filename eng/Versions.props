@@ -106,12 +106,10 @@
     <MicrosoftExtensionsOptionsDataAnnotationsVersion>6.0.0-rc.2.21453.3</MicrosoftExtensionsOptionsDataAnnotationsVersion>
     <MicrosoftExtensionsOptionsVersion>6.0.0-rc.2.21453.3</MicrosoftExtensionsOptionsVersion>
     <MicrosoftExtensionsPrimitivesVersion>6.0.0-rc.2.21453.3</MicrosoftExtensionsPrimitivesVersion>
-    <MicrosoftWin32SystemEventsVersion>6.0.0-rc.2.21453.3</MicrosoftWin32SystemEventsVersion>
     <MicrosoftInternalRuntimeAspNetCoreTransportVersion>6.0.0-rc.2.21453.3</MicrosoftInternalRuntimeAspNetCoreTransportVersion>
     <SystemDiagnosticsDiagnosticSourceVersion>6.0.0-rc.2.21453.3</SystemDiagnosticsDiagnosticSourceVersion>
     <SystemDiagnosticsEventLogVersion>6.0.0-rc.2.21453.3</SystemDiagnosticsEventLogVersion>
     <SystemDirectoryServicesProtocolsVersion>6.0.0-rc.2.21453.3</SystemDirectoryServicesProtocolsVersion>
-    <SystemDrawingCommonVersion>6.0.0-rc.2.21453.3</SystemDrawingCommonVersion>
     <SystemIOPipelinesVersion>6.0.0-rc.2.21453.3</SystemIOPipelinesVersion>
     <SystemNetHttpJsonVersion>6.0.0-rc.2.21453.3</SystemNetHttpJsonVersion>
     <SystemNetHttpWinHttpHandlerVersion>6.0.0-rc.2.21453.3</SystemNetHttpWinHttpHandlerVersion>
@@ -120,12 +118,10 @@
     <SystemRuntimeCompilerServicesUnsafeVersion>6.0.0-rc.2.21453.3</SystemRuntimeCompilerServicesUnsafeVersion>
     <SystemSecurityCryptographyPkcsVersion>6.0.0-rc.2.21453.3</SystemSecurityCryptographyPkcsVersion>
     <SystemSecurityCryptographyXmlVersion>6.0.0-rc.2.21453.3</SystemSecurityCryptographyXmlVersion>
-    <SystemSecurityPermissionsVersion>6.0.0-rc.2.21453.3</SystemSecurityPermissionsVersion>
     <SystemServiceProcessServiceControllerVersion>6.0.0-rc.2.21453.3</SystemServiceProcessServiceControllerVersion>
     <SystemTextEncodingsWebVersion>6.0.0-rc.2.21453.3</SystemTextEncodingsWebVersion>
     <SystemTextJsonVersion>6.0.0-rc.2.21453.3</SystemTextJsonVersion>
     <SystemThreadingChannelsVersion>6.0.0-rc.2.21453.3</SystemThreadingChannelsVersion>
-    <SystemWindowsExtensionsVersion>6.0.0-rc.2.21453.3</SystemWindowsExtensionsVersion>
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <MicrosoftNETCorePlatformsVersion>6.0.0-rc.2.21453.3</MicrosoftNETCorePlatformsVersion>
     <!-- Packages from dotnet/efcore -->

@@ -177,10 +177,6 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>41dcbd6a2a7e7963f2a508a8b36cad8689d1e4ae</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Win32.SystemEvents" Version="6.0.0-rc.2.21453.3">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>41dcbd6a2a7e7963f2a508a8b36cad8689d1e4ae</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.Internal.Runtime.AspNetCore.Transport" Version="6.0.0-rc.2.21453.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>41dcbd6a2a7e7963f2a508a8b36cad8689d1e4ae</Sha>
@@ -194,10 +190,6 @@
       <Sha>41dcbd6a2a7e7963f2a508a8b36cad8689d1e4ae</Sha>
     </Dependency>
     <Dependency Name="System.DirectoryServices.Protocols" Version="6.0.0-rc.2.21453.3">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>41dcbd6a2a7e7963f2a508a8b36cad8689d1e4ae</Sha>
-    </Dependency>
-    <Dependency Name="System.Drawing.Common" Version="6.0.0-rc.2.21453.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>41dcbd6a2a7e7963f2a508a8b36cad8689d1e4ae</Sha>
     </Dependency>
@@ -233,10 +225,6 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>41dcbd6a2a7e7963f2a508a8b36cad8689d1e4ae</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Permissions" Version="6.0.0-rc.2.21453.3">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>41dcbd6a2a7e7963f2a508a8b36cad8689d1e4ae</Sha>
-    </Dependency>
     <Dependency Name="System.ServiceProcess.ServiceController" Version="6.0.0-rc.2.21453.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>41dcbd6a2a7e7963f2a508a8b36cad8689d1e4ae</Sha>
@@ -250,10 +238,6 @@
       <Sha>41dcbd6a2a7e7963f2a508a8b36cad8689d1e4ae</Sha>
     </Dependency>
     <Dependency Name="System.Threading.Channels" Version="6.0.0-rc.2.21453.3">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>41dcbd6a2a7e7963f2a508a8b36cad8689d1e4ae</Sha>
-    </Dependency>
-    <Dependency Name="System.Windows.Extensions" Version="6.0.0-rc.2.21453.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>41dcbd6a2a7e7963f2a508a8b36cad8689d1e4ae</Sha>
     </Dependency>
