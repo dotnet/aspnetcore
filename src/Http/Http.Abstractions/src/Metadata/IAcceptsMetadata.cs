@@ -21,5 +21,10 @@ namespace Microsoft.AspNetCore.Http.Metadata
         /// Gets the type being read from the request. 
         /// </summary>
         Type? RequestType { get; }
+
+        /// <summary>
+        /// Gets a value that determines if the request body is optional.
+        /// </summary>
+        bool IsOptional { get; }
     }
 }
