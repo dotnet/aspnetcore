@@ -862,10 +862,9 @@ namespace Microsoft.AspNetCore.Http
 
             var isOptional = IsOptionalParameter(parameter);
 
-            factoryContext.Metadata.Add(new AcceptsMetadata(parameter.ParameterType, isOptional, new string[] {"application/json"}));
-
             factoryContext.JsonRequestBodyType = parameter.ParameterType;
             factoryContext.AllowEmptyRequestBody = allowEmpty || isOptional;
+            factoryContext.Metadata.Add(new AcceptsMetadata(parameter.ParameterType, factoryContext.AllowEmptyRequestBody, new string[] { "application/json" }));
 
             if (!factoryContext.AllowEmptyRequestBody)
             {
