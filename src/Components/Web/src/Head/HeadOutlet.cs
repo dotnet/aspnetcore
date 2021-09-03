@@ -45,13 +45,14 @@ namespace Microsoft.AspNetCore.Components.Web
             {
                 builder.OpenComponent<SectionContent>(2);
                 builder.AddAttribute(3, nameof(SectionContent.Name), TitleSectionOutletName);
-                builder.AddAttribute(4, nameof(SectionContent.ChildContent), (RenderFragment)BuildDefaultTitleRenderTree);
+                builder.AddAttribute(4, nameof(SectionContent.IsDefaultContent), true);
+                builder.AddAttribute(5, nameof(SectionContent.ChildContent), (RenderFragment)BuildDefaultTitleRenderTree);
                 builder.CloseComponent();
             }
 
             // Render the rest of the head metadata
-            builder.OpenComponent<SectionOutlet>(5);
-            builder.AddAttribute(6, nameof(SectionOutlet.Name), HeadSectionOutletName);
+            builder.OpenComponent<SectionOutlet>(6);
+            builder.AddAttribute(7, nameof(SectionOutlet.Name), HeadSectionOutletName);
             builder.CloseComponent();
         }
 

@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Manifest
 
         public string? PhysicalPath => null;
 
-        public string? Name => Directory.Name;
+        public string Name => Directory.Name;
 
         public DateTimeOffset LastModified { get; }
 

@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                     var xHttpMethodOverrideValue = context.Request.Headers[xHttpMethodOverride];
                     if (!string.IsNullOrEmpty(xHttpMethodOverrideValue))
                     {
-                        context.Request.Method = xHttpMethodOverrideValue;
+                        context.Request.Method = xHttpMethodOverrideValue.ToString();
                     }
                 }
             }
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
             var methodType = form[_options.FormFieldName!];
             if (!string.IsNullOrEmpty(methodType))
             {
-                context.Request.Method = methodType;
+                context.Request.Method = methodType.ToString();
             }
             await _next(context);
         }

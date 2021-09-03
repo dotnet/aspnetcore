@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net.Http;
@@ -254,7 +255,7 @@ namespace Microsoft.AspNetCore.Testing
         {
             if (actual != expected)
             {
-                throw new InvalidOperationException($"Expected {actual} frame. Got {expected}.");
+                throw new InvalidOperationException($"Expected {expected} frame. Got {actual}.");
             }
         }
 
@@ -922,7 +923,7 @@ namespace Microsoft.AspNetCore.Testing
         });
 
         private readonly Http3InMemory _testBase;
-        private long _error;
+        private long? _error;
 
         public TestMultiplexedConnectionContext(Http3InMemory testBase)
         {
@@ -946,7 +947,7 @@ namespace Microsoft.AspNetCore.Testing
 
         public long Error
         {
-            get => _error;
+            get => _error ?? -1;
             set => _error = value;
         }
 
@@ -1019,6 +1020,7 @@ namespace Microsoft.AspNetCore.Testing
 
         private TaskCompletionSource _disposingTcs;
         private TaskCompletionSource _disposedTcs;
+        internal long? _error;
 
         public TestStreamContext(bool canRead, bool canWrite, Http3InMemory testBase)
         {
@@ -1069,9 +1071,10 @@ namespace Microsoft.AspNetCore.Testing
 
             StreamId = streamId;
             _testBase.Logger.LogInformation($"Initializing stream {streamId}");
-            ConnectionId = "TEST:" + streamId.ToString();
+            ConnectionId = "TEST:" + streamId.ToString(CultureInfo.InvariantCulture);
             AbortReadException = null;
             AbortWriteException = null;
+            _error = null;
 
             _disposedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             _disposingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -1112,7 +1115,11 @@ namespace Microsoft.AspNetCore.Testing
 
         public bool CanWrite { get; }
 
-        public long Error { get; set; }
+        public long Error
+        {
+            get => _error ?? -1;
+            set => _error = value;
+        }
 
         public override void Abort(ConnectionAbortedException abortReason)
         {

@@ -17,6 +17,7 @@
     <Compile Include="$(SharedSourceRoot)ProblemDetailsJsonConverter.cs" LinkBase="Shared"/>
     <Compile Include="$(SharedSourceRoot)HttpValidationProblemDetailsJsonConverter.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RoutingMetadata\AcceptsMetadata.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)TypeNameHelper/TypeNameHelper.cs" LinkBase="Shared"/>
   </ItemGroup>
 
   <ItemGroup>

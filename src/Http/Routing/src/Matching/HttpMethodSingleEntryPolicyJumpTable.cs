@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var httpMethod = httpContext.Request.Method;
             if (_supportsCorsPreflight && HttpMethodMatcherPolicy.IsCorsPreflightRequest(httpContext, httpMethod, out var accessControlRequestMethod))
             {
-                return HttpMethods.Equals(accessControlRequestMethod, _method) ? _corsPreflightDestination : _corsPreflightExitDestination;
+                return HttpMethods.Equals(accessControlRequestMethod.ToString(), _method) ? _corsPreflightDestination : _corsPreflightExitDestination;
             }
 
             return HttpMethods.Equals(httpMethod, _method) ? _destination : _exitDestination;

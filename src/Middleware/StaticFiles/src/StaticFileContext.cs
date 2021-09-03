@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -47,6 +43,11 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         public StaticFileContext(HttpContext context, StaticFileOptions options, ILogger logger, IFileProvider fileProvider, string? contentType, PathString subPath)
         {
+            if (subPath.Value == null)
+            {
+                throw new ArgumentNullException(nameof(subPath));
+            }
+
             _context = context;
             _options = options;
             _request = context.Request;
@@ -109,11 +110,11 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         public string SubPath => _subPath.Value!;
 
-        public string PhysicalPath => _fileInfo.PhysicalPath;
+        public string PhysicalPath => _fileInfo.PhysicalPath ?? string.Empty;
 
         public bool LookupFileInfo()
         {
-            _fileInfo = _fileProvider.GetFileInfo(_subPath.Value);
+            _fileInfo = _fileProvider.GetFileInfo(SubPath);
             if (_fileInfo.Exists)
             {
                 _length = _fileInfo.Length;
@@ -264,7 +265,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 _response.ContentLength = _length;
             }
 
-            _options.OnPrepareResponse(new StaticFileResponseContext(_context, _fileInfo!));
+            _options.OnPrepareResponse(new StaticFileResponseContext(_context, _fileInfo));
         }
 
         public PreconditionState GetPreconditionState()

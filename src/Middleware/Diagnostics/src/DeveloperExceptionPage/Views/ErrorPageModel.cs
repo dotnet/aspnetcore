@@ -51,5 +51,10 @@ namespace Microsoft.AspNetCore.Diagnostics.RazorViews
         /// Request endpoint.
         /// </summary>
         public EndpointModel Endpoint { get; set; }
+
+        /// <summary>
+        /// The text be inside the HTML title element.
+        /// </summary>
+        public string Title { get; set; }
     }
 }

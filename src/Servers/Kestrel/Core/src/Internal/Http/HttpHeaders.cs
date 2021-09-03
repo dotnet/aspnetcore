@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Buffers.Binary;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -268,9 +267,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             var count = headerValues.Count;
             for (var i = 0; i < count; i++)
-
             {
-                ValidateHeaderValueCharacters(headerValues[i], requireAscii);
+                ValidateHeaderValueCharacters(headerValues[i]!, requireAscii);
             }
         }
 
@@ -373,7 +371,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                     if (c == 'k' && byteValue.Length >= (2 * sizeof(ulong) + sizeof(ushort)))
                     {
-                        if ((BinaryPrimitives.ReadUInt64LittleEndian(byteValue) | lowerCaseKeep) == keepAliveStart)
+                        if (ReadLowerCaseUInt64(byteValue, lowerCaseKeep) == keepAliveStart)
                         {
                             offset += sizeof(ulong) / 2;
                             byteValue = byteValue.Slice(sizeof(ulong));
@@ -484,16 +482,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static ulong ReadLowerCaseUInt64(ReadOnlySpan<byte> value)
-            => BinaryPrimitives.ReadUInt64LittleEndian(value) | 0x0020_0020_0020_0020;
+        private static ulong ReadLowerCaseUInt64(ReadOnlySpan<byte> value, ulong lowerCaseMask = 0x0020_0020_0020_0020)
+        {
+            ulong result = MemoryMarshal.Read<ulong>(value);
+            if (!BitConverter.IsLittleEndian)
+            {
+                result = (result & 0xffff_0000_0000_0000) >> 48 |
+                         (result & 0x0000_ffff_0000_0000) >> 16 |
+                         (result & 0x0000_0000_ffff_0000) << 16 |
+                         (result & 0x0000_0000_0000_ffff) << 48;
+            }
+            return result | lowerCaseMask;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static uint ReadLowerCaseUInt32(ReadOnlySpan<byte> value)
-            => BinaryPrimitives.ReadUInt32LittleEndian(value) | 0x0020_0020;
+        {
+            uint result = MemoryMarshal.Read<uint>(value);
+            if (!BitConverter.IsLittleEndian)
+            {
+                result = (result & 0xffff_0000) >> 16 |
+                         (result & 0x0000_ffff) << 16;
+            }
+            return result | 0x0020_0020;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ushort ReadLowerCaseUInt16(ReadOnlySpan<byte> value)
-            => (ushort)(BinaryPrimitives.ReadUInt16LittleEndian(value) | 0x0020);
+            => (ushort)(MemoryMarshal.Read<ushort>(value) | 0x0020);
 
         private static char ToLowerCase(char value) => (char)(value | (char)0x0020);
 
@@ -603,8 +619,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool TryReadLowerCaseUInt64(ReadOnlySpan<byte> byteValue, out ulong value)
         {
-            if (BinaryPrimitives.TryReadUInt64LittleEndian(byteValue, out var result))
+            if (MemoryMarshal.TryRead(byteValue, out ulong result))
             {
+                if (!BitConverter.IsLittleEndian)
+                {
+                    result = (result & 0xffff_0000_0000_0000) >> 48 |
+                             (result & 0x0000_ffff_0000_0000) >> 16 |
+                             (result & 0x0000_0000_ffff_0000) << 16 |
+                             (result & 0x0000_0000_0000_ffff) << 48;
+                }
                 value = result | 0x0020_0020_0020_0020;
                 return true;
             }
@@ -616,8 +639,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool TryReadLowerCaseUInt32(ReadOnlySpan<byte> byteValue, out uint value)
         {
-            if (BinaryPrimitives.TryReadUInt32LittleEndian(byteValue, out var result))
+            if (MemoryMarshal.TryRead(byteValue, out uint result))
             {
+                if (!BitConverter.IsLittleEndian)
+                {
+                    result = (result & 0xffff_0000) >> 16 |
+                             (result & 0x0000_ffff) << 16;
+                }
                 value = result | 0x0020_0020;
                 return true;
             }

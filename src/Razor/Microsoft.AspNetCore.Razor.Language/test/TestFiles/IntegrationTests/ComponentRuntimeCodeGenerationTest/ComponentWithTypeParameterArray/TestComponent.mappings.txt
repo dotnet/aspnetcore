@@ -1,0 +1,31 @@
+Source Location: (111:7,1 [33] x:\dir\subdir\Test\TestComponent.cshtml)
+|foreach (var item in Items2)
+{
+|
+Generated Location: (1042:37,1 [33] )
+|foreach (var item in Items2)
+{
+|
+
+Source Location: (176:10,0 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+|}
+|
+Generated Location: (1461:54,0 [3] )
+|}
+|
+
+Source Location: (222:14,7 [248] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    [Parameter] public TItem[] Items1 { get; set; }
+    [Parameter] public List<TItem[]> Items2 { get; set; }
+    [Parameter] public Func<TItem[]> Items3 { get; set; }
+    [Parameter] public RenderFragment<TItem[]> ChildContent { get; set; }
+|
+Generated Location: (1910:72,7 [248] )
+|
+    [Parameter] public TItem[] Items1 { get; set; }
+    [Parameter] public List<TItem[]> Items2 { get; set; }
+    [Parameter] public Func<TItem[]> Items3 { get; set; }
+    [Parameter] public RenderFragment<TItem[]> ChildContent { get; set; }
+|
+

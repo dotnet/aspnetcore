@@ -9,11 +9,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
     internal sealed partial class QuicStreamContext : IPersistentStateFeature, IStreamDirectionFeature, IProtocolErrorCodeFeature, IStreamIdFeature, IStreamAbortFeature
     {
         private IDictionary<object, object?>? _persistentState;
+        private long? _error;
 
         public bool CanRead { get; private set; }
         public bool CanWrite { get; private set; }
 
-        public long Error { get; set; }
+        public long Error
+        {
+            get => _error ?? -1;
+            set => _error = value;
+        }
 
         public long StreamId { get; private set; }
 

@@ -215,6 +215,10 @@ namespace Microsoft.AspNetCore.Hosting
 
         public IWebHostBuilder UseStartup([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType)
         {
+            var startupAssemblyName = startupType.Assembly.GetName().Name;
+
+            UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
+
             // UseStartup can be called multiple times. Only run the last one.
             _startupObject = startupType;
 
@@ -232,6 +236,10 @@ namespace Microsoft.AspNetCore.Hosting
 
         public IWebHostBuilder UseStartup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)]TStartup>(Func<WebHostBuilderContext, TStartup> startupFactory)
         {
+            var startupAssemblyName = startupFactory.GetMethodInfo().DeclaringType!.Assembly.GetName().Name;
+
+            UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
+
             // Clear the startup type
             _startupObject = startupFactory;
 
@@ -333,8 +341,35 @@ namespace Microsoft.AspNetCore.Hosting
             builder.Build(instance)(container);
         }
 
+        public IWebHostBuilder Configure(Action<IApplicationBuilder> configure)
+        {
+            var startupAssemblyName = configure.GetMethodInfo().DeclaringType!.Assembly.GetName().Name!;
+
+            UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
+
+            // Clear the startup type
+            _startupObject = configure;
+
+            _builder.ConfigureServices((context, services) =>
+            {
+                if (object.ReferenceEquals(_startupObject, configure))
+                {
+                    services.Configure<GenericWebHostServiceOptions>(options =>
+                    {
+                        options.ConfigureApplication = app => configure(app);
+                    });
+                }
+            });
+
+            return this;
+        }
+
         public IWebHostBuilder Configure(Action<WebHostBuilderContext, IApplicationBuilder> configure)
         {
+            var startupAssemblyName = configure.GetMethodInfo().DeclaringType!.Assembly.GetName().Name!;
+
+            UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
+
             // Clear the startup type
             _startupObject = configure;
 

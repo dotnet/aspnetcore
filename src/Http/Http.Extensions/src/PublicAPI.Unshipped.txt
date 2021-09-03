@@ -163,6 +163,8 @@ Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteParameterNames.get 
 Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteParameterNames.init -> void
 Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.ServiceProvider.get -> System.IServiceProvider?
 Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.ServiceProvider.init -> void
+Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.ThrowOnBadRequest.get -> bool
+Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.ThrowOnBadRequest.init -> void
 Microsoft.AspNetCore.Mvc.ProblemDetails
 Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.get -> string?
 Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.set -> void
@@ -205,3 +207,6 @@ static Microsoft.AspNetCore.Http.SessionExtensions.GetInt32(this Microsoft.AspNe
 static Microsoft.AspNetCore.Http.SessionExtensions.GetString(this Microsoft.AspNetCore.Http.ISession! session, string! key) -> string?
 static Microsoft.AspNetCore.Http.SessionExtensions.SetInt32(this Microsoft.AspNetCore.Http.ISession! session, string! key, int value) -> void
 static Microsoft.AspNetCore.Http.SessionExtensions.SetString(this Microsoft.AspNetCore.Http.ISession! session, string! key, string! value) -> void
+Microsoft.AspNetCore.Http.TagsAttribute
+Microsoft.AspNetCore.Http.TagsAttribute.TagsAttribute(params string![]! tags) -> void
+Microsoft.AspNetCore.Http.TagsAttribute.Tags.get -> System.Collections.Generic.IReadOnlyList<string!>!

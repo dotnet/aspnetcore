@@ -163,6 +163,8 @@ function invokeJSFromDotNet(callInfo: Pointer, arg0: any, arg1: any, arg2: any):
         const streamReference = DotNet.createJSStreamReference(result);
         const resultJson = JSON.stringify(streamReference);
         return BINDING.js_string_to_mono_string(resultJson);
+      case DotNet.JSCallResultType.JSVoidResult:
+        return null;
       default:
         throw new Error(`Invalid JS call result type '${resultType}'.`);
     }

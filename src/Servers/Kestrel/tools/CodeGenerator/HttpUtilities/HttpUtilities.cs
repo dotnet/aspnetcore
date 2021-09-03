@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -308,16 +309,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return maskArray;
         }
 
-        private static unsafe ulong GetAsciiStringAsLong(string str)
+        private static ulong GetAsciiStringAsLong(string str)
         {
             Debug.Assert(str.Length == sizeof(ulong), string.Format(CultureInfo.InvariantCulture, "String must be exactly {0} (ASCII) characters long.", sizeof(ulong)));
 
             var bytes = Encoding.ASCII.GetBytes(str);
 
-            fixed (byte* ptr = &bytes[0])
-            {
-                return *(ulong*)ptr;
-            }
+            return BinaryPrimitives.ReadUInt64LittleEndian(bytes);
         }
     }
 }

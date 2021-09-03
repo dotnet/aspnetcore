@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -28,7 +27,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         private readonly IHostEnvironment _environment;
         private readonly IServiceProviderIsService? _serviceProviderIsService;
         private readonly TryParseMethodCache TryParseMethodCache = new();
-        private readonly NullabilityInfoContext NullabilityContext = new();
 
         // Executes before MVC's DefaultApiDescriptionProvider and GrpcHttpApiDescriptionProvider for no particular reason.
         public int Order => -1100;
@@ -104,8 +102,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 },
             };
 
-            var hasJsonBody = false;
-
             foreach (var parameter in methodInfo.GetParameters())
             {
                 var parameterDescription = CreateApiParameterDescription(parameter, routeEndpoint.RoutePattern);
@@ -115,17 +111,37 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     continue;
                 }
 
-                if (parameterDescription.Source == BindingSource.Body)
-                {
-                    hasJsonBody = true;
-                }
-
                 apiDescription.ParameterDescriptions.Add(parameterDescription);
             }
 
-            AddSupportedRequestFormats(apiDescription.SupportedRequestFormats, hasJsonBody, routeEndpoint.Metadata);
-            AddSupportedResponseTypes(apiDescription.SupportedResponseTypes, methodInfo.ReturnType, routeEndpoint.Metadata);
+            // Get IAcceptsMetadata.
+            var acceptsMetadata = routeEndpoint.Metadata.GetMetadata<IAcceptsMetadata>();
+            if (acceptsMetadata is not null)
+            {
+                var acceptsRequestType = acceptsMetadata.RequestType;
+                var isOptional = acceptsMetadata.IsOptional;
+                var parameterDescription = new ApiParameterDescription
+                {
+                    Name = acceptsRequestType is not null ? acceptsRequestType.Name : typeof(void).Name,
+                    ModelMetadata = CreateModelMetadata(acceptsRequestType ?? typeof(void)),
+                    Source = BindingSource.Body,
+                    Type = acceptsRequestType ?? typeof(void),
+                    IsRequired = !isOptional,
+                };
+                apiDescription.ParameterDescriptions.Add(parameterDescription);
 
+                var supportedRequestFormats = apiDescription.SupportedRequestFormats;
+
+                foreach (var contentType in acceptsMetadata.ContentTypes)
+                {
+                    supportedRequestFormats.Add(new ApiRequestFormat
+                    {
+                        MediaType = contentType
+                    });
+                }
+            }
+
+            AddSupportedResponseTypes(apiDescription.SupportedResponseTypes, methodInfo.ReturnType, routeEndpoint.Metadata);
             AddActionDescriptorEndpointMetadata(apiDescription.ActionDescriptor, routeEndpoint.Metadata);
 
             return apiDescription;
@@ -136,13 +152,15 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var (source, name, allowEmpty) = GetBindingSourceAndName(parameter, pattern);
 
             // Services are ignored because they are not request parameters.
-            if (source == BindingSource.Services)
+            // We ignore/skip body parameter because the value will be retrieved from the IAcceptsMetadata.
+            if (source == BindingSource.Services || source == BindingSource.Body)
             {
                 return null;
             }
 
             // Determine the "requiredness" based on nullability, default value or if allowEmpty is set
-            var nullability = NullabilityContext.Create(parameter);
+            var nullabilityContext = new NullabilityInfoContext();
+            var nullability = nullabilityContext.Create(parameter);
             var isOptional = parameter.HasDefaultValue || nullability.ReadState != NullabilityState.NotNull || allowEmpty;
 
             return new ApiParameterDescription
@@ -204,33 +222,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             else
             {
                 return (BindingSource.Body, parameter.Name ?? string.Empty, false);
-            }
-        }
-
-        private static void AddSupportedRequestFormats(
-            IList<ApiRequestFormat> supportedRequestFormats,
-            bool hasJsonBody,
-            EndpointMetadataCollection endpointMetadata)
-        {
-            var requestMetadata = endpointMetadata.GetOrderedMetadata<IApiRequestMetadataProvider>();
-            var declaredContentTypes = DefaultApiDescriptionProvider.GetDeclaredContentTypes(requestMetadata);
-
-            if (declaredContentTypes.Count > 0)
-            {
-                foreach (var contentType in declaredContentTypes)
-                {
-                    supportedRequestFormats.Add(new ApiRequestFormat
-                    {
-                        MediaType = contentType,
-                    });
-                }
-            }
-            else if (hasJsonBody)
-            {
-                supportedRequestFormats.Add(new ApiRequestFormat
-                {
-                    MediaType = "application/json",
-                });
             }
         }
 

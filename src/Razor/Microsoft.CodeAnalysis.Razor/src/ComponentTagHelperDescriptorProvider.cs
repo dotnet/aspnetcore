@@ -243,6 +243,12 @@ namespace Microsoft.CodeAnalysis.Razor
                         return true;
                     }
                 }
+                // Also check for cases like:
+                // [Parameter] public T[] MyProperty { get; set; }
+                else if (type is IArrayTypeSymbol array && HasTypeParameter(array.ElementType))
+                {
+                    return true;
+                }
 
                 return false;
             }

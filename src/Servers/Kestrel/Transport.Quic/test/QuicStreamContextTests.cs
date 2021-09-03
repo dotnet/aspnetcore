@@ -96,6 +96,53 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             Assert.Equal(0, quicConnectionContext.StreamPool.Count);
         }
 
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task BidirectionalStream_ClientAbortedAfterDisposeCalled_NotPooled()
+        {
+            // Arrange
+            await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
+
+            var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+            using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+            await clientConnection.ConnectAsync().DefaultTimeout();
+
+            await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+
+            // Act
+            var clientStream = clientConnection.OpenBidirectionalStream();
+            await clientStream.WriteAsync(TestData).DefaultTimeout();
+
+            var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
+            var readResult = await serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
+            serverStream.Transport.Input.AdvanceTo(readResult.Buffer.End);
+
+            // Server sends a large response that will make it wait to complete sends.
+            await serverStream.Transport.Output.WriteAsync(new byte[1024 * 1024 * 32]).DefaultTimeout();
+
+            // Complete reading and writing.
+            await serverStream.Transport.Input.CompleteAsync();
+            await serverStream.Transport.Output.CompleteAsync();
+
+            var quicStreamContext = Assert.IsType<QuicStreamContext>(serverStream);
+
+            // Server starts disposing
+            var disposeTask = quicStreamContext.DisposeAsync();
+
+            // Client aborts while server is draining
+            clientStream.AbortRead((long)Http3ErrorCode.RequestCancelled);
+            clientStream.AbortWrite((long)Http3ErrorCode.RequestCancelled);
+
+            // Server finishes disposing
+            await disposeTask.DefaultTimeout();
+            quicStreamContext.Dispose();
+
+            var quicConnectionContext = Assert.IsType<QuicConnectionContext>(serverConnection);
+
+            // Assert
+            Assert.Equal(0, quicConnectionContext.StreamPool.Count);
+        }
+
         [ConditionalTheory]
         [MsQuicSupported]
         [InlineData(1024)]
@@ -139,6 +186,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             await serverStream.Transport.Input.CompleteAsync().DefaultTimeout();
             await serverStream.Transport.Output.CompleteAsync().DefaultTimeout();
 
+            Logger.LogInformation("Client reading until end of stream.");
+            var data = await clientStream.ReadUntilEndAsync().DefaultTimeout();
+            Assert.Equal(testData.Length, data.Length);
+            Assert.Equal(testData, data);
+
             var quicStreamContext = Assert.IsType<QuicStreamContext>(serverStream);
 
             Logger.LogInformation("Server waiting for send and receiving loops to complete.");
@@ -149,11 +201,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             Logger.LogInformation("Server disposing stream.");
             await quicStreamContext.DisposeAsync().DefaultTimeout();
             quicStreamContext.Dispose();
-
-            Logger.LogInformation("Client reading until end of stream.");
-            var data = await clientStream.ReadUntilEndAsync().DefaultTimeout();
-            Assert.Equal(testData.Length, data.Length);
-            Assert.Equal(testData, data);
 
             var quicConnectionContext = Assert.IsType<QuicConnectionContext>(serverConnection);
 
@@ -402,6 +449,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
             Assert.Equal(TestData, data);
 
+            Logger.LogInformation("Server aborting stream");
             ((IProtocolErrorCodeFeature)serverStream).Error = (long)Http3ErrorCode.InternalError;
             serverStream.Abort(new ConnectionAbortedException("Test message"));
 

@@ -1,15 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Server
 {
-    internal class ComponentParameterDeserializer
+    internal sealed partial class ComponentParameterDeserializer
     {
         private readonly ILogger<ComponentParameterDeserializer> _logger;
         private readonly ComponentParametersTypeCache _parametersCache;
@@ -57,7 +54,7 @@ namespace Microsoft.AspNetCore.Components.Server
                     var parameterType = _parametersCache.GetParameterType(definition.Assembly, definition.TypeName);
                     if (parameterType == null)
                     {
-                        Log.InvalidParameterType(_logger, definition.Name, definition.Assembly, definition.TypeName);
+                        Log.InvalidParameterType(_logger, definition.Name, definition.TypeName, definition.Assembly);
                         return false;
                     }
                     try
@@ -110,79 +107,31 @@ namespace Microsoft.AspNetCore.Components.Server
             }
         }
 
-        private static class Log
+        private static partial class Log
         {
-            private static readonly Action<ILogger, Exception> _parameterValuesInvalidFormat =
-                LoggerMessage.Define(
-                    LogLevel.Debug,
-                    new EventId(1, "ParameterValuesInvalidFormat"),
-                    "Parameter values must be an array.");
+            [LoggerMessage(1, LogLevel.Debug, "Parameter values must be an array.", EventName = "ParameterValuesInvalidFormat")]
+            internal static partial void ParameterValuesInvalidFormat(ILogger<ComponentParameterDeserializer> logger);
 
-            private static readonly Action<ILogger, string, string, string, Exception> _incompleteParameterDefinition =
-                LoggerMessage.Define<string, string, string>(
-                    LogLevel.Debug,
-                    new EventId(2, "IncompleteParameterDefinition"),
-                    "The parameter definition for '{ParameterName}' is incomplete: Type='{TypeName}' Assembly='{Assembly}'.");
+            [LoggerMessage(2, LogLevel.Debug, "The parameter definition for '{ParameterName}' is incomplete: Type='{TypeName}' Assembly='{Assembly}'.", EventName = "IncompleteParameterDefinition")]
+            internal static partial void IncompleteParameterDefinition(ILogger<ComponentParameterDeserializer> logger, string parameterName, string typeName, string assembly);
 
-            private static readonly Action<ILogger, string, string, string, Exception> _invalidParameterType =
-                LoggerMessage.Define<string, string, string>(
-                    LogLevel.Debug,
-                    new EventId(3, "InvalidParameterType"),
-                    "The parameter '{ParameterName} with type '{TypeName}' in assembly '{Assembly}' could not be found.");
+            [LoggerMessage(3, LogLevel.Debug, "The parameter '{ParameterName} with type '{TypeName}' in assembly '{Assembly}' could not be found.", EventName = "InvalidParameterType")]
+            internal static partial void InvalidParameterType(ILogger<ComponentParameterDeserializer> logger, string parameterName, string typeName, string assembly);
 
-            private static readonly Action<ILogger, string, string, string, Exception> _invalidParameterValue =
-                LoggerMessage.Define<string, string, string>(
-                    LogLevel.Debug,
-                    new EventId(4, "InvalidParameterValue"),
-                    "Could not parse the parameter value for parameter '{Name}' of type '{TypeName}' and assembly '{Assembly}'.");
+            [LoggerMessage(4, LogLevel.Debug, "Could not parse the parameter value for parameter '{Name}' of type '{TypeName}' and assembly '{Assembly}'.", EventName = "InvalidParameterValue")]
+            internal static partial void InvalidParameterValue(ILogger<ComponentParameterDeserializer> logger, string name, string typeName, string assembly, Exception e);
 
-            private static readonly Action<ILogger, Exception> _failedToParseParameterDefinitions =
-                LoggerMessage.Define(
-                    LogLevel.Debug,
-                    new EventId(5, "FailedToParseParameterDefinitions"),
-                    "Failed to parse the parameter definitions.");
+            [LoggerMessage(5, LogLevel.Debug, "Failed to parse the parameter definitions.", EventName = "FailedToParseParameterDefinitions")]
+            internal static partial void FailedToParseParameterDefinitions(ILogger<ComponentParameterDeserializer> logger, Exception e);
 
-            private static readonly Action<ILogger, Exception> _failedToParseParameterValues =
-                LoggerMessage.Define(
-                    LogLevel.Debug,
-                    new EventId(6, "FailedToParseParameterValues"),
-                    "Failed to parse the parameter values.");
+            [LoggerMessage(6, LogLevel.Debug, "Failed to parse the parameter values.", EventName = "FailedToParseParameterValues")]
+            internal static partial void FailedToParseParameterValues(ILogger<ComponentParameterDeserializer> logger, Exception e);
 
-            private static readonly Action<ILogger, int, int, Exception> _mismatchedParameterAndDefinitions =
-                LoggerMessage.Define<int, int>(
-                    LogLevel.Debug,
-                    new EventId(7, "MismatchedParameterAndDefinitions"),
-                    "The number of parameter definitions '{DescriptorsLength}' does not match the number parameter values '{ValuesLength}'.");
+            [LoggerMessage(7, LogLevel.Debug, "The number of parameter definitions '{DescriptorsLength}' does not match the number parameter values '{ValuesLength}'.", EventName = "MismatchedParameterAndDefinitions")]
+            internal static partial void MismatchedParameterAndDefinitions(ILogger<ComponentParameterDeserializer> logger, int descriptorsLength, int valuesLength);
 
-            private static readonly Action<ILogger, Exception> _missingParameterDefinitionName =
-                LoggerMessage.Define(
-                    LogLevel.Debug,
-                    new EventId(8, "MissingParameterDefinitionName"),
-                    "The name is missing in a parameter definition.");
-
-            internal static void ParameterValuesInvalidFormat(ILogger<ComponentParameterDeserializer> logger) =>
-                _parameterValuesInvalidFormat(logger, null);
-
-            internal static void IncompleteParameterDefinition(ILogger<ComponentParameterDeserializer> logger, string name, string typeName, string assembly) =>
-                _incompleteParameterDefinition(logger, name, typeName, assembly, null);
-
-            internal static void InvalidParameterType(ILogger<ComponentParameterDeserializer> logger, string name, string assembly, string typeName) =>
-                _invalidParameterType(logger, name, assembly, typeName, null);
-
-            internal static void InvalidParameterValue(ILogger<ComponentParameterDeserializer> logger, string name, string typeName, string assembly, Exception e) =>
-                _invalidParameterValue(logger, name, typeName, assembly,e);
-
-            internal static void FailedToParseParameterDefinitions(ILogger<ComponentParameterDeserializer> logger, Exception e) =>
-                _failedToParseParameterDefinitions(logger, e);
-
-            internal static void FailedToParseParameterValues(ILogger<ComponentParameterDeserializer> logger, Exception e) =>
-                _failedToParseParameterValues(logger, e);
-
-            internal static void MismatchedParameterAndDefinitions(ILogger<ComponentParameterDeserializer> logger, int definitionsLength, int valuesLength) =>
-                _mismatchedParameterAndDefinitions(logger, definitionsLength, valuesLength, null);
-
-            internal static void MissingParameterDefinitionName(ILogger<ComponentParameterDeserializer> logger) =>
-                _missingParameterDefinitionName(logger, null);
+            [LoggerMessage(8, LogLevel.Debug, "The name is missing in a parameter definition.", EventName = "MissingParameterDefinitionName")]
+            internal static partial void MissingParameterDefinitionName(ILogger<ComponentParameterDeserializer> logger);
         }
     }
 }

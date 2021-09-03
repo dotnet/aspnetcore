@@ -15,7 +15,7 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.Routing
 {
     /// <summary>
-    /// Supports managing a collection fo multiple routes.
+    /// Supports managing a collection for multiple routes.
     /// </summary>
     public class RouteCollection : IRouteCollection
     {
