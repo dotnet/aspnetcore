@@ -196,6 +196,59 @@ namespace Microsoft.AspNetCore.Diagnostics
         }
 
         [Fact]
+        public async Task Reexecute_CaptureEndpointAndRouteData()
+        {
+            var expectedStatusCode = 432;
+            var destination = "/location";
+            var endpoint = new Endpoint((_) => Task.CompletedTask, new EndpointMetadataCollection(), "Test");
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseStatusCodePagesWithReExecute(pathFormat: "/errorPage", queryFormat: "?id={0}");
+
+                        app.Map(destination, (innerAppBuilder) =>
+                        {
+                            innerAppBuilder.Run((httpContext) =>
+                            {
+                                httpContext.SetEndpoint(endpoint);
+                                httpContext.Request.RouteValues["John"] = "Doe";
+                                httpContext.Response.StatusCode = expectedStatusCode;
+                                return Task.CompletedTask;
+                            });
+                        });
+
+                        app.Map("/errorPage", (innerAppBuilder) =>
+                        {
+                            innerAppBuilder.Run(httpContext =>
+                            {
+                                var statusCodeReExecuteFeature = httpContext.Features.Get<IStatusCodeReExecuteFeature>();
+
+                                Assert.Equal(endpoint, statusCodeReExecuteFeature.Endpoint);
+                                Assert.Equal("Doe", statusCodeReExecuteFeature.RouteValues["John"]);
+
+                                return Task.CompletedTask;
+                            });
+                        });
+
+                        app.Run((context) =>
+                        {
+                            throw new InvalidOperationException("Invalid input provided.");
+                        });
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var response = await client.GetAsync(destination + "?name=James");
+        }
+
+        [Fact]
         public async Task Reexecute_WorksAfterUseRoutingWithGlobalRouteBuilder()
         {
             var builder = WebApplication.CreateBuilder();

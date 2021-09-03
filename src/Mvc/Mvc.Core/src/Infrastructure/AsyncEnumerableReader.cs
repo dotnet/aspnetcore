@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             nameof(ReadInternal),
             BindingFlags.NonPublic | BindingFlags.Instance)!;
 
-        private readonly ConcurrentDictionary<Type, Func<object, Task<ICollection>>?> _asyncEnumerableConverters = new();
+        private readonly ConcurrentDictionary<Type, Func<object, CancellationToken, Task<ICollection>>?> _asyncEnumerableConverters = new();
         private readonly MvcOptions _mvcOptions;
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// <param name="type">The type to read.</param>
         /// <param name="reader">A delegate that when awaited reads the <see cref="IAsyncEnumerable{T}"/>.</param>
         /// <returns><see langword="true" /> when <paramref name="type"/> is an instance of <see cref="IAsyncEnumerable{T}"/>, othwerise <see langword="false"/>.</returns>
-        public bool TryGetReader(Type type, [NotNullWhen(true)] out Func<object, Task<ICollection>>? reader)
+        public bool TryGetReader(Type type, [NotNullWhen(true)] out Func<object, CancellationToken, Task<ICollection>>? reader)
         {
             if (!_asyncEnumerableConverters.TryGetValue(type, out reader))
             {
@@ -67,9 +67,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 {
                     var enumeratedObjectType = enumerableType.GetGenericArguments()[0];
 
-                    var converter = (Func<object, Task<ICollection>>)Converter
+                    var converter = (Func<object, CancellationToken, Task<ICollection>>)Converter
                         .MakeGenericMethod(enumeratedObjectType)
-                        .CreateDelegate(typeof(Func<object, Task<ICollection>>), this);
+                        .CreateDelegate(typeof(Func<object, CancellationToken, Task<ICollection>>), this);
 
                     reader = converter;
                     _asyncEnumerableConverters.TryAdd(type, reader);
@@ -79,9 +79,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return reader != null;
         }
 
-        private async Task<ICollection> ReadInternal<T>(object value)
+        private async Task<ICollection> ReadInternal<T>(object value, CancellationToken cancellationToken)
         {
-            var asyncEnumerable = (IAsyncEnumerable<T>)value;
+            var asyncEnumerable = ((IAsyncEnumerable<T>)value).WithCancellation(cancellationToken);
             var result = new List<T>();
             var count = 0;
 

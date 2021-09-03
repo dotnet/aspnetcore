@@ -57,9 +57,8 @@ namespace Microsoft.AspNetCore.Builder
                 // Runs inline.
                 webHostBuilder.Configure(ConfigureApplication);
 
-                // We need to override the application name since the call to Configure will set it to
-                // be the calling assembly's name.
-                webHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, (Assembly.GetEntryAssembly())?.GetName()?.Name ?? string.Empty);
+                // Attempt to set the application name from options
+                options.ApplyApplicationName(webHostBuilder);
             });
 
             // Apply the args to host configuration last since ConfigureWebHostDefaults overrides a host specific setting (the application name).
@@ -78,8 +77,14 @@ namespace Microsoft.AspNetCore.Builder
 
             Configuration = new();
 
+            // Collect the hosted services separately since we want those to run after the user's hosted services
+            _services.TrackHostedServices = true;
+
             // This is the application configuration
             var hostContext = _bootstrapHostBuilder.RunDefaultCallbacks(Configuration, _hostBuilder);
+
+            // Stop tracking here
+            _services.TrackHostedServices = false;
 
             // Grab the WebHostBuilderContext from the property bag to use in the ConfigureWebHostBuilder
             var webHostContext = (WebHostBuilderContext)hostContext.Properties[typeof(WebHostBuilderContext)];
@@ -155,6 +160,17 @@ namespace Microsoft.AspNetCore.Builder
                 {
                     services.Add(s);
                 }
+
+                // Add the hosted services that were initially added last
+                // this makes sure any hosted services that are added run after the initial set
+                // of hosted services. This means hosted services run before the web host starts.
+                foreach (var s in _services.HostedServices)
+                {
+                    services.Add(s);
+                }
+
+                // Clear the hosted services list out
+                _services.HostedServices.Clear();
 
                 // Add any services to the user visible service collection so that they are observable
                 // just in case users capture the Services property. Orchard does this to get a "blueprint"

@@ -402,7 +402,7 @@ function StopProcesses {
 function TryLogClientIpAddress () {
   echo 'Attempting to log this client''s IP for Azure Package feed telemetry purposes'
   if command -v curl > /dev/null; then
-    curl -s 'http://co1.msedge.net/fdv2/diagnostics.aspx' | grep ' IP: '
+    curl -s 'http://co1.msedge.net/fdv2/diagnostics.aspx' | grep ' IP: ' || true
   fi
 }
 
@@ -417,6 +417,13 @@ function MSBuild {
       export NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS=20
       Write-PipelineSetVariable -name "NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS" -value "20"
       Write-PipelineSetVariable -name "NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS" -value "20"
+
+      export NUGET_ENABLE_EXPERIMENTAL_HTTP_RETRY=true
+      export NUGET_EXPERIMENTAL_MAX_NETWORK_TRY_COUNT=6
+      export NUGET_EXPERIMENTAL_NETWORK_RETRY_DELAY_MILLISECONDS=1000
+      Write-PipelineSetVariable -name "NUGET_ENABLE_EXPERIMENTAL_HTTP_RETRY" -value "true"
+      Write-PipelineSetVariable -name "NUGET_EXPERIMENTAL_MAX_NETWORK_TRY_COUNT" -value "6"
+      Write-PipelineSetVariable -name "NUGET_EXPERIMENTAL_NETWORK_RETRY_DELAY_MILLISECONDS" -value "1000"
     fi
 
     local toolset_dir="${_InitializeToolset%/*}"
@@ -427,6 +434,8 @@ function MSBuild {
     possiblePaths+=( "$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.Arcade.Sdk.dll" )
     possiblePaths+=( "$toolset_dir/netcoreapp2.1/Microsoft.DotNet.ArcadeLogging.dll" )
     possiblePaths+=( "$toolset_dir/netcoreapp2.1/Microsoft.DotNet.Arcade.Sdk.dll" )
+    possiblePaths+=( "$toolset_dir/netcoreapp3.1/Microsoft.DotNet.ArcadeLogging.dll" )
+    possiblePaths+=( "$toolset_dir/netcoreapp3.1/Microsoft.DotNet.Arcade.Sdk.dll" )
     for path in "${possiblePaths[@]}"; do
       if [[ -f $path ]]; then
         selectedPath=$path

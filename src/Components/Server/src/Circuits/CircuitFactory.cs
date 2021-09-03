@@ -16,7 +16,7 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
-    internal class CircuitFactory : ICircuitFactory
+    internal sealed partial class CircuitFactory : ICircuitFactory
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILoggerFactory _loggerFactory;
@@ -99,13 +99,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             return circuitHost;
         }
 
-        private static class Log
+        private static partial class Log
         {
-            private static readonly Action<ILogger, string, string, Exception> _createdCircuit =
-                LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(1, "CreatedCircuit"), "Created circuit {CircuitId} for connection {ConnectionId}");
+            [LoggerMessage(1, LogLevel.Debug, "Created circuit {CircuitId} for connection {ConnectionId}", EventName = "CreatedCircuit")]
+            private static partial void CreatedCircuit(ILogger logger, string circuitId, string connectionId);
 
             internal static void CreatedCircuit(ILogger logger, CircuitHost circuitHost) =>
-                _createdCircuit(logger, circuitHost.CircuitId.Id, circuitHost.Client.ConnectionId, null);
+                CreatedCircuit(logger, circuitHost.CircuitId.Id, circuitHost.Client.ConnectionId);
         }
     }
 }

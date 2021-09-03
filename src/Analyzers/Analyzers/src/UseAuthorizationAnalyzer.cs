@@ -20,7 +20,6 @@ namespace Microsoft.AspNetCore.Analyzers
         public void AnalyzeSymbol(SymbolAnalysisContext context)
         {
             Debug.Assert(context.Symbol.Kind == SymbolKind.NamedType);
-            Debug.Assert(StartupFacts.IsStartupClass(_context.StartupSymbols, (INamedTypeSymbol)context.Symbol));
 
             var type = (INamedTypeSymbol)context.Symbol;
 

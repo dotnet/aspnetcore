@@ -14,9 +14,12 @@ namespace Microsoft.AspNetCore.Analyzers
 {
     internal class AnalyzersDiagnosticAnalyzerRunner : DiagnosticAnalyzerRunner
     {
-        public AnalyzersDiagnosticAnalyzerRunner(DiagnosticAnalyzer analyzer)
+        private readonly OutputKind _outputKind;
+
+        public AnalyzersDiagnosticAnalyzerRunner(DiagnosticAnalyzer analyzer, OutputKind? outputKind = null)
         {
             Analyzer = analyzer;
+            _outputKind = outputKind ?? OutputKind.DynamicallyLinkedLibrary;
         }
 
         public DiagnosticAnalyzer Analyzer { get; }
@@ -50,6 +53,11 @@ namespace Microsoft.AspNetCore.Analyzers
         public Task<Diagnostic[]> GetDiagnosticsAsync(Project project)
         {
             return GetDiagnosticsAsync(new[] { project }, Analyzer, Array.Empty<string>());
+        }
+
+        protected override CompilationOptions ConfigureCompilationOptions(CompilationOptions options)
+        {
+            return options.WithOutputKind(_outputKind);
         }
     }
 }

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -503,6 +504,73 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
 
             // Assert
             Assert.False(canWriteResult);
+        }
+
+        [Fact]
+        public async Task WriteResponseBodyAsync_AsyncEnumerableConnectionCloses()
+        {
+            // Arrange
+            var formatter = new XmlSerializerOutputFormatter();
+            var body = new MemoryStream();
+            var cts = new CancellationTokenSource();
+            var iterated = false;
+
+            var asyncEnumerable = AsyncEnumerableClosedConnection();
+            var outputFormatterContext = GetOutputFormatterContext(
+                asyncEnumerable,
+                asyncEnumerable.GetType());
+            outputFormatterContext.HttpContext.RequestAborted = cts.Token;
+            outputFormatterContext.HttpContext.Response.Body = body;
+
+            // Act
+            await formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.GetEncoding("utf-8"));
+
+            // Assert
+            Assert.Empty(body.ToArray());
+            Assert.False(iterated);
+
+            async IAsyncEnumerable<int> AsyncEnumerableClosedConnection([EnumeratorCancellation] CancellationToken cancellationToken = default)
+            {
+                await Task.Yield();
+                cts.Cancel();
+                // MvcOptions.MaxIAsyncEnumerableBufferLimit is 8192. Pick some value larger than that.
+                foreach (var i in Enumerable.Range(0, 9000))
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        yield break;
+                    }
+                    iterated = true;
+                    yield return i;
+                }
+            }
+        }
+
+        [Fact]
+        public async Task WriteResponseBodyAsync_AsyncEnumerable()
+        {
+            // Arrange
+            var formatter = new XmlSerializerOutputFormatter();
+            var body = new MemoryStream();
+
+            var asyncEnumerable = AsyncEnumerable();
+            var outputFormatterContext = GetOutputFormatterContext(
+                asyncEnumerable,
+                asyncEnumerable.GetType());
+            outputFormatterContext.HttpContext.Response.Body = body;
+
+            // Act
+            await formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.GetEncoding("utf-8"));
+
+            // Assert
+            Assert.Contains("<int>1</int><int>2</int>", Encoding.UTF8.GetString(body.ToArray()));
+
+            async IAsyncEnumerable<int> AsyncEnumerable()
+            {
+                await Task.Yield();
+                yield return 1;
+                yield return 2;
+            }
         }
 
         private OutputFormatterWriteContext GetOutputFormatterContext(

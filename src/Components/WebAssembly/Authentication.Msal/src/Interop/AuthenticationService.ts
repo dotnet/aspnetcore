@@ -125,7 +125,7 @@ class MsalAuthorizeService implements AuthorizeService {
     async getTokenCore(scopes?: string[]): Promise<AccessToken | undefined> {
         const account = this.getAccount();
         if (!account) {
-            return;
+            throw new Error('Failed to retrieve token, no account found.');
         }
 
         this._requestedScopes = scopes;

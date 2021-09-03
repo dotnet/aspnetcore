@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 {
                     try
                     {
-                        var bytes = Convert.FromBase64String(_header);
+                        var bytes = Convert.FromBase64String(_header.ToString());
                         _certificate = new X509Certificate2(bytes);
                     }
                     catch (Exception ex)

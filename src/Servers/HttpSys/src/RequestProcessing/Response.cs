@@ -485,9 +485,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return flags;
         }
 
-        private static bool Matches(string knownValue, string input)
+        private static bool Matches(string knownValue, StringValues input)
         {
-            return string.Equals(knownValue, input?.Trim(), StringComparison.OrdinalIgnoreCase);
+            return string.Equals(knownValue, input.ToString().Trim(), StringComparison.OrdinalIgnoreCase);
         }
 
         private unsafe List<GCHandle>? SerializeHeaders(bool isOpaqueUpgrade)

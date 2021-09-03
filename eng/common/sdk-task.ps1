@@ -83,7 +83,9 @@ try {
   }
 
   if ($restore) {
-    Try-LogClientIpAddress
+    if ($ci) {
+      Try-LogClientIpAddress
+    }
     Build 'Restore'
   }
 

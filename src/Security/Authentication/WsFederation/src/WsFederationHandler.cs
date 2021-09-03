@@ -150,7 +150,10 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
             {
                 var form = await Request.ReadFormAsync(Context.RequestAborted);
 
-                wsFederationMessage = new WsFederationMessage(form.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
+                // ToArray handles the StringValues.IsNullOrEmpty case. We assume non-empty Value does not contain null elements.
+#pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
+                wsFederationMessage = new WsFederationMessage(form.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value.ToArray())));
+#pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
             }
 
             if (wsFederationMessage == null || !wsFederationMessage.IsSignInMessage)
@@ -380,7 +383,11 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         /// <returns></returns>
         protected virtual async Task<bool> HandleRemoteSignOutAsync()
         {
-            var message = new WsFederationMessage(Request.Query.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
+            // ToArray handles the StringValues.IsNullOrEmpty case. We assume non-empty Value does not contain null elements.
+#pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
+            var message = new WsFederationMessage(Request.Query.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value.ToArray())));
+#pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
+
             var remoteSignOutContext = new RemoteSignOutContext(Context, Scheme, Options, message);
             await Events.RemoteSignOut(remoteSignOutContext);
 

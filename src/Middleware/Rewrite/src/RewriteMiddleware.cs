@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Rewrite
                         break;
                     case RuleResult.EndResponse:
                         logger.RewriteMiddlewareRequestResponseComplete(
-                            httpContext.Response.Headers.Location,
+                            httpContext.Response.Headers.Location.ToString(),
                             httpContext.Response.StatusCode);
                         return;
                     case RuleResult.SkipRemainingRules:

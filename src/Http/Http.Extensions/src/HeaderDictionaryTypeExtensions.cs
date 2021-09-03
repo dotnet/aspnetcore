@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Http
             if (KnownParsers.TryGetValue(typeof(T), out var temp))
             {
                 var func = (Func<string, T>)temp;
-                return func(value);
+                return func(value.ToString());
             }
 
             return GetViaReflection<T>(value.ToString());

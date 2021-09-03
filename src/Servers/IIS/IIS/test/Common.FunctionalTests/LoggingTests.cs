@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -329,7 +330,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var processIdPattern = new Regex("Process Id: (\\d+)\\.", RegexOptions.Singleline);
             var processIdMatch = processIdPattern.Match(aspnetcorev2Log.Message);
             Assert.True(processIdMatch.Success, $"'{processIdPattern}' did not match '{aspnetcorev2Log}'");
-            var processId = int.Parse(processIdMatch.Groups[1].Value);
+            var processId = int.Parse(processIdMatch.Groups[1].Value, CultureInfo.InvariantCulture);
 
             if (DeployerSelector.HasNewShim)
             {
@@ -365,8 +366,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var prefixMatch = prefixPattern.Match(log);
             Assert.True(prefixMatch.Success, $"'{prefixPattern}' did not match '{log}'");
 
-            var time = DateTime.Parse(prefixMatch.Groups[1].Value).ToUniversalTime();
-            var prefixProcessId = int.Parse(prefixMatch.Groups[2].Value);
+            var time = DateTime.Parse(prefixMatch.Groups[1].Value, CultureInfo.InvariantCulture).ToUniversalTime();
+            var prefixProcessId = int.Parse(prefixMatch.Groups[2].Value, CultureInfo.InvariantCulture);
 
             Assert.Equal(processId, prefixProcessId);
 

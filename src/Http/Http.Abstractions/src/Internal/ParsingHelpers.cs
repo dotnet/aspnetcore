@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         // Quote items that contain commas and are not already quoted.
-        private static string QuoteIfNeeded(string value)
+        private static string? QuoteIfNeeded(string? value)
         {
             if (!string.IsNullOrEmpty(value) &&
                 value.Contains(',') &&
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Http
             return value;
         }
 
-        private static string DeQuote(string value)
+        private static string? DeQuote(string? value)
         {
             if (!string.IsNullOrEmpty(value) &&
                 (value.Length > 1 && value[0] == '"' && value[value.Length - 1] == '"'))
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Http
                 return;
             }
 
-            string existing = GetHeader(headers, key);
+            string? existing = GetHeader(headers, key);
             if (existing == null)
             {
                 SetHeaderJoined(headers, key, values);

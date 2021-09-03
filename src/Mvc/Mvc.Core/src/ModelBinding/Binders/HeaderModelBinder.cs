@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 }
                 else
                 {
-                    values = new[] { (string)request.Headers[headerName] };
+                    values = new[] { request.Headers[headerName].ToString() };
                 }
             }
 
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             if (bindingContext.ModelType == typeof(string))
             {
                 var value = request.Headers[headerName];
-                model = (string)value;
+                model = value.ToString();
             }
             else if (ModelBindingHelper.CanGetCompatibleCollection<string>(bindingContext))
             {

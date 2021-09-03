@@ -518,7 +518,7 @@ namespace Microsoft.Extensions.CommandLineUtils
                 if (OptionHelp != null)
                 {
                     commandsBuilder.AppendLine();
-                    commandsBuilder.Append($"Use \"{target.Name} [command] --{OptionHelp.LongName}\" for more information about a command.");
+                    commandsBuilder.Append(FormattableString.Invariant($"Use \"{target.Name} [command] --{OptionHelp.LongName}\" for more information about a command."));
                     commandsBuilder.AppendLine();
                 }
             }

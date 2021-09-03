@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 {
@@ -422,7 +423,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         public void RespectsProducesProblemExtensionMethod()
         {
             // Arrange
-            var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(null));
+            var builder = CreateBuilder();
             builder.MapGet("/api/todos", () => "").ProducesProblem(StatusCodes.Status400BadRequest);
             var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
 
@@ -447,7 +448,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         {
             // Arrange
             var endpointGroupName = "SomeEndpointGroupName";
-            var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(null));
+            var builder = CreateBuilder();
             builder.MapGet("/api/todos", () => "").Produces<InferredJsonClass>().WithGroupName(endpointGroupName);
             var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
 
@@ -472,7 +473,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         public void RespectsExcludeFromDescription()
         {
             // Arrange
-            var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(null));
+            var builder = CreateBuilder();
             builder.MapGet("/api/todos", () => "").Produces<InferredJsonClass>().ExcludeFromDescription();
             var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
 
@@ -494,7 +495,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         public void HandlesProducesWithProducesProblem()
         {
             // Arrange
-            var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(null));
+            var builder = CreateBuilder();
             builder.MapGet("/api/todos", () => "")
                 .Produces<InferredJsonClass>(StatusCodes.Status200OK)
                 .ProducesValidationProblem()
@@ -547,7 +548,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         public void HandleMultipleProduces()
         {
             // Arrange
-            var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(null));
+            var builder = CreateBuilder();
             builder.MapGet("/api/todos", () => "")
                 .Produces<InferredJsonClass>(StatusCodes.Status200OK)
                 .Produces<InferredJsonClass>(StatusCodes.Status201Created);
@@ -586,7 +587,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         public void HandleAcceptsMetadata()
         {
             // Arrange
-            var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(null));
+            var builder = CreateBuilder();
             builder.MapPost("/api/todos", () => "")
                 .Accepts<string>("application/json", "application/xml");
             var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
@@ -764,7 +765,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 .Select(format => format.MediaType);
         }
 
-        private IList<ApiDescription> GetApiDescriptions(
+        private static IList<ApiDescription> GetApiDescriptions(
             Delegate action,
             string pattern = null,
             IEnumerable<string> httpMethods = null,
@@ -794,7 +795,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             return context.Results;
         }
 
-        private ApiDescription GetApiDescription(Delegate action, string pattern = null, string displayName = null) =>
+        private static TestEndpointRouteBuilder CreateBuilder() =>
+            new TestEndpointRouteBuilder(new ApplicationBuilder(new TestServiceProvider()));
+
+
+        private static ApiDescription GetApiDescription(Delegate action, string pattern = null, string displayName = null) =>
             Assert.Single(GetApiDescriptions(action, pattern, displayName: displayName));
 
         private static void TestAction()
@@ -859,6 +864,23 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 throw new NotImplementedException();
             public static bool TryParse(string value, out BindAsyncRecord result) =>
                 throw new NotImplementedException();
+        }
+
+        private class TestServiceProvider : IServiceProvider
+        {
+            public void Dispose()
+            {
+            }
+
+            public object GetService(Type serviceType)
+            {
+                if (serviceType == typeof(IOptions<RouteHandlerOptions>))
+                {
+                    return Options.Create(new RouteHandlerOptions());
+                }
+
+                return null;
+            }
         }
     }
 }
