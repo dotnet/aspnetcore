@@ -319,36 +319,6 @@ namespace Templates.Test
             }
         }
 
-        [Theory]
-        [InlineData(BrowserKind.Chromium, Skip = "https://github.com/dotnet/aspnetcore/issues/28596")]
-        public async Task BlazorWasmStandaloneTemplate_IndividualAuth_Works(BrowserKind browserKind)
-        {
-            var project = await CreateBuildPublishAsync("blazorstandaloneindividual" + browserKind, args: new[] {
-                "-au",
-                "Individual",
-                "--authority",
-                "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration",
-                "--client-id",
-                "sample-client-id"
-            });
-
-            // We don't want to test the auth flow as we don't have the required settings to talk to a third-party IdP
-            // but we want to make sure that we are able to run the app without errors.
-            // That will at least test that we are able to initialize and retrieve the configuration from the IdP
-            // for that, we use the common microsoft tenant.
-            await BuildAndRunTest(project.ProjectName, project, browserKind, usesAuth: false);
-
-            var (serveProcess, listeningUri) = RunPublishedStandaloneBlazorProject(project);
-            using (serveProcess)
-            {
-                Output.WriteLine($"Opening browser at {listeningUri}...");
-                await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
-                var page = await NavigateToPage(browser, listeningUri);
-                await TestBasicNavigation(project.ProjectName, page);
-                await page.CloseAsync();
-            }
-        }
-
         public static TheoryData<TemplateInstance> TemplateData => new TheoryData<TemplateInstance>
         {
             new TemplateInstance(
