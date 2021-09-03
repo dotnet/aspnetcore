@@ -720,7 +720,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34992")]
         [Fact]
         public async Task Http10KeepAliveNotHonoredIfResponseContentLengthNotSet()
         {

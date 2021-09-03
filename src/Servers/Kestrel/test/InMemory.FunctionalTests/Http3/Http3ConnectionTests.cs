@@ -262,7 +262,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34685")]
         public async Task StreamPool_MultipleStreamsInSequence_PooledStreamReused()
         {
             var headers = new[]
