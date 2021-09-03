@@ -290,14 +290,13 @@ namespace Microsoft.AspNetCore.Builder
             // Trigger Endpoint build by calling getter.
             var endpoint = Assert.Single(dataSource.Endpoints);
 
-            var endpointMetadata = endpoint.Metadata.GetOrderedMetadata<IAcceptsMetadata>();
-            Assert.NotNull(endpointMetadata);
-            Assert.Equal(2, endpointMetadata.Count);
+            var endpointMetadata = endpoint.Metadata.GetMetadata<IAcceptsMetadata>();
 
-            var lastAddedMetadata = endpointMetadata[^1];
-  
-            Assert.Equal(typeof(Todo), lastAddedMetadata.RequestType);
-            Assert.Equal(new[] { "application/xml" }, lastAddedMetadata.ContentTypes);
+            Assert.NotNull(endpointMetadata);
+            Assert.False(endpointMetadata!.IsOptional);
+            Assert.Equal(typeof(Todo), endpointMetadata.RequestType);
+            Assert.Equal(new[] { "application/xml" }, endpointMetadata.ContentTypes);
+
         }
 
         [Fact]
@@ -573,7 +572,7 @@ namespace Microsoft.AspNetCore.Builder
 
             Type? _requestType;
 
-            List<string> _contentTypes = new();           
+            List<string> _contentTypes = new();
         }
 
         class Todo
