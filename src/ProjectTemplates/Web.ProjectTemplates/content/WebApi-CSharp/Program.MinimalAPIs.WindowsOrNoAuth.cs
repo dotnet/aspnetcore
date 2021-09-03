@@ -28,13 +28,14 @@ var summaries = new[]
 
 app.MapGet("/weatherforecast", () =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index => new WeatherForecast
-    {
-        Date = DateTime.Now.AddDays(index),
-        TemperatureC = Random.Shared.Next(-20, 55),
-        Summary = summaries[Random.Shared.Next(summaries.Length)]
-    })
-    .ToArray();
+    var forecast =  Enumerable.Range(1, 5).Select(index =>
+        new WeatherForecast
+        (
+            DateTime.Now.AddDays(index),
+            Random.Shared.Next(-20, 55),
+            summaries[Random.Shared.Next(summaries.Length)]
+        ))
+        .ToArray();
     return forecast;
 #if (EnableOpenAPI)
 })
@@ -45,13 +46,7 @@ app.MapGet("/weatherforecast", () =>
 
 app.Run();
 
-class WeatherForecast
+record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
 {
-    public DateTime Date { get; set; }
-
-    public int TemperatureC { get; set; }
-
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-
-    public string? Summary { get; set; }
 }

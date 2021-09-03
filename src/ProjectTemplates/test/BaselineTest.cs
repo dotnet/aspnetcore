@@ -112,8 +112,7 @@ namespace Templates.Test
             // Turn string like "new templatename -minimal -au SingleOrg --another-option OptionValue"
             // into array like [ "new templatename", "minimal", "au SingleOrg", "another-option OptionValue" ]
             var argumentsArray = arguments
-                .Split(" --", int.MaxValue, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
-                .SelectMany(e => e.Split(" -", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+                .Split(new[] { " --", " -" }, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
                 .ToArray();
 
             // Add template name, value has form of "new name"

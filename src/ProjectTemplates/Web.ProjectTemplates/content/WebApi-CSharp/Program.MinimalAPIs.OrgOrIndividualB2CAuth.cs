@@ -86,13 +86,14 @@ app.MapGet("/weatherforecast", (HttpContext httpContext, IDownstreamWebApi downs
         throw new HttpRequestException($"Invalid status code in the HttpResponseMessage: {response.StatusCode}: {error}");
     }
 
-    var forecast = Enumerable.Range(1, 5).Select(index => new WeatherForecast
-    {
-        Date = DateTime.Now.AddDays(index),
-        TemperatureC = Random.Shared.Next(-20, 55),
-        Summary = summaries[Random.Shared.Next(summaries.Length)]
-    })
-    .ToArray();
+    var forecast =  Enumerable.Range(1, 5).Select(index =>
+        new WeatherForecast
+        (
+            DateTime.Now.AddDays(index),
+            Random.Shared.Next(-20, 55),
+            summaries[Random.Shared.Next(summaries.Length)]
+        ))
+        .ToArray();
 
     return forecast;
 })
@@ -103,13 +104,14 @@ app.MapGet("/weahterforecast", (HttpContext httpContext, GraphServiceClient grap
 
     var user = await _graphServiceClient.Me.Request().GetAsync();
 
-    var forecast =  Enumerable.Range(1, 5).Select(index => new WeatherForecast
-    {
-        Date = DateTime.Now.AddDays(index),
-        TemperatureC = Random.Shared.Next(-20, 55),
-        Summary = summaries[Random.Shared.Next(summaries.Length)]
-    })
-    .ToArray();
+    var forecast =  Enumerable.Range(1, 5).Select(index =>
+        new WeatherForecast
+        (
+            DateTime.Now.AddDays(index),
+            Random.Shared.Next(-20, 55),
+            summaries[Random.Shared.Next(summaries.Length)]
+        ))
+        .ToArray();
 
     return forecast;
 })
@@ -118,13 +120,14 @@ app.MapGet("/weatherforecast", (HttpContext httpContext) =>
 {
     httpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
 
-    var forecast =  Enumerable.Range(1, 5).Select(index => new WeatherForecast
-    {
-        Date = DateTime.Now.AddDays(index),
-        TemperatureC = Random.Shared.Next(-20, 55),
-        Summary = summaries[Random.Shared.Next(summaries.Length)]
-    })
-    .ToArray();
+    var forecast =  Enumerable.Range(1, 5).Select(index =>
+        new WeatherForecast
+        (
+            DateTime.Now.AddDays(index),
+            Random.Shared.Next(-20, 55),
+            summaries[Random.Shared.Next(summaries.Length)]
+        ))
+        .ToArray();
     return forecast;
 #endif
 #if (EnableOpenAPI)
@@ -138,13 +141,7 @@ app.MapGet("/weatherforecast", (HttpContext httpContext) =>
 
 app.Run();
 
-class WeatherForecast
+record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
 {
-    public DateTime Date { get; set; }
-
-    public int TemperatureC { get; set; }
-
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-
-    public string? Summary { get; set; }
 }
