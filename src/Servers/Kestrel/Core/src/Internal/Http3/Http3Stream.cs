@@ -787,12 +787,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // proxy or gateway can translate requests for non - HTTP schemes,
             // enabling the use of HTTP to interact with non - HTTP services.
             var headerScheme = HttpRequestHeaders.HeaderScheme.ToString();
+            HttpRequestHeaders.HeaderScheme = default; // Suppress pseduo headers from the public headers collection.
             if (!ReferenceEquals(headerScheme, Scheme) &&
                 !string.Equals(headerScheme, Scheme, StringComparison.OrdinalIgnoreCase))
             {
                 if (!ServerOptions.AllowAlternateSchemes || !Uri.CheckSchemeName(headerScheme))
                 {
-                    var str = CoreStrings.FormatHttp3StreamErrorSchemeMismatch(RequestHeaders[HeaderNames.Scheme], Scheme);
+                    var str = CoreStrings.FormatHttp3StreamErrorSchemeMismatch(headerScheme, Scheme);
                     Abort(new ConnectionAbortedException(str), Http3ErrorCode.ProtocolError);
                     return false;
                 }
@@ -802,7 +803,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             // :path (and query) - Required
             // Must start with / except may be * for OPTIONS
-            var path = RequestHeaders[HeaderNames.Path].ToString();
+            var path = HttpRequestHeaders.HeaderPath.ToString();
+            HttpRequestHeaders.HeaderPath = default; // Suppress pseduo headers from the public headers collection.
             RawTarget = path;
 
             // OPTIONS - https://tools.ietf.org/html/rfc7540#section-8.1.2.3
@@ -840,7 +842,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private bool TryValidateMethod()
         {
             // :method
-            _methodText = RequestHeaders[HeaderNames.Method].ToString();
+            _methodText = HttpRequestHeaders.HeaderMethod.ToString();
+            HttpRequestHeaders.HeaderMethod = default; // Suppress pseduo headers from the public headers collection.
             Method = HttpUtilities.GetKnownMethod(_methodText);
 
             if (Method == Http.HttpMethod.None)
@@ -866,7 +869,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // :authority (optional)
             // Prefer this over Host
 
-            var authority = RequestHeaders[HeaderNames.Authority];
+            var authority = HttpRequestHeaders.HeaderAuthority;
+            HttpRequestHeaders.HeaderAuthority = default; // Suppress pseduo headers from the public headers collection.
             var host = HttpRequestHeaders.HeaderHost;
             if (!StringValues.IsNullOrEmpty(authority))
             {
