@@ -57,23 +57,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
-        public void AddsJsonRequestFormatWhenFromBodyInferred()
-        {
-            static void AssertJsonRequestFormat(ApiDescription apiDescription)
-            {
-                var requestFormat = Assert.Single(apiDescription.SupportedRequestFormats);
-                Assert.Equal("application/json", requestFormat.MediaType);
-                Assert.Null(requestFormat.Formatter);
-            }
-
-            AssertJsonRequestFormat(GetApiDescription(
-                (InferredJsonClass fromBody) => { }));
-
-            AssertJsonRequestFormat(GetApiDescription(
-                ([FromBody] int fromBody) => { }));
-        }
-
-        [Fact]
         public void AddsRequestFormatFromMetadata()
         {
             static void AssertCustomRequestFormat(ApiDescription apiDescription)
@@ -114,11 +97,27 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
-        public void AddsMultipleRequestFormatsFromMetadataWithRequestType()
+        public void AddsMultipleRequestFormatsFromMetadataWithRequestTypeAndOptionalBodyParameter()
         {
             var apiDescription = GetApiDescription(
-                [Consumes(typeof(InferredJsonClass), "application/custom0", "application/custom1")]
-                () => { });
+                [Consumes(typeof(InferredJsonClass), "application/custom0", "application/custom1", IsOptional = true)]
+            () =>
+                { });
+
+            Assert.Equal(2, apiDescription.SupportedRequestFormats.Count);
+
+            var apiParameterDescription = apiDescription.ParameterDescriptions[0];
+            Assert.Equal("InferredJsonClass", apiParameterDescription.Type.Name);
+            Assert.False(apiParameterDescription.IsRequired);
+        }
+
+        [Fact]
+        public void AddsMultipleRequestFormatsFromMetadataWithRequiredBodyParameter()
+        {
+            var apiDescription = GetApiDescription(
+                [Consumes(typeof(InferredJsonClass), "application/custom0", "application/custom1", IsOptional = false)]
+            (InferredJsonClass fromBody) =>
+                { });
 
             Assert.Equal(2, apiDescription.SupportedRequestFormats.Count);
 
@@ -309,14 +308,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
-        public void AddsFromBodyParameterAsBody()
+        public void DoesNotAddFromBodyParameterInTheParameterDescription()
         {
             static void AssertBodyParameter(ApiDescription apiDescription, Type expectedType)
             {
-                var param = Assert.Single(apiDescription.ParameterDescriptions);
-                Assert.Equal(expectedType, param.Type);
-                Assert.Equal(expectedType, param.ModelMetadata.ModelType);
-                Assert.Equal(BindingSource.Body, param.Source);
+                Assert.Empty(apiDescription.ParameterDescriptions);
             }
 
             AssertBodyParameter(GetApiDescription((InferredJsonClass foo) => { }), typeof(InferredJsonClass));
@@ -336,7 +332,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         public void AddsMultipleParameters()
         {
             var apiDescription = GetApiDescription(([FromRoute] int foo, int bar, InferredJsonClass fromBody) => { });
-            Assert.Equal(3, apiDescription.ParameterDescriptions.Count);
+            Assert.Equal(2, apiDescription.ParameterDescriptions.Count);
 
             var fooParam = apiDescription.ParameterDescriptions[0];
             Assert.Equal(typeof(int), fooParam.Type);
@@ -349,12 +345,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.Equal(typeof(int), barParam.ModelMetadata.ModelType);
             Assert.Equal(BindingSource.Query, barParam.Source);
             Assert.True(barParam.IsRequired);
-
-            var fromBodyParam = apiDescription.ParameterDescriptions[2];
-            Assert.Equal(typeof(InferredJsonClass), fromBodyParam.Type);
-            Assert.Equal(typeof(InferredJsonClass), fromBodyParam.ModelMetadata.ModelType);
-            Assert.Equal(BindingSource.Body, fromBodyParam.Source);
-            Assert.False(fromBodyParam.IsRequired); // Reference type in oblivious nullability context
         }
 
         [Fact]
@@ -375,34 +365,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.Equal(BindingSource.Query, barParam.Source);
             Assert.False(barParam.IsRequired);
         }
-
-#nullable enable
-
-        [Fact]
-        public void TestIsRequiredFromBody()
-        {
-            var apiDescription0 = GetApiDescription(([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] InferredJsonClass fromBody) => { });
-            var apiDescription1 = GetApiDescription((InferredJsonClass? fromBody) => { });
-            Assert.Equal(1, apiDescription0.ParameterDescriptions.Count);
-            Assert.Equal(1, apiDescription1.ParameterDescriptions.Count);
-
-            var fromBodyParam0 = apiDescription0.ParameterDescriptions[0];
-            Assert.Equal(typeof(InferredJsonClass), fromBodyParam0.Type);
-            Assert.Equal(typeof(InferredJsonClass), fromBodyParam0.ModelMetadata.ModelType);
-            Assert.Equal(BindingSource.Body, fromBodyParam0.Source);
-            Assert.False(fromBodyParam0.IsRequired);
-
-            var fromBodyParam1 = apiDescription1.ParameterDescriptions[0];
-            Assert.Equal(typeof(InferredJsonClass), fromBodyParam1.Type);
-            Assert.Equal(typeof(InferredJsonClass), fromBodyParam1.ModelMetadata.ModelType);
-            Assert.Equal(BindingSource.Body, fromBodyParam1.Source);
-            Assert.False(fromBodyParam1.IsRequired);
-        }
-
-        // This is necessary for TestIsRequiredFromBody to pass until https://github.com/dotnet/roslyn/issues/55254 is resolved.
-        private object RandomMethod() => throw new NotImplementedException();
-
-#nullable disable
 
         [Fact]
         public void AddsDisplayNameFromRouteEndpoint()
@@ -644,6 +606,148 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     Assert.Equal("application/xml", requestType.MediaType);
                 });
         }
+
+        [Fact]
+        public void HandleAcceptsMetadataWithTypeParameter()
+        {
+            // Arrange
+            var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(null));
+            builder.MapPost("/api/todos", (InferredJsonClass inferredJsonClass) => "")
+                .Accepts(typeof(InferredJsonClass), "application/json");
+            var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+            var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+            var hostEnvironment = new HostEnvironment
+            {
+                ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+            };
+            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+
+            // Act
+            provider.OnProvidersExecuting(context);
+            provider.OnProvidersExecuted(context);
+
+            // Assert
+            var parameterDescriptions = context.Results.SelectMany(r => r.ParameterDescriptions);
+            var bodyParameterDescription = parameterDescriptions.Single();
+            Assert.Equal(typeof(InferredJsonClass), bodyParameterDescription.Type);
+            Assert.Equal(typeof(InferredJsonClass).Name, bodyParameterDescription.Name);
+            Assert.True(bodyParameterDescription.IsRequired);
+        }
+
+#nullable enable
+
+        [Fact]
+        public void HandleDefaultIAcceptsMetadataForRequiredBodyParameter()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var serviceProvider = services.BuildServiceProvider();
+            var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+            builder.MapPost("/api/todos", (InferredJsonClass inferredJsonClass) => "");
+            var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+            var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+            var hostEnvironment = new HostEnvironment
+            {
+                ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+            };
+            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+
+            // Act
+            provider.OnProvidersExecuting(context);
+            provider.OnProvidersExecuted(context);
+
+            // Assert
+            var parameterDescriptions = context.Results.SelectMany(r => r.ParameterDescriptions);
+            var bodyParameterDescription = parameterDescriptions.Single();
+            Assert.Equal(typeof(InferredJsonClass), bodyParameterDescription.Type);
+            Assert.Equal(typeof(InferredJsonClass).Name, bodyParameterDescription.Name);
+            Assert.True(bodyParameterDescription.IsRequired);
+
+            // Assert
+            var requestFormats = context.Results.SelectMany(r => r.SupportedRequestFormats);
+            var defaultRequestFormat = requestFormats.Single();
+            Assert.Equal("application/json", defaultRequestFormat.MediaType);
+        }
+
+#nullable restore
+
+#nullable enable
+
+        [Fact]
+        public void HandleDefaultIAcceptsMetadataForOptionalBodyParameter()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var serviceProvider = services.BuildServiceProvider();
+            var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+            builder.MapPost("/api/todos", (InferredJsonClass? inferredJsonClass) => "");
+            var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+            var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+            var hostEnvironment = new HostEnvironment
+            {
+                ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+            };
+            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+
+            // Act
+            provider.OnProvidersExecuting(context);
+            provider.OnProvidersExecuted(context);
+
+            // Assert
+            var parameterDescriptions = context.Results.SelectMany(r => r.ParameterDescriptions);
+            var bodyParameterDescription = parameterDescriptions.Single();
+            Assert.Equal(typeof(InferredJsonClass), bodyParameterDescription.Type);
+            Assert.Equal(typeof(InferredJsonClass).Name, bodyParameterDescription.Name);
+            Assert.False(bodyParameterDescription.IsRequired);
+
+            // Assert
+            var requestFormats = context.Results.SelectMany(r => r.SupportedRequestFormats);
+            var defaultRequestFormat = requestFormats.Single();
+            Assert.Equal("application/json", defaultRequestFormat.MediaType);
+        }
+
+#nullable restore
+
+#nullable enable
+
+        [Fact]
+        public void HandleIAcceptsMetadataWithConsumesAttributeAndInferredOptionalFromBodyType()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var serviceProvider = services.BuildServiceProvider();
+            var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+            builder.MapPost("/api/todos", [Consumes("application/xml")] (InferredJsonClass? inferredJsonClass) => "");
+            var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+            var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+            var hostEnvironment = new HostEnvironment
+            {
+                ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+            };
+            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+
+            // Act
+            provider.OnProvidersExecuting(context);
+            provider.OnProvidersExecuted(context);
+
+            // Assert
+            var parameterDescriptions = context.Results.SelectMany(r => r.ParameterDescriptions);
+            var bodyParameterDescription = parameterDescriptions.Single();
+            Assert.Equal(typeof(void), bodyParameterDescription.Type);
+            Assert.Equal(typeof(void).Name, bodyParameterDescription.Name);
+            Assert.True(bodyParameterDescription.IsRequired);
+
+            // Assert
+            var requestFormats = context.Results.SelectMany(r => r.SupportedRequestFormats);
+            var defaultRequestFormat = requestFormats.Single();
+            Assert.Equal("application/xml", defaultRequestFormat.MediaType);
+        }
+
+#nullable restore
 
         private static IEnumerable<string> GetSortedMediaTypes(ApiResponseType apiResponseType)
         {

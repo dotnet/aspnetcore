@@ -103,8 +103,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 },
             };
 
-            var hasJsonBody = false;
-
             foreach (var parameter in methodInfo.GetParameters())
             {
                 var parameterDescription = CreateApiParameterDescription(parameter, routeEndpoint.RoutePattern);
@@ -114,33 +112,37 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     continue;
                 }
 
-                if (parameterDescription.Source == BindingSource.Body)
-                {
-                    hasJsonBody = true;
-                }
-
                 apiDescription.ParameterDescriptions.Add(parameterDescription);
             }
 
-            // Get custom attributes for the handler. ConsumesAttribute is one of the examples. 
-            var acceptsRequestType = routeEndpoint.Metadata.GetMetadata<IAcceptsMetadata>()?.RequestType;
-            if (acceptsRequestType is not null)
+            // Get IAcceptsMetadata.
+            var acceptsMetadata = routeEndpoint.Metadata.GetMetadata<IAcceptsMetadata>();
+            if (acceptsMetadata is not null)
             {
+                var acceptsRequestType = acceptsMetadata.RequestType;
+                var isOptional = acceptsMetadata.IsOptional;
                 var parameterDescription = new ApiParameterDescription
                 {
-                    Name = acceptsRequestType.Name,
-                    ModelMetadata = CreateModelMetadata(acceptsRequestType),
+                    Name = acceptsRequestType is not null ? acceptsRequestType.Name : typeof(void).Name,
+                    ModelMetadata = CreateModelMetadata(acceptsRequestType ?? typeof(void)),
                     Source = BindingSource.Body,
-                    Type = acceptsRequestType,
-                    IsRequired = true,
+                    Type = acceptsRequestType ?? typeof(void),
+                    IsRequired = !isOptional,
                 };
-
                 apiDescription.ParameterDescriptions.Add(parameterDescription);
+
+                var supportedRequestFormats = apiDescription.SupportedRequestFormats;
+
+                foreach (var contentType in acceptsMetadata.ContentTypes)
+                {
+                    supportedRequestFormats.Add(new ApiRequestFormat
+                    {
+                        MediaType = contentType
+                    });
+                }
             }
 
-            AddSupportedRequestFormats(apiDescription.SupportedRequestFormats, hasJsonBody, routeEndpoint.Metadata);
             AddSupportedResponseTypes(apiDescription.SupportedResponseTypes, methodInfo.ReturnType, routeEndpoint.Metadata);
-
             AddActionDescriptorEndpointMetadata(apiDescription.ActionDescriptor, routeEndpoint.Metadata);
 
             return apiDescription;
@@ -151,7 +153,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var (source, name, allowEmpty) = GetBindingSourceAndName(parameter, pattern);
 
             // Services are ignored because they are not request parameters.
-            if (source == BindingSource.Services)
+            // We ignore/skip body parameter because the value will be retrieved from the IAcceptsMetadata.
+            if (source == BindingSource.Services || source == BindingSource.Body)
             {
                 return null;
             }
@@ -219,33 +222,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             else
             {
                 return (BindingSource.Body, parameter.Name ?? string.Empty, false);
-            }
-        }
-
-        private static void AddSupportedRequestFormats(
-            IList<ApiRequestFormat> supportedRequestFormats,
-            bool hasJsonBody,
-            EndpointMetadataCollection endpointMetadata)
-        {
-            var requestMetadata = endpointMetadata.GetOrderedMetadata<IApiRequestMetadataProvider>();
-            var declaredContentTypes = DefaultApiDescriptionProvider.GetDeclaredContentTypes(requestMetadata);
-
-            if (declaredContentTypes.Count > 0)
-            {
-                foreach (var contentType in declaredContentTypes)
-                {
-                    supportedRequestFormats.Add(new ApiRequestFormat
-                    {
-                        MediaType = contentType,
-                    });
-                }
-            }
-            else if (hasJsonBody)
-            {
-                supportedRequestFormats.Add(new ApiRequestFormat
-                {
-                    MediaType = "application/json",
-                });
             }
         }
 
