@@ -26,7 +26,7 @@ public static class ConnectionsDependencyInjectionExtensions
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<ConnectionOptions>, ConnectionOptionsSetup>());
         services.TryAddSingleton<HttpConnectionDispatcher>();
         services.TryAddSingleton<HttpConnectionManager>();
-        services.TryAddSingleton<IBeforeShutdown, DefaultBeforeShutdown>();
+        services.TryAddSingleton<IBeforeShutdown>(provider => provider.GetRequiredService<HttpConnectionManager>())
         return services;
     }
 

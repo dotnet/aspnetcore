@@ -17,11 +17,5 @@ namespace Microsoft.AspNetCore.Http.Connections.Features
         /// <param name="callback">Function to run on graceful shutdown.</param>
         /// <returns>Disposable that will remove the registered function.</returns>
         IDisposable Register(Func<Task> callback);
-
-        /// <summary>
-        /// Trigger the registered callbacks.
-        /// </summary>
-        /// <returns>Task representing the callbacks running.</returns>
-        Task TriggerAsync();
     }
 }

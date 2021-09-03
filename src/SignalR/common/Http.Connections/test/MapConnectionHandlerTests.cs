@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.Testing;
@@ -369,6 +370,30 @@ public class MapConnectionHandlerTests
         await client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None).DefaultTimeout();
         var result = await client.ReceiveAsync(new ArraySegment<byte>(new byte[1024]), CancellationToken.None).DefaultTimeout();
         Assert.Equal(WebSocketMessageType.Close, result.MessageType);
+    }
+
+    [Fact]
+    public async Task IBeforeShutdownServiceAdded()
+    {
+        var authCount = 0;
+        using (var host = BuildWebHost<MyConnectionHandler>("/endpoint",
+            options => authCount += options.AuthorizationData.Count))
+        {
+            host.Start();
+
+            var beforeShutdown = host.Services.GetRequiredService<IBeforeShutdown>();
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            beforeShutdown.Register(() =>
+            {
+                tcs.SetResult();
+                return Task.CompletedTask;
+            });
+
+            await host.StopAsync().DefaultTimeout();
+            await tcs.Task.DefaultTimeout();
+        }
+
+        Assert.Equal(0, authCount);
     }
 
     private class MyConnectionHandler : ConnectionHandler

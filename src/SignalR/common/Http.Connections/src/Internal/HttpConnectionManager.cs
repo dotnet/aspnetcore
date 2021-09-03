@@ -15,7 +15,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal;
 
-internal partial class HttpConnectionManager
+internal partial class HttpConnectionManager : IBeforeShutdown
 {
     // TODO: Consider making this configurable? At least for testing?
     private static readonly TimeSpan _heartbeatTickRate = TimeSpan.FromSeconds(1);
@@ -26,9 +26,9 @@ internal partial class HttpConnectionManager
     private readonly ILogger<HttpConnectionManager> _logger;
     private readonly ILogger<HttpConnectionContext> _connectionLogger;
     private readonly long _disconnectTimeoutTicks;
+    private readonly List<Func<Task>> _shutdownCallbacks = new();
 
-    public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions,
-        IBeforeShutdown beforeShutdown)
+    public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions)
     {
         _logger = loggerFactory.CreateLogger<HttpConnectionManager>();
         _connectionLogger = loggerFactory.CreateLogger<HttpConnectionContext>();
@@ -37,7 +37,7 @@ internal partial class HttpConnectionManager
 
         // Register these last as the callbacks could run immediately
         appLifetime.ApplicationStarted.Register(() => Start());
-        appLifetime.ApplicationStopping.Register(() => _ = CloseConnections(beforeShutdown));
+        appLifetime.ApplicationStopping.Register(() => _ = CloseConnections());
     }
 
 
@@ -172,13 +172,35 @@ internal partial class HttpConnectionManager
         }
     }
 
-    public async Task CloseConnections(IBeforeShutdown beforeShutdown)
+    public async Task CloseConnections()
     {
-        try
+        Func<Task>[] callbacks;
+        lock (_shutdownCallbacks)
         {
-            await beforeShutdown.TriggerAsync();
+            callbacks = _shutdownCallbacks.ToArray();
+            _shutdownCallbacks.Clear();
         }
-        catch { }
+
+        List<Exception>? exceptions = null;
+        foreach (var callback in callbacks)
+        {
+            try
+            {
+                await callback();
+            }
+            catch (Exception ex)
+            {
+                if (exceptions is null)
+                {
+                    exceptions = new();
+                }
+                exceptions.Add(ex);
+            }
+        }
+        if (exceptions is not null)
+        {
+            Log.ErrorFromShutdownCallbacks(_logger, new AggregateException(exceptions));
+        }
 
         // Stop firing the timer
         _nextHeartbeat.Dispose();
@@ -219,6 +241,35 @@ internal partial class HttpConnectionManager
             // Remove it from the list after disposal so that's it's easy to see
             // connections that might be in a hung state via the connections list
             RemoveConnection(connection.ConnectionToken);
+        }
+    }
+
+    public IDisposable Register(Func<Task> callback)
+    {
+        lock (_shutdownCallbacks)
+        {
+            _shutdownCallbacks.Add(callback);
+        }
+        return new CallbackDisposable(_shutdownCallbacks, callback);
+    }
+
+    private class CallbackDisposable : IDisposable
+    {
+        private readonly List<Func<Task>> _list;
+        private readonly Func<Task> _func;
+
+        public CallbackDisposable(List<Func<Task>> list, Func<Task> func)
+        {
+            _list = list;
+            _func = func;
+        }
+
+        public void Dispose()
+        {
+            lock (_list)
+            {
+                _list.Remove(_func);
+            }
         }
     }
 }
