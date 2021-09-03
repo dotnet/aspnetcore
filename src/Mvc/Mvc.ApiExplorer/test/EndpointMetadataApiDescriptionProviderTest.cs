@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
-        public void DoesNotAddFromBodyParameterInTheAPIDescription()
+        public void DoesNotAddFromBodyParameterInTheParameterDescription()
         {
             static void AssertBodyParameter(ApiDescription apiDescription, Type expectedType)
             {
@@ -707,6 +707,44 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var requestFormats = context.Results.SelectMany(r => r.SupportedRequestFormats);
             var defaultRequestFormat = requestFormats.Single();
             Assert.Equal("application/json", defaultRequestFormat.MediaType);
+        }
+
+#nullable restore
+
+#nullable enable
+
+        [Fact]
+        public void HandleIAcceptsMetadataWithConsumesAttributeAndInferredOptionalFromBodyType()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var serviceProvider = services.BuildServiceProvider();
+            var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+            builder.MapPost("/api/todos", [Consumes("application/xml")] (InferredJsonClass? inferredJsonClass) => "");
+            var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+            var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+            var hostEnvironment = new HostEnvironment
+            {
+                ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+            };
+            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+
+            // Act
+            provider.OnProvidersExecuting(context);
+            provider.OnProvidersExecuted(context);
+
+            // Assert
+            var parameterDescriptions = context.Results.SelectMany(r => r.ParameterDescriptions);
+            var bodyParameterDescription = parameterDescriptions.Single();
+            Assert.Equal(typeof(void), bodyParameterDescription.Type);
+            Assert.Equal(typeof(void).Name, bodyParameterDescription.Name);
+            Assert.True(bodyParameterDescription.IsRequired);
+
+            // Assert
+            var requestFormats = context.Results.SelectMany(r => r.SupportedRequestFormats);
+            var defaultRequestFormat = requestFormats.Single();
+            Assert.Equal("application/xml", defaultRequestFormat.MediaType);
         }
 
 #nullable restore
