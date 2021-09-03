@@ -420,8 +420,7 @@ namespace Templates.Test
         private async Task TestBasicNavigation(string appName, IPage page, bool usesAuth = false, bool skipFetchData = false)
         {
             await page.WaitForSelectorAsync("nav");
-
-            Assert.Equal("Index", (await page.GetTitleAsync()).Trim());
+            Assert.Equal(usesAuth ? appName.Trim() : "Index", (await page.GetTitleAsync()).Trim());
 
             // Initially displays the home page
             await page.WaitForSelectorAsync("h1 >> text=Hello, world!");
