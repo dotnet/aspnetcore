@@ -273,43 +273,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
         }
 
-        protected static void WriteUnmatchedValuesPropertySetterProperty(CodeRenderingContext context)
-        {
-            context.CodeWriter.Write(ComponentsApi.IUnmatchedValuesPropertySetter.FullTypeName);
-            context.CodeWriter.Write(" ");
-            context.CodeWriter.Write(ComponentsApi.IPropertySetterProvider.FullTypeName);
-            context.CodeWriter.Write(".");
-            context.CodeWriter.Write(ComponentsApi.IPropertySetterProvider.UnmatchedValuesPropertySetter);
-            context.CodeWriter.WriteLine(" { get; }");
-        }
-
-        protected static void WriteTryGetSetterSignature(CodeRenderingContext context)
-        {
-            context.CodeWriter.Write("bool ");
-            context.CodeWriter.Write(ComponentsApi.IPropertySetterProvider.FullTypeName);
-            context.CodeWriter.Write(".");
-            context.CodeWriter.Write(ComponentsApi.IPropertySetterProvider.TryGetSetter);
-            context.CodeWriter.Write("(");
-            context.CodeWriter.Write("string ");
-            context.CodeWriter.Write(ComponentsApi.IPropertySetterProvider.PropertyNameParameter);
-            context.CodeWriter.Write(", ");
-            context.CodeWriter.Write("out ");
-            context.CodeWriter.Write(ComponentsApi.IPropertySetter.FullTypeName);
-            context.CodeWriter.Write(" ");
-            context.CodeWriter.Write(ComponentsApi.IPropertySetterProvider.PropertySetterParameter);
-            context.CodeWriter.WriteLine(")");
-        }
-
-        protected static void WriteTryGetSetterDefaultBody(CodeRenderingContext context)
-        {
-            using (context.CodeWriter.BuildScope())
-            {
-                context.CodeWriter.Write(ComponentsApi.IPropertySetterProvider.PropertySetterParameter);
-                context.CodeWriter.WriteLine(" = default;");
-                context.CodeWriter.WriteLine("return false;");
-            }
-        }
-
         protected List<TypeInferenceMethodParameter> GetTypeInferenceMethodParameters(ComponentTypeInferenceMethodIntermediateNode node)
         {
             var p = new List<TypeInferenceMethodParameter>();

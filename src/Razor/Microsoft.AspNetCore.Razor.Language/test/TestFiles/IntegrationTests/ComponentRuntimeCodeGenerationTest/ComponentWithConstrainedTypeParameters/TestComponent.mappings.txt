@@ -21,7 +21,7 @@ Source Location: (294:15,7 [236] x:\dir\subdir\Test\TestComponent.cshtml)
     [Parameter] public TItem3 Item3 { get; set; }
     [Parameter] public RenderFragment<TItem2> ChildContent { get; set; }
 |
-Generated Location: (1589:57,7 [236] )
+Generated Location: (2838:67,7 [236] )
 |
     [Parameter] public TItem1 Item1 { get; set; }
     [Parameter] public List<TItem2> Items2 { get; set; }

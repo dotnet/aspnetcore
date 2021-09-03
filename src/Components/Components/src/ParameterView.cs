@@ -260,6 +260,21 @@ namespace Microsoft.AspNetCore.Components
         }
 
         /// <summary>
+        /// For each parameter property on <paramref name="target"/>, updates its value to
+        /// match the corresponding entry in the <see cref="ParameterView"/>.
+        /// </summary>
+        /// <param name="target">An object that has a public writable property matching each parameter's name and type.</param>
+        public void SetParameterProperties(IPropertySetterProvider target)
+        {
+            if (target is null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
+
+            ComponentProperties.SetProperties(this, target);
+        }
+
+        /// <summary>
         /// An enumerator that iterates through a <see cref="ParameterView"/>.
         /// </summary>
 

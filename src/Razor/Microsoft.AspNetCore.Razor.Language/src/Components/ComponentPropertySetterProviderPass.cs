@@ -26,8 +26,6 @@ internal class ComponentPropertySetterProviderPass : ComponentIntermediateNodePa
 
         BuildComponentParameterData(codeDocument.GetTagHelperContext(), componentParameterDataNode);
 
-        primaryClass.Interfaces.Add(ComponentsApi.IPropertySetterProvider.FullTypeName);
-
         var nodeParameterDataBuilder = IntermediateNodeBuilder.Create(primaryClass);
         nodeParameterDataBuilder.Add(componentParameterDataNode);
     }

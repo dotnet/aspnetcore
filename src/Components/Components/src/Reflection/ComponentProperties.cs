@@ -26,19 +26,27 @@ namespace Microsoft.AspNetCore.Components.Reflection
                 throw new ArgumentNullException(nameof(target));
             }
 
-            var targetType = target.GetType();
+            var writers = GetWritersForType(target.GetType());
+            SetProperties(parameters, writers, target);
+        }
 
-            if (target is not IPropertySetterProvider propertySetterProvider)
+        public static void SetProperties(in ParameterView parameters, IPropertySetterProvider target)
+        {
+            if (target == null)
             {
-                if (!_cachedWritersByType.TryGetValue(targetType, out var writers))
-                {
-                    writers = new WritersForType(targetType);
-                    _cachedWritersByType[targetType] = writers;
-                }
-
-                propertySetterProvider = writers;
+                throw new ArgumentNullException(nameof(target));
             }
 
+            var provider = new FallbackPropertySetterProvider(target);
+            SetProperties(parameters, provider, target);
+        }
+
+        private static void SetProperties<TProvider>(
+            in ParameterView parameters,
+            in TProvider propertySetterProvider,
+            object target) where TProvider : IPropertySetterProvider
+        {
+            var targetType = target.GetType();
             var unmatchedValuesSetter = propertySetterProvider.UnmatchedValuesPropertySetter;
 
             // The logic is split up for simplicity now that we have CaptureUnmatchedValues parameters.
@@ -48,13 +56,13 @@ namespace Microsoft.AspNetCore.Components.Reflection
                 foreach (var parameter in parameters)
                 {
                     var parameterName = parameter.Name;
-                    if (!propertySetterProvider.TryGetSetter(parameterName, out var writer))
+                    if (!propertySetterProvider.TryGetSetter(parameterName, out var setter))
                     {
                         // Case 1: There is nowhere to put this value.
                         ThrowForUnknownIncomingParameterName(targetType, parameterName);
                         throw null; // Unreachable
                     }
-                    else if (writer.Cascading && !parameter.Cascading)
+                    else if (setter.Cascading && !parameter.Cascading)
                     {
                         // We don't allow you to set a cascading parameter with a non-cascading value. Put another way:
                         // cascading parameters are not part of the public API of a component, so it's not reasonable
@@ -65,7 +73,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
                         ThrowForSettingCascadingParameterWithNonCascadingValue(targetType, parameterName);
                         throw null; // Unreachable
                     }
-                    else if (!writer.Cascading && parameter.Cascading)
+                    else if (!setter.Cascading && parameter.Cascading)
                     {
                         // We're giving a more specific error here because trying to set a non-cascading parameter
                         // with a cascading value is likely deliberate (but not supported), or is a bug in our code.
@@ -73,7 +81,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
                         throw null; // Unreachable
                     }
 
-                    SetProperty(target, writer, parameterName, parameter.Value);
+                    SetProperty(target, setter, parameterName, parameter.Value);
                 }
             }
             else
@@ -89,9 +97,9 @@ namespace Microsoft.AspNetCore.Components.Reflection
                         isCaptureUnmatchedValuesParameterSetExplicitly = true;
                     }
 
-                    if (propertySetterProvider.TryGetSetter(parameterName, out var writer))
+                    if (propertySetterProvider.TryGetSetter(parameterName, out var setter))
                     {
-                        if (!writer.Cascading && parameter.Cascading)
+                        if (!setter.Cascading && parameter.Cascading)
                         {
                             // Don't allow an "extra" cascading value to be collected - or don't allow a non-cascading
                             // parameter to be set with a cascading value.
@@ -100,7 +108,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
                             ThrowForSettingParameterWithCascadingValue(targetType, parameterName);
                             throw null; // Unreachable
                         }
-                        else if (writer.Cascading && !parameter.Cascading)
+                        else if (setter.Cascading && !parameter.Cascading)
                         {
                             // Allow unmatched parameters to collide with the names of cascading parameters. This is
                             // valid because cascading parameter names are not part of the public API. There's no
@@ -111,7 +119,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
                         }
                         else
                         {
-                            SetProperty(target, writer, parameterName, parameter.Value);
+                            SetProperty(target, setter, parameterName, parameter.Value);
                         }
                     }
                     else
@@ -164,6 +172,42 @@ namespace Microsoft.AspNetCore.Components.Reflection
                         $"type '{target.GetType().FullName}'. The error was: {ex.Message}", ex);
                 }
             }
+        }
+
+        // This struct wraps the provided IPropertySetterProvider, using a fallback, reflection-based
+        // IPropertySetterProvider when the target cannot provide a property.
+        private struct FallbackPropertySetterProvider : IPropertySetterProvider
+        {
+            private readonly IPropertySetterProvider _target;
+            private IPropertySetterProvider? _fallback;
+
+            private IPropertySetterProvider Fallback
+                => _fallback ??= GetWritersForType(_target.GetType());
+
+            public FallbackPropertySetterProvider(IPropertySetterProvider target)
+            {
+                _target = target;
+                _fallback = default;
+            }
+
+            public IUnmatchedValuesPropertySetter? UnmatchedValuesPropertySetter
+                => _target.UnmatchedValuesPropertySetter
+                ?? Fallback.UnmatchedValuesPropertySetter;
+
+            public bool TryGetSetter(string propertyName, [NotNullWhen(true)] out IPropertySetter? propertySetter)
+                => _target.TryGetSetter(propertyName, out propertySetter)
+                || Fallback.TryGetSetter(propertyName, out propertySetter);
+        }
+
+        private static WritersForType GetWritersForType(Type targetType)
+        {
+            if (!_cachedWritersByType.TryGetValue(targetType, out var writers))
+            {
+                writers = new WritersForType(targetType);
+                _cachedWritersByType[targetType] = writers;
+            }
+
+            return writers;
         }
 
         internal static IEnumerable<PropertyInfo> GetCandidateBindableProperties([DynamicallyAccessedMembers(Component)] Type targetType)
@@ -319,7 +363,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
                 }
             }
 
-            public bool TryGetSetter(string parameterName, [MaybeNullWhen(false)] out IPropertySetter writer)
+            public bool TryGetSetter(string parameterName, [MaybeNullWhen(false)] out IPropertySetter setter)
             {
                 // In intensive parameter-passing scenarios, one of the most expensive things we do is the
                 // lookup from parameterName to writer. Pre-5.0 that was because of the string hashing.
@@ -328,9 +372,9 @@ namespace Microsoft.AspNetCore.Components.Reflection
                 // having to hash the string. We only fall back on hashing the string if the cache gets full,
                 // which would only be in very unusual situations because components don't typically have many
                 // parameters, and the parameterName strings usually come from compile-time constants.
-                if (!_referenceEqualityWritersCache.TryGetValue(parameterName, out writer))
+                if (!_referenceEqualityWritersCache.TryGetValue(parameterName, out setter))
                 {
-                    _underlyingWriters.TryGetValue(parameterName, out writer);
+                    _underlyingWriters.TryGetValue(parameterName, out setter);
 
                     // Note that because we're not locking around this, it's possible we might
                     // actually write more than MaxCachedWriterLookups entries due to concurrent
@@ -341,11 +385,11 @@ namespace Microsoft.AspNetCore.Components.Reflection
                     // being passed as catch-all parameter values.
                     if (_referenceEqualityWritersCache.Count < MaxCachedWriterLookups)
                     {
-                        _referenceEqualityWritersCache.TryAdd(parameterName, writer);
+                        _referenceEqualityWritersCache.TryAdd(parameterName, setter);
                     }
                 }
 
-                return writer != null;
+                return setter != null;
             }
         }
     }

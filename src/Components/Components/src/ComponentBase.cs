@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.Components
     /// Optional base class for components. Alternatively, components may
     /// implement <see cref="IComponent"/> directly.
     /// </summary>
-    public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRender
+    public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRender, IPropertySetterProvider
     {
         private readonly RenderFragment _renderFragment;
         private RenderHandle _renderHandle;
@@ -27,6 +28,9 @@ namespace Microsoft.AspNetCore.Components
         private bool _hasNeverRendered = true;
         private bool _hasPendingQueuedRender;
         private bool _hasCalledOnAfterRender;
+
+        /// <inheritdoc/>
+        public virtual IUnmatchedValuesPropertySetter? UnmatchedValuesPropertySetter => default;
 
         /// <summary>
         /// Constructs an instance of <see cref="ComponentBase"/>.
@@ -219,6 +223,13 @@ namespace Microsoft.AspNetCore.Components
             {
                 return CallOnParametersSetAsync();
             }
+        }
+
+        /// <inheritdoc/>
+        public virtual bool TryGetSetter(string propertyName, [NotNullWhen(true)] out IPropertySetter? propertySetter)
+        {
+            propertySetter = default;
+            return false;
         }
 
         private async Task RunInitAndSetParametersAsync()

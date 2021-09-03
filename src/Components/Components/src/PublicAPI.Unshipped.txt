@@ -40,6 +40,7 @@ Microsoft.AspNetCore.Components.NavigationOptions.ForceLoad.init -> void
 Microsoft.AspNetCore.Components.NavigationOptions.NavigationOptions() -> void
 Microsoft.AspNetCore.Components.NavigationOptions.ReplaceHistoryEntry.get -> bool
 Microsoft.AspNetCore.Components.NavigationOptions.ReplaceHistoryEntry.init -> void
+Microsoft.AspNetCore.Components.ParameterView.SetParameterProperties(Microsoft.AspNetCore.Components.IPropertySetterProvider! target) -> void
 Microsoft.AspNetCore.Components.RenderHandle.IsRenderingOnMetadataUpdate.get -> bool
 Microsoft.AspNetCore.Components.RenderTree.Renderer.RemoveRootComponent(int componentId) -> void
 Microsoft.AspNetCore.Components.IPersistentComponentStateStore
@@ -127,6 +128,8 @@ static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQue
 static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameters(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, System.Collections.Generic.IReadOnlyDictionary<string!, object?>! parameters) -> string!
 static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameters(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! uri, System.Collections.Generic.IReadOnlyDictionary<string!, object?>! parameters) -> string!
 static Microsoft.AspNetCore.Components.ParameterView.FromDictionary(System.Collections.Generic.IDictionary<string!, object?>! parameters) -> Microsoft.AspNetCore.Components.ParameterView
+virtual Microsoft.AspNetCore.Components.ComponentBase.TryGetSetter(string! propertyName, out Microsoft.AspNetCore.Components.IPropertySetter? propertySetter) -> bool
+virtual Microsoft.AspNetCore.Components.ComponentBase.UnmatchedValuesPropertySetter.get -> Microsoft.AspNetCore.Components.IUnmatchedValuesPropertySetter?
 virtual Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(string! uri, Microsoft.AspNetCore.Components.NavigationOptions options) -> void
 virtual Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(string! uri, bool forceLoad) -> void
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo? fieldInfo, System.EventArgs! eventArgs) -> System.Threading.Tasks.Task!

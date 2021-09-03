@@ -92,9 +92,11 @@ namespace Microsoft.AspNetCore.Components
         public ChangeEventArgs() { }
         public object Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
-    public abstract partial class ComponentBase : Microsoft.AspNetCore.Components.IComponent, Microsoft.AspNetCore.Components.IHandleAfterRender, Microsoft.AspNetCore.Components.IHandleEvent
+    public abstract partial class ComponentBase : Microsoft.AspNetCore.Components.IComponent, Microsoft.AspNetCore.Components.IHandleAfterRender, Microsoft.AspNetCore.Components.IHandleEvent, Microsoft.AspNetCore.Components.IPropertySetterProvider
     {
         public ComponentBase() { }
+        public virtual IUnmatchedValuesPropertySetter UnmatchedValuesPropertySetter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public virtual bool TryGetSetter(string propertyName, out Microsoft.AspNetCore.Components.IPropertySetter propertySetter) { throw null; }
         protected virtual void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
         protected System.Threading.Tasks.Task InvokeAsync(System.Action workItem) { throw null; }
         protected System.Threading.Tasks.Task InvokeAsync(System.Func<System.Threading.Tasks.Task> workItem) { throw null; }
