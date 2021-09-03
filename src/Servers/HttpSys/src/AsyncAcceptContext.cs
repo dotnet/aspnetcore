@@ -126,8 +126,16 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     &bytesTransferred,
                     _overlapped);
 
-                if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_INVALID_PARAMETER && _requestContext.RequestId != 0)
+                if ((statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_CONNECTION_INVALID
+                    || statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_INVALID_PARAMETER)
+                    && _requestContext.RequestId != 0)
                 {
+                    // ERROR_CONNECTION_INVALID:
+                    // The client reset the connection between the time we got the MORE_DATA error and when called HttpReceiveHttpRequest
+                    // with the new new buffer. We can clear the request id and move on to the next request.
+                    //
+                    // ERROR_INVALID_PARAMETER: Historical check from HttpListener.
+                    // https://referencesource.microsoft.com/#System/net/System/Net/_ListenerAsyncResult.cs,137
                     // we might get this if somebody stole our RequestId,
                     // set RequestId to 0 and start all over again with the buffer we just allocated
                     // BUGBUG: how can someone steal our request ID?  seems really bad and in need of fix.
