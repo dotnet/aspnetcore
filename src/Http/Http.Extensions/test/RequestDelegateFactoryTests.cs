@@ -2362,8 +2362,10 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(@"""Hello Tester. This is from an extension method.""", decodedResponseBody);
         }
 
-        [Fact]
-        public async Task RequestDelegateRejectsNonJsonContent()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task RequestDelegateRejectsNonJsonContent(bool shouldThrow)
         {
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Headers["Content-Type"] = "application/xml";
@@ -2376,19 +2378,33 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var factoryResult = RequestDelegateFactory.Create((HttpContext context, Todo todo) =>
             {
-            });
+            }, new RequestDelegateFactoryOptions() { ThrowOnBadRequest = shouldThrow });
             var requestDelegate = factoryResult.RequestDelegate;
 
-            await requestDelegate(httpContext);
+            var request = requestDelegate(httpContext);
 
-            Assert.Equal(415, httpContext.Response.StatusCode);
-            var logMessage = Assert.Single(TestSink.Writes);
-            Assert.Equal(new EventId(6, "UnexpectedContentType"), logMessage.EventId);
-            Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
+            if (shouldThrow)
+            {
+                var ex = await Assert.ThrowsAsync<BadHttpRequestException>(() => request);
+                Assert.Equal("Expected a supported JSON media type but got \"application/xml\".", ex.Message);
+                Assert.Equal(StatusCodes.Status415UnsupportedMediaType, ex.StatusCode);
+            }
+            else
+            {
+                await request;
+
+                Assert.Equal(415, httpContext.Response.StatusCode);
+                var logMessage = Assert.Single(TestSink.Writes);
+                Assert.Equal(new EventId(6, "UnexpectedContentType"), logMessage.EventId);
+                Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
+                Assert.Equal("Expected a supported JSON media type but got \"application/xml\".", logMessage.Message);
+            }
         }
 
-        [Fact]
-        public async Task RequestDelegateWithBindAndImplicitBodyRejectsNonJsonContent()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task RequestDelegateWithBindAndImplicitBodyRejectsNonJsonContent(bool shouldThrow)
         {
             Todo originalTodo = new()
             {
@@ -2410,15 +2426,27 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var factoryResult = RequestDelegateFactory.Create((HttpContext context, JsonTodo customTodo, Todo todo) =>
             {
-            });
+            }, new RequestDelegateFactoryOptions() { ThrowOnBadRequest = shouldThrow });
             var requestDelegate = factoryResult.RequestDelegate;
 
-            await requestDelegate(httpContext);
+            var request = requestDelegate(httpContext);
 
-            Assert.Equal(415, httpContext.Response.StatusCode);
-            var logMessage = Assert.Single(TestSink.Writes);
-            Assert.Equal(new EventId(6, "UnexpectedContentType"), logMessage.EventId);
-            Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
+            if (shouldThrow)
+            {
+                var ex = await Assert.ThrowsAsync<BadHttpRequestException>(() => request);
+                Assert.Equal("Expected a supported JSON media type but got \"application/xml\".", ex.Message);
+                Assert.Equal(StatusCodes.Status415UnsupportedMediaType, ex.StatusCode);
+            }
+            else
+            {
+                await request;
+
+                Assert.Equal(415, httpContext.Response.StatusCode);
+                var logMessage = Assert.Single(TestSink.Writes);
+                Assert.Equal(new EventId(6, "UnexpectedContentType"), logMessage.EventId);
+                Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
+                Assert.Equal("Expected a supported JSON media type but got \"application/xml\".", logMessage.Message);
+            }
         }
 
         private DefaultHttpContext CreateHttpContext()
