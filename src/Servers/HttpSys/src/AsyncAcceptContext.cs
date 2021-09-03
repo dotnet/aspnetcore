@@ -131,8 +131,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     && _requestContext.RequestId != 0)
                 {
                     // ERROR_CONNECTION_INVALID:
-                    // The client reset the connection between the time we got the MORE_DATA error and when called HttpReceiveHttpRequest
-                    // with the new new buffer. We can clear the request id and move on to the next request.
+                    // The client reset the connection between the time we got the MORE_DATA error and when we called HttpReceiveHttpRequest
+                    // with the new buffer. We can clear the request id and move on to the next request.
                     //
                     // ERROR_INVALID_PARAMETER: Historical check from HttpListener.
                     // https://referencesource.microsoft.com/#System/net/System/Net/_ListenerAsyncResult.cs,137
