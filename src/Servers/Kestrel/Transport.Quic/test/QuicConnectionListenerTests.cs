@@ -112,10 +112,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
             var qex = await Assert.ThrowsAsync<QuicException>(async () => await clientConnection.ConnectAsync().DefaultTimeout());
             Assert.Equal("Connection has been shutdown by transport. Error Code: 0x80410100", qex.Message);
-
-            // https://github.com/dotnet/runtime/issues/57246 The accept still completes even though the connection was rejected, but it's already failed.
-            var serverContext = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
-            await Assert.ThrowsAsync<QuicException>(() => serverContext.ConnectAsync().DefaultTimeout());
         }
     }
 }

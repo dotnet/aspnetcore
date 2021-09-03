@@ -132,18 +132,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             }
         }
 
-        [LoggerMessage(11, LogLevel.Debug, @"Stream id ""{ConnectionId}"" aborted by peer with error code {ErrorCode}.", EventName = "StreamAborted", SkipEnabledCheck = true)]
-        private static partial void StreamAborted(ILogger logger, string connectionId, long errorCode, Exception ex);
+        [LoggerMessage(11, LogLevel.Debug, @"Stream id ""{ConnectionId}"" read aborted by peer with error code {ErrorCode}.", EventName = "StreamAborted", SkipEnabledCheck = true)]
+        private static partial void StreamAbortedRead(ILogger logger, string connectionId, long errorCode);
 
-        public void StreamAborted(QuicStreamContext streamContext, long errorCode, Exception ex)
+        public void StreamAbortedRead(QuicStreamContext streamContext, long errorCode)
         {
             if (_logger.IsEnabled(LogLevel.Debug))
             {
-                StreamAborted(_logger, streamContext.ConnectionId, errorCode, ex);
+                StreamAbortedRead(_logger, streamContext.ConnectionId, errorCode);
             }
         }
 
-        [LoggerMessage(12, LogLevel.Debug, @"Stream id ""{ConnectionId}"" aborted by application with error code {ErrorCode} because: ""{Reason}"".", EventName = "StreamAbort", SkipEnabledCheck = true)]
+        [LoggerMessage(12, LogLevel.Debug, @"Stream id ""{ConnectionId}"" write aborted by peer with error code {ErrorCode}.", EventName = "StreamAborted", SkipEnabledCheck = true)]
+        private static partial void StreamAbortedWrite(ILogger logger, string connectionId, long errorCode);
+
+        public void StreamAbortedWrite(QuicStreamContext streamContext, long errorCode)
+        {
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                StreamAbortedWrite(_logger, streamContext.ConnectionId, errorCode);
+            }
+        }
+
+        [LoggerMessage(13, LogLevel.Debug, @"Stream id ""{ConnectionId}"" aborted by application with error code {ErrorCode} because: ""{Reason}"".", EventName = "StreamAbort", SkipEnabledCheck = true)]
         private static partial void StreamAbort(ILogger logger, string connectionId, long errorCode, string reason);
 
         public void StreamAbort(QuicStreamContext streamContext, long errorCode, string reason)
@@ -154,7 +165,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             }
         }
 
-        [LoggerMessage(13, LogLevel.Debug, @"Stream id ""{ConnectionId}"" read side aborted by application with error code {ErrorCode} because: ""{Reason}"".", SkipEnabledCheck = true)]
+        [LoggerMessage(14, LogLevel.Debug, @"Stream id ""{ConnectionId}"" read side aborted by application with error code {ErrorCode} because: ""{Reason}"".", SkipEnabledCheck = true)]
         private static partial void StreamAbortRead(ILogger logger, string connectionId, long errorCode, string reason);
 
         public void StreamAbortRead(QuicStreamContext streamContext, long errorCode, string reason)
@@ -165,7 +176,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             }
         }
 
-        [LoggerMessage(14, LogLevel.Debug, @"Stream id ""{ConnectionId}"" write side aborted by application with error code {ErrorCode} because: ""{Reason}"".", SkipEnabledCheck = true)]
+        [LoggerMessage(15, LogLevel.Debug, @"Stream id ""{ConnectionId}"" write side aborted by application with error code {ErrorCode} because: ""{Reason}"".", SkipEnabledCheck = true)]
         private static partial void StreamAbortWrite(ILogger logger, string connectionId, long errorCode, string reason);
         
         public void StreamAbortWrite(QuicStreamContext streamContext, long errorCode, string reason)
