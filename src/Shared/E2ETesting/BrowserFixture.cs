@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.E2ETesting
                     var driver = new RemoteWebDriverWithLogs(
                         instance.Uri,
                         opts.ToCapabilities(),
-                        TimeSpan.FromSeconds(60).Add(TimeSpan.FromSeconds(attempt * 60)));
+                        TimeSpan.FromSeconds(10).Add(TimeSpan.FromSeconds(attempt * 60)));
 
                     driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1);
                     var logs = driver.Manage().Logs;
@@ -207,6 +207,12 @@ namespace Microsoft.AspNetCore.E2ETesting
                 }
                 catch (Exception ex)
                 {
+                    if (ex.Message.Contains("This version of ChromeDriver only supports Chrome version"))
+                    {
+                        // Don't retry as it won't fix the problem
+                        throw;
+                    }
+
                     output.WriteLine($"Error initializing RemoteWebDriver: {ex.Message}");
                     innerException = ex;
                 }
