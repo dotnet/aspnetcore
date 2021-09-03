@@ -425,9 +425,9 @@ namespace Microsoft.AspNetCore.Tests
                     // Verify the defaults observed by the boostrap host builder we use internally to populate
                     // the defaults
                     bootstrapBuilder.ConfigureAppConfiguration((context, config) =>
-                {
-                    Assert.Equal(assemblyName, context.HostingEnvironment.ApplicationName);
-                });
+                    {
+                        Assert.Equal(assemblyName, context.HostingEnvironment.ApplicationName);
+                    });
                 });
 
             Assert.Equal(assemblyName, builder.Environment.ApplicationName);
@@ -466,9 +466,9 @@ namespace Microsoft.AspNetCore.Tests
                     // Verify the defaults observed by the boostrap host builder we use internally to populate
                     // the defaults
                     bootstrapBuilder.ConfigureAppConfiguration((context, config) =>
-                {
-                    Assert.Equal(assemblyName, context.HostingEnvironment.ApplicationName);
-                });
+                    {
+                        Assert.Equal(assemblyName, context.HostingEnvironment.ApplicationName);
+                    });
                 });
 
             Assert.Equal(assemblyName, builder.Environment.ApplicationName);
