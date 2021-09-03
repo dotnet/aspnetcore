@@ -225,17 +225,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
         }
 
-        private static void AddSupportedRequestFormats(IList<ApiRequestFormat> supportedRequestFormats, IAcceptsMetadata acceptsMetadata)
-        {
-            foreach (var contentType in acceptsMetadata.ContentTypes)
-            {
-                supportedRequestFormats.Add(new ApiRequestFormat
-                {
-                    MediaType = contentType
-                });
-            }
-        }
-
         private static void AddSupportedResponseTypes(
             IList<ApiResponseType> supportedResponseTypes,
             Type returnType,
