@@ -45,7 +45,7 @@ renderTreeBuilder.CloseRegion();
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DoNotUseNonLiteralSequenceNumbers, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("'i' should not be used as a sequence number", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.StartsWith("'i' should not be used as a sequence number.", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -66,7 +66,7 @@ renderTreeBuilder.CloseRegion();
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DoNotUseNonLiteralSequenceNumbers, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("'i' should not be used as a sequence number", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.StartsWith("'i' should not be used as a sequence number.", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -87,6 +87,6 @@ static int ComputeSequenceNumber(int i) => i + 1;
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DoNotUseNonLiteralSequenceNumbers, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("'ComputeSequenceNumber(0)' should not be used as a sequence number", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.StartsWith("'ComputeSequenceNumber(0)' should not be used as a sequence number.", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 }

@@ -38,7 +38,7 @@ internal static class DiagnosticDescriptors
     internal static readonly DiagnosticDescriptor DoNotUseNonLiteralSequenceNumbers = new(
         "ASP0006",
         "Do not use non-literal sequence numbers",
-        "'{0}' should not be used as a sequence number",
+        "'{0}' should not be used as a sequence number. Instead, use an integer literal representing source code order.",
         "Usage",
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
