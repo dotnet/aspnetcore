@@ -1492,29 +1492,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         [Theory]
         [MemberData(nameof(ExplicitFromServiceActions))]
-        public void RequestDelegateWithExplicitFromServiceParametersAndIsServiceContainer(Delegate action)
+        public async Task RequestDelegateWithExplicitFromServiceParameters(Delegate action)
         {
-            // IEnumerable<T> always resolves from DI, so ignore it in this test
-            if (action.Method.Name.Contains("TestExplicitFromIEnumerableService", StringComparison.Ordinal))
-            {
-                return;
-            }
-
-            var httpContext = CreateHttpContext();
-
-            var ex = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(action, new RequestDelegateFactoryOptions()
-            {
-                // pass a service container in so the IServiceProviderIsService check is tested
-                ServiceProvider = httpContext.RequestServices
-            }));
-            Assert.Contains("Parameter must be a service but no service was found.", ex.Message);
-        }
-
-        [Theory]
-        [MemberData(nameof(ExplicitFromServiceActions))]
-        public async Task RequestDelegateWithExplicitFromServiceParametersAndNoIsServiceContainer(Delegate action)
-        {
-            // IEnumerable<T> always resolves from DI, so ignore it in this test
+            // IEnumerable<T> always resolves from DI but is empty and throws from test method
             if (action.Method.Name.Contains("TestExplicitFromIEnumerableService", StringComparison.Ordinal))
             {
                 return;
@@ -2386,12 +2366,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
             httpContext.RequestServices = services;
             RequestDelegateFactoryOptions options = new() { ServiceProvider = services };
 
-            if (!hasService && isInvalid)
-            {
-                var ex = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(@delegate, options));
-                Assert.Contains("Parameter must be a service but no service was found.", ex.Message);
-                return;
-            }
             var factoryResult = RequestDelegateFactory.Create(@delegate, options);
             var requestDelegate = factoryResult.RequestDelegate;
 
