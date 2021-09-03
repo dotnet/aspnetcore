@@ -159,7 +159,7 @@ Microsoft.AspNetCore.Http.Headers.ResponseHeaders.SetList<T>(string! name, Syste
 Microsoft.AspNetCore.Http.RequestDelegateFactory
 Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions
 Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.DisableInferredBody.get -> bool
-Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.DisableInferredBody.set -> void
+Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.DisableInferredBody.init -> void
 Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RequestDelegateFactoryOptions() -> void
 Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteParameterNames.get -> System.Collections.Generic.IEnumerable<string!>?
 Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteParameterNames.init -> void

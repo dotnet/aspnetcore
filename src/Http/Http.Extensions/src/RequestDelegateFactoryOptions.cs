@@ -30,6 +30,6 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Prevent the <see cref="RequestDelegateFactory" /> from inferring a parameter should be bound from the request body without an attribute that implements <see cref="IFromBodyMetadata"/>.
         /// </summary>
-        public bool DisableInferredBody { get; set; }
+        public bool DisableInferredBody { get; init; }
     }
 }
