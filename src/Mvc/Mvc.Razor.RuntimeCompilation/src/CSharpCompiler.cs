@@ -211,9 +211,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             DependencyContextCompilationOptions dependencyContextOptions)
         {
             var configurationSymbol = hostingEnvironment.IsDevelopment() ? "DEBUG" : "RELEASE";
-            var defines = dependencyContextOptions.Defines.Concat(new[] { configurationSymbol });
+            var defines = dependencyContextOptions.Defines.Concat(new[] { configurationSymbol }).Where(define => define != null);
 
-            var parseOptions = new CSharpParseOptions(preprocessorSymbols: defines);
+            var parseOptions = new CSharpParseOptions(preprocessorSymbols: (IEnumerable<string>)defines);
 
             if (string.IsNullOrEmpty(dependencyContextOptions.LanguageVersion))
             {
