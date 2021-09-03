@@ -130,7 +130,16 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     IsRequired = !isOptional,
                 };
                 apiDescription.ParameterDescriptions.Add(parameterDescription);
-                AddSupportedRequestFormats(apiDescription.SupportedRequestFormats, acceptsMetadata);
+
+                var supportedRequestFormats = apiDescription.SupportedRequestFormats;
+
+                foreach (var contentType in acceptsMetadata.ContentTypes)
+                {
+                    supportedRequestFormats.Add(new ApiRequestFormat
+                    {
+                        MediaType = contentType
+                    });
+                }
             }
 
             AddSupportedResponseTypes(apiDescription.SupportedResponseTypes, methodInfo.ReturnType, routeEndpoint.Metadata);
