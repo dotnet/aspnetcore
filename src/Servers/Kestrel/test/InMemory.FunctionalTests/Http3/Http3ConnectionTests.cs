@@ -284,7 +284,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData(10)]
         [InlineData(100)]
         [InlineData(500)]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34685")]
         public async Task StreamPool_VariableMultipleStreamsInSequence_PooledStreamReused(int count)
         {
             var headers = new[]
@@ -319,7 +318,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData(100, true)]
         [InlineData(500, false)]
         [InlineData(500, true)]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34685")]
         public async Task VariableMultipleStreamsInSequence_Success(int count, bool sendData)
         {
             var headers = new[]
