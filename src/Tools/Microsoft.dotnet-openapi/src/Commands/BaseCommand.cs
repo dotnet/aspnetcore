@@ -569,7 +569,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
 
                 // Create or overwrite the destination file.
                 reachedCopy = true;
-                using var fileStream = new FileStream(destinationPath, FileMode.OpenOrCreate, FileAccess.Write);
+                using var fileStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write);
                 fileStream.Seek(0, SeekOrigin.Begin);
                 if (content.CanSeek)
                 {
