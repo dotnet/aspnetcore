@@ -25,7 +25,7 @@ namespace Interop.FunctionalTests.Http3
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35070")]
     public class Http3RequestTests : LoggedTest
     {
-        private class StreamingHttpContext : HttpContent
+        private class StreamingHttpContent : HttpContent
         {
             private readonly TaskCompletionSource _completeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             private readonly TaskCompletionSource<Stream> _getStreamTcs = new TaskCompletionSource<Stream>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -234,7 +234,7 @@ namespace Interop.FunctionalTests.Http3
             {
                 await host.StartAsync();
 
-                var requestContent = new StreamingHttpContext();
+                var requestContent = new StreamingHttpContent();
 
                 var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
                 request.Content = requestContent;
@@ -278,7 +278,7 @@ namespace Interop.FunctionalTests.Http3
             {
                 await host.StartAsync().DefaultTimeout();
 
-                var requestContent = new StreamingHttpContext();
+                var requestContent = new StreamingHttpContent();
 
                 var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
                 request.Content = requestContent;
@@ -347,7 +347,7 @@ namespace Interop.FunctionalTests.Http3
                 await host.StartAsync().DefaultTimeout();
 
                 var cts = new CancellationTokenSource();
-                var requestContent = new StreamingHttpContext();
+                var requestContent = new StreamingHttpContent();
 
                 var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
                 request.Content = requestContent;
@@ -418,7 +418,7 @@ namespace Interop.FunctionalTests.Http3
             {
                 await host.StartAsync().DefaultTimeout();
 
-                var requestContent = new StreamingHttpContext();
+                var requestContent = new StreamingHttpContent();
 
                 var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
                 request.Content = requestContent;
@@ -506,6 +506,57 @@ namespace Interop.FunctionalTests.Http3
 
                 var serverWriteTask = await writeAsyncTask.Task.DefaultTimeout();
                 await serverWriteTask.DefaultTimeout();
+
+                await host.StopAsync().DefaultTimeout();
+            }
+        }
+
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task POST_Expect100Continue_Get100Continue()
+        {
+            // Arrange
+            var builder = CreateHostBuilder(async context =>
+            {
+                var body = context.Request.Body;
+
+                var data = await body.ReadAtLeastLengthAsync(TestData.Length).DefaultTimeout();
+
+                await context.Response.Body.WriteAsync(data);
+            });
+
+            using (var host = builder.Build())
+            using (var client = Http3Helpers.CreateClient(expect100ContinueTimeout: TimeSpan.FromMinutes(20)))
+            {
+                await host.StartAsync().DefaultTimeout();
+
+                var requestContent = new StreamingHttpContent();
+
+                var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
+                request.Content = requestContent;
+                request.Version = HttpVersion.Version30;
+                request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+                request.Headers.ExpectContinue = true;
+
+                // Act
+                using var cts = new CancellationTokenSource();
+                cts.CancelAfter(TimeSpan.FromSeconds(1));
+                var responseTask = client.SendAsync(request, cts.Token);
+
+                var requestStream = await requestContent.GetStreamAsync().DefaultTimeout();
+
+                // Send headers
+                await requestStream.FlushAsync().DefaultTimeout();
+                // Write content
+                await requestStream.WriteAsync(TestData).DefaultTimeout();
+
+                var response = await responseTask.DefaultTimeout();
+
+                // Assert
+                response.EnsureSuccessStatusCode();
+                Assert.Equal(HttpVersion.Version30, response.Version);
+                var responseText = await response.Content.ReadAsStringAsync().DefaultTimeout();
+                Assert.Equal("Hello world", responseText);
 
                 await host.StopAsync().DefaultTimeout();
             }
@@ -632,7 +683,7 @@ namespace Interop.FunctionalTests.Http3
                 await host.StartAsync().DefaultTimeout();
 
                 var cts = new CancellationTokenSource();
-                var requestContent = new StreamingHttpContext();
+                var requestContent = new StreamingHttpContent();
 
                 var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
                 request.Content = requestContent;
@@ -729,7 +780,7 @@ namespace Interop.FunctionalTests.Http3
                 await host.StartAsync().DefaultTimeout();
 
                 var cts = new CancellationTokenSource();
-                var requestContent = new StreamingHttpContext();
+                var requestContent = new StreamingHttpContent();
 
                 var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
                 request.Content = requestContent;
@@ -1456,7 +1507,7 @@ namespace Interop.FunctionalTests.Http3
             {
                 await host.StartAsync().DefaultTimeout();
 
-                var requestContent = new StreamingHttpContext();
+                var requestContent = new StreamingHttpContent();
 
                 var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
                 request.Content = requestContent;
@@ -1551,7 +1602,7 @@ namespace Interop.FunctionalTests.Http3
             {
                 await host.StartAsync().DefaultTimeout();
 
-                var requestContent = new StreamingHttpContext();
+                var requestContent = new StreamingHttpContent();
 
                 var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
                 request.Content = requestContent;

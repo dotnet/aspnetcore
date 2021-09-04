@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             new KeyValuePair<string, string>(HeaderNames.Path, "/"),
             new KeyValuePair<string, string>(HeaderNames.Authority, "127.0.0.1"),
             new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>("expect", "100-continue"),
+            new KeyValuePair<string, string>(HeaderNames.Expect, "100-continue"),
         };
 
         protected static readonly IEnumerable<KeyValuePair<string, string>> _requestTrailers = new[]
