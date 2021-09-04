@@ -1,12 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.DotNet.OpenApi.Tests;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.OpenApi.Refresh.Tests
@@ -15,7 +10,7 @@ namespace Microsoft.DotNet.OpenApi.Refresh.Tests
     {
         public OpenApiRefreshTests(ITestOutputHelper output) : base(output) { }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
+        [Fact]
         public async Task OpenApi_Refresh_Basic()
         {
             CreateBasicProject(withOpenApi: false);
