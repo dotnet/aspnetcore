@@ -27,7 +27,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         private readonly IHostEnvironment _environment;
         private readonly IServiceProviderIsService? _serviceProviderIsService;
         private readonly TryParseMethodCache TryParseMethodCache = new();
-        private readonly NullabilityInfoContext NullabilityContext = new();
 
         // Executes before MVC's DefaultApiDescriptionProvider and GrpcHttpApiDescriptionProvider for no particular reason.
         public int Order => -1100;
@@ -160,7 +159,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
 
             // Determine the "requiredness" based on nullability, default value or if allowEmpty is set
-            var nullability = NullabilityContext.Create(parameter);
+            var nullabilityContext = new NullabilityInfoContext();
+            var nullability = nullabilityContext.Create(parameter);
             var isOptional = parameter.HasDefaultValue || nullability.ReadState != NullabilityState.NotNull || allowEmpty;
 
             return new ApiParameterDescription
