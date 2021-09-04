@@ -19,7 +19,7 @@ namespace Interop.FunctionalTests.Http3
 {
     public static class Http3Helpers
     {
-        public static HttpMessageInvoker CreateClient(TimeSpan? idleTimeout = null, bool includeClientCert = false)
+        public static HttpMessageInvoker CreateClient(TimeSpan? idleTimeout = null, TimeSpan? expect100ContinueTimeout = null, bool includeClientCert = false)
         {
             var handler = new SocketsHttpHandler();
             handler.SslOptions = new System.Net.Security.SslClientAuthenticationOptions
@@ -28,6 +28,12 @@ namespace Interop.FunctionalTests.Http3
                 TargetHost = "targethost",
                 ClientCertificates = !includeClientCert ? null : new X509CertificateCollection() { TestResources.GetTestCertificate() },
             };
+
+            if (expect100ContinueTimeout != null)
+            {
+                handler.Expect100ContinueTimeout = expect100ContinueTimeout.Value;
+            }
+
             if (idleTimeout != null)
             {
                 handler.PooledConnectionIdleTimeout = idleTimeout.Value;
