@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Http
                 ServiceProviderIsService = options?.ServiceProvider?.GetService<IServiceProviderIsService>(),
                 RouteParameters = options?.RouteParameterNames?.ToList(),
                 ThrowOnBadRequest = options?.ThrowOnBadRequest ?? false,
-                AllowImplicitFromBody = !options?.DisableInferredBody ?? true,
+                DisableInferredFromBody = options?.DisableInferredBody ?? false,
             };
 
         private static Func<object?, HttpContext, Task> CreateTargetableRequestDelegate(MethodInfo methodInfo, Expression? targetExpression, FactoryContext factoryContext)
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Http
                 args[i] = CreateArgument(parameters[i], factoryContext);
             }
 
-            if (factoryContext.HasImplicitBody && !factoryContext.AllowImplicitFromBody)
+            if (factoryContext.HasInferredBody && factoryContext.DisableInferredFromBody)
             {
                 var errorMessage = BuildErrorMessageForInferredBodyParameter(factoryContext);
                 throw new InvalidOperationException(errorMessage);
@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.Http
                     }
                 }
 
-                factoryContext.HasImplicitBody = true;
+                factoryContext.HasInferredBody = true;
                 factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.BodyParameter);
                 return BindParameterFromBody(parameter, allowEmpty: false, factoryContext);
             }
@@ -897,7 +897,7 @@ namespace Microsoft.AspNetCore.Http
 
             if (!factoryContext.AllowEmptyRequestBody)
             {
-                if (factoryContext.HasImplicitBody)
+                if (factoryContext.HasInferredBody)
                 {
                     // if (bodyValue == null)
                     // {
@@ -1160,7 +1160,7 @@ namespace Microsoft.AspNetCore.Http
             public IServiceProviderIsService? ServiceProviderIsService { get; init; }
             public List<string>? RouteParameters { get; init; }
             public bool ThrowOnBadRequest { get; init; }
-            public bool AllowImplicitFromBody { get; init; }
+            public bool DisableInferredFromBody { get; init; }
 
             // Temporary State
             public Type? JsonRequestBodyType { get; set; }
@@ -1173,7 +1173,7 @@ namespace Microsoft.AspNetCore.Http
 
             public Dictionary<string, string> TrackedParameters { get; } = new();
             public bool HasMultipleBodyParameters { get; set; }
-            public bool HasImplicitBody { get; set; }
+            public bool HasInferredBody { get; set; }
 
             public List<object> Metadata { get; } = new();
 
