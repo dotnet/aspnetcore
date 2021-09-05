@@ -1377,8 +1377,8 @@ namespace Microsoft.AspNetCore.Tests
         {
             var builder = WebApplication.CreateBuilder();
 
-            var contentRoot = Path.GetTempPath().ToString();
-            var webRoot = Path.GetTempPath().ToString();
+            var contentRoot = Path.GetTempPath();
+            var webRoot = Path.GetTempPath();
             var envName = $"{nameof(WebApplicationTests)}_ENV";
 
             builder.Configuration[WebHostDefaults.ApplicationKey] = nameof(WebApplicationTests);
