@@ -4,6 +4,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
 {
@@ -18,9 +19,9 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             httpContext.Response.ContentType = "text/plain";
             return result.Status switch
             {
-                HealthStatus.Degraded => httpContext.Response.Body.WriteAsync(DegradedBytes.AsMemory()).AsTask(),
-                HealthStatus.Healthy => httpContext.Response.Body.WriteAsync(HealthyBytes.AsMemory()).AsTask(),
-                HealthStatus.Unhealthy => httpContext.Response.Body.WriteAsync(UnhealthyBytes.AsMemory()).AsTask(),
+                HealthStatus.Degraded => httpContext.Response.Body.WriteAsync(DegradedBytes.AsMemory()).GetAsTask(),
+                HealthStatus.Healthy => httpContext.Response.Body.WriteAsync(HealthyBytes.AsMemory()).GetAsTask(),
+                HealthStatus.Unhealthy => httpContext.Response.Body.WriteAsync(UnhealthyBytes.AsMemory()).GetAsTask(),
                 _ => httpContext.Response.WriteAsync(result.Status.ToString())
             };
         }
