@@ -922,7 +922,7 @@ namespace Microsoft.AspNetCore.Testing
         });
 
         private readonly Http3InMemory _testBase;
-        private long _error;
+        private long? _error;
 
         public TestMultiplexedConnectionContext(Http3InMemory testBase)
         {
@@ -946,7 +946,7 @@ namespace Microsoft.AspNetCore.Testing
 
         public long Error
         {
-            get => _error;
+            get => _error ?? -1;
             set => _error = value;
         }
 
@@ -1019,6 +1019,7 @@ namespace Microsoft.AspNetCore.Testing
 
         private TaskCompletionSource _disposingTcs;
         private TaskCompletionSource _disposedTcs;
+        internal long? _error;
 
         public TestStreamContext(bool canRead, bool canWrite, Http3InMemory testBase)
         {
@@ -1072,6 +1073,7 @@ namespace Microsoft.AspNetCore.Testing
             ConnectionId = "TEST:" + streamId.ToString();
             AbortReadException = null;
             AbortWriteException = null;
+            _error = null;
 
             _disposedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             _disposingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -1112,7 +1114,11 @@ namespace Microsoft.AspNetCore.Testing
 
         public bool CanWrite { get; }
 
-        public long Error { get; set; }
+        public long Error
+        {
+            get => _error ?? -1;
+            set => _error = value;
+        }
 
         public override void Abort(ConnectionAbortedException abortReason)
         {

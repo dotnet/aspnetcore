@@ -2463,7 +2463,93 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.False(httpContext.RequestAborted.IsCancellationRequested);
             var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
             Assert.Equal(@"""Hello Tester. This is from an extension method.""", decodedResponseBody);
+        }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task RequestDelegateRejectsNonJsonContent(bool shouldThrow)
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Headers["Content-Type"] = "application/xml";
+            httpContext.Request.Headers["Content-Length"] = "1";
+            httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(LoggerFactory);
+            httpContext.RequestServices = serviceCollection.BuildServiceProvider();
+
+            var factoryResult = RequestDelegateFactory.Create((HttpContext context, Todo todo) =>
+            {
+            }, new RequestDelegateFactoryOptions() { ThrowOnBadRequest = shouldThrow });
+            var requestDelegate = factoryResult.RequestDelegate;
+
+            var request = requestDelegate(httpContext);
+
+            if (shouldThrow)
+            {
+                var ex = await Assert.ThrowsAsync<BadHttpRequestException>(() => request);
+                Assert.Equal("Expected a supported JSON media type but got \"application/xml\".", ex.Message);
+                Assert.Equal(StatusCodes.Status415UnsupportedMediaType, ex.StatusCode);
+            }
+            else
+            {
+                await request;
+
+                Assert.Equal(415, httpContext.Response.StatusCode);
+                var logMessage = Assert.Single(TestSink.Writes);
+                Assert.Equal(new EventId(6, "UnexpectedContentType"), logMessage.EventId);
+                Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
+                Assert.Equal("Expected a supported JSON media type but got \"application/xml\".", logMessage.Message);
+            }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task RequestDelegateWithBindAndImplicitBodyRejectsNonJsonContent(bool shouldThrow)
+        {
+            Todo originalTodo = new()
+            {
+                Name = "Write more tests!"
+            };
+
+            var httpContext = new DefaultHttpContext();
+
+            var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(originalTodo);
+            var stream = new MemoryStream(requestBodyBytes);
+            httpContext.Request.Body = stream;
+            httpContext.Request.Headers["Content-Type"] = "application/xml";
+            httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
+            httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(LoggerFactory);
+            httpContext.RequestServices = serviceCollection.BuildServiceProvider();
+
+            var factoryResult = RequestDelegateFactory.Create((HttpContext context, JsonTodo customTodo, Todo todo) =>
+            {
+            }, new RequestDelegateFactoryOptions() { ThrowOnBadRequest = shouldThrow });
+            var requestDelegate = factoryResult.RequestDelegate;
+
+            var request = requestDelegate(httpContext);
+
+            if (shouldThrow)
+            {
+                var ex = await Assert.ThrowsAsync<BadHttpRequestException>(() => request);
+                Assert.Equal("Expected a supported JSON media type but got \"application/xml\".", ex.Message);
+                Assert.Equal(StatusCodes.Status415UnsupportedMediaType, ex.StatusCode);
+            }
+            else
+            {
+                await request;
+
+                Assert.Equal(415, httpContext.Response.StatusCode);
+                var logMessage = Assert.Single(TestSink.Writes);
+                Assert.Equal(new EventId(6, "UnexpectedContentType"), logMessage.EventId);
+                Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
+                Assert.Equal("Expected a supported JSON media type but got \"application/xml\".", logMessage.Message);
+            }
         }
 
         private DefaultHttpContext CreateHttpContext()
@@ -2497,6 +2583,17 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 Assert.Equal("customTodo", parameter.Name);
 
                 var body = await context.Request.ReadFromJsonAsync<CustomTodo>();
+                context.Request.Body.Position = 0;
+                return body;
+            }
+        }
+
+        private class JsonTodo : Todo
+        {
+            public static async ValueTask<JsonTodo?> BindAsync(HttpContext context, ParameterInfo parameter)
+            {
+                // manually call deserialize so we don't check content type
+                var body = await JsonSerializer.DeserializeAsync<JsonTodo>(context.Request.Body);
                 context.Request.Body.Position = 0;
                 return body;
             }

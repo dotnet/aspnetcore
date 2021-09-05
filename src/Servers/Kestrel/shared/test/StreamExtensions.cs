@@ -46,7 +46,7 @@ namespace System.IO
             return offset;
         }
 
-        public static async Task<byte[]> ReadAtLeastLengthAsync(this Stream stream, int length, int bufferLength = 1024, CancellationToken cancellationToken = default)
+        public static async Task<byte[]> ReadAtLeastLengthAsync(this Stream stream, int length, int bufferLength = 1024, bool allowEmpty = false, CancellationToken cancellationToken = default)
         {
             var buffer = new byte[bufferLength];
             var data = new List<byte>();
@@ -57,7 +57,15 @@ namespace System.IO
                 var read = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
                 offset += read;
 
-                Assert.NotEqual(0, read);
+                if (read == 0)
+                {
+                    if (allowEmpty && offset == 0)
+                    {
+                        return null;
+                    }
+
+                    throw new Exception("Stream read 0.");
+                }
 
                 data.AddRange(buffer.AsMemory(0, read).ToArray());
             }
