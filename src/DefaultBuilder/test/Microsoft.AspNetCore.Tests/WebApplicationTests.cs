@@ -1372,6 +1372,37 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Equal(string.Empty, responseBody);
         }
 
+        [Fact]
+        public void PropertiesArePropagated()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.Host.Properties["hello"] = "world";
+            var callbacks = 0;
+
+            builder.Host.ConfigureAppConfiguration((context, config) =>
+            {
+                callbacks |= 0b00000001;
+                Assert.Equal("world", context.Properties["hello"]);
+            });
+
+            builder.Host.ConfigureServices((context, config) =>
+            {
+                callbacks |= 0b00000010;
+                Assert.Equal("world", context.Properties["hello"]);
+            });
+
+            builder.Host.ConfigureContainer<IServiceCollection>((context, config) =>
+            {
+                callbacks |= 0b00000100;
+                Assert.Equal("world", context.Properties["hello"]);
+            });
+
+            using var app = builder.Build();
+
+            // Make sure all of the callbacks ran
+            Assert.Equal(0b00000111, callbacks);
+        }
+
         class ThrowingStartupFilter : IStartupFilter
         {
             public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
