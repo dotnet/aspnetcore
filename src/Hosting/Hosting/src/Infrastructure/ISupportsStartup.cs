@@ -20,6 +20,13 @@ namespace Microsoft.AspNetCore.Hosting.Infrastructure
         /// </summary>
         /// <param name="configure">The delegate that configures the <see cref="IApplicationBuilder"/>.</param>
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        IWebHostBuilder Configure(Action<IApplicationBuilder> configure);
+
+        /// <summary>
+        /// Specify the startup method to be used to configure the web application.
+        /// </summary>
+        /// <param name="configure">The delegate that configures the <see cref="IApplicationBuilder"/>.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         IWebHostBuilder Configure(Action<WebHostBuilderContext, IApplicationBuilder> configure);
 
         /// <summary>

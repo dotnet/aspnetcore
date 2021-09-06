@@ -10,6 +10,7 @@ Microsoft.AspNetCore.Http.IResult
 Microsoft.AspNetCore.Http.IResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata
 Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata.ContentTypes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata.IsOptional.get -> bool
 Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata.RequestType.get -> System.Type?
 Microsoft.AspNetCore.Http.Metadata.IFromBodyMetadata
 Microsoft.AspNetCore.Http.Metadata.IFromBodyMetadata.AllowEmpty.get -> bool
@@ -20,6 +21,8 @@ Microsoft.AspNetCore.Http.Metadata.IFromQueryMetadata.Name.get -> string?
 Microsoft.AspNetCore.Http.Metadata.IFromRouteMetadata
 Microsoft.AspNetCore.Http.Metadata.IFromRouteMetadata.Name.get -> string?
 Microsoft.AspNetCore.Http.Metadata.IFromServiceMetadata
+Microsoft.AspNetCore.Http.Metadata.ITagsMetadata
+Microsoft.AspNetCore.Http.Metadata.ITagsMetadata.Tags.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Microsoft.AspNetCore.Http.Endpoint.Endpoint(Microsoft.AspNetCore.Http.RequestDelegate? requestDelegate, Microsoft.AspNetCore.Http.EndpointMetadataCollection? metadata, string? displayName) -> void
 Microsoft.AspNetCore.Http.Endpoint.RequestDelegate.get -> Microsoft.AspNetCore.Http.RequestDelegate?
 Microsoft.AspNetCore.Http.RequestDelegateResult
@@ -27,6 +30,7 @@ Microsoft.AspNetCore.Http.RequestDelegateResult.EndpointMetadata.get -> System.C
 Microsoft.AspNetCore.Http.RequestDelegateResult.RequestDelegate.get -> Microsoft.AspNetCore.Http.RequestDelegate!
 Microsoft.AspNetCore.Http.RequestDelegateResult.RequestDelegateResult(Microsoft.AspNetCore.Http.RequestDelegate! requestDelegate, System.Collections.Generic.IReadOnlyList<object!>! metadata) -> void
 Microsoft.AspNetCore.Routing.RouteValueDictionary.TryAdd(string! key, object? value) -> bool
+static Microsoft.AspNetCore.Builder.MapExtensions.Map(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! pathMatch, System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder!>! configuration) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 abstract Microsoft.AspNetCore.Http.HttpResponse.ContentType.get -> string?
 static readonly Microsoft.AspNetCore.Http.HttpProtocol.Http09 -> string!
 static Microsoft.AspNetCore.Http.HttpProtocol.IsHttp09(string! protocol) -> bool

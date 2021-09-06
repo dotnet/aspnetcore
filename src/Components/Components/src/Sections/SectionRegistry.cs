@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.Sections
         private readonly Dictionary<string, ISectionContentSubscriber> _subscribersByName = new();
         private readonly Dictionary<string, List<ISectionContentProvider>> _providersByName = new();
 
-        public void AddProvider(string name, ISectionContentProvider provider)
+        public void AddProvider(string name, ISectionContentProvider provider, bool isDefaultProvider)
         {
             if (!_providersByName.TryGetValue(name, out var providers))
             {
@@ -16,7 +16,14 @@ namespace Microsoft.AspNetCore.Components.Sections
                 _providersByName.Add(name, providers);
             }
 
-            providers.Add(provider);
+            if (isDefaultProvider)
+            {
+                providers.Insert(0, provider);
+            }
+            else
+            {
+                providers.Add(provider);
+            }
         }
 
         public void RemoveProvider(string name, ISectionContentProvider provider)

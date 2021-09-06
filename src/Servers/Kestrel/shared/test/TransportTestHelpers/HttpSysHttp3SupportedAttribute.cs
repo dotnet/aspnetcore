@@ -3,13 +3,12 @@
 
 using System;
 using System.Net.Quic;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Win32;
 
-namespace Microsoft.AspNetCore.Server.HttpSys
+namespace Microsoft.AspNetCore.Testing
 {
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false)]
-    public class Http3SupportedAttribute : Attribute, ITestCondition
+    public class HttpSysHttp3SupportedAttribute : Attribute, ITestCondition
     {
         // We have the same OS and TLS version requirements as MsQuic so check that first.
         public bool IsMet => QuicImplementationProviders.MsQuic.IsSupported && IsRegKeySet;

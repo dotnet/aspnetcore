@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Diagnostics
 {
@@ -26,5 +27,15 @@ namespace Microsoft.AspNetCore.Diagnostics
         /// The <see cref="HttpRequest.QueryString"/> of the original request.
         /// </summary>
         string? OriginalQueryString { get; set; }
+
+        /// <summary>
+        /// Gets the selected <see cref="Http.Endpoint"/> for the original request.
+        /// </summary>
+        Endpoint? Endpoint => null;
+
+        /// <summary>
+        /// Gets the <see cref="RouteValueDictionary"/> associated with the original request.
+        /// </summary>
+        RouteValueDictionary? RouteValues => null;
     }
 }

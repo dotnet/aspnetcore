@@ -17,7 +17,7 @@ using Xunit;
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
     [MsQuicSupported] // Required by HttpClient
-    [Http3Supported]
+    [HttpSysHttp3Supported]
     public class Http3Tests
     {
         [ConditionalFact]

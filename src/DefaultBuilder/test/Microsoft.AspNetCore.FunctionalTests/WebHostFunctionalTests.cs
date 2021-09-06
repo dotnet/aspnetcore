@@ -111,6 +111,7 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/36079")]
         public void LoggingConfigurationSectionPassedToLoggerByDefault()
         {
             try
