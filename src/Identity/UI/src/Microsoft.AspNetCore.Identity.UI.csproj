@@ -38,7 +38,7 @@
 
   <Target Name="SetupRazorInputs" BeforeTargets="ResolveRazorGenerateInputs">
     <ItemGroup>
-      <_RazorGenerate Include="Areas\Identity\Pages\V5\**\*.cshtml" />
+      <_RazorGenerate Include="Areas\Identity\Pages\**\*.cshtml" />
 
       <RazorGenerate Include="@(_RazorGenerate)" Link="Areas\Identity\Pages\%(RecursiveDir)%(Filename)%(Extension)" />
     </ItemGroup>
@@ -46,12 +46,12 @@
 
   <Target Name="GetIdentityUIAssets" Returns="@(ReferenceAsset)">
     <ItemGroup>
-      <ReferenceAssetCandidates Include="assets\V4\**" />
+      <ReferenceAssetCandidates Include="assets\V5\**" />
       <ReferenceAssetCandidates>
         <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
       </ReferenceAssetCandidates>
     </ItemGroup>
-    <DefineStaticWebAssets Condition="'@(ReferenceAssetCandidates-&gt;Count())' != '0'" CandidateAssets="@(ReferenceAssetCandidates)" SourceId="$(PackageId)" SourceType="Project" AssetKind="All" ContentRoot="assets/V4" BasePath="$(StaticWebAssetBasePath)">
+    <DefineStaticWebAssets Condition="'@(ReferenceAssetCandidates-&gt;Count())' != '0'" CandidateAssets="@(ReferenceAssetCandidates)" SourceId="$(PackageId)" SourceType="Project" AssetKind="All" ContentRoot="assets/V5" BasePath="$(StaticWebAssetBasePath)">
       <Output TaskParameter="Assets" ItemName="ReferenceAsset" />
     </DefineStaticWebAssets>
     <ItemGroup>
@@ -61,7 +61,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_GenerateIdentityUIPackItems">
+  <!--<Target Name="_GenerateIdentityUIPackItems">
     <ItemGroup>
       <V4AssetsCandidates Include="assets\V4\**" />
       <V4AssetsCandidates>
@@ -103,5 +103,5 @@
         <PackagePath>%(_PackV5Asset.TargetPath)</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>
-  </Target>
+  </Target>-->
 </Project>
