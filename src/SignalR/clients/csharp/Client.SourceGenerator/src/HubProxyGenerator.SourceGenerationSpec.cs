@@ -29,8 +29,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
             public string ClassTypeName;
             public List<MethodSpec> Methods = new();
             public Location CallSite;
-            public string FullyQualifiedClassTypeName =>
-                $"Microsoft.AspNetCore.SignalR.Client.Tests.GetProxyExtensions.{ClassTypeName}";
         }
 
         public class MethodSpec

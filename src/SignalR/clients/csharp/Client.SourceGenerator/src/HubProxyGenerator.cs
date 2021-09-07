@@ -12,17 +12,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
     [Generator]
     internal partial class HubProxyGenerator : IIncrementalGenerator
     {
-        public HubProxyGenerator()
-        {
-
-            if (!Debugger.IsAttached)
-            {
-                Debugger.Launch();
-            }
-
-        }
-
-
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             var methodDeclaration = context.SyntaxProvider
@@ -53,7 +42,5 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
             var emitter = new Emitter(context, spec);
             emitter.Emit();
         }
-
-
     }
 }

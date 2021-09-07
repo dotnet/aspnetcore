@@ -49,7 +49,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                 foreach (var classSpec in _spec.Classes)
                 {
                     var fqIntfTypeName = classSpec.FullyQualifiedInterfaceTypeName;
-                    var fqClassTypeName = classSpec.FullyQualifiedClassTypeName;
+                    var fqClassTypeName =
+                        $"{_spec.GetProxyNamespace}.{_spec.GetProxyClassName}.{classSpec.ClassTypeName}";
                     getProxyBody.Append($@"
             if(typeof({_spec.GetProxyTypeParameterName}) == typeof({fqIntfTypeName}))
             {{
