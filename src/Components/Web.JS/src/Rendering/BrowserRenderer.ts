@@ -293,14 +293,14 @@ export class BrowserRenderer {
     }
 
     if (isMultipleSelectElement(selectElem)) {
-      optionElement.selected = selectElem[deferredValuePropname]!.indexOf(optionElement.value) !== -1;
+      optionElement.selected = selectElem._blazorDeferredValue!.indexOf(optionElement.value) !== -1;
     } else {
-      if (selectElem[deferredValuePropname] !== optionElement.value) {
+      if (selectElem._blazorDeferredValue !== optionElement.value) {
         return false;
       }
 
       setSingleSelectElementValue(selectElem, optionElement.value);
-      delete selectElem[deferredValuePropname];
+      delete selectElem._blazorDeferredValue;
     }
 
     return true;
