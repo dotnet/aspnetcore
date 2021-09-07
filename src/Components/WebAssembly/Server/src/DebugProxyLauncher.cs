@@ -23,6 +23,13 @@ namespace Microsoft.AspNetCore.Builder
         private static Task<string>? LaunchedDebugProxyUrl;
         private static readonly Regex NowListeningRegex = new Regex(@"^\s*Now listening on: (?<url>.*)$", RegexOptions.None, TimeSpan.FromSeconds(10));
         private static readonly Regex ApplicationStartedRegex = new Regex(@"^\s*Application started\. Press Ctrl\+C to shut down\.$", RegexOptions.None, TimeSpan.FromSeconds(10));
+        private static readonly string[] MessageSuppressionPrefixes = new[]
+        {
+            "Hosting environment:",
+            "Content root path:",
+            "Now listening on:",
+            "Application started. Press Ctrl+C to shut down.",
+        };
 
         public static Task<string> EnsureLaunchedAndGetUrl(IServiceProvider serviceProvider, string devToolsHost)
         {
@@ -110,6 +117,24 @@ namespace Microsoft.AspNetCore.Builder
         {
             process.OutputDataReceived += (sender, eventArgs) =>
             {
+                // It's confusing if the debug proxy emits its own startup status messages, because the developer
+                // may think the ports/environment/paths refer to their actual application. So we want to suppress
+                // them, but we can't stop the debug proxy app from emitting the messages entirely (e.g., via
+                // SuppressStatusMessages) because we need the "Now listening on" one to detect the chosen port.
+                // Instead, we'll filter out known strings from the passthrough logic. It's legit to hardcode these
+                // strings because they are also hardcoded like this inside WebHostExtensions.cs and can't vary
+                // according to culture.
+                if (eventArgs.Data is not null)
+                {
+                    foreach (var prefix in MessageSuppressionPrefixes)
+                    {
+                        if (eventArgs.Data.StartsWith(prefix, StringComparison.Ordinal))
+                        {
+                            return;
+                        }
+                    }
+                }
+
                 Console.WriteLine(eventArgs.Data);
             };
         }

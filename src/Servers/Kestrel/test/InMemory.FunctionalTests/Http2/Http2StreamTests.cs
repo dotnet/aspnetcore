@@ -5100,5 +5100,53 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Contains(LogMessages, m => m.Message.Equals("One or more of the following response headers have been removed because they are invalid for HTTP/2 and HTTP/3 responses: 'Connection', 'Transfer-Encoding', 'Keep-Alive', 'Upgrade' and 'Proxy-Connection'."));
         }
+
+        [Theory]
+        [InlineData(1000)]
+        [InlineData(4096)]
+        [InlineData(8000)] // Greater than the default max pool size (4096)
+        public async Task GetMemory_AfterAbort_GetsFakeMemory(int sizeHint)
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(async httpContext =>
+            {
+                var response = httpContext.Response;
+
+                await response.BodyWriter.FlushAsync();
+
+                httpContext.Abort();
+
+                var memory = response.BodyWriter.GetMemory(sizeHint);
+                Assert.True(memory.Length >= sizeHint);
+
+                var fisrtPartOfResponse = Encoding.ASCII.GetBytes(new String('a', sizeHint));
+                fisrtPartOfResponse.CopyTo(memory);
+                response.BodyWriter.Advance(sizeHint);
+            });
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 32,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.RST_STREAM,
+                withLength: 4,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(2, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        }
     }
 }
