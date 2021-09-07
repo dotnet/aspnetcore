@@ -64,13 +64,6 @@ namespace Microsoft.AspNetCore.Identity
             return builder;
         }
 
-        //private static readonly IDictionary<UIFramework, string> _assemblyMap =
-        //    new Dictionary<UIFramework, string>()
-        //    {
-        //        [UIFramework.Bootstrap4] = "Microsoft.AspNetCore.Identity.UI.Views.V4",
-        //        [UIFramework.Bootstrap5] = "Microsoft.AspNetCore.Identity.UI.Views.V5",
-        //    };
-
         private static Assembly GetApplicationAssembly(IdentityBuilder builder)
         {
             // Whis is the same logic that MVC follows to find the application assembly.
@@ -124,19 +117,23 @@ namespace Microsoft.AspNetCore.Identity
                         if (_isV4) {
                             if (descriptor.Type.FullName.Contains("V5"))
                             {
+                                // Remove V5 views
                                 viewsToRemove.Add(descriptor);
                             }
                             else
                             {
+                                // Fix up paths to eliminate version subdir
                                 descriptor.RelativePath = descriptor.RelativePath.Replace("V4/", "");
                             }
                         } else {
                             if (descriptor.Type.FullName.Contains("V4"))
                             {
+                                // Remove V4 views
                                 viewsToRemove.Add(descriptor);
                             }
                             else
                             {
+                                // Fix up paths to eliminate version subdir
                                 descriptor.RelativePath = descriptor.RelativePath.Replace("V5/", "");
                             }
                         }
