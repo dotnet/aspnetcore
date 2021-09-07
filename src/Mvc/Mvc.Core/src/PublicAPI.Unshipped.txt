@@ -1532,8 +1532,6 @@ Microsoft.AspNetCore.Mvc.ActionResult<TValue>.Value.get -> TValue?
 *REMOVED*~Microsoft.AspNetCore.Mvc.Formatters.MediaType.GetParameter(string parameterName) -> Microsoft.Extensions.Primitives.StringSegment
 *REMOVED*~Microsoft.AspNetCore.Mvc.Formatters.MediaType.MediaType(string mediaType) -> void
 *REMOVED*~Microsoft.AspNetCore.Mvc.Formatters.MediaType.MediaType(string mediaType, int offset, int? length) -> void
-*REMOVED*Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection
-*REMOVED*Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection.MediaTypeCollection() -> void
 *REMOVED*~Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection.Add(Microsoft.Net.Http.Headers.MediaTypeHeaderValue item) -> void
 *REMOVED*~Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection.Insert(int index, Microsoft.Net.Http.Headers.MediaTypeHeaderValue item) -> void
 *REMOVED*~Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection.Remove(Microsoft.Net.Http.Headers.MediaTypeHeaderValue item) -> bool
@@ -2043,6 +2041,9 @@ Microsoft.AspNetCore.Mvc.Formatters.SystemTextJsonOutputFormatter.SystemTextJson
 Microsoft.AspNetCore.Mvc.Formatters.TextInputFormatter.SelectCharacterEncoding(Microsoft.AspNetCore.Mvc.Formatters.InputFormatterContext! context) -> System.Text.Encoding?
 Microsoft.AspNetCore.Mvc.Formatters.TextInputFormatter.SupportedEncodings.get -> System.Collections.Generic.IList<System.Text.Encoding!>!
 Microsoft.AspNetCore.Mvc.Formatters.TextOutputFormatter.SupportedEncodings.get -> System.Collections.Generic.IList<System.Text.Encoding!>!
+Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection.Add(Microsoft.Net.Http.Headers.MediaTypeHeaderValue! item) -> void
+Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection.Insert(int index, Microsoft.Net.Http.Headers.MediaTypeHeaderValue! item) -> void
+Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection.Remove(Microsoft.Net.Http.Headers.MediaTypeHeaderValue! item) -> bool
 Microsoft.AspNetCore.Mvc.FromBodyAttribute.BindingSource.get -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource!
 Microsoft.AspNetCore.Mvc.FromFormAttribute.BindingSource.get -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource!
 Microsoft.AspNetCore.Mvc.FromFormAttribute.Name.get -> string?

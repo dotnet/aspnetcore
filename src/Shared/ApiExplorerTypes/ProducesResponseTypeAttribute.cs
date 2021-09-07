@@ -4,7 +4,6 @@
 using System;
 using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.Http.Metadata;
-using Microsoft.AspNetCore.Mvc.Formatters;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -13,7 +12,7 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     internal class ProducesResponseTypeAttribute : IProducesResponseTypeMetadata
     {
-        private readonly MediaTypeCollection? _contentTypes;
+        private readonly ICollection<string>? _contentTypes;
 
         /// <summary>
         /// Initializes an instance of <see cref="ProducesResponseTypeAttribute"/>.
@@ -87,9 +86,9 @@ namespace Microsoft.AspNetCore.Http
         internal bool IsResponseTypeSetByDefault { get; }
 
         // Internal for testing
-        internal MediaTypeCollection? ContentTypes => _contentTypes;
+        internal ICollection<string>? ContentTypes => _contentTypes;
 
-        void IProducesResponseTypeMetadata.SetContentTypes(MediaTypeCollection contentTypes)
+        void IProducesResponseTypeMetadata.SetContentTypes(ICollection<string> contentTypes)
         {
             if (_contentTypes is not null)
             {
@@ -101,12 +100,12 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
-        private static MediaTypeCollection GetContentTypes(string contentType, string[] additionalContentTypes)
+        private static ICollection<string> GetContentTypes(string contentType, string[] additionalContentTypes)
         {
             var completeContentTypes = new List<string>(additionalContentTypes.Length + 1);
             completeContentTypes.Add(contentType);
             completeContentTypes.AddRange(additionalContentTypes);
-            MediaTypeCollection contentTypes = new();
+            List<string> contentTypes = new();
             foreach (var type in completeContentTypes)
             {
                 if (type.Contains('*', StringComparison.OrdinalIgnoreCase))

@@ -2545,8 +2545,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
             Attribute,
             IFilterMetadata,
             IApiResponseMetadataProvider,
-            IApiRequestMetadataProvider,
-            IProducesResponseTypeMetadata
+            IApiRequestMetadataProvider
         {
             public ContentTypeAttribute(string mediaType)
             {

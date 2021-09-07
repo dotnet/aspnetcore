@@ -485,12 +485,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         [Fact]
         public void HandlesProducesWithProducesProblem()
         {
-            Console.WriteLine($"Waiting for debugger to attach on {System.Environment.ProcessId}");
-            while (!System.Diagnostics.Debugger.IsAttached)
-            {
-                Thread.Sleep(1000);
-            }
-            Console.WriteLine("Debugger attached");
             // Arrange
             var builder = CreateBuilder();
             builder.MapGet("/api/todos", () => "")
@@ -639,6 +633,38 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.Equal(typeof(InferredJsonClass), bodyParameterDescription.Type);
             Assert.Equal(typeof(InferredJsonClass).Name, bodyParameterDescription.Name);
             Assert.True(bodyParameterDescription.IsRequired);
+        }
+
+        [Fact]
+        public void FavorsProducesInMethodOverAttribute()
+        {
+            // Arrange
+            var builder = CreateBuilder();
+            builder.MapGet("/api/todos", [ProducesResponseType(typeof(List<string>), StatusCodes.Status200OK)]() => "")
+                .Produces<InferredJsonClass>(StatusCodes.Status200OK);
+            var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+            var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+            var hostEnvironment = new HostEnvironment
+            {
+                ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+            };
+            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+
+            // Act
+            provider.OnProvidersExecuting(context);
+            provider.OnProvidersExecuted(context);
+
+            // Assert
+            Assert.Collection(
+                context.Results.SelectMany(r => r.SupportedResponseTypes).OrderBy(r => r.StatusCode),
+                responseType =>
+                {
+                    Assert.Equal(typeof(InferredJsonClass), responseType.Type);
+                    Assert.Equal(200, responseType.StatusCode);
+                    Assert.Equal(new[] { "application/json" }, GetSortedMediaTypes(responseType));
+
+                });
         }
 
 #nullable enable

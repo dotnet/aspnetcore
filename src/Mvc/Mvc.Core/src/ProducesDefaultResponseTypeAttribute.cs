@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Formatters;
 
@@ -43,12 +42,6 @@ namespace Microsoft.AspNetCore.Mvc
 
         /// <inheritdoc />
         void IApiResponseMetadataProvider.SetContentTypes(MediaTypeCollection contentTypes)
-        {
-            // Users are supposed to use the 'Produces' attribute to set the content types that an action can support.
-        }
-
-        /// <inheritdoc />
-        void IProducesResponseTypeMetadata.SetContentTypes(MediaTypeCollection contentTypes)
         {
             // Users are supposed to use the 'Produces' attribute to set the content types that an action can support.
         }

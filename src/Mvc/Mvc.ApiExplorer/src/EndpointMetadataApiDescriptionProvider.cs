@@ -243,15 +243,24 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 responseType = typeof(void);
             }
 
-            var responseMetadata = endpointMetadata.GetOrderedMetadata<IProducesResponseTypeMetadata>();
+            // For back-compat, we support attributes (which implement the IApiResponseMetadataProvider) interface
+            // and types added via the extension methods (which implement IProducesResponseTypeMetadata).
+            var responseProviderMetadata = endpointMetadata.GetOrderedMetadata<IApiResponseMetadataProvider>();
+            var producesResponseMetadata = endpointMetadata.GetOrderedMetadata<IProducesResponseTypeMetadata>();
             var errorMetadata = endpointMetadata.GetMetadata<ProducesErrorResponseTypeAttribute>();
             var defaultErrorType = errorMetadata?.Type ?? typeof(void);
             var contentTypes = new MediaTypeCollection();
 
-            var responseMetadataTypes = ApiResponseTypeProvider.ReadResponseMetadata(
-                responseMetadata, responseType, defaultErrorType, contentTypes);
+            var responseProviderMetadataTypes = ApiResponseTypeProvider.ReadResponseMetadata(
+                responseProviderMetadata, responseType, defaultErrorType, contentTypes);
+            var producesResponseMetadataTypes = ReadResponseMetadata(
+                producesResponseMetadata, responseType, defaultErrorType);
 
-            if (responseMetadataTypes.Count > 0)
+            // We favor types added via the extension methods (which implements IProducesResponseTypeMetadata)
+            // over those that are added via attributes.
+            var responseMetadataTypes = producesResponseMetadataTypes.Concat(responseProviderMetadataTypes);
+
+            if (responseMetadataTypes.Any())
             {
                 foreach (var apiResponseType in responseMetadataTypes)
                 {
@@ -275,7 +284,10 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                         apiResponseType.ApiResponseFormats.Add(defaultResponseFormat);
                     }
 
-                    supportedResponseTypes.Add(apiResponseType);
+                    if (!supportedResponseTypes.Any(existingResponseType => existingResponseType.StatusCode.Equals(apiResponseType.StatusCode)))
+                    {
+                        supportedResponseTypes.Add(apiResponseType);
+                    }
                 }
             }
             else
@@ -292,6 +304,73 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
                 supportedResponseTypes.Add(defaultApiResponseType);
             }
+        }
+
+        private static List<ApiResponseType> ReadResponseMetadata(
+            IReadOnlyList<IProducesResponseTypeMetadata> responseMetadataAttributes,
+            Type? type,
+            Type defaultErrorType)
+        {
+            var results = new Dictionary<int, ApiResponseType>();
+
+            // Get the content type that the action explicitly set to support.
+            // Walk through all 'filter' attributes in order, and allow each one to see or override
+            // the results of the previous ones. This is similar to the execution path for content-negotiation.
+            if (responseMetadataAttributes != null)
+            {
+                foreach (var metadataAttribute in responseMetadataAttributes)
+                {
+                    var statusCode = metadataAttribute.StatusCode;
+
+                    var apiResponseType = new ApiResponseType
+                    {
+                        Type = metadataAttribute.Type,
+                        StatusCode = statusCode,
+                        IsDefaultResponse = metadataAttribute is IApiDefaultResponseMetadataProvider,
+                    };
+
+                    if (apiResponseType.Type == typeof(void))
+                    {
+                        if (type != null && (statusCode == StatusCodes.Status200OK || statusCode == StatusCodes.Status201Created))
+                        {
+                            // ProducesResponseTypeAttribute's constructor defaults to setting "Type" to void when no value is specified.
+                            // In this event, use the action's return type for 200 or 201 status codes. This lets you decorate an action with a
+                            // [ProducesResponseType(201)] instead of [ProducesResponseType(typeof(Person), 201] when typeof(Person) can be inferred
+                            // from the return type.
+                            apiResponseType.Type = type;
+                        }
+                        else if (ApiResponseTypeProvider.IsClientError(statusCode))
+                        {
+                            // Determine whether or not the type was provided by the user. If so, favor it over the default
+                            // error type for 4xx client errors if no response type is specified..
+                            var setByDefault = metadataAttribute is ProducesResponseTypeAttribute { IsResponseTypeSetByDefault: true };
+                            apiResponseType.Type = setByDefault ? defaultErrorType : apiResponseType.Type;
+                        }
+                        else if (apiResponseType.IsDefaultResponse)
+                        {
+                            apiResponseType.Type = defaultErrorType;
+                        }
+                    }
+
+                    // We special case the handling of ProcuesResponseTypeAttributes since
+                    // multiple ProducesResponseTypeAttributes are permitted on a single
+                    // action/controller/etc. In that scenario, instead of picking the most-specific
+                    // set of content types (like we do with the Produces attribute above) we process
+                    // the content types for each attribute independently. This is done indiscriminantly
+                    // here since the EndpointMetadataApiDescriptionProvider only supports the
+                    // `ProducesResponseType` attribute.
+                    var attributeContentTypes = new MediaTypeCollection();
+                    metadataAttribute.SetContentTypes(attributeContentTypes);
+                    ApiResponseTypeProvider.CalculateResponseFormatForType(apiResponseType, attributeContentTypes, null, null);
+
+                    if (apiResponseType.Type != null)
+                    {
+                        results[apiResponseType.StatusCode] = apiResponseType;
+                    }
+                }
+            }
+
+            return results.Values.ToList();
         }
 
         private static ApiResponseType CreateDefaultApiResponseType(Type responseType)
