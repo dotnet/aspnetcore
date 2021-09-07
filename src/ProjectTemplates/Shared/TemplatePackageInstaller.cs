@@ -109,6 +109,7 @@ namespace Templates.Test.Helpers
 
             await VerifyCannotFindTemplateAsync(output, "web");
             await VerifyCannotFindTemplateAsync(output, "webapp");
+            await VerifyCannotFindTemplateAsync(output, "webapi");
             await VerifyCannotFindTemplateAsync(output, "mvc");
             await VerifyCannotFindTemplateAsync(output, "react");
             await VerifyCannotFindTemplateAsync(output, "reactredux");
@@ -123,6 +124,7 @@ namespace Templates.Test.Helpers
 
             await VerifyCanFindTemplate(output, "webapp");
             await VerifyCanFindTemplate(output, "web");
+            await VerifyCanFindTemplate(output, "webapi");
             await VerifyCanFindTemplate(output, "react");
         }
 
