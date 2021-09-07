@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Formatters;
-
+using System.Collections.Generic;
 namespace Microsoft.AspNetCore.Http.Metadata
 {
     /// <summary>
@@ -25,6 +23,6 @@ namespace Microsoft.AspNetCore.Http.Metadata
         /// <summary>
         /// Configures a collection of allowed content types which can be produced.
         /// </summary>
-        void SetContentTypes(MediaTypeCollection contentTypes);
+        void SetContentTypes(ICollection<string> contentTypes);
     }
 }
