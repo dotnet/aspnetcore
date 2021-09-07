@@ -3,7 +3,6 @@
 
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.FileProviders;
@@ -367,9 +366,58 @@ namespace Microsoft.AspNetCore.StaticWebAssets
         {
             public override Dictionary<string, StaticWebAssetNode> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
-                return new Dictionary<string, StaticWebAssetNode>(
-                    JsonSerializer.Deserialize<IDictionary<string, StaticWebAssetNode>>(ref reader, options)!,
-                    StaticWebAssetManifest.PathComparer);
+                var parsed = JsonSerializer.Deserialize<IDictionary<string, StaticWebAssetNode>>(ref reader, options)!;
+                var result = new Dictionary<string, StaticWebAssetNode>(StaticWebAssetManifest.PathComparer);
+                MergeChildren(parsed, result);
+                return result;
+
+                static void MergeChildren(
+                    IDictionary<string, StaticWebAssetNode> newChildren,
+                    IDictionary<string, StaticWebAssetNode> existing)
+                {
+                    foreach (var (key, value) in newChildren)
+                    {
+                        if (!existing.TryGetValue(key, out var existingNode))
+                        {
+                            existing.Add(key, value);
+                        }
+                        else
+                        {
+                            if (value.Patterns != null)
+                            {
+                                if (existingNode.Patterns == null)
+                                {
+                                    existingNode.Patterns = value.Patterns;
+                                }
+                                else
+                                {
+                                    if (value.Patterns.Length > 0)
+                                    {
+                                        var newList = new StaticWebAssetPattern[existingNode.Patterns.Length + value.Patterns.Length];
+                                        existingNode.Patterns.CopyTo(newList, 0);
+                                        value.Patterns.CopyTo(newList, existingNode.Patterns.Length);
+                                        existingNode.Patterns = newList;
+                                    }
+                                }
+                            }
+
+                            if (value.Children != null)
+                            {
+                                if (existingNode.Children == null)
+                                {
+                                    existingNode.Children = value.Children;
+                                }
+                                else
+                                {
+                                    if (value.Children.Count > 0)
+                                    {
+                                        MergeChildren(value.Children, existingNode.Children);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             public override void Write(Utf8JsonWriter writer, Dictionary<string, StaticWebAssetNode> value, JsonSerializerOptions options)
