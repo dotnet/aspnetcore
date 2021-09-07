@@ -33,8 +33,8 @@ namespace Microsoft.AspNetCore.Identity
         {
             builder.AddSignInManager();
             builder.Services
-                .AddMvc();
-/*                .ConfigureApplicationPartManager(apm =>
+                .AddMvc()
+                .ConfigureApplicationPartManager(apm =>
                 {
                     // We try to resolve the UI framework that was used by looking at the entry assembly.
                     // When an app runs, the entry assembly will point to the built app. In some rare cases
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Identity
                         apm.ApplicationParts.Add(part);
                     }
                     apm.FeatureProviders.Add(new ViewVersionFeatureProvider(framework == UIFramework.Bootstrap4));
-                });*/
+                });
 
             builder.Services.ConfigureOptions(
                 typeof(IdentityDefaultUIConfigureOptions<>)
@@ -121,24 +121,24 @@ namespace Microsoft.AspNetCore.Identity
                 {
                     if (IsIdentityUIView(descriptor))
                     {
-                        if (_isV4)
-                        {
-                            if (descriptor.Type.Assembly == typeof(IdentityBuilderUIExtensions).Assembly
-                                && descriptor.Type.FullName.Contains("V5")) {
+                        if (_isV4) {
+                            if (descriptor.Type.FullName.Contains("V5"))
+                            {
                                 viewsToRemove.Add(descriptor);
                             }
                             else
                             {
-//                                descriptor.RelativePath.Replace("V4/", "");
+                                descriptor.RelativePath = descriptor.RelativePath.Replace("V4/", "");
                             }
-                        }
-                        else if (descriptor.Type.Assembly == typeof(IdentityBuilderUIExtensions).Assembly
-                                && descriptor.Type.FullName.Contains("V4"))
-                        {
-                            viewsToRemove.Add(descriptor);
-                        } else
-                        {
-                            //descriptor.RelativePath.Replace("V5/", "");
+                        } else {
+                            if (descriptor.Type.FullName.Contains("V4"))
+                            {
+                                viewsToRemove.Add(descriptor);
+                            }
+                            else
+                            {
+                                descriptor.RelativePath = descriptor.RelativePath.Replace("V5/", "");
+                            }
                         }
                     }
                 }
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Identity
                 }
             }
 
-            private static bool IsIdentityUIView(CompiledViewDescriptor desc) => desc.RelativePath.StartsWith("/Areas/Identity", StringComparison.OrdinalIgnoreCase);
+            private static bool IsIdentityUIView(CompiledViewDescriptor desc) => desc.RelativePath.StartsWith("/Areas/Identity", StringComparison.OrdinalIgnoreCase) && desc.Type.Assembly == typeof(IdentityBuilderUIExtensions).Assembly;
         }
     }
 }
