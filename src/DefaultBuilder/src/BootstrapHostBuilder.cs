@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Hosting
             return this;
         }
 
-        public HostBuilderContext RunDefaultCallbacks(ConfigurationManager configuration, HostBuilder innerBuilder)
+        public (HostBuilderContext, ConfigurationManager) RunDefaultCallbacks(ConfigurationManager configuration, HostBuilder innerBuilder)
         {
             var hostConfiguration = new ConfigurationManager();
 
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Hosting
                 callback(innerBuilder);
             }
 
-            return hostContext;
+            return (hostContext, hostConfiguration);
         }
 
         private class HostingEnvironment : IHostEnvironment
