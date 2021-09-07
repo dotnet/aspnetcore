@@ -14,7 +14,7 @@ module.exports = (env, args) => ({
     entry: {
         'AuthenticationService': './AuthenticationService.ts',
     },
-    output: { path: path.join(__dirname, '/dist', args.mode == 'development' ? '/Debug' : '/Release'), filename: '[name].js' },
+    output: { path: path.join(__dirname, 'dist', args.mode == 'development' ? 'Debug' : 'Release'), filename: '[name].js' },
     performance: {
         maxAssetSize: 122880,
     },
