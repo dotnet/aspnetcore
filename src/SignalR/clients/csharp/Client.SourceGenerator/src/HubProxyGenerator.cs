@@ -2,57 +2,58 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
 {
     [Generator]
-    internal partial class HubProxyGenerator : ISourceGenerator
+    internal partial class HubProxyGenerator : IIncrementalGenerator
     {
-        public void Initialize(GeneratorInitializationContext context)
+        public HubProxyGenerator()
         {
-            context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
-        }
 
-        public void Execute(GeneratorExecutionContext context)
-        {
-            if (context.SyntaxReceiver is null)
+            if (!Debugger.IsAttached)
             {
-                // nothing to do yet
-                return;
+                Debugger.Launch();
             }
 
-            var parser = new Parser(context);
-            var spec = parser.Parse(((SyntaxReceiver)context.SyntaxReceiver).Candidates);
+        }
+
+
+        public void Initialize(IncrementalGeneratorInitializationContext context)
+        {
+            var methodDeclaration = context.SyntaxProvider
+                .CreateSyntaxProvider(static (s, _) => Parser.IsSyntaxTargetForAttribute(s),
+                    static (ctx, _) => Parser.GetSemanticTargetForAttribute(ctx))
+                .Where(static m => m is not null)
+                .Collect()
+                .Select(static (s, _) => Parser.GetSoleDeclarationSyntax(s));
+
+            var memberAccessExpressions = context.SyntaxProvider
+                .CreateSyntaxProvider(static (s, _) => Parser.IsSyntaxTargetForGeneration(s),
+                    static (ctx, _) => Parser.GetSemanticTargetForGeneration(ctx))
+                .Where(static m => m is not null);
+
+            var compilationAndMethodDeclaration = context.CompilationProvider.Combine(methodDeclaration);
+
+            var payload = compilationAndMethodDeclaration
+                .Combine(memberAccessExpressions.Collect());
+
+            context.RegisterSourceOutput(payload, static (spc, source) =>
+                Execute(source.Left.Left, source.Left.Right, source.Right, spc));
+        }
+
+        private static void Execute(Compilation compilation, MethodDeclarationSyntax methodDeclarationSyntax, ImmutableArray<MemberAccessExpressionSyntax> memberAccessExpressionSyntaxes, SourceProductionContext context)
+        {
+            var parser = new Parser(context, compilation);
+            var spec = parser.Parse(methodDeclarationSyntax, memberAccessExpressionSyntaxes);
             var emitter = new Emitter(context, spec);
             emitter.Emit();
         }
 
-        private class SyntaxReceiver : ISyntaxReceiver
-        {
-            public List<MemberAccessExpressionSyntax> Candidates { get; } = new();
 
-            public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
-            {
-                if (syntaxNode is MemberAccessExpressionSyntax
-                    {
-                        Name: GenericNameSyntax
-                        {
-                            TypeArgumentList:
-                            {
-                                Arguments: { Count: 1 }
-                            },
-                            Identifier:
-                            {
-                                ValueText: "GetProxy"
-                            }
-                        },
-                    } getProxyCall)
-                {
-                    Candidates.Add(getProxyCall);
-                }
-            }
-        }
     }
 }

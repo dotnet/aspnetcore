@@ -12,6 +12,12 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
+    internal static partial class GetProxyExtensions
+    {
+        [GetProxy]
+        public static partial T GetProxy<T>(this HubConnection conn);
+    }
+
     public class HubProxyGeneratorTests
     {
         public interface IMyHub
@@ -97,6 +103,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
             // Act
             var result = await myHub.GetCollection();
+
+            // hello
 
             // Assert
             mockConn.VerifyAll();

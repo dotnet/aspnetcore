@@ -211,3 +211,7 @@ virtual Microsoft.AspNetCore.SignalR.Client.HubConnection.StartAsync(System.Thre
 virtual Microsoft.AspNetCore.SignalR.Client.HubConnection.StopAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.SignalR.Client.HubConnection.StreamAsChannelCoreAsync(string! methodName, System.Type! returnType, object?[]! args, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Threading.Channels.ChannelReader<object?>!>!
 virtual Microsoft.AspNetCore.SignalR.Client.HubConnection.StreamAsyncCore<TResult>(string! methodName, object?[]! args, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<TResult>!
+Microsoft.AspNetCore.SignalR.Client.GetProxyAttribute
+Microsoft.AspNetCore.SignalR.Client.GetProxyAttribute.GetProxyAttribute() -> void
+Microsoft.AspNetCore.SignalR.Client.RegisterCallbackProviderAttribute
+Microsoft.AspNetCore.SignalR.Client.RegisterCallbackProviderAttribute.RegisterCallbackProviderAttribute() -> void

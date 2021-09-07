@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
 {
@@ -11,6 +12,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
     {
         public class SourceGenerationSpec
         {
+            public string? GetProxyNamespace;
+            public string? GetProxyClassName;
+            public string? GetProxyMethodName;
+            public string? GetProxyTypeParameterName;
+            public string? GetProxyHubConnectionParameterName;
+            public string? GetProxyMethodAccessibility;
+            public string? GetProxyClassAccessibility;
             public List<ClassSpec> Classes = new();
         }
 
@@ -22,7 +30,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
             public List<MethodSpec> Methods = new();
             public Location CallSite;
             public string FullyQualifiedClassTypeName =>
-                $"Microsoft.AspNetCore.SignalR.Client.SourceGenerated.{ClassTypeName}";
+                $"Microsoft.AspNetCore.SignalR.Client.Tests.GetProxyExtensions.{ClassTypeName}";
         }
 
         public class MethodSpec
