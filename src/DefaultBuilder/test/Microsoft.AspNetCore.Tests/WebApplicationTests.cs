@@ -1323,35 +1323,6 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Equal("value", app.Configuration["testhostingstartup:config"]);
         }
 
-        public class TestHostingStartup : IHostingStartup
-        {
-            public void Configure(IWebHostBuilder builder)
-            {
-                builder
-                    .ConfigureAppConfiguration((context, configurationBuilder) => configurationBuilder.AddInMemoryCollection(
-                        new[]
-                        {
-                            new KeyValuePair<string,string>("testhostingstartup:config", "value")
-                        }));
-            }
-        }
-
-        class ThrowingStartupFilter : IStartupFilter
-        {
-            public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
-            {
-                return app =>
-                {
-                    app.Use((HttpContext context, RequestDelegate next) =>
-                    {
-                        throw new InvalidOperationException("BOOM Filter");
-                    });
-
-                    next(app);
-                };
-            }
-        }
-
         [Fact]
         public async Task DeveloperExceptionPageWritesBadRequestDetailsToResponseByDefaltInDevelopment()
         {
@@ -1397,6 +1368,126 @@ namespace Microsoft.AspNetCore.Tests
 
             var responseBody = await response.Content.ReadAsStringAsync();
             Assert.Equal(string.Empty, responseBody);
+        }
+
+        [Fact]
+        public void HostConfigurationNotAffectedByConfiguration()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            var contentRoot = Path.GetTempPath();
+            var webRoot = Path.GetTempPath();
+            var envName = $"{nameof(WebApplicationTests)}_ENV";
+
+            builder.Configuration[WebHostDefaults.ApplicationKey] = nameof(WebApplicationTests);
+            builder.Configuration[WebHostDefaults.EnvironmentKey] = envName;
+            builder.Configuration[WebHostDefaults.ContentRootKey] = contentRoot;
+
+            var app = builder.Build();
+            var hostEnv = app.Services.GetRequiredService<IHostEnvironment>();
+            var webHostEnv = app.Services.GetRequiredService<IWebHostEnvironment>();
+
+            Assert.Equal(builder.Environment.ApplicationName, hostEnv.ApplicationName);
+            Assert.Equal(builder.Environment.EnvironmentName, hostEnv.EnvironmentName);
+            Assert.Equal(builder.Environment.ContentRootPath, hostEnv.ContentRootPath);
+
+            Assert.Equal(webHostEnv.ApplicationName, hostEnv.ApplicationName);
+            Assert.Equal(webHostEnv.EnvironmentName, hostEnv.EnvironmentName);
+            Assert.Equal(webHostEnv.ContentRootPath, hostEnv.ContentRootPath);
+
+            Assert.NotEqual(nameof(WebApplicationTests), hostEnv.ApplicationName);
+            Assert.NotEqual(envName, hostEnv.EnvironmentName);
+            Assert.NotEqual(contentRoot, hostEnv.ContentRootPath);
+        }
+
+        [Fact]
+        public void ClearingConfigurationDoesNotAffectHostConfiguration()
+        {
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+            {
+                ApplicationName = typeof(WebApplicationOptions).Assembly.FullName,
+                EnvironmentName = Environments.Staging,
+                ContentRootPath = Path.GetTempPath()
+            });
+
+            ((IConfigurationBuilder)builder.Configuration).Sources.Clear();
+
+            var app = builder.Build();
+            var hostEnv = app.Services.GetRequiredService<IHostEnvironment>();
+            var webHostEnv = app.Services.GetRequiredService<IWebHostEnvironment>();
+
+            Assert.Equal(builder.Environment.ApplicationName, hostEnv.ApplicationName);
+            Assert.Equal(builder.Environment.EnvironmentName, hostEnv.EnvironmentName);
+            Assert.Equal(builder.Environment.ContentRootPath, hostEnv.ContentRootPath);
+
+            Assert.Equal(webHostEnv.ApplicationName, hostEnv.ApplicationName);
+            Assert.Equal(webHostEnv.EnvironmentName, hostEnv.EnvironmentName);
+            Assert.Equal(webHostEnv.ContentRootPath, hostEnv.ContentRootPath);
+
+            Assert.Equal(typeof(WebApplicationOptions).Assembly.FullName, hostEnv.ApplicationName);
+            Assert.Equal(Environments.Staging, hostEnv.EnvironmentName);
+            Assert.Equal(Path.GetTempPath(), hostEnv.ContentRootPath);
+        }
+
+        [Fact]
+        public void ConfigurationCanBeReloaded()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            ((IConfigurationBuilder)builder.Configuration).Sources.Add(new RandomConfigurationSource());
+
+            var app = builder.Build();
+
+            var value0 = app.Configuration["Random"];
+            ((IConfigurationRoot)app.Configuration).Reload();
+            var value1 = app.Configuration["Random"];
+
+            Assert.NotEqual(value0, value1);
+        }
+
+        public class RandomConfigurationSource : IConfigurationSource
+        {
+            public IConfigurationProvider Build(IConfigurationBuilder builder)
+            {
+                return new RandomConfigurationProvider();
+            }
+        }
+
+        public class RandomConfigurationProvider : ConfigurationProvider
+        {
+            public override void Load()
+            {
+                Data["Random"] = Guid.NewGuid().ToString();
+            }
+        }
+
+        public class TestHostingStartup : IHostingStartup
+        {
+            public void Configure(IWebHostBuilder builder)
+            {
+                builder
+                    .ConfigureAppConfiguration((context, configurationBuilder) => configurationBuilder.AddInMemoryCollection(
+                        new[]
+                        {
+                            new KeyValuePair<string,string>("testhostingstartup:config", "value")
+                        }));
+            }
+        }
+
+        class ThrowingStartupFilter : IStartupFilter
+        {
+            public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+            {
+                return app =>
+                {
+                    app.Use((HttpContext context, RequestDelegate next) =>
+                    {
+                        throw new InvalidOperationException("BOOM Filter");
+                    });
+
+                    next(app);
+                };
+            }
         }
 
         class PropertyFilter : IStartupFilter
