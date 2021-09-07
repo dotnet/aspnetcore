@@ -1403,6 +1403,7 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Equal(0b00000111, callbacks);
         }
 
+        [Fact]
         public void HostConfigurationNotAffectedByConfiguration()
         {
             var builder = WebApplication.CreateBuilder();
