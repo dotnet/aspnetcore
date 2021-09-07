@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             Browser.Equal(42.ToString(cultureInfo), () => display.Text);
 
             input.Clear();
-            input.SendKeys(9000.ToString("0,000", cultureInfo));
+            input.SendKeys(NormalizeWhitespace(9000.ToString("0,000", cultureInfo)));
             input.SendKeys("\t");
             Browser.Equal(9000.ToString(cultureInfo), () => display.Text);
 
@@ -47,7 +48,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             Browser.Equal(4.2m.ToString(cultureInfo), () => display.Text);
 
             input.Clear();
-            input.SendKeys(9000.42m.ToString("0,000.00", cultureInfo));
+            input.SendKeys(NormalizeWhitespace(9000.42m.ToString("0,000.00", cultureInfo)));
             input.SendKeys("\t");
             Browser.Equal(9000.42m.ToString(cultureInfo), () => display.Text);
 
@@ -68,6 +69,13 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             input.ReplaceText(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo));
             input.SendKeys("\t");
             Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo), () => display.Text);
+        }
+
+        private static string NormalizeWhitespace(string value)
+        {
+            // In some cultures, the number group separator may be a nonbreaking space. Chrome doesn't let you type a nonbreaking space,
+            // so we need to replace it with a normal space.
+            return Regex.Replace(value, "\\s", " ");
         }
 
         // The logic is different for verifying culture-invariant fields. The problem is that the logic for what
