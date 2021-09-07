@@ -306,7 +306,7 @@ export class BrowserRenderer {
     return true;
 
     function isBlazorSelectElement(selectElem: HTMLSelectElement | null) : selectElem is BlazorHtmlSelectElement {
-      return selectElem && (deferredValuePropname in selectElem);
+      return !!selectElem && (deferredValuePropname in selectElem);
     }
   }
 
