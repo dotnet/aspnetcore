@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     internal class ProducesResponseTypeMetadata : IProducesResponseTypeMetadata
     {
-        private readonly IEnumerable<string>? _contentTypes;
+        private readonly IEnumerable<string> _contentTypes;
 
         /// <summary>
         /// Initializes an instance of <see cref="ProducesResponseTypeMetadata"/>.
@@ -35,6 +35,7 @@ namespace Microsoft.AspNetCore.Http
             Type = type ?? throw new ArgumentNullException(nameof(type));
             StatusCode = statusCode;
             IsResponseTypeSetByDefault = false;
+            _contentTypes = new List<string>();
         }
 
         /// <summary>
@@ -86,7 +87,7 @@ namespace Microsoft.AspNetCore.Http
         /// <value></value>
         internal bool IsResponseTypeSetByDefault { get; }
 
-        public IEnumerable<string>? ContentTypes => _contentTypes;
+        public IEnumerable<string> ContentTypes => _contentTypes;
 
         private static List<string> GetContentTypes(string contentType, string[] additionalContentTypes)
         {

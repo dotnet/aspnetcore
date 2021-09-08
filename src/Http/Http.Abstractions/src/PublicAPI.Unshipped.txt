@@ -43,4 +43,4 @@ virtual Microsoft.AspNetCore.Http.WebSocketManager.AcceptWebSocketAsync(Microsof
 Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata
 Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.StatusCode.get -> int
 Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.Type.get -> System.Type?
-Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.ContentTypes.get -> System.Collections.Generic.IEnumerable<string!>?
+Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.ContentTypes.get -> System.Collections.Generic.IEnumerable<string!>!
