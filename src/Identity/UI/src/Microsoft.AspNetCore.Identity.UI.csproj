@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <Description>ASP.NET Core Identity UI is the default Razor Pages built-in UI for the ASP.NET Core Identity framework.</Description>
@@ -85,10 +85,10 @@
         <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
       </V5AssetsCandidates>
     </ItemGroup>
-    <DefineStaticWebAssets Condition="'@(V4AssetsCandidates-&gt;Count())' != '0'" CandidateAssets="@(V4AssetsCandidates)" SourceId="$(PackageId)" SourceType="Project" AssetKind="All" ContentRoot="assets/V4" BasePath="$(StaticWebAssetBasePath)">
+    <DefineStaticWebAssets Condition="'@(V4AssetsCandidates-&gt;Count())' != '0'" CandidateAssets="@(V4AssetsCandidates)" SourceId="$(PackageId)" SourceType="Discovered" AssetKind="All" ContentRoot="assets/V4" BasePath="$(StaticWebAssetBasePath)">
       <Output TaskParameter="Assets" ItemName="V4Assets" />
     </DefineStaticWebAssets>
-    <DefineStaticWebAssets Condition="'@(V5AssetsCandidates-&gt;Count())' != '0'" CandidateAssets="@(V5AssetsCandidates)" SourceId="$(PackageId)" SourceType="Project" AssetKind="All" ContentRoot="assets/V5" BasePath="$(StaticWebAssetBasePath)">
+    <DefineStaticWebAssets Condition="'@(V5AssetsCandidates-&gt;Count())' != '0'" CandidateAssets="@(V5AssetsCandidates)" SourceId="$(PackageId)" SourceType="Discovered" AssetKind="All" ContentRoot="assets/V5" BasePath="$(StaticWebAssetBasePath)">
       <Output TaskParameter="Assets" ItemName="V5Assets" />
     </DefineStaticWebAssets>
 
