@@ -2,34 +2,35 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.ObjectModel;
 using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.Http.Metadata;
 
 namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
-    /// A filter that specifies the type of the value and status code returned by the action.
+    /// Specifies the type of the value and status code returned by the action.
     /// </summary>
-    internal class ProducesResponseTypeAttribute : IProducesResponseTypeMetadata
+    internal class ProducesResponseTypeMetadata : IProducesResponseTypeMetadata
     {
-        private readonly List<string>? _contentTypes;
+        private readonly ReadOnlyCollection<string>? _contentTypes;
 
         /// <summary>
-        /// Initializes an instance of <see cref="ProducesResponseTypeAttribute"/>.
+        /// Initializes an instance of <see cref="ProducesResponseTypeMetadata"/>.
         /// </summary>
         /// <param name="statusCode">The HTTP response status code.</param>
-        public ProducesResponseTypeAttribute(int statusCode)
+        public ProducesResponseTypeMetadata(int statusCode)
             : this(typeof(void), statusCode)
         {
             IsResponseTypeSetByDefault = true;
         }
 
         /// <summary>
-        /// Initializes an instance of <see cref="ProducesResponseTypeAttribute"/>.
+        /// Initializes an instance of <see cref="ProducesResponseTypeMetadata"/>.
         /// </summary>
         /// <param name="type">The <see cref="Type"/> of object that is going to be written in the response.</param>
         /// <param name="statusCode">The HTTP response status code.</param>
-        public ProducesResponseTypeAttribute(Type type, int statusCode)
+        public ProducesResponseTypeMetadata(Type type, int statusCode)
         {
             Type = type ?? throw new ArgumentNullException(nameof(type));
             StatusCode = statusCode;
@@ -37,13 +38,13 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Initializes an instance of <see cref="ProducesResponseTypeAttribute"/>.
+        /// Initializes an instance of <see cref="ProducesResponseTypeMetadata"/>.
         /// </summary>
         /// <param name="type">The <see cref="Type"/> of object that is going to be written in the response.</param>
         /// <param name="statusCode">The HTTP response status code.</param>
         /// <param name="contentType">The content type associated with the response.</param>
         /// <param name="additionalContentTypes">Additional content types supported by the response.</param>
-        public ProducesResponseTypeAttribute(Type type, int statusCode, string contentType, params string[] additionalContentTypes)
+        public ProducesResponseTypeMetadata(Type type, int statusCode, string contentType, params string[] additionalContentTypes)
         {
             if (contentType == null)
             {
@@ -60,7 +61,7 @@ namespace Microsoft.AspNetCore.Http
                 MediaTypeHeaderValue.Parse(additionalContentTypes[i]);
             }
 
-            _contentTypes = GetContentTypes(contentType, additionalContentTypes);
+            _contentTypes = GetContentTypes(contentType, additionalContentTypes).AsReadOnly();
         }
 
         /// <summary>
@@ -85,8 +86,7 @@ namespace Microsoft.AspNetCore.Http
         /// <value></value>
         internal bool IsResponseTypeSetByDefault { get; }
 
-        // Internal for testing
-        public IReadOnlyCollection<string>? ContentTypes => _contentTypes?.AsReadOnly();
+        public IReadOnlyCollection<string>? ContentTypes => _contentTypes;
 
         private static List<string> GetContentTypes(string contentType, string[] additionalContentTypes)
         {

@@ -283,10 +283,20 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                         apiResponseType.ApiResponseFormats.Add(defaultResponseFormat);
                     }
 
-                    if (!supportedResponseTypes.Any(existingResponseType => existingResponseType.StatusCode.Equals(apiResponseType.StatusCode)))
+                    bool foundDuplicateStatusCode = false;
+                    foreach (var existingResponseType in supportedResponseTypes)
+                    {
+                        if (existingResponseType.StatusCode.Equals(apiResponseType.StatusCode))
+                        {
+                            foundDuplicateStatusCode = true;
+                        }
+                    }
+
+                    if (!foundDuplicateStatusCode)
                     {
                         supportedResponseTypes.Add(apiResponseType);
                     }
+
                 }
             }
             else

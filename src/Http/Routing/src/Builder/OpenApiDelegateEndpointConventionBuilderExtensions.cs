@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Adds the <see cref="ProducesResponseTypeAttribute"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+        /// Adds an <see cref="IProducesResponseTypeMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
         /// produced by <paramref name="builder"/>.
         /// </summary>
         /// <typeparam name="TResponse">The type of the response.</typeparam>
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Adds the <see cref="ProducesResponseTypeAttribute"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+        /// Adds an <see cref="IProducesResponseTypeMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
         /// produced by <paramref name="builder"/>.
         /// </summary>
         /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
@@ -74,17 +74,17 @@ namespace Microsoft.AspNetCore.Http
 
             if (contentType is null)
             {
-                builder.WithMetadata(new ProducesResponseTypeAttribute(responseType ?? typeof(void), statusCode));
+                builder.WithMetadata(new ProducesResponseTypeMetadata(responseType ?? typeof(void), statusCode));
                 return builder;
             }
 
-            builder.WithMetadata(new ProducesResponseTypeAttribute(responseType ?? typeof(void), statusCode, contentType, additionalContentTypes));
+            builder.WithMetadata(new ProducesResponseTypeMetadata(responseType ?? typeof(void), statusCode, contentType, additionalContentTypes));
 
             return builder;
         }
 
         /// <summary>
-        /// Adds the <see cref="ProducesResponseTypeAttribute"/> with a <see cref="ProblemDetails"/> type
+        /// Adds an <see cref="IProducesResponseTypeMetadata"/> with a <see cref="ProblemDetails"/> type
         /// to <see cref="EndpointBuilder.Metadata"/> for all builders produced by <paramref name="builder"/>.
         /// </summary>
         /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Adds the <see cref="ProducesResponseTypeAttribute"/> with a <see cref="HttpValidationProblemDetails"/> type
+        /// Adds an <see cref="IProducesResponseTypeMetadata"/> with a <see cref="HttpValidationProblemDetails"/> type
         /// to <see cref="EndpointBuilder.Metadata"/> for all builders produced by <paramref name="builder"/>.
         /// </summary>
         /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
