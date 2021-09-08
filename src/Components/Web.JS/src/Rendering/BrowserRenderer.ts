@@ -492,6 +492,7 @@ function parseMarkup(markup: string, isSvg: boolean) {
 
 function normalizeInputValue(value: string, type: string | null): string {
   // Time inputs (e.g. 'time' and 'datetime-local') misbehave on chromium-based
+  // EDIT
   // browsers when a time is set that includes a seconds value of '00', most notably
   // when entered from keyboard input. This behavior is not limited to specific
   // 'step' attribute values, so we always remove the trailing seconds value if the
