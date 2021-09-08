@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.E2ETesting
                         TimeSpan.FromSeconds(60).Add(TimeSpan.FromSeconds(attempt * 60)));
 
                     driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1);
-                    var logs = new RemoteLogs(driver);
+                    var logs = driver.Manage().Logs;
 
                     return (driver, logs);
                 }
@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.E2ETesting
                         TimeSpan.FromSeconds(60).Add(TimeSpan.FromSeconds(attempt * 60)));
 
                     driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1);
-                    var logs = new RemoteLogs(driver);
+                    var logs = driver.Manage().Logs;
 
                     return (driver, logs);
                 }
