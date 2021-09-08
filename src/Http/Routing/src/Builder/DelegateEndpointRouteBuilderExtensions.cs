@@ -207,23 +207,32 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(httpMethods));
             }
 
-            var DisableInferBodyFromParameters = false;
-            // GET, DELETE, HEAD, CONNECT, TRACE, and OPTIONS normally do not contain bodies
-            if (!httpMethods.Any(method => !(method.Equals(HttpMethods.Get, StringComparison.Ordinal) ||
-                method.Equals(HttpMethods.Delete, StringComparison.Ordinal) ||
-                method.Equals(HttpMethods.Head, StringComparison.Ordinal) ||
-                method.Equals(HttpMethods.Options, StringComparison.Ordinal) ||
-                method.Equals(HttpMethods.Trace, StringComparison.Ordinal) ||
-                method.Equals(HttpMethods.Connect, StringComparison.Ordinal))))
+            var disableInferredBody = false;
+            foreach (var method in httpMethods)
             {
-                DisableInferBodyFromParameters = true;
+                disableInferredBody = ShouldDisableInferredBody(method);
+                if (disableInferredBody is true)
+                {
+                    break;
+                }
             }
 
-            var builder = endpoints.Map(RoutePatternFactory.Parse(pattern), handler, DisableInferBodyFromParameters);
+            var builder = endpoints.Map(RoutePatternFactory.Parse(pattern), handler, disableInferredBody);
             // Prepends the HTTP method to the DisplayName produced with pattern + method name
             builder.Add(b => b.DisplayName = $"HTTP: {string.Join(", ", httpMethods)} {b.DisplayName}");
             builder.WithMetadata(new HttpMethodMetadata(httpMethods));
             return builder;
+
+            static bool ShouldDisableInferredBody(string method)
+            {
+                 // GET, DELETE, HEAD, CONNECT, TRACE, and OPTIONS normally do not contain bodies
+                return method.Equals(HttpMethods.Get, StringComparison.Ordinal) ||
+                       method.Equals(HttpMethods.Delete, StringComparison.Ordinal) ||
+                       method.Equals(HttpMethods.Head, StringComparison.Ordinal) ||
+                       method.Equals(HttpMethods.Options, StringComparison.Ordinal) ||
+                       method.Equals(HttpMethods.Trace, StringComparison.Ordinal) ||
+                       method.Equals(HttpMethods.Connect, StringComparison.Ordinal);
+            }
         }
 
         /// <summary>
