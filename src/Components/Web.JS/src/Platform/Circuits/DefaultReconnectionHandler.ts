@@ -82,7 +82,7 @@ class ReconnectionProcess {
         return;
       } catch (err) {
         // We got an exception so will try again momentarily
-        this.logger.log(LogLevel.Error, err);
+        this.logger.log(LogLevel.Error, err as Error);
       }
     }
 
