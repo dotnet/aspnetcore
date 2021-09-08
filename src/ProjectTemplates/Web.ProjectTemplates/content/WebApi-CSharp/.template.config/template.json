@@ -101,14 +101,14 @@
     "AAdB2CInstance": {
       "type": "parameter",
       "datatype": "string",
-      "defaultValue": "https://login.microsoftonline.com/tfp/",
-      "replaces": "https:////login.microsoftonline.com/tfp/",
+      "defaultValue": "https://qualified.domain.name.b2clogin.com/",
+      "replaces": "https:////qualified.domain.name.b2clogin.com/",
       "description": "The Azure Active Directory B2C instance to connect to (use with IndividualB2C auth)."
     },
     "SignUpSignInPolicyId": {
       "type": "parameter",
       "datatype": "string",
-      "defaultValue": "",
+      "defaultValue": "b2c_1_susi",
       "replaces": "MySignUpSignInPolicyId",
       "description": "The sign-in and sign-up policy ID for this project (use with IndividualB2C auth)."
     },
