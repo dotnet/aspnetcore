@@ -318,8 +318,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             return declaredReturnType;
         }
 
-        // Shared with EndpointMetadataApiDescriptionProvider
-        internal static bool IsClientError(int statusCode)
+        private static bool IsClientError(int statusCode)
         {
             return statusCode >= 400 && statusCode < 500;
         }
