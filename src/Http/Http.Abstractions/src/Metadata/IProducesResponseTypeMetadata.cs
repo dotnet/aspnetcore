@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 namespace Microsoft.AspNetCore.Http.Metadata
 {
     /// <summary>
@@ -23,6 +21,6 @@ namespace Microsoft.AspNetCore.Http.Metadata
         /// <summary>
         /// Gets the content types supported by the metadata.
         /// </summary>
-        IReadOnlyCollection<string>? ContentTypes { get; }
+        IEnumerable<string>? ContentTypes { get; }
     }
 }
