@@ -211,10 +211,6 @@ to open the .sln file or one of the project specific .slnf files to work on the 
 > :bulb: Rerunning the above command or, perhaps, the quicker `.\build.cmd -noBuildNative -noBuildManaged` may be
 > necessary after switching branches, especially if the `$(DefaultNetCoreTargetFramework)` value changes.
 
-
-> :bulb: If you have build errors trying to run `restore.cmd` and you cloned the repository some time ago,
-> try deleting the `.dotnet` and `.tools` directories in your local repo folder. It may resolve the problem.
-
 Typically, you want to focus on a single project within this large repo. For example,
 if you want to work on Blazor WebAssembly, you'll need to launch the solution file for that project by changing into the `src/Components`
 directory and executing `startvs.cmd` in that directory like so:
