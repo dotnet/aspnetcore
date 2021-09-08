@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Http
                 ServiceProviderIsService = options?.ServiceProvider?.GetService<IServiceProviderIsService>(),
                 RouteParameters = options?.RouteParameterNames?.ToList(),
                 ThrowOnBadRequest = options?.ThrowOnBadRequest ?? false,
-                DisableInferredFromBody = options?.DisableInferredBody ?? false,
+                DisableInferredFromBody = options?.DisableInferBodyFromParameters ?? false,
             };
 
         private static Func<object?, HttpContext, Task> CreateTargetableRequestDelegate(MethodInfo methodInfo, Expression? targetExpression, FactoryContext factoryContext)

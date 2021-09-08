@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Builder
             this IEndpointRouteBuilder endpoints,
             RoutePattern pattern,
             Delegate handler,
-            bool disableInferredBody)
+            bool DisableInferBodyFromParameters)
         {
             if (endpoints is null)
             {
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Builder
                 ServiceProvider = endpoints.ServiceProvider,
                 RouteParameterNames = routeParams,
                 ThrowOnBadRequest = routeHandlerOptions?.Value.ThrowOnBadRequest ?? false,
-                DisableInferredBody = disableInferredBody,
+                DisableInferBodyFromParameters = DisableInferBodyFromParameters,
             };
 
             var requestDelegateResult = RequestDelegateFactory.Create(handler, options);
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Builder
             // Add delegate attributes as metadata
             var attributes = handler.Method.GetCustomAttributes();
 
-            // Add add request delegate metadata 
+            // Add add request delegate metadata
             foreach (var metadata in requestDelegateResult.EndpointMetadata)
             {
                 builder.Metadata.Add(metadata);
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(httpMethods));
             }
 
-            var disableInferredBody = false;
+            var DisableInferBodyFromParameters = false;
             // GET, DELETE, HEAD, CONNECT, TRACE, and OPTIONS normally do not contain bodies
             if (!httpMethods.Any(method => !(method.Equals(HttpMethods.Get, StringComparison.Ordinal) ||
                 method.Equals(HttpMethods.Delete, StringComparison.Ordinal) ||
@@ -216,10 +216,10 @@ namespace Microsoft.AspNetCore.Builder
                 method.Equals(HttpMethods.Trace, StringComparison.Ordinal) ||
                 method.Equals(HttpMethods.Connect, StringComparison.Ordinal))))
             {
-                disableInferredBody = true;
+                DisableInferBodyFromParameters = true;
             }
 
-            var builder = endpoints.Map(RoutePatternFactory.Parse(pattern), handler, disableInferredBody);
+            var builder = endpoints.Map(RoutePatternFactory.Parse(pattern), handler, DisableInferBodyFromParameters);
             // Prepends the HTTP method to the DisplayName produced with pattern + method name
             builder.Add(b => b.DisplayName = $"HTTP: {string.Join(", ", httpMethods)} {b.DisplayName}");
             builder.WithMetadata(new HttpMethodMetadata(httpMethods));
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Builder
             RoutePattern pattern,
             Delegate handler)
         {
-            return Map(endpoints, pattern, handler, disableInferredBody: false);
+            return Map(endpoints, pattern, handler, DisableInferBodyFromParameters: false);
         }
 
         /// <summary>
