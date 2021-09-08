@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     internal class ProducesResponseTypeAttribute : IProducesResponseTypeMetadata
     {
-        private readonly ICollection<string>? _contentTypes;
+        private readonly List<string>? _contentTypes;
 
         /// <summary>
         /// Initializes an instance of <see cref="ProducesResponseTypeAttribute"/>.
@@ -86,21 +86,9 @@ namespace Microsoft.AspNetCore.Http
         internal bool IsResponseTypeSetByDefault { get; }
 
         // Internal for testing
-        internal ICollection<string>? ContentTypes => _contentTypes;
+        public IReadOnlyCollection<string>? ContentTypes => _contentTypes?.AsReadOnly();
 
-        void IProducesResponseTypeMetadata.SetContentTypes(ICollection<string> contentTypes)
-        {
-            if (_contentTypes is not null)
-            {
-                contentTypes.Clear();
-                foreach (var contentType in _contentTypes)
-                {
-                    contentTypes.Add(contentType);
-                }
-            }
-        }
-
-        private static ICollection<string> GetContentTypes(string contentType, string[] additionalContentTypes)
+        private static List<string> GetContentTypes(string contentType, string[] additionalContentTypes)
         {
             var completeContentTypes = new List<string>(additionalContentTypes.Length + 1);
             completeContentTypes.Add(contentType);

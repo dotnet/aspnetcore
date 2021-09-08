@@ -306,20 +306,20 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         private static List<ApiResponseType> ReadResponseMetadata(
-            IReadOnlyList<IProducesResponseTypeMetadata> responseMetadataAttributes,
+            IReadOnlyList<IProducesResponseTypeMetadata> responseMetadata,
             Type? type)
         {
             var results = new Dictionary<int, ApiResponseType>();
 
-            if (responseMetadataAttributes != null)
+            if (responseMetadata != null)
             {
-                foreach (var metadataAttribute in responseMetadataAttributes)
+                foreach (var metadata in responseMetadata)
                 {
-                    var statusCode = metadataAttribute.StatusCode;
+                    var statusCode = metadata.StatusCode;
 
                     var apiResponseType = new ApiResponseType
                     {
-                        Type = metadataAttribute.Type,
+                        Type = metadata.Type,
                         StatusCode = statusCode,
                     };
 
@@ -334,7 +334,13 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     }
 
                     var attributeContentTypes = new MediaTypeCollection();
-                    metadataAttribute.SetContentTypes(attributeContentTypes);
+                    if (metadata.ContentTypes != null)
+                    {
+                        foreach (var contentType in metadata.ContentTypes)
+                        {
+                            attributeContentTypes.Add(contentType);
+                        }
+                    }
                     ApiResponseTypeProvider.CalculateResponseFormatForType(apiResponseType, attributeContentTypes, null, null);
 
                     if (apiResponseType.Type != null)

@@ -21,8 +21,8 @@ namespace Microsoft.AspNetCore.Http.Metadata
         int StatusCode { get; }
 
         /// <summary>
-        /// Configures a collection of allowed content types which can be produced.
+        /// Gets the content types supported by the metadata.
         /// </summary>
-        void SetContentTypes(ICollection<string> contentTypes);
+        IReadOnlyCollection<string>? ContentTypes { get; }
     }
 }
