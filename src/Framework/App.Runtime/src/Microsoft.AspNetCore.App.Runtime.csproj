@@ -207,7 +207,10 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <Target Name="FilterUnwantedContent">
     <ItemGroup>
       <!-- These files end up in this item group as a result of setting CopyLocalLockFileAssemblies, but shouldn't be. -->
-      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(FileName)' == 'apphost' OR '%(FileName)' == '$(LibPrefix)hostfxr' OR '%(FileName)' == '$(LibPrefix)hostpolicy' "/>
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)"
+          Condition="'%(FileName)' == 'apphost' OR '%(FileName)' == '$(LibPrefix)hostfxr' OR
+                     '%(FileName)' == '$(LibPrefix)hostpolicy' OR '%(FileName)' == 'Microsoft.Bcl.AsyncInterfaces' OR
+                     '%(FileName)' == 'System.Text.Json' "/>
     </ItemGroup>
   </Target>
 
