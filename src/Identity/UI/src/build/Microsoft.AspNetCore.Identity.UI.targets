@@ -4,7 +4,8 @@
   <Target Name="ValidateIdentityUIFrameworkVersion" BeforeTargets="Build">
 
     <PropertyGroup>
-      <_IdentityUIUnknownVersionErrorMessage>The 'IdentityUIFrameworkVersion' '$(IdentityUIFrameworkVersion)' in '$(MSBuildProjectFile)' is not valid. Valid versions are 'Bootstrap4'.
+      <_IdentityUIUnknownVersionErrorMessage>
+        The 'IdentityUIFrameworkVersion' '$(IdentityUIFrameworkVersion)' in '$(MSBuildProjectFile)' is not valid. Valid versions are 'Bootstrap4' and 'Bootstrap5'.
       </_IdentityUIUnknownVersionErrorMessage>
     </PropertyGroup>
 
