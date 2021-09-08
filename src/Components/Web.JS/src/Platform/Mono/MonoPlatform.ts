@@ -271,7 +271,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
         const dotnetWasmResource = await wasmBeingLoaded;
         compiledInstance = await compileWasmModule(dotnetWasmResource, imports);
       } catch (ex) {
-        module.printErr(ex);
+        module.printErr((ex as Error).toString());
         throw ex;
       }
       successCallback(compiledInstance);
