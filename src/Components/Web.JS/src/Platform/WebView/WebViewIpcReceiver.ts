@@ -20,7 +20,7 @@ export function startIpcReceiver() {
         renderBatch(0, new OutOfProcessRenderBatch(batchData));
         sendRenderCompleted(batchId, null);
       } catch (ex) {
-        sendRenderCompleted(batchId, ex.toString());
+        sendRenderCompleted(batchId, (ex as Error).toString());
       }
     },
 

@@ -150,7 +150,7 @@ namespace Templates.Test
 
             await page.WaitForSelectorAsync("nav");
             // <title> element gets project ID injected into it during template execution
-            Assert.Equal(project.ProjectName.Trim(), (await page.GetTitleAsync()).Trim());
+            Assert.Equal("Index", (await page.GetTitleAsync()).Trim());
 
             // Initially displays the home page
             await page.WaitForSelectorAsync("h1 >> text=Hello, world!");

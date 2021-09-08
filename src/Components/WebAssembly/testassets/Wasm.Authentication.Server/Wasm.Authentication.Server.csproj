@@ -17,11 +17,11 @@
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
     <Reference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
-    <Reference Include="Microsoft.EntityFrameworkCore.Design" />
     <Reference Include="Microsoft.AspNetCore.Identity.UI" />
     <Reference Include="Microsoft.EntityFrameworkCore.Relational" />
     <Reference Include="Microsoft.EntityFrameworkCore.SQLite" />
     <Reference Include="Microsoft.Extensions.Hosting" />
+    <Reference Include="Microsoft.EntityFrameworkCore.Tools"  />
   </ItemGroup>
 
   <ItemGroup>
