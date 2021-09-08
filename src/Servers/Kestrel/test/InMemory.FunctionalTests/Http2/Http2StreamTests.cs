@@ -432,6 +432,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(context =>
             {
                 Assert.Equal(scheme, context.Request.Scheme);
+                Assert.False(context.Request.Headers.ContainsKey(HeaderNames.Scheme));
                 return Task.CompletedTask;
             });
 
