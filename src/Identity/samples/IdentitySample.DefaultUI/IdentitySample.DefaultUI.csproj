@@ -1,10 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <Description>Identity sample MVC application on ASP.NET Core using the default UI</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <UserSecretsId>aspnetcore-2ff9bc27-5e8c-4484-90ca-e3aace89b72a</UserSecretsId>
-    <IdentityUIFrameworkVersion>Bootstrap5</IdentityUIFrameworkVersion>
+    <IdentityUIFrameworkVersion>Bootstrap4</IdentityUIFrameworkVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -37,7 +37,7 @@
     <Folder Include="Properties\" />
   </ItemGroup>
 
-  <!-- Include an assembly attribute into the built application assembly to indicate which flavor of the UI framework to use -->
+  <!-- Include an assembly attribute into the built application assembly to indicate which flavor of the UI framework to use (needed for project reference) -->
   <ItemGroup>
     <AssemblyAttribute Include="Microsoft.AspNetCore.Identity.UI.UIFrameworkAttribute">
       <_Parameter1>$(IdentityUIFrameworkVersion)</_Parameter1>
