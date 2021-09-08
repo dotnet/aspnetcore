@@ -15,8 +15,4 @@
     <Reference Include="Microsoft.Extensions.WebEncoders" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)RoutingMetadata\AcceptsMetadata.cs" LinkBase="Shared" />
-  </ItemGroup>
-
 </Project>
