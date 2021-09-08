@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Localization
 
             context.Features.Set<IRequestCultureFeature>(new RequestCultureFeature(requestCulture, winningProvider));
 
-            SetCurrentThreadCulture(requestCulture);
+            SetDefaultThreadCulture(requestCulture);
 
             if (_options.ApplyCurrentCultureToResponseHeaders)
             {
@@ -133,10 +133,10 @@ namespace Microsoft.AspNetCore.Localization
             await _next(context);
         }
 
-        private static void SetCurrentThreadCulture(RequestCulture requestCulture)
+        private static void SetDefaultThreadCulture(RequestCulture requestCulture)
         {
-            CultureInfo.CurrentCulture = requestCulture.Culture;
-            CultureInfo.CurrentUICulture = requestCulture.UICulture;
+            CultureInfo.DefaultThreadCurrentCulture = requestCulture.Culture;
+            CultureInfo.DefaultThreadCurrentUICulture = requestCulture.UICulture;
         }
 
         private static CultureInfo? GetCultureInfo(
