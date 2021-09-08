@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 responseType = typeof(void);
             }
 
-            // For back-compat, we support attributes (which implement the IApiResponseMetadataProvider) interface
+            // We support attributes (which implement the IApiResponseMetadataProvider) interface
             // and types added via the extension methods (which implement IProducesResponseTypeMetadata).
             var responseProviderMetadata = endpointMetadata.GetOrderedMetadata<IApiResponseMetadataProvider>();
             var producesResponseMetadata = endpointMetadata.GetOrderedMetadata<IProducesResponseTypeMetadata>();
@@ -257,7 +257,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             // We favor types added via the extension methods (which implements IProducesResponseTypeMetadata)
             // over those that are added via attributes.
-            var responseMetadataTypes = producesResponseMetadataTypes.Concat(responseProviderMetadataTypes);
+            var responseMetadataTypes = producesResponseMetadataTypes.Values.Concat(responseProviderMetadataTypes);
 
             if (responseMetadataTypes.Any())
             {
@@ -283,16 +283,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                         apiResponseType.ApiResponseFormats.Add(defaultResponseFormat);
                     }
 
-                    bool foundDuplicateStatusCode = false;
-                    foreach (var existingResponseType in supportedResponseTypes)
-                    {
-                        if (existingResponseType.StatusCode.Equals(apiResponseType.StatusCode))
-                        {
-                            foundDuplicateStatusCode = true;
-                        }
-                    }
-
-                    if (!foundDuplicateStatusCode)
+                    if (!supportedResponseTypes.Any(existingResponseType => existingResponseType.StatusCode == apiResponseType.StatusCode))
                     {
                         supportedResponseTypes.Add(apiResponseType);
                     }
@@ -315,52 +306,49 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
         }
 
-        private static List<ApiResponseType> ReadResponseMetadata(
+        private static Dictionary<int, ApiResponseType> ReadResponseMetadata(
             IReadOnlyList<IProducesResponseTypeMetadata> responseMetadata,
             Type? type)
         {
             var results = new Dictionary<int, ApiResponseType>();
 
-            if (responseMetadata != null)
+            foreach (var metadata in responseMetadata)
             {
-                foreach (var metadata in responseMetadata)
+                var statusCode = metadata.StatusCode;
+
+                var apiResponseType = new ApiResponseType
                 {
-                    var statusCode = metadata.StatusCode;
+                    Type = metadata.Type,
+                    StatusCode = statusCode,
+                };
 
-                    var apiResponseType = new ApiResponseType
+                if (apiResponseType.Type == typeof(void))
+                {
+                    if (type != null && (statusCode == StatusCodes.Status200OK || statusCode == StatusCodes.Status201Created))
                     {
-                        Type = metadata.Type,
-                        StatusCode = statusCode,
-                    };
-
-                    if (apiResponseType.Type == typeof(void))
-                    {
-                        if (type != null && (statusCode == StatusCodes.Status200OK || statusCode == StatusCodes.Status201Created))
-                        {
-                            // Allow setting the response type from the return type of the method if it has
-                            // not been set explicitly by the method.
-                            apiResponseType.Type = type;
-                        }
+                        // Allow setting the response type from the return type of the method if it has
+                        // not been set explicitly by the method.
+                        apiResponseType.Type = type;
                     }
+                }
 
-                    var attributeContentTypes = new MediaTypeCollection();
-                    if (metadata.ContentTypes != null)
+                var attributeContentTypes = new MediaTypeCollection();
+                if (metadata.ContentTypes != null)
+                {
+                    foreach (var contentType in metadata.ContentTypes)
                     {
-                        foreach (var contentType in metadata.ContentTypes)
-                        {
-                            attributeContentTypes.Add(contentType);
-                        }
+                        attributeContentTypes.Add(contentType);
                     }
-                    ApiResponseTypeProvider.CalculateResponseFormatForType(apiResponseType, attributeContentTypes, null, null);
+                }
+                ApiResponseTypeProvider.CalculateResponseFormatForType(apiResponseType, attributeContentTypes, responseTypeMetadataProviders: null, modelMetadataProvider: null);
 
-                    if (apiResponseType.Type != null)
-                    {
-                        results[apiResponseType.StatusCode] = apiResponseType;
-                    }
+                if (apiResponseType.Type != null)
+                {
+                    results[apiResponseType.StatusCode] = apiResponseType;
                 }
             }
 
-            return results.Values.ToList();
+            return results;
         }
 
         private static ApiResponseType CreateDefaultApiResponseType(Type responseType)
