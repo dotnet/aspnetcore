@@ -99,7 +99,7 @@ or
 ./build.sh --projects "$PWD/src/Framework/App.Runtime/src/Microsoft.AspNetCore.App.Runtime.csproj"
 ```
 
-## Miscellaneous other errors
+## Errors when restoring older clones
 
 If you have build errors trying to run `restore.cmd` and you cloned the repository some time ago,
 try deleting the `.dotnet` and `.tools` directories in your local repo directory. It may resolve
