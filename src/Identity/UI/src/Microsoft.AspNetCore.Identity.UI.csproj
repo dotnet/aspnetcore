@@ -61,7 +61,7 @@
     </ItemGroup>
   </Target>
 
-  <!--<Target Name="_GenerateIdentityUIPackItems">
+  <Target Name="_GenerateIdentityUIPackItems">
     <ItemGroup>
       <V4AssetsCandidates Include="assets\V4\**" />
       <V4AssetsCandidates>
@@ -103,5 +103,5 @@
         <PackagePath>%(_PackV5Asset.TargetPath)</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>
-  </Target>-->
+  </Target>
 </Project>
