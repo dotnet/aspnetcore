@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Identity
 
         private static Assembly GetApplicationAssembly(IdentityBuilder builder)
         {
-            // Whis is the same logic that MVC follows to find the application assembly.
+            // This is the same logic that MVC follows to find the application assembly.
             var environment = builder.Services.Where(d => d.ServiceType == typeof(IWebHostEnvironment)).ToArray();
             var applicationName = ((IWebHostEnvironment)environment.LastOrDefault()?.ImplementationInstance)
                 .ApplicationName;
