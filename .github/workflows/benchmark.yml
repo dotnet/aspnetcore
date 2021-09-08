@@ -1,0 +1,189 @@
+name: Run PR Benchmarks
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  benchmark:
+    # comments can be triggered on issues and prs, ensure this is a PR
+    if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '/benchmark')
+    # Comment out this line to test the scripts in a fork
+    # if: github.repository == 'dotnet/aspnetcore'
+    name: Benchmark Kestrel
+    runs-on: ubuntu-latest
+    steps:
+    - name: Extract benchmark argument
+      uses: actions/github-script@v4
+      id: benchmark-argument
+      with:
+        result-encoding: string
+        script: |
+          if (context.eventName !== "issue_comment") throw "Error: This action only works on issue_comment events.";
+
+          // extract the benchmark domain from the trigger phrase containing these characters: a-z, A-Z, digits, forward slash, dot, hyphen, underscore
+          const regex = /\/benchmark ([a-zA-Z\d\/\.\-\_]+)/;
+          benchmark_argument = regex.exec(context.payload.comment.body);
+          if (benchmark_argument == null || (benchmark_argument[1] != "kestrel" && benchmark_argument[1] != "mvc")) {
+              await github.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: "The `/benchmark` command must contain a domain from like __kestrel__, __mvc__. e.g., `/benchmark kestrel`"
+              });
+              throw `Error: Invalid benchmark command argument '${benchmark_argument[1]}'`;
+          }
+
+          return benchmark_argument[1];
+
+    - name: Check user's organization
+      uses: actions/github-script@v4
+      with:
+        script: |
+
+          const repo_owner = context.payload.repository.owner.login;
+          const repo_name = context.payload.repository.name;
+          const comment_user = context.payload.comment.user.login;
+
+          var membership = await github.repos.checkCollaborator({
+            owner: repo_owner,
+            repo: repo_name,
+            username: comment_user
+          });
+
+          console.log(`Verified ${comment_user} is a repo collaborator.`);
+
+    - name: Extract target branch
+      uses: actions/github-script@v4
+      id: target-branch-extractor
+      with:
+        script: |
+          const result = await github.request(context.payload.issue.pull_request.url)
+          const pull_request = result.data;
+          return pull_request.base.ref;
+
+    - name: Extract source repository
+      uses: actions/github-script@v4
+      id: source-repo-extractor
+      with:
+        script: |
+          const result = await github.request(context.payload.issue.pull_request.url)
+          const pull_request = result.data;
+          return pull_request.head.repo.clone_url;
+
+    - name: Extract source branch
+      uses: actions/github-script@v4
+      id: source-branch-extractor
+      with:
+        script: |
+          const result = await github.request(context.payload.issue.pull_request.url)
+          const pull_request = result.data;
+          return pull_request.head.ref;
+
+    - name: Checkout
+      run: |
+        rm -rf aspnetcore
+        git clone --recursive ${{ github.event.repository.clone_url }} aspnetcore
+
+    - name: Install crank
+      run: |
+        dotnet tool install Microsoft.Crank.Controller --version "0.2.0-*" --global
+
+    - name: Build base
+      working-directory: ./aspnetcore
+      run: |
+        git checkout ${{ steps.target-branch-extractor.outputs.result }}
+
+        if [ "${{ steps.benchmark-argument.outputs.result }}" = "kestrel" ]
+        then
+          echo "Building Kestrel"
+          cd ./src/Servers/Kestrel
+          ./build.sh -c release
+        elif [ "${{ steps.benchmark-argument.outputs.result }}" = "mvc" ]
+        then
+          echo "Building Mvc"
+          cd ./src/Mvc
+          ./build.sh -c release -NoBuildNodeJS
+        fi
+
+    - name: Benchmark base
+      working-directory: ./aspnetcore
+      env:
+        AZURE_RELAY: ${{ secrets.AZURE_RELAY }}
+      run: |
+        if [ "${{ steps.benchmark-argument.outputs.result }}" = "kestrel" ]
+        then
+          ARGUMENTS="--config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/plaintext.benchmarks.yml --scenario plaintext --application.framework net6.0 --application.options.outputFiles ./artifacts/bin/Microsoft.AspNetCore.Server.Kestrel/release/net6.0/"
+        elif [ "${{ steps.benchmark-argument.outputs.result }}" = "mvc" ]
+        then
+          ARGUMENTS="--config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/plaintext.benchmarks.yml --scenario mvc --application.framework net6.0 --application.options.outputFiles ./artifacts/bin/Microsoft.AspNetCore.Mvc.IntegrationTests/release/net6.0/"
+        fi
+
+        crank --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true --profile aspnet-azure-lin-relay --relay AZURE_RELAY --json ../base.json $ARGUMENTS
+
+    - name: Build head
+      working-directory: ./aspnetcore
+      run: |
+        git fetch origin pull/${{ github.event.issue.number }}/head
+        git config --global user.name "user"
+        git config --global user.email "user@company.com"
+        git merge FETCH_HEAD
+
+        if [ "${{ steps.benchmark-argument.outputs.result }}" = "kestrel" ]
+        then
+          echo "Building Kestrel"
+          cd ./src/Servers/Kestrel
+          ./build.sh -c release
+        elif [ "${{ steps.benchmark-argument.outputs.result }}" = "mvc" ]
+        then
+          echo "Building Mvc"
+          cd ./src/Mvc
+          ./build.sh -c release -NoBuildNodeJS
+        fi
+
+    - name: Benchmark head
+      working-directory: ./aspnetcore
+      id: arguments
+      env:
+        AZURE_RELAY: ${{ secrets.AZURE_RELAY }}
+      run: |
+        if [ "${{ steps.benchmark-argument.outputs.result }}" = "kestrel" ]
+        then
+          ARGUMENTS="--config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/plaintext.benchmarks.yml --scenario plaintext --application.framework net6.0 --application.options.outputFiles ./artifacts/bin/Microsoft.AspNetCore.Server.Kestrel/release/net6.0/"
+        elif [ "${{ steps.benchmark-argument.outputs.result }}" = "mvc" ]
+        then
+          ARGUMENTS="--config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/plaintext.benchmarks.yml --scenario mvc --application.framework net6.0 --application.options.outputFiles ./artifacts/bin/Microsoft.AspNetCore.Mvc.IntegrationTests/release/net6.0/"
+        fi
+
+        crank --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true --profile aspnet-azure-lin-relay --relay AZURE_RELAY --json ../head.json $ARGUMENTS
+        echo "::set-output name=result::$ARGUMENTS"
+    - name: Compare benchmarks
+      id: benchmark
+      run: |
+        crank compare base.json head.json > results.txt
+
+        cat results.txt
+
+        export RESULT=$'Arguments:\n```\n'"${{ steps.arguments.outputs.result }}"$'\n```\nResults:\n```\n'$(cat results.txt)$'\n```\n'
+
+        RESULT="${RESULT//'%'/'%25'}"
+        RESULT="${RESULT//$'\n'/'%0A'}"
+        RESULT="${RESULT//$'\r'/'%0D'}"
+        RESULT="${RESULT//$'`'/'\`'}"
+        echo $RESULT
+        echo "::set-output name=result::$(echo "$RESULT")"
+
+    - name: Report results
+      uses: actions/github-script@v4
+      with:
+        script: |
+          // The result contains new lines, so the generated script needs to wrap it in back-ticks
+          const body = `${{ steps.benchmark.outputs.result }}`;
+
+          await github.issues.createComment({
+            issue_number: context.payload.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: body
+          });
+
+
