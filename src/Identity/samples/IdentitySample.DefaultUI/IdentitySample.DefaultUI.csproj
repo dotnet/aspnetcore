@@ -44,15 +44,14 @@
     </AssemblyAttribute>
   </ItemGroup>
 
-  <PropertyGroup>
-    <ResolveStaticWebAssetsInputsDependsOn>_SetBootstrapFrameworkVersion</ResolveStaticWebAssetsInputsDependsOn>
-  </PropertyGroup>
-
-  <Target Name="_SetBootstrapFrameworkVersion">
+  <Target
+    Name="_SetBootstrapFrameworkVersion"
+    AfterTargets="ResolveReferencedProjectsStaticWebAssetsConfiguration"
+    BeforeTargets="ResolveReferencedProjectsStaticWebAssets">
     <ItemGroup>
-      <_StaticWebAssetsProjectReference Condition="'%(FileName)' == 'Microsoft.AspNetCore.identity.UI'">
-        <AdditionalProperties>IdentityUIFrameworkVersion=$(IdentityUIFrameworkVersion)</AdditionalProperties>
-      </_StaticWebAssetsProjectReference>
+      <StaticWebAssetProjectConfiguration Condition="'%(FileName)' == 'Microsoft.AspNetCore.Identity.UI'">
+        <AdditionalBuildProperties>IdentityDefaultUIFramework=$(IdentityUIFrameworkVersion)</AdditionalBuildProperties>
+      </StaticWebAssetProjectConfiguration>
     </ItemGroup>
   </Target>
 

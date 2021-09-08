@@ -45,13 +45,26 @@
   </Target>
 
   <Target Name="GetIdentityUIAssets" Returns="@(ReferenceAsset)">
+    <PropertyGroup>
+      <_ReferenceAssetContentRoot Condition="'$(IdentityDefaultUIFramework)' == 'Bootstrap5'">assets/V5</_ReferenceAssetContentRoot>
+      <_ReferenceAssetContentRoot Condition="'$(IdentityDefaultUIFramework)' == 'Bootstrap4'">assets/V4</_ReferenceAssetContentRoot>
+    </PropertyGroup>
     <ItemGroup>
-      <ReferenceAssetCandidates Include="assets\V5\**" />
+      <ReferenceAssetCandidates Condition="'$(IdentityDefaultUIFramework)' == 'Bootstrap5'" Include="assets\V5\**" />
+      <ReferenceAssetCandidates Condition="'$(IdentityDefaultUIFramework)' == 'Bootstrap4'" Include="assets\V4\**" />
       <ReferenceAssetCandidates>
         <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
+        <ContentRoot>$([System.IO.Path]::GetFullPath($(_ReferenceAssetContentRoot)))</ContentRoot>
       </ReferenceAssetCandidates>
     </ItemGroup>
-    <DefineStaticWebAssets Condition="'@(ReferenceAssetCandidates-&gt;Count())' != '0'" CandidateAssets="@(ReferenceAssetCandidates)" SourceId="$(PackageId)" SourceType="Project" AssetKind="All" ContentRoot="assets/V5" BasePath="$(StaticWebAssetBasePath)">
+    <DefineStaticWebAssets
+      Condition="'@(ReferenceAssetCandidates->Count())' != '0'"
+      CandidateAssets="@(ReferenceAssetCandidates)"
+      SourceId="$(PackageId)"
+      SourceType="Project"
+      AssetKind="All"
+      BasePath="$(StaticWebAssetBasePath)"
+    >
       <Output TaskParameter="Assets" ItemName="ReferenceAsset" />
     </DefineStaticWebAssets>
     <ItemGroup>
@@ -78,17 +91,17 @@
     <DefineStaticWebAssets Condition="'@(V5AssetsCandidates-&gt;Count())' != '0'" CandidateAssets="@(V5AssetsCandidates)" SourceId="$(PackageId)" SourceType="Project" AssetKind="All" ContentRoot="assets/V5" BasePath="$(StaticWebAssetBasePath)">
       <Output TaskParameter="Assets" ItemName="V5Assets" />
     </DefineStaticWebAssets>
-    
+
     <GenerateStaticWebAsssetsPropsFile StaticWebAssets="@(V4Assets)" PackagePathPrefix="staticwebassets/V4" TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V4.targets" />
     <GenerateStaticWebAsssetsPropsFile StaticWebAssets="@(V5Assets)" PackagePathPrefix="staticwebassets/V5" TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V5.targets" />
-    
+
     <ComputeStaticWebAssetsTargetPaths Assets="@(V4Assets)" PathPrefix="staticwebassets/V4" AdjustPathsForPack="true">
       <Output TaskParameter="AssetsWithTargetPath" ItemName="_PackV4Asset" />
     </ComputeStaticWebAssetsTargetPaths>
     <ComputeStaticWebAssetsTargetPaths Assets="@(V5Assets)" PathPrefix="staticwebassets/V5" AdjustPathsForPack="true">
       <Output TaskParameter="AssetsWithTargetPath" ItemName="_PackV5Asset" />
     </ComputeStaticWebAssetsTargetPaths>
-    
+
     <ItemGroup>
       <TfmSpecificPackageFile Include="$(IntermediateOutputPath)IdentityUI.V4.targets">
         <PackagePath>build\Microsoft.AspNetCore.StaticWebAssets.V4.targets</PackagePath>
