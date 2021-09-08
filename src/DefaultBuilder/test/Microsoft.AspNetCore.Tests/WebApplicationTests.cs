@@ -140,6 +140,67 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
+        public async Task HostedServicesRunBeforeTheServerStarts()
+        {
+            var builder = WebApplication.CreateBuilder();
+            var startOrder = new List<object>();
+            var server = new MockServer(startOrder);
+            var hostedService = new HostedService(startOrder);
+            builder.Services.AddSingleton<IHostedService>(hostedService);
+            builder.Services.AddSingleton<IServer>(server);
+            await using var app = builder.Build();
+
+            await app.StartAsync();
+
+            Assert.Equal(2, startOrder.Count);
+            Assert.Same(hostedService, startOrder[0]);
+            Assert.Same(server, startOrder[1]);
+        }
+
+        class HostedService : IHostedService
+        {
+            private readonly List<object> _startOrder;
+
+            public HostedService(List<object> startOrder)
+            {
+                _startOrder = startOrder;
+            }
+
+            public Task StartAsync(CancellationToken cancellationToken)
+            {
+                _startOrder.Add(this);
+                return Task.CompletedTask;
+            }
+
+            public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+        }
+
+        class MockServer : IServer
+        {
+            private readonly List<object> _startOrder;
+
+            public MockServer(List<object> startOrder)
+            {
+                _startOrder = startOrder;
+            }
+
+            public IFeatureCollection Features { get; } = new FeatureCollection();
+
+            public void Dispose() { }
+
+            public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken) where TContext : notnull
+            {
+                _startOrder.Add(this);
+                return Task.CompletedTask;
+            }
+
+            public Task StopAsync(CancellationToken cancellationToken)
+            {
+                return Task.CompletedTask;
+            }
+        }
+
+        [Fact]
         public async Task WebApplicationRunUrls_ThrowsInvalidOperationExceptionIfThereIsNoIServerAddressesFeature()
         {
             var builder = WebApplication.CreateBuilder();
@@ -1309,6 +1370,128 @@ namespace Microsoft.AspNetCore.Tests
 
             var responseBody = await response.Content.ReadAsStringAsync();
             Assert.Equal(string.Empty, responseBody);
+        }
+
+        [Fact]
+        public void PropertiesArePropagated()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.Host.Properties["hello"] = "world";
+            var callbacks = 0;
+
+            builder.Host.ConfigureAppConfiguration((context, config) =>
+            {
+                callbacks |= 0b00000001;
+                Assert.Equal("world", context.Properties["hello"]);
+            });
+
+            builder.Host.ConfigureServices((context, config) =>
+            {
+                callbacks |= 0b00000010;
+                Assert.Equal("world", context.Properties["hello"]);
+            });
+
+            builder.Host.ConfigureContainer<IServiceCollection>((context, config) =>
+            {
+                callbacks |= 0b00000100;
+                Assert.Equal("world", context.Properties["hello"]);
+            });
+
+            using var app = builder.Build();
+
+            // Make sure all of the callbacks ran
+            Assert.Equal(0b00000111, callbacks);
+        }
+
+        [Fact]
+        public void HostConfigurationNotAffectedByConfiguration()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            var contentRoot = Path.GetTempPath();
+            var webRoot = Path.GetTempPath();
+            var envName = $"{nameof(WebApplicationTests)}_ENV";
+
+            builder.Configuration[WebHostDefaults.ApplicationKey] = nameof(WebApplicationTests);
+            builder.Configuration[WebHostDefaults.EnvironmentKey] = envName;
+            builder.Configuration[WebHostDefaults.ContentRootKey] = contentRoot;
+
+            var app = builder.Build();
+            var hostEnv = app.Services.GetRequiredService<IHostEnvironment>();
+            var webHostEnv = app.Services.GetRequiredService<IWebHostEnvironment>();
+
+            Assert.Equal(builder.Environment.ApplicationName, hostEnv.ApplicationName);
+            Assert.Equal(builder.Environment.EnvironmentName, hostEnv.EnvironmentName);
+            Assert.Equal(builder.Environment.ContentRootPath, hostEnv.ContentRootPath);
+
+            Assert.Equal(webHostEnv.ApplicationName, hostEnv.ApplicationName);
+            Assert.Equal(webHostEnv.EnvironmentName, hostEnv.EnvironmentName);
+            Assert.Equal(webHostEnv.ContentRootPath, hostEnv.ContentRootPath);
+
+            Assert.NotEqual(nameof(WebApplicationTests), hostEnv.ApplicationName);
+            Assert.NotEqual(envName, hostEnv.EnvironmentName);
+            Assert.NotEqual(contentRoot, hostEnv.ContentRootPath);
+        }
+
+        [Fact]
+        public void ClearingConfigurationDoesNotAffectHostConfiguration()
+        {
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+            {
+                ApplicationName = typeof(WebApplicationOptions).Assembly.FullName,
+                EnvironmentName = Environments.Staging,
+                ContentRootPath = Path.GetTempPath()
+            });
+
+            ((IConfigurationBuilder)builder.Configuration).Sources.Clear();
+
+            var app = builder.Build();
+            var hostEnv = app.Services.GetRequiredService<IHostEnvironment>();
+            var webHostEnv = app.Services.GetRequiredService<IWebHostEnvironment>();
+
+            Assert.Equal(builder.Environment.ApplicationName, hostEnv.ApplicationName);
+            Assert.Equal(builder.Environment.EnvironmentName, hostEnv.EnvironmentName);
+            Assert.Equal(builder.Environment.ContentRootPath, hostEnv.ContentRootPath);
+
+            Assert.Equal(webHostEnv.ApplicationName, hostEnv.ApplicationName);
+            Assert.Equal(webHostEnv.EnvironmentName, hostEnv.EnvironmentName);
+            Assert.Equal(webHostEnv.ContentRootPath, hostEnv.ContentRootPath);
+
+            Assert.Equal(typeof(WebApplicationOptions).Assembly.FullName, hostEnv.ApplicationName);
+            Assert.Equal(Environments.Staging, hostEnv.EnvironmentName);
+            Assert.Equal(Path.GetTempPath(), hostEnv.ContentRootPath);
+        }
+
+        [Fact]
+        public void ConfigurationCanBeReloaded()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            ((IConfigurationBuilder)builder.Configuration).Sources.Add(new RandomConfigurationSource());
+
+            var app = builder.Build();
+
+            var value0 = app.Configuration["Random"];
+            ((IConfigurationRoot)app.Configuration).Reload();
+            var value1 = app.Configuration["Random"];
+
+            Assert.NotEqual(value0, value1);
+        }
+
+        public class RandomConfigurationSource : IConfigurationSource
+        {
+            public IConfigurationProvider Build(IConfigurationBuilder builder)
+            {
+                return new RandomConfigurationProvider();
+            }
+        }
+
+        public class RandomConfigurationProvider : ConfigurationProvider
+        {
+            public override void Load()
+            {
+                Data["Random"] = Guid.NewGuid().ToString();
+            }
         }
 
         class ThrowingStartupFilter : IStartupFilter

@@ -54,11 +54,11 @@ export class RenderQueue {
       renderBatch(this.browserRendererId, new OutOfProcessRenderBatch(batchData));
       await this.completeBatch(connection, receivedBatchId);
     } catch (error) {
-      this.fatalError = error.toString();
+      this.fatalError = (error as Error).toString();
       this.logger.log(LogLevel.Error, `There was an error applying batch ${receivedBatchId}.`);
 
       // If there's a rendering exception, notify server *and* throw on client
-      connection.send('OnRenderCompleted', receivedBatchId, error.toString());
+      connection.send('OnRenderCompleted', receivedBatchId, (error as Error).toString());
       throw error;
     }
   }

@@ -42,7 +42,7 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
     this.button = this.modal.querySelector('button')!;
     this.reloadParagraph = this.modal.querySelector('p')!;
     this.loader = this.getLoader();
-    
+
     this.message.after(this.loader);
 
     this.button.addEventListener('click', async () => {
@@ -59,7 +59,7 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
         }
       } catch (err: any) {
         // We got an exception, server is currently unavailable
-        this.logger.log(LogLevel.Error, err);
+        this.logger.log(LogLevel.Error, err as Error);
         this.failed();
       }
     });

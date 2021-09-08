@@ -47,7 +47,7 @@ export function sendJSDataStream(connection: HubConnection, data: ArrayBufferVie
                 chunkId++;
             }
         } catch (error) {
-            await connection.send('ReceiveJSDataChunk', streamId, -1, null, error.toString());
+            await connection.send('ReceiveJSDataChunk', streamId, -1, null, (error as Error).toString());
         }
     }, 0);
 };
