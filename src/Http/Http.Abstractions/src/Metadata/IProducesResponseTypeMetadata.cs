@@ -21,6 +21,6 @@ namespace Microsoft.AspNetCore.Http.Metadata
         /// <summary>
         /// Gets the content types supported by the metadata.
         /// </summary>
-        IEnumerable<string>? ContentTypes { get; }
+        IEnumerable<string> ContentTypes { get; }
     }
 }
