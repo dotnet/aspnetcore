@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.ObjectModel;
+using System.Linq;
 using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.Http.Metadata;
 
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Http
             Type = type ?? throw new ArgumentNullException(nameof(type));
             StatusCode = statusCode;
             IsResponseTypeSetByDefault = false;
-            _contentTypes = new List<string>();
+            _contentTypes = Enumerable.Empty<string>();
         }
 
         /// <summary>
