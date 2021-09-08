@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Identity
                     {
                         apm.ApplicationParts.Add(part);
                     }
-                    apm.FeatureProviders.Add(new ViewVersionFeatureProvider(framework == UIFramework.Bootstrap4));
+                    apm.FeatureProviders.Add(new ViewVersionFeatureProvider(framework));
                 });
 
             builder.Services.ConfigureOptions(
@@ -103,9 +103,9 @@ namespace Microsoft.AspNetCore.Identity
 
         internal class ViewVersionFeatureProvider : IApplicationFeatureProvider<ViewsFeature>
         {
-            private readonly bool _isV4;
+            private readonly UIFramework _framework;
 
-            public ViewVersionFeatureProvider(bool isV4) => _isV4 = isV4;
+            public ViewVersionFeatureProvider(UIFramework framework) => _framework = framework;
 
             public void PopulateFeature(IEnumerable<ApplicationPart> parts, ViewsFeature feature)
             {
@@ -114,28 +114,34 @@ namespace Microsoft.AspNetCore.Identity
                 {
                     if (IsIdentityUIView(descriptor))
                     {
-                        if (_isV4) {
-                            if (descriptor.Type.FullName.Contains("V5"))
-                            {
-                                // Remove V5 views
-                                viewsToRemove.Add(descriptor);
-                            }
-                            else
-                            {
-                                // Fix up paths to eliminate version subdir
-                                descriptor.RelativePath = descriptor.RelativePath.Replace("V4/", "");
-                            }
-                        } else {
-                            if (descriptor.Type.FullName.Contains("V4"))
-                            {
-                                // Remove V4 views
-                                viewsToRemove.Add(descriptor);
-                            }
-                            else
-                            {
-                                // Fix up paths to eliminate version subdir
-                                descriptor.RelativePath = descriptor.RelativePath.Replace("V5/", "");
-                            }
+                        switch (_framework)
+                        {
+                            case UIFramework.Bootstrap4:
+                                if (descriptor.Type.FullName.Contains("V5"))
+                                {
+                                    // Remove V5 views
+                                    viewsToRemove.Add(descriptor);
+                                }
+                                else
+                                {
+                                    // Fix up paths to eliminate version subdir
+                                    descriptor.RelativePath = descriptor.RelativePath.Replace("V4/", "");
+                                }
+                                break;
+                            case UIFramework.Bootstrap5:
+                                if (descriptor.Type.FullName.Contains("V4"))
+                                {
+                                    // Remove V4 views
+                                    viewsToRemove.Add(descriptor);
+                                }
+                                else
+                                {
+                                    // Fix up paths to eliminate version subdir
+                                    descriptor.RelativePath = descriptor.RelativePath.Replace("V5/", "");
+                                }
+                                break;
+                            default:
+                                throw new InvalidOperationException($"Unknown framework: {_framework}");
                         }
                     }
                 }
