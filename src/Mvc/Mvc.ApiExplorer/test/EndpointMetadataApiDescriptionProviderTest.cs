@@ -647,12 +647,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         [Fact]
         public void FavorsProducesMetadataOverAttribute()
         {
-            // System.Console.WriteLine($"Waiting for debugger to attach on {System.Environment.ProcessId}");
-            // while (!System.Diagnostics.Debugger.IsAttached)
-            // {
-            //     Thread.Sleep(1000);
-            // }
-            // System.Console.WriteLine("Debugger attached");
             // Arrange
             var builder = CreateBuilder();
             builder.MapGet("/api/todos", [ProducesResponseType(typeof(List<string>), StatusCodes.Status200OK)]() => "")

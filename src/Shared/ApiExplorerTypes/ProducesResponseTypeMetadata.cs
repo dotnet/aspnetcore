@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Http
     /// <summary>
     /// Specifies the type of the value and status code returned by the action.
     /// </summary>
-    internal class ProducesResponseTypeMetadata : IProducesResponseTypeMetadata
+    internal sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetadata
     {
         private readonly IEnumerable<string> _contentTypes;
 
@@ -91,21 +91,24 @@ namespace Microsoft.AspNetCore.Http
 
         private static List<string> GetContentTypes(string contentType, string[] additionalContentTypes)
         {
-            var completeContentTypes = new List<string>(additionalContentTypes.Length + 1);
-            completeContentTypes.Add(contentType);
-            completeContentTypes.AddRange(additionalContentTypes);
-            List<string> contentTypes = new();
-            foreach (var type in completeContentTypes)
+            var contentTypes = new List<string>(additionalContentTypes.Length + 1);
+            ValidateContentType(contentType);
+            contentTypes.Add(contentType);
+            foreach (var type in additionalContentTypes)
+            {
+                ValidateContentType(type);
+                contentTypes.Add(type);
+            }
+
+            return contentTypes;
+
+            static void ValidateContentType(string type)
             {
                 if (type.Contains('*', StringComparison.OrdinalIgnoreCase))
                 {
                     throw new InvalidOperationException($"Could not parse '{type}'. Content types with wildcards are not supported.");
                 }
-
-                contentTypes.Add(type);
             }
-
-            return contentTypes;
         }
     }
 }
