@@ -105,4 +105,8 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.Authentication.JwtBearer;
     </PackagesInPatch>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.31' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
 </Project>
