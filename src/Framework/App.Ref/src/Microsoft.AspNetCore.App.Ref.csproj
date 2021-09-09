@@ -119,8 +119,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           BeforeTargets="_GetPackageFiles"
           DependsOnTargets="ResolveReferences;FindReferenceAssembliesForReferences">
     <ItemGroup>
-      <!-- Exclude transitive external dependencies that are not directly referenced in AspNetCore or Runtime. -->
-      <_DisallowedReferenceAssemblies Include="System.Net.Quic.dll; System.Security.Cryptography.Pkcs.dll" />
+      <!-- Exclude a dependency that we don't want to expose. -->
+      <_DisallowedReferenceAssemblies Include="System.Net.Quic.dll" />
       <_AvailableRuntimeRefAssemblies Include="$(RuntimeTransportReferenceDirectory)*.dll"
           Exclude="@(_DisallowedReferenceAssemblies->'$(RuntimeTransportReferenceDirectory)%(Filename)%(Extension)')" />
     </ItemGroup>
@@ -135,7 +135,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
         Microsoft.Internal.Runtime.AspNetCore.Transport assets (almost all added just below).
 
         Filename exclusions are due to implementation assemblies creeping into the closure. Reference assemblies
-        for all are available in the transport package though System.Security.Cryptography.Pkcs is excluded.
+        for all but System.Security.Cryptography.Pkcs are available in the transport package.
       -->
       <AspNetCoreReferenceAssemblyPath
           Include="@(ReferencePathWithRefAssemblies)"
