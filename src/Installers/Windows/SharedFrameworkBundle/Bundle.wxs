@@ -47,26 +47,6 @@
         <RelatedBundle Id="{38580A17-729D-376F-AC0D-B8E80E77CE20}" Action="Upgrade" />
         <!--'Microsoft ASP.NET Core 2.1.7 - Shared Framework'-->
         <RelatedBundle Id="{05D79AF1-C5B9-39AB-95B8-8BEEB5F6EE8D}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.6 - Shared Framework'-->
-        <RelatedBundle Id="{DCC2A848-E51F-3525-9AEC-6F3AD09E8E4E}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.5 - Shared Framework'-->
-        <RelatedBundle Id="{4FF26B15-D19E-33DE-B3B9-0048CB452719}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.4 - Shared Framework'-->
-        <RelatedBundle Id="{516DDC47-3178-3854-80B3-69A5924BA645}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.3 - Shared Framework'-->
-        <RelatedBundle Id="{AED22235-ACC3-38AD-8AA6-3A05CA2D3ADA}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.2 - Shared Framework'-->
-        <RelatedBundle Id="{842F7946-BF3F-30F0-9136-68B9666857CC}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.1 - Shared Framework'-->
-        <RelatedBundle Id="{54785C17-D593-3E17-B4DB-71204B69804B}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.0 - Shared Framework'-->
-        <RelatedBundle Id="{30CB480C-ADF0-3B81-8F50-48376E153BFA}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.0 Release Candidate 1 - Shared Framework'-->
-        <RelatedBundle Id="{83D09AED-0BC7-3254-A011-2FDCF79D8859}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.0 Preview 2 - Shared Framework'-->
-        <RelatedBundle Id="{9E1909B0-7040-3B58-9F51-1862DA343256}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.0 Preview 1 - Shared Framework'-->
-        <RelatedBundle Id="{1434C698-C3C8-3021-BAAC-F65A5139E5D0}" Action="Upgrade" />
         <?endif?>
 
         <!-- Ensure upgrades from 2.1.0 thru 2.1.23 for x86. -->
@@ -105,26 +85,6 @@
         <RelatedBundle Id="{70D80ED0-BE96-30CF-8BD8-CDEB74A1FA44}" Action="Upgrade" />
         <!--'Microsoft ASP.NET Core 2.1.7 - Shared Framework'-->
         <RelatedBundle Id="{35188EAF-50A8-36B1-89E1-65A048879A8A}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.6 - Shared Framework'-->
-        <RelatedBundle Id="{52B39EEB-6453-35C7-82C3-0A3E32D7A7E3}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.5 - Shared Framework'-->
-        <RelatedBundle Id="{2396ABF1-286C-35AC-9D73-6DA0C1488697}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.4 - Shared Framework'-->
-        <RelatedBundle Id="{C43E83C3-55D5-339B-9AEB-CCF6EF0C3E88}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.3 - Shared Framework'-->
-        <RelatedBundle Id="{D629A358-61C2-326F-A491-55E29C064E30}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.2 - Shared Framework'-->
-        <RelatedBundle Id="{649622E9-21EF-3C33-8121-3AE51E01ECD8}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.1 - Shared Framework'-->
-        <RelatedBundle Id="{B71D596D-762B-343B-AA62-A49344C9C5E8}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.0 - Shared Framework'-->
-        <RelatedBundle Id="{E880C10C-463E-3D37-AD6E-EAF52D736BCB}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.0 Release Candidate 1 - Shared Framework'-->
-        <RelatedBundle Id="{6E0B3327-43F4-3EE3-9E64-6C395C2CFFA8}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.0 Preview 2 - Shared Framework'-->
-        <RelatedBundle Id="{87DA165A-7B38-3BE2-8954-F4D3237E5CE5}" Action="Upgrade" />
-        <!--'Microsoft ASP.NET Core 2.1.0 Preview 1 - Shared Framework'-->
-        <RelatedBundle Id="{2F9AD35A-B7C3-3CCF-9ADA-EFBC876815F8}" Action="Upgrade" />
         <?endif?>
         <?endif?>
 

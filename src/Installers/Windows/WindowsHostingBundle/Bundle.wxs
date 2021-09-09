@@ -45,14 +45,6 @@
         <RelatedBundle Id="{9F1D5735-B2F6-3C74-8F6B-2390BB739697}" Action="Upgrade" />
         <!--'Microsoft .NET Core 2.1.7 - Windows Server Hosting'-->
         <RelatedBundle Id="{E5555A4A-7AF5-3733-BB60-EC74A4874842}" Action="Upgrade" />
-        <!--'Microsoft .NET Core 2.1.6 - Windows Server Hosting'-->
-        <RelatedBundle Id="{EC44441A-0A96-39C4-A4A3-C6D65FEA6E3C}" Action="Upgrade" />
-        <!--'Microsoft .NET Core 2.1.5 - Windows Server Hosting'-->
-        <RelatedBundle Id="{E22164E9-31C6-3C19-8FB9-F9EA2711EEAC}" Action="Upgrade" />
-        <!--'Microsoft .NET Core 2.1.4 - Windows Server Hosting'-->
-        <RelatedBundle Id="{38010573-29EA-472C-91FA-779DC0A6CDED}" Action="Upgrade" />
-        <!--'Microsoft .NET Core 2.1.3 - Windows Server Hosting'-->
-        <RelatedBundle Id="{0ECB5C6B-3FD7-36C2-8138-61AE2E999E76}" Action="Upgrade" />
         <?endif?>
 
         <!-- Customizations of the default BA -->

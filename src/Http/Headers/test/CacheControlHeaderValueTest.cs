@@ -48,17 +48,17 @@ namespace Microsoft.Net.Http.Headers
             // String collection properties
             Assert.NotNull(cacheControl.NoCacheHeaders);
             Assert.Throws<ArgumentException>(() => cacheControl.NoCacheHeaders.Add(null));
-            Assert.Throws<FormatException>(() => cacheControl.NoCacheHeaders.Add("invalid token"));
-            cacheControl.NoCacheHeaders.Add("token");
+            Assert.Throws<FormatException>(() => cacheControl.NoCacheHeaders.Add("invalid PLACEHOLDER"));
+            cacheControl.NoCacheHeaders.Add("PLACEHOLDER");
             Assert.Equal(1, cacheControl.NoCacheHeaders.Count);
-            Assert.Equal("token", cacheControl.NoCacheHeaders.First());
+            Assert.Equal("PLACEHOLDER", cacheControl.NoCacheHeaders.First());
 
             Assert.NotNull(cacheControl.PrivateHeaders);
             Assert.Throws<ArgumentException>(() => cacheControl.PrivateHeaders.Add(null));
-            Assert.Throws<FormatException>(() => cacheControl.PrivateHeaders.Add("invalid token"));
-            cacheControl.PrivateHeaders.Add("token");
+            Assert.Throws<FormatException>(() => cacheControl.PrivateHeaders.Add("invalid PLACEHOLDER"));
+            cacheControl.PrivateHeaders.Add("PLACEHOLDER");
             Assert.Equal(1, cacheControl.PrivateHeaders.Count);
-            Assert.Equal("token", cacheControl.PrivateHeaders.First());
+            Assert.Equal("PLACEHOLDER", cacheControl.PrivateHeaders.First());
 
             // NameValueHeaderValue collection property
             Assert.NotNull(cacheControl.Extensions);
@@ -115,21 +115,21 @@ namespace Microsoft.Net.Http.Headers
 
             cacheControl.NoCache = true;
             Assert.Equal("no-cache", cacheControl.ToString());
-            cacheControl.NoCacheHeaders.Add("token1");
-            Assert.Equal("no-cache=\"token1\"", cacheControl.ToString());
+            cacheControl.NoCacheHeaders.Add("PLACEHOLDER1");
+            Assert.Equal("no-cache=\"PLACEHOLDER1\"", cacheControl.ToString());
             cacheControl.Public = true;
-            Assert.Equal("public, no-cache=\"token1\"", cacheControl.ToString());
+            Assert.Equal("public, no-cache=\"PLACEHOLDER1\"", cacheControl.ToString());
 
             cacheControl = new CacheControlHeaderValue();
             cacheControl.Private = true;
             Assert.Equal("private", cacheControl.ToString());
-            cacheControl.PrivateHeaders.Add("token2");
-            cacheControl.PrivateHeaders.Add("token3");
-            Assert.Equal("private=\"token2, token3\"", cacheControl.ToString());
+            cacheControl.PrivateHeaders.Add("PLACEHOLDER2");
+            cacheControl.PrivateHeaders.Add("PLACEHOLDER3");
+            Assert.Equal("private=\"PLACEHOLDER2, PLACEHOLDER3\"", cacheControl.ToString());
             cacheControl.MustRevalidate = true;
-            Assert.Equal("must-revalidate, private=\"token2, token3\"", cacheControl.ToString());
+            Assert.Equal("must-revalidate, private=\"PLACEHOLDER2, PLACEHOLDER3\"", cacheControl.ToString());
             cacheControl.ProxyRevalidate = true;
-            Assert.Equal("must-revalidate, proxy-revalidate, private=\"token2, token3\"", cacheControl.ToString());
+            Assert.Equal("must-revalidate, proxy-revalidate, private=\"PLACEHOLDER2, PLACEHOLDER3\"", cacheControl.ToString());
         }
 
         [Fact]
@@ -218,21 +218,21 @@ namespace Microsoft.Net.Http.Headers
             var cacheControl5 = new CacheControlHeaderValue();
 
             cacheControl1.NoCache = true;
-            cacheControl1.NoCacheHeaders.Add("token2");
+            cacheControl1.NoCacheHeaders.Add("PLACEHOLDER2");
 
             cacheControl2.NoCache = true;
-            cacheControl2.NoCacheHeaders.Add("token1");
-            cacheControl2.NoCacheHeaders.Add("token2");
+            cacheControl2.NoCacheHeaders.Add("PLACEHOLDER1");
+            cacheControl2.NoCacheHeaders.Add("PLACEHOLDER2");
 
             CompareHashCodes(cacheControl1, cacheControl2, false);
 
-            cacheControl1.NoCacheHeaders.Add("token1");
+            cacheControl1.NoCacheHeaders.Add("PLACEHOLDER1");
             CompareHashCodes(cacheControl1, cacheControl2, true);
 
             // Since NoCache and Private generate different hash codes, even if NoCacheHeaders and PrivateHeaders 
             // have the same values, the hash code will be different.
             cacheControl3.Private = true;
-            cacheControl3.PrivateHeaders.Add("token2");
+            cacheControl3.PrivateHeaders.Add("PLACEHOLDER2");
             CompareHashCodes(cacheControl1, cacheControl3, false);
 
 
@@ -343,27 +343,27 @@ namespace Microsoft.Net.Http.Headers
             var cacheControl6 = new CacheControlHeaderValue();
 
             cacheControl1.NoCache = true;
-            cacheControl1.NoCacheHeaders.Add("token2");
+            cacheControl1.NoCacheHeaders.Add("PLACEHOLDER2");
 
             Assert.False(cacheControl1.Equals(null), "Compare with 'null'");
 
             cacheControl2.NoCache = true;
-            cacheControl2.NoCacheHeaders.Add("token1");
-            cacheControl2.NoCacheHeaders.Add("token2");
+            cacheControl2.NoCacheHeaders.Add("PLACEHOLDER1");
+            cacheControl2.NoCacheHeaders.Add("PLACEHOLDER2");
 
             CompareValues(cacheControl1, cacheControl2, false);
 
-            cacheControl1.NoCacheHeaders.Add("token1");
+            cacheControl1.NoCacheHeaders.Add("PLACEHOLDER1");
             CompareValues(cacheControl1, cacheControl2, true);
 
             // Since NoCache and Private generate different hash codes, even if NoCacheHeaders and PrivateHeaders
             // have the same values, the hash code will be different.
             cacheControl3.Private = true;
-            cacheControl3.PrivateHeaders.Add("token2");
+            cacheControl3.PrivateHeaders.Add("PLACEHOLDER2");
             CompareValues(cacheControl1, cacheControl3, false);
 
             cacheControl4.Private = true;
-            cacheControl4.PrivateHeaders.Add("token3");
+            cacheControl4.PrivateHeaders.Add("PLACEHOLDER3");
             CompareValues(cacheControl3, cacheControl4, false);
 
             cacheControl5.Extensions.Add(new NameValueHeaderValue("custom"));
@@ -386,9 +386,9 @@ namespace Microsoft.Net.Http.Headers
 
             expected = new CacheControlHeaderValue();
             expected.NoCache = true;
-            expected.NoCacheHeaders.Add("token1");
-            expected.NoCacheHeaders.Add("token2");
-            CheckValidTryParse("no-cache=\"token1, token2\"", expected);
+            expected.NoCacheHeaders.Add("PLACEHOLDER1");
+            expected.NoCacheHeaders.Add("PLACEHOLDER2");
+            CheckValidTryParse("no-cache=\"PLACEHOLDER1, PLACEHOLDER2\"", expected);
 
             expected = new CacheControlHeaderValue();
             expected.NoStore = true;
@@ -406,12 +406,12 @@ namespace Microsoft.Net.Http.Headers
             expected = new CacheControlHeaderValue();
             expected.Public = true;
             expected.Private = true;
-            expected.PrivateHeaders.Add("token1");
+            expected.PrivateHeaders.Add("PLACEHOLDER1");
             expected.MustRevalidate = true;
             expected.ProxyRevalidate = true;
             expected.Extensions.Add(new NameValueHeaderValue("c", "d"));
             expected.Extensions.Add(new NameValueHeaderValue("a", "b"));
-            CheckValidTryParse(",public, , private=\"token1\", must-revalidate, c=d, proxy-revalidate, a=b", expected);
+            CheckValidTryParse(",public, , private=\"PLACEHOLDER1\", must-revalidate, c=d, proxy-revalidate, a=b", expected);
 
             expected = new CacheControlHeaderValue();
             expected.Private = true;
@@ -428,7 +428,7 @@ namespace Microsoft.Net.Http.Headers
         [InlineData(null)]
         [InlineData("")]
         [InlineData("    ")]
-        // Token-only values
+        // PLACEHOLDER-only values
         [InlineData("no-store=15")]
         [InlineData("no-store=")]
         [InlineData("no-transform=a")]
@@ -441,17 +441,17 @@ namespace Microsoft.Net.Http.Headers
         [InlineData("must-revalidate=")]
         [InlineData("proxy-revalidate=x")]
         [InlineData("proxy-revalidate=")]
-        // Token with optional field-name list
+        // PLACEHOLDER with optional field-name list
         [InlineData("no-cache=")]
-        [InlineData("no-cache=token")]
-        [InlineData("no-cache=\"token")]
-        [InlineData("no-cache=\"\"")] // at least one token expected as value
+        [InlineData("no-cache=PLACEHOLDER")]
+        [InlineData("no-cache=\"PLACEHOLDER")]
+        [InlineData("no-cache=\"\"")] // at least one PLACEHOLDER expected as value
         [InlineData("private=")]
-        [InlineData("private=token")]
-        [InlineData("private=\"token")]
-        [InlineData("private=\",\"")] // at least one token expected as value
+        [InlineData("private=PLACEHOLDER")]
+        [InlineData("private=\"PLACEHOLDER")]
+        [InlineData("private=\",\"")] // at least one PLACEHOLDER expected as value
         [InlineData("private=\"=\"")]
-        // Token with delta-seconds value
+        // PLACEHOLDER with delta-seconds value
         [InlineData("max-age")]
         [InlineData("max-age=")]
         [InlineData("max-age=a")]

@@ -229,7 +229,7 @@
     </ItemGroup>
 
     <PropertyGroup>
-      <Image>ubuntu.14.04</Image>
+      <Image>ubuntu.18.04</Image>
 
       <DebSharedFxDependencies>@(_DebSharedFxDependencies->'"%(Identity)": { "package_version": "%(Version)" }', ', ')</DebSharedFxDependencies>
 

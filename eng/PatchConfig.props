@@ -100,4 +100,13 @@ Later on, this will be checked using this condition:
       @aspnet/signalr-protocol-msgpack;
     </PackagesInPatch>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.30' ">
+    <PackagesInPatch>
+      Microsoft.AspNetCore.Authentication.JwtBearer;
+    </PackagesInPatch>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.31' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
 </Project>

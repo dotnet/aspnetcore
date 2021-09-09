@@ -20,6 +20,58 @@
     {
       "placeholder": "1qaz@WSX",
       "_justification": "This is a fake password used in test code."
-    }
+    },
+    {
+      "file": "\\src\\DataProtection\\Extensions\\test\\TestFiles\\TestCert.pfx",
+      "_justification": "Legitimate UT certificate file with private key"
+    },
+        {
+      "file": "\\src\\DataProtection\\Extensions\\test\\TestFiles\\TestCert2.pfx",
+      "_justification": "Legitimate UT certificate file with private key"
+    },
+    {
+      "file": "\\src\\DefaultBuilder\\test\\Microsoft.AspNetCore.FunctionalTests\\testCert.pfx",
+      "_justification": "Legitimate UT certificate file with private key"
+    },
+    {
+      "file": "\\src\\DataProtection\\DataProtection\\test\\TestFiles\\TestCert1.pfx",
+      "_justification": "Legitimate UT certificate file with private key"
+    },
+    {
+      "file": "\\src\\DataProtection\\DataProtection\\test\\TestFiles\\TestCert2.pfx",
+      "_justification": "Legitimate UT certificate file with private key"
+    },
+    {
+      "file": "\\src\\Middleware\\WebSockets\\test\\ConformanceTests\\AutobahnTestApp\\TestResources\\testCert.pfx",
+      "_justification": "Legitimate UT certificate file with private key"
+    },
+    {
+      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\aspnetdevcert.pfx",
+      "_justification": "Legitimate UT certificate file with private key"
+    },
+    {
+      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\eku.client.pfx",
+      "_justification": "Legitimate UT certificate file with private key"
+    },
+    {
+      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\eku.code_signing.pfx",
+      "_justification": "Legitimate UT certificate file with private key"
+    },
+    {
+      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\eku.multiple_usages.pfx",
+      "_justification": "Legitimate UT certificate file with private key"
+    },
+    {
+      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\eku.server.pfx",
+      "_justification": "Legitimate UT certificate file with private key"
+    },
+    {
+      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\no_extensions.pfx",
+      "_justification": "Legitimate UT certificate file with private key"
+    },
+    {
+      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\testCert.pfx",
+      "_justification": "Legitimate UT certificate file with private key"
+    },
   ]
 }

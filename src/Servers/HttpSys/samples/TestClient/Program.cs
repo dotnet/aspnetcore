@@ -19,7 +19,7 @@ namespace TestClient
             WebRequestHandler handler = new WebRequestHandler();
             handler.ServerCertificateValidationCallback = (_, __, ___, ____) => true;
             // handler.UseDefaultCredentials = true;
-            handler.Credentials = new NetworkCredential(@"redmond\chrross", "passwird");
+            handler.Credentials = new NetworkCredential(@"redmond\chrross", "PLACEHOLDER");
             HttpClient client = new HttpClient(handler);
 
             /*

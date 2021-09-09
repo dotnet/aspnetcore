@@ -90,6 +90,9 @@ fi
 dockerfile="$DIR/build/docker/$image.Dockerfile"
 tagname="aspnetcore-build-$image"
 
+# Use a location for .dotnet/ that's not under repo root in the container and don't reuse host's folder.
+mkdir "$(dirname $DIR)/.dotnet-$image"
+
 docker build "$(dirname "$dockerfile")" \
     --build-arg "USER=$(whoami)" \
     --build-arg "USER_ID=$(id -u)" \
@@ -114,6 +117,7 @@ docker run \
     -e PB_ASSETROOTURL \
     -e PRODUCTBUILDID \
     -v "$DIR:/code/build" \
+    -v "$(dirname $DIR)/.dotnet-$image:/code/.dotnet" \
     ${docker_args[@]+"${docker_args[@]}"} \
     $tagname \
     ./build.sh \

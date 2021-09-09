@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -23,7 +24,9 @@ namespace Microsoft.AspNetCore.Identity.Test
             _output = output;
         }
 
-        [Fact]
+        // Because this test runs on .NET Core and seems reliable there, likely not worth running on .NET Framework.
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.CLR, SkipReason = "At least flaky on .NET Framework.")]
         public async Task IdentityUI_ScriptTags_SubresourceIntegrityCheck()
         {
             var slnDir = GetSolutionDir();
@@ -39,7 +42,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.NotEmpty(scriptTags);
 
             var shasum = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            using (var client = new HttpClient(new RetryHandler(new HttpClientHandler() { })))
+            using (var client = new HttpClient(new RetryHandler(new HttpClientHandler(), _output)))
             {
                 foreach (var script in scriptTags)
                 {
@@ -63,22 +66,52 @@ namespace Microsoft.AspNetCore.Identity.Test
             });
         }
 
-        class RetryHandler : DelegatingHandler
+        private class RetryHandler : DelegatingHandler
         {
-            public RetryHandler(HttpMessageHandler innerHandler) : base(innerHandler) { }
+            private readonly ITestOutputHelper _output;
+
+            public RetryHandler(HttpMessageHandler innerHandler, ITestOutputHelper output) : base(innerHandler)
+            {
+                _output = output;
+            }
+
             protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
                 HttpResponseMessage result = null;
-                for (var i = 0; i < 10; i++)
+                var method = request.Method;
+                var url = request.RequestUri;
+                var waitIntervalBeforeRetry = 1;
+
+                // Try 6 times with 1, 2, 4, 8, 16 seconds between attempts. Last attempt may throw or report
+                // error to caller.
+                for (var i = 0; i < 5; i++)
                 {
-                    result = await base.SendAsync(request, cancellationToken);
-                    if (result.IsSuccessStatusCode)
+                    try
                     {
-                        return result;
+                        _output.WriteLine($"Sending request '{method} - {url}' {i+1} attempt.");
+                        result = await base.SendAsync(request, cancellationToken);
+                        if (result.IsSuccessStatusCode)
+                        {
+                            return result;
+                        }
+                        else
+                        {
+                            _output.WriteLine($"Request '{method} - {url}' failed with {result.StatusCode}.");
+                        }
                     }
-                    await Task.Delay(1000);
+                    catch (Exception e)
+                    {
+                        _output.WriteLine($"Request '{method} - {url}' failed with {e.ToString()}");
+                    }
+                    finally
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(waitIntervalBeforeRetry), cancellationToken);
+                        waitIntervalBeforeRetry = waitIntervalBeforeRetry * 2;
+                    }
                 }
-                return result;
+
+                // Try one last time to show the actual error.
+                return await base.SendAsync(request, cancellationToken);
             }
         }
 
