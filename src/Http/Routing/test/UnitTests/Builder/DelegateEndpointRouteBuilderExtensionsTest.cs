@@ -223,8 +223,8 @@ namespace Microsoft.AspNetCore.Builder
         [Fact]
         public void MapGet_ImplicitFromService()
         {
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().AddSingleton<Todo>().BuildServiceProvider()));
-            _ = builder.MapGet("/", (Todo todo) => { });
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().AddSingleton<TodoService>().BuildServiceProvider()));
+            _ = builder.MapGet("/", (TodoService todo) => { });
 
             var dataSource = GetBuilderEndpointDataSource(builder);
             // Trigger Endpoint build by calling getter.
@@ -243,8 +243,8 @@ namespace Microsoft.AspNetCore.Builder
         [Fact]
         public void MapDelete_ImplicitFromService()
         {
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().AddSingleton<Todo>().BuildServiceProvider()));
-            _ = builder.MapDelete("/", (Todo todo) => { });
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().AddSingleton<TodoService>().BuildServiceProvider()));
+            _ = builder.MapDelete("/", (TodoService todo) => { });
 
             var dataSource = GetBuilderEndpointDataSource(builder);
             // Trigger Endpoint build by calling getter.
@@ -267,8 +267,8 @@ namespace Microsoft.AspNetCore.Builder
         [Fact]
         public void MapGet_ExplicitFromService()
         {
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().AddSingleton<Todo>().BuildServiceProvider()));
-            _ = builder.MapGet("/", ([TestFromServiceAttribute] Todo todo) => { });
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().AddSingleton<TodoService>().BuildServiceProvider()));
+            _ = builder.MapGet("/", ([TestFromServiceAttribute] TodoService todo) => { });
 
             var dataSource = GetBuilderEndpointDataSource(builder);
             // Trigger Endpoint build by calling getter.
@@ -287,8 +287,8 @@ namespace Microsoft.AspNetCore.Builder
         [Fact]
         public void MapDelete_ExplicitFromService()
         {
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().AddSingleton<Todo>().BuildServiceProvider()));
-            _ = builder.MapDelete("/", ([TestFromServiceAttribute] Todo todo) => { });
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().AddSingleton<TodoService>().BuildServiceProvider()));
+            _ = builder.MapDelete("/", ([TestFromServiceAttribute] TodoService todo) => { });
 
             var dataSource = GetBuilderEndpointDataSource(builder);
             // Trigger Endpoint build by calling getter.
@@ -748,6 +748,13 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         class Todo
+        {
+
+        }
+
+        // Here to more easily disambiguate when ToDo is
+        // intended to be validated as an implicit service in tests
+        class TodoService
         {
 
         }
