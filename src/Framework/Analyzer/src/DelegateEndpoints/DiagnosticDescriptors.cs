@@ -37,8 +37,8 @@ namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints
 
         internal static readonly DiagnosticDescriptor DetectMismatchedParameterOptionality = new(
             "ASP0006",
-            "Parameter optionality is mismatched",
-            "'{0}' argument should be annotated as optional to match route parameter",
+            "Route parameter and argument optionality is mismatched",
+            "'{0}' argument should be annotated as optional or nullable to match route parameter",
             "Usage",
             DiagnosticSeverity.Warning,
             isEnabledByDefault: true,

@@ -20,6 +20,11 @@ public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
         IInvocationOperation invocation,
         IMethodSymbol methodSymbol)
     {
+        if (invocation.Arguments.Length < 2)
+        {
+            return;
+        }
+
         var value = invocation.Arguments[1].Value;
         if (value.ConstantValue is not { HasValue: true } constant ||
             constant.Value is not string routeTemplate)
@@ -27,38 +32,37 @@ public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var parametersInArguments = methodSymbol.Parameters;
-        var parametersInRoute = GetParametersFromRoute(routeTemplate);
-
-        foreach (var parameter in parametersInArguments)
+        var allDeclarations = methodSymbol.GetAllMethodSymbolsOfPartialParts();
+        foreach (var method in allDeclarations)
         {
-            var isOptional = parameter.IsOptional || parameter.NullableAnnotation != NullableAnnotation.NotAnnotated;
-            var location = parameter.DeclaringSyntaxReferences.SingleOrDefault()?.GetSyntax().GetLocation();
-            var paramName = parameter.Name;
-            var parameterFound = parametersInRoute.TryGetValue(paramName, out var routeParam);
+            var parametersInArguments = method.Parameters;
+            var enumerator = new RouteTokenEnumerator(routeTemplate);
 
-            if (!isOptional && parameterFound && routeParam.IsOptional)
+            while (enumerator.MoveNext())
             {
-                context.ReportDiagnostic(Diagnostic.Create(
-                    DiagnosticDescriptors.DetectMismatchedParameterOptionality,
-                    location,
-                    paramName));
+                foreach (var parameter in parametersInArguments)
+                {
+                    var paramName = parameter.Name;
+                    //  If this is not the methpd parameter associated with the route
+                    // parameter then continue looking for it in the list
+                    if (!enumerator.CurrentName.Equals(paramName.AsSpan(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+                    var argumentIsOptional = parameter.IsOptional || parameter.NullableAnnotation != NullableAnnotation.NotAnnotated;
+                    var location = parameter.DeclaringSyntaxReferences.SingleOrDefault()?.GetSyntax().GetLocation();
+                    var routeParamIsOptional = enumerator.CurrentQualifiers.IndexOf('?') > -1;
+
+                    if (!argumentIsOptional && routeParamIsOptional)
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(
+                            DiagnosticDescriptors.DetectMismatchedParameterOptionality,
+                            location,
+                            paramName));
+                    }
+                }
             }
         }
-    }
-
-    private static IDictionary<string, RouteParameter> GetParametersFromRoute(string routeTemplate)
-    {
-        var enumerator = new RouteTokenEnumerator(routeTemplate);
-        Dictionary<string, RouteParameter> result = new(StringComparer.OrdinalIgnoreCase);
-        while (enumerator.MoveNext())
-        {
-            var isOptional = enumerator.CurrentQualifiers.IndexOf('?') > -1;
-            result.Add(
-                enumerator.CurrentName.ToString(),
-                new RouteParameter(enumerator.CurrentName.ToString(), isOptional));
-        }
-        return result;
     }
 
     internal ref struct RouteTokenEnumerator
@@ -132,6 +136,4 @@ public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
 
         return -1;
     }
-
-    internal record RouteParameter(string Name, bool IsOptional);
 }

@@ -1,19 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
 using System.Collections.Immutable;
-using Microsoft.CodeAnalysis.Testing.Verifiers;
+using System.Globalization;
 using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Testing;
+using Microsoft.CodeAnalysis.Testing.Verifiers;
 using Xunit;
-using Microsoft.AspNetCore.Analyzers.DelegateEndpoints;
 
-namespace Microsoft.AspNetCore.Analyzers.Testing.Utilities;
-public static class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
+namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints;
+
+public static class CSharpDelegateEndpointsCodeFixVerifier<TAnalyzer, TCodeFix>
     where TAnalyzer : DelegateEndpointAnalyzer, new()
     where TCodeFix : DelegateEndpointFixer, new()
 {
@@ -25,7 +25,7 @@ public static class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
 
     public static Task VerifyAnalyzerAsync(string source, params DiagnosticResult[] expected)
     {
-        var test = new CSharpAnalyzerVerifier<TAnalyzer>.Test { TestCode = source };
+        var test = new CSharpDelegateEndpointsAnalyzerVerifier<TAnalyzer>.Test { TestCode = source };
         test.ExpectedDiagnostics.AddRange(expected);
         return test.RunAsync();
     }
@@ -43,13 +43,20 @@ public static class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
     {
         var test = new DelegateEndpointAnalyzerTest
         {
-            TestState = {
+            TestState =
+            {
                 Sources = { sources, usageSource },
+                // We need to set the output type to an exe to properly
+                // support top-level programs in the tests. Otherwise,
+                // the test infra will assume we are trying to build a library.
+                OutputKind = OutputKind.ConsoleApplication
             },
-            FixedState = {
+            FixedState =
+            {
                 Sources =  { fixedSources, usageSource }
             }
         };
+
         test.TestState.ExpectedDiagnostics.AddRange(expected);
         return test.RunAsync();
     }
@@ -74,4 +81,3 @@ public static class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
         }
     }
 }
-

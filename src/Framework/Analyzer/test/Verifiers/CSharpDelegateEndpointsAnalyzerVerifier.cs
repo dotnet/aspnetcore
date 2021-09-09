@@ -1,24 +1,23 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
 using System.Collections.Immutable;
-using Microsoft.CodeAnalysis.Testing.Verifiers;
+using System.Globalization;
 using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Testing;
+using Microsoft.CodeAnalysis.Testing.Verifiers;
 using Xunit;
-using Microsoft.AspNetCore.Analyzers.DelegateEndpoints;
 
-namespace Microsoft.AspNetCore.Analyzers.Testing.Utilities;
+namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints;
 
-public static class CSharpAnalyzerVerifier<TAnalyzer>
+public static class CSharpDelegateEndpointsAnalyzerVerifier<TAnalyzer>
     where TAnalyzer : DelegateEndpointAnalyzer, new()
 {
     public static DiagnosticResult Diagnostic(string diagnosticId = null)
-        => CSharpAnalyzerVerifier<DelegateEndpointAnalyzer>.Diagnostic(diagnosticId);
+        => CSharpDelegateEndpointsAnalyzerVerifier<DelegateEndpointAnalyzer>.Diagnostic(diagnosticId);
 
     public static DiagnosticResult Diagnostic(DiagnosticDescriptor descriptor)
         => new DiagnosticResult(descriptor);
@@ -29,5 +28,6 @@ public static class CSharpAnalyzerVerifier<TAnalyzer>
         test.ExpectedDiagnostics.AddRange(expected);
         return test.RunAsync();
     }
+
     public class Test : CSharpCodeFixTest<TAnalyzer, EmptyCodeFixProvider, XUnitVerifier> { }
 }
