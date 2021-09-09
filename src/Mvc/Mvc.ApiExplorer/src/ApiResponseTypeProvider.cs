@@ -201,7 +201,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             return results.Values.ToList();
         }
 
-        private static void CalculateResponseFormatForType(ApiResponseType apiResponse, MediaTypeCollection declaredContentTypes, IEnumerable<IApiResponseTypeMetadataProvider>? responseTypeMetadataProviders, IModelMetadataProvider? modelMetadataProvider)
+        // Shared with EndpointMetadataApiDescriptionProvider
+        internal static void CalculateResponseFormatForType(ApiResponseType apiResponse, MediaTypeCollection declaredContentTypes, IEnumerable<IApiResponseTypeMetadataProvider>? responseTypeMetadataProviders, IModelMetadataProvider? modelMetadataProvider)
         {
             // If response formats have already been calculate for this type,
             // then exit early. This avoids populating the ApiResponseFormat for

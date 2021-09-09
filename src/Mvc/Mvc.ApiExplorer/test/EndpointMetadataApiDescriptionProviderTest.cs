@@ -635,6 +635,38 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.True(bodyParameterDescription.IsRequired);
         }
 
+        [Fact]
+        public void FavorsProducesMetadataOverAttribute()
+        {
+            // Arrange
+            var builder = CreateBuilder();
+            builder.MapGet("/api/todos", [ProducesResponseType(typeof(List<string>), StatusCodes.Status200OK)]() => "")
+                .Produces<InferredJsonClass>(StatusCodes.Status200OK);
+            var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+            var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+            var hostEnvironment = new HostEnvironment
+            {
+                ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+            };
+            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+
+            // Act
+            provider.OnProvidersExecuting(context);
+            provider.OnProvidersExecuted(context);
+
+            // Assert
+            Assert.Collection(
+                context.Results.SelectMany(r => r.SupportedResponseTypes).OrderBy(r => r.StatusCode),
+                responseType =>
+                {
+                    Assert.Equal(typeof(InferredJsonClass), responseType.Type);
+                    Assert.Equal(200, responseType.StatusCode);
+                    Assert.Equal(new[] { "application/json" }, GetSortedMediaTypes(responseType));
+
+                });
+        }
+
 #nullable enable
 
         [Fact]
