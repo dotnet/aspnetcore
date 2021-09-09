@@ -27,7 +27,7 @@ public class DetectMismatchedParameterOptionalityFixer : CodeFixProvider
         {
             context.RegisterCodeFix(
                 CodeAction.Create("Fix mismatched route parameter and argument optionality",
-                    cancellationToken => FixMismatchedParameterOptionality(context, cancellationToken),
+                    cancellationToken => FixMismatchedParameterOptionality(diagnostic, context.Document, cancellationToken),
                     equivalenceKey: DiagnosticDescriptors.DetectMismatchedParameterOptionality.Id),
                 diagnostic);
         }
@@ -35,31 +35,21 @@ public class DetectMismatchedParameterOptionalityFixer : CodeFixProvider
         return Task.CompletedTask;
     }
 
-    private static async Task<Document> FixMismatchedParameterOptionality(CodeFixContext context, CancellationToken cancellationToken)
+    private static async Task<Document> FixMismatchedParameterOptionality(Diagnostic diagnostic, Document document, CancellationToken cancellationToken)
     {
-        DocumentEditor editor = await DocumentEditor.CreateAsync(context.Document, cancellationToken);
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+        DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken);
+        var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
         if (root == null)
         {
-            return context.Document;
-        }
-
-        var diagnostic = context.Diagnostics.SingleOrDefault();
-
-        if (diagnostic == null)
-        {
-            return context.Document;
+            return document;
         }
 
         var param = root.FindNode(diagnostic.Location.SourceSpan);
-        if (param != null && param is ParameterSyntax parameterSyntax)
+        if (param is ParameterSyntax { Type: { } parameterType } parameterSyntax)
         {
-            if (parameterSyntax.Type != null)
-            {
-                var newParam = parameterSyntax.WithType(SyntaxFactory.NullableType(parameterSyntax.Type));
-                editor.ReplaceNode(parameterSyntax, newParam);
-            }
+            var newParam = parameterSyntax.WithType(SyntaxFactory.NullableType(parameterType));
+            editor.ReplaceNode(parameterSyntax, newParam);
         }
 
         return editor.GetChangedDocument();

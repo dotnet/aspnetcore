@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="All" />
 
     <InternalsVisibleTo Include="Microsoft.AspNetCore.App.Analyzers.Test" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.App.CodeFixes" />
