@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Routing
             // Only apply the conventions once
             var conventions = Interlocked.Exchange(ref _conventions, null);
 
-            if (conventions != null)
+            if (conventions is not null)
             {
                 foreach (var convention in conventions)
                 {
