@@ -120,9 +120,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           DependsOnTargets="ResolveReferences;FindReferenceAssembliesForReferences">
     <ItemGroup>
       <!-- Exclude transitive external dependencies that are not directly referenced in AspNetCore or Runtime. -->
-      <_DisallowedReferenceAssemblies Include="
-          System.Net.Quic.dll;
-          System.Security.Cryptography.Pkcs.dll" />
+      <_DisallowedReferenceAssemblies Include="System.Net.Quic.dll; System.Security.Cryptography.Pkcs.dll" />
       <_AvailableRuntimeRefAssemblies Include="$(RuntimeTransportReferenceDirectory)*.dll"
           Exclude="@(_DisallowedReferenceAssemblies->'$(RuntimeTransportReferenceDirectory)%(Filename)%(Extension)')" />
     </ItemGroup>
@@ -132,12 +130,22 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     </JoinItems>
 
     <ItemGroup>
-      <!-- Again, ignore ref/ assemblies provided in the transport package that we don't want in this package. -->
+      <!--
+        Grab full dependency closure but exclude Microsoft.NETCore.App.Ref assets (avoid duplicates) and
+        Microsoft.Internal.Runtime.AspNetCore.Transport assets (almost all added just below).
+
+        Filename exclusions are due to implementation assemblies creeping into the closure. Reference assemblies
+        for all are available in the transport package though System.Security.Cryptography.Pkcs is excluded.
+      -->
       <AspNetCoreReferenceAssemblyPath
           Include="@(ReferencePathWithRefAssemblies)"
           Exclude="
-            @(_ReferencedRuntimeRefAssemblies);
-            @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'Microsoft.NETCore.App.Ref'))" />
+            @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'Microsoft.NETCore.App.Ref'));
+            @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'Microsoft.Internal.Runtime.AspNetCore.Transport'));
+            @(ReferencePathWithRefAssemblies->WithMetadataValue('Filename', 'System.Diagnostics.EventLog'));
+            @(ReferencePathWithRefAssemblies->WithMetadataValue('Filename', 'System.IO.Pipelines'));
+            @(ReferencePathWithRefAssemblies->WithMetadataValue('Filename', 'System.Security.Cryptography.Pkcs'));
+            @(ReferencePathWithRefAssemblies->WithMetadataValue('Filename', 'System.Security.Cryptography.Xml'))" />
 
       <AspNetCoreReferenceAssemblyPath
           Include="@(_ReferencedRuntimeRefAssemblies->'$(RuntimeTransportReferenceDirectory)%(FileName)%(Extension)')" />
