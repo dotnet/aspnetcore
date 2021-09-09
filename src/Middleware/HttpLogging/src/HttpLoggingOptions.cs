@@ -45,6 +45,8 @@ namespace Microsoft.AspNetCore.HttpLogging
             HeaderNames.Host,
             HeaderNames.MaxForwards,
             HeaderNames.Range,
+            HeaderNames.SecWebSocketExtensions,
+            HeaderNames.SecWebSocketVersion,
             HeaderNames.TE,
             HeaderNames.Trailer,
             HeaderNames.TransferEncoding,
@@ -70,6 +72,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             HeaderNames.Age,
             HeaderNames.Allow,
             HeaderNames.AltSvc,
+            HeaderNames.Connection,
             HeaderNames.ContentDisposition,
             HeaderNames.ContentLanguage,
             HeaderNames.ContentLength,
@@ -83,6 +86,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             HeaderNames.Server,
             HeaderNames.Status,
             HeaderNames.TransferEncoding,
+            HeaderNames.Upgrade,
             HeaderNames.XPoweredBy
         };
 
