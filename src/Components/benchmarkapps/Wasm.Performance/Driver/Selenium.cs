@@ -93,7 +93,7 @@ namespace Wasm.Performance.Driver
                     if (PoolForBrowserLogs)
                     {
                         // Run in background.
-                        var logs = new RemoteLogs(driver);
+                        var logs = driver.Manage().Logs;
                         _ = Task.Run(async () =>
                         {
                             while (!cancellationToken.IsCancellationRequested)
