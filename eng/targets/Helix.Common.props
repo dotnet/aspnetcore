@@ -43,9 +43,7 @@
   <!-- x64 Queues for public helix-matrix.yml and quarantine pipelines, Windows cases-->
   <ItemGroup Condition="'$(TargetArchitecture)' == 'x64' AND '$(IsHelixDaily)' == 'true' AND '$(_UseHelixOpenQueues)' == 'true'">
     <HelixAvailableTargetQueue Include="Windows.10.Amd64.Server20H2.Open" Platform="Windows" />
-    <!-- TODO Re-enable Win-7 queue when dotnet restore are fixed. https://github.com/dotnet/aspnetcore/issues/32683 -->
-    <!-- <HelixAvailableTargetQueue Include="Windows.7.Amd64.Open" Platform="Windows" /> -->
-    <HelixAvailableTargetQueue Include="Windows.81.Amd64.Open" Platform="Windows" />
+    <HelixAvailableTargetQueue Include="Windows.11.Amd64.ClientPre.Open" Platform="Windows" />
   </ItemGroup>
 
   <!-- x64 Queues for internal helix-matrix.yml and quarantine pipelines -->
