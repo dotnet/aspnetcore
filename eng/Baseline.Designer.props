@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <AspNetCoreBaselineVersion>2.1.29</AspNetCoreBaselineVersion>
+    <AspNetCoreBaselineVersion>2.1.30</AspNetCoreBaselineVersion>
   </PropertyGroup>
   <!-- Package: dotnet-dev-certs-->
   <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-dev-certs' ">
@@ -127,7 +127,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.JwtBearer-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.JwtBearer' ">
-    <BaselinePackageVersion>2.1.2</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.30</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.JwtBearer' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication" Version="[2.1.2, )" />
