@@ -12,24 +12,37 @@ namespace Microsoft.AspNetCore.Routing
     {
         internal EndpointBuilder EndpointBuilder { get; }
 
-        private readonly List<Action<EndpointBuilder>> _conventions;
+        private List<Action<EndpointBuilder>>? _conventions;
 
         public DefaultEndpointConventionBuilder(EndpointBuilder endpointBuilder)
         {
             EndpointBuilder = endpointBuilder;
-            _conventions = new List<Action<EndpointBuilder>>();
+            _conventions = new();
         }
 
         public void Add(Action<EndpointBuilder> convention)
         {
-            _conventions.Add(convention);
+            var conventions = _conventions;
+
+            if (conventions is null)
+            {
+                throw new InvalidOperationException("Conventions cannot be added after building the endpoint");
+            }
+
+            conventions.Add(convention);
         }
 
         public Endpoint Build()
         {
-            foreach (var convention in _conventions)
+            // Only apply the conventions once
+            var conventions = Interlocked.Exchange(ref _conventions, null);
+
+            if (conventions is not null)
             {
-                convention(EndpointBuilder);
+                foreach (var convention in conventions)
+                {
+                    convention(EndpointBuilder);
+                }
             }
 
             return EndpointBuilder.Build();
