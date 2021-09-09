@@ -41,6 +41,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         private Matcher CreateMatcher(IReadOnlyList<Endpoint> endpoints)
         {
             var builder = _matcherBuilderFactory();
+            var seenEndpointNames = new HashSet<string>();
             for (var i = 0; i < endpoints.Count; i++)
             {
                 // By design we only look at RouteEndpoint here. It's possible to
@@ -48,6 +49,16 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 // ok that we won't route to them.
                 if (endpoints[i] is RouteEndpoint endpoint && endpoint.Metadata.GetMetadata<ISuppressMatchingMetadata>()?.SuppressMatching != true)
                 {
+                    // Validate that endpoint names are unique.
+                    var endpointName = endpoint.Metadata.GetMetadata<IEndpointNameMetadata>()?.EndpointName;
+                    if (endpointName is not null)
+                    {
+                        if (!seenEndpointNames.Add(endpointName))
+                        {
+                            throw new InvalidOperationException($"Duplicate endpoint name {endpointName} found. Endpoint names must be globally unique.");
+                        }
+                    }
+
                     builder.AddEndpoint(endpoint);
                 }
             }
