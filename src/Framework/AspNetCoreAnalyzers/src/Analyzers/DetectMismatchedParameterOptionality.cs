@@ -50,7 +50,7 @@ public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
                         continue;
                     }
                     var argumentIsOptional = parameter.IsOptional || parameter.NullableAnnotation != NullableAnnotation.NotAnnotated;
-                    var location = parameter.DeclaringSyntaxReferences.SingleOrDefault()?.GetSyntax().GetLocation();
+                    var location = parameter.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax().GetLocation();
                     var routeParamIsOptional = enumerator.CurrentQualifiers.IndexOf('?') > -1;
 
                     if (!argumentIsOptional && routeParamIsOptional)

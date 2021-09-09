@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using VerifyCS = Microsoft.AspNetCore.Analyzers.DelegateEndpoints.CSharpDelegateEndpointsCodeFixVerifier<
     Microsoft.AspNetCore.Analyzers.DelegateEndpoints.DelegateEndpointAnalyzer,
-    Microsoft.AspNetCore.Analyzers.DelegateEndpoints.DelegateEndpointFixer>;
+    Microsoft.AspNetCore.Analyzers.DelegateEndpoints.Fixers.DetectMismatchedParameterOptionalityFixer>;
 
 namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints;
 

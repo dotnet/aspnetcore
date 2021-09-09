@@ -3,9 +3,11 @@
 
 using System.Collections.Immutable;
 using System.Globalization;
+using Microsoft.AspNetCore.Analyzers.DelegateEndpoints.Fixers;
 using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Testing;
+using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Testing.Verifiers;
@@ -15,7 +17,7 @@ namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints;
 
 public static class CSharpDelegateEndpointsCodeFixVerifier<TAnalyzer, TCodeFix>
     where TAnalyzer : DelegateEndpointAnalyzer, new()
-    where TCodeFix : DelegateEndpointFixer, new()
+    where TCodeFix : DetectMismatchedParameterOptionalityFixer, new()
 {
     public static DiagnosticResult Diagnostic(string diagnosticId = null)
         => CSharpCodeFixVerifier<TAnalyzer, TCodeFix, XUnitVerifier>.Diagnostic(diagnosticId);

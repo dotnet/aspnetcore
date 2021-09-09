@@ -13,6 +13,7 @@
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
 
     <InternalsVisibleTo Include="Microsoft.AspNetCore.App.Analyzers.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.App.CodeFixes" />
   </ItemGroup>
 
   <ItemGroup>
