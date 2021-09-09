@@ -140,7 +140,7 @@ jobs:
 
   - ${{ if eq(parameters.enableMicrobuild, 'true') }}:
     - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-      - task: MicroBuildSigningPlugin@2
+      - task: MicroBuildSigningPlugin@3
         displayName: Install MicroBuild plugin
         inputs:
           signType: $(_SignType)
