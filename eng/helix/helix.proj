@@ -8,6 +8,10 @@
     <ProjectToBuild Condition="'$(ProjectToBuild)' == '$(MSBuildProjectFullPath)'"/>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <HelixBaseUri>https://helix.int-dot.net</HelixBaseUri>
+  </PropertyGroup>
+
   <Import Project="..\targets\Helix.Common.props" />
   <Import Project="..\Build.props" />
   <Import Project="..\Versions.props" />
