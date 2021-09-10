@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
         private async Task<AccessToken> ObtainAccessTokenAsync(RequestToken token, string verifier)
         {
-            // https://dev.twitter.com/docs/api/1/post/oauth/access_token
+            // https://developer.twitter.com/en/docs/authentication/api-reference/access_token
 
             Logger.ObtainAccessToken();
 
