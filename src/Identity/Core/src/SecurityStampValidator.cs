@@ -90,6 +90,13 @@ namespace Microsoft.AspNetCore.Identity
             // REVIEW: note we lost login authentication method
             context.ReplacePrincipal(newPrincipal);
             context.ShouldRenew = true;
+
+            if (!context.Options.SlidingExpiration)
+            {
+                // On renwal calculate the new ticket length relative to now to avoid
+                // extending the expiration.
+                context.Properties.IssuedUtc = Clock.UtcNow;
+            }
         }
 
         /// <summary>
