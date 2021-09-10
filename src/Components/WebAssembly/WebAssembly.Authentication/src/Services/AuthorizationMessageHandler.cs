@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 {
@@ -36,6 +37,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         {
             _provider = provider;
             _navigation = navigation;
+
+            // Invalidate the cached _lastToken when the authentication state changes
+            if (_provider is AuthenticationStateProvider authStateProvider)
+            {
+                authStateProvider.AuthenticationStateChanged += _ => { _lastToken = null; };
+            }
         }
 
         /// <inheritdoc />
