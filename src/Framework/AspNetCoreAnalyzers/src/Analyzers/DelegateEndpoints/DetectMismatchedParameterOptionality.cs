@@ -13,8 +13,6 @@ namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints;
 
 public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
 {
-    internal const string DetectMismatchedParameterOptionalityRuleId = "ASP0006";
-
     private static void DetectMismatchedParameterOptionality(
         in OperationAnalysisContext context,
         IInvocationOperation invocation,
