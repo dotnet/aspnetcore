@@ -32,6 +32,8 @@
     "webpack-cli": "^3.3.11"
   },
   "resolutions": {
-    "**/set-value": "^2.0.1"
+    "**/set-value": "^2.0.1",
+    "lodash": ">=4.17.21",
+    "url-parse": ">=1.5.0"
   }
 }

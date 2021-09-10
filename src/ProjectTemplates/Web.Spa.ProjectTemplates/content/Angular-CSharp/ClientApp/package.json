@@ -58,5 +58,9 @@
     "protractor": "~5.4.2",
     "ts-node": "~8.4.1",
     "tslint": "~5.20.0"
+  },
+  "resolutions": {
+    "url-parse": ">=1.5.0",
+    "lodash": ">=4.17.21"
   }
 }
