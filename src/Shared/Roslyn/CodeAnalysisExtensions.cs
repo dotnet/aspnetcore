@@ -148,5 +148,26 @@ namespace Microsoft.CodeAnalysis
                 typeSymbol = typeSymbol.BaseType;
             }
         }
+
+        // Adapted from https://github.com/dotnet/roslyn/blob/929272/src/Workspaces/Core/Portable/Shared/Extensions/IMethodSymbolExtensions.cs#L61
+        public static IEnumerable<IMethodSymbol> GetAllMethodSymbolsOfPartialParts(this IMethodSymbol method)
+        {
+            if (method.PartialDefinitionPart != null)
+            {
+                Debug.Assert(method.PartialImplementationPart == null && !SymbolEqualityComparer.Default.Equals(method.PartialDefinitionPart, method));
+                yield return method;
+                yield return method.PartialDefinitionPart;
+            }
+            else if (method.PartialImplementationPart != null)
+            {
+                Debug.Assert(!SymbolEqualityComparer.Default.Equals(method.PartialImplementationPart, method));
+                yield return method.PartialImplementationPart;
+                yield return method;
+            }
+            else
+            {
+                yield return method;
+            }
+        }
     }
 }

@@ -63,7 +63,11 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <ItemGroup>
     <!-- Note: do not add _TransitiveExternalAspNetCoreAppReference to this list. This is intentionally not listed as a direct package reference. -->
     <Reference Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage);@(ExternalAspNetCoreAppReference)" />
-    <ProjectReference Include="..\..\Analyzer\src\Microsoft.AspNetCore.App.Analyzers.csproj"
+    <ProjectReference Include="..\..\AspNetCoreAnalyzers\src\Analyzers\Microsoft.AspNetCore.App.Analyzers.csproj"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir" />
+    <ProjectReference Include="..\..\AspNetCoreAnalyzers\src\CodeFixes\Microsoft.AspNetCore.App.CodeFixes.csproj"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true"
       UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir" />
@@ -160,6 +164,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
       <RefPackContent Include="$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)\$(AnalyzersPackagePath)**\*.*" PackagePath="$(AnalyzersPackagePath)" />
       <RefPackContent Include="$(ArtifactsDir)bin\Microsoft.AspNetCore.App.Analyzers\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.App.Analyzers.dll" PackagePath="$(AnalyzersPackagePath)dotnet/cs/" />
+      <RefPackContent Include="$(ArtifactsDir)bin\Microsoft.AspNetCore.App.CodeFixes\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.App.CodeFixes.dll" PackagePath="$(AnalyzersPackagePath)dotnet/cs/" />
 
       <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" PackagePath="$(RefAssemblyPackagePath)" />
       <RefPackContent Include="@(AspNetCoreReferenceDocXml)" PackagePath="$(RefAssemblyPackagePath)" />
