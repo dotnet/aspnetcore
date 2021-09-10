@@ -219,6 +219,53 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.NotNull(context.Principal);
         }
 
+        [Fact]
+        public async Task OnValidateIdentityDoesNotExtendExpirationWhenSlidingIsDisabled()
+        {
+            var user = new PocoUser("test");
+            var httpContext = new Mock<HttpContext>();
+            var userManager = MockHelpers.MockUserManager<PocoUser>();
+            var identityOptions = new Mock<IOptions<IdentityOptions>>();
+            identityOptions.Setup(a => a.Value).Returns(new IdentityOptions());
+            var claimsManager = new Mock<IUserClaimsPrincipalFactory<PocoUser>>();
+            var options = new Mock<IOptions<SecurityStampValidatorOptions>>();
+            options.Setup(a => a.Value).Returns(new SecurityStampValidatorOptions { ValidationInterval = TimeSpan.FromMinutes(1) });
+            var contextAccessor = new Mock<IHttpContextAccessor>();
+            contextAccessor.Setup(a => a.HttpContext).Returns(httpContext.Object);
+            var signInManager = new Mock<SignInManager<PocoUser>>(userManager.Object,
+                contextAccessor.Object, claimsManager.Object, identityOptions.Object, null, new Mock<IAuthenticationSchemeProvider>().Object, new DefaultUserConfirmation<PocoUser>());
+            signInManager.Setup(s => s.ValidateSecurityStampAsync(It.IsAny<ClaimsPrincipal>())).Returns(Task.FromResult(user));
+            signInManager.Setup(s => s.CreateUserPrincipalAsync(It.IsAny<PocoUser>())).Returns(Task.FromResult(new ClaimsPrincipal(new ClaimsIdentity("auth"))));
+            signInManager.Setup(s => s.SignInAsync(user, false, null)).Throws(new Exception("Shouldn't be called"));
+            var services = new ServiceCollection();
+            services.AddSingleton(options.Object);
+            services.AddSingleton(signInManager.Object);
+            var clock = new SystemClock();
+            services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<PocoUser>(options.Object, signInManager.Object, new SystemClock(), new LoggerFactory()));
+            httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
+            var id = new ClaimsIdentity(IdentityConstants.ApplicationScheme);
+            id.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
+
+            var ticket = new AuthenticationTicket(new ClaimsPrincipal(id),
+                new AuthenticationProperties
+                {
+                    IssuedUtc = clock.UtcNow - TimeSpan.FromDays(1),
+                    ExpiresUtc = clock.UtcNow + TimeSpan.FromDays(1),
+                },
+                IdentityConstants.ApplicationScheme);
+            var context = new CookieValidatePrincipalContext(httpContext.Object, new AuthenticationSchemeBuilder(IdentityConstants.ApplicationScheme) { HandlerType = typeof(NoopHandler) }.Build(),
+                new CookieAuthenticationOptions() { SlidingExpiration = false }, ticket);
+            Assert.NotNull(context.Properties);
+            Assert.NotNull(context.Options);
+            Assert.NotNull(context.Principal);
+            await SecurityStampValidator.ValidatePrincipalAsync(context);
+
+            // Issued is moved forward, expires is not.
+            Assert.Equal(clock.UtcNow, context.Properties.IssuedUtc);
+            Assert.Equal(clock.UtcNow + TimeSpan.FromDays(1), context.Properties.ExpiresUtc);
+            Assert.NotNull(context.Principal);
+        }
+
         private async Task RunRememberClientCookieTest(bool shouldStampValidate, bool validationSuccess)
         {
             var user = new PocoUser("test");
