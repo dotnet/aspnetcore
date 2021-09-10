@@ -76,7 +76,7 @@ function loadViaWebpackNoCache<T>(webpackConfigPath: string, modulePath: string)
             // a .css file inside an NPM module (e.g., require('somepackage/somefile.css')), then we do need to
             // load that via Webpack rather than as a regular CommonJS module.
             //
-            // So, configure webpack-externals-plugin to 'whitelist' (i.e., not treat as external) any file
+            // So, configure webpack-externals-plugin to 'allow' (i.e., not treat as external) any file
             // that has an extension other than .js. Also, since some libraries such as font-awesome refer to
             // their own files with cache-busting querystrings (e.g., (url('./something.css?v=4.1.2'))), we
             // need to treat '?' as an alternative 'end of filename' marker.
