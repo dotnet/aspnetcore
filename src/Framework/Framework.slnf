@@ -21,7 +21,7 @@
       "src\\FileProviders\\Manifest.MSBuildTask\\src\\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.csproj",
       "src\\Framework\\AspNetCoreAnalyzers\\src\\Analyzers\\Microsoft.AspNetCore.App.Analyzers.csproj",
       "src\\Framework\\AspNetCoreAnalyzers\\src\\CodeFixes\\Microsoft.AspNetCore.App.CodeFixes.csproj",
-      "src\\Framework\\Analyzer\\test\\Microsoft.AspNetCore.App.Analyzers.Test.csproj",
+      "src\\Framework\\AspNetCoreAnalyzers\\test\\Microsoft.AspNetCore.App.Analyzers.Test.csproj",
       "src\\Framework\\App.Ref\\src\\Microsoft.AspNetCore.App.Ref.csproj",
       "src\\Framework\\App.Runtime\\src\\Microsoft.AspNetCore.App.Runtime.csproj",
       "src\\Framework\\test\\Microsoft.AspNetCore.App.UnitTests.csproj",
