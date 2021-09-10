@@ -530,7 +530,7 @@ namespace Interop.FunctionalTests.Http3
             {
                 await host.StartAsync().DefaultTimeout();
 
-                var requestContent = new StreamingHttpContent();
+                var requestContent = new StringContent("Hello world");
 
                 var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
                 request.Content = requestContent;
@@ -543,13 +543,6 @@ namespace Interop.FunctionalTests.Http3
                 cts.CancelAfter(TimeSpan.FromSeconds(1));
                 var responseTask = client.SendAsync(request, cts.Token);
 
-                var requestStream = await requestContent.GetStreamAsync().DefaultTimeout();
-
-                // Send headers
-                await requestStream.FlushAsync().DefaultTimeout();
-                // Write content
-                await requestStream.WriteAsync(TestData).DefaultTimeout();
-
                 var response = await responseTask.DefaultTimeout();
 
                 // Assert
@@ -561,6 +554,7 @@ namespace Interop.FunctionalTests.Http3
                 await host.StopAsync().DefaultTimeout();
             }
         }
+
 
         private static Version GetProtocol(HttpProtocols protocol)
         {
