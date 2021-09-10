@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// </summary>
         public ISet<string> RequestHeaders => _internalRequestHeaders;
 
-        internal HashSet<string> _internalRequestHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        internal HashSet<string> _internalRequestHeaders = new HashSet<string>(26, StringComparer.OrdinalIgnoreCase)
         {
             HeaderNames.Accept,
             HeaderNames.AcceptCharset,
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// </summary>
         public ISet<string> ResponseHeaders => _internalResponseHeaders;
 
-        internal HashSet<string> _internalResponseHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        internal HashSet<string> _internalResponseHeaders = new HashSet<string>(20, StringComparer.OrdinalIgnoreCase)
         {
             HeaderNames.AcceptRanges,
             HeaderNames.Age,
