@@ -43,4 +43,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+    internal static readonly DiagnosticDescriptor DetectMismatchedParameterOptionality = new(
+        "ASP0007",
+        "Route parameter and argument optionality is mismatched",
+        "'{0}' argument should be annotated as optional or nullable to match route parameter",
+        "Usage",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
 }

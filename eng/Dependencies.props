@@ -56,6 +56,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Extensions.Options" />
     <LatestPackageReference Include="Microsoft.Extensions.Primitives" />
     <LatestPackageReference Include="Microsoft.Win32.Registry" />
+    <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing.XUnit" />
     <LatestPackageReference Include="System.Buffers" />
     <LatestPackageReference Include="System.CodeDom" />
     <LatestPackageReference Include="System.CommandLine.Experimental" />
