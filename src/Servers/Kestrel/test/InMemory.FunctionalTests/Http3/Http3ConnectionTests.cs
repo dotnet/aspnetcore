@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var frame = await requestStream.ReceiveFrameAsync();
             Assert.Equal(Http3FrameType.Headers, frame.Type);
 
-            var continueBytesQpackEncoded = new byte[] { 0x5f, 0x30, 0x03, 0x31, 0x30, 0x30 };
+            var continueBytesQpackEncoded = new byte[] { 0x00, 0x00, 0xff, 0x00 };
             Assert.Equal(continueBytesQpackEncoded, frame.PayloadSequence.ToArray());
 
             await requestStream.SendDataAsync(Encoding.ASCII.GetBytes("Hello world"), endStream: false);

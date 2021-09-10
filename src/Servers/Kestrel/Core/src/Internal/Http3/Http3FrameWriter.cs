@@ -22,8 +22,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
     internal class Http3FrameWriter
     {
-        // These bytes represent a "100 Continue" encoded with QPACK.
-        // To arrive at this, we first take the index in the QPACK static table for status
+        // These bytes represent a ":status: 100" continue response header frame encoded with
+        // QPACK. To arrive at this, we first take the index in the QPACK static table for status
         // 100 (https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#appendix-A), which
         // is 63, and encode it to get ff 00 (see QPackEncoder.EncodeStaticIndexedHeaderField).
         // The two zero bytes are for the section prefix
