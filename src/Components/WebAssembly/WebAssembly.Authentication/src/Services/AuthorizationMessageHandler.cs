@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
     {
         private readonly IAccessTokenProvider _provider;
         private readonly NavigationManager _navigation;
+        private readonly AuthenticationStateChangedHandler _authenticationStateChangedHandler;
         private AccessToken _lastToken;
         private AuthenticationHeaderValue _cachedHeader;
         private Uri[] _authorizedUris;
@@ -41,7 +42,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             // Invalidate the cached _lastToken when the authentication state changes
             if (_provider is AuthenticationStateProvider authStateProvider)
             {
-                authStateProvider.AuthenticationStateChanged += _ => { _lastToken = null; };
+                _authenticationStateChangedHandler = _ => { _lastToken = null; };
+                authStateProvider.AuthenticationStateChanged += _authenticationStateChangedHandler;
             }
         }
 
@@ -126,6 +128,17 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             }
 
             return this;
+        }
+
+        /// <inheritdoc />
+        protected override void Dispose(bool disposing)
+        {
+            if (_provider is AuthenticationStateProvider authStateProvider)
+            {
+                authStateProvider.AuthenticationStateChanged -= _authenticationStateChangedHandler;
+            }
+
+            base.Dispose(disposing);
         }
     }
 }
