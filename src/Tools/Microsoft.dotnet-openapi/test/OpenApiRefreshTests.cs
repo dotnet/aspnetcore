@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DotNet.OpenApi.Tests;
 using Xunit;
@@ -24,7 +23,7 @@ namespace Microsoft.DotNet.OpenApi.Refresh.Tests
             var app = GetApplication();
             var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
+            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error}");
             Assert.Equal(0, run);
 
             // File will grow after the refresh.
@@ -38,7 +37,7 @@ namespace Microsoft.DotNet.OpenApi.Refresh.Tests
             app = GetApplication();
             run = app.Execute(new[] { "refresh", FakeOpenApiUrl });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
+            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error}");
             Assert.Equal(0, run);
 
             var secondWriteTime = File.GetLastWriteTime(expectedJsonPath);
@@ -56,7 +55,8 @@ namespace Microsoft.DotNet.OpenApi.Refresh.Tests
             var app = GetApplication();
             var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl });
 
-            AssertNoErrors(run);
+            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error}");
+            Assert.Equal(0, run);
 
             // File will shrink after the refresh.
             var expectedJsonPath = Path.Combine(_tempDir.Root, "filename.json");
@@ -69,7 +69,8 @@ namespace Microsoft.DotNet.OpenApi.Refresh.Tests
             app = GetApplication();
             run = app.Execute(new[] { "refresh", FakeOpenApiUrl });
 
-            AssertNoErrors(run);
+            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error}");
+            Assert.Equal(0, run);
 
             var secondWriteTime = File.GetLastWriteTime(expectedJsonPath);
             Assert.True(firstWriteTime < secondWriteTime, $"File wasn't updated! {firstWriteTime} {secondWriteTime}");
@@ -85,7 +86,8 @@ namespace Microsoft.DotNet.OpenApi.Refresh.Tests
             var app = GetApplication();
             var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl });
 
-            AssertNoErrors(run);
+            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error}");
+            Assert.Equal(0, run);
 
             var expectedJsonPath = Path.Combine(_tempDir.Root, "filename.json");
             var firstWriteTime = File.GetLastWriteTime(expectedJsonPath);
@@ -95,7 +97,8 @@ namespace Microsoft.DotNet.OpenApi.Refresh.Tests
             app = GetApplication();
             run = app.Execute(new[] { "refresh", FakeOpenApiUrl });
 
-            AssertNoErrors(run);
+            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error}");
+            Assert.Equal(0, run);
 
             var secondWriteTime = File.GetLastWriteTime(expectedJsonPath);
             Assert.Equal(firstWriteTime, secondWriteTime);
