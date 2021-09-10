@@ -1,20 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Threading.Tasks;
-using System.Xml;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -342,16 +335,13 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
         private static string ComputeSignature(string consumerSecret, string? tokenSecret, string signatureData)
         {
-            using (var algorithm = new HMACSHA1())
-            {
-                algorithm.Key = Encoding.ASCII.GetBytes(
-                    string.Format(CultureInfo.InvariantCulture,
-                        "{0}&{1}",
-                        Uri.EscapeDataString(consumerSecret),
-                        string.IsNullOrEmpty(tokenSecret) ? string.Empty : Uri.EscapeDataString(tokenSecret)));
-                var hash = algorithm.ComputeHash(Encoding.ASCII.GetBytes(signatureData));
-                return Convert.ToBase64String(hash);
-            }
+            var key = Encoding.ASCII.GetBytes(
+                string.Format(CultureInfo.InvariantCulture,
+                    "{0}&{1}",
+                    Uri.EscapeDataString(consumerSecret),
+                    string.IsNullOrEmpty(tokenSecret) ? string.Empty : Uri.EscapeDataString(tokenSecret)));
+            var hash = HMACSHA1.HashData(key, Encoding.ASCII.GetBytes(signatureData));
+            return Convert.ToBase64String(hash);
         }
 
         // https://developer.twitter.com/en/docs/apps/callback-urls
