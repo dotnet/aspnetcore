@@ -27,10 +27,6 @@ updates:
       include: scope
     labels:
       - area-infrastructure
-    reviewers:
-      - "dotnet/aspnet-build"
-      - "dougbu"
-      - "wtgodbe"
     target-branch: "release/2.1"
   - package-ecosystem: "gitsubmodule"
     directory: "/"
@@ -43,10 +39,6 @@ updates:
       include: scope
     labels:
       - area-infrastructure
-    reviewers:
-      - "dotnet/aspnet-build"
-      - "dougbu"
-      - "wtgodbe"
     target-branch: "release/3.1"
   - package-ecosystem: "gitsubmodule"
     directory: "/"
@@ -59,10 +51,6 @@ updates:
       include: scope
     labels:
       - area-infrastructure
-    reviewers:
-      - "dotnet/aspnet-build"
-      - "dougbu"
-      - "wtgodbe"
     target-branch: "release/5.0"
   - package-ecosystem: "gitsubmodule"
     directory: "/"
@@ -75,8 +63,4 @@ updates:
       include: scope
     labels:
       - area-infrastructure
-    reviewers:
-      - "dotnet/aspnet-build"
-      - "dougbu"
-      - "wtgodbe"
     target-branch: "release/6.0"
