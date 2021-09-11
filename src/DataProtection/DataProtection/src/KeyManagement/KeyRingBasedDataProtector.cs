@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
@@ -142,36 +143,17 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             }
         }
 
-        // Helper function to read a GUID from a 32-bit alignment; useful on architectures where unaligned reads
-        // can result in weird behaviors at runtime.
-        private static Guid Read32bitAlignedGuid(void* ptr)
+        private static Guid ReadGuid(void* ptr)
         {
-            Debug.Assert((long)ptr % 4 == 0);
-
-            Guid retVal;
-            if (BitConverter.IsLittleEndian)
-            {
-                ((int*)&retVal)[0] = ((int*)ptr)[0];
-                ((int*)&retVal)[1] = ((int*)ptr)[1];
-                ((int*)&retVal)[2] = ((int*)ptr)[2];
-                ((int*)&retVal)[3] = ((int*)ptr)[3];
-            }
-            else
-            {
-                // The first 8 bytes of the Guid hold one 32-bit integer
-                // and two 16-bit integers that must be byte-swapped.
-                ((byte*)&retVal)[0] = ((byte*)ptr)[3];
-                ((byte*)&retVal)[1] = ((byte*)ptr)[2];
-                ((byte*)&retVal)[2] = ((byte*)ptr)[1];
-                ((byte*)&retVal)[3] = ((byte*)ptr)[0];
-                ((byte*)&retVal)[4] = ((byte*)ptr)[5];
-                ((byte*)&retVal)[5] = ((byte*)ptr)[4];
-                ((byte*)&retVal)[6] = ((byte*)ptr)[7];
-                ((byte*)&retVal)[7] = ((byte*)ptr)[6];
-                ((int*)&retVal)[2] = ((int*)ptr)[2];
-                ((int*)&retVal)[3] = ((int*)ptr)[3];
-            }
-            return retVal;
+#if NETCOREAPP
+            // Performs appropriate endianness fixups
+            return new Guid(new ReadOnlySpan<byte>(ptr, sizeof(Guid)));
+#elif NETSTANDARD2_0 || NET461
+            // netstandard/netfx assumes little-endian
+            return Unsafe.ReadUnaligned<Guid>(ptr);
+#else
+#error Update target frameworks
+#endif
         }
 
         private static uint ReadBigEndian32BitInteger(byte* ptr)
@@ -233,7 +215,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 fixed (byte* pbInput = protectedData)
                 {
                     magicHeaderFromPayload = ReadBigEndian32BitInteger(pbInput);
-                    keyIdFromPayload = Read32bitAlignedGuid(&pbInput[sizeof(uint)]);
+                    keyIdFromPayload = ReadGuid(&pbInput[sizeof(uint)]);
                 }
 
                 // Are the magic header and version information correct?
@@ -402,7 +384,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 // The caller will not mutate it.
                 fixed (byte* pExistingTemplate = existingTemplate)
                 {
-                    if (Read32bitAlignedGuid(&pExistingTemplate[sizeof(uint)]) == keyId)
+                    if (ReadGuid(&pExistingTemplate[sizeof(uint)]) == keyId)
                     {
                         return existingTemplate;
                     }
