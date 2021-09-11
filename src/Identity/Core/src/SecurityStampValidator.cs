@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Identity
 
             if (!context.Options.SlidingExpiration)
             {
-                // On renwal calculate the new ticket length relative to now to avoid
+                // On renewal calculate the new ticket length relative to now to avoid
                 // extending the expiration.
                 context.Properties.IssuedUtc = Clock.UtcNow;
             }
