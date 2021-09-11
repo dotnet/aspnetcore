@@ -1095,8 +1095,8 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                             id.RemoveClaim(claim);
                             id.AddClaim(new Claim("counter", claim.Value + "1"));
                         }
-                        // Causes the expiry time to not be extended because the liftime is
-                        // calculated to relative to the issue time.
+                        // Causes the expiry time to not be extended because the lifetime is
+                        // calculated relative to the issue time.
                         ctx.Properties.IssuedUtc = _clock.UtcNow;
                         return Task.FromResult(0);
                     }
