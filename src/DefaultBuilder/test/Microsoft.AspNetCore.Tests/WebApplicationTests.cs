@@ -948,7 +948,8 @@ namespace Microsoft.AspNetCore.Tests
             await using var app = builder.Build();
 
             var chosenEndpoint = string.Empty;
-            app.MapGet("/", async c => {
+            app.MapGet("/", async c =>
+            {
                 chosenEndpoint = c.GetEndpoint().DisplayName;
                 await c.Response.WriteAsync("Hello World");
             }).WithDisplayName("One");
@@ -982,7 +983,8 @@ namespace Microsoft.AspNetCore.Tests
 
             app.UseRouting();
 
-            app.MapGet("/1", async c => {
+            app.MapGet("/1", async c =>
+            {
                 chosenEndpoint = c.GetEndpoint().DisplayName;
                 await c.Response.WriteAsync("Hello World");
             }).WithDisplayName("One");
