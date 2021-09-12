@@ -1447,6 +1447,62 @@ namespace Microsoft.AspNetCore.Tests
             Assert.NotEqual(value0, value1);
         }
 
+        [Fact]
+        public async Task DeveloperExceptionPageIsOnByDefaltInDevelopment()
+        {
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions() { EnvironmentName = Environments.Development });
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            app.MapGet("/", void () => throw new InvalidOperationException("BOOM"));
+
+            await app.StartAsync();
+
+            var client = app.GetTestClient();
+
+            var response = await client.GetAsync("/");
+
+            Assert.False(response.IsSuccessStatusCode);
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+            Assert.Contains("BOOM", await response.Content.ReadAsStringAsync());
+            Assert.Contains("text/plain", response.Content.Headers.ContentType.MediaType);
+        }
+
+        [Fact]
+        public async Task DeveloperExceptionPageDoesNotGetCaughtByStartupFilters()
+        {
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions() { EnvironmentName = Environments.Development });
+            builder.WebHost.UseTestServer();
+            builder.Services.AddSingleton<IStartupFilter, ThrowingStartupFilter>();
+            await using var app = builder.Build();
+
+            await app.StartAsync();
+
+            var client = app.GetTestClient();
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetAsync("/"));
+
+            Assert.Equal("BOOM Filter", ex.Message);
+        }
+
+        [Fact]
+        public async Task DeveloperExceptionPageIsNotOnInProduction()
+        {
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions() { EnvironmentName = Environments.Production });
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            app.MapGet("/", void () => throw new InvalidOperationException("BOOM"));
+
+            await app.StartAsync();
+
+            var client = app.GetTestClient();
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetAsync("/"));
+
+            Assert.Equal("BOOM", ex.Message);
+        }
+
         public class RandomConfigurationSource : IConfigurationSource
         {
             public IConfigurationProvider Build(IConfigurationBuilder builder)
