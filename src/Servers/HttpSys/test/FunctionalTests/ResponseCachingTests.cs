@@ -383,7 +383,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/32853")]
         public async Task Caching_SendFileWithFullContentLength_Cached()
         {
             var requestCount = 1;
