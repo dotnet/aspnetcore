@@ -136,9 +136,9 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
 
   try {
     await connection.start();
-  } catch (ex) {
+  } catch (ex: any) {
     unhandledError(connection, ex as Error, logger);
-    
+
     if (ex.errorType === 'FailedToNegotiateWithServerError') {
       // Connection with the server has been interrupted, and we're in the process of reconnecting.
       // Throw this exception so it can be handled at the reconnection layer, and don't show the
