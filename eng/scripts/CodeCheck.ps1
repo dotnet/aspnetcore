@@ -142,12 +142,14 @@ try {
     $solutionFile = Split-Path -Leaf $solution
 
     Write-Host "Checking that $solutionFile is up to date"
+
+    # $solutionProjects will store relative paths i.e. the exact solution and solution filter content.
     $solutionProjects = New-Object 'System.Collections.Generic.HashSet[string]'
 
     # Where-Object needed to ignore heading `dotnet sln` outputs
     & dotnet sln $solution list  | Where-Object { $_ -like '*proj' } | ForEach-Object {
         $proj = Join-Path $repoRoot $_
-        if (-not ($solutionProjects.Add($proj))) {
+        if (-not ($solutionProjects.Add($_))) {
             LogError "Duplicate project. $solutionFile references a project more than once: $proj."
         }
         if (-not (Test-Path $proj)) {
@@ -156,7 +158,7 @@ try {
     }
 
     Write-Host "Checking solution filters"
-    Get-ChildItem -Recurse $repoRoot\*.slnf | ForEach-Object {
+    Get-ChildItem -Recurse "$repoRoot\*.slnf" | ForEach-Object {
         $solutionFilter = $_
         $json = Get-Content -Raw -Path $solutionFilter |ConvertFrom-Json
         $json.solution.projects | ForEach-Object {
@@ -195,8 +197,9 @@ try {
         foreach ($file in $changedFiles) {
             if ($changedFilesExclusions -contains $file) {continue}
             $filePath = Resolve-Path "${repoRoot}/${file}"
-            LogError "Generated code is not up to date in $file. You might need to regenerate the reference " +
-                "assemblies or project list (see docs/ReferenceResolution.md)" -filepath $filePath
+            LogError  -filepath $filePath `
+                "Generated code is not up to date in $file. You might need to regenerate the reference " +
+                "assemblies or project list (see docs/ReferenceResolution.md)"
             & git --no-pager diff --ignore-space-change $filePath
         }
     }
