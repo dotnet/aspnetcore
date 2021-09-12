@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             store = store ?? new Mock<IRoleStore<TRole>>().Object;
             var roles = new List<IRoleValidator<TRole>>();
             roles.Add(new RoleValidator<TRole>());
-            return new Mock<RoleManager<TRole>>(store, roles, new UpperInvariantLookupNormalizer(),
+            return new Mock<RoleManager<TRole>>(store, roles, MockLookupNormalizer(),
                 new IdentityErrorDescriber(), null);
         }
 
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var pwdValidators = new List<PasswordValidator<TUser>>();
             pwdValidators.Add(new PasswordValidator<TUser>());
             var userManager = new UserManager<TUser>(store, options.Object, new PasswordHasher<TUser>(),
-                userValidators, pwdValidators, new UpperInvariantLookupNormalizer(),
+                userValidators, pwdValidators, MockLookupNormalizer(),
                 new IdentityErrorDescriber(), null,
                 new Mock<ILogger<UserManager<TUser>>>().Object);
             validator.Setup(v => v.ValidateAsync(userManager, It.IsAny<TUser>()))
@@ -61,10 +61,24 @@ namespace Microsoft.AspNetCore.Identity.Test
             var roles = new List<IRoleValidator<TRole>>();
             roles.Add(new RoleValidator<TRole>());
             return new RoleManager<TRole>(store, roles,
-                new UpperInvariantLookupNormalizer(),
+                MockLookupNormalizer(),
                 new IdentityErrorDescriber(),
                 null);
         }
 
+        public static ILookupNormalizer MockLookupNormalizer()
+        {
+            var normalizerFunc = new Func<string, string>(i =>
+            {
+                if (i == null)
+                    return null;
+                else
+                    return Convert.ToBase64String(Encoding.UTF8.GetBytes(i)).ToUpperInvariant();
+            });
+            var lookupNormalizer = new Mock<ILookupNormalizer>();
+            lookupNormalizer.Setup(i => i.NormalizeName(It.IsAny<string>())).Returns(normalizerFunc);
+            lookupNormalizer.Setup(i => i.NormalizeEmail(It.IsAny<string>())).Returns(normalizerFunc);
+            return lookupNormalizer.Object;
+        }
     }
 }

@@ -97,10 +97,21 @@ namespace Microsoft.AspNetCore.E2ETesting
                 throw new InvalidOperationException("Selenium config path not configured. Does this project import the E2ETesting.targets?");
             }
 
+            // In AzDO, the path to the system chromedriver is in an env var called CHROMEWEBDRIVER
+            // We want to use this because it should match the installed browser version
+            // If the env var is not set, then we fall back on using whatever is in the Selenium config file
+            var chromeDriverArg = string.Empty;
+            var chromeDriverPathEnvVar = Environment.GetEnvironmentVariable("CHROMEWEBDRIVER");
+            if (!string.IsNullOrEmpty(chromeDriverPathEnvVar))
+            {
+                chromeDriverArg = $"--javaArgs=-Dwebdriver.chrome.driver={chromeDriverPathEnvVar}/chromedriver";
+                output.WriteLine($"Using chromedriver at path {chromeDriverPathEnvVar}");
+            }
+
             var psi = new ProcessStartInfo
             {
                 FileName = "npm",
-                Arguments = $"run selenium-standalone start -- --config \"{seleniumConfigPath}\" -- -port {port}",
+                Arguments = $"run selenium-standalone start -- --config \"{seleniumConfigPath}\" {chromeDriverArg} -- -port {port}",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
             };
@@ -133,12 +144,21 @@ namespace Microsoft.AspNetCore.E2ETesting
             {
                 process = Process.Start(psi);
                 pidFilePath = await WriteTrackingFileAsync(output, trackingFolder, process);
-                sentinel = StartSentinelProcess(process, pidFilePath, SeleniumProcessTimeout);
+
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    sentinel = StartSentinelProcess(process, pidFilePath, SeleniumProcessTimeout);
+                }
             }
             catch
             {
                 ProcessCleanup(process, pidFilePath);
-                ProcessCleanup(sentinel, pidFilePath: null);
+
+                if (sentinel is not null)
+                {
+                    ProcessCleanup(sentinel, pidFilePath: null);
+                }
+
                 throw;
             }
 
@@ -187,6 +207,9 @@ namespace Microsoft.AspNetCore.E2ETesting
                     }
                 }
                 catch (OperationCanceledException)
+                {
+                }
+                catch (HttpRequestException)
                 {
                 }
 
@@ -292,7 +315,11 @@ Captured output lines:
         public void Dispose()
         {
             ProcessCleanup(_process, _sentinelPath);
-            ProcessCleanup(_sentinelProcess, pidFilePath: null);
+
+            if (_sentinelProcess is not null)
+            {
+                ProcessCleanup(_sentinelProcess, pidFilePath: null);
+            }
         }
     }
 }

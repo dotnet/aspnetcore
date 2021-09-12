@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
@@ -91,6 +92,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             bool shouldLog = false;
 
             var now = DateTime.UtcNow;
+            var stopWatch = ValueStopwatch.StartNew();
             if (options.LoggingFields.HasFlag(W3CLoggingFields.Date))
             {
                 shouldLog |= AddToList(elements, _dateIndex, now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
@@ -213,6 +215,11 @@ namespace Microsoft.AspNetCore.HttpLogging
             if (options.LoggingFields.HasFlag(W3CLoggingFields.ProtocolStatus))
             {
                 shouldLog |= AddToList(elements, _protocolStatusIndex, response.StatusCode.ToString(CultureInfo.InvariantCulture));
+            }
+
+            if (options.LoggingFields.HasFlag(W3CLoggingFields.TimeTaken))
+            {
+                shouldLog |= AddToList(elements, _timeTakenIndex, stopWatch.GetElapsedTime().TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
             }
 
             // Write the log

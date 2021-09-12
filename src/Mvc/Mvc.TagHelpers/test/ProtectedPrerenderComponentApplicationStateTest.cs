@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -24,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expected = @"{""MyValue"":""AQIDBA==""}";
             var store = new ProtectedPrerenderComponentApplicationStore(_provider);
 
-            var state = new Dictionary<string, byte[]>()
+            var state = new Dictionary<string, byte []>()
             {
                 ["MyValue"] = new byte[] { 1, 2, 3, 4 }
             };
@@ -40,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         public async Task GetPersistStateAsync_CanUnprotectPersistedState()
         {
             // Arrange
-            var expectedState = new Dictionary<string, byte[]>()
+            var expectedState = new Dictionary<string, byte []>()
             {
                 ["MyValue"] = new byte[] { 1, 2, 3, 4 }
             };
@@ -52,7 +54,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var restored = await store.GetPersistedStateAsync();
 
             // Assert
-            Assert.Equal(expectedState, restored);
+            Assert.Equal(
+                expectedState.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToArray()),
+                restored.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToArray()));
         }
 
         [Fact]

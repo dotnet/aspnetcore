@@ -82,7 +82,26 @@ namespace Microsoft.AspNetCore.Http
             options ??= ResolveSerializerOptions(response.HttpContext);
 
             response.ContentType = contentType ?? JsonConstants.JsonContentTypeWithCharset;
+            // if no user provided token, pass the RequestAborted token and ignore OperationCanceledException
+            if (!cancellationToken.CanBeCanceled)
+            {
+                return WriteAsJsonAsyncSlow<TValue>(response.Body, value, options, response.HttpContext.RequestAborted);
+            }
+
             return JsonSerializer.SerializeAsync<TValue>(response.Body, value, options, cancellationToken);
+        }
+
+        private static async Task WriteAsJsonAsyncSlow<TValue>(
+            Stream body,
+            TValue value,
+            JsonSerializerOptions? options,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                await JsonSerializer.SerializeAsync<TValue>(body, value, options, cancellationToken);
+            }
+            catch (OperationCanceledException) { }
         }
 
         /// <summary>
@@ -157,7 +176,28 @@ namespace Microsoft.AspNetCore.Http
             options ??= ResolveSerializerOptions(response.HttpContext);
 
             response.ContentType = contentType ?? JsonConstants.JsonContentTypeWithCharset;
+
+            // if no user provided token, pass the RequestAborted token and ignore OperationCanceledException
+            if (!cancellationToken.CanBeCanceled)
+            {
+                return WriteAsJsonAsyncSlow(response.Body, value, type, options, response.HttpContext.RequestAborted);
+            }
+
             return JsonSerializer.SerializeAsync(response.Body, value, type, options, cancellationToken);
+        }
+
+        private static async Task WriteAsJsonAsyncSlow(
+            Stream body,
+            object? value,
+            Type type,
+            JsonSerializerOptions? options,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                await JsonSerializer.SerializeAsync(body, value, type, options, cancellationToken);
+            }
+            catch (OperationCanceledException) { }
         }
 
         private static JsonSerializerOptions ResolveSerializerOptions(HttpContext httpContext)

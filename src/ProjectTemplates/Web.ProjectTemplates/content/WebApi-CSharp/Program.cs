@@ -8,10 +8,7 @@ using Graph = Microsoft.Graph;
 #if (OrganizationalAuth || IndividualB2CAuth)
 using Microsoft.Identity.Web;
 #endif
-#if (EnableOpenAPI)
-using Microsoft.OpenApi.Models;
-#endif
-#if (OrganizationalAuth || IndividualB2CAuth || GenerateGraph || EnableOpenAPI)
+#if (OrganizationalAuth || IndividualB2CAuth || GenerateGraph)
 
 #endif
 var builder = WebApplication.CreateBuilder(args);

@@ -483,7 +483,7 @@ namespace CodeGenerator
                     }
                     else
                     {
-                        return $"(Unsafe.ReadUnaligned<{type}>(ref nameStart) & 0x{mask:x}{suffix})";
+                        return $"(ReadUnalignedLittleEndian_{type}(ref nameStart) & 0x{mask:x}{suffix})";
                     }
                 }
                 else
@@ -494,11 +494,11 @@ namespace CodeGenerator
                     }
                     else if ((offset / count) == 1)
                     {
-                        return $"(Unsafe.ReadUnaligned<{type}>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof({type}))) & 0x{mask:x}{suffix})";
+                        return $"(ReadUnalignedLittleEndian_{type}(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof({type}))) & 0x{mask:x}{suffix})";
                     }
                     else
                     {
-                        return $"(Unsafe.ReadUnaligned<{type}>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)({offset / count} * sizeof({type})))) & 0x{mask:x}{suffix})";
+                        return $"(ReadUnalignedLittleEndian_{type}(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)({offset / count} * sizeof({type})))) & 0x{mask:x}{suffix})";
                     }
                 }
 
@@ -777,6 +777,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.IO.Pipelines;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -842,7 +843,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }}
             set
             {{
-                {header.SetBit()};
+                if (!StringValues.IsNullOrEmpty(value))
+                {{
+                    {header.SetBit()};
+                }}
+                else
+                {{
+                    {header.ClearBit()};
+                }}
                 _headers._{header.Identifier} = value; {(header.EnhancedSetter == false ? "" : $@"
                 _headers._raw{header.Identifier} = null;")}
             }}")}
@@ -1240,6 +1248,17 @@ $@"        private void Clear(long bitsToClear)
                 }}
             }} while (tempBits != 0);
         }}" : "")}{(loop.ClassName == "HttpRequestHeaders" ? $@"
+        {Each(new string[] {"ushort", "uint", "ulong"}, type => $@"
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static unsafe {type} ReadUnalignedLittleEndian_{type}(ref byte source)
+        {{
+            {type} result = Unsafe.ReadUnaligned<{type}>(ref source);
+            if (!BitConverter.IsLittleEndian)
+            {{
+                result = BinaryPrimitives.ReverseEndianness(result);
+            }}
+            return result;
+        }}")}
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public unsafe void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value, bool checkForNewlineChars)
         {{

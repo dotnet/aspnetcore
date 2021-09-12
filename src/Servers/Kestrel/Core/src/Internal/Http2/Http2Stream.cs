@@ -248,13 +248,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // enabling the use of HTTP to interact with non - HTTP services.
             // A common example is TLS termination.
             var headerScheme = HttpRequestHeaders.HeaderScheme.ToString();
+            HttpRequestHeaders.HeaderScheme = default; // Suppress pseduo headers from the public headers collection.
             if (!ReferenceEquals(headerScheme, Scheme) &&
                 !string.Equals(headerScheme, Scheme, StringComparison.OrdinalIgnoreCase))
             {
                 if (!ServerOptions.AllowAlternateSchemes || !Uri.CheckSchemeName(headerScheme))
                 {
                     ResetAndAbort(new ConnectionAbortedException(
-                        CoreStrings.FormatHttp2StreamErrorSchemeMismatch(HttpRequestHeaders.HeaderScheme, Scheme)), Http2ErrorCode.PROTOCOL_ERROR);
+                        CoreStrings.FormatHttp2StreamErrorSchemeMismatch(headerScheme, Scheme)), Http2ErrorCode.PROTOCOL_ERROR);
                     return false;
                 }
 
@@ -264,6 +265,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // :path (and query) - Required
             // Must start with / except may be * for OPTIONS
             var path = HttpRequestHeaders.HeaderPath.ToString();
+            HttpRequestHeaders.HeaderPath = default; // Suppress pseduo headers from the public headers collection.
             RawTarget = path;
 
             // OPTIONS - https://tools.ietf.org/html/rfc7540#section-8.1.2.3
@@ -301,6 +303,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             // :method
             _methodText = HttpRequestHeaders.HeaderMethod.ToString();
+            HttpRequestHeaders.HeaderMethod = default; // Suppress pseduo headers from the public headers collection.
             Method = HttpUtilities.GetKnownMethod(_methodText);
 
             if (Method == HttpMethod.None)
@@ -327,6 +330,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // Prefer this over Host
 
             var authority = HttpRequestHeaders.HeaderAuthority;
+            HttpRequestHeaders.HeaderAuthority = default; // Suppress pseduo headers from the public headers collection.
             var host = HttpRequestHeaders.HeaderHost;
             if (!StringValues.IsNullOrEmpty(authority))
             {
@@ -515,7 +519,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             DecrementActiveClientStreamCount();
 
             ApplyCompletionFlag(StreamCompletionFlags.RstStreamReceived);
-            Abort(new IOException(CoreStrings.Http2StreamResetByClient));
+            Abort(new IOException(CoreStrings.HttpStreamResetByClient));
         }
 
         public void Abort(IOException abortReason)

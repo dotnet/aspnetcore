@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -111,6 +112,54 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             // Assert
             Assert.Equal(expected.ToArray(), body.ToArray());
+        }
+
+        [Fact]
+        public async Task WriteResponseBodyAsync_AsyncEnumerableConnectionCloses()
+        {
+            // Arrange
+            var formatter = GetOutputFormatter();
+            var mediaType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+
+            var body = new MemoryStream();
+            var actionContext = GetActionContext(mediaType, body);
+            var cts = new CancellationTokenSource();
+            actionContext.HttpContext.RequestAborted = cts.Token;
+
+            var asyncEnumerable = AsyncEnumerableClosedConnection();
+            var outputFormatterContext = new OutputFormatterWriteContext(
+                actionContext.HttpContext,
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                asyncEnumerable.GetType(),
+                asyncEnumerable)
+            {
+                ContentType = new StringSegment(mediaType.ToString()),
+            };
+            var iterated = false;
+
+            // Act
+            await formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.GetEncoding("utf-8"));
+
+            // Assert
+            // System.Text.Json might write the '[' before cancellation is observed
+            Assert.InRange(body.ToArray().Length, 0, 1);
+            Assert.False(iterated);
+
+            async IAsyncEnumerable<int> AsyncEnumerableClosedConnection([EnumeratorCancellation] CancellationToken cancellationToken = default)
+            {
+                await Task.Yield();
+                cts.Cancel();
+                // MvcOptions.MaxIAsyncEnumerableBufferLimit is 8192. Pick some value larger than that.
+                foreach (var i in Enumerable.Range(0, 9000))
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        yield break;
+                    }
+                    iterated = true;
+                    yield return i;
+                }
+            }
         }
 
         private class Person

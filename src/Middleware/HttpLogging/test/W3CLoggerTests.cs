@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             var now = DateTime.Now;
             var options = new W3CLoggerOptions()
             {
-                LoggingFields = W3CLoggingFields.Date | W3CLoggingFields.Time | W3CLoggingFields.TimeTaken,
+                LoggingFields = W3CLoggingFields.Date | W3CLoggingFields.Time,
                 LogDirectory = path
             };
             try
@@ -50,11 +50,9 @@ namespace Microsoft.AspNetCore.HttpLogging
                     // Assert that the log was written in the last 10 seconds
                     Assert.True(now.Subtract(startDate).TotalSeconds < 10);
 
-                    Assert.Equal("#Fields: date time time-taken", lines[2]);
+                    Assert.Equal("#Fields: date time", lines[2]);
 
-                    Assert.StartsWith("2021-01-02 03:04:05 ", lines[3]);
-                    // Assert that the log's time-taken is within 10 seconds of DateTime.Now minus our arbitary start time (01/02/21 at 3:04:05)
-                    Assert.True(now.Subtract(_timestampOne).TotalSeconds - Convert.ToDouble(lines[3].Substring(20), CultureInfo.InvariantCulture) < 10);
+                    Assert.StartsWith("2021-01-02 03:04:05", lines[3]);
                 }
             }
             finally
@@ -67,7 +65,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         public async Task HandlesNullValuesAsync()
         {
             var path = Path.GetTempFileName() + "_";
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             var options = new W3CLoggerOptions()
             {
                 LoggingFields = W3CLoggingFields.UriQuery | W3CLoggingFields.Host | W3CLoggingFields.ProtocolStatus,

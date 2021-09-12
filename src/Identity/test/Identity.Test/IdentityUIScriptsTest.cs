@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         [MemberData(nameof(ScriptWithFallbackSrcData))]
         public async Task IdentityUI_ScriptTags_FallbackSourceContent_Matches_CDNContent(ScriptTag scriptTag)
         {
-            var wwwrootDir = Path.Combine(GetProjectBasePath(), "wwwroot");
+            var wwwrootDir = Path.Combine(GetProjectBasePath(), "assets", scriptTag.Version);
 
             var cdnContent = await _httpClient.GetStringAsync(scriptTag.Src);
             var fallbackSrcContent = File.ReadAllText(
@@ -106,8 +106,9 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         private static List<ScriptTag> GetScriptTags()
         {
-            var uiDirV4 = Path.Combine(GetProjectBasePath(), "Areas", "Identity", "Pages", "V5");
-            var cshtmlFiles = GetRazorFiles(uiDirV4);
+            var uiDirV4 = Path.Combine(GetProjectBasePath(), "Areas", "Identity", "Pages", "V4");
+            var uiDirV5 = Path.Combine(GetProjectBasePath(), "Areas", "Identity", "Pages", "V5");
+            var cshtmlFiles = GetRazorFiles(uiDirV4).Concat(GetRazorFiles(uiDirV5));
 
             var scriptTags = new List<ScriptTag>();
             foreach (var cshtmlFile in cshtmlFiles)
@@ -140,7 +141,7 @@ namespace Microsoft.AspNetCore.Identity.Test
 
                 scriptTags.Add(new ScriptTag
                 {
-                    Version = "V4",
+                    Version = cshtmlFile.Contains("V4") ? "V4" : "V5",
                     Src = scriptElement.Source,
                     Integrity = scriptElement.Integrity,
                     FallbackSrc = fallbackSrcAttribute?.Value,

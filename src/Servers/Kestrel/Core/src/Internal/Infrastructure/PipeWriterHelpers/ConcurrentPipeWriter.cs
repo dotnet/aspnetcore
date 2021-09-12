@@ -346,19 +346,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             }
         }
 
-        private BufferSegment AllocateSegmentUnsynchronized(int sizeHint)
+        private BufferSegment AllocateSegmentUnsynchronized(int minSize)
         {
             BufferSegment newSegment = CreateSegmentUnsynchronized();
 
-            if (sizeHint <= _pool.MaxBufferSize)
+            if (minSize <= _pool.MaxBufferSize)
             {
                 // Use the specified pool if it fits
-                newSegment.SetOwnedMemory(_pool.Rent(GetSegmentSize(sizeHint, _pool.MaxBufferSize)));
+                newSegment.SetOwnedMemory(_pool.Rent(GetSegmentSize(minSize, _pool.MaxBufferSize)));
             }
             else
             {
                 // We can't use the recommended pool so use the ArrayPool
-                newSegment.SetOwnedMemory(ArrayPool<byte>.Shared.Rent(sizeHint));
+                newSegment.SetOwnedMemory(ArrayPool<byte>.Shared.Rent(minSize));
             }
 
             _tailMemory = newSegment.AvailableMemory;

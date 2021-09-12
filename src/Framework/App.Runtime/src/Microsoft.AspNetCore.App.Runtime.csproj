@@ -42,7 +42,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- Pack .ni.r2rmap files in symbols package (native symbols for Linux) -->
     <AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder>$(AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder);.r2rmap</AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder>
 
-    <!-- Optimize the framework using the crossgen2 tool -->
+    <!-- Optimize the framework using the crossgen2 tool. Crossgen2 is not currently supported on s390x. -->
+    <CrossgenOutput Condition=" '$(TargetArchitecture)' == 's390x' ">false</CrossgenOutput>
     <CrossgenOutput Condition=" '$(CrossgenOutput)' == '' AND '$(Configuration)' != 'Debug' ">true</CrossgenOutput>
 
     <!-- Produce crossgen2 profiling symbols (.ni.pdb or .r2rmap files). -->
@@ -120,15 +121,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <IncludeAssets>Runtime;Native</IncludeAssets>
     </Reference>
 
-    <!-- Omit System.Security.Permissions closure. https://github.com/dotnet/runtime/issues/54341
-         It is brought in by System.Security.Cryptography.Xml for netstandard2.0 compatibility
-         but not required in net6.0 since the types required exist in System.Security.AccessControl. -->
-    <Reference Include="Microsoft.Win32.SystemEvents" ExcludeAssets="All" />
-    <Reference Include="System.Drawing.Common" ExcludeAssets="All" />
-    <Reference Include="System.Security.Permissions" ExcludeAssets="All" />
-    <Reference Include="System.Windows.Extensions" ExcludeAssets="All" />
-
-    <Reference Include="Microsoft.NETCore.App.Runtime.$(RuntimeIdentifier)"
+    <Reference Condition="'$(CrossgenOutput)' == 'true'"
+        Include="Microsoft.NETCore.App.Runtime.$(RuntimeIdentifier)"
         ExcludeAssets="All"
         PrivateAssets="All"
         GeneratePathProperty="true" />
@@ -137,7 +131,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       This package contains the crossgen2 tool. Unfortunately, it doesn't make the tool easy to use.
       $(GeneratePathProperty) and hacks in the _ExpandRuntimePackageRoot target work around the gaps.
     -->
-    <Reference Include="Microsoft.NETCore.App.Crossgen2.$(BuildOsName)-$(Crossgen2BuildArchitecture)"
+    <Reference Condition="'$(CrossgenOutput)' == 'true'"
+        Include="Microsoft.NETCore.App.Crossgen2.$(BuildOsName)-$(Crossgen2BuildArchitecture)"
         ExcludeAssets="All"
         PrivateAssets="All"
         GeneratePathProperty="true" />

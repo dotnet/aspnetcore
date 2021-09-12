@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Internal;
 using Polly;
+using Polly.Extensions.Http;
 using Polly.Timeout;
 using Xunit;
 
@@ -96,6 +97,54 @@ namespace Microsoft.Extensions.Http
             Assert.Equal(2, callCount);
             Assert.Same(expected, response);
             Assert.Same(expectedRequest, policySelectorRequest);
+        }
+
+        [Fact]
+        public async Task SendAsync_StaticPolicy_PolicyTriggers_CanReexecuteSendAsync_FirstResponseDisposed()
+        {
+            // Arrange
+            var policy = HttpPolicyExtensions.HandleTransientHttpError()
+                .RetryAsync(retryCount: 1);
+
+            var callCount = 0;
+            var fakeContent = new FakeContent();
+            var firstResponse = new HttpResponseMessage()
+            {
+                StatusCode = System.Net.HttpStatusCode.InternalServerError,
+                Content = fakeContent,
+            };
+            var expected = new HttpResponseMessage();
+
+            var handler = new PolicyHttpMessageHandler(policy);
+            handler.InnerHandler = new TestHandler()
+            {
+                OnSendAsync = (req, ct) =>
+                {
+                    if (callCount == 0)
+                    {
+                        callCount++;
+                        return Task.FromResult(firstResponse);
+                    }
+                    else if (callCount == 1)
+                    {
+                        callCount++;
+                        return Task.FromResult(expected);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException();
+                    }
+                }
+            };
+            var invoke = new HttpMessageInvoker(handler);
+
+            // Act
+            var response = await invoke.SendAsync(new HttpRequestMessage(), CancellationToken.None);
+
+            // Assert
+            Assert.Equal(2, callCount);
+            Assert.Same(expected, response);
+            Assert.True(fakeContent.Disposed);
         }
 
         [Fact]
@@ -331,6 +380,32 @@ namespace Microsoft.Extensions.Http
             {
                 Assert.NotNull(OnSendAsync);
                 return OnSendAsync(request, context, cancellationToken);
+            }
+        }
+
+        private class TestHandler : HttpMessageHandler
+        {
+            public Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> OnSendAsync { get; set; }
+
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                Assert.NotNull(OnSendAsync);
+                return OnSendAsync(request, cancellationToken);
+            }
+        }
+
+        private class FakeContent : StringContent
+        {
+            public FakeContent() : base("hello world")
+            {
+            }
+
+            public bool Disposed { get; set; }
+
+            protected override void Dispose(bool disposing)
+            {
+                Disposed = true;
+                base.Dispose(disposing);
             }
         }
     }

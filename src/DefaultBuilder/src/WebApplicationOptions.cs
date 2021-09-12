@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
@@ -63,6 +64,41 @@ namespace Microsoft.AspNetCore.Builder
             {
                 builder.AddInMemoryCollection(config);
             }
+        }
+
+        internal void ApplyApplicationName(IWebHostBuilder webHostBuilder)
+        {
+            string? applicationName = null;
+
+            // We need to "parse" the args here since
+            // we need to set the application name via UseSetting
+            if (Args is not null)
+            {
+                var config = new ConfigurationBuilder()
+                        .AddCommandLine(Args)
+                        .Build();
+
+                applicationName = config[WebHostDefaults.ApplicationKey];
+
+                // This isn't super important since we're not adding any disposable sources
+                // but just in case
+                if (config is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+            }
+
+            // Application name overrides args
+            if (ApplicationName is not null)
+            {
+                applicationName = ApplicationName;
+            }
+
+            // We need to override the application name since the call to Configure will set it to
+            // be the calling assembly's name.
+            applicationName ??= Assembly.GetEntryAssembly()?.GetName()?.Name ?? string.Empty;
+
+            webHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, applicationName);
         }
     }
 }

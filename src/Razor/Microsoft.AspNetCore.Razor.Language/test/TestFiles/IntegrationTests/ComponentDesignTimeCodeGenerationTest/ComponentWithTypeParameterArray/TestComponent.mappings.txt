@@ -1,0 +1,56 @@
+Source Location: (1:0,1 [38] x:\dir\subdir\Test\TestComponent.cshtml)
+|using Microsoft.AspNetCore.Components;|
+Generated Location: (276:11,0 [38] )
+|using Microsoft.AspNetCore.Components;|
+
+Source Location: (52:1,11 [5] x:\dir\subdir\Test\TestComponent.cshtml)
+|TItem|
+Generated Location: (688:23,22 [5] )
+|TItem|
+
+Source Location: (82:5,4 [20] x:\dir\subdir\Test\TestComponent.cshtml)
+|ChildContent(Items1)|
+Generated Location: (1199:40,6 [20] )
+|ChildContent(Items1)|
+
+Source Location: (111:7,1 [37] x:\dir\subdir\Test\TestComponent.cshtml)
+|foreach (var item in Items2)
+{
+    |
+Generated Location: (1343:47,1 [37] )
+|foreach (var item in Items2)
+{
+    |
+
+Source Location: (152:9,8 [18] x:\dir\subdir\Test\TestComponent.cshtml)
+|ChildContent(item)|
+Generated Location: (1511:56,8 [18] )
+|ChildContent(item)|
+
+Source Location: (174:9,30 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+}|
+Generated Location: (1683:63,30 [3] )
+|
+}|
+
+Source Location: (185:12,4 [22] x:\dir\subdir\Test\TestComponent.cshtml)
+|ChildContent(Items3())|
+Generated Location: (1815:71,6 [22] )
+|ChildContent(Items3())|
+
+Source Location: (222:14,7 [248] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    [Parameter] public TItem[] Items1 { get; set; }
+    [Parameter] public List<TItem[]> Items2 { get; set; }
+    [Parameter] public Func<TItem[]> Items3 { get; set; }
+    [Parameter] public RenderFragment<TItem[]> ChildContent { get; set; }
+|
+Generated Location: (2017:80,7 [248] )
+|
+    [Parameter] public TItem[] Items1 { get; set; }
+    [Parameter] public List<TItem[]> Items2 { get; set; }
+    [Parameter] public Func<TItem[]> Items3 { get; set; }
+    [Parameter] public RenderFragment<TItem[]> ChildContent { get; set; }
+|
+

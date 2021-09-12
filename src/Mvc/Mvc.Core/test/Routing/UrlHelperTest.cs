@@ -1,14 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
@@ -68,7 +64,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             string protocol,
             string routeName,
             string template,
-            object defaults)
+            object defaults,
+            object requiredValues)
         {
             var services = CreateServices();
             var routeBuilder = CreateRouteBuilder(services);

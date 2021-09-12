@@ -26,6 +26,36 @@ namespace Microsoft.AspNetCore.Builder
             return Assert.IsType<RouteEndpointBuilder>(Assert.Single(GetBuilderEndpointDataSource(endpointRouteBuilder).EndpointBuilders));
         }
 
+        public static object[][] MapMethods
+        {
+            get
+            {
+                IEndpointConventionBuilder MapGet(IEndpointRouteBuilder routes, string template, RequestDelegate action) =>
+                    routes.MapGet(template, action);
+
+                IEndpointConventionBuilder MapPost(IEndpointRouteBuilder routes, string template, RequestDelegate action) =>
+                    routes.MapPost(template, action);
+
+                IEndpointConventionBuilder MapPut(IEndpointRouteBuilder routes, string template, RequestDelegate action) =>
+                    routes.MapPut(template, action);
+
+                IEndpointConventionBuilder MapDelete(IEndpointRouteBuilder routes, string template, RequestDelegate action) =>
+                    routes.MapDelete(template, action);
+
+                IEndpointConventionBuilder Map(IEndpointRouteBuilder routes, string template, RequestDelegate action) =>
+                    routes.Map(template, action);
+
+                return new object[][]
+                {
+                    new object[] { (Func<IEndpointRouteBuilder, string, RequestDelegate, IEndpointConventionBuilder>)MapGet },
+                    new object[] { (Func<IEndpointRouteBuilder, string, RequestDelegate, IEndpointConventionBuilder>)MapPost },
+                    new object[] { (Func<IEndpointRouteBuilder, string, RequestDelegate, IEndpointConventionBuilder>)MapPut },
+                    new object[] { (Func<IEndpointRouteBuilder, string, RequestDelegate, IEndpointConventionBuilder>)MapDelete },
+                    new object[] { (Func<IEndpointRouteBuilder, string, RequestDelegate, IEndpointConventionBuilder>)Map },
+                };
+            }
+        }
+
         [Fact]
         public void MapEndpoint_StringPattern_BuildsEndpoint()
         {
@@ -69,7 +99,7 @@ namespace Microsoft.AspNetCore.Builder
             var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
 
             // Act
-            var endpointBuilder = builder.Map(RoutePatternFactory.Parse("/"),  Handle);
+            var endpointBuilder = builder.Map(RoutePatternFactory.Parse("/"), Handle);
 
             // Assert
             var endpointBuilder1 = GetRouteEndpointBuilder(builder);
@@ -121,6 +151,49 @@ namespace Microsoft.AspNetCore.Builder
                 var httpMethodMetadata = Assert.IsAssignableFrom<IHttpMethodMetadata>(metadata);
                 return Assert.Single(httpMethodMetadata.HttpMethods);
             }
+        }
+
+        [Theory]
+        [MemberData(nameof(MapMethods))]
+        public void Map_EndpointMetadataNotDuplicated(Func<IEndpointRouteBuilder, string, RequestDelegate, IEndpointConventionBuilder> map)
+        {
+            // Arrange
+            var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
+
+            // Act
+            var endpointBuilder = map(builder, "/", context => Task.CompletedTask).WithMetadata(new EndpointNameMetadata("MapMe"));
+
+            // Assert
+            var ds = GetBuilderEndpointDataSource(builder);
+
+            _ = ds.Endpoints;
+            _ = ds.Endpoints;
+            _ = ds.Endpoints;
+
+            Assert.Single(ds.Endpoints);
+            var endpoint = ds.Endpoints.Single();
+
+            Assert.Single(endpoint.Metadata.GetOrderedMetadata<IEndpointNameMetadata>());
+        }
+
+        [Theory]
+        [MemberData(nameof(MapMethods))]
+        public void AddingMetadataAfterBuildingEndpointThrows(Func<IEndpointRouteBuilder, string, RequestDelegate, IEndpointConventionBuilder> map)
+        {
+            // Arrange
+            var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
+
+            // Act
+            var endpointBuilder = map(builder, "/", context => Task.CompletedTask).WithMetadata(new EndpointNameMetadata("MapMe"));
+
+            // Assert
+            var ds = GetBuilderEndpointDataSource(builder);
+
+            var endpoint = Assert.Single(ds.Endpoints);
+
+            Assert.Single(endpoint.Metadata.GetOrderedMetadata<IEndpointNameMetadata>());
+
+            Assert.Throws<InvalidOperationException>(() => endpointBuilder.WithMetadata(new RouteNameMetadata("Foo")));
         }
 
         [Attribute1]

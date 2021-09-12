@@ -42,3 +42,4 @@ StyleCop.Cache
 UpgradeLog.htm
 .idea
 *.svclog
+mono_crash.*.json

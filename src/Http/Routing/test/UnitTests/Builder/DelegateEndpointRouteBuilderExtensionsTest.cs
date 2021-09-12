@@ -3,17 +3,12 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -29,28 +24,32 @@ namespace Microsoft.AspNetCore.Builder
             return Assert.IsType<RouteEndpointBuilder>(Assert.Single(GetBuilderEndpointDataSource(endpointRouteBuilder).EndpointBuilders));
         }
 
-        public static object[][] MapMethods
+        public static object?[]?[] MapMethods
         {
             get
             {
-                void MapGet(IEndpointRouteBuilder routes, string template, Delegate action) =>
+                IEndpointConventionBuilder MapGet(IEndpointRouteBuilder routes, string template, Delegate action) =>
                     routes.MapGet(template, action);
 
-                void MapPost(IEndpointRouteBuilder routes, string template, Delegate action) =>
+                IEndpointConventionBuilder MapPost(IEndpointRouteBuilder routes, string template, Delegate action) =>
                     routes.MapPost(template, action);
 
-                void MapPut(IEndpointRouteBuilder routes, string template, Delegate action) =>
+                IEndpointConventionBuilder MapPut(IEndpointRouteBuilder routes, string template, Delegate action) =>
                     routes.MapPut(template, action);
 
-                void MapDelete(IEndpointRouteBuilder routes, string template, Delegate action) =>
+                IEndpointConventionBuilder MapDelete(IEndpointRouteBuilder routes, string template, Delegate action) =>
                     routes.MapDelete(template, action);
 
-                return new object[][]
+                IEndpointConventionBuilder Map(IEndpointRouteBuilder routes, string template, Delegate action) =>
+                    routes.Map(template, action);
+
+                return new object?[]?[]
                 {
-                    new object[] { (Action<IEndpointRouteBuilder, string, Delegate>)MapGet, "GET" },
-                    new object[] { (Action<IEndpointRouteBuilder, string, Delegate>)MapPost, "POST" },
-                    new object[] { (Action<IEndpointRouteBuilder, string, Delegate>)MapPut, "PUT" },
-                    new object[] { (Action<IEndpointRouteBuilder, string, Delegate>)MapDelete, "DELETE" },
+                    new object?[] { (Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder>)MapGet, "GET" },
+                    new object?[] { (Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder>)MapPost, "POST" },
+                    new object?[] { (Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder>)MapPut, "PUT" },
+                    new object?[] { (Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder>)MapDelete, "DELETE" },
+                    new object?[] { (Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder>)Map, null },
                 };
             }
         }
@@ -58,7 +57,7 @@ namespace Microsoft.AspNetCore.Builder
         [Fact]
         public void MapEndpoint_PrecedenceOfMetadata_BuilderMetadataReturned()
         {
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
 
             [HttpMethod("ATTRIBUTE")]
             void TestAction()
@@ -86,7 +85,7 @@ namespace Microsoft.AspNetCore.Builder
         [Fact]
         public void MapGet_BuildsEndpointWithCorrectMethod()
         {
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
             _ = builder.MapGet("/", () => { });
 
             var dataSource = GetBuilderEndpointDataSource(builder);
@@ -106,7 +105,7 @@ namespace Microsoft.AspNetCore.Builder
         [Fact]
         public async Task MapGetWithRouteParameter_BuildsEndpointWithRouteSpecificBinding()
         {
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
             _ = builder.MapGet("/{id}", (int? id, HttpContext httpContext) =>
             {
                 if (id is not null)
@@ -144,7 +143,7 @@ namespace Microsoft.AspNetCore.Builder
         [Fact]
         public async Task MapGetWithoutRouteParameter_BuildsEndpointWithQuerySpecificBinding()
         {
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
             _ = builder.MapGet("/", (int? id, HttpContext httpContext) =>
             {
                 if (id is not null)
@@ -183,9 +182,63 @@ namespace Microsoft.AspNetCore.Builder
 
         [Theory]
         [MemberData(nameof(MapMethods))]
-        public async Task MapVerbWithExplicitRouteParameterIsCaseInsensitive(Action<IEndpointRouteBuilder, string, Delegate> map, string expectedMethod)
+        public void MapVerbDoesNotDuplicateMetadata(Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder> map, string expectedMethod)
         {
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+
+            map(builder, "/{ID}", () => { }).WithName("Foo");
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+
+            // Access endpoints a couple of times to make sure it gets built
+            _ = dataSource.Endpoints;
+            _ = dataSource.Endpoints;
+            _ = dataSource.Endpoints;
+
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var endpointNameMetadata = Assert.Single(endpoint.Metadata.GetOrderedMetadata<IEndpointNameMetadata>());
+            var routeNameMetadata = Assert.Single(endpoint.Metadata.GetOrderedMetadata<IRouteNameMetadata>());
+            Assert.Equal("Foo", endpointNameMetadata.EndpointName);
+            Assert.Equal("Foo", routeNameMetadata.RouteName);
+
+            if (expectedMethod is not null)
+            {
+                var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+                Assert.NotNull(methodMetadata);
+                var method = Assert.Single(methodMetadata!.HttpMethods);
+                Assert.Equal(expectedMethod, method);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(MapMethods))]
+        public void AddingMetadataAfterBuildingEndpointThrows(Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder> map, string expectedMethod)
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+
+            var endpointBuilder = map(builder, "/{ID}", () => { });
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            if (expectedMethod is not null)
+            {
+                var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+                Assert.NotNull(methodMetadata);
+                var method = Assert.Single(methodMetadata!.HttpMethods);
+                Assert.Equal(expectedMethod, method);
+            }
+
+            Assert.Throws<InvalidOperationException>(() => endpointBuilder.WithMetadata(new RouteNameMetadata("Foo")));
+        }
+
+        [Theory]
+        [MemberData(nameof(MapMethods))]
+        public async Task MapVerbWithExplicitRouteParameterIsCaseInsensitive(Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder> map, string expectedMethod)
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
 
             map(builder, "/{ID}", ([FromRoute] int? id, HttpContext httpContext) =>
             {
@@ -199,13 +252,19 @@ namespace Microsoft.AspNetCore.Builder
             // Trigger Endpoint build by calling getter.
             var endpoint = Assert.Single(dataSource.Endpoints);
 
-            var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
-            Assert.NotNull(methodMetadata);
-            var method = Assert.Single(methodMetadata!.HttpMethods);
-            Assert.Equal(expectedMethod, method);
+            if (expectedMethod is not null)
+            {
+                var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+                Assert.NotNull(methodMetadata);
+                var method = Assert.Single(methodMetadata!.HttpMethods);
+                Assert.Equal(expectedMethod, method);
+            }
 
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal($"HTTP: {expectedMethod} /{{ID}}", routeEndpointBuilder.DisplayName);
+            if (expectedMethod is not null)
+            {
+                Assert.Equal($"HTTP: {expectedMethod} /{{ID}}", routeEndpointBuilder.DisplayName);
+            }
             Assert.Equal($"/{{ID}}", routeEndpointBuilder.RoutePattern.RawText);
 
             var httpContext = new DefaultHttpContext();
@@ -219,9 +278,9 @@ namespace Microsoft.AspNetCore.Builder
 
         [Theory]
         [MemberData(nameof(MapMethods))]
-        public async Task MapVerbWithRouteParameterDoesNotFallbackToQuery(Action<IEndpointRouteBuilder, string, Delegate> map, string expectedMethod)
+        public async Task MapVerbWithRouteParameterDoesNotFallbackToQuery(Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder> map, string expectedMethod)
         {
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
 
             map(builder, "/{ID}", (int? id, HttpContext httpContext) =>
             {
@@ -234,14 +293,19 @@ namespace Microsoft.AspNetCore.Builder
             var dataSource = GetBuilderEndpointDataSource(builder);
             // Trigger Endpoint build by calling getter.
             var endpoint = Assert.Single(dataSource.Endpoints);
-
-            var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
-            Assert.NotNull(methodMetadata);
-            var method = Assert.Single(methodMetadata!.HttpMethods);
-            Assert.Equal(expectedMethod, method);
+            if (expectedMethod is not null)
+            {
+                var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+                Assert.NotNull(methodMetadata);
+                var method = Assert.Single(methodMetadata!.HttpMethods);
+                Assert.Equal(expectedMethod, method);
+            }
 
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal($"HTTP: {expectedMethod} /{{ID}}", routeEndpointBuilder.DisplayName);
+            if (expectedMethod is not null)
+            {
+                Assert.Equal($"HTTP: {expectedMethod} /{{ID}}", routeEndpointBuilder.DisplayName);
+            }
             Assert.Equal($"/{{ID}}", routeEndpointBuilder.RoutePattern.RawText);
 
             // Assert that we don't fallback to the query string
@@ -260,7 +324,7 @@ namespace Microsoft.AspNetCore.Builder
         [Fact]
         public void MapGetWithRouteParameter_ThrowsIfRouteParameterDoesNotExist()
         {
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
             var ex = Assert.Throws<InvalidOperationException>(() => builder.MapGet("/", ([FromRoute] int id) => { }));
             Assert.Equal("id is not a route paramter.", ex.Message);
         }
@@ -268,7 +332,7 @@ namespace Microsoft.AspNetCore.Builder
         [Fact]
         public void MapPost_BuildsEndpointWithCorrectMethod()
         {
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
             _ = builder.MapPost("/", () => { });
 
             var dataSource = GetBuilderEndpointDataSource(builder);
@@ -286,9 +350,28 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         [Fact]
+        public void MapPost_BuildsEndpointWithCorrectEndpointMetadata()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+            _ = builder.MapPost("/", [TestConsumesAttribute(typeof(Todo), "application/xml")] (Todo todo) => { });
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var endpointMetadata = endpoint.Metadata.GetMetadata<IAcceptsMetadata>();
+
+            Assert.NotNull(endpointMetadata);
+            Assert.False(endpointMetadata!.IsOptional);
+            Assert.Equal(typeof(Todo), endpointMetadata.RequestType);
+            Assert.Equal(new[] { "application/xml" }, endpointMetadata.ContentTypes);
+
+        }
+
+        [Fact]
         public void MapPut_BuildsEndpointWithCorrectMethod()
         {
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
             _ = builder.MapPut("/", () => { });
 
             var dataSource = GetBuilderEndpointDataSource(builder);
@@ -308,7 +391,7 @@ namespace Microsoft.AspNetCore.Builder
         [Fact]
         public void MapDelete_BuildsEndpointWithCorrectMethod()
         {
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
             _ = builder.MapDelete("/", () => { });
 
             var dataSource = GetBuilderEndpointDataSource(builder);
@@ -328,7 +411,7 @@ namespace Microsoft.AspNetCore.Builder
         [Fact]
         public void MapFallback_BuildsEndpointWithLowestRouteOrder()
         {
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
             _ = builder.MapFallback("/", () => { });
 
             var dataSource = GetBuilderEndpointDataSource(builder);
@@ -344,7 +427,7 @@ namespace Microsoft.AspNetCore.Builder
         [Fact]
         public void MapFallbackWithoutPath_BuildsEndpointWithLowestRouteOrder()
         {
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
             _ = builder.MapFallback(() => { });
 
             var dataSource = GetBuilderEndpointDataSource(builder);
@@ -366,7 +449,7 @@ namespace Microsoft.AspNetCore.Builder
         public void MapMethod_DoesNotEndpointNameForInnerMethod()
         {
             var name = "InnerGetString";
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
             string InnerGetString() => "TestString";
             _ = builder.MapDelete("/", InnerGetString);
 
@@ -386,7 +469,7 @@ namespace Microsoft.AspNetCore.Builder
         public void MapMethod_DoesNotEndpointNameForInnerMethodWithTarget()
         {
             var name = "InnerGetString";
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
             var testString = "TestString";
             string InnerGetString() => testString;
             _ = builder.MapDelete("/", InnerGetString);
@@ -408,7 +491,7 @@ namespace Microsoft.AspNetCore.Builder
         public void MapMethod_SetsEndpointNameForMethodGroup()
         {
             var name = "GetString";
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
             _ = builder.MapDelete("/", GetString);
 
             var dataSource = GetBuilderEndpointDataSource(builder);
@@ -427,7 +510,7 @@ namespace Microsoft.AspNetCore.Builder
         public void WithNameOverridesDefaultEndpointName()
         {
             var name = "SomeCustomName";
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
             _ = builder.MapDelete("/", GetString).WithName(name);
 
             var dataSource = GetBuilderEndpointDataSource(builder);
@@ -448,7 +531,7 @@ namespace Microsoft.AspNetCore.Builder
         [Fact]
         public void MapMethod_DoesNotSetEndpointNameForLambda()
         {
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvdier()));
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
             _ = builder.MapDelete("/", () => { });
 
             var dataSource = GetBuilderEndpointDataSource(builder);
@@ -459,9 +542,111 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Null(endpointName);
         }
 
+        [Fact]
+        public void WithTags_CanSetTagsForEndpoint()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+            _ = builder.MapDelete("/", GetString).WithTags("Some", "Test", "Tags");
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var tagsMetadata = endpoint.Metadata.GetMetadata<ITagsMetadata>();
+            Assert.Equal(new[] { "Some", "Test", "Tags" }, tagsMetadata?.Tags);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task MapMethod_FlowsThrowOnBadHttpRequest(bool throwOnBadRequest)
+        {
+            var serviceProvider = new EmptyServiceProvider();
+            serviceProvider.RouteHandlerOptions.ThrowOnBadRequest = throwOnBadRequest;
+
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+            _ = builder.Map("/{id}", (int id) => { });
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.RequestServices = new ServiceCollection().AddLogging().BuildServiceProvider();
+            httpContext.Request.RouteValues["id"] = "invalid!";
+
+            if (throwOnBadRequest)
+            {
+                var ex = await Assert.ThrowsAsync<BadHttpRequestException>(() => endpoint.RequestDelegate!(httpContext));
+                Assert.Equal(400, ex.StatusCode);
+            }
+            else
+            {
+                await endpoint.RequestDelegate!(httpContext);
+                Assert.Equal(400, httpContext.Response.StatusCode);
+            }
+        }
+
+        [Fact]
+        public async Task MapMethod_DefaultsToNotThrowOnBadHttpRequestIfItCannotResolveRouteHandlerOptions()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));
+
+            _ = builder.Map("/{id}", (int id) => { });
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.RequestServices = new ServiceCollection().AddLogging().BuildServiceProvider();
+            httpContext.Request.RouteValues["id"] = "invalid!";
+
+            await endpoint.RequestDelegate!(httpContext);
+            Assert.Equal(400, httpContext.Response.StatusCode);
+        }
+
         class FromRoute : Attribute, IFromRouteMetadata
         {
             public string? Name { get; set; }
+        }
+
+        class TestConsumesAttribute : Attribute, IAcceptsMetadata
+        {
+            public TestConsumesAttribute(Type requestType, string contentType, params string[] otherContentTypes)
+            {
+                if (contentType == null)
+                {
+                    throw new ArgumentNullException(nameof(contentType));
+                }
+
+                var contentTypes = new List<string>()
+                {
+                    contentType
+                };
+
+                for (var i = 0; i < otherContentTypes.Length; i++)
+                {
+                    contentTypes.Add(otherContentTypes[i]);
+                }
+
+                _requestType = requestType;
+                _contentTypes = contentTypes;
+            }
+
+            IReadOnlyList<string> IAcceptsMetadata.ContentTypes => _contentTypes;
+            Type? IAcceptsMetadata.RequestType => _requestType;
+
+            bool IAcceptsMetadata.IsOptional => false;
+
+            Type? _requestType;
+
+            List<string> _contentTypes = new();
+        }
+
+        class Todo
+        {
+
         }
 
         private class HttpMethodAttribute : Attribute, IHttpMethodMetadata
@@ -476,18 +661,19 @@ namespace Microsoft.AspNetCore.Builder
             }
         }
 
-        private class EmptyServiceProvdier : IServiceScope, IServiceProvider, IServiceScopeFactory
+        private class EmptyServiceProvider : IServiceScope, IServiceProvider, IServiceScopeFactory
         {
             public IServiceProvider ServiceProvider => this;
 
+            public RouteHandlerOptions RouteHandlerOptions { get; set; } = new RouteHandlerOptions();
+
             public IServiceScope CreateScope()
             {
-                return new EmptyServiceProvdier();
+                return this;
             }
 
             public void Dispose()
             {
-
             }
 
             public object? GetService(Type serviceType)
@@ -496,6 +682,11 @@ namespace Microsoft.AspNetCore.Builder
                 {
                     return this;
                 }
+                else if (serviceType == typeof(IOptions<RouteHandlerOptions>))
+                {
+                    return Options.Create(RouteHandlerOptions);
+                }
+
                 return null;
             }
         }

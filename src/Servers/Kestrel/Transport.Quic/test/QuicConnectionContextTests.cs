@@ -181,6 +181,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             read = await serverStream.Transport.Input.ReadAsync().DefaultTimeout();
             Assert.True(read.IsCompleted);
 
+            await serverStream.Transport.Output.CompleteAsync();
+
             await closedTcs.Task.DefaultTimeout();
         }
 

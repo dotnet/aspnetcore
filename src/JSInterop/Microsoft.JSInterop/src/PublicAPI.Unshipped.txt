@@ -11,7 +11,9 @@ Microsoft.JSInterop.DotNetStreamReference.DotNetStreamReference(System.IO.Stream
 Microsoft.JSInterop.DotNetStreamReference.LeaveOpen.get -> bool
 Microsoft.JSInterop.DotNetStreamReference.Stream.get -> System.IO.Stream!
 Microsoft.JSInterop.Infrastructure.DotNetInvocationResult.ResultJson.get -> string?
+Microsoft.JSInterop.Infrastructure.IJSVoidResult
 Microsoft.JSInterop.JSCallResultType.JSStreamReference = 2 -> Microsoft.JSInterop.JSCallResultType
+Microsoft.JSInterop.JSCallResultType.JSVoidResult = 3 -> Microsoft.JSInterop.JSCallResultType
 Microsoft.JSInterop.JSRuntime.Dispose() -> void
 static Microsoft.JSInterop.Implementation.JSObjectReferenceJsonWorker.ReadJSObjectReferenceIdentifier(ref System.Text.Json.Utf8JsonReader reader) -> long
 static Microsoft.JSInterop.Implementation.JSObjectReferenceJsonWorker.WriteJSObjectReference(System.Text.Json.Utf8JsonWriter! writer, Microsoft.JSInterop.Implementation.JSObjectReference! objectReference) -> void

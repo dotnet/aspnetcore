@@ -78,5 +78,13 @@
     </ItemGroup>
 
     <Exec Command="fpm @(FpmArgs,' ')" />
+
+    <Copy SourceFiles="$(TargetPath)"
+          DestinationFiles="$(CblMarinerTargetPath)"
+          OverwriteReadOnlyFiles="True"
+          SkipUnchangedFiles="False"
+          UseHardlinksIfPossible="False" />
+
+    <Message Text="$(TargetPath) -> $(CblMarinerTargetPath)" Importance="high" />
   </Target>
 </Project>

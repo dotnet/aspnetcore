@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -232,7 +233,7 @@ namespace Ignitor
 
             // The string table position is given by the final int, and continues
             // until we get to the final set of top-level indices
-            var stringTableStartPosition = BitConverter.ToInt32(bytes, bytes.Length - 4);
+            var stringTableStartPosition = ReadInt(bytes, bytes.Length - 4);
             var stringTableEndPositionExcl = bytes.Length - 20;
 
             var result = new List<string>();
@@ -241,7 +242,7 @@ namespace Ignitor
                 entryPosition += 4)
             {
                 // The string table entries are all length-prefixed UTF8 blobs
-                var tableEntryPos = BitConverter.ToInt32(bytes, entryPosition);
+                var tableEntryPos = ReadInt(bytes, entryPosition);
                 var length = (int)ReadUnsignedLEB128(bytes, tableEntryPos, out var numLEB128Bytes);
                 var value = Encoding.UTF8.GetString(bytes, tableEntryPos + numLEB128Bytes, length);
                 result.Add(value);
@@ -299,7 +300,7 @@ namespace Ignitor
         }
 
         static int ReadInt(Span<byte> bytes, int startOffset)
-            => BitConverter.ToInt32(bytes.Slice(startOffset, 4).ToArray(), 0);
+            => BinaryPrimitives.ReadInt32LittleEndian(bytes.Slice(startOffset, 4));
 
         public static uint ReadUnsignedLEB128(byte[] bytes, int startOffset, out int numBytesRead)
         {
