@@ -91,61 +91,11 @@ namespace Microsoft.AspNetCore.Builder
             return MapMethods(endpoints, pattern, DeleteVerb, handler);
         }
 
-        /// <summary>
-        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP requests
-        /// for the specified HTTP methods and pattern.
-        /// </summary>
-        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
-        /// <param name="pattern">The route pattern.</param>
-        /// <param name="handler">The delegate executed when the endpoint is matched.</param>
-        /// <param name="httpMethods">HTTP methods that the endpoint will match.</param>
-        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static DelegateEndpointConventionBuilder MapMethods(
-           this IEndpointRouteBuilder endpoints,
-           string pattern,
-           IEnumerable<string> httpMethods,
-           Delegate handler)
-        {
-            if (httpMethods is null)
-            {
-                throw new ArgumentNullException(nameof(httpMethods));
-            }
-
-            var builder = endpoints.Map(RoutePatternFactory.Parse(pattern), handler);
-            // Prepends the HTTP method to the DisplayName produced with pattern + method name
-            builder.Add(b => b.DisplayName = $"HTTP: {string.Join(", ", httpMethods)} {b.DisplayName}");
-            builder.WithMetadata(new HttpMethodMetadata(httpMethods));
-            return builder;
-        }
-
-        /// <summary>
-        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP requests
-        /// for the specified pattern.
-        /// </summary>
-        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
-        /// <param name="pattern">The route pattern.</param>
-        /// <param name="handler">The delegate executed when the endpoint is matched.</param>
-        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static DelegateEndpointConventionBuilder Map(
-            this IEndpointRouteBuilder endpoints,
-            string pattern,
-            Delegate handler)
-        {
-            return Map(endpoints, RoutePatternFactory.Parse(pattern), handler);
-        }
-
-        /// <summary>
-        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP requests
-        /// for the specified pattern.
-        /// </summary>
-        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
-        /// <param name="pattern">The route pattern.</param>
-        /// <param name="handler">The delegate executed when the endpoint is matched.</param>
-        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static DelegateEndpointConventionBuilder Map(
+        private static DelegateEndpointConventionBuilder Map(
             this IEndpointRouteBuilder endpoints,
             RoutePattern pattern,
-            Delegate handler)
+            Delegate handler,
+            bool DisableInferBodyFromParameters)
         {
             if (endpoints is null)
             {
@@ -177,6 +127,7 @@ namespace Microsoft.AspNetCore.Builder
                 ServiceProvider = endpoints.ServiceProvider,
                 RouteParameterNames = routeParams,
                 ThrowOnBadRequest = routeHandlerOptions?.Value.ThrowOnBadRequest ?? false,
+                DisableInferBodyFromParameters = DisableInferBodyFromParameters,
             };
 
             var requestDelegateResult = RequestDelegateFactory.Create(handler, options);
@@ -211,7 +162,7 @@ namespace Microsoft.AspNetCore.Builder
             // Add delegate attributes as metadata
             var attributes = handler.Method.GetCustomAttributes();
 
-            // Add add request delegate metadata 
+            // Add add request delegate metadata
             foreach (var metadata in requestDelegateResult.EndpointMetadata)
             {
                 builder.Metadata.Add(metadata);
@@ -234,6 +185,86 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             return new DelegateEndpointConventionBuilder(dataSource.AddEndpointBuilder(builder));
+        }
+
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP requests
+        /// for the specified HTTP methods and pattern.
+        /// </summary>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="handler">The delegate executed when the endpoint is matched.</param>
+        /// <param name="httpMethods">HTTP methods that the endpoint will match.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static DelegateEndpointConventionBuilder MapMethods(
+           this IEndpointRouteBuilder endpoints,
+           string pattern,
+           IEnumerable<string> httpMethods,
+           Delegate handler)
+        {
+            if (httpMethods is null)
+            {
+                throw new ArgumentNullException(nameof(httpMethods));
+            }
+
+            var disableInferredBody = false;
+            foreach (var method in httpMethods)
+            {
+                disableInferredBody = ShouldDisableInferredBody(method);
+                if (disableInferredBody is true)
+                {
+                    break;
+                }
+            }
+
+            var builder = endpoints.Map(RoutePatternFactory.Parse(pattern), handler, disableInferredBody);
+            // Prepends the HTTP method to the DisplayName produced with pattern + method name
+            builder.Add(b => b.DisplayName = $"HTTP: {string.Join(", ", httpMethods)} {b.DisplayName}");
+            builder.WithMetadata(new HttpMethodMetadata(httpMethods));
+            return builder;
+
+            static bool ShouldDisableInferredBody(string method)
+            {
+                 // GET, DELETE, HEAD, CONNECT, TRACE, and OPTIONS normally do not contain bodies
+                return method.Equals(HttpMethods.Get, StringComparison.Ordinal) ||
+                       method.Equals(HttpMethods.Delete, StringComparison.Ordinal) ||
+                       method.Equals(HttpMethods.Head, StringComparison.Ordinal) ||
+                       method.Equals(HttpMethods.Options, StringComparison.Ordinal) ||
+                       method.Equals(HttpMethods.Trace, StringComparison.Ordinal) ||
+                       method.Equals(HttpMethods.Connect, StringComparison.Ordinal);
+            }
+        }
+
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP requests
+        /// for the specified pattern.
+        /// </summary>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="handler">The delegate executed when the endpoint is matched.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static DelegateEndpointConventionBuilder Map(
+            this IEndpointRouteBuilder endpoints,
+            string pattern,
+            Delegate handler)
+        {
+            return Map(endpoints, RoutePatternFactory.Parse(pattern), handler);
+        }
+
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP requests
+        /// for the specified pattern.
+        /// </summary>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="handler">The delegate executed when the endpoint is matched.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static DelegateEndpointConventionBuilder Map(
+            this IEndpointRouteBuilder endpoints,
+            RoutePattern pattern,
+            Delegate handler)
+        {
+            return Map(endpoints, pattern, handler, DisableInferBodyFromParameters: false);
         }
 
         /// <summary>

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
@@ -71,6 +72,58 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await requestStream.OnDisposedTask.DefaultTimeout();
             Assert.True(requestStream.Disposed);
+        }
+
+        [Fact]
+        public async Task HEADERS_Received_ContainsExpect100Continue_100ContinueSent()
+        {
+            await Http3Api.InitializeConnectionAsync(async context =>
+            {
+                var buffer = new byte[16 * 1024];
+                var received = 0;
+
+                while ((received = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                {
+                    await context.Response.Body.WriteAsync(buffer, 0, received);
+                }
+            });
+
+            await Http3Api.CreateControlStream();
+            await Http3Api.GetInboundControlStream();
+
+            var requestStream = await Http3Api.CreateRequestStream();
+
+            var expectContinueRequestHeaders = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "127.0.0.1"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Expect, "100-continue"),
+            };
+
+            await requestStream.SendHeadersAsync(expectContinueRequestHeaders);
+
+            var frame = await requestStream.ReceiveFrameAsync();
+            Assert.Equal(Http3FrameType.Headers, frame.Type);
+
+            var continueBytesQpackEncoded = new byte[] { 0x00, 0x00, 0xff, 0x00 };
+            Assert.Equal(continueBytesQpackEncoded, frame.PayloadSequence.ToArray());
+
+            await requestStream.SendDataAsync(Encoding.ASCII.GetBytes("Hello world"), endStream: false);
+            var headers = await requestStream.ExpectHeadersAsync();
+            Assert.Equal("200", headers[HeaderNames.Status]);
+
+            var responseData = await requestStream.ExpectDataAsync();
+            Assert.Equal("Hello world", Encoding.ASCII.GetString(responseData.ToArray()));
+
+            Assert.False(requestStream.Disposed, "Request is in progress and shouldn't be disposed.");
+
+            await requestStream.SendDataAsync(Encoding.ASCII.GetBytes($"End"), endStream: true);
+            responseData = await requestStream.ExpectDataAsync();
+            Assert.Equal($"End", Encoding.ASCII.GetString(responseData.ToArray()));
+
+            await requestStream.ExpectReceiveEndOfStream();
         }
 
         [Theory]

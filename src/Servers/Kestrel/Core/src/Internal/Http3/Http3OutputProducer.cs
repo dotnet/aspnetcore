@@ -295,7 +295,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public ValueTask<FlushResult> Write100ContinueAsync()
         {
-            throw new NotImplementedException();
+            lock (_dataWriterLock)
+            {
+                ThrowIfSuffixSent();
+
+                if (_streamCompleted)
+                {
+                    return default;
+                }
+
+                return _frameWriter.Write100ContinueAsync();
+            }
         }
 
         public ValueTask<FlushResult> WriteChunkAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken)

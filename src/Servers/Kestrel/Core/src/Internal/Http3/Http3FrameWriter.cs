@@ -22,6 +22,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
     internal class Http3FrameWriter
     {
+        // These bytes represent a ":status: 100" continue response header frame encoded with
+        // QPACK. To arrive at this, we first take the index in the QPACK static table for status
+        // 100 (https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#appendix-A), which
+        // is 63, and encode it to get ff 00 (see QPackEncoder.EncodeStaticIndexedHeaderField).
+        // The two zero bytes are for the section prefix
+        // (https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#header-prefix)
+        private static ReadOnlySpan<byte> ContinueBytes => new byte[] { 0x00, 0x00, 0xff, 0x00 };
+
         // Size based on HTTP/2 default frame size
         private const int MaxDataFrameSize = 16 * 1024;
         private const int HeaderBufferSize = 16 * 1024;
@@ -254,6 +262,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             // We assume the payload will be written prior to the next flush.
             _unflushedBytes += headerLength + _outgoingFrame.Length;
+        }
+
+        public ValueTask<FlushResult> Write100ContinueAsync()
+        {
+            lock (_writeLock)
+            {
+                if (_completed)
+                {
+                    return default;
+                }
+
+                _outgoingFrame.PrepareHeaders();
+                _outgoingFrame.Length = ContinueBytes.Length;
+                WriteHeaderUnsynchronized();
+                _outputWriter.Write(ContinueBytes);
+                return TimeFlushUnsynchronizedAsync();
+            }
         }
 
         internal static int WriteHeader(Http3FrameType frameType, long frameLength, PipeWriter output)

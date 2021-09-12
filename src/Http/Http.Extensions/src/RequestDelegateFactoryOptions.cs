@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http
@@ -25,5 +26,10 @@ namespace Microsoft.AspNetCore.Http
         /// writing a <see cref="LogLevel.Debug"/> log when handling invalid requests.
         /// </summary>
         public bool ThrowOnBadRequest { get; init; }
+
+        /// <summary>
+        /// Prevent the <see cref="RequestDelegateFactory" /> from inferring a parameter should be bound from the request body without an attribute that implements <see cref="IFromBodyMetadata"/>.
+        /// </summary>
+        public bool DisableInferBodyFromParameters { get; init; }
     }
 }

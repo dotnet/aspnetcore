@@ -47,5 +47,8 @@
     "@microsoft/signalr": "link:../signalr",
     "@msgpack/msgpack": "^2.7.0"
   },
-  "devDependencies": {}
+  "devDependencies": {},
+  "resolutions": {
+    "url-parse": ">=1.5.0"
+  }
 }
