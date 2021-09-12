@@ -104,6 +104,7 @@ namespace Microsoft.AspNetCore.Builder
             conventionBuilders.Add(negotiateBuilder);
             // Add the negotiate metadata so this endpoint can be identified
             negotiateBuilder.WithMetadata(_negotiateMetadata);
+            negotiateBuilder.WithMetadata(options);
 
             // build the execute handler part of the protocol
             app = endpoints.CreateApplicationBuilder();

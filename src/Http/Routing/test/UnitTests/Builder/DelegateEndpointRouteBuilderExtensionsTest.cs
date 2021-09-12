@@ -24,28 +24,32 @@ namespace Microsoft.AspNetCore.Builder
             return Assert.IsType<RouteEndpointBuilder>(Assert.Single(GetBuilderEndpointDataSource(endpointRouteBuilder).EndpointBuilders));
         }
 
-        public static object[][] MapMethods
+        public static object?[]?[] MapMethods
         {
             get
             {
-                void MapGet(IEndpointRouteBuilder routes, string template, Delegate action) =>
+                IEndpointConventionBuilder MapGet(IEndpointRouteBuilder routes, string template, Delegate action) =>
                     routes.MapGet(template, action);
 
-                void MapPost(IEndpointRouteBuilder routes, string template, Delegate action) =>
+                IEndpointConventionBuilder MapPost(IEndpointRouteBuilder routes, string template, Delegate action) =>
                     routes.MapPost(template, action);
 
-                void MapPut(IEndpointRouteBuilder routes, string template, Delegate action) =>
+                IEndpointConventionBuilder MapPut(IEndpointRouteBuilder routes, string template, Delegate action) =>
                     routes.MapPut(template, action);
 
-                void MapDelete(IEndpointRouteBuilder routes, string template, Delegate action) =>
+                IEndpointConventionBuilder MapDelete(IEndpointRouteBuilder routes, string template, Delegate action) =>
                     routes.MapDelete(template, action);
 
-                return new object[][]
+                IEndpointConventionBuilder Map(IEndpointRouteBuilder routes, string template, Delegate action) =>
+                    routes.Map(template, action);
+
+                return new object?[]?[]
                 {
-                    new object[] { (Action<IEndpointRouteBuilder, string, Delegate>)MapGet, "GET" },
-                    new object[] { (Action<IEndpointRouteBuilder, string, Delegate>)MapPost, "POST" },
-                    new object[] { (Action<IEndpointRouteBuilder, string, Delegate>)MapPut, "PUT" },
-                    new object[] { (Action<IEndpointRouteBuilder, string, Delegate>)MapDelete, "DELETE" },
+                    new object?[] { (Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder>)MapGet, "GET" },
+                    new object?[] { (Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder>)MapPost, "POST" },
+                    new object?[] { (Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder>)MapPut, "PUT" },
+                    new object?[] { (Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder>)MapDelete, "DELETE" },
+                    new object?[] { (Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder>)Map, null },
                 };
             }
         }
@@ -176,9 +180,235 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal(41, httpContext.Items["input"]);
         }
 
+        [Fact]
+        public void MapGet_ThrowsWithImplicitFromBody()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+            var ex = Assert.Throws<InvalidOperationException>(() => builder.MapGet("/", (Todo todo) => { }));
+            Assert.Contains("Body was inferred but the method does not allow inferred body parameters.", ex.Message);
+            Assert.Contains("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromService] or [FromBody] attribute?", ex.Message);
+        }
+
+        [Fact]
+        public void MapDelete_ThrowsWithImplicitFromBody()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+            var ex = Assert.Throws<InvalidOperationException>(() => builder.MapDelete("/", (Todo todo) => { }));
+            Assert.Contains("Body was inferred but the method does not allow inferred body parameters.", ex.Message);
+            Assert.Contains("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromService] or [FromBody] attribute?", ex.Message);
+        }
+
+        public static object[][] NonImplicitFromBodyMethods
+        {
+            get
+            {
+                return new[]
+                {
+                    new[] { HttpMethods.Delete },
+                    new[] { HttpMethods.Connect },
+                    new[] { HttpMethods.Trace },
+                    new[] { HttpMethods.Get },
+                    new[] { HttpMethods.Head },
+                    new[] { HttpMethods.Options },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(NonImplicitFromBodyMethods))]
+        public void MapVerb_ThrowsWithImplicitFromBody(string method)
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+            var ex = Assert.Throws<InvalidOperationException>(() => builder.MapMethods("/", new[] { method }, (Todo todo) => { }));
+            Assert.Contains("Body was inferred but the method does not allow inferred body parameters.", ex.Message);
+            Assert.Contains("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromService] or [FromBody] attribute?", ex.Message);
+        }
+
+        [Fact]
+        public void MapGet_ImplicitFromService()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().AddSingleton<TodoService>().BuildServiceProvider()));
+            _ = builder.MapGet("/", (TodoService todo) => { });
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+            Assert.NotNull(methodMetadata);
+            var method = Assert.Single(methodMetadata!.HttpMethods);
+            Assert.Equal("GET", method);
+
+            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+            Assert.Equal("HTTP: GET /", routeEndpointBuilder.DisplayName);
+            Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
+        }
+
+        [Fact]
+        public void MapDelete_ImplicitFromService()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().AddSingleton<TodoService>().BuildServiceProvider()));
+            _ = builder.MapDelete("/", (TodoService todo) => { });
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+            Assert.NotNull(methodMetadata);
+            var method = Assert.Single(methodMetadata!.HttpMethods);
+            Assert.Equal("DELETE", method);
+
+            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+            Assert.Equal("HTTP: DELETE /", routeEndpointBuilder.DisplayName);
+            Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
+        }
+
+        [AttributeUsage(AttributeTargets.Parameter)]
+        private class TestFromServiceAttribute : Attribute, IFromServiceMetadata
+        { }
+
+        [Fact]
+        public void MapGet_ExplicitFromService()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().AddSingleton<TodoService>().BuildServiceProvider()));
+            _ = builder.MapGet("/", ([TestFromServiceAttribute] TodoService todo) => { });
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+            Assert.NotNull(methodMetadata);
+            var method = Assert.Single(methodMetadata!.HttpMethods);
+            Assert.Equal("GET", method);
+
+            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+            Assert.Equal("HTTP: GET /", routeEndpointBuilder.DisplayName);
+            Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
+        }
+
+        [Fact]
+        public void MapDelete_ExplicitFromService()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().AddSingleton<TodoService>().BuildServiceProvider()));
+            _ = builder.MapDelete("/", ([TestFromServiceAttribute] TodoService todo) => { });
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+            Assert.NotNull(methodMetadata);
+            var method = Assert.Single(methodMetadata!.HttpMethods);
+            Assert.Equal("DELETE", method);
+
+            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+            Assert.Equal("HTTP: DELETE /", routeEndpointBuilder.DisplayName);
+            Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
+        }
+
+        [AttributeUsage(AttributeTargets.Parameter)]
+        private class TestFromBodyAttribute : Attribute, IFromBodyMetadata
+        { }
+
+        [Fact]
+        public void MapGet_ExplicitFromBody_BuildsEndpointWithCorrectMethod()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+            _ = builder.MapGet("/", ([TestFromBody] Todo todo) => { });
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+            Assert.NotNull(methodMetadata);
+            var method = Assert.Single(methodMetadata!.HttpMethods);
+            Assert.Equal("GET", method);
+
+            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+            Assert.Equal("HTTP: GET /", routeEndpointBuilder.DisplayName);
+            Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
+        }
+
+        [Fact]
+        public void MapDelete_ExplicitFromBody_BuildsEndpointWithCorrectMethod()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+            _ = builder.MapDelete("/", ([TestFromBody] Todo todo) => { });
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+            Assert.NotNull(methodMetadata);
+            var method = Assert.Single(methodMetadata!.HttpMethods);
+            Assert.Equal("DELETE", method);
+
+            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+            Assert.Equal("HTTP: DELETE /", routeEndpointBuilder.DisplayName);
+            Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
+        }
+
         [Theory]
         [MemberData(nameof(MapMethods))]
-        public async Task MapVerbWithExplicitRouteParameterIsCaseInsensitive(Action<IEndpointRouteBuilder, string, Delegate> map, string expectedMethod)
+        public void MapVerbDoesNotDuplicateMetadata(Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder> map, string expectedMethod)
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+
+            map(builder, "/{ID}", () => { }).WithName("Foo");
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+
+            // Access endpoints a couple of times to make sure it gets built
+            _ = dataSource.Endpoints;
+            _ = dataSource.Endpoints;
+            _ = dataSource.Endpoints;
+
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var endpointNameMetadata = Assert.Single(endpoint.Metadata.GetOrderedMetadata<IEndpointNameMetadata>());
+            var routeNameMetadata = Assert.Single(endpoint.Metadata.GetOrderedMetadata<IRouteNameMetadata>());
+            Assert.Equal("Foo", endpointNameMetadata.EndpointName);
+            Assert.Equal("Foo", routeNameMetadata.RouteName);
+
+            if (expectedMethod is not null)
+            {
+                var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+                Assert.NotNull(methodMetadata);
+                var method = Assert.Single(methodMetadata!.HttpMethods);
+                Assert.Equal(expectedMethod, method);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(MapMethods))]
+        public void AddingMetadataAfterBuildingEndpointThrows(Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder> map, string expectedMethod)
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+
+            var endpointBuilder = map(builder, "/{ID}", () => { });
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            if (expectedMethod is not null)
+            {
+                var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+                Assert.NotNull(methodMetadata);
+                var method = Assert.Single(methodMetadata!.HttpMethods);
+                Assert.Equal(expectedMethod, method);
+            }
+
+            Assert.Throws<InvalidOperationException>(() => endpointBuilder.WithMetadata(new RouteNameMetadata("Foo")));
+        }
+
+        [Theory]
+        [MemberData(nameof(MapMethods))]
+        public async Task MapVerbWithExplicitRouteParameterIsCaseInsensitive(Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder> map, string expectedMethod)
         {
             var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
 
@@ -194,13 +424,19 @@ namespace Microsoft.AspNetCore.Builder
             // Trigger Endpoint build by calling getter.
             var endpoint = Assert.Single(dataSource.Endpoints);
 
-            var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
-            Assert.NotNull(methodMetadata);
-            var method = Assert.Single(methodMetadata!.HttpMethods);
-            Assert.Equal(expectedMethod, method);
+            if (expectedMethod is not null)
+            {
+                var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+                Assert.NotNull(methodMetadata);
+                var method = Assert.Single(methodMetadata!.HttpMethods);
+                Assert.Equal(expectedMethod, method);
+            }
 
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal($"HTTP: {expectedMethod} /{{ID}}", routeEndpointBuilder.DisplayName);
+            if (expectedMethod is not null)
+            {
+                Assert.Equal($"HTTP: {expectedMethod} /{{ID}}", routeEndpointBuilder.DisplayName);
+            }
             Assert.Equal($"/{{ID}}", routeEndpointBuilder.RoutePattern.RawText);
 
             var httpContext = new DefaultHttpContext();
@@ -214,7 +450,7 @@ namespace Microsoft.AspNetCore.Builder
 
         [Theory]
         [MemberData(nameof(MapMethods))]
-        public async Task MapVerbWithRouteParameterDoesNotFallbackToQuery(Action<IEndpointRouteBuilder, string, Delegate> map, string expectedMethod)
+        public async Task MapVerbWithRouteParameterDoesNotFallbackToQuery(Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder> map, string expectedMethod)
         {
             var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
 
@@ -229,14 +465,19 @@ namespace Microsoft.AspNetCore.Builder
             var dataSource = GetBuilderEndpointDataSource(builder);
             // Trigger Endpoint build by calling getter.
             var endpoint = Assert.Single(dataSource.Endpoints);
-
-            var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
-            Assert.NotNull(methodMetadata);
-            var method = Assert.Single(methodMetadata!.HttpMethods);
-            Assert.Equal(expectedMethod, method);
+            if (expectedMethod is not null)
+            {
+                var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+                Assert.NotNull(methodMetadata);
+                var method = Assert.Single(methodMetadata!.HttpMethods);
+                Assert.Equal(expectedMethod, method);
+            }
 
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal($"HTTP: {expectedMethod} /{{ID}}", routeEndpointBuilder.DisplayName);
+            if (expectedMethod is not null)
+            {
+                Assert.Equal($"HTTP: {expectedMethod} /{{ID}}", routeEndpointBuilder.DisplayName);
+            }
             Assert.Equal($"/{{ID}}", routeEndpointBuilder.RoutePattern.RawText);
 
             // Assert that we don't fallback to the query string
@@ -576,6 +817,13 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         class Todo
+        {
+
+        }
+
+        // Here to more easily disambiguate when ToDo is
+        // intended to be validated as an implicit service in tests
+        class TodoService
         {
 
         }

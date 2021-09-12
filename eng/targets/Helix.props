@@ -20,7 +20,7 @@
     <IsMacHelixQueue Condition="$(HelixTargetQueue.Contains('OSX')) or $(HelixTargetQueue.Contains('macOs'))">true</IsMacHelixQueue>
     <HelixTestName>$(MSBuildProjectName)--$(TargetFramework)</HelixTestName>
     <LoggingTestingDisableFileLogging Condition="'$(IsHelixJob)' == 'true'">false</LoggingTestingDisableFileLogging>
-    <NodeVersion>10.15.3</NodeVersion>
+    <NodeVersion>14.17.6</NodeVersion>
     <TestDependsOnAspNetPackages>false</TestDependsOnAspNetPackages>
     <TestDependsOnAspNetRuntime>false</TestDependsOnAspNetRuntime>
   </PropertyGroup>

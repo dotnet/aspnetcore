@@ -139,16 +139,16 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
   try {
     await connection.start();
   } catch (ex) {
-    unhandledError(connection, ex, logger);
+    unhandledError(connection, ex as Error, logger);
 
-    if (ex.innerErrors && ex.innerErrors.some(e => e.errorType === 'UnsupportedTransportError' && e.transport === HttpTransportType.WebSockets)) {
+    if (!isNestedError(ex)) {
+      showErrorNotification();
+    } else if (ex.innerErrors && ex.innerErrors.some(e => e.errorType === 'UnsupportedTransportError' && e.transport === HttpTransportType.WebSockets)) {
       showErrorNotification('Unable to connect, please ensure you are using an updated browser that supports WebSockets.');
     } else if (ex.innerErrors && ex.innerErrors.some(e => e.errorType === 'FailedToStartTransportError' && e.transport === HttpTransportType.WebSockets)) {
       showErrorNotification('Unable to connect, please ensure WebSockets are available. A VPN or proxy may be blocking the connection.');
     } else if (ex.innerErrors && ex.innerErrors.some(e => e.errorType === 'DisabledTransportError' && e.transport === HttpTransportType.LongPolling)) {
       logger.log(LogLevel.Error, 'Unable to initiate a SignalR connection to the server. This might be because the server is not configured to support WebSockets. To troubleshoot this, visit https://aka.ms/blazor-server-websockets-error.');
-      showErrorNotification();
-    } else {
       showErrorNotification();
     }
   }
@@ -166,7 +166,13 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
   });
 
   return connection;
+
+  function isNestedError(error: any): error is AggregateError {
+    return error && ('innerErrors' in error);
+  }
 }
+
+type AggregateError = Error & { innerErrors: { errorType: string, transport: HttpTransportType }[] };
 
 function unhandledError(connection: HubConnection, err: Error, logger: Logger): void {
   logger.log(LogLevel.Error, err);

@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Parameter] public EventCallback<TAuthenticationState> OnLogOutSucceeded { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="IJSRuntime"/> to use for performin JavaScript interop.
+        /// Gets or sets the <see cref="IJSRuntime"/> to use for performing JavaScript interop.
         /// </summary>
         [Inject] internal IJSRuntime JS { get; set; }
 

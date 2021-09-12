@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         private readonly EndpointDataSource _endpointDataSource;
         private readonly IHostEnvironment _environment;
         private readonly IServiceProviderIsService? _serviceProviderIsService;
-        private readonly TryParseMethodCache TryParseMethodCache = new();
+        private readonly ParameterBindingMethodCache ParameterBindingMethodCache = new();
 
         // Executes before MVC's DefaultApiDescriptionProvider and GrpcHttpApiDescriptionProvider for no particular reason.
         public int Order => -1100;
@@ -202,12 +202,12 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                      parameter.ParameterType == typeof(HttpResponse) ||
                      parameter.ParameterType == typeof(ClaimsPrincipal) ||
                      parameter.ParameterType == typeof(CancellationToken) ||
-                     TryParseMethodCache.HasBindAsyncMethod(parameter) ||
+                     ParameterBindingMethodCache.HasBindAsyncMethod(parameter) ||
                      _serviceProviderIsService?.IsService(parameter.ParameterType) == true)
             {
                 return (BindingSource.Services, parameter.Name ?? string.Empty, false);
             }
-            else if (parameter.ParameterType == typeof(string) || TryParseMethodCache.HasTryParseStringMethod(parameter))
+            else if (parameter.ParameterType == typeof(string) || ParameterBindingMethodCache.HasTryParseMethod(parameter))
             {
                 // Path vs query cannot be determined by RequestDelegateFactory at startup currently because of the layering, but can be done here.
                 if (parameter.Name is { } name && pattern.GetParameter(name) is not null)
@@ -243,15 +243,23 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 responseType = typeof(void);
             }
 
-            var responseMetadata = endpointMetadata.GetOrderedMetadata<IApiResponseMetadataProvider>();
+            // We support attributes (which implement the IApiResponseMetadataProvider) interface
+            // and types added via the extension methods (which implement IProducesResponseTypeMetadata).
+            var responseProviderMetadata = endpointMetadata.GetOrderedMetadata<IApiResponseMetadataProvider>();
+            var producesResponseMetadata = endpointMetadata.GetOrderedMetadata<IProducesResponseTypeMetadata>();
             var errorMetadata = endpointMetadata.GetMetadata<ProducesErrorResponseTypeAttribute>();
             var defaultErrorType = errorMetadata?.Type ?? typeof(void);
             var contentTypes = new MediaTypeCollection();
 
-            var responseMetadataTypes = ApiResponseTypeProvider.ReadResponseMetadata(
-                responseMetadata, responseType, defaultErrorType, contentTypes);
+            var responseProviderMetadataTypes = ApiResponseTypeProvider.ReadResponseMetadata(
+                responseProviderMetadata, responseType, defaultErrorType, contentTypes);
+            var producesResponseMetadataTypes = ReadResponseMetadata(producesResponseMetadata, responseType);
 
-            if (responseMetadataTypes.Count > 0)
+            // We favor types added via the extension methods (which implements IProducesResponseTypeMetadata)
+            // over those that are added via attributes.
+            var responseMetadataTypes = producesResponseMetadataTypes.Values.Concat(responseProviderMetadataTypes);
+
+            if (responseMetadataTypes.Any())
             {
                 foreach (var apiResponseType in responseMetadataTypes)
                 {
@@ -275,7 +283,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                         apiResponseType.ApiResponseFormats.Add(defaultResponseFormat);
                     }
 
-                    supportedResponseTypes.Add(apiResponseType);
+                    if (!supportedResponseTypes.Any(existingResponseType => existingResponseType.StatusCode == apiResponseType.StatusCode))
+                    {
+                        supportedResponseTypes.Add(apiResponseType);
+                    }
+
                 }
             }
             else
@@ -292,6 +304,51 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
                 supportedResponseTypes.Add(defaultApiResponseType);
             }
+        }
+
+        private static Dictionary<int, ApiResponseType> ReadResponseMetadata(
+            IReadOnlyList<IProducesResponseTypeMetadata> responseMetadata,
+            Type? type)
+        {
+            var results = new Dictionary<int, ApiResponseType>();
+
+            foreach (var metadata in responseMetadata)
+            {
+                var statusCode = metadata.StatusCode;
+
+                var apiResponseType = new ApiResponseType
+                {
+                    Type = metadata.Type,
+                    StatusCode = statusCode,
+                };
+
+                if (apiResponseType.Type == typeof(void))
+                {
+                    if (type != null && (statusCode == StatusCodes.Status200OK || statusCode == StatusCodes.Status201Created))
+                    {
+                        // Allow setting the response type from the return type of the method if it has
+                        // not been set explicitly by the method.
+                        apiResponseType.Type = type;
+                    }
+                }
+
+                var attributeContentTypes = new MediaTypeCollection();
+                if (metadata.ContentTypes != null)
+                {
+                    foreach (var contentType in metadata.ContentTypes)
+                    {
+                        attributeContentTypes.Add(contentType);
+                    }
+                }
+                ApiResponseTypeProvider.CalculateResponseFormatForType(apiResponseType, attributeContentTypes, responseTypeMetadataProviders: null, modelMetadataProvider: null);
+
+                if (apiResponseType.Type != null)
+                {
+                    results[apiResponseType.StatusCode] = apiResponseType;
+                }
+            }
+
+            return results;
         }
 
         private static ApiResponseType CreateDefaultApiResponseType(Type responseType)

@@ -39,8 +39,8 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
 'dotnet dev-certs https --clean --import ./certificate.pfx -p password'
 'dotnet dev-certs https --check --trust'
 'dotnet dev-certs https -ep ./certificate.pfx -p password --trust'
-'dotnet dev-certs https -ep ./certificate.crt --trust --key-format Pem'
-'dotnet dev-certs https -ep ./certificate.crt -p password --trust --key-format Pem'";
+'dotnet dev-certs https -ep ./certificate.crt --trust --format Pem'
+'dotnet dev-certs https -ep ./certificate.crt -p password --trust --format Pem'";
 
         public static readonly TimeSpan HttpsCertificateValidity = TimeSpan.FromDays(365);
 

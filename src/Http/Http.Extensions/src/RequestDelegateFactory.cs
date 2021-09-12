@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     public static partial class RequestDelegateFactory
     {
-        private static readonly TryParseMethodCache TryParseMethodCache = new();
+        private static readonly ParameterBindingMethodCache ParameterBindingMethodCache = new();
 
         private static readonly MethodInfo ExecuteTaskOfTMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTask), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo ExecuteTaskOfStringMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskOfString), BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -41,13 +41,15 @@ namespace Microsoft.AspNetCore.Http
             Log.ParameterBindingFailed(httpContext, parameterType, parameterName, sourceValue, shouldThrow));
         private static readonly MethodInfo LogRequiredParameterNotProvidedMethod = GetMethodInfo<Action<HttpContext, string, string, string, bool>>((httpContext, parameterType, parameterName, source, shouldThrow) =>
             Log.RequiredParameterNotProvided(httpContext, parameterType, parameterName, source, shouldThrow));
+        private static readonly MethodInfo LogImplicitBodyNotProvidedMethod = GetMethodInfo<Action<HttpContext, string, bool>>((httpContext, parameterName, shouldThrow) =>
+            Log.ImplicitBodyNotProvided(httpContext, parameterName, shouldThrow));
 
         private static readonly ParameterExpression TargetExpr = Expression.Parameter(typeof(object), "target");
         private static readonly ParameterExpression BodyValueExpr = Expression.Parameter(typeof(object), "bodyValue");
         private static readonly ParameterExpression WasParamCheckFailureExpr = Expression.Variable(typeof(bool), "wasParamCheckFailure");
         private static readonly ParameterExpression BoundValuesArrayExpr = Expression.Parameter(typeof(object[]), "boundValues");
 
-        private static ParameterExpression HttpContextExpr => TryParseMethodCache.HttpContextExpr;
+        private static readonly ParameterExpression HttpContextExpr = ParameterBindingMethodCache.HttpContextExpr;
         private static readonly MemberExpression RequestServicesExpr = Expression.Property(HttpContextExpr, typeof(HttpContext).GetProperty(nameof(HttpContext.RequestServices))!);
         private static readonly MemberExpression HttpRequestExpr = Expression.Property(HttpContextExpr, typeof(HttpContext).GetProperty(nameof(HttpContext.Request))!);
         private static readonly MemberExpression HttpResponseExpr = Expression.Property(HttpContextExpr, typeof(HttpContext).GetProperty(nameof(HttpContext.Response))!);
@@ -59,7 +61,7 @@ namespace Microsoft.AspNetCore.Http
         private static readonly MemberExpression StatusCodeExpr = Expression.Property(HttpResponseExpr, typeof(HttpResponse).GetProperty(nameof(HttpResponse.StatusCode))!);
         private static readonly MemberExpression CompletedTaskExpr = Expression.Property(null, (PropertyInfo)GetMemberInfo<Func<Task>>(() => Task.CompletedTask));
 
-        private static ParameterExpression TempSourceStringExpr => TryParseMethodCache.TempSourceStringExpr;
+        private static readonly ParameterExpression TempSourceStringExpr = ParameterBindingMethodCache.TempSourceStringExpr;
         private static readonly BinaryExpression TempSourceStringNotNullExpr = Expression.NotEqual(TempSourceStringExpr, Expression.Constant(null));
         private static readonly BinaryExpression TempSourceStringNullExpr = Expression.Equal(TempSourceStringExpr, Expression.Constant(null));
         private static readonly string[] DefaultAcceptsContentType = new[] { "application/json" };
@@ -138,6 +140,7 @@ namespace Microsoft.AspNetCore.Http
                 ServiceProviderIsService = options?.ServiceProvider?.GetService<IServiceProviderIsService>(),
                 RouteParameters = options?.RouteParameterNames?.ToList(),
                 ThrowOnBadRequest = options?.ThrowOnBadRequest ?? false,
+                DisableInferredFromBody = options?.DisableInferBodyFromParameters ?? false,
             };
 
         private static Func<object?, HttpContext, Task> CreateTargetableRequestDelegate(MethodInfo methodInfo, Expression? targetExpression, FactoryContext factoryContext)
@@ -186,6 +189,11 @@ namespace Microsoft.AspNetCore.Http
                 args[i] = CreateArgument(parameters[i], factoryContext);
             }
 
+            if (factoryContext.HasInferredBody && factoryContext.DisableInferredFromBody)
+            {
+                var errorMessage = BuildErrorMessageForInferredBodyParameter(factoryContext);
+                throw new InvalidOperationException(errorMessage);
+            }
             if (factoryContext.HasMultipleBodyParameters)
             {
                 var errorMessage = BuildErrorMessageForMultipleBodyParameters(factoryContext);
@@ -254,11 +262,11 @@ namespace Microsoft.AspNetCore.Http
             {
                 return RequestAbortedExpr;
             }
-            else if (TryParseMethodCache.HasBindAsyncMethod(parameter))
+            else if (ParameterBindingMethodCache.HasBindAsyncMethod(parameter))
             {
                 return BindParameterFromBindAsync(parameter, factoryContext);
             }
-            else if (parameter.ParameterType == typeof(string) || TryParseMethodCache.HasTryParseStringMethod(parameter))
+            else if (parameter.ParameterType == typeof(string) || ParameterBindingMethodCache.HasTryParseMethod(parameter))
             {
                 // 1. We bind from route values only, if route parameters are non-null and the parameter name is in that set.
                 // 2. We bind from query only, if route parameters are non-null and the parameter name is NOT in that set.
@@ -294,6 +302,7 @@ namespace Microsoft.AspNetCore.Http
                     }
                 }
 
+                factoryContext.HasInferredBody = true;
                 factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.BodyParameter);
                 return BindParameterFromBody(parameter, allowEmpty: false, factoryContext);
             }
@@ -558,7 +567,7 @@ namespace Microsoft.AspNetCore.Http
                     {
                         if (!httpContext.Request.HasJsonContentType())
                         {
-                            Log.UnexpectedContentType(httpContext, httpContext.Request.ContentType);
+                            Log.UnexpectedContentType(httpContext, httpContext.Request.ContentType, factoryContext.ThrowOnBadRequest);
                             httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
                             return;
                         }
@@ -596,7 +605,7 @@ namespace Microsoft.AspNetCore.Http
                     {
                         if (!httpContext.Request.HasJsonContentType())
                         {
-                            Log.UnexpectedContentType(httpContext, httpContext.Request.ContentType);
+                            Log.UnexpectedContentType(httpContext, httpContext.Request.ContentType, factoryContext.ThrowOnBadRequest);
                             httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
                             return;
                         }
@@ -634,9 +643,11 @@ namespace Microsoft.AspNetCore.Http
         {
             var isOptional = IsOptionalParameter(parameter, factoryContext);
 
-            return isOptional
-                ? Expression.Call(GetServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr)
-                : Expression.Call(GetRequiredServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
+            if (isOptional)
+            {
+                return Expression.Call(GetServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
+            }
+            return Expression.Call(GetRequiredServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
         }
 
         private static Expression BindParameterFromValue(ParameterInfo parameter, Expression valueExpression, FactoryContext factoryContext, string source)
@@ -703,7 +714,7 @@ namespace Microsoft.AspNetCore.Http
             var isNotNullable = underlyingNullableType is null;
 
             var nonNullableParameterType = underlyingNullableType ?? parameter.ParameterType;
-            var tryParseMethodCall = TryParseMethodCache.FindTryParseStringMethod(nonNullableParameterType);
+            var tryParseMethodCall = ParameterBindingMethodCache.FindTryParseMethod(nonNullableParameterType);
 
             if (tryParseMethodCall is null)
             {
@@ -829,7 +840,7 @@ namespace Microsoft.AspNetCore.Http
             var isOptional = IsOptionalParameter(parameter, factoryContext);
 
             // Get the BindAsync method for the type.
-            var bindAsyncExpression = TryParseMethodCache.FindBindAsyncMethod(parameter);
+            var bindAsyncExpression = ParameterBindingMethodCache.FindBindAsyncMethod(parameter);
             // We know BindAsync exists because there's no way to opt-in without defining the method on the type.
             Debug.Assert(bindAsyncExpression is not null);
 
@@ -886,30 +897,54 @@ namespace Microsoft.AspNetCore.Http
 
             if (!factoryContext.AllowEmptyRequestBody)
             {
-                // If the parameter is required or the user has not explicitly
-                // set allowBody to be empty then validate that it is required.
-                //
-                // if (bodyValue == null)
-                // {
-                //      wasParamCheckFailure = true;
-                //      Log.RequiredParameterNotProvided(httpContext, "Todo", "body");
-                // }
-                var checkRequiredBodyBlock = Expression.Block(
-                    Expression.IfThen(
-                    Expression.Equal(BodyValueExpr, Expression.Constant(null)),
-                        Expression.Block(
-                            Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
-                            Expression.Call(LogRequiredParameterNotProvidedMethod,
+                if (factoryContext.HasInferredBody)
+                {
+                    // if (bodyValue == null)
+                    // {
+                    //    wasParamCheckFailure = true;
+                    //    Log.ImplicitBodyNotProvided(httpContext, "todo", ThrowOnBadRequest);
+                    // }
+                    factoryContext.ParamCheckExpressions.Add(Expression.Block(
+                        Expression.IfThen(
+                            Expression.Equal(BodyValueExpr, Expression.Constant(null)),
+                            Expression.Block(
+                                Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
+                                Expression.Call(LogImplicitBodyNotProvidedMethod,
+                                    HttpContextExpr,
+                                    Expression.Constant(parameter.Name),
+                                    Expression.Constant(factoryContext.ThrowOnBadRequest)
+                                )
+                            )
+                        )
+                    ));
+                }
+                else
+                {
+                    // If the parameter is required or the user has not explicitly
+                    // set allowBody to be empty then validate that it is required.
+                    //
+                    // if (bodyValue == null)
+                    // {
+                    //      wasParamCheckFailure = true;
+                    //      Log.RequiredParameterNotProvided(httpContext, "Todo", "todo", "body", ThrowOnBadRequest);
+                    // }
+                    var checkRequiredBodyBlock = Expression.Block(
+                        Expression.IfThen(
+                        Expression.Equal(BodyValueExpr, Expression.Constant(null)),
+                            Expression.Block(
+                                Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
+                                Expression.Call(LogRequiredParameterNotProvidedMethod,
                                     HttpContextExpr,
                                     Expression.Constant(TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false)),
                                     Expression.Constant(parameter.Name),
                                     Expression.Constant("body"),
                                     Expression.Constant(factoryContext.ThrowOnBadRequest))
+                            )
                         )
-                    )
-                );
+                    );
+                    factoryContext.ParamCheckExpressions.Add(checkRequiredBodyBlock);
+                }
 
-                factoryContext.ParamCheckExpressions.Add(checkRequiredBodyBlock);
             }
             else if (parameter.HasDefaultValue)
             {
@@ -1125,6 +1160,7 @@ namespace Microsoft.AspNetCore.Http
             public IServiceProviderIsService? ServiceProviderIsService { get; init; }
             public List<string>? RouteParameters { get; init; }
             public bool ThrowOnBadRequest { get; init; }
+            public bool DisableInferredFromBody { get; init; }
 
             // Temporary State
             public Type? JsonRequestBodyType { get; set; }
@@ -1137,6 +1173,7 @@ namespace Microsoft.AspNetCore.Http
 
             public Dictionary<string, string> TrackedParameters { get; } = new();
             public bool HasMultipleBodyParameters { get; set; }
+            public bool HasInferredBody { get; set; }
 
             public List<object> Metadata { get; } = new();
 
@@ -1166,6 +1203,11 @@ namespace Microsoft.AspNetCore.Http
 
             private const string RequiredParameterNotProvidedLogMessage = @"Required parameter ""{ParameterType} {ParameterName}"" was not provided from {Source}.";
             private const string RequiredParameterNotProvidedExceptionMessage = @"Required parameter ""{0} {1}"" was not provided from {2}.";
+
+            private const string UnexpectedContentTypeLogMessage = @"Expected a supported JSON media type but got ""{ContentType}"".";
+            private const string UnexpectedContentTypeExceptionMessage = @"Expected a supported JSON media type but got ""{0}"".";
+            private const string ImplicitBodyNotProvidedLogMessage = @"Implicit body inferred for parameter ""{ParameterName}"" but no body was provided. Did you mean to use a Service instead?";
+            private const string ImplicitBodyNotProvidedExceptionMessage = @"Implicit body inferred for parameter ""{0}"" but no body was provided. Did you mean to use a Service instead?";
 
             // This doesn't take a shouldThrow parameter because an IOException indicates an aborted request rather than a "bad" request so
             // a BadHttpRequestException feels wrong. The client shouldn't be able to read the Developer Exception Page at any rate.
@@ -1216,12 +1258,34 @@ namespace Microsoft.AspNetCore.Http
             [LoggerMessage(4, LogLevel.Debug, RequiredParameterNotProvidedLogMessage, EventName = "RequiredParameterNotProvided")]
             private static partial void RequiredParameterNotProvided(ILogger logger, string parameterType, string parameterName, string source);
 
+            public static void UnexpectedContentType(HttpContext httpContext, string? contentType, bool shouldThrow)
+            {
+                if (shouldThrow)
+                {
+                    var message = string.Format(CultureInfo.InvariantCulture, UnexpectedContentTypeExceptionMessage, contentType);
+                    throw new BadHttpRequestException(message, StatusCodes.Status415UnsupportedMediaType);
+                }
+
+                UnexpectedContentType(GetLogger(httpContext), contentType ?? "(none)");
+            }
+            public static void ImplicitBodyNotProvided(HttpContext httpContext, string parameterName, bool shouldThrow)
+            {
+                if (shouldThrow)
+                {
+                    var message = string.Format(CultureInfo.InvariantCulture, ImplicitBodyNotProvidedExceptionMessage, parameterName);
+                    throw new BadHttpRequestException(message);
+                }
+
+                ImplicitBodyNotProvided(GetLogger(httpContext), parameterName);
+            }
+
+            [LoggerMessage(5, LogLevel.Debug, ImplicitBodyNotProvidedLogMessage, EventName = "ImplicitBodyNotProvided")]
+            private static partial void ImplicitBodyNotProvided(ILogger logger, string parameterName);
+
             public static void UnexpectedContentType(HttpContext httpContext, string? contentType)
                 => UnexpectedContentType(GetLogger(httpContext), contentType ?? "(none)");
 
-            [LoggerMessage(6, LogLevel.Debug,
-                "Expected a supported JSON media type but got \"{ContentType}\".",
-                EventName = "UnexpectedContentType")]
+            [LoggerMessage(6, LogLevel.Debug, UnexpectedContentTypeLogMessage, EventName = "UnexpectedContentType")]
             private static partial void UnexpectedContentType(ILogger logger, string contentType);
 
             private static ILogger GetLogger(HttpContext httpContext)
@@ -1268,7 +1332,7 @@ namespace Microsoft.AspNetCore.Http
             errorMessage.AppendLine("Failure to infer one or more parameters.");
             errorMessage.AppendLine("Below is the list of parameters that we found: ");
             errorMessage.AppendLine();
-            errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}|{"Source",-30}"));
+            errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}| {"Source",-30}"));
             errorMessage.AppendLine("---------------------------------------------------------------------------------");
 
             foreach (var kv in factoryContext.TrackedParameters)
@@ -1277,6 +1341,25 @@ namespace Microsoft.AspNetCore.Http
             }
             errorMessage.AppendLine().AppendLine();
             errorMessage.AppendLine("Did you mean to register the \"UNKNOWN\" parameters as a Service?")
+                .AppendLine();
+            return errorMessage.ToString();
+        }
+
+        private static string BuildErrorMessageForInferredBodyParameter(FactoryContext factoryContext)
+        {
+            var errorMessage = new StringBuilder();
+            errorMessage.AppendLine("Body was inferred but the method does not allow inferred body parameters.");
+            errorMessage.AppendLine("Below is the list of parameters that we found: ");
+            errorMessage.AppendLine();
+            errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}| {"Source",-30}"));
+            errorMessage.AppendLine("---------------------------------------------------------------------------------");
+
+            foreach (var kv in factoryContext.TrackedParameters)
+            {
+                errorMessage.AppendLine(FormattableString.Invariant($"{kv.Key,-19} | {kv.Value,-15}"));
+            }
+            errorMessage.AppendLine().AppendLine();
+            errorMessage.AppendLine("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromService] or [FromBody] attribute?")
                 .AppendLine();
             return errorMessage.ToString();
         }

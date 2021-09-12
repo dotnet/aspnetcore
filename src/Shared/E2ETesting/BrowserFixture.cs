@@ -318,7 +318,8 @@ namespace Microsoft.AspNetCore.E2ETesting
 
             var capabilities = options.ToCapabilities();
 
-            await SauceConnectServer.StartAsync(output);
+            //await SauceConnectServer.StartAsync(output);
+            await Task.Yield();
 
             var attempt = 0;
             const int maxAttempts = 3;

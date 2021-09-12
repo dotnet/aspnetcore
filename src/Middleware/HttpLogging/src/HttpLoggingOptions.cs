@@ -27,17 +27,34 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// </summary>
         public ISet<string> RequestHeaders => _internalRequestHeaders;
 
-        internal HashSet<string> _internalRequestHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        internal HashSet<string> _internalRequestHeaders = new HashSet<string>(26, StringComparer.OrdinalIgnoreCase)
         {
             HeaderNames.Accept,
+            HeaderNames.AcceptCharset,
             HeaderNames.AcceptEncoding,
             HeaderNames.AcceptLanguage,
             HeaderNames.Allow,
+            HeaderNames.CacheControl,
             HeaderNames.Connection,
+            HeaderNames.ContentEncoding,
             HeaderNames.ContentLength,
             HeaderNames.ContentType,
+            HeaderNames.Date,
+            HeaderNames.DNT,
+            HeaderNames.Expect,
             HeaderNames.Host,
-            HeaderNames.UserAgent
+            HeaderNames.MaxForwards,
+            HeaderNames.Range,
+            HeaderNames.SecWebSocketExtensions,
+            HeaderNames.SecWebSocketVersion,
+            HeaderNames.TE,
+            HeaderNames.Trailer,
+            HeaderNames.TransferEncoding,
+            HeaderNames.Upgrade,
+            HeaderNames.UserAgent,
+            HeaderNames.Warning,
+            HeaderNames.XRequestedWith,
+            HeaderNames.XUACompatible
         };
 
         /// <summary>
@@ -49,11 +66,28 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// </summary>
         public ISet<string> ResponseHeaders => _internalResponseHeaders;
 
-        internal HashSet<string> _internalResponseHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        internal HashSet<string> _internalResponseHeaders = new HashSet<string>(20, StringComparer.OrdinalIgnoreCase)
         {
+            HeaderNames.AcceptRanges,
+            HeaderNames.Age,
+            HeaderNames.Allow,
+            HeaderNames.AltSvc,
+            HeaderNames.Connection,
+            HeaderNames.ContentDisposition,
+            HeaderNames.ContentLanguage,
             HeaderNames.ContentLength,
+            HeaderNames.ContentLocation,
+            HeaderNames.ContentRange,
             HeaderNames.ContentType,
-            HeaderNames.TransferEncoding
+            HeaderNames.Date,
+            HeaderNames.Expires,
+            HeaderNames.LastModified,
+            HeaderNames.Location,
+            HeaderNames.Server,
+            HeaderNames.Status,
+            HeaderNames.TransferEncoding,
+            HeaderNames.Upgrade,
+            HeaderNames.XPoweredBy
         };
 
         /// <summary>

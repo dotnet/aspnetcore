@@ -139,7 +139,10 @@ namespace Templates.Test.Helpers
             foreach (IHtmlLinkElement styleSheet in html.GetElementsByTagName("link"))
             {
                 Assert.Equal("stylesheet", styleSheet.Relation);
-                await AssertOk(styleSheet.Href.Replace("about://", string.Empty));
+                // Workaround for https://github.com/dotnet/aspnetcore/issues/31030#issuecomment-811334450
+                // Cleans up incorrectly generated filename for scoped CSS files
+                var styleSheetHref = styleSheet.Href.Replace("_", string.Empty).Replace("about://", string.Empty);
+                await AssertOk(styleSheetHref);
             }
             foreach (var script in html.Scripts)
             {

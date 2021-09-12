@@ -173,7 +173,7 @@ export function getLogicalChild(parent: LogicalElement, childIndex: number): Log
 export function isSvgElement(element: LogicalElement) {
   // Note: This check is intentionally case-sensitive since we expect this element
   // to appear as a child of an SVG element and SVGs are case-sensitive.
-  var closestElement = getClosestDomElement(element);
+  var closestElement = getClosestDomElement(element) as any;
   return closestElement.namespaceURI === 'http://www.w3.org/2000/svg' && closestElement['tagName'] !== 'foreignObject';
 }
 

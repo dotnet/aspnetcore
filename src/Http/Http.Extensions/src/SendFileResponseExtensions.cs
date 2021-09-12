@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Http
             if (string.IsNullOrEmpty(file.PhysicalPath))
             {
                 CheckRange(offset, count, file.Length);
-                using var fileContent = file.CreateReadStream();
+                await using var fileContent = file.CreateReadStream();
 
                 var useRequestAborted = !cancellationToken.CanBeCanceled;
                 var localCancel = useRequestAborted ? response.HttpContext.RequestAborted : cancellationToken;
