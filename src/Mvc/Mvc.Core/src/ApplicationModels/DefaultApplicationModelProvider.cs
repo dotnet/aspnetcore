@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             _modelMetadataProvider = modelMetadataProvider;
 
             _supportsAllRequests = _ => true;
-            _supportsNonGetRequests = context => !string.Equals(context.HttpContext.Request.Method, "GET", StringComparison.OrdinalIgnoreCase);
+            _supportsNonGetRequests = context => !HttpMethods.IsGet(context.HttpContext.Request.Method);
         }
 
         /// <inheritdoc />
