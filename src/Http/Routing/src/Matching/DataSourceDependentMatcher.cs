@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     {
                         if (!seenEndpointNames.Add(endpointName))
                         {
-                            throw new InvalidOperationException($"Duplicate endpoint name {endpointName} found. Endpoint names must be globally unique.");
+                            throw new InvalidOperationException($"Duplicate endpoint name '{endpointName}' found on '{endpoint.DisplayName}'. Endpoint names must be globally unique.");
                         }
                     }
 
