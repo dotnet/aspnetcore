@@ -79,6 +79,13 @@ namespace Microsoft.AspNetCore.Identity
             // REVIEW: note we lost login authentication method
             context.ReplacePrincipal(newPrincipal);
             context.ShouldRenew = true;
+
+            if (!context.Options.SlidingExpiration)
+            {
+                // On renewal calculate the new ticket length relative to now to avoid
+                // extending the expiration.
+                context.Properties.IssuedUtc = Clock.UtcNow;
+            }
         }
 
         /// <summary>
@@ -99,7 +106,7 @@ namespace Microsoft.AspNetCore.Identity
         public virtual async Task ValidateAsync(CookieValidatePrincipalContext context)
         {
             var currentUtc = DateTimeOffset.UtcNow;
-            if (context.Options != null && Clock != null)
+            if (Clock != null)
             {
                 currentUtc = Clock.UtcNow;
             }

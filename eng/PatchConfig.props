@@ -107,6 +107,7 @@ Later on, this will be checked using this condition:
   </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.31' ">
     <PackagesInPatch>
+      Microsoft.AspNetCore.Identity;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>
