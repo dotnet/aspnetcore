@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Identity
         public virtual async Task ValidateAsync(CookieValidatePrincipalContext context)
         {
             var currentUtc = DateTimeOffset.UtcNow;
-            if (context.Options != null && Clock != null)
+            if (Clock != null)
             {
                 currentUtc = Clock.UtcNow;
             }
