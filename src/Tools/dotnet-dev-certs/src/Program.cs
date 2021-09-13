@@ -367,7 +367,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                         "already trusted we will run the following command:" + Environment.NewLine +
                         "'sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain <<certificate>>'" +
                         Environment.NewLine + "This command might prompt you for your password to install the certificate " +
-                        "on the system keychain. To undo these changes: 'sudo security remove-trusted-cert -d <<certificate>>`");
+                        "on the system keychain. To undo these changes: 'sudo security remove-trusted-cert -d <<certificate>>'");
                 }
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
