@@ -93,6 +93,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/36472")]
         public void IHttpActivityFeatureIsPopulated()
         {
             var testSource = new ActivitySource(Path.GetRandomFileName());
