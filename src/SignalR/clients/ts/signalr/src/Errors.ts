@@ -75,7 +75,7 @@ export class UnsupportedTransportError extends Error {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private __proto__: Error;
 
-    /** The {@link @microsoft/signalr.HttpTransportType} this error occured on. */
+    /** The {@link @microsoft/signalr.HttpTransportType} this error occurred on. */
     public transport: HttpTransportType;
 
     /** The type name of this error. */
@@ -84,7 +84,7 @@ export class UnsupportedTransportError extends Error {
     /** Constructs a new instance of {@link @microsoft/signalr.UnsupportedTransportError}.
      *
      * @param {string} message A descriptive error message.
-     * @param {HttpTransportType} transport The {@link @microsoft/signalr.HttpTransportType} this error occured on.
+     * @param {HttpTransportType} transport The {@link @microsoft/signalr.HttpTransportType} this error occurred on.
      */
     constructor(message: string, transport: HttpTransportType) {
         const trueProto = new.target.prototype;
@@ -105,7 +105,7 @@ export class DisabledTransportError extends Error {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private __proto__: Error;
 
-    /** The {@link @microsoft/signalr.HttpTransportType} this error occured on. */
+    /** The {@link @microsoft/signalr.HttpTransportType} this error occurred on. */
     public transport: HttpTransportType;
 
     /** The type name of this error. */
@@ -114,7 +114,7 @@ export class DisabledTransportError extends Error {
     /** Constructs a new instance of {@link @microsoft/signalr.DisabledTransportError}.
      *
      * @param {string} message A descriptive error message.
-     * @param {HttpTransportType} transport The {@link @microsoft/signalr.HttpTransportType} this error occured on.
+     * @param {HttpTransportType} transport The {@link @microsoft/signalr.HttpTransportType} this error occurred on.
      */
     constructor(message: string, transport: HttpTransportType) {
         const trueProto = new.target.prototype;
@@ -135,7 +135,7 @@ export class FailedToStartTransportError extends Error {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private __proto__: Error;
 
-    /** The {@link @microsoft/signalr.HttpTransportType} this error occured on. */
+    /** The {@link @microsoft/signalr.HttpTransportType} this error occurred on. */
     public transport: HttpTransportType;
 
     /** The type name of this error. */
@@ -144,7 +144,7 @@ export class FailedToStartTransportError extends Error {
     /** Constructs a new instance of {@link @microsoft/signalr.FailedToStartTransportError}.
      *
      * @param {string} message A descriptive error message.
-     * @param {HttpTransportType} transport The {@link @microsoft/signalr.HttpTransportType} this error occured on.
+     * @param {HttpTransportType} transport The {@link @microsoft/signalr.HttpTransportType} this error occurred on.
      */
     constructor(message: string, transport: HttpTransportType) {
         const trueProto = new.target.prototype;
@@ -183,7 +183,7 @@ export class FailedToNegotiateWithServerError extends Error {
     }
 }
 
-/** Error thrown when multiple errors have occured. */
+/** Error thrown when multiple errors have occurred. */
 /** @private */
 export class AggregateErrors extends Error {
     // @ts-ignore: Intentionally unused.
