@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public void Matcher_ThrowsOnDuplicateEndpoints()
         {
             // Arrange
-            var expectedError = "Duplicate endpoint name Foo found. Endpoint names must be globally unique.";
+            var expectedError = "Duplicate endpoint name 'Foo' found on '/bar'. Endpoint names must be globally unique.";
             var dataSource = new DynamicEndpointDataSource();
             var lifetime = new DataSourceDependentMatcher.Lifetime();
             dataSource.AddEndpoint(new RouteEndpoint(
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public void Matcher_ThrowsOnDuplicateEndpointsFromMultipleSources()
         {
             // Arrange
-            var expectedError = "Duplicate endpoint name Foo found. Endpoint names must be globally unique.";
+            var expectedError = "Duplicate endpoint name 'Foo' found on '/foo2'. Endpoint names must be globally unique.";
             var dataSource = new DynamicEndpointDataSource();
             var lifetime = new DataSourceDependentMatcher.Lifetime();
             dataSource.AddEndpoint(new RouteEndpoint(
@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 RoutePatternFactory.Parse("/foo2"),
                 0,
                 new EndpointMetadataCollection(new EndpointNameMetadata("Foo")),
-                "/foo"
+                "/foo2"
             ));
 
             var compositeDataSource = new CompositeEndpointDataSource(new[] { dataSource, anotherDataSource });
@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public void Matcher_ThrowsOnDuplicateEndpointAddedLater()
         {
             // Arrange
-            var expectedError = "Duplicate endpoint name Foo found. Endpoint names must be globally unique.";
+            var expectedError = "Duplicate endpoint name 'Foo' found on '/bar'. Endpoint names must be globally unique.";
             var dataSource = new DynamicEndpointDataSource();
             var lifetime = new DataSourceDependentMatcher.Lifetime();
             dataSource.AddEndpoint(new RouteEndpoint(
