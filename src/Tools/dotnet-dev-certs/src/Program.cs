@@ -363,12 +363,12 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
-                    var certPath = exportPath.HasValue() ? exportPath.Value() : "<<certificate>>";
+                    var certPath = exportPath.HasValue() ? exportPath.Value() : "";
                     reporter.Warn("Trusting the HTTPS development certificate was requested. If the certificate is not " +
                         "already trusted we will run the following command:" + Environment.NewLine +
-                        $"'sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain {certPath}'" +
+                        "'sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain <<certificate>>'" +
                         Environment.NewLine + "This command might prompt you for your password to install the certificate " +
-                        "on the system keychain.");
+                        "on the system keychain. To undo these changes: 'sudo security remove-trusted-cert -d <<certificate>>`");
                 }
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
