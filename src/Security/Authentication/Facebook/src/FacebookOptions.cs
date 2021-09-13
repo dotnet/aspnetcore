@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         /// <summary>
         /// Gets or sets if the <c>appsecret_proof</c> should be generated and sent with Facebook API calls.
         /// </summary>
-        /// <remarks>See https://developers.facebook.com/docs/graph-api/securing-requests/#appsecret_proof for more details.</remarks>
+        /// <remarks>See https://developers.facebook.com/docs/graph-api/security#appsecret_proof for more details.</remarks>
         /// <value>Defaults to <see langword="true"/>.</value>
         public bool SendAppSecretProof { get; set; }
 

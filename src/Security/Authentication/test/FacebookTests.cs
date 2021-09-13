@@ -369,6 +369,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
             Assert.Equal(1, finalUserInfoEndpoint.Count(c => c == '?'));
             Assert.Contains("fields=email,timezone,picture", finalUserInfoEndpoint);
             Assert.Contains("&access_token=", finalUserInfoEndpoint);
+            Assert.Contains("&appsecret_proof=b7fb6d5a4510926b4af6fe080497827d791dc45fe6541d88ba77bdf6e8e208c6&", finalUserInfoEndpoint);
         }
 
         private static async Task<IHost> CreateHost(Action<IApplicationBuilder> configure, Action<IServiceCollection> configureServices, Func<HttpContext, Task<bool>> handler)
