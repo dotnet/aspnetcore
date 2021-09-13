@@ -656,7 +656,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         [Fact]
         public async Task CookieCanBeRenewedByValidatorWithModifiedLifetime()
         {
-            using var host = await CreateHost(o =>
+            var server = CreateServer(o =>
             {
                 o.ExpireTimeSpan = TimeSpan.FromMinutes(10);
                 o.Events = new CookieAuthenticationEvents
@@ -686,7 +686,6 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 context.SignInAsync("Cookies",
                     new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies")))));
 
-            using var server = host.GetTestServer();
             var transaction1 = await SendAsync(server, "http://example.com/testpath");
 
             var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
