@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public void Matcher_ThrowsOnDuplicateEndpoints()
         {
             // Arrange
-            var expectedError = "Duplicate endpoint name 'Foo' found on '/bar'. Endpoint names must be globally unique.";
+            var expectedError = "Duplicate endpoint name 'Foo' found on '/bar' and '/foo'. Endpoint names must be globally unique.";
             var dataSource = new DynamicEndpointDataSource();
             var lifetime = new DataSourceDependentMatcher.Lifetime();
             dataSource.AddEndpoint(new RouteEndpoint(
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public void Matcher_ThrowsOnDuplicateEndpointsFromMultipleSources()
         {
             // Arrange
-            var expectedError = "Duplicate endpoint name 'Foo' found on '/foo2'. Endpoint names must be globally unique.";
+            var expectedError = "Duplicate endpoint name 'Foo' found on '/foo2' and '/foo'. Endpoint names must be globally unique.";
             var dataSource = new DynamicEndpointDataSource();
             var lifetime = new DataSourceDependentMatcher.Lifetime();
             dataSource.AddEndpoint(new RouteEndpoint(
@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public void Matcher_ThrowsOnDuplicateEndpointAddedLater()
         {
             // Arrange
-            var expectedError = "Duplicate endpoint name 'Foo' found on '/bar'. Endpoint names must be globally unique.";
+            var expectedError = "Duplicate endpoint name 'Foo' found on '/bar' and '/foo'. Endpoint names must be globally unique.";
             var dataSource = new DynamicEndpointDataSource();
             var lifetime = new DataSourceDependentMatcher.Lifetime();
             dataSource.AddEndpoint(new RouteEndpoint(
