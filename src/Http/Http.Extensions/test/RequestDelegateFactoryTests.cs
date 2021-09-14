@@ -612,6 +612,54 @@ namespace Microsoft.AspNetCore.Routing.Internal
             }
         }
 
+        private record struct MyBothBindAsyncStruct(Uri Uri)
+        {
+            public static ValueTask<MyBothBindAsyncStruct> BindAsync(HttpContext context, ParameterInfo parameter)
+            {
+                Assert.True(parameter.ParameterType == typeof(MyBothBindAsyncStruct) || parameter.ParameterType == typeof(MyBothBindAsyncStruct?));
+                Assert.Equal("myBothBindAsyncStruct", parameter.Name);
+
+                if (!Uri.TryCreate(context.Request.Headers.Referer, UriKind.Absolute, out var uri))
+                {
+                    throw new BadHttpRequestException("The request is missing the required Referer header.");
+                }
+
+                return new(result: new(uri));
+            }
+
+            // BindAsync with ParameterInfo is preferred
+            public static ValueTask<MyBothBindAsyncStruct> BindAsync(HttpContext context)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private record struct MySimpleBindAsyncStruct(Uri Uri)
+        {
+            public static ValueTask<MySimpleBindAsyncStruct> BindAsync(HttpContext context)
+            {
+                if (!Uri.TryCreate(context.Request.Headers.Referer, UriKind.Absolute, out var uri))
+                {
+                    throw new BadHttpRequestException("The request is missing the required Referer header.");
+                }
+
+                return new(result: new(uri));
+            }
+        }
+
+        private record MySimpleBindAsyncRecord(Uri Uri)
+        {
+            public static ValueTask<MySimpleBindAsyncRecord?> BindAsync(HttpContext context)
+            {
+                if (!Uri.TryCreate(context.Request.Headers.Referer, UriKind.Absolute, out var uri))
+                {
+                    return new(result: null);
+                }
+
+                return new(result: new(uri));
+            }
+        }
+
         [Theory]
         [MemberData(nameof(TryParsableParameters))]
         public async Task RequestDelegatePopulatesUnattributedTryParsableParametersFromRouteValue(Delegate action, string? routeValue, object? expectedParameterValue)
@@ -722,6 +770,24 @@ namespace Microsoft.AspNetCore.Routing.Internal
             await requestDelegate(httpContext);
 
             Assert.Equal(new MyBindAsyncStruct(new Uri("https://example.org")), httpContext.Items["myBindAsyncStruct"]);
+        }
+
+        [Fact]
+        public async Task RequestDelegateUsesParameterInfoBindAsyncOverOtherBindAsync()
+        {
+            var httpContext = CreateHttpContext();
+
+            httpContext.Request.Headers.Referer = "https://example.org";
+
+            var resultFactory = RequestDelegateFactory.Create((HttpContext httpContext, MyBothBindAsyncStruct? myBothBindAsyncStruct) =>
+            {
+                httpContext.Items["myBothBindAsyncStruct"] = myBothBindAsyncStruct;
+            });
+
+            var requestDelegate = resultFactory.RequestDelegate;
+            await requestDelegate(httpContext);
+
+            Assert.Equal(new MyBothBindAsyncStruct(new Uri("https://example.org")), httpContext.Items["myBothBindAsyncStruct"]);
         }
 
         [Fact]
@@ -873,7 +939,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         [Fact]
         public async Task RequestDelegateLogsBindAsyncFailuresAndSets400Response()
         {
-            // Not supplying any headers will cause the HttpContext TryParse overload to fail.
+            // Not supplying any headers will cause the HttpContext BindAsync overload to return null.
             var httpContext = CreateHttpContext();
             var invoked = false;
 
@@ -905,7 +971,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         [Fact]
         public async Task RequestDelegateLogsBindAsyncFailuresAndThrowsIfThrowOnBadRequest()
         {
-            // Not supplying any headers will cause the HttpContext TryParse overload to fail.
+            // Not supplying any headers will cause the HttpContext BindAsync overload to return null.
             var httpContext = CreateHttpContext();
             var invoked = false;
 
@@ -932,9 +998,71 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Fact]
+        public async Task RequestDelegateLogsSingleArgBindAsyncFailuresAndSets400Response()
+        {
+            // Not supplying any headers will cause the HttpContext BindAsync overload to return null.
+            var httpContext = CreateHttpContext();
+            var invoked = false;
+
+            var factoryResult = RequestDelegateFactory.Create((MySimpleBindAsyncRecord mySimpleBindAsyncRecord1,
+                MySimpleBindAsyncRecord mySimpleBindAsyncRecord2) =>
+            {
+                invoked = true;
+            });
+
+            var requestDelegate = factoryResult.RequestDelegate;
+            await requestDelegate(httpContext);
+
+            Assert.False(invoked);
+            Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+            Assert.Equal(400, httpContext.Response.StatusCode);
+
+            var logs = TestSink.Writes.ToArray();
+
+            Assert.Equal(2, logs.Length);
+
+            Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[0].EventId);
+            Assert.Equal(LogLevel.Debug, logs[0].LogLevel);
+            Assert.Equal(@"Required parameter ""MySimpleBindAsyncRecord mySimpleBindAsyncRecord1"" was not provided from MySimpleBindAsyncRecord.BindAsync(HttpContext).", logs[0].Message);
+
+            Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[1].EventId);
+            Assert.Equal(LogLevel.Debug, logs[1].LogLevel);
+            Assert.Equal(@"Required parameter ""MySimpleBindAsyncRecord mySimpleBindAsyncRecord2"" was not provided from MySimpleBindAsyncRecord.BindAsync(HttpContext).", logs[1].Message);
+        }
+
+        [Fact]
+        public async Task RequestDelegateLogsSingleArgBindAsyncFailuresAndThrowsIfThrowOnBadRequest()
+        {
+            // Not supplying any headers will cause the HttpContext BindAsync overload to return null.
+            var httpContext = CreateHttpContext();
+            var invoked = false;
+
+            var factoryResult = RequestDelegateFactory.Create((MySimpleBindAsyncRecord mySimpleBindAsyncRecord1,
+                MySimpleBindAsyncRecord mySimpleBindAsyncRecord2) =>
+            {
+                invoked = true;
+            }, new() { ThrowOnBadRequest = true });
+
+            var requestDelegate = factoryResult.RequestDelegate;
+            var badHttpRequestException = await Assert.ThrowsAsync<BadHttpRequestException>(() => requestDelegate(httpContext));
+
+            Assert.False(invoked);
+
+            // The httpContext should be untouched.
+            Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+            Assert.Equal(200, httpContext.Response.StatusCode);
+            Assert.False(httpContext.Response.HasStarted);
+
+            // We don't log bad requests when we throw.
+            Assert.Empty(TestSink.Writes);
+
+            Assert.Equal(@"Required parameter ""MySimpleBindAsyncRecord mySimpleBindAsyncRecord1"" was not provided from MySimpleBindAsyncRecord.BindAsync(HttpContext).", badHttpRequestException.Message);
+            Assert.Equal(400, badHttpRequestException.StatusCode);
+        }
+
+        [Fact]
         public async Task BindAsyncExceptionsAreUncaught()
         {
-            // Not supplying any headers will cause the HttpContext BindAsync overload to fail.
             var httpContext = CreateHttpContext();
 
             var factoryResult = RequestDelegateFactory.Create((MyBindAsyncTypeThatThrows arg1) => { });
@@ -2239,6 +2367,10 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 {
                     context.Items["uri"] = myBindAsyncRecord?.Uri;
                 }
+                void requiredReferenceTypeSimple(HttpContext context, MySimpleBindAsyncRecord mySimpleBindAsyncRecord)
+                {
+                    context.Items["uri"] = mySimpleBindAsyncRecord.Uri;
+                }
 
 
                 void requiredValueType(HttpContext context, MyNullableBindAsyncStruct myNullableBindAsyncStruct)
@@ -2253,11 +2385,16 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 {
                     context.Items["uri"] = myNullableBindAsyncStruct?.Uri;
                 }
+                void requiredValueTypeSimple(HttpContext context, MySimpleBindAsyncStruct mySimpleBindAsyncStruct)
+                {
+                    context.Items["uri"] = mySimpleBindAsyncStruct.Uri;
+                }
 
                 return new object?[][]
                 {
                     new object?[] { (Action<HttpContext, MyBindAsyncRecord>)requiredReferenceType, false, true, false },
                     new object?[] { (Action<HttpContext, MyBindAsyncRecord>)requiredReferenceType, true, false, false, },
+                    new object?[] { (Action<HttpContext, MySimpleBindAsyncRecord>)requiredReferenceTypeSimple, true, false, false },
 
                     new object?[] { (Action<HttpContext, MyBindAsyncRecord?>)defaultReferenceType, false, false, false, },
                     new object?[] { (Action<HttpContext, MyBindAsyncRecord?>)defaultReferenceType, true, false, false },
@@ -2267,6 +2404,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
                     new object?[] { (Action<HttpContext, MyNullableBindAsyncStruct>)requiredValueType, false, true, true },
                     new object?[] { (Action<HttpContext, MyNullableBindAsyncStruct>)requiredValueType, true, false, true },
+                    new object?[] { (Action<HttpContext, MySimpleBindAsyncStruct>)requiredValueTypeSimple, true, false, true },
 
                     new object?[] { (Action<HttpContext, MyNullableBindAsyncStruct?>)defaultValueType, false, false, true },
                     new object?[] { (Action<HttpContext, MyNullableBindAsyncStruct?>)defaultValueType, true, false, true },
