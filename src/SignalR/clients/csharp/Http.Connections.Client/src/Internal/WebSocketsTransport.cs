@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             {
                 // Full Framework will throw when trying to set the User-Agent header
                 // So avoid setting it in netstandard2.0 and only set it in netstandard2.1 and higher
-#if !NETSTANDARD2_0 && !NET461
+#if !NETSTANDARD2_0 && !NET462
                 webSocket.Options.SetRequestHeader("User-Agent", Constants.UserAgentHeader.ToString());
 #else
                 // Set an alternative user agent header on Full framework
@@ -276,7 +276,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 #if NETSTANDARD2_1 || NETCOREAPP
                     // Because we checked the CloseStatus from the 0 byte read above, we don't need to check again after reading
                     var receiveResult = await socket.ReceiveAsync(memory, CancellationToken.None);
-#elif NETSTANDARD2_0 || NET461
+#elif NETSTANDARD2_0 || NET462
                     var isArray = MemoryMarshal.TryGetArray<byte>(memory, out var arraySegment);
                     Debug.Assert(isArray);
 

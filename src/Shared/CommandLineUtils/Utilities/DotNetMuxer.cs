@@ -4,7 +4,7 @@
 // System.AppContext.GetData is not available in these frameworks
 #nullable enable
 
-#if !NET451 && !NET452 && !NET46 && !NET461
+#if !NET451 && !NET452 && !NET46 && !NET462
 
 using System;
 using System.Diagnostics;

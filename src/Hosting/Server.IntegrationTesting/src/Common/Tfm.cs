@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 {
     public static class Tfm
     {
-        public const string Net461 = "net461";
+        public const string Net462 = "net462";
         public const string NetCoreApp20 = "netcoreapp2.0";
         public const string NetCoreApp21 = "netcoreapp2.1";
         public const string NetCoreApp22 = "netcoreapp2.2";
