@@ -13,12 +13,22 @@ namespace Microsoft.AspNetCore.Builder
     {
         private readonly List<IEndpointConventionBuilder> _endpointConventionBuilders;
 
-        internal DelegateEndpointConventionBuilder(IEndpointConventionBuilder endpointConventionBuilder)
+        /// <summary>
+        /// Instantiates a new <see cref="DelegateEndpointConventionBuilder" /> given a single
+        /// <see cref="IEndpointConventionBuilder" />.
+        /// </summary>
+        /// <param name="endpointConventionBuilder">The <see cref="IEndpointConventionBuilder" /> to instantiate with.</param>
+        public DelegateEndpointConventionBuilder(IEndpointConventionBuilder endpointConventionBuilder)
         {
             _endpointConventionBuilders = new List<IEndpointConventionBuilder>() { endpointConventionBuilder };
         }
 
-        internal DelegateEndpointConventionBuilder(List<IEndpointConventionBuilder> endpointConventionBuilders)
+        /// <summary>
+        /// Instantiates a new <see cref="DelegateEndpointConventionBuilder" /> given multiple
+        /// <see cref="IEndpointConventionBuilder" /> instances.
+        /// </summary>
+        /// <param name="endpointConventionBuilders">A list of <see cref="IEndpointConventionBuilder" /> instances.</param>
+        public DelegateEndpointConventionBuilder(List<IEndpointConventionBuilder> endpointConventionBuilders)
         {
             _endpointConventionBuilders = endpointConventionBuilders;
         }
