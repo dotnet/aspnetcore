@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public sealed class DelegateEndpointConventionBuilder : IEndpointConventionBuilder
     {
-        private readonly List<IEndpointConventionBuilder> _endpointConventionBuilders;
+        private readonly IEnumerable<IEndpointConventionBuilder> _endpointConventionBuilders;
 
         /// <summary>
         /// Instantiates a new <see cref="DelegateEndpointConventionBuilder" /> given a single
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <see cref="IEndpointConventionBuilder" /> instances.
         /// </summary>
         /// <param name="endpointConventionBuilders">A list of <see cref="IEndpointConventionBuilder" /> instances.</param>
-        public DelegateEndpointConventionBuilder(List<IEndpointConventionBuilder> endpointConventionBuilders)
+        public DelegateEndpointConventionBuilder(IEnumerable<IEndpointConventionBuilder> endpointConventionBuilders)
         {
             _endpointConventionBuilders = endpointConventionBuilders;
         }
