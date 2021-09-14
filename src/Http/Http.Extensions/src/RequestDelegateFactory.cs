@@ -840,7 +840,7 @@ namespace Microsoft.AspNetCore.Http
             var isOptional = IsOptionalParameter(parameter, factoryContext);
 
             // Get the BindAsync method for the type.
-            var bindAsyncExpression = ParameterBindingMethodCache.FindBindAsyncMethod(parameter);
+            var (bindAsyncExpression, paramCount) = ParameterBindingMethodCache.FindBindAsyncMethod(parameter);
             // We know BindAsync exists because there's no way to opt-in without defining the method on the type.
             Debug.Assert(bindAsyncExpression is not null);
 
@@ -854,6 +854,7 @@ namespace Microsoft.AspNetCore.Http
             if (!isOptional)
             {
                 var typeName = TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false);
+                var message = paramCount == 2 ? $"{typeName}.BindAsync(HttpContext, ParameterInfo)" : $"{typeName}.BindAsync(HttpContext)";
                 var checkRequiredBodyBlock = Expression.Block(
                         Expression.IfThen(
                         Expression.Equal(boundValueExpr, Expression.Constant(null)),
@@ -863,7 +864,7 @@ namespace Microsoft.AspNetCore.Http
                                         HttpContextExpr,
                                         Expression.Constant(typeName),
                                         Expression.Constant(parameter.Name),
-                                        Expression.Constant($"{typeName}.BindAsync(HttpContext, ParameterInfo)"),
+                                        Expression.Constant(message),
                                         Expression.Constant(factoryContext.ThrowOnBadRequest))
                             )
                         )
