@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Cryptography.KeyDerivation.PBKDF2
 
         private static IPbkdf2Provider GetPbkdf2Provider()
         {
-#if NETSTANDARD2_0 || NET462
+#if NETSTANDARD2_0 || NETFRAMEWORK
             // In priority order, our three implementations are Win8, Win7, and "other".
             if (OSVersionUtil.IsWindows8OrLater())
             {

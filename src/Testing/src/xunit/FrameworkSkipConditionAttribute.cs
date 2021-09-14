@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Testing
                 return true;
             }
 
-#if NET462 || NET46
+#if NETFRAMEWORK
             if (excludedFrameworks.HasFlag(RuntimeFrameworks.Mono) &&
                 TestPlatformHelper.IsMono)
             {

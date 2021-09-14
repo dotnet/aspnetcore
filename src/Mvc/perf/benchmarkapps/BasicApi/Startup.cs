@@ -64,7 +64,7 @@ namespace BasicApi
 
             switch (databaseType.ToUpperInvariant())
             {
-#if !NET462
+#if !NETFRAMEWORK
                 case "MYSQL":
                     services
                         .AddEntityFrameworkMySql()
