@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <see cref="IEndpointConventionBuilder" />.
         /// </summary>
         /// <param name="endpointConventionBuilder">The <see cref="IEndpointConventionBuilder" /> to instantiate with.</param>
-        public DelegateEndpointConventionBuilder(IEndpointConventionBuilder endpointConventionBuilder)
+        internal DelegateEndpointConventionBuilder(IEndpointConventionBuilder endpointConventionBuilder)
         {
             _endpointConventionBuilders = new List<IEndpointConventionBuilder>() { endpointConventionBuilder };
         }

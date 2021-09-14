@@ -6,7 +6,6 @@
 *REMOVED*Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteName.get -> string!
 *REMOVED*Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteNameMetadata(string! routeName) -> void
 Microsoft.AspNetCore.Builder.DelegateEndpointConventionBuilder
-Microsoft.AspNetCore.Builder.DelegateEndpointConventionBuilder.DelegateEndpointConventionBuilder(Microsoft.AspNetCore.Builder.IEndpointConventionBuilder! endpointConventionBuilder) -> void
 Microsoft.AspNetCore.Builder.DelegateEndpointConventionBuilder.DelegateEndpointConventionBuilder(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!>! endpointConventionBuilders) -> void
 Microsoft.AspNetCore.Builder.DelegateEndpointConventionBuilder.Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! convention) -> void
 Microsoft.AspNetCore.Builder.DelegateEndpointRouteBuilderExtensions
