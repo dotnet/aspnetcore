@@ -158,6 +158,31 @@ export class FailedToStartTransportError extends Error {
     }
 }
 
+/** Error thrown when the negotiation with the server failed to complete. */
+/** @private */
+export class FailedToNegotiateWithServerError extends Error {
+    // @ts-ignore: Intentionally unused.
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    private __proto__: Error;
+
+    /** The type name of this error. */
+    public errorType: string;
+
+    /** Constructs a new instance of {@link @microsoft/signalr.FailedToNegotiateWithServerError}.
+     *
+     * @param {string} message A descriptive error message.
+     */
+    constructor(message: string) {
+        const trueProto = new.target.prototype;
+        super(message);
+        this.errorType = 'FailedToNegotiateWithServerError';
+
+        // Workaround issue in Typescript compiler
+        // https://github.com/Microsoft/TypeScript/issues/13965#issuecomment-278570200
+        this.__proto__ = trueProto;
+    }
+}
+
 /** Error thrown when multiple errors have occurred. */
 /** @private */
 export class AggregateErrors extends Error {
