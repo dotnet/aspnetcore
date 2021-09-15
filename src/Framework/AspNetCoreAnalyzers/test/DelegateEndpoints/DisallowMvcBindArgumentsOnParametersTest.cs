@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints;
 
 public partial class DisallowMvcBindArgumentsOnParametersTest
 {
-    private TestDiagnosticAnalyzerRunner Runner { get; } = new(new DelegateEndpointAnalyzer());
+    private TestDiagnosticAnalyzerRunner Runner { get; } = new(new RouteHandlerAnalyzer());
 
     [Fact]
     public async Task MinimalAction_WithoutBindAttributes_Works()

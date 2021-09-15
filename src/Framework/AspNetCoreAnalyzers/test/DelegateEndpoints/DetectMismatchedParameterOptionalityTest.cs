@@ -4,7 +4,7 @@
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using VerifyCS = Microsoft.AspNetCore.Analyzers.DelegateEndpoints.CSharpDelegateEndpointsCodeFixVerifier<
-    Microsoft.AspNetCore.Analyzers.DelegateEndpoints.DelegateEndpointAnalyzer,
+    Microsoft.AspNetCore.Analyzers.DelegateEndpoints.RouteHandlerAnalyzer,
     Microsoft.AspNetCore.Analyzers.DelegateEndpoints.Fixers.DetectMismatchedParameterOptionalityFixer>;
 
 namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints;
@@ -377,7 +377,7 @@ app.MapGet(""/hello/{name?}"", (string name) => $""Hello {name}"");
     public void RouteTokenizer_Works_ForSimpleRouteTemplates(string template, string[] expectedNames, string[] expectedQualifiers)
     {
         // Arrange
-        var tokenizer = new DelegateEndpointAnalyzer.RouteTokenEnumerator(template);
+        var tokenizer = new RouteHandlerAnalyzer.RouteTokenEnumerator(template);
         var actualNames = new List<string>();
         var actualQualifiers = new List<string>();
 

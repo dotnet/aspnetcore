@@ -4,15 +4,21 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints;
+namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
 
 internal sealed class WellKnownTypes
 {
     public static bool TryCreate(Compilation compilation, [NotNullWhen(true)] out WellKnownTypes? wellKnownTypes)
     {
         wellKnownTypes = default;
-        const string DelegateEndpointRouteBuilderExtensions = "Microsoft.AspNetCore.Builder.DelegateEndpointRouteBuilderExtensions";
-        if (compilation.GetTypeByMetadataName(DelegateEndpointRouteBuilderExtensions) is not { } delegateEndpointRouteBuilderExtensions)
+        const string EndpointRouteBuilderExtensions = "Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions";
+        if (compilation.GetTypeByMetadataName(EndpointRouteBuilderExtensions) is not { } endpointRouteBuilderExtensions)
+        {
+            return false;
+        }
+
+        const string Delegate = "System.Delegate";
+        if (compilation.GetTypeByMetadataName(Delegate) is not { } @delegate)
         {
             return false;
         }
@@ -51,7 +57,8 @@ internal sealed class WellKnownTypes
 
         wellKnownTypes = new WellKnownTypes
         {
-            DelegateEndpointRouteBuilderExtensions = delegateEndpointRouteBuilderExtensions,
+            EndpointRouteBuilderExtensions = endpointRouteBuilderExtensions,
+            Delegate = @delegate,
             IBinderTypeProviderMetadata = ibinderTypeProviderMetadata,
             BindAttribute = bindAttribute,
             IResult = iResult,
@@ -62,7 +69,8 @@ internal sealed class WellKnownTypes
         return true;
     }
 
-    public ITypeSymbol DelegateEndpointRouteBuilderExtensions { get; private init; }
+    public INamedTypeSymbol EndpointRouteBuilderExtensions { get; private init; }
+    public INamedTypeSymbol Delegate { get; private init; }
     public INamedTypeSymbol IBinderTypeProviderMetadata { get; private init; }
     public INamedTypeSymbol BindAttribute { get; private init; }
     public INamedTypeSymbol IResult { get; private init; }

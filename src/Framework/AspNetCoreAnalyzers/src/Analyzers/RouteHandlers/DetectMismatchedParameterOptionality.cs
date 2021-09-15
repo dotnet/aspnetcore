@@ -9,9 +9,9 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
-namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints;
+namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
 
-public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
+public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 {
     private static void DetectMismatchedParameterOptionality(
         in OperationAnalysisContext context,

@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints;
 
 public partial class DisallowReturningActionResultsFromMapMethodsTest
 {
-    private TestDiagnosticAnalyzerRunner Runner { get; } = new(new DelegateEndpointAnalyzer());
+    private TestDiagnosticAnalyzerRunner Runner { get; } = new(new RouteHandlerAnalyzer());
 
     [Fact]
     public async Task MinimalAction_ReturningIResult_Works()
