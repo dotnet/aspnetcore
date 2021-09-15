@@ -14,8 +14,7 @@
   <ItemGroup Condition="'$(IsRequiredCheck)' == 'true' AND '$(TargetArchitecture)' == 'x64' AND '$(IsHelixDaily)' != 'true'">
     <HelixAvailableTargetQueue Include="Ubuntu.1804.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Windows.10.Amd64.Server20H2.Open" Platform="Windows" />
-    <!-- Re-enable once https://github.com/dotnet/core-eng/issues/14346 is resolved -->
-    <!-- <HelixAvailableTargetQueue Include="OSX.1014.Amd64.Open" Platform="OSX" /> -->
+    <HelixAvailableTargetQueue Include="OSX.1014.Amd64.Open" Platform="OSX" />
   </ItemGroup>
   
   <!-- x64 Quarantined-only (quarantined-pr.yml and quarantined-tests.yml) test queues -->
@@ -32,8 +31,7 @@
     <HelixAvailableTargetQueue Include="Ubuntu.1804.Amd64.Open" Platform="Linux" />
 
     <!-- Mac -->
-    <!-- Re-enable once https://github.com/dotnet/core-eng/issues/14346 is resolved -->
-    <!-- <HelixAvailableTargetQueue Include="OSX.1014.Amd64.Open" Platform="OSX" /> -->
+    <HelixAvailableTargetQueue Include="OSX.1014.Amd64.Open" Platform="OSX" />
     <HelixAvailableTargetQueue Include="OSX.1100.Amd64.Open" Platform="OSX" />
 
     <!-- Containers -->
