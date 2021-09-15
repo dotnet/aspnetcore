@@ -47,6 +47,7 @@
 
   <Target Name="GetIdentityUIAssets" Returns="@(ReferenceAsset)">
     <PropertyGroup>
+      <IdentityDefaultUIFramework Condition="'$(IdentityDefaultUIFramework)' == ''">Bootstrap5</IdentityDefaultUIFramework>
       <_ReferenceAssetContentRoot Condition="'$(IdentityDefaultUIFramework)' == 'Bootstrap5'">assets/V5</_ReferenceAssetContentRoot>
       <_ReferenceAssetContentRoot Condition="'$(IdentityDefaultUIFramework)' == 'Bootstrap4'">assets/V4</_ReferenceAssetContentRoot>
     </PropertyGroup>
