@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.ComponentModel;
 using System.Reflection;
 using System.Security.Claims;
 using System.Threading;
@@ -11,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -269,6 +271,20 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
+        public void AddsFromRouteParameterAsPathWithCustomType()
+        {
+            static void AssertPathParameter(ApiDescription apiDescription)
+            {
+                var param = Assert.Single(apiDescription.ParameterDescriptions);
+                Assert.Equal(typeof(TryParseStringRecord), param.Type);
+                Assert.Equal(typeof(TryParseStringRecord), param.ModelMetadata.ModelType);
+                Assert.Equal(BindingSource.Path, param.Source);
+            }
+
+            AssertPathParameter(GetApiDescription((TryParseStringRecord foo) => { }, "/{foo}"));
+        }
+
+        [Fact]
         public void AddsFromQueryParameterAsQuery()
         {
             static void AssertQueryParameter(ApiDescription apiDescription)
@@ -408,6 +424,32 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.Equal(typeof(int), barParam.ModelMetadata.ModelType);
             Assert.Equal(BindingSource.Query, barParam.Source);
             Assert.True(barParam.IsRequired);
+        }
+
+        [Fact]
+        public void TestParameterAttributesCanBeInspected()
+        {
+            var apiDescription = GetApiDescription(([Description("The name.")] string name) => { });
+            Assert.Equal(1, apiDescription.ParameterDescriptions.Count);
+
+            var nameParam = apiDescription.ParameterDescriptions[0];
+            Assert.Equal(typeof(string), nameParam.Type);
+            Assert.Equal(typeof(string), nameParam.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.Query, nameParam.Source);
+            Assert.False(nameParam.IsRequired);
+
+            Assert.NotNull(nameParam.ParameterDescriptor);
+            Assert.Equal("name", nameParam.ParameterDescriptor.Name);
+            Assert.Equal(typeof(string), nameParam.ParameterDescriptor.ParameterType);
+
+            var descriptor = Assert.IsAssignableFrom<IParameterInfoParameterDescriptor>(nameParam.ParameterDescriptor);
+
+            Assert.NotNull(descriptor.ParameterInfo);
+
+            var description = Assert.Single(descriptor.ParameterInfo.GetCustomAttributes<DescriptionAttribute>());
+
+            Assert.NotNull(description);
+            Assert.Equal("The name.", description.Description);
         }
 
         [Fact]
