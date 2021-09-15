@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <typeparam name="TResponse">The type of the response.</typeparam>
         /// <param name="builder">The <see cref="RouteHandlerConventionBuilder"/>.</param>
-        /// <param name="statusCode">The response status code. Defaults to StatusCodes.Status200OK.</param>
+        /// <param name="statusCode">The response status code. Defaults to <see cref="StatusCodes.Status200OK"/>.</param>
         /// <param name="contentType">The response content type. Defaults to "application/json".</param>
         /// <param name="additionalContentTypes">Additional response content types the endpoint produces for the supplied status code.</param>
         /// <returns>A <see cref="RouteHandlerConventionBuilder"/> that can be used to further customize the endpoint.</returns>
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Http
         /// to <see cref="EndpointBuilder.Metadata"/> for all builders produced by <paramref name="builder"/>.
         /// </summary>
         /// <param name="builder">The <see cref="RouteHandlerConventionBuilder"/>.</param>
-        /// <param name="statusCode">The response status code. Defaults to StatusCodes.Status400BadRequest.</param>
+        /// <param name="statusCode">The response status code. Defaults to <see cref="StatusCodes.Status400BadRequest"/>.</param>
         /// <param name="contentType">The response content type. Defaults to "application/problem+json".</param>
         /// <returns>A <see cref="RouteHandlerConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static RouteHandlerConventionBuilder ProducesValidationProblem(this RouteHandlerConventionBuilder builder,
