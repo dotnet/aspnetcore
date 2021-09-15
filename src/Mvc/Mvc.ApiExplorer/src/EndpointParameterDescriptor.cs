@@ -5,9 +5,10 @@ using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 
-namespace Microsoft.AspNetCore.Mvc.ApiExplorer;
-
-internal sealed class EndpointParameterDescriptor : ParameterDescriptor, IParameterInfoParameterDescriptor
+namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 {
-    public ParameterInfo ParameterInfo { get; set; } = default!;
+    internal sealed class EndpointParameterDescriptor : ParameterDescriptor, IParameterInfoParameterDescriptor
+    {
+        public ParameterInfo ParameterInfo { get; set; } = default!;
+    }
 }
