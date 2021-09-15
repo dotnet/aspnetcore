@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Http
     /// Extension methods for adding <see cref="Endpoint.Metadata"/> that is
     /// meant to be consumed by OpenAPI libraries.
     /// </summary>
-    public static class OpenApiDelegateEndpointConventionBuilderExtensions
+    public static class OpenApiRouteHandlerConventionBuilderExtensions
     {
         private static readonly ExcludeFromDescriptionAttribute _excludeFromDescriptionMetadataAttribute = new();
 
@@ -20,9 +20,9 @@ namespace Microsoft.AspNetCore.Http
         /// Adds the <see cref="IExcludeFromDescriptionMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
         /// produced by <paramref name="builder"/>.
         /// </summary>
-        /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
-        /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static DelegateEndpointConventionBuilder ExcludeFromDescription(this DelegateEndpointConventionBuilder builder)
+        /// <param name="builder">The <see cref="RouteHandlerConventionBuilder"/>.</param>
+        /// <returns>A <see cref="RouteHandlerConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static RouteHandlerConventionBuilder ExcludeFromDescription(this RouteHandlerConventionBuilder builder)
         {
             builder.WithMetadata(_excludeFromDescriptionMetadataAttribute);
 
@@ -34,13 +34,13 @@ namespace Microsoft.AspNetCore.Http
         /// produced by <paramref name="builder"/>.
         /// </summary>
         /// <typeparam name="TResponse">The type of the response.</typeparam>
-        /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
+        /// <param name="builder">The <see cref="RouteHandlerConventionBuilder"/>.</param>
         /// <param name="statusCode">The response status code. Defaults to StatusCodes.Status200OK.</param>
         /// <param name="contentType">The response content type. Defaults to "application/json".</param>
         /// <param name="additionalContentTypes">Additional response content types the endpoint produces for the supplied status code.</param>
-        /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        /// <returns>A <see cref="RouteHandlerConventionBuilder"/> that can be used to further customize the endpoint.</returns>
 #pragma warning disable RS0026
-        public static DelegateEndpointConventionBuilder Produces<TResponse>(this DelegateEndpointConventionBuilder builder,
+        public static RouteHandlerConventionBuilder Produces<TResponse>(this RouteHandlerConventionBuilder builder,
 #pragma warning restore RS0026
             int statusCode = StatusCodes.Status200OK,
             string? contentType = null,
@@ -53,14 +53,14 @@ namespace Microsoft.AspNetCore.Http
         /// Adds an <see cref="IProducesResponseTypeMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
         /// produced by <paramref name="builder"/>.
         /// </summary>
-        /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
+        /// <param name="builder">The <see cref="RouteHandlerConventionBuilder"/>.</param>
         /// <param name="statusCode">The response status code.</param>
         /// <param name="responseType">The type of the response. Defaults to null.</param>
         /// <param name="contentType">The response content type. Defaults to "application/json" if responseType is not null, otherwise defaults to null.</param>
         /// <param name="additionalContentTypes">Additional response content types the endpoint produces for the supplied status code.</param>
-        /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        /// <returns>A <see cref="RouteHandlerConventionBuilder"/> that can be used to further customize the endpoint.</returns>
 #pragma warning disable RS0026
-        public static DelegateEndpointConventionBuilder Produces(this DelegateEndpointConventionBuilder builder,
+        public static RouteHandlerConventionBuilder Produces(this RouteHandlerConventionBuilder builder,
 #pragma warning restore RS0026
             int statusCode,
             Type? responseType = null,
@@ -87,11 +87,11 @@ namespace Microsoft.AspNetCore.Http
         /// Adds an <see cref="IProducesResponseTypeMetadata"/> with a <see cref="ProblemDetails"/> type
         /// to <see cref="EndpointBuilder.Metadata"/> for all builders produced by <paramref name="builder"/>.
         /// </summary>
-        /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
+        /// <param name="builder">The <see cref="RouteHandlerConventionBuilder"/>.</param>
         /// <param name="statusCode">The response status code.</param>
         /// <param name="contentType">The response content type. Defaults to "application/problem+json".</param>
-        /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static DelegateEndpointConventionBuilder ProducesProblem(this DelegateEndpointConventionBuilder builder,
+        /// <returns>A <see cref="RouteHandlerConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static RouteHandlerConventionBuilder ProducesProblem(this RouteHandlerConventionBuilder builder,
             int statusCode,
             string? contentType = null)
         {
@@ -107,11 +107,11 @@ namespace Microsoft.AspNetCore.Http
         /// Adds an <see cref="IProducesResponseTypeMetadata"/> with a <see cref="HttpValidationProblemDetails"/> type
         /// to <see cref="EndpointBuilder.Metadata"/> for all builders produced by <paramref name="builder"/>.
         /// </summary>
-        /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
+        /// <param name="builder">The <see cref="RouteHandlerConventionBuilder"/>.</param>
         /// <param name="statusCode">The response status code. Defaults to StatusCodes.Status400BadRequest.</param>
         /// <param name="contentType">The response content type. Defaults to "application/problem+json".</param>
-        /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static DelegateEndpointConventionBuilder ProducesValidationProblem(this DelegateEndpointConventionBuilder builder,
+        /// <returns>A <see cref="RouteHandlerConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static RouteHandlerConventionBuilder ProducesValidationProblem(this RouteHandlerConventionBuilder builder,
             int statusCode = StatusCodes.Status400BadRequest,
             string? contentType = null)
         {
@@ -132,10 +132,10 @@ namespace Microsoft.AspNetCore.Http
         /// into related groups. These tags are typically included in the generated specification
         /// and are typically used to group operations by tags in the UI.
         /// </remarks>
-        /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
+        /// <param name="builder">The <see cref="RouteHandlerConventionBuilder"/>.</param>
         /// <param name="tags">A collection of tags to be associated with the endpoint.</param>
-        /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static DelegateEndpointConventionBuilder WithTags(this DelegateEndpointConventionBuilder builder, params string[] tags)
+        /// <returns>A <see cref="RouteHandlerConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static RouteHandlerConventionBuilder WithTags(this RouteHandlerConventionBuilder builder, params string[] tags)
         {
             builder.WithMetadata(new TagsAttribute(tags));
             return builder;
@@ -146,11 +146,11 @@ namespace Microsoft.AspNetCore.Http
         /// produced by <paramref name="builder"/>.
         /// </summary>
         /// <typeparam name="TRequest">The type of the request body.</typeparam>
-        /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
+        /// <param name="builder">The <see cref="RouteHandlerConventionBuilder"/>.</param>
         /// <param name="contentType">The request content type that the endpoint accepts.</param>
         /// <param name="additionalContentTypes">The list of additional request content types that the endpoint accepts.</param>
-        /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static DelegateEndpointConventionBuilder Accepts<TRequest>(this DelegateEndpointConventionBuilder builder,
+        /// <returns>A <see cref="RouteHandlerConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static RouteHandlerConventionBuilder Accepts<TRequest>(this RouteHandlerConventionBuilder builder,
             string contentType, params string[] additionalContentTypes) where TRequest : notnull
         {
             Accepts(builder, typeof(TRequest), contentType, additionalContentTypes);
@@ -163,12 +163,12 @@ namespace Microsoft.AspNetCore.Http
         /// produced by <paramref name="builder"/>.
         /// </summary>
         /// <typeparam name="TRequest">The type of the request body.</typeparam>
-        /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
+        /// <param name="builder">The <see cref="RouteHandlerConventionBuilder"/>.</param>
         /// <param name="isOptional">Sets a value that determines if the request body is optional.</param>
         /// <param name="contentType">The request content type that the endpoint accepts.</param>
         /// <param name="additionalContentTypes">The list of additional request content types that the endpoint accepts.</param>
-        /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static DelegateEndpointConventionBuilder Accepts<TRequest>(this DelegateEndpointConventionBuilder builder,
+        /// <returns>A <see cref="RouteHandlerConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static RouteHandlerConventionBuilder Accepts<TRequest>(this RouteHandlerConventionBuilder builder,
             bool isOptional, string contentType, params string[] additionalContentTypes) where TRequest : notnull
         {
             Accepts(builder, typeof(TRequest), isOptional, contentType, additionalContentTypes);
@@ -180,12 +180,12 @@ namespace Microsoft.AspNetCore.Http
         /// Adds <see cref="IAcceptsMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
         /// produced by <paramref name="builder"/>.
         /// </summary>
-        /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
+        /// <param name="builder">The <see cref="RouteHandlerConventionBuilder"/>.</param>
         /// <param name="requestType">The type of the request body.</param>
         /// <param name="contentType">The request content type that the endpoint accepts.</param>
         /// <param name="additionalContentTypes">The list of additional request content types that the endpoint accepts.</param>
-        /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static DelegateEndpointConventionBuilder Accepts(this DelegateEndpointConventionBuilder builder,
+        /// <returns>A <see cref="RouteHandlerConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static RouteHandlerConventionBuilder Accepts(this RouteHandlerConventionBuilder builder,
             Type requestType, string contentType, params string[] additionalContentTypes)
         {
             builder.WithMetadata(new AcceptsMetadata(requestType, false, GetAllContentTypes(contentType, additionalContentTypes)));
@@ -197,13 +197,13 @@ namespace Microsoft.AspNetCore.Http
         /// Adds <see cref="IAcceptsMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
         /// produced by <paramref name="builder"/>.
         /// </summary>
-        /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
+        /// <param name="builder">The <see cref="RouteHandlerConventionBuilder"/>.</param>
         /// <param name="requestType">The type of the request body.</param>
         /// <param name="isOptional">Sets a value that determines if the request body is optional.</param>
         /// <param name="contentType">The request content type that the endpoint accepts.</param>
         /// <param name="additionalContentTypes">The list of additional request content types that the endpoint accepts.</param>
-        /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static DelegateEndpointConventionBuilder Accepts(this DelegateEndpointConventionBuilder builder,
+        /// <returns>A <see cref="RouteHandlerConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static RouteHandlerConventionBuilder Accepts(this RouteHandlerConventionBuilder builder,
             Type requestType, bool isOptional, string contentType, params string[] additionalContentTypes)
         {
             builder.WithMetadata(new AcceptsMetadata(requestType, isOptional, GetAllContentTypes(contentType, additionalContentTypes)));

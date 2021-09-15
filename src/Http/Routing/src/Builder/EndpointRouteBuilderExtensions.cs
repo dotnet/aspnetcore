@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="pattern">The route pattern.</param>
         /// <param name="handler">The delegate executed when the endpoint is matched.</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static DelegateEndpointConventionBuilder MapGet(
+        public static RouteHandlerConventionBuilder MapGet(
             this IEndpointRouteBuilder endpoints,
             string pattern,
             Delegate handler)
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="pattern">The route pattern.</param>
         /// <param name="handler">The delegate executed when the endpoint is matched.</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static DelegateEndpointConventionBuilder MapPost(
+        public static RouteHandlerConventionBuilder MapPost(
             this IEndpointRouteBuilder endpoints,
             string pattern,
             Delegate handler)
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="pattern">The route pattern.</param>
         /// <param name="handler">The delegate executed when the endpoint is matched.</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static DelegateEndpointConventionBuilder MapPut(
+        public static RouteHandlerConventionBuilder MapPut(
             this IEndpointRouteBuilder endpoints,
             string pattern,
             Delegate handler)
@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="pattern">The route pattern.</param>
         /// <param name="handler">The delegate executed when the endpoint is matched.</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static DelegateEndpointConventionBuilder MapDelete(
+        public static RouteHandlerConventionBuilder MapDelete(
             this IEndpointRouteBuilder endpoints,
             string pattern,
             Delegate handler)
@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="handler">The delegate executed when the endpoint is matched.</param>
         /// <param name="httpMethods">HTTP methods that the endpoint will match.</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static DelegateEndpointConventionBuilder MapMethods(
+        public static RouteHandlerConventionBuilder MapMethods(
            this IEndpointRouteBuilder endpoints,
            string pattern,
            IEnumerable<string> httpMethods,
@@ -311,7 +311,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="pattern">The route pattern.</param>
         /// <param name="handler">The delegate executed when the endpoint is matched.</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static DelegateEndpointConventionBuilder Map(
+        public static RouteHandlerConventionBuilder Map(
             this IEndpointRouteBuilder endpoints,
             string pattern,
             Delegate handler)
@@ -327,7 +327,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="pattern">The route pattern.</param>
         /// <param name="handler">The delegate executed when the endpoint is matched.</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static DelegateEndpointConventionBuilder Map(
+        public static RouteHandlerConventionBuilder Map(
             this IEndpointRouteBuilder endpoints,
             RoutePattern pattern,
             Delegate handler)
@@ -354,7 +354,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <c>{*path:nonfile}</c>. The order of the registered endpoint will be <c>int.MaxValue</c>.
         /// </para>
         /// </remarks>
-        public static DelegateEndpointConventionBuilder MapFallback(this IEndpointRouteBuilder endpoints, Delegate handler)
+        public static RouteHandlerConventionBuilder MapFallback(this IEndpointRouteBuilder endpoints, Delegate handler)
         {
             if (endpoints == null)
             {
@@ -390,7 +390,7 @@ namespace Microsoft.AspNetCore.Builder
         /// to exclude requests for static files.
         /// </para>
         /// </remarks>
-        public static DelegateEndpointConventionBuilder MapFallback(
+        public static RouteHandlerConventionBuilder MapFallback(
             this IEndpointRouteBuilder endpoints,
             string pattern,
             Delegate handler)
@@ -416,7 +416,7 @@ namespace Microsoft.AspNetCore.Builder
             return conventionBuilder;
         }
 
-        private static DelegateEndpointConventionBuilder Map(
+        private static RouteHandlerConventionBuilder Map(
             this IEndpointRouteBuilder endpoints,
             RoutePattern pattern,
             Delegate handler,
@@ -506,7 +506,7 @@ namespace Microsoft.AspNetCore.Builder
                 endpoints.DataSources.Add(dataSource);
             }
 
-            return new DelegateEndpointConventionBuilder(dataSource.AddEndpointBuilder(builder));
+            return new RouteHandlerConventionBuilder(dataSource.AddEndpointBuilder(builder));
         }
     }
 }

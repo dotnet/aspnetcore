@@ -9,26 +9,26 @@ namespace Microsoft.AspNetCore.Builder
     /// <summary>
     /// Builds conventions that will be used for customization of MapAction <see cref="EndpointBuilder"/> instances.
     /// </summary>
-    public sealed class DelegateEndpointConventionBuilder : IEndpointConventionBuilder
+    public sealed class RouteHandlerConventionBuilder : IEndpointConventionBuilder
     {
         private readonly IEnumerable<IEndpointConventionBuilder> _endpointConventionBuilders;
 
         /// <summary>
-        /// Instantiates a new <see cref="DelegateEndpointConventionBuilder" /> given a single
+        /// Instantiates a new <see cref="RouteHandlerConventionBuilder" /> given a single
         /// <see cref="IEndpointConventionBuilder" />.
         /// </summary>
         /// <param name="endpointConventionBuilder">The <see cref="IEndpointConventionBuilder" /> to instantiate with.</param>
-        internal DelegateEndpointConventionBuilder(IEndpointConventionBuilder endpointConventionBuilder)
+        internal RouteHandlerConventionBuilder(IEndpointConventionBuilder endpointConventionBuilder)
         {
             _endpointConventionBuilders = new List<IEndpointConventionBuilder>() { endpointConventionBuilder };
         }
 
         /// <summary>
-        /// Instantiates a new <see cref="DelegateEndpointConventionBuilder" /> given multiple
+        /// Instantiates a new <see cref="RouteHandlerConventionBuilder" /> given multiple
         /// <see cref="IEndpointConventionBuilder" /> instances.
         /// </summary>
         /// <param name="endpointConventionBuilders">A list of <see cref="IEndpointConventionBuilder" /> instances.</param>
-        public DelegateEndpointConventionBuilder(IEnumerable<IEndpointConventionBuilder> endpointConventionBuilders)
+        public RouteHandlerConventionBuilder(IEnumerable<IEndpointConventionBuilder> endpointConventionBuilders)
         {
             _endpointConventionBuilders = endpointConventionBuilders;
         }
