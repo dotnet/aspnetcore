@@ -242,7 +242,7 @@ namespace PackageBaselineGenerator
                     WriteEndDocumentOnClose = true,
                 };
 
-                using (var stream = File.OpenWrite(documentPath))
+                using (var stream = File.Open(documentPath, FileMode.Create))
                 {
                     using (var writer = XmlWriter.Create(stream, settings))
                     {
