@@ -840,12 +840,12 @@ namespace Microsoft.AspNetCore.Http
             var isOptional = IsOptionalParameter(parameter, factoryContext);
 
             // Get the BindAsync method for the type.
-            var (bindAsyncExpression, paramCount) = ParameterBindingMethodCache.FindBindAsyncMethod(parameter);
+            var bindAsyncMethod = ParameterBindingMethodCache.FindBindAsyncMethod(parameter);
             // We know BindAsync exists because there's no way to opt-in without defining the method on the type.
-            Debug.Assert(bindAsyncExpression is not null);
+            Debug.Assert(bindAsyncMethod.Expression is not null);
 
             // Compile the delegate to the BindAsync method for this parameter index
-            var bindAsyncDelegate = Expression.Lambda<Func<HttpContext, ValueTask<object?>>>(bindAsyncExpression, HttpContextExpr).Compile();
+            var bindAsyncDelegate = Expression.Lambda<Func<HttpContext, ValueTask<object?>>>(bindAsyncMethod.Expression, HttpContextExpr).Compile();
             factoryContext.ParameterBinders.Add(bindAsyncDelegate);
 
             // boundValues[index]
@@ -854,7 +854,7 @@ namespace Microsoft.AspNetCore.Http
             if (!isOptional)
             {
                 var typeName = TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false);
-                var message = paramCount == 2 ? $"{typeName}.BindAsync(HttpContext, ParameterInfo)" : $"{typeName}.BindAsync(HttpContext)";
+                var message = bindAsyncMethod.ParamCount == 2 ? $"{typeName}.BindAsync(HttpContext, ParameterInfo)" : $"{typeName}.BindAsync(HttpContext)";
                 var checkRequiredBodyBlock = Expression.Block(
                         Expression.IfThen(
                         Expression.Equal(boundValueExpr, Expression.Constant(null)),
