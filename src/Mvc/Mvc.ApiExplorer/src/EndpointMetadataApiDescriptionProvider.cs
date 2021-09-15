@@ -1,12 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
-using System.Threading;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -162,6 +160,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var nullabilityContext = new NullabilityInfoContext();
             var nullability = nullabilityContext.Create(parameter);
             var isOptional = parameter.HasDefaultValue || nullability.ReadState != NullabilityState.NotNull || allowEmpty;
+            var parameterDescriptor = CreateParameterDescriptor(parameter);
 
             return new ApiParameterDescription
             {
@@ -170,9 +169,18 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 Source = source,
                 DefaultValue = parameter.DefaultValue,
                 Type = parameter.ParameterType,
-                IsRequired = !isOptional
+                IsRequired = !isOptional,
+                ParameterDescriptor = parameterDescriptor
             };
         }
+
+        private static ParameterDescriptor CreateParameterDescriptor(ParameterInfo parameter)
+            => new EndpointParameterDescriptor
+            {
+                Name = parameter.Name ?? string.Empty,
+                ParameterInfo = parameter,
+                ParameterType = parameter.ParameterType,
+            };
 
         // TODO: Share more of this logic with RequestDelegateFactory.CreateArgument(...) using RequestDelegateFactoryUtilities
         // which is shared source.
