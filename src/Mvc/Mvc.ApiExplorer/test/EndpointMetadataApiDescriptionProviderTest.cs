@@ -1,11 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
 using System.Reflection;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -264,7 +266,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
-        public void AddsFromRouteParameterAsPathWithCustomTypep()
+        public void AddsFromRouteParameterAsPathWithCustomType()
         {
             static void AssertPathParameter(ApiDescription apiDescription)
             {
@@ -417,6 +419,32 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.Equal(typeof(int), barParam.ModelMetadata.ModelType);
             Assert.Equal(BindingSource.Query, barParam.Source);
             Assert.True(barParam.IsRequired);
+        }
+
+        [Fact]
+        public void TestParameterAttributesCanBeInspected()
+        {
+            var apiDescription = GetApiDescription(([Description("The name.")] string name) => { });
+            Assert.Equal(1, apiDescription.ParameterDescriptions.Count);
+
+            var nameParam = apiDescription.ParameterDescriptions[0];
+            Assert.Equal(typeof(string), nameParam.Type);
+            Assert.Equal(typeof(string), nameParam.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.Query, nameParam.Source);
+            Assert.False(nameParam.IsRequired);
+
+            Assert.NotNull(nameParam.ParameterDescriptor);
+            Assert.Equal("name", nameParam.ParameterDescriptor.Name);
+            Assert.Equal(typeof(string), nameParam.ParameterDescriptor.ParameterType);
+
+            var descriptor = Assert.IsAssignableFrom<IParameterInfoParameterDescriptor>(nameParam.ParameterDescriptor);
+
+            Assert.NotNull(descriptor.ParameterInfo);
+
+            var description = Assert.Single(descriptor.ParameterInfo.GetCustomAttributes<DescriptionAttribute>());
+
+            Assert.NotNull(description);
+            Assert.Equal("The name.", description.Description);
         }
 
         [Fact]
