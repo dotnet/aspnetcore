@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Builder
         /// Instantiates a new <see cref="DelegateEndpointConventionBuilder" /> given multiple
         /// <see cref="IEndpointConventionBuilder" /> instances.
         /// </summary>
-        /// <param name="endpointConventionBuilders">A list of <see cref="IEndpointConventionBuilder" /> instances.</param>
+        /// <param name="endpointConventionBuilders">A sequence of <see cref="IEndpointConventionBuilder" /> instances.</param>
         public DelegateEndpointConventionBuilder(IEnumerable<IEndpointConventionBuilder> endpointConventionBuilders)
         {
             _endpointConventionBuilders = endpointConventionBuilders;
