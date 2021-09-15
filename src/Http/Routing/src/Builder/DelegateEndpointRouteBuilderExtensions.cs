@@ -153,9 +153,6 @@ namespace Microsoft.AspNetCore.Builder
                 || !TypeHelper.IsCompilerGeneratedMethod(handler.Method))
             {
                 endpointName ??= handler.Method.Name;
-
-                builder.Metadata.Add(new EndpointNameMetadata(endpointName));
-                builder.Metadata.Add(new RouteNameMetadata(endpointName));
                 builder.DisplayName = $"{builder.DisplayName} => {endpointName}";
             }
 

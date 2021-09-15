@@ -615,54 +615,24 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         [Fact]
-        // This test scenario simulates methods defined in a top-level program
-        // which are compiler generated. We currently do some manually parsing leveraging
-        // code in Roslyn to support this scenario. More info at https://github.com/dotnet/roslyn/issues/55651.
-        public void MapMethod_DoesNotEndpointNameForInnerMethod()
+        public void WithTags_CanSetTagsForEndpoint()
         {
-            var name = "InnerGetString";
             var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
-            string InnerGetString() => "TestString";
-            _ = builder.MapDelete("/", InnerGetString);
+            string GetString() => "Foo";
+            _ = builder.MapDelete("/", GetString).WithTags("Some", "Test", "Tags");
 
             var dataSource = GetBuilderEndpointDataSource(builder);
             // Trigger Endpoint build by calling getter.
             var endpoint = Assert.Single(dataSource.Endpoints);
 
-            var endpointName = endpoint.Metadata.GetMetadata<IEndpointNameMetadata>();
-            var routeName = endpoint.Metadata.GetMetadata<IRouteNameMetadata>();
-            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal(name, endpointName?.EndpointName);
-            Assert.Equal(name, routeName?.RouteName);
-            Assert.Equal("HTTP: DELETE / => InnerGetString", routeEndpointBuilder.DisplayName);
+            var tagsMetadata = endpoint.Metadata.GetMetadata<ITagsMetadata>();
+            Assert.Equal(new[] { "Some", "Test", "Tags" }, tagsMetadata?.Tags);
         }
 
         [Fact]
-        public void MapMethod_DoesNotEndpointNameForInnerMethodWithTarget()
+        public void MapMethod_DoesNotEndpointNameForMethodGroupByDefault()
         {
-            var name = "InnerGetString";
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
-            var testString = "TestString";
-            string InnerGetString() => testString;
-            _ = builder.MapDelete("/", InnerGetString);
-
-            var dataSource = GetBuilderEndpointDataSource(builder);
-            // Trigger Endpoint build by calling getter.
-            var endpoint = Assert.Single(dataSource.Endpoints);
-
-            var endpointName = endpoint.Metadata.GetMetadata<IEndpointNameMetadata>();
-            var routeName = endpoint.Metadata.GetMetadata<IRouteNameMetadata>();
-            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal(name, endpointName?.EndpointName);
-            Assert.Equal(name, routeName?.RouteName);
-            Assert.Equal("HTTP: DELETE / => InnerGetString", routeEndpointBuilder.DisplayName);
-        }
-
-
-        [Fact]
-        public void MapMethod_SetsEndpointNameForMethodGroup()
-        {
-            var name = "GetString";
+            string GetString() => "Foo";
             var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
             _ = builder.MapDelete("/", GetString);
 
@@ -673,59 +643,9 @@ namespace Microsoft.AspNetCore.Builder
             var endpointName = endpoint.Metadata.GetMetadata<IEndpointNameMetadata>();
             var routeName = endpoint.Metadata.GetMetadata<IRouteNameMetadata>();
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal(name, endpointName?.EndpointName);
-            Assert.Equal(name, routeName?.RouteName);
-            Assert.Equal("HTTP: DELETE / => GetString", routeEndpointBuilder.DisplayName);
-        }
-
-        [Fact]
-        public void WithNameOverridesDefaultEndpointName()
-        {
-            var name = "SomeCustomName";
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
-            _ = builder.MapDelete("/", GetString).WithName(name);
-
-            var dataSource = GetBuilderEndpointDataSource(builder);
-            // Trigger Endpoint build by calling getter.
-            var endpoint = Assert.Single(dataSource.Endpoints);
-
-            var endpointName = endpoint.Metadata.GetMetadata<IEndpointNameMetadata>();
-            var routeName = endpoint.Metadata.GetMetadata<IRouteNameMetadata>();
-            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal(name, endpointName?.EndpointName);
-            Assert.Equal(name, routeName?.RouteName);
-            // Will still use the original method name, not the custom endpoint name
-            Assert.Equal("HTTP: DELETE / => GetString", routeEndpointBuilder.DisplayName);
-        }
-
-        private string GetString() => "TestString";
-
-        [Fact]
-        public void MapMethod_DoesNotSetEndpointNameForLambda()
-        {
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
-            _ = builder.MapDelete("/", () => { });
-
-            var dataSource = GetBuilderEndpointDataSource(builder);
-            // Trigger Endpoint build by calling getter.
-            var endpoint = Assert.Single(dataSource.Endpoints);
-
-            var endpointName = endpoint.Metadata.GetMetadata<IEndpointNameMetadata>();
             Assert.Null(endpointName);
-        }
-
-        [Fact]
-        public void WithTags_CanSetTagsForEndpoint()
-        {
-            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
-            _ = builder.MapDelete("/", GetString).WithTags("Some", "Test", "Tags");
-
-            var dataSource = GetBuilderEndpointDataSource(builder);
-            // Trigger Endpoint build by calling getter.
-            var endpoint = Assert.Single(dataSource.Endpoints);
-
-            var tagsMetadata = endpoint.Metadata.GetMetadata<ITagsMetadata>();
-            Assert.Equal(new[] { "Some", "Test", "Tags" }, tagsMetadata?.Tags);
+            Assert.Null(routeName);
+            Assert.Equal("HTTP: DELETE / => GetString", routeEndpointBuilder.DisplayName);
         }
 
         [Theory]
