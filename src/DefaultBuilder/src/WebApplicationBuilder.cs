@@ -146,14 +146,13 @@ namespace Microsoft.AspNetCore.Builder
                 builder.AddInMemoryCollection(_hostConfigurationValues);
             });
 
-            // Wire up the application configuration by copying the sources over to final configuration builder.
-            // this will also contain host configuration since it's chained (unless the sources were cleared)
-            // but it can't affect the hosting configuration at this point so it's harmless.
+            // Wire up the application configuration by copying the already built configuration providers over to final configuration builder.
+            // We wrap the existing provider in a configuration source to avoid re-bulding the already added configuration sources.
             _hostBuilder.ConfigureAppConfiguration(builder =>
             {
-                foreach (var source in ((IConfigurationBuilder)Configuration).Sources)
+                foreach (var provider in ((IConfigurationRoot)Configuration).Providers)
                 {
-                    builder.Sources.Add(source);
+                    builder.Sources.Add(new ConfigurationProviderSource(provider));
                 }
 
                 foreach (var (key, value) in ((IConfigurationBuilder)Configuration).Properties)
@@ -279,7 +278,7 @@ namespace Microsoft.AspNetCore.Builder
             }
         }
 
-        private class LoggingBuilder : ILoggingBuilder
+        private sealed class LoggingBuilder : ILoggingBuilder
         {
             public LoggingBuilder(IServiceCollection services)
             {
@@ -287,6 +286,21 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             public IServiceCollection Services { get; }
+        }
+
+        private sealed class ConfigurationProviderSource : IConfigurationSource
+        {
+            private readonly IConfigurationProvider _configurationProvider;
+
+            public ConfigurationProviderSource(IConfigurationProvider configurationProvider)
+            {
+                _configurationProvider = configurationProvider;
+            }
+
+            public IConfigurationProvider Build(IConfigurationBuilder builder)
+            {
+                return _configurationProvider;
+            }
         }
     }
 }
