@@ -280,7 +280,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
-        public void AddsFromRouteParameterAsPathWithCustomTypeWithTryParse()
+        public void AddsFromRouteParameterAsPathWithPrimitiveTypeWithTryParse()
         {
             static void AssertPathParameter(ApiDescription apiDescription)
             {
