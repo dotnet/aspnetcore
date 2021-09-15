@@ -1478,10 +1478,26 @@ namespace Microsoft.AspNetCore.Tests
             Assert.NotEqual(value0, value1);
         }
 
+        [Fact]
+        public void ConfigurationSourcesAreBuiltOnce()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            var configSource = new RandomConfigurationSource();
+            ((IConfigurationBuilder)builder.Configuration).Sources.Add(configSource);
+
+            var app = builder.Build();
+
+            Assert.Equal(1, configSource.ProvidersBuilt);
+        }
+
         public class RandomConfigurationSource : IConfigurationSource
         {
+            public int ProvidersBuilt { get; set; }
+
             public IConfigurationProvider Build(IConfigurationBuilder builder)
             {
+                ProvidersBuilt++;
                 return new RandomConfigurationProvider();
             }
         }
