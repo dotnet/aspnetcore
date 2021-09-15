@@ -173,13 +173,13 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
             var parameter = new MockParameterInfo(type, "bindAsyncRecord");
             var methodFound = cache.FindBindAsyncMethod(parameter);
 
-            Assert.NotNull(methodFound.Item1);
-            Assert.Equal(2, methodFound.Item2);
+            Assert.NotNull(methodFound.Expression);
+            Assert.Equal(2, methodFound.ParamCount);
 
             var parsedValue = Expression.Variable(type, "parsedValue");
 
             var parseHttpContext = Expression.Lambda<Func<HttpContext, ValueTask<object>>>(
-                Expression.Block(new[] { parsedValue }, methodFound.Item1!),
+                Expression.Block(new[] { parsedValue }, methodFound.Expression!),
                 ParameterBindingMethodCache.HttpContextExpr).Compile();
 
             var httpContext = new DefaultHttpContext
@@ -204,13 +204,13 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
             var parameter = new MockParameterInfo(type, "bindAsyncSingleArgStruct");
             var methodFound = cache.FindBindAsyncMethod(parameter);
 
-            Assert.NotNull(methodFound.Item1);
-            Assert.Equal(1, methodFound.Item2);
+            Assert.NotNull(methodFound.Expression);
+            Assert.Equal(1, methodFound.ParamCount);
 
             var parsedValue = Expression.Variable(type, "parsedValue");
 
             var parseHttpContext = Expression.Lambda<Func<HttpContext, ValueTask<object>>>(
-                Expression.Block(new[] { parsedValue }, methodFound.Item1!),
+                Expression.Block(new[] { parsedValue }, methodFound.Expression!),
                 ParameterBindingMethodCache.HttpContextExpr).Compile();
 
             var httpContext = new DefaultHttpContext

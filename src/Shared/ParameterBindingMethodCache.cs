@@ -46,11 +46,8 @@ namespace Microsoft.AspNetCore.Http
             return FindTryParseMethod(nonNullableParameterType) is not null;
         }
 
-        public bool HasBindAsyncMethod(ParameterInfo parameter)
-        {
-            var (expression, _) = FindBindAsyncMethod(parameter);
-            return expression is not null;
-        }
+        public bool HasBindAsyncMethod(ParameterInfo parameter) =>
+            FindBindAsyncMethod(parameter).Expression is not null;
 
         public Func<ParameterExpression, Expression>? FindTryParseMethod(Type type)
         {
@@ -131,7 +128,7 @@ namespace Microsoft.AspNetCore.Http
             return _stringMethodCallCache.GetOrAdd(type, Finder);
         }
 
-        public (Expression?, int) FindBindAsyncMethod(ParameterInfo parameter)
+        public (Expression? Expression, int ParamCount) FindBindAsyncMethod(ParameterInfo parameter)
         {
             static (Func<ParameterInfo, Expression>?, int) Finder(Type nonNullableParameterType)
             {
