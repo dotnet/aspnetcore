@@ -36,11 +36,24 @@ jobs:
           const source_repository = pull_request.head.repo.clone_url;
           const source_branch = pull_request.head.ref;
 
-          var membership = await github.repos.checkCollaborator({
-            owner: repo_owner,
-            repo: repo_name,
-            username: comment_user
-          });
+          try {
+            var membership = await github.repos.checkCollaborator({
+              owner: repo_owner,
+              repo: repo_name,
+              username: comment_user
+            });
+          } catch (error) {
+            var message = `Error: @${comment_user} is not a repo collaborator, benchmarking is not allowed.`;
+
+            await github.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: message
+              });
+
+            throw message;
+          }
 
           core.info(`Verified ${comment_user} is a repo collaborator.`);
 
