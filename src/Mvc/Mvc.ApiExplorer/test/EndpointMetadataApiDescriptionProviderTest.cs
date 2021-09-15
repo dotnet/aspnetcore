@@ -280,7 +280,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
-        public void AddsFromRouteParameterAsPathWithPrimitiveTypeWithTryParse()
+        public void AddsFromRouteParameterAsPathWithPrimitiveType()
         {
             static void AssertPathParameter(ApiDescription apiDescription)
             {
@@ -291,6 +291,20 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
 
             AssertPathParameter(GetApiDescription((int foo) => { }, "/{foo}"));
+        }
+
+        [Fact]
+        public void AddsFromRouteParameterAsPathWithNullablePrimitiveType()
+        {
+            static void AssertPathParameter(ApiDescription apiDescription)
+            {
+                var param = Assert.Single(apiDescription.ParameterDescriptions);
+                Assert.Equal(typeof(int?), param.Type);
+                Assert.Equal(typeof(int?), param.ModelMetadata.ModelType);
+                Assert.Equal(BindingSource.Path, param.Source);
+            }
+
+            AssertPathParameter(GetApiDescription((int? foo) => { }, "/{foo}"));
         }
 
         [Fact]
