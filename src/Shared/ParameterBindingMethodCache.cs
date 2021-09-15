@@ -47,7 +47,8 @@ namespace Microsoft.AspNetCore.Http
         }
 
         public bool HasBindAsyncMethod(ParameterInfo parameter) =>
-            FindBindAsyncMethod(parameter).Item1 is not null;
+            var (expression, _) = FindBindAsyncMethod(parameter);
+            return expression is not null;
 
         public Func<ParameterExpression, Expression>? FindTryParseMethod(Type type)
         {
