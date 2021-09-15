@@ -45,6 +45,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="testroot\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <EmbeddedResource Include="$(SharedSourceRoot)ServerInfrastructure\SharedStrings.resx" Link="Shared\SharedStrings.resx">
       <ManifestResourceName>Microsoft.AspNetCore.Server.SharedStrings</ManifestResourceName>
       <Generator></Generator>
