@@ -23,6 +23,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Update="**\*.cshtml" Pack="false" />
     <None Include="build\*" Pack="true" PackagePath="build\" />
     <None Include="buildMultiTargeting\*" Pack="true" PackagePath="buildMultiTargeting\" />
     <None Include="buildTransitive\*" Pack="true" PackagePath="buildTransitive\" />
