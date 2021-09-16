@@ -304,7 +304,8 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         {
 #if NETCOREAPP
             var span = new Span<byte>(ptr, sizeof(Guid)); // performs appropriate endianness fixups
-            value.TryWriteBytes(span);
+            var success = value.TryWriteBytes(span);
+            Debug.Assert(success, "Failed to write Guid.");
 #elif NETSTANDARD2_0 || NET461
             // netstandard & netfx assumes little-endian, so this is fine
             Unsafe.WriteUnaligned<Guid>(ptr, value);
