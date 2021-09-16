@@ -285,7 +285,11 @@ namespace Microsoft.AspNetCore.Identity.Test
             var services = new ServiceCollection();
             services.AddSingleton(options.Object);
             services.AddSingleton(signInManager.Object);
-            var clock = new SystemClock();
+            var clock = new TestClock()
+            {
+                // Second precision
+                UtcNow = new DateTimeOffset(2013, 6, 11, 12, 34, 56, 0, TimeSpan.Zero)
+            };
             services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<PocoUser>(options.Object, signInManager.Object, clock, new LoggerFactory()));
             httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
             var id = new ClaimsIdentity(IdentityConstants.ApplicationScheme);
