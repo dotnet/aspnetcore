@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 #if NETCOREAPP
             // Performs appropriate endianness fixups
             return new Guid(new ReadOnlySpan<byte>(ptr, sizeof(Guid)));
-#elif NETSTANDARD2_0 || NET461
+#elif NETSTANDARD2_0 || NETFRAMEWORK
             // netstandard/netfx assumes little-endian
             return Unsafe.ReadUnaligned<Guid>(ptr);
 #else
@@ -306,8 +306,8 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             var span = new Span<byte>(ptr, sizeof(Guid)); // performs appropriate endianness fixups
             var success = value.TryWriteBytes(span);
             Debug.Assert(success, "Failed to write Guid.");
-#elif NETSTANDARD2_0 || NET461
-            // netstandard & netfx assumes little-endian, so this is fine
+#elif NETSTANDARD2_0 || NETFRAMEWORK
+            // netstandard/netfx assumes little-endian
             Unsafe.WriteUnaligned<Guid>(ptr, value);
 #else
 #error Update target frameworks
