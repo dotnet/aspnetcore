@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 
         private static bool CanDelegate()
         {
-            return HttpApi.IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureDelegateEx);
+            return HttpApi.SupportsDelegation;
         }
     }
 }

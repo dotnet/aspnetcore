@@ -125,6 +125,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal static bool SupportsTrailers { get; private set; }
         [MemberNotNullWhen(true, nameof(HttpSetRequestProperty))]
         internal static bool SupportsReset { get; private set; }
+        internal static bool SupportsDelegation { get; private set; }
 
         static HttpApi()
         {
@@ -147,7 +148,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
                 SupportsReset = HttpSetRequestProperty != null;
                 // Trailers support was added in the same release as Reset, but there's no method we can export to check it directly.
-                SupportsTrailers = SupportsReset;
+                SupportsTrailers = IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureResponseTrailers);
+
+                SupportsDelegation = IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureDelegateEx);
             }
         }
 
