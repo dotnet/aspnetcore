@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 fixed (byte* pbRetVal = retVal)
                 {
                     WriteBigEndianInteger(pbRetVal, MAGIC_HEADER_V0);
-                    Write32bitAlignedGuid(&pbRetVal[sizeof(uint)], defaultKeyId);
+                    WriteGuid(&pbRetVal[sizeof(uint)], defaultKeyId);
                 }
 
                 // At this point, retVal := { magicHeader || keyId || encryptorSpecificProtectedPayload }
@@ -300,34 +300,17 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             }
         }
 
-        // Helper function to write a GUID to a 32-bit alignment; useful on ARM where unaligned reads
-        // can result in weird behaviors at runtime.
-        private static void Write32bitAlignedGuid(void* ptr, Guid value)
+        private static void WriteGuid(void* ptr, Guid value)
         {
-            Debug.Assert((long)ptr % 4 == 0);
-
-            if (BitConverter.IsLittleEndian)
-            {
-                ((int*)ptr)[0] = ((int*)&value)[0];
-                ((int*)ptr)[1] = ((int*)&value)[1];
-                ((int*)ptr)[2] = ((int*)&value)[2];
-                ((int*)ptr)[3] = ((int*)&value)[3];
-            }
-            else
-            {
-                // The first 8 bytes of the Guid hold one 32-bit integer
-                // and two 16-bit integers that must be byte-swapped.
-                ((byte*)ptr)[0] = ((byte*)&value)[3];
-                ((byte*)ptr)[1] = ((byte*)&value)[2];
-                ((byte*)ptr)[2] = ((byte*)&value)[1];
-                ((byte*)ptr)[3] = ((byte*)&value)[0];
-                ((byte*)ptr)[4] = ((byte*)&value)[5];
-                ((byte*)ptr)[5] = ((byte*)&value)[4];
-                ((byte*)ptr)[6] = ((byte*)&value)[7];
-                ((byte*)ptr)[7] = ((byte*)&value)[6];
-                ((int*)ptr)[2] = ((int*)&value)[2];
-                ((int*)ptr)[3] = ((int*)&value)[3];
-            }
+#if NETCOREAPP
+            var span = new Span<byte>(ptr, sizeof(Guid)); // performs appropriate endianness fixups
+            value.TryWriteBytes(span);
+#elif NETSTANDARD2_0 || NET461
+            // netstandard & netfx assumes little-endian, so this is fine
+            Unsafe.WriteUnaligned<Guid>(ptr, value);
+#else
+#error Update target frameworks
+#endif
         }
 
         private static void WriteBigEndianInteger(byte* ptr, uint value)
@@ -397,7 +380,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 byte[] newTemplate = (byte[])existingTemplate.Clone();
                 fixed (byte* pNewTemplate = newTemplate)
                 {
-                    Write32bitAlignedGuid(&pNewTemplate[sizeof(uint)], keyId);
+                    WriteGuid(&pNewTemplate[sizeof(uint)], keyId);
                     if (isProtecting)
                     {
                         Volatile.Write(ref _aadTemplate, newTemplate);
