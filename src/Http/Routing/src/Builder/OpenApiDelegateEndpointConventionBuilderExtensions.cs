@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="builder">The <see cref="DelegateEndpointConventionBuilder"/>.</param>
         /// <param name="statusCode">The response status code. Defaults to StatusCodes.Status400BadRequest.</param>
-        /// <param name="contentType">The response content type. Defaults to "application/validationproblem+json".</param>
+        /// <param name="contentType">The response content type. Defaults to "application/problem+json".</param>
         /// <returns>A <see cref="DelegateEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static DelegateEndpointConventionBuilder ProducesValidationProblem(this DelegateEndpointConventionBuilder builder,
             int statusCode = StatusCodes.Status400BadRequest,
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Http
         {
             if (string.IsNullOrEmpty(contentType))
             {
-                contentType = "application/validationproblem+json";
+                contentType = "application/problem+json";
             }
 
             return Produces<HttpValidationProblemDetails>(builder, statusCode, contentType);
