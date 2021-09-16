@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
         /// <param name="handler">The delegate executed when the endpoint is matched.</param>
-        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
         public static RouteHandlerBuilder MapGet(
             this IEndpointRouteBuilder endpoints,
             string pattern,
@@ -214,7 +214,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
         /// <param name="handler">The delegate executed when the endpoint is matched.</param>
-        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
         public static RouteHandlerBuilder MapPost(
             this IEndpointRouteBuilder endpoints,
             string pattern,
@@ -230,7 +230,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
         /// <param name="handler">The delegate executed when the endpoint is matched.</param>
-        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
         public static RouteHandlerBuilder MapPut(
             this IEndpointRouteBuilder endpoints,
             string pattern,
@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
         /// <param name="handler">The delegate executed when the endpoint is matched.</param>
-        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
         public static RouteHandlerBuilder MapDelete(
             this IEndpointRouteBuilder endpoints,
             string pattern,
@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="pattern">The route pattern.</param>
         /// <param name="handler">The delegate executed when the endpoint is matched.</param>
         /// <param name="httpMethods">HTTP methods that the endpoint will match.</param>
-        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
         public static RouteHandlerBuilder MapMethods(
            this IEndpointRouteBuilder endpoints,
            string pattern,
@@ -310,7 +310,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
         /// <param name="handler">The delegate executed when the endpoint is matched.</param>
-        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
         public static RouteHandlerBuilder Map(
             this IEndpointRouteBuilder endpoints,
             string pattern,
@@ -326,7 +326,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
         /// <param name="handler">The delegate executed when the endpoint is matched.</param>
-        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
         public static RouteHandlerBuilder Map(
             this IEndpointRouteBuilder endpoints,
             RoutePattern pattern,
@@ -341,7 +341,7 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="handler">The delegate executed when the endpoint is matched.</param>
-        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
         /// <remarks>
         /// <para>
         /// <see cref="MapFallback(IEndpointRouteBuilder, Delegate)"/> is intended to handle cases where URL path of
@@ -376,7 +376,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
         /// <param name="handler">The delegate executed when the endpoint is matched.</param>
-        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
         /// <remarks>
         /// <para>
         /// <see cref="MapFallback(IEndpointRouteBuilder, string, Delegate)"/> is intended to handle cases where no
