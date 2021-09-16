@@ -173,12 +173,13 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
             var parameter = new MockParameterInfo(type, "bindAsyncRecord");
             var methodFound = cache.FindBindAsyncMethod(parameter);
 
-            Assert.NotNull(methodFound);
+            Assert.NotNull(methodFound.Expression);
+            Assert.Equal(2, methodFound.ParamCount);
 
             var parsedValue = Expression.Variable(type, "parsedValue");
 
             var parseHttpContext = Expression.Lambda<Func<HttpContext, ValueTask<object>>>(
-                Expression.Block(new[] { parsedValue }, methodFound!),
+                Expression.Block(new[] { parsedValue }, methodFound.Expression!),
                 ParameterBindingMethodCache.HttpContextExpr).Compile();
 
             var httpContext = new DefaultHttpContext
@@ -195,6 +196,37 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
             Assert.Equal(new BindAsyncRecord(42), await parseHttpContext(httpContext));
         }
 
+        [Fact]
+        public async Task FindBindAsyncMethod_FindsSingleArgBindAsync()
+        {
+            var type = typeof(BindAsyncSingleArgStruct);
+            var cache = new ParameterBindingMethodCache();
+            var parameter = new MockParameterInfo(type, "bindAsyncSingleArgStruct");
+            var methodFound = cache.FindBindAsyncMethod(parameter);
+
+            Assert.NotNull(methodFound.Expression);
+            Assert.Equal(1, methodFound.ParamCount);
+
+            var parsedValue = Expression.Variable(type, "parsedValue");
+
+            var parseHttpContext = Expression.Lambda<Func<HttpContext, ValueTask<object>>>(
+                Expression.Block(new[] { parsedValue }, methodFound.Expression!),
+                ParameterBindingMethodCache.HttpContextExpr).Compile();
+
+            var httpContext = new DefaultHttpContext
+            {
+                Request =
+                {
+                    Headers =
+                    {
+                        ["ETag"] = "42",
+                    },
+                },
+            };
+
+            Assert.Equal(new BindAsyncSingleArgStruct(42), await parseHttpContext(httpContext));
+        }
+
         public static IEnumerable<object[]> BindAsyncParameterInfoData
         {
             get
@@ -209,6 +241,14 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
                     {
                         GetFirstParameter((BindAsyncStruct arg) => BindAsyncStructMethod(arg)),
                     },
+                    new[]
+                    {
+                        GetFirstParameter((BindAsyncSingleArgRecord arg) => BindAsyncSingleArgRecordMethod(arg)),
+                    },
+                    new[]
+                    {
+                        GetFirstParameter((BindAsyncSingleArgStruct arg) => BindAsyncSingleArgStructMethod(arg)),
+                    }
                 };
             }
         }
@@ -249,6 +289,11 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         private static void BindAsyncStructMethod(BindAsyncStruct arg) { }
         private static void BindAsyncNullableStructMethod(BindAsyncStruct? arg) { }
         private static void NullableReturningBindAsyncStructMethod(NullableReturningBindAsyncStruct arg) { }
+
+        private static void BindAsyncSingleArgRecordMethod(BindAsyncSingleArgRecord arg) { }
+        private static void BindAsyncSingleArgStructMethod(BindAsyncSingleArgStruct arg) { }
+        private static void BindAsyncNullableSingleArgStructMethod(BindAsyncSingleArgStruct? arg) { }
+        private static void NullableReturningBindAsyncSingleArgStructMethod(NullableReturningBindAsyncSingleArgStruct arg) { }
 
         private static ParameterInfo GetFirstParameter<T>(Expression<Action<T>> expr)
         {
@@ -319,6 +364,38 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         }
 
         private record struct NullableReturningBindAsyncStruct(int Value)
+        {
+            public static ValueTask<NullableReturningBindAsyncStruct?> BindAsync(HttpContext context, ParameterInfo parameter) =>
+                throw new NotImplementedException();
+        }
+
+        private record BindAsyncSingleArgRecord(int Value)
+        {
+            public static ValueTask<BindAsyncSingleArgRecord?> BindAsync(HttpContext context)
+            {
+                if (!int.TryParse(context.Request.Headers.ETag, out var val))
+                {
+                    return new(result: null);
+                }
+
+                return new(result: new(val));
+            }
+        }
+
+        private record struct BindAsyncSingleArgStruct(int Value)
+        {
+            public static ValueTask<BindAsyncSingleArgStruct> BindAsync(HttpContext context)
+            {
+                if (!int.TryParse(context.Request.Headers.ETag, out var val))
+                {
+                    throw new BadHttpRequestException("The request is missing the required ETag header.");
+                }
+
+                return new(result: new(val));
+            }
+        }
+
+        private record struct NullableReturningBindAsyncSingleArgStruct(int Value)
         {
             public static ValueTask<NullableReturningBindAsyncStruct?> BindAsync(HttpContext context, ParameterInfo parameter) =>
                 throw new NotImplementedException();
