@@ -10,6 +10,7 @@ using System.Numerics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Microsoft.Extensions.Internal;
 
 #nullable enable
 
@@ -126,9 +127,9 @@ namespace Microsoft.AspNetCore.Http
                 if (type.GetMethod("TryParse", BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance) is MethodInfo invalidMethod)
                 {
                     var stringBuilder = new StringBuilder();
-                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"TryParse method found on {type.Name} with incorrect format. Must be a static method with format");
-                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"bool TryParse(string, IFormatProvider, out {type.Name})");
-                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"bool TryParse(string, out {type.Name})");
+                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"TryParse method found on {TypeNameHelper.GetTypeDisplayName(type)} with incorrect format. Must be a static method with format");
+                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"bool TryParse(string, IFormatProvider, out {TypeNameHelper.GetTypeDisplayName(type)})");
+                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"bool TryParse(string, out {TypeNameHelper.GetTypeDisplayName(type)})");
                     stringBuilder.AppendLine("but found");
                     stringBuilder.Append(invalidMethod.IsStatic ? "static " : "not-static ");
                     stringBuilder.Append(invalidMethod.ToString());
@@ -209,11 +210,11 @@ namespace Microsoft.AspNetCore.Http
                 if (nonNullableParameterType.GetMethod("BindAsync", BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance) is MethodInfo invalidBindMethod)
                 {
                     var stringBuilder = new StringBuilder();
-                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"BindAsync method found on {nonNullableParameterType.Name} with incorrect format. Must be a static method with format");
-                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"ValueTask<{nonNullableParameterType.Name}> BindAsync(HttpContext context, ParameterInfo parameter)");
-                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"ValueTask<{nonNullableParameterType.Name}> BindAsync(HttpContext context)");
-                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"ValueTask<{nonNullableParameterType.Name}?> BindAsync(HttpContext context, ParameterInfo parameter)");
-                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"ValueTask<{nonNullableParameterType.Name}?> BindAsync(HttpContext context)");
+                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"BindAsync method found on {TypeNameHelper.GetTypeDisplayName(nonNullableParameterType)} with incorrect format. Must be a static method with format");
+                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"ValueTask<{TypeNameHelper.GetTypeDisplayName(nonNullableParameterType)}> BindAsync(HttpContext context, ParameterInfo parameter)");
+                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"ValueTask<{TypeNameHelper.GetTypeDisplayName(nonNullableParameterType)}> BindAsync(HttpContext context)");
+                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"ValueTask<{TypeNameHelper.GetTypeDisplayName(nonNullableParameterType)}?> BindAsync(HttpContext context, ParameterInfo parameter)");
+                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"ValueTask<{TypeNameHelper.GetTypeDisplayName(nonNullableParameterType)}?> BindAsync(HttpContext context)");
                     stringBuilder.AppendLine("but found");
                     stringBuilder.Append(invalidBindMethod.IsStatic ? "static " : "not-static");
                     stringBuilder.Append(invalidBindMethod.ToString());
