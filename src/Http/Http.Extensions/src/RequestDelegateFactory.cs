@@ -586,7 +586,7 @@ namespace Microsoft.AspNetCore.Http
                             Log.RequestBodyIOException(httpContext, ex);
                             return;
                         }
-                        catch (Exception ex) when (ex is InvalidDataException || ex is JsonException)
+                        catch (JsonException ex)
                         {
                             Log.InvalidJsonRequestBody(httpContext, parameterTypeName, parameterName, ex, factoryContext.ThrowOnBadRequest);
                             httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
@@ -624,7 +624,7 @@ namespace Microsoft.AspNetCore.Http
                             Log.RequestBodyIOException(httpContext, ex);
                             return;
                         }
-                        catch (Exception ex) when (ex is InvalidDataException || ex is JsonException)
+                        catch (JsonException ex)
                         {
 
                             Log.InvalidJsonRequestBody(httpContext, parameterTypeName, parameterName, ex, factoryContext.ThrowOnBadRequest);
@@ -1271,16 +1271,6 @@ namespace Microsoft.AspNetCore.Http
             [LoggerMessage(4, LogLevel.Debug, RequiredParameterNotProvidedLogMessage, EventName = "RequiredParameterNotProvided")]
             private static partial void RequiredParameterNotProvided(ILogger logger, string parameterType, string parameterName, string source);
 
-            public static void UnexpectedContentType(HttpContext httpContext, string? contentType, bool shouldThrow)
-            {
-                if (shouldThrow)
-                {
-                    var message = string.Format(CultureInfo.InvariantCulture, UnexpectedContentTypeExceptionMessage, contentType);
-                    throw new BadHttpRequestException(message, StatusCodes.Status415UnsupportedMediaType);
-                }
-
-                UnexpectedContentType(GetLogger(httpContext), contentType ?? "(none)");
-            }
             public static void ImplicitBodyNotProvided(HttpContext httpContext, string parameterName, bool shouldThrow)
             {
                 if (shouldThrow)
@@ -1295,8 +1285,16 @@ namespace Microsoft.AspNetCore.Http
             [LoggerMessage(5, LogLevel.Debug, ImplicitBodyNotProvidedLogMessage, EventName = "ImplicitBodyNotProvided")]
             private static partial void ImplicitBodyNotProvided(ILogger logger, string parameterName);
 
-            public static void UnexpectedContentType(HttpContext httpContext, string? contentType)
-                => UnexpectedContentType(GetLogger(httpContext), contentType ?? "(none)");
+            public static void UnexpectedContentType(HttpContext httpContext, string? contentType, bool shouldThrow)
+            {
+                if (shouldThrow)
+                {
+                    var message = string.Format(CultureInfo.InvariantCulture, UnexpectedContentTypeExceptionMessage, contentType);
+                    throw new BadHttpRequestException(message, StatusCodes.Status415UnsupportedMediaType);
+                }
+
+                UnexpectedContentType(GetLogger(httpContext), contentType ?? "(none)");
+            }
 
             [LoggerMessage(6, LogLevel.Debug, UnexpectedContentTypeLogMessage, EventName = "UnexpectedContentType")]
             private static partial void UnexpectedContentType(ILogger logger, string contentType);
