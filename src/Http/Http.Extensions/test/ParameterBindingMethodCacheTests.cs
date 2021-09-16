@@ -6,6 +6,7 @@
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Http.Extensions.Tests
 {
@@ -288,9 +289,9 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         {
             var ex = Assert.Throws<InvalidOperationException>(
                 () => new ParameterBindingMethodCache().FindTryParseMethod(type));
-            Assert.StartsWith($"TryParse method found on {type.Name} with incorrect format. Must be a static method with format", ex.Message);
-            Assert.Contains($"bool TryParse(string, IFormatProvider, out {type.Name})", ex.Message);
-            Assert.Contains($"bool TryParse(string, out {type.Name})", ex.Message);
+            Assert.StartsWith($"TryParse method found on {TypeNameHelper.GetTypeDisplayName(type)} with incorrect format. Must be a static method with format", ex.Message);
+            Assert.Contains($"bool TryParse(string, IFormatProvider, out {TypeNameHelper.GetTypeDisplayName(type)})", ex.Message);
+            Assert.Contains($"bool TryParse(string, out {TypeNameHelper.GetTypeDisplayName(type)})", ex.Message);
         }
 
         [Theory]
@@ -313,11 +314,11 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
             var parameter = new MockParameterInfo(type, "anything");
             var ex = Assert.Throws<InvalidOperationException>(
                 () => cache.FindBindAsyncMethod(parameter));
-            Assert.StartsWith($"BindAsync method found on {type.Name} with incorrect format. Must be a static method with format", ex.Message);
-            Assert.Contains($"ValueTask<{type.Name}> BindAsync(HttpContext context, ParameterInfo parameter)", ex.Message);
-            Assert.Contains($"ValueTask<{type.Name}> BindAsync(HttpContext context)", ex.Message);
-            Assert.Contains($"ValueTask<{type.Name}?> BindAsync(HttpContext context, ParameterInfo parameter)", ex.Message);
-            Assert.Contains($"ValueTask<{type.Name}?> BindAsync(HttpContext context)", ex.Message);
+            Assert.StartsWith($"BindAsync method found on {TypeNameHelper.GetTypeDisplayName(type)} with incorrect format. Must be a static method with format", ex.Message);
+            Assert.Contains($"ValueTask<{TypeNameHelper.GetTypeDisplayName(type)}> BindAsync(HttpContext context, ParameterInfo parameter)", ex.Message);
+            Assert.Contains($"ValueTask<{TypeNameHelper.GetTypeDisplayName(type)}> BindAsync(HttpContext context)", ex.Message);
+            Assert.Contains($"ValueTask<{TypeNameHelper.GetTypeDisplayName(type)}?> BindAsync(HttpContext context, ParameterInfo parameter)", ex.Message);
+            Assert.Contains($"ValueTask<{TypeNameHelper.GetTypeDisplayName(type)}?> BindAsync(HttpContext context)", ex.Message);
         }
 
         [Theory]
@@ -601,12 +602,6 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
             }
         }
 
-        private record struct NullableReturningBindAsyncSingleArgStruct(int Value)
-        {
-            public static ValueTask<NullableReturningBindAsyncStruct?> BindAsync(HttpContext context, ParameterInfo parameter) =>
-                throw new NotImplementedException();
-        }
-
         private record struct InvalidWrongReturnBindAsyncStruct(int Value)
         {
             public static Task<InvalidWrongReturnBindAsyncStruct> BindAsync(HttpContext context, ParameterInfo parameter) =>
@@ -621,13 +616,13 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
 
         private record struct InvalidWrongParamBindAsyncStruct(int Value)
         {
-            public static ValueTask<InvalidWrongReturnBindAsyncStruct> BindAsync(ParameterInfo parameter) =>
+            public static ValueTask<InvalidWrongParamBindAsyncStruct> BindAsync(ParameterInfo parameter) =>
                 throw new NotImplementedException();
         }
 
         private class InvalidWrongParamBindAsyncClass
         {
-            public static Task<InvalidWrongReturnBindAsyncClass> BindAsync(ParameterInfo parameter) =>
+            public static Task<InvalidWrongParamBindAsyncClass> BindAsync(ParameterInfo parameter) =>
                 throw new NotImplementedException();
         }
 
