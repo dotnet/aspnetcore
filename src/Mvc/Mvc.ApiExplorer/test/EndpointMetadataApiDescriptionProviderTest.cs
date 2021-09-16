@@ -271,17 +271,59 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
-        public void AddsFromRouteParameterAsPathWithCustomType()
+        public void AddsFromRouteParameterAsPathWithCustomClassWithTryParse()
         {
             static void AssertPathParameter(ApiDescription apiDescription)
             {
                 var param = Assert.Single(apiDescription.ParameterDescriptions);
                 Assert.Equal(typeof(TryParseStringRecord), param.Type);
-                Assert.Equal(typeof(TryParseStringRecord), param.ModelMetadata.ModelType);
+                Assert.Equal(typeof(string), param.ModelMetadata.ModelType);
                 Assert.Equal(BindingSource.Path, param.Source);
             }
 
             AssertPathParameter(GetApiDescription((TryParseStringRecord foo) => { }, "/{foo}"));
+        }
+
+        [Fact]
+        public void AddsFromRouteParameterAsPathWithPrimitiveType()
+        {
+            static void AssertPathParameter(ApiDescription apiDescription)
+            {
+                var param = Assert.Single(apiDescription.ParameterDescriptions);
+                Assert.Equal(typeof(int), param.Type);
+                Assert.Equal(typeof(int), param.ModelMetadata.ModelType);
+                Assert.Equal(BindingSource.Path, param.Source);
+            }
+
+            AssertPathParameter(GetApiDescription((int foo) => { }, "/{foo}"));
+        }
+
+        [Fact]
+        public void AddsFromRouteParameterAsPathWithNullablePrimitiveType()
+        {
+            static void AssertPathParameter(ApiDescription apiDescription)
+            {
+                var param = Assert.Single(apiDescription.ParameterDescriptions);
+                Assert.Equal(typeof(int?), param.Type);
+                Assert.Equal(typeof(int?), param.ModelMetadata.ModelType);
+                Assert.Equal(BindingSource.Path, param.Source);
+            }
+
+            AssertPathParameter(GetApiDescription((int? foo) => { }, "/{foo}"));
+        }
+
+        [Fact]
+        public void AddsFromRouteParameterAsPathWithStructTypeWithTryParse()
+        {
+            static void AssertPathParameter(ApiDescription apiDescription)
+            {
+                var param = Assert.Single(apiDescription.ParameterDescriptions);
+                Assert.Equal(typeof(TryParseStringRecordStruct), param.Type);
+                Assert.Equal(typeof(string), param.ModelMetadata.ModelType);
+                Assert.Equal(BindingSource.Path, param.Source);
+            }
+
+            AssertPathParameter(GetApiDescription((TryParseStringRecordStruct foo) => { }, "/{foo}"));
         }
 
         [Fact]
@@ -920,6 +962,12 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         private record TryParseStringRecord(int Value)
         {
             public static bool TryParse(string value, out TryParseStringRecord result) =>
+                throw new NotImplementedException();
+        }
+
+        private record struct TryParseStringRecordStruct(int Value)
+        {
+            public static bool TryParse(string value, out TryParseStringRecordStruct result) =>
                 throw new NotImplementedException();
         }
 
