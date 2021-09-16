@@ -838,7 +838,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Fact]
-        public async Task RequestDelegateLogsTryParsableFailuresAsDebugAndThrowsIfThrowOnBadRequest()
+        public async Task RequestDelegateThrowsForTryParsableFailuresIfThrowOnBadRequest()
         {
             var invoked = false;
 
@@ -903,7 +903,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Fact]
-        public async Task RequestDelegateLogsBindAsyncFailuresAndThrowsIfThrowOnBadRequest()
+        public async Task RequestDelegateThrowsForBindAsyncFailuresIfThrowOnBadRequest()
         {
             // Not supplying any headers will cause the HttpContext TryParse overload to fail.
             var httpContext = CreateHttpContext();
@@ -1293,7 +1293,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task RequestDelegateLogsFromBodyIOExceptionsAsDebugDoesNotAbortAndNeverThrows(bool throwOnBadRequests)
+        public async Task RequestDelegateLogsIOExceptionsAsDebugDoesNotAbortAndNeverThrows(bool throwOnBadRequests)
         {
             var invoked = false;
 
@@ -1326,7 +1326,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Fact]
-        public async Task RequestDelegateLogsFromBodyInvalidDataExceptionsAsDebugAndSets400Response()
+        public async Task RequestDelegateLogsJsonExceptionsAsDebugAndSets400Response()
         {
             var invoked = false;
 
@@ -1335,12 +1335,12 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 invoked = true;
             }
 
-            var invalidDataException = new InvalidDataException();
+            var jsonException = new JsonException();
 
             var httpContext = CreateHttpContext();
             httpContext.Request.Headers["Content-Type"] = "application/json";
             httpContext.Request.Headers["Content-Length"] = "1";
-            httpContext.Request.Body = new ExceptionThrowingRequestBodyStream(invalidDataException);
+            httpContext.Request.Body = new ExceptionThrowingRequestBodyStream(jsonException);
             httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
 
             var factoryResult = RequestDelegateFactory.Create(TestAction);
@@ -1357,11 +1357,49 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(new EventId(2, "InvalidJsonRequestBody"), logMessage.EventId);
             Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
             Assert.Equal(@"Failed to read parameter ""Todo todo"" from the request body as JSON.", logMessage.Message);
-            Assert.Same(invalidDataException, logMessage.Exception);
+            Assert.Same(jsonException, logMessage.Exception);
         }
 
         [Fact]
-        public async Task RequestDelegateLogsFromBodyJsonExceptionAsDebugAndSets400Response()
+        public async Task RequestDelegateThrowsForJsonExceptionsIfThrowOnBadRequest()
+        {
+            var invoked = false;
+
+            void TestAction([FromBody] Todo todo)
+            {
+                invoked = true;
+            }
+
+            var jsonException = new JsonException();
+
+            var httpContext = CreateHttpContext();
+            httpContext.Request.Headers["Content-Type"] = "application/json";
+            httpContext.Request.Headers["Content-Length"] = "1";
+            httpContext.Request.Body = new ExceptionThrowingRequestBodyStream(jsonException);
+            httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+            var factoryResult = RequestDelegateFactory.Create(TestAction, new() { ThrowOnBadRequest = true });
+            var requestDelegate = factoryResult.RequestDelegate;
+
+            var badHttpRequestException = await Assert.ThrowsAsync<BadHttpRequestException>(() => requestDelegate(httpContext));
+
+            Assert.False(invoked);
+
+            // The httpContext should be untouched.
+            Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+            Assert.Equal(200, httpContext.Response.StatusCode);
+            Assert.False(httpContext.Response.HasStarted);
+
+            // We don't log bad requests when we throw.
+            Assert.Empty(TestSink.Writes);
+
+            Assert.Equal(@"Failed to read parameter ""Todo todo"" from the request body as JSON.", badHttpRequestException.Message);
+            Assert.Equal(400, badHttpRequestException.StatusCode);
+            Assert.Same(jsonException, badHttpRequestException.InnerException);
+        }
+
+        [Fact]
+        public async Task RequestDelegateLogsMalformedJsonAsDebugAndSets400Response()
         {
             var invoked = false;
 
@@ -1394,45 +1432,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Fact]
-        public async Task RequestDelegateLogsFromBodyInvalidDataExceptionsAsDebugAndThrowsIfThrowOnBadRequest()
-        {
-            var invoked = false;
-
-            void TestAction([FromBody] Todo todo)
-            {
-                invoked = true;
-            }
-
-            var invalidDataException = new InvalidDataException();
-
-            var httpContext = CreateHttpContext();
-            httpContext.Request.Headers["Content-Type"] = "application/json";
-            httpContext.Request.Headers["Content-Length"] = "1";
-            httpContext.Request.Body = new ExceptionThrowingRequestBodyStream(invalidDataException);
-            httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
-
-            var factoryResult = RequestDelegateFactory.Create(TestAction, new() { ThrowOnBadRequest = true });
-            var requestDelegate = factoryResult.RequestDelegate;
-
-            var badHttpRequestException = await Assert.ThrowsAsync<BadHttpRequestException>(() => requestDelegate(httpContext));
-
-            Assert.False(invoked);
-
-            // The httpContext should be untouched.
-            Assert.False(httpContext.RequestAborted.IsCancellationRequested);
-            Assert.Equal(200, httpContext.Response.StatusCode);
-            Assert.False(httpContext.Response.HasStarted);
-
-            // We don't log bad requests when we throw.
-            Assert.Empty(TestSink.Writes);
-
-            Assert.Equal(@"Failed to read parameter ""Todo todo"" from the request body as JSON.", badHttpRequestException.Message);
-            Assert.Equal(400, badHttpRequestException.StatusCode);
-            Assert.Same(invalidDataException, badHttpRequestException.InnerException);
-        }
-
-        [Fact]
-        public async Task RequestDelegateLogsFromBodyJsonExceptionsAsDebugAndThrowsIfThrowOnBadRequest()
+        public async Task RequestDelegateThrowsForMalformedJsonIfThrowOnBadRequest()
         {
             var invoked = false;
 
