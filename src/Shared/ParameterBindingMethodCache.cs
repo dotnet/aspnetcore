@@ -128,7 +128,6 @@ namespace Microsoft.AspNetCore.Http
                     var stringBuilder = new StringBuilder();
                     stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"TryParse method found on {type.Name} with incorrect format. Must be a static method with format");
                     stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"bool TryParse(string, IFormatProvider, out {type.Name})");
-                    stringBuilder.AppendLine("or");
                     stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"bool TryParse(string, out {type.Name})");
                     stringBuilder.AppendLine("but found");
                     stringBuilder.Append(invalidMethod.IsStatic ? "static " : "not-static ");
