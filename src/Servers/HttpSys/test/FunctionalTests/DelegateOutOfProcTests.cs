@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 
                 // https://github.com/dotnet/aspnetcore/issues/8247
 #pragma warning disable 0618
-                var applicationPath = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("HttpSys"), "test", "testassets",
+                var applicationPath = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("HttpSysServer"), "test", "testassets",
                     "DelegationSite");
 #pragma warning restore 0618
 
@@ -86,6 +86,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     throw new InvalidOperationException("Timeout while waiting for host process to output started message.", ex);
                 }
 
+                var response = await result.HttpClient.GetAsync("");
+                Assert.True(response.IsSuccessStatusCode);
+                Assert.Equal("", await response.Content.ReadAsStringAsync());
                 output = output.Trim('\n');
 
                 Assert.Equal(CompletionMessage, output);
