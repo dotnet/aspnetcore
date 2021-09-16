@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Authorization
             => (IEnumerable<AuthorizationFailureReason>?)_failedReasons ?? Array.Empty<AuthorizationFailureReason>();
 
         /// <summary>
-        /// Flag indicating whether the current authorization processing has failed.
+        /// Flag indicating whether the current authorization processing has failed due to Fail being called.
         /// </summary>
         public virtual bool HasFailed { get { return _failCalled; } }
 

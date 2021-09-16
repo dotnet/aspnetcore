@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Authorization
         private Dictionary<string, AuthorizationPolicy> PolicyMap { get; } = new Dictionary<string, AuthorizationPolicy>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// Determines whether authentication handlers should be invoked after a failure.
+        /// Determines whether authentication handlers should be invoked after <see cref="AuthorizationHandlerContext.HasFailed"/>.
         /// Defaults to true.
         /// </summary>
         public bool InvokeHandlersAfterFailure { get; set; } = true;

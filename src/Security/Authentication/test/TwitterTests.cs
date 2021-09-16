@@ -1,20 +1,24 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Net.Http.Headers;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.Twitter
@@ -381,6 +385,158 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             Assert.Equal(HttpStatusCode.NotAcceptable, response.StatusCode);
         }
 
+        [Fact]
+        public async Task CanSignIn()
+        {
+            var stateFormat = new SecureDataFormat<RequestToken>(new RequestTokenSerializer(), new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("TwitterTest"));
+            using var host = await CreateHost((options) =>
+            {
+                options.ConsumerKey = "Test App Id";
+                options.ConsumerSecret = "PLACEHOLDER";
+                options.SaveTokens = true;
+                options.StateDataFormat = stateFormat;
+                options.BackchannelHttpHandler = new TestHttpMessageHandler
+                {
+                    Sender = req =>
+                    {
+                        if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == "https://api.twitter.com/oauth/access_token")
+                        {
+                            var res = new HttpResponseMessage(HttpStatusCode.OK);
+                            var content = new Dictionary<string, string>()
+                            {
+                                ["oauth_token"] = "Test Access Token",
+                                ["oauth_token_secret"] = "PLACEHOLDER",
+                                ["user_id"] = "123456",
+                                ["screen_name"] = "@dotnet"
+                            };
+                            res.Content = new FormUrlEncodedContent(content);
+                            return res;
+                        }
+                        return null;
+                    }
+                };
+            });
+
+            var token = new RequestToken()
+            {
+                Token = "TestToken",
+                TokenSecret = "PLACEHOLDER",
+                Properties = new()
+            };
+
+            var correlationKey = ".xsrf";
+            var correlationValue = "TestCorrelationId";
+            token.Properties.Items.Add(correlationKey, correlationValue);
+            token.Properties.RedirectUri = "/me";
+            var state = stateFormat.Protect(token);
+            using var server = host.GetTestServer();
+            var transaction = await server.SendAsync(
+                "https://example.com/signin-twitter?oauth_token=TestToken&oauth_verifier=TestVerifier",
+                $".AspNetCore.Correlation.{correlationValue}=N;__TwitterState={UrlEncoder.Default.Encode(state)}");
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
+
+            var authCookie = transaction.AuthenticationCookieValue;
+            transaction = await server.SendAsync("https://example.com/me", authCookie);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+            var expectedIssuer = TwitterDefaults.AuthenticationScheme;
+            Assert.Equal("@dotnet", transaction.FindClaimValue(ClaimTypes.Name, expectedIssuer));
+            Assert.Equal("123456", transaction.FindClaimValue(ClaimTypes.NameIdentifier, expectedIssuer));
+            Assert.Equal("123456", transaction.FindClaimValue("urn:twitter:userid", expectedIssuer));
+            Assert.Equal("@dotnet", transaction.FindClaimValue("urn:twitter:screenname", expectedIssuer));
+
+            transaction = await server.SendAsync("https://example.com/tokens", authCookie);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+            Assert.Equal("Test Access Token", transaction.FindTokenValue("access_token"));
+            Assert.Equal("PLACEHOLDER", transaction.FindTokenValue("access_token_secret"));
+        }
+
+        [Fact]
+        public async Task CanFetchUserDetails()
+        {
+            var verifyCredentialsEndpoint = "https://api.twitter.com/1.1/account/verify_credentials.json";
+            var finalVerifyCredentialsEndpoint = string.Empty;
+            var finalAuthorizationParameter = string.Empty;
+            var stateFormat = new SecureDataFormat<RequestToken>(new RequestTokenSerializer(), new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("TwitterTest"));
+            using var host = await CreateHost((options) =>
+            {
+                options.ConsumerKey = "Test App Id";
+                options.ConsumerSecret = "PLACEHOLDER";
+                options.RetrieveUserDetails = true;
+                options.StateDataFormat = stateFormat;
+                options.BackchannelHttpHandler = new TestHttpMessageHandler
+                {
+                    Sender = req =>
+                    {
+                        if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == "https://api.twitter.com/oauth/access_token")
+                        {
+                            var res = new HttpResponseMessage(HttpStatusCode.OK);
+                            var content = new Dictionary<string, string>()
+                            {
+                                ["oauth_token"] = "Test Access Token",
+                                ["oauth_token_secret"] = "PLACEHOLDER",
+                                ["user_id"] = "123456",
+                                ["screen_name"] = "@dotnet"
+                            };
+                            res.Content = new FormUrlEncodedContent(content);
+                            return res;
+                        }
+                        if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) ==
+                            new Uri(verifyCredentialsEndpoint).GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped))
+                        {
+                            finalVerifyCredentialsEndpoint = req.RequestUri.ToString();
+                            finalAuthorizationParameter = req.Headers.Authorization.Parameter;
+                            var res = new HttpResponseMessage(HttpStatusCode.OK);
+                            var graphResponse = "{ \"email\": \"Test email\" }";
+                            res.Content = new StringContent(graphResponse, Encoding.UTF8);
+                            return res;
+                        }
+                        return null;
+                    }
+                };
+            });
+
+            var token = new RequestToken()
+            {
+                Token = "TestToken",
+                TokenSecret = "PLACEHOLDER",
+                Properties = new()
+            };
+
+            var correlationKey = ".xsrf";
+            var correlationValue = "TestCorrelationId";
+            token.Properties.Items.Add(correlationKey, correlationValue);
+            token.Properties.RedirectUri = "/me";
+            var state = stateFormat.Protect(token);
+            using var server = host.GetTestServer();
+            var transaction = await server.SendAsync(
+                "https://example.com/signin-twitter?oauth_token=TestToken&oauth_verifier=TestVerifier",
+                $".AspNetCore.Correlation.{correlationValue}=N;__TwitterState={UrlEncoder.Default.Encode(state)}");
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
+
+            Assert.Equal(1, finalVerifyCredentialsEndpoint.Count(c => c == '?'));
+            Assert.Contains("include_email=true", finalVerifyCredentialsEndpoint);
+
+            Assert.Contains("oauth_consumer_key=", finalAuthorizationParameter);
+            Assert.Contains("oauth_nonce=", finalAuthorizationParameter);
+            Assert.Contains("oauth_signature=", finalAuthorizationParameter);
+            Assert.Contains("oauth_signature_method=", finalAuthorizationParameter);
+            Assert.Contains("oauth_timestamp=", finalAuthorizationParameter);
+            Assert.Contains("oauth_token=", finalAuthorizationParameter);
+            Assert.Contains("oauth_version=", finalAuthorizationParameter);
+
+            var authCookie = transaction.AuthenticationCookieValue;
+            transaction = await server.SendAsync("https://example.com/me", authCookie);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+            var expectedIssuer = TwitterDefaults.AuthenticationScheme;
+            Assert.Equal("@dotnet", transaction.FindClaimValue(ClaimTypes.Name, expectedIssuer));
+            Assert.Equal("123456", transaction.FindClaimValue(ClaimTypes.NameIdentifier, expectedIssuer));
+            Assert.Equal("123456", transaction.FindClaimValue("urn:twitter:userid", expectedIssuer));
+            Assert.Equal("@dotnet", transaction.FindClaimValue("urn:twitter:screenname", expectedIssuer));
+            Assert.Equal("Test email", transaction.FindClaimValue(ClaimTypes.Email, expectedIssuer));
+        }
+
         private static async Task<IHost> CreateHost(Action<TwitterOptions> options, Func<HttpContext, Task<bool>> handler = null)
         {
             var host = new HostBuilder()
@@ -405,6 +561,16 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                                 {
                                     await Assert.ThrowsAsync<InvalidOperationException>(() => context.ForbidAsync("Twitter"));
                                 }
+                                else if (req.Path == new PathString("/me"))
+                                {
+                                    await res.DescribeAsync(context.User);
+                                }
+                                else if (req.Path == new PathString("/tokens"))
+                                {
+                                    var result = await context.AuthenticateAsync(TestExtensions.CookieAuthenticationScheme);
+                                    var tokens = result.Properties.GetTokens();
+                                    await res.DescribeAsync(tokens);
+                                }
                                 else if (handler == null || !await handler(context))
                                 {
                                     await next(context);
@@ -418,8 +584,8 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                                 o.SignInScheme = "External";
                                 options(o);
                             };
-                            services.AddAuthentication()
-                                .AddCookie("External", _ => { })
+                            services.AddAuthentication(TestExtensions.CookieAuthenticationScheme)
+                                .AddCookie(TestExtensions.CookieAuthenticationScheme, o => o.ForwardChallenge = TwitterDefaults.AuthenticationScheme)
                                 .AddTwitter(wrapOptions);
                         }))
                 .Build();

@@ -1,17 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.DotNet.Openapi.Tools;
 using Microsoft.Extensions.Tools.Internal;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.OpenApi.Tests
@@ -92,7 +87,7 @@ namespace Microsoft.DotNet.OpenApi.Tests
                 _tempDir.Root, wrapper, _output, _error);
         }
 
-        private IDictionary<string, Tuple<string, ContentDispositionHeaderValue>> DownloadMock()
+        private static IDictionary<string, Tuple<string, ContentDispositionHeaderValue>> DownloadMock()
         {
             var noExtension = new ContentDispositionHeaderValue("attachment");
             noExtension.Parameters.Add(new NameValueHeaderValue("filename", "filename"));
@@ -113,7 +108,7 @@ namespace Microsoft.DotNet.OpenApi.Tests
 
         protected void AssertNoErrors(int appExitCode)
         {
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
+            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error}");
             Assert.Equal(0, appExitCode);
         }
 
@@ -124,7 +119,7 @@ namespace Microsoft.DotNet.OpenApi.Tests
         }
     }
 
-    public class TestHttpClientWrapper : IHttpClientWrapper
+    public sealed class TestHttpClientWrapper : IHttpClientWrapper
     {
         private readonly IDictionary<string, Tuple<string, ContentDispositionHeaderValue>> _results;
 
@@ -143,7 +138,7 @@ namespace Microsoft.DotNet.OpenApi.Tests
             MemoryStream stream = null;
             if(result != null)
             {
-                byte[] byteArray = Encoding.ASCII.GetBytes(result.Item1);
+                var byteArray = Encoding.ASCII.GetBytes(result.Item1);
                 stream = new MemoryStream(byteArray);
             }
 
@@ -151,7 +146,7 @@ namespace Microsoft.DotNet.OpenApi.Tests
         }
     }
 
-    public class TestHttpResponseMessageWrapper : IHttpResponseMessageWrapper
+    public sealed class TestHttpResponseMessageWrapper : IHttpResponseMessageWrapper
     {
         public Task<Stream> Stream { get; }
 
@@ -159,17 +154,11 @@ namespace Microsoft.DotNet.OpenApi.Tests
 
         public bool IsSuccessCode()
         {
-            switch(StatusCode)
+            return StatusCode switch
             {
-                case HttpStatusCode.OK:
-                case HttpStatusCode.Created:
-                case HttpStatusCode.NoContent:
-                case HttpStatusCode.Accepted:
-                    return true;
-                case HttpStatusCode.NotFound:
-                default:
-                    return false;
-            }
+                HttpStatusCode.OK or HttpStatusCode.Created or HttpStatusCode.NoContent or HttpStatusCode.Accepted => true,
+                _ => false,
+            };
         }
 
         private readonly ContentDispositionHeaderValue _contentDisposition;

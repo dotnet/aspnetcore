@@ -1,12 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
-using System.Threading;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -149,7 +147,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
         private ApiParameterDescription? CreateApiParameterDescription(ParameterInfo parameter, RoutePattern pattern)
         {
-            var (source, name, allowEmpty) = GetBindingSourceAndName(parameter, pattern);
+            var (source, name, allowEmpty, paramType) = GetBindingSourceAndName(parameter, pattern);
 
             // Services are ignored because they are not request parameters.
             // We ignore/skip body parameter because the value will be retrieved from the IAcceptsMetadata.
@@ -162,39 +160,49 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var nullabilityContext = new NullabilityInfoContext();
             var nullability = nullabilityContext.Create(parameter);
             var isOptional = parameter.HasDefaultValue || nullability.ReadState != NullabilityState.NotNull || allowEmpty;
+            var parameterDescriptor = CreateParameterDescriptor(parameter);
 
             return new ApiParameterDescription
             {
                 Name = name,
-                ModelMetadata = CreateModelMetadata(parameter.ParameterType),
+                ModelMetadata = CreateModelMetadata(paramType),
                 Source = source,
                 DefaultValue = parameter.DefaultValue,
                 Type = parameter.ParameterType,
-                IsRequired = !isOptional
+                IsRequired = !isOptional,
+                ParameterDescriptor = parameterDescriptor
             };
         }
 
+        private static ParameterDescriptor CreateParameterDescriptor(ParameterInfo parameter)
+            => new EndpointParameterDescriptor
+            {
+                Name = parameter.Name ?? string.Empty,
+                ParameterInfo = parameter,
+                ParameterType = parameter.ParameterType,
+            };
+
         // TODO: Share more of this logic with RequestDelegateFactory.CreateArgument(...) using RequestDelegateFactoryUtilities
         // which is shared source.
-        private (BindingSource, string, bool) GetBindingSourceAndName(ParameterInfo parameter, RoutePattern pattern)
+        private (BindingSource, string, bool, Type) GetBindingSourceAndName(ParameterInfo parameter, RoutePattern pattern)
         {
             var attributes = parameter.GetCustomAttributes();
 
             if (attributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
             {
-                return (BindingSource.Path, routeAttribute.Name ?? parameter.Name ?? string.Empty, false);
+                return (BindingSource.Path, routeAttribute.Name ?? parameter.Name ?? string.Empty, false, parameter.ParameterType);
             }
             else if (attributes.OfType<IFromQueryMetadata>().FirstOrDefault() is { } queryAttribute)
             {
-                return (BindingSource.Query, queryAttribute.Name ?? parameter.Name ?? string.Empty, false);
+                return (BindingSource.Query, queryAttribute.Name ?? parameter.Name ?? string.Empty, false, parameter.ParameterType);
             }
             else if (attributes.OfType<IFromHeaderMetadata>().FirstOrDefault() is { } headerAttribute)
             {
-                return (BindingSource.Header, headerAttribute.Name ?? parameter.Name ?? string.Empty, false);
+                return (BindingSource.Header, headerAttribute.Name ?? parameter.Name ?? string.Empty, false, parameter.ParameterType);
             }
             else if (attributes.OfType<IFromBodyMetadata>().FirstOrDefault() is { } fromBodyAttribute)
             {
-                return (BindingSource.Body, parameter.Name ?? string.Empty, fromBodyAttribute.AllowEmpty);
+                return (BindingSource.Body, parameter.Name ?? string.Empty, fromBodyAttribute.AllowEmpty, parameter.ParameterType);
             }
             else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)) ||
                      parameter.ParameterType == typeof(HttpContext) ||
@@ -205,23 +213,26 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                      ParameterBindingMethodCache.HasBindAsyncMethod(parameter) ||
                      _serviceProviderIsService?.IsService(parameter.ParameterType) == true)
             {
-                return (BindingSource.Services, parameter.Name ?? string.Empty, false);
+                return (BindingSource.Services, parameter.Name ?? string.Empty, false, parameter.ParameterType);
             }
             else if (parameter.ParameterType == typeof(string) || ParameterBindingMethodCache.HasTryParseMethod(parameter))
             {
+                // complex types will display as strings since they use custom parsing via TryParse on a string
+                var displayType = !parameter.ParameterType.IsPrimitive && Nullable.GetUnderlyingType(parameter.ParameterType)?.IsPrimitive != true
+                    ? typeof(string) : parameter.ParameterType;
                 // Path vs query cannot be determined by RequestDelegateFactory at startup currently because of the layering, but can be done here.
                 if (parameter.Name is { } name && pattern.GetParameter(name) is not null)
                 {
-                    return (BindingSource.Path, name, false);
+                    return (BindingSource.Path, name, false, displayType);
                 }
                 else
                 {
-                    return (BindingSource.Query, parameter.Name ?? string.Empty, false);
+                    return (BindingSource.Query, parameter.Name ?? string.Empty, false, displayType);
                 }
             }
             else
             {
-                return (BindingSource.Body, parameter.Name ?? string.Empty, false);
+                return (BindingSource.Body, parameter.Name ?? string.Empty, false, parameter.ParameterType);
             }
         }
 

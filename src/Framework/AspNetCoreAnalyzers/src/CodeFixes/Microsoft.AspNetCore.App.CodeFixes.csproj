@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>CSharp CodeFixes for ASP.NET Core.</Description>
+    <IsShippingPackage>false</IsShippingPackage>
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <Nullable>Enable</Nullable>
+    <RootNamespace>Microsoft.AspNetCore.Analyzers</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
+    <ProjectReference Include="..\Analyzers\Microsoft.AspNetCore.App.Analyzers.csproj" />
+  </ItemGroup>
+
+</Project>
