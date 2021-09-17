@@ -141,6 +141,102 @@ namespace Microsoft.AspNetCore.Routing.Matching
             Assert.Same(endpoint, Assert.Single(inner.Endpoints));
         }
 
+        [Fact]
+        public void Matcher_ThrowsOnDuplicateEndpoints()
+        {
+            // Arrange
+            var expectedError = "Duplicate endpoint name 'Foo' found on '/bar' and '/foo'. Endpoint names must be globally unique.";
+            var dataSource = new DynamicEndpointDataSource();
+            var lifetime = new DataSourceDependentMatcher.Lifetime();
+            dataSource.AddEndpoint(new RouteEndpoint(
+                TestConstants.EmptyRequestDelegate,
+                RoutePatternFactory.Parse("/foo"),
+                0,
+                new EndpointMetadataCollection(new EndpointNameMetadata("Foo")),
+                "/foo"
+            ));
+            dataSource.AddEndpoint(new RouteEndpoint(
+                TestConstants.EmptyRequestDelegate,
+                RoutePatternFactory.Parse("/bar"),
+                0,
+                new EndpointMetadataCollection(new EndpointNameMetadata("Foo")),
+                "/bar"
+            ));
+
+            // Assert
+            var exception = Assert.Throws<InvalidOperationException>(
+                () => new DataSourceDependentMatcher(dataSource, lifetime, TestMatcherBuilder.Create));
+            Assert.Equal(expectedError, exception.Message);
+        }
+
+        [Fact]
+        public void Matcher_ThrowsOnDuplicateEndpointsFromMultipleSources()
+        {
+            // Arrange
+            var expectedError = "Duplicate endpoint name 'Foo' found on '/foo2' and '/foo'. Endpoint names must be globally unique.";
+            var dataSource = new DynamicEndpointDataSource();
+            var lifetime = new DataSourceDependentMatcher.Lifetime();
+            dataSource.AddEndpoint(new RouteEndpoint(
+                TestConstants.EmptyRequestDelegate,
+                RoutePatternFactory.Parse("/foo"),
+                0,
+                new EndpointMetadataCollection(new EndpointNameMetadata("Foo")),
+                "/foo"
+            ));
+            dataSource.AddEndpoint(new RouteEndpoint(
+                TestConstants.EmptyRequestDelegate,
+                RoutePatternFactory.Parse("/bar"),
+                0,
+                new EndpointMetadataCollection(new EndpointNameMetadata("Bar")),
+                "/bar"
+            ));
+            var anotherDataSource = new DynamicEndpointDataSource();
+            anotherDataSource.AddEndpoint(new RouteEndpoint(
+                TestConstants.EmptyRequestDelegate,
+                RoutePatternFactory.Parse("/foo2"),
+                0,
+                new EndpointMetadataCollection(new EndpointNameMetadata("Foo")),
+                "/foo2"
+            ));
+
+            var compositeDataSource = new CompositeEndpointDataSource(new[] { dataSource, anotherDataSource });
+
+            // Assert
+            var exception = Assert.Throws<InvalidOperationException>(
+                () => new DataSourceDependentMatcher(compositeDataSource, lifetime, TestMatcherBuilder.Create));
+            Assert.Equal(expectedError, exception.Message);
+        }
+
+        [Fact]
+        public void Matcher_ThrowsOnDuplicateEndpointAddedLater()
+        {
+            // Arrange
+            var expectedError = "Duplicate endpoint name 'Foo' found on '/bar' and '/foo'. Endpoint names must be globally unique.";
+            var dataSource = new DynamicEndpointDataSource();
+            var lifetime = new DataSourceDependentMatcher.Lifetime();
+            dataSource.AddEndpoint(new RouteEndpoint(
+                TestConstants.EmptyRequestDelegate,
+                RoutePatternFactory.Parse("/foo"),
+                0,
+                new EndpointMetadataCollection(new EndpointNameMetadata("Foo")),
+                "/foo"
+            ));
+
+            // Act (should be all good since no duplicate has been added yet)
+            var matcher = new DataSourceDependentMatcher(dataSource, lifetime, TestMatcherBuilder.Create);
+
+            // Assert that rerunning initializer throws AggregateException
+            var exception = Assert.Throws<AggregateException>(
+                () => dataSource.AddEndpoint(new RouteEndpoint(
+                    TestConstants.EmptyRequestDelegate,
+                    RoutePatternFactory.Parse("/bar"),
+                    0,
+                    new EndpointMetadataCollection(new EndpointNameMetadata("Foo")),
+                    "/bar"
+            )));
+            Assert.Equal(expectedError, exception.InnerException.Message);
+        }
+
         private class TestMatcherBuilder : MatcherBuilder
         {
             public static Func<MatcherBuilder> Create = () => new TestMatcherBuilder();

@@ -15,11 +15,11 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
-    public class OutputProducerTests : IDisposable
+    public class Http1OutputProducerTests : IDisposable
     {
         private readonly MemoryPool<byte> _memoryPool;
 
-        public OutputProducerTests()
+        public Http1OutputProducerTests()
         {
             _memoryPool = PinnedBlockMemoryPoolFactory.Create();
         }
@@ -72,6 +72,89 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             outputProducer.Abort(null);
 
             mockConnectionContext.Verify(f => f.Abort(null), Times.Once());
+        }
+
+        [Fact]
+        public void AllocatesFakeMemorySmallerThanMaxBufferSize()
+        {
+            var pipeOptions = new PipeOptions
+            (
+                pool: _memoryPool,
+                readerScheduler: Mock.Of<PipeScheduler>(),
+                writerScheduler: PipeScheduler.Inline,
+                useSynchronizationContext: false
+            );
+
+            using (var socketOutput = CreateOutputProducer(pipeOptions))
+            {
+                var bufferSize = 1;
+                var fakeMemory = socketOutput.GetFakeMemory(bufferSize);
+
+                Assert.True(fakeMemory.Length >= bufferSize);
+            }
+        }
+
+        [Fact]
+        public void AllocatesFakeMemoryBiggerThanMaxBufferSize()
+        {
+            var pipeOptions = new PipeOptions
+            (
+                pool: _memoryPool,
+                readerScheduler: Mock.Of<PipeScheduler>(),
+                writerScheduler: PipeScheduler.Inline,
+                useSynchronizationContext: false
+            );
+
+            using (var socketOutput = CreateOutputProducer(pipeOptions))
+            {
+                var bufferSize = _memoryPool.MaxBufferSize * 2;
+                var fakeMemory = socketOutput.GetFakeMemory(bufferSize);
+
+                Assert.True(fakeMemory.Length >= bufferSize);
+            }
+        }
+
+        [Fact]
+        public void AllocatesIncreasingFakeMemory()
+        {
+            var pipeOptions = new PipeOptions
+            (
+                pool: _memoryPool,
+                readerScheduler: Mock.Of<PipeScheduler>(),
+                writerScheduler: PipeScheduler.Inline,
+                useSynchronizationContext: false
+            );
+
+            using (var socketOutput = CreateOutputProducer(pipeOptions))
+            {
+                var bufferSize1 = 1024;
+                var bufferSize2 = 2048;
+                var fakeMemory = socketOutput.GetFakeMemory(bufferSize1);
+                fakeMemory = socketOutput.GetFakeMemory(bufferSize2);
+
+                Assert.True(fakeMemory.Length >= bufferSize2);
+            }
+        }
+
+        [Fact]
+        public void ReusesFakeMemory()
+        {
+            var pipeOptions = new PipeOptions
+            (
+                pool: _memoryPool,
+                readerScheduler: Mock.Of<PipeScheduler>(),
+                writerScheduler: PipeScheduler.Inline,
+                useSynchronizationContext: false
+            );
+
+            using (var socketOutput = CreateOutputProducer(pipeOptions))
+            {
+                var bufferSize = 1024;
+                var fakeMemory1 = socketOutput.GetFakeMemory(bufferSize);
+                var fakeMemory2 = socketOutput.GetFakeMemory(bufferSize);
+
+                Assert.Equal(fakeMemory1, fakeMemory2);
+            }
         }
 
         private TestHttpOutputProducer CreateOutputProducer(

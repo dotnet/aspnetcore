@@ -1,11 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
 using System.Reflection;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -264,17 +266,59 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
-        public void AddsFromRouteParameterAsPathWithCustomTypep()
+        public void AddsFromRouteParameterAsPathWithCustomClassWithTryParse()
         {
             static void AssertPathParameter(ApiDescription apiDescription)
             {
                 var param = Assert.Single(apiDescription.ParameterDescriptions);
                 Assert.Equal(typeof(TryParseStringRecord), param.Type);
-                Assert.Equal(typeof(TryParseStringRecord), param.ModelMetadata.ModelType);
+                Assert.Equal(typeof(string), param.ModelMetadata.ModelType);
                 Assert.Equal(BindingSource.Path, param.Source);
             }
 
             AssertPathParameter(GetApiDescription((TryParseStringRecord foo) => { }, "/{foo}"));
+        }
+
+        [Fact]
+        public void AddsFromRouteParameterAsPathWithPrimitiveType()
+        {
+            static void AssertPathParameter(ApiDescription apiDescription)
+            {
+                var param = Assert.Single(apiDescription.ParameterDescriptions);
+                Assert.Equal(typeof(int), param.Type);
+                Assert.Equal(typeof(int), param.ModelMetadata.ModelType);
+                Assert.Equal(BindingSource.Path, param.Source);
+            }
+
+            AssertPathParameter(GetApiDescription((int foo) => { }, "/{foo}"));
+        }
+
+        [Fact]
+        public void AddsFromRouteParameterAsPathWithNullablePrimitiveType()
+        {
+            static void AssertPathParameter(ApiDescription apiDescription)
+            {
+                var param = Assert.Single(apiDescription.ParameterDescriptions);
+                Assert.Equal(typeof(int?), param.Type);
+                Assert.Equal(typeof(int?), param.ModelMetadata.ModelType);
+                Assert.Equal(BindingSource.Path, param.Source);
+            }
+
+            AssertPathParameter(GetApiDescription((int? foo) => { }, "/{foo}"));
+        }
+
+        [Fact]
+        public void AddsFromRouteParameterAsPathWithStructTypeWithTryParse()
+        {
+            static void AssertPathParameter(ApiDescription apiDescription)
+            {
+                var param = Assert.Single(apiDescription.ParameterDescriptions);
+                Assert.Equal(typeof(TryParseStringRecordStruct), param.Type);
+                Assert.Equal(typeof(string), param.ModelMetadata.ModelType);
+                Assert.Equal(BindingSource.Path, param.Source);
+            }
+
+            AssertPathParameter(GetApiDescription((TryParseStringRecordStruct foo) => { }, "/{foo}"));
         }
 
         [Fact]
@@ -420,6 +464,32 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         [Fact]
+        public void TestParameterAttributesCanBeInspected()
+        {
+            var apiDescription = GetApiDescription(([Description("The name.")] string name) => { });
+            Assert.Equal(1, apiDescription.ParameterDescriptions.Count);
+
+            var nameParam = apiDescription.ParameterDescriptions[0];
+            Assert.Equal(typeof(string), nameParam.Type);
+            Assert.Equal(typeof(string), nameParam.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.Query, nameParam.Source);
+            Assert.False(nameParam.IsRequired);
+
+            Assert.NotNull(nameParam.ParameterDescriptor);
+            Assert.Equal("name", nameParam.ParameterDescriptor.Name);
+            Assert.Equal(typeof(string), nameParam.ParameterDescriptor.ParameterType);
+
+            var descriptor = Assert.IsAssignableFrom<IParameterInfoParameterDescriptor>(nameParam.ParameterDescriptor);
+
+            Assert.NotNull(descriptor.ParameterInfo);
+
+            var description = Assert.Single(descriptor.ParameterInfo.GetCustomAttributes<DescriptionAttribute>());
+
+            Assert.NotNull(description);
+            Assert.Equal("The name.", description.Description);
+        }
+
+        [Fact]
         public void RespectsProducesProblemExtensionMethod()
         {
             // Arrange
@@ -528,7 +598,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 {
                     Assert.Equal(typeof(HttpValidationProblemDetails), responseType.Type);
                     Assert.Equal(400, responseType.StatusCode);
-                    Assert.Equal(new[] { "application/validationproblem+json" }, GetSortedMediaTypes(responseType));
+                    Assert.Equal(new[] { "application/problem+json" }, GetSortedMediaTypes(responseType));
                 },
                 responseType =>
                 {
@@ -642,6 +712,38 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             Assert.Equal(typeof(InferredJsonClass), bodyParameterDescription.Type);
             Assert.Equal(typeof(InferredJsonClass).Name, bodyParameterDescription.Name);
             Assert.True(bodyParameterDescription.IsRequired);
+        }
+
+        [Fact]
+        public void FavorsProducesMetadataOverAttribute()
+        {
+            // Arrange
+            var builder = CreateBuilder();
+            builder.MapGet("/api/todos", [ProducesResponseType(typeof(List<string>), StatusCodes.Status200OK)]() => "")
+                .Produces<InferredJsonClass>(StatusCodes.Status200OK);
+            var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+            var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+            var hostEnvironment = new HostEnvironment
+            {
+                ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+            };
+            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+
+            // Act
+            provider.OnProvidersExecuting(context);
+            provider.OnProvidersExecuted(context);
+
+            // Assert
+            Assert.Collection(
+                context.Results.SelectMany(r => r.SupportedResponseTypes).OrderBy(r => r.StatusCode),
+                responseType =>
+                {
+                    Assert.Equal(typeof(InferredJsonClass), responseType.Type);
+                    Assert.Equal(200, responseType.StatusCode);
+                    Assert.Equal(new[] { "application/json" }, GetSortedMediaTypes(responseType));
+
+                });
         }
 
 #nullable enable
@@ -855,6 +957,12 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         private record TryParseStringRecord(int Value)
         {
             public static bool TryParse(string value, out TryParseStringRecord result) =>
+                throw new NotImplementedException();
+        }
+
+        private record struct TryParseStringRecordStruct(int Value)
+        {
+            public static bool TryParse(string value, out TryParseStringRecordStruct result) =>
                 throw new NotImplementedException();
         }
 

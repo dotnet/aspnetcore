@@ -4,6 +4,10 @@
     "UseLocalDB": {
       "longName": "use-local-db"
     },
+    "UseMinimalAPIs": {
+      "longName": "use-minimal-apis",
+      "shortName": "minimal"
+    },
     "AADInstance": {
       "longName": "aad-instance",
       "shortName": ""
