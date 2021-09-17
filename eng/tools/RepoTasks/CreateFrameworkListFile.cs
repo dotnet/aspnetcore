@@ -73,15 +73,19 @@ namespace RepoTasks
 
                     var pathParts = path.Split('/');
 
-                    if (pathParts.Length < 3 || !pathParts[1].Equals("dotnet", StringComparison.Ordinal) || pathParts.Length > 4)
+                    if (pathParts.Length < 3 || !pathParts[1].Equals("dotnet", StringComparison.Ordinal) || pathParts.Length > 5)
                     {
-                        Log.LogError($"Unexpected analyzer path format {path}.  Expected  'analyzers/dotnet(/language)/analyzer.dll");
+                        Log.LogError($"Unexpected analyzer path format {path}.  Expected  'analyzers/dotnet(/roslyn<version>)(/language)/analyzer.dll");
                     }
 
-                    // Check if we have enough parts for language directory and include it
-                    if (pathParts.Length > 3)
+                    // Check if we have enough parts for language directory and include it.
+                    // There could be a roslyn<version> folder before the language folder. Check for it.
+                    bool hasRoslynVersion = pathParts[2].StartsWith("roslyn", StringComparison.Ordinal);
+                    int languageLengthCheck = hasRoslynVersion ? 4 : 3;
+                    int potentialLanguageIndex = hasRoslynVersion ? 3 : 2;
+                    if (pathParts.Length > languageLengthCheck)
                     {
-                        element.Add(new XAttribute("Language", pathParts[2]));
+                        element.Add(new XAttribute("Language", pathParts[potentialLanguageIndex]));
                     }
                 }
 
