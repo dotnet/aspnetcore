@@ -1609,6 +1609,51 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestBothInvalidAction));
         }
 
+        [Fact]
+        public void BuildRequestDelegateThrowsInvalidOperationExceptionForInvalidTryParse()
+        {
+            void TestTryParseStruct(BadTryParseStruct value1) { }
+            void TestTryParseClass(BadTryParseClass value1) { }
+
+            Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestTryParseStruct));
+            Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestTryParseClass));
+        }
+
+        private struct BadTryParseStruct
+        {
+            public static void TryParse(string? value, out BadTryParseStruct result) { }
+        }
+
+        private class BadTryParseClass
+        {
+            public static void TryParse(string? value, out BadTryParseClass result)
+            {
+                result = new();
+            }
+        }
+
+        [Fact]
+        public void BuildRequestDelegateThrowsInvalidOperationExceptionForInvalidBindAsync()
+        {
+            void TestBindAsyncStruct(BadBindAsyncStruct value1) { }
+            void TestBindAsyncClass(BadBindAsyncClass value1) { }
+
+            var ex = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestBindAsyncStruct));
+            Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestBindAsyncClass));
+        }
+
+        private struct BadBindAsyncStruct
+        {
+            public static Task<BadBindAsyncStruct> BindAsync(HttpContext context, ParameterInfo parameter) =>
+                throw new NotImplementedException();
+        }
+
+        private class BadBindAsyncClass
+        {
+            public static Task<BadBindAsyncClass> BindAsync(HttpContext context, ParameterInfo parameter) =>
+                throw new NotImplementedException();
+        }
+
         public static object[][] ExplicitFromServiceActions
         {
             get

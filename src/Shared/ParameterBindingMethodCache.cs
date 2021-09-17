@@ -9,6 +9,8 @@ using System.Linq.Expressions;
 using System.Numerics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
+using Microsoft.Extensions.Internal;
 
 #nullable enable
 
@@ -106,7 +108,7 @@ namespace Microsoft.AspNetCore.Http
 
                 methodInfo = type.GetMethod("TryParse", BindingFlags.Public | BindingFlags.Static, new[] { typeof(string), typeof(IFormatProvider), type.MakeByRefType() });
 
-                if (methodInfo != null)
+                if (methodInfo is not null && methodInfo.ReturnType == typeof(bool))
                 {
                     return (expression) => Expression.Call(
                         methodInfo,
@@ -117,9 +119,22 @@ namespace Microsoft.AspNetCore.Http
 
                 methodInfo = type.GetMethod("TryParse", BindingFlags.Public | BindingFlags.Static, new[] { typeof(string), type.MakeByRefType() });
 
-                if (methodInfo != null)
+                if (methodInfo is not null && methodInfo.ReturnType == typeof(bool))
                 {
                     return (expression) => Expression.Call(methodInfo, TempSourceStringExpr, expression);
+                }
+
+                if (type.GetMethod("TryParse", BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance) is MethodInfo invalidMethod)
+                {
+                    var stringBuilder = new StringBuilder();
+                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"TryParse method found on {TypeNameHelper.GetTypeDisplayName(type, fullName: false)} with incorrect format. Must be a static method with format");
+                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"bool TryParse(string, IFormatProvider, out {TypeNameHelper.GetTypeDisplayName(type, fullName: false)})");
+                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"bool TryParse(string, out {TypeNameHelper.GetTypeDisplayName(type, fullName: false)})");
+                    stringBuilder.AppendLine("but found");
+                    stringBuilder.Append(invalidMethod.IsStatic ? "static " : "not-static ");
+                    stringBuilder.Append(invalidMethod.ToString());
+
+                    throw new InvalidOperationException(stringBuilder.ToString());
                 }
 
                 return null;
@@ -190,6 +205,21 @@ namespace Microsoft.AspNetCore.Http
                             return Expression.Call(ConvertValueTaskOfNullableResultMethod.MakeGenericMethod(nonNullableParameterType), typedCall);
                         }, hasParameterInfo ? 2 : 1);
                     }
+                }
+
+                if (nonNullableParameterType.GetMethod("BindAsync", BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance) is MethodInfo invalidBindMethod)
+                {
+                    var stringBuilder = new StringBuilder();
+                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"BindAsync method found on {TypeNameHelper.GetTypeDisplayName(nonNullableParameterType, fullName: false)} with incorrect format. Must be a static method with format");
+                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"ValueTask<{TypeNameHelper.GetTypeDisplayName(nonNullableParameterType, fullName: false)}> BindAsync(HttpContext context, ParameterInfo parameter)");
+                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"ValueTask<{TypeNameHelper.GetTypeDisplayName(nonNullableParameterType, fullName: false)}> BindAsync(HttpContext context)");
+                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"ValueTask<{TypeNameHelper.GetTypeDisplayName(nonNullableParameterType, fullName: false)}?> BindAsync(HttpContext context, ParameterInfo parameter)");
+                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"ValueTask<{TypeNameHelper.GetTypeDisplayName(nonNullableParameterType, fullName: false)}?> BindAsync(HttpContext context)");
+                    stringBuilder.AppendLine("but found");
+                    stringBuilder.Append(invalidBindMethod.IsStatic ? "static " : "not-static");
+                    stringBuilder.Append(invalidBindMethod.ToString());
+
+                    throw new InvalidOperationException(stringBuilder.ToString());
                 }
 
                 return (null, 0);
