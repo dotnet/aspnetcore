@@ -11,9 +11,9 @@ public static class Program
             .ConfigureWebHost(webHostBuilder =>
             {
                 webHostBuilder.UseHttpSys(options =>
-                    {
-                        options.RequestQueueName = Environment.GetEnvironmentVariable("queue");
-                    })
+                {
+                    options.RequestQueueName = Environment.GetEnvironmentVariable("queue");
+                })
                 .Configure(app =>
                 {
                     app.Run(context =>
