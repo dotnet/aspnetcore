@@ -36,6 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly PipeReader _pipeReader;
         private readonly ManualResetValueTaskSource<object> _resetAwaitable = new ManualResetValueTaskSource<object>();
         private IMemoryOwner<byte> _fakeMemoryOwner;
+        private byte[] _fakeMemory;
         private bool _startedWritingDataFrames;
         private bool _streamCompleted;
         private bool _suffixSent;
@@ -119,6 +120,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     _fakeMemoryOwner.Dispose();
                     _fakeMemoryOwner = null;
                 }
+
+                if (_fakeMemory != null)
+                {
+                    ArrayPool<byte>.Shared.Return(_fakeMemory);
+                    _fakeMemory = null;
+                }                
             }
         }
 
@@ -485,14 +492,48 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        private Memory<byte> GetFakeMemory(int sizeHint)
+        internal Memory<byte> GetFakeMemory(int minSize)
         {
-            if (_fakeMemoryOwner == null)
+            // Try to reuse _fakeMemoryOwner
+            if (_fakeMemoryOwner != null)
             {
-                _fakeMemoryOwner = _memoryPool.Rent(sizeHint);
+                if (_fakeMemoryOwner.Memory.Length < minSize)
+                {
+                    _fakeMemoryOwner.Dispose();
+                    _fakeMemoryOwner = null;
+                }
+                else
+                {
+                    return _fakeMemoryOwner.Memory;
+                }
             }
 
-            return _fakeMemoryOwner.Memory;
+            // Try to reuse _fakeMemory
+            if (_fakeMemory != null)
+            {
+                if (_fakeMemory.Length < minSize)
+                {
+                    ArrayPool<byte>.Shared.Return(_fakeMemory);
+                    _fakeMemory = null;
+                }
+                else
+                {
+                    return _fakeMemory;
+                }
+            }
+
+            // Requesting a bigger buffer could throw.
+            if (minSize <= _memoryPool.MaxBufferSize)
+            {
+                // Use the specified pool as it fits.
+                _fakeMemoryOwner = _memoryPool.Rent(minSize);
+                return _fakeMemoryOwner.Memory;
+            }
+            else
+            {
+                // Use the array pool. Its MaxBufferSize is int.MaxValue.
+                return _fakeMemory = ArrayPool<byte>.Shared.Rent(minSize);
+            }
         }
 
         [StackTraceHidden]
