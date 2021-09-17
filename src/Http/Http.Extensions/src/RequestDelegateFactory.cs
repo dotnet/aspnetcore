@@ -8,6 +8,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
@@ -504,7 +505,7 @@ namespace Microsoft.AspNetCore.Http
 
         private static Func<object?, HttpContext, Task> HandleRequestBodyAndCompileRequestDelegate(Expression responseWritingMethodCall, FactoryContext factoryContext)
         {
-            if (factoryContext.JsonRequestBodyType is null)
+            if (factoryContext.JsonRequestBodyParameter is null)
             {
                 if (factoryContext.ParameterBinders.Count > 0)
                 {
@@ -533,7 +534,12 @@ namespace Microsoft.AspNetCore.Http
                     responseWritingMethodCall, TargetExpr, HttpContextExpr).Compile();
             }
 
-            var bodyType = factoryContext.JsonRequestBodyType;
+            var bodyType = factoryContext.JsonRequestBodyParameter.ParameterType;
+            var parameterTypeName = TypeNameHelper.GetTypeDisplayName(factoryContext.JsonRequestBodyParameter.ParameterType, fullName: false);
+            var parameterName = factoryContext.JsonRequestBodyParameter.Name;
+
+            Debug.Assert(parameterName is not null, "CreateArgument() should throw if parameter.Name is null.");
+
             object? defaultBodyValue = null;
 
             if (factoryContext.AllowEmptyRequestBody && bodyType.IsValueType)
@@ -580,10 +586,10 @@ namespace Microsoft.AspNetCore.Http
                             Log.RequestBodyIOException(httpContext, ex);
                             return;
                         }
-                        catch (InvalidDataException ex)
+                        catch (JsonException ex)
                         {
-                            Log.RequestBodyInvalidDataException(httpContext, ex, factoryContext.ThrowOnBadRequest);
-                            httpContext.Response.StatusCode = 400;
+                            Log.InvalidJsonRequestBody(httpContext, parameterTypeName, parameterName, ex, factoryContext.ThrowOnBadRequest);
+                            httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                             return;
                         }
                     }
@@ -618,10 +624,10 @@ namespace Microsoft.AspNetCore.Http
                             Log.RequestBodyIOException(httpContext, ex);
                             return;
                         }
-                        catch (InvalidDataException ex)
+                        catch (JsonException ex)
                         {
 
-                            Log.RequestBodyInvalidDataException(httpContext, ex, factoryContext.ThrowOnBadRequest);
+                            Log.InvalidJsonRequestBody(httpContext, parameterTypeName, parameterName, ex, factoryContext.ThrowOnBadRequest);
                             httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                             return;
                         }
@@ -879,11 +885,14 @@ namespace Microsoft.AspNetCore.Http
 
         private static Expression BindParameterFromBody(ParameterInfo parameter, bool allowEmpty, FactoryContext factoryContext)
         {
-            if (factoryContext.JsonRequestBodyType is not null)
+            if (factoryContext.JsonRequestBodyParameter is not null)
             {
                 factoryContext.HasMultipleBodyParameters = true;
                 var parameterName = parameter.Name;
-                if (parameterName is not null && factoryContext.TrackedParameters.ContainsKey(parameterName))
+
+                Debug.Assert(parameterName is not null, "CreateArgument() should throw if parameter.Name is null.");
+
+                if (factoryContext.TrackedParameters.ContainsKey(parameterName))
                 {
                     factoryContext.TrackedParameters.Remove(parameterName);
                     factoryContext.TrackedParameters.Add(parameterName, "UNKNOWN");
@@ -892,7 +901,7 @@ namespace Microsoft.AspNetCore.Http
 
             var isOptional = IsOptionalParameter(parameter, factoryContext);
 
-            factoryContext.JsonRequestBodyType = parameter.ParameterType;
+            factoryContext.JsonRequestBodyParameter = parameter;
             factoryContext.AllowEmptyRequestBody = allowEmpty || isOptional;
             factoryContext.Metadata.Add(new AcceptsMetadata(parameter.ParameterType, factoryContext.AllowEmptyRequestBody, DefaultAcceptsContentType));
 
@@ -1164,7 +1173,7 @@ namespace Microsoft.AspNetCore.Http
             public bool DisableInferredFromBody { get; init; }
 
             // Temporary State
-            public Type? JsonRequestBodyType { get; set; }
+            public ParameterInfo? JsonRequestBodyParameter { get; set; }
             public bool AllowEmptyRequestBody { get; set; }
 
             public bool UsingTempSourceString { get; set; }
@@ -1197,7 +1206,8 @@ namespace Microsoft.AspNetCore.Http
 
         private static partial class Log
         {
-            private const string RequestBodyInvalidDataExceptionMessage = "Reading the request body failed with an InvalidDataException.";
+            private const string InvalidJsonRequestBodyMessage = @"Failed to read parameter ""{ParameterType} {ParameterName}"" from the request body as JSON.";
+            private const string InvalidJsonRequestBodyExceptionMessage = @"Failed to read parameter ""{0} {1}"" from the request body as JSON.";
 
             private const string ParameterBindingFailedLogMessage = @"Failed to bind parameter ""{ParameterType} {ParameterName}"" from ""{SourceValue}"".";
             private const string ParameterBindingFailedExceptionMessage = @"Failed to bind parameter ""{0} {1}"" from ""{2}"".";
@@ -1207,6 +1217,7 @@ namespace Microsoft.AspNetCore.Http
 
             private const string UnexpectedContentTypeLogMessage = @"Expected a supported JSON media type but got ""{ContentType}"".";
             private const string UnexpectedContentTypeExceptionMessage = @"Expected a supported JSON media type but got ""{0}"".";
+
             private const string ImplicitBodyNotProvidedLogMessage = @"Implicit body inferred for parameter ""{ParameterName}"" but no body was provided. Did you mean to use a Service instead?";
             private const string ImplicitBodyNotProvidedExceptionMessage = @"Implicit body inferred for parameter ""{0}"" but no body was provided. Did you mean to use a Service instead?";
 
@@ -1218,18 +1229,19 @@ namespace Microsoft.AspNetCore.Http
             [LoggerMessage(1, LogLevel.Debug, "Reading the request body failed with an IOException.", EventName = "RequestBodyIOException")]
             private static partial void RequestBodyIOException(ILogger logger, IOException exception);
 
-            public static void RequestBodyInvalidDataException(HttpContext httpContext, InvalidDataException exception, bool shouldThrow)
+            public static void InvalidJsonRequestBody(HttpContext httpContext, string parameterTypeName, string parameterName, Exception exception, bool shouldThrow)
             {
                 if (shouldThrow)
                 {
-                    throw new BadHttpRequestException(RequestBodyInvalidDataExceptionMessage, exception);
+                    var message = string.Format(CultureInfo.InvariantCulture, InvalidJsonRequestBodyExceptionMessage, parameterTypeName, parameterName);
+                    throw new BadHttpRequestException(message, exception);
                 }
 
-                RequestBodyInvalidDataException(GetLogger(httpContext), exception);
+                InvalidJsonRequestBody(GetLogger(httpContext), parameterTypeName, parameterName, exception);
             }
 
-            [LoggerMessage(2, LogLevel.Debug, RequestBodyInvalidDataExceptionMessage, EventName = "RequestBodyInvalidDataException")]
-            private static partial void RequestBodyInvalidDataException(ILogger logger, InvalidDataException exception);
+            [LoggerMessage(2, LogLevel.Debug, InvalidJsonRequestBodyMessage, EventName = "InvalidJsonRequestBody")]
+            private static partial void InvalidJsonRequestBody(ILogger logger, string parameterType, string parameterName, Exception exception);
 
             public static void ParameterBindingFailed(HttpContext httpContext, string parameterTypeName, string parameterName, string sourceValue, bool shouldThrow)
             {
@@ -1259,16 +1271,6 @@ namespace Microsoft.AspNetCore.Http
             [LoggerMessage(4, LogLevel.Debug, RequiredParameterNotProvidedLogMessage, EventName = "RequiredParameterNotProvided")]
             private static partial void RequiredParameterNotProvided(ILogger logger, string parameterType, string parameterName, string source);
 
-            public static void UnexpectedContentType(HttpContext httpContext, string? contentType, bool shouldThrow)
-            {
-                if (shouldThrow)
-                {
-                    var message = string.Format(CultureInfo.InvariantCulture, UnexpectedContentTypeExceptionMessage, contentType);
-                    throw new BadHttpRequestException(message, StatusCodes.Status415UnsupportedMediaType);
-                }
-
-                UnexpectedContentType(GetLogger(httpContext), contentType ?? "(none)");
-            }
             public static void ImplicitBodyNotProvided(HttpContext httpContext, string parameterName, bool shouldThrow)
             {
                 if (shouldThrow)
@@ -1283,8 +1285,16 @@ namespace Microsoft.AspNetCore.Http
             [LoggerMessage(5, LogLevel.Debug, ImplicitBodyNotProvidedLogMessage, EventName = "ImplicitBodyNotProvided")]
             private static partial void ImplicitBodyNotProvided(ILogger logger, string parameterName);
 
-            public static void UnexpectedContentType(HttpContext httpContext, string? contentType)
-                => UnexpectedContentType(GetLogger(httpContext), contentType ?? "(none)");
+            public static void UnexpectedContentType(HttpContext httpContext, string? contentType, bool shouldThrow)
+            {
+                if (shouldThrow)
+                {
+                    var message = string.Format(CultureInfo.InvariantCulture, UnexpectedContentTypeExceptionMessage, contentType);
+                    throw new BadHttpRequestException(message, StatusCodes.Status415UnsupportedMediaType);
+                }
+
+                UnexpectedContentType(GetLogger(httpContext), contentType ?? "(none)");
+            }
 
             [LoggerMessage(6, LogLevel.Debug, UnexpectedContentTypeLogMessage, EventName = "UnexpectedContentType")]
             private static partial void UnexpectedContentType(ILogger logger, string contentType);
