@@ -43,11 +43,6 @@
   <ItemGroup Condition="'$(TestDependsOnNode)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
     <HelixPreCommand Include="call RunPowershell.cmd InstallNode.ps1 $(NodeVersion) || exit /b 1" />
   </ItemGroup>
-  
-  <!-- Have all tests depend on the latest runtimes until we get a net7.0 SDK -->
-  <PropertyGroup>
-    <TestDependsOnAspNetRuntime Condition="'$(TestDependsOnAspNetRuntime)' != 'false'">true</TestDependsOnAspNetRuntime>
-  </PropertyGroup>
 
   <!-- $(TestDependsOnAspNetRuntime) implies $(TestDependsOnAspNetPackages). Separate for the App.UnitTests case. -->
   <PropertyGroup Condition=" $(TestDependsOnAspNetRuntime) AND !$(TestDependsOnAspNetPackages) ">
