@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Http
                         expression);
                 }
 
-                methodInfo = type.GetMethod("TryParse", BindingFlags.Public | BindingFlags.Static, new[] { typeof(string), typeof(IFormatProvider), type.MakeByRefType() });
+                methodInfo = type.GetMethod("TryParse", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy, new[] { typeof(string), typeof(IFormatProvider), type.MakeByRefType() });
 
                 if (methodInfo is not null && methodInfo.ReturnType == typeof(bool))
                 {
@@ -117,14 +117,14 @@ namespace Microsoft.AspNetCore.Http
                         expression);
                 }
 
-                methodInfo = type.GetMethod("TryParse", BindingFlags.Public | BindingFlags.Static, new[] { typeof(string), type.MakeByRefType() });
+                methodInfo = type.GetMethod("TryParse", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy, new[] { typeof(string), type.MakeByRefType() });
 
                 if (methodInfo is not null && methodInfo.ReturnType == typeof(bool))
                 {
                     return (expression) => Expression.Call(methodInfo, TempSourceStringExpr, expression);
                 }
 
-                if (type.GetMethod("TryParse", BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance) is MethodInfo invalidMethod)
+                if (type.GetMethod("TryParse", BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.FlattenHierarchy) is MethodInfo invalidMethod)
                 {
                     var stringBuilder = new StringBuilder();
                     stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"TryParse method found on {TypeNameHelper.GetTypeDisplayName(type, fullName: false)} with incorrect format. Must be a static method with format");
@@ -149,11 +149,11 @@ namespace Microsoft.AspNetCore.Http
             {
                 var hasParameterInfo = true;
                 // There should only be one BindAsync method with these parameters since C# does not allow overloading on return type.
-                var methodInfo = nonNullableParameterType.GetMethod("BindAsync", BindingFlags.Public | BindingFlags.Static, new[] { typeof(HttpContext), typeof(ParameterInfo) });
+                var methodInfo = nonNullableParameterType.GetMethod("BindAsync", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy, new[] { typeof(HttpContext), typeof(ParameterInfo) });
                 if (methodInfo is null)
                 {
                     hasParameterInfo = false;
-                    methodInfo = nonNullableParameterType.GetMethod("BindAsync", BindingFlags.Public | BindingFlags.Static, new[] { typeof(HttpContext) });
+                    methodInfo = nonNullableParameterType.GetMethod("BindAsync", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy, new[] { typeof(HttpContext) });
                 }
 
                 // We're looking for a method with the following signatures:
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Http
                     }
                 }
 
-                if (nonNullableParameterType.GetMethod("BindAsync", BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance) is MethodInfo invalidBindMethod)
+                if (nonNullableParameterType.GetMethod("BindAsync", BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.FlattenHierarchy) is MethodInfo invalidBindMethod)
                 {
                     var stringBuilder = new StringBuilder();
                     stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"BindAsync method found on {TypeNameHelper.GetTypeDisplayName(nonNullableParameterType, fullName: false)} with incorrect format. Must be a static method with format");
