@@ -11,14 +11,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys.NonHelixTests
         private readonly bool _isSupported;
         public DelegateSupportedConditionAttribute(bool isSupported) => _isSupported = isSupported;
 
-        private readonly Lazy<bool> _isDelegateSupported = new Lazy<bool>(CanDelegate);
-        public bool IsMet => (_isDelegateSupported.Value == _isSupported);
+        public bool IsMet => HttpApi.SupportsDelegation == _isSupported;
 
         public string SkipReason => $"Http.Sys does {(_isSupported ? "not" : "")} support delegating requests";
-
-        private static bool CanDelegate()
-        {
-            return HttpApi.SupportsDelegation;
-        }
     }
 }
