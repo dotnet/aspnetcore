@@ -1,13 +1,9 @@
 let hasFailed = false;
 
-export async function showErrorNotification(customErrorMessage: string = '') {
+export async function showErrorNotification() {
     let errorUi = document.querySelector('#blazor-error-ui') as HTMLElement;
     if (errorUi) {
         errorUi.style.display = 'block';
-
-        if (customErrorMessage && errorUi.firstChild) {
-            errorUi.firstChild.textContent = `\n\t${customErrorMessage}\t\n`;
-        }
     }
 
     if (!hasFailed) {
