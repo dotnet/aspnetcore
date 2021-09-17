@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
@@ -128,7 +129,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 fixed (byte* pbRetVal = retVal)
                 {
                     WriteBigEndianInteger(pbRetVal, MAGIC_HEADER_V0);
-                    Write32bitAlignedGuid(&pbRetVal[sizeof(uint)], defaultKeyId);
+                    WriteGuid(&pbRetVal[sizeof(uint)], defaultKeyId);
                 }
 
                 // At this point, retVal := { magicHeader || keyId || encryptorSpecificProtectedPayload }
@@ -142,36 +143,17 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             }
         }
 
-        // Helper function to read a GUID from a 32-bit alignment; useful on architectures where unaligned reads
-        // can result in weird behaviors at runtime.
-        private static Guid Read32bitAlignedGuid(void* ptr)
+        private static Guid ReadGuid(void* ptr)
         {
-            Debug.Assert((long)ptr % 4 == 0);
-
-            Guid retVal;
-            if (BitConverter.IsLittleEndian)
-            {
-                ((int*)&retVal)[0] = ((int*)ptr)[0];
-                ((int*)&retVal)[1] = ((int*)ptr)[1];
-                ((int*)&retVal)[2] = ((int*)ptr)[2];
-                ((int*)&retVal)[3] = ((int*)ptr)[3];
-            }
-            else
-            {
-                // The first 8 bytes of the Guid hold one 32-bit integer
-                // and two 16-bit integers that must be byte-swapped.
-                ((byte*)&retVal)[0] = ((byte*)ptr)[3];
-                ((byte*)&retVal)[1] = ((byte*)ptr)[2];
-                ((byte*)&retVal)[2] = ((byte*)ptr)[1];
-                ((byte*)&retVal)[3] = ((byte*)ptr)[0];
-                ((byte*)&retVal)[4] = ((byte*)ptr)[5];
-                ((byte*)&retVal)[5] = ((byte*)ptr)[4];
-                ((byte*)&retVal)[6] = ((byte*)ptr)[7];
-                ((byte*)&retVal)[7] = ((byte*)ptr)[6];
-                ((int*)&retVal)[2] = ((int*)ptr)[2];
-                ((int*)&retVal)[3] = ((int*)ptr)[3];
-            }
-            return retVal;
+#if NETCOREAPP
+            // Performs appropriate endianness fixups
+            return new Guid(new ReadOnlySpan<byte>(ptr, sizeof(Guid)));
+#elif NETSTANDARD2_0 || NETFRAMEWORK
+            Debug.Assert(BitConverter.IsLittleEndian);
+            return Unsafe.ReadUnaligned<Guid>(ptr);
+#else
+#error Update target frameworks
+#endif
         }
 
         private static uint ReadBigEndian32BitInteger(byte* ptr)
@@ -233,7 +215,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 fixed (byte* pbInput = protectedData)
                 {
                     magicHeaderFromPayload = ReadBigEndian32BitInteger(pbInput);
-                    keyIdFromPayload = Read32bitAlignedGuid(&pbInput[sizeof(uint)]);
+                    keyIdFromPayload = ReadGuid(&pbInput[sizeof(uint)]);
                 }
 
                 // Are the magic header and version information correct?
@@ -318,34 +300,20 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             }
         }
 
-        // Helper function to write a GUID to a 32-bit alignment; useful on ARM where unaligned reads
-        // can result in weird behaviors at runtime.
-        private static void Write32bitAlignedGuid(void* ptr, Guid value)
+        private static void WriteGuid(void* ptr, Guid value)
         {
-            Debug.Assert((long)ptr % 4 == 0);
+#if NETCOREAPP
+            var span = new Span<byte>(ptr, sizeof(Guid));
 
-            if (BitConverter.IsLittleEndian)
-            {
-                ((int*)ptr)[0] = ((int*)&value)[0];
-                ((int*)ptr)[1] = ((int*)&value)[1];
-                ((int*)ptr)[2] = ((int*)&value)[2];
-                ((int*)ptr)[3] = ((int*)&value)[3];
-            }
-            else
-            {
-                // The first 8 bytes of the Guid hold one 32-bit integer
-                // and two 16-bit integers that must be byte-swapped.
-                ((byte*)ptr)[0] = ((byte*)&value)[3];
-                ((byte*)ptr)[1] = ((byte*)&value)[2];
-                ((byte*)ptr)[2] = ((byte*)&value)[1];
-                ((byte*)ptr)[3] = ((byte*)&value)[0];
-                ((byte*)ptr)[4] = ((byte*)&value)[5];
-                ((byte*)ptr)[5] = ((byte*)&value)[4];
-                ((byte*)ptr)[6] = ((byte*)&value)[7];
-                ((byte*)ptr)[7] = ((byte*)&value)[6];
-                ((int*)ptr)[2] = ((int*)&value)[2];
-                ((int*)ptr)[3] = ((int*)&value)[3];
-            }
+            // Performs appropriate endianness fixups
+            var success = value.TryWriteBytes(span);
+            Debug.Assert(success, "Failed to write Guid.");
+#elif NETSTANDARD2_0 || NETFRAMEWORK
+            Debug.Assert(BitConverter.IsLittleEndian);
+            Unsafe.WriteUnaligned<Guid>(ptr, value);
+#else
+#error Update target frameworks
+#endif
         }
 
         private static void WriteBigEndianInteger(byte* ptr, uint value)
@@ -402,7 +370,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 // The caller will not mutate it.
                 fixed (byte* pExistingTemplate = existingTemplate)
                 {
-                    if (Read32bitAlignedGuid(&pExistingTemplate[sizeof(uint)]) == keyId)
+                    if (ReadGuid(&pExistingTemplate[sizeof(uint)]) == keyId)
                     {
                         return existingTemplate;
                     }
@@ -415,7 +383,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 byte[] newTemplate = (byte[])existingTemplate.Clone();
                 fixed (byte* pNewTemplate = newTemplate)
                 {
-                    Write32bitAlignedGuid(&pNewTemplate[sizeof(uint)], keyId);
+                    WriteGuid(&pNewTemplate[sizeof(uint)], keyId);
                     if (isProtecting)
                     {
                         Volatile.Write(ref _aadTemplate, newTemplate);
