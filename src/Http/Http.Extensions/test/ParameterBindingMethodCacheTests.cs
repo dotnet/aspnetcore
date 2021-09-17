@@ -289,9 +289,9 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         {
             var ex = Assert.Throws<InvalidOperationException>(
                 () => new ParameterBindingMethodCache().FindTryParseMethod(type));
-            Assert.StartsWith($"TryParse method found on {TypeNameHelper.GetTypeDisplayName(type)} with incorrect format. Must be a static method with format", ex.Message);
-            Assert.Contains($"bool TryParse(string, IFormatProvider, out {TypeNameHelper.GetTypeDisplayName(type)})", ex.Message);
-            Assert.Contains($"bool TryParse(string, out {TypeNameHelper.GetTypeDisplayName(type)})", ex.Message);
+            Assert.StartsWith($"TryParse method found on {TypeNameHelper.GetTypeDisplayName(type, fullName: false)} with incorrect format. Must be a static method with format", ex.Message);
+            Assert.Contains($"bool TryParse(string, IFormatProvider, out {TypeNameHelper.GetTypeDisplayName(type, fullName: false)})", ex.Message);
+            Assert.Contains($"bool TryParse(string, out {TypeNameHelper.GetTypeDisplayName(type, fullName: false)})", ex.Message);
         }
 
         [Theory]
@@ -314,11 +314,11 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
             var parameter = new MockParameterInfo(type, "anything");
             var ex = Assert.Throws<InvalidOperationException>(
                 () => cache.FindBindAsyncMethod(parameter));
-            Assert.StartsWith($"BindAsync method found on {TypeNameHelper.GetTypeDisplayName(type)} with incorrect format. Must be a static method with format", ex.Message);
-            Assert.Contains($"ValueTask<{TypeNameHelper.GetTypeDisplayName(type)}> BindAsync(HttpContext context, ParameterInfo parameter)", ex.Message);
-            Assert.Contains($"ValueTask<{TypeNameHelper.GetTypeDisplayName(type)}> BindAsync(HttpContext context)", ex.Message);
-            Assert.Contains($"ValueTask<{TypeNameHelper.GetTypeDisplayName(type)}?> BindAsync(HttpContext context, ParameterInfo parameter)", ex.Message);
-            Assert.Contains($"ValueTask<{TypeNameHelper.GetTypeDisplayName(type)}?> BindAsync(HttpContext context)", ex.Message);
+            Assert.StartsWith($"BindAsync method found on {TypeNameHelper.GetTypeDisplayName(type, fullName: false)} with incorrect format. Must be a static method with format", ex.Message);
+            Assert.Contains($"ValueTask<{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}> BindAsync(HttpContext context, ParameterInfo parameter)", ex.Message);
+            Assert.Contains($"ValueTask<{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}> BindAsync(HttpContext context)", ex.Message);
+            Assert.Contains($"ValueTask<{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}?> BindAsync(HttpContext context, ParameterInfo parameter)", ex.Message);
+            Assert.Contains($"ValueTask<{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}?> BindAsync(HttpContext context)", ex.Message);
         }
 
         [Theory]
