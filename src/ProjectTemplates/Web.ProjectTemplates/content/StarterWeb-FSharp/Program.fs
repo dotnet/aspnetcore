@@ -1,5 +1,7 @@
 namespace Company.WebApplication1
+
 #nowarn "20"
+
 open System
 open System.Collections.Generic
 open System.IO
@@ -8,8 +10,8 @@ open System.Threading.Tasks
 open Microsoft.AspNetCore
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
-#if (!NoHttps)
-open Microsoft.AspNetCore.HttpsPolicy;
+#if !NoHttps
+open Microsoft.AspNetCore.HttpsPolicy
 #endif
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
@@ -23,15 +25,18 @@ module Program =
     let main args =
         let builder = WebApplication.CreateBuilder(args)
 
-        builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation()
+        builder
+            .Services
+            .AddControllersWithViews()
+            .AddRazorRuntimeCompilation()
+
         builder.Services.AddRazorPages()
 
         let app = builder.Build()
 
-        if not(builder.Environment.IsDevelopment()) then
+        if not (builder.Environment.IsDevelopment()) then
             app.UseExceptionHandler("/Home/Error")
-
-#if (!NoHttps)
+#if !NoHttps
             app.UseHsts() |> ignore // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
 
         app.UseHttpsRedirection()
@@ -41,11 +46,9 @@ module Program =
         app.UseRouting()
         app.UseAuthorization()
 
-        app.MapControllerRoute(
-                name = "default",
-                pattern = "{controller=Home}/{action=Index}/{id?}")
+        app.MapControllerRoute(name = "default", pattern = "{controller=Home}/{action=Index}/{id?}")
 
-        app.MapRazorPages();
+        app.MapRazorPages()
 
         app.Run()
 

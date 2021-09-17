@@ -8,8 +8,8 @@ open System.Threading.Tasks
 open Microsoft.AspNetCore
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
-#if (!NoHttps)
-open Microsoft.AspNetCore.HttpsPolicy;
+#if !NoHttps
+open Microsoft.AspNetCore.HttpsPolicy
 #endif
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.Hosting
@@ -27,7 +27,7 @@ module Program =
 
         let app = builder.Build()
 
-#if (!NoHttps)
+#if !NoHttps
         app.UseHttpsRedirection()
 #endif
 
