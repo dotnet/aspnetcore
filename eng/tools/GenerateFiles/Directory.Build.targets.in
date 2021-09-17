@@ -27,6 +27,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!--
+      Reference base shared framework at incoming dependency flow version, not bundled sdk version.
+      Apply this to all projects that target the default tfm (e.g. net7.0) or a rid-based variant of it (e.g. net7.0-windows)
+    -->
+    <FrameworkReference
+      Update="Microsoft.NETCore.App"
+      Condition=" (('$(ProjectTargetFrameworkIdentifier)' == '${DefaultNetCoreTargetFramework}') AND '${DefaultNetCoreTargetFramework}' == '$(ProjectTargetFrameworkVersion)') AND '$(TargetLatestDotNetRuntime)' != 'false' "
+      RuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimeVersion}"
+      TargetingPackVersion="${MicrosoftNETCoreAppRefVersion}" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Use the same NETCore shared framework as repo built against except when building product code in servicing. -->
     <KnownFrameworkReference
         Update="@(KnownFrameworkReference->WithMetadataValue('Identity', 'Microsoft.NETCore.App')->WithMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}'))"
