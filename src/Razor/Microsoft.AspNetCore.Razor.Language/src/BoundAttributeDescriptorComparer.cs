@@ -60,6 +60,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             hash.Add(descriptor.Kind, StringComparer.Ordinal);
             hash.Add(descriptor.Name, StringComparer.Ordinal);
             hash.Add(descriptor.IsEditorRequired);
+            hash.Add(descriptor.TypeName, StringComparer.Ordinal);
+            hash.Add(descriptor.Documentation, StringComparer.Ordinal);
 
             if (descriptor.BoundAttributeParameters != null)
             {
