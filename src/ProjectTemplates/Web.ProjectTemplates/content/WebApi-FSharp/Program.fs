@@ -12,6 +12,7 @@ open Microsoft.AspNetCore.Hosting
 open Microsoft.AspNetCore.HttpsPolicy
 #endif
 open Microsoft.Extensions.Configuration
+open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.Logging
 
