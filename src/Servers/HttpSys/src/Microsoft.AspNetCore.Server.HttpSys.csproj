@@ -28,4 +28,9 @@
     <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.HttpSys.FunctionalTests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.HttpSys.NonHelixTests" />
+  </ItemGroup>
+
 </Project>
