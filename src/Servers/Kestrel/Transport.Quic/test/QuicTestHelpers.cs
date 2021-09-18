@@ -25,7 +25,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 {
     internal static class QuicTestHelpers
     {
-        public const string Alpn = "h3";
         private static readonly byte[] TestData = Encoding.UTF8.GetBytes("Hello world");
 
         public static QuicTransportFactory CreateTransportFactory(ILoggerFactory loggerFactory = null, ISystemClock systemClock = null)
@@ -58,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             var cert = TestResources.GetTestCertificate();
 
             var sslServerAuthenticationOptions = new SslServerAuthenticationOptions();
-            sslServerAuthenticationOptions.ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol(Alpn) };
+            sslServerAuthenticationOptions.ApplicationProtocols = new List<SslApplicationProtocol>() { SslApplicationProtocol.Http3 };
             sslServerAuthenticationOptions.ServerCertificate = cert;
             sslServerAuthenticationOptions.RemoteCertificateValidationCallback = RemoteCertificateValidationCallback;
             sslServerAuthenticationOptions.ClientCertificateRequired = clientCertificateRequired;
@@ -99,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
                 {
                     ApplicationProtocols = new List<SslApplicationProtocol>
                     {
-                        new SslApplicationProtocol(Alpn)
+                        SslApplicationProtocol.Http3
                     },
                     RemoteCertificateValidationCallback = RemoteCertificateValidationCallback
                 }
