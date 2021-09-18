@@ -519,7 +519,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             var sslServerAuthenticationOptions = new SslServerAuthenticationOptions
             {
                 ServerCertificate = httpsOptions.ServerCertificate,
-                ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol("h3"), new SslApplicationProtocol("h3-29") },
+                ApplicationProtocols = new List<SslApplicationProtocol>() { SslApplicationProtocol.Http3, new SslApplicationProtocol("h3-29") },
                 CertificateRevocationCheckMode = httpsOptions.CheckCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
             };
 
