@@ -84,10 +84,10 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         internal enum HTTP_FEATURE_ID
         {
-            HttpFeatureUnknown = 0,
-            HttpFeatureResponseTrailers = 1,
-            HttpFeatureApiTimings = 2,
-            HttpFeatureDelegateEx = 3,
+            HttpFeatureUnknown,
+            HttpFeatureResponseTrailers,
+            HttpFeatureApiTimings,
+            HttpFeatureDelegateEx,
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
@@ -655,6 +655,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             HTTP_SEND_REQUEST_FLAG_MORE_DATA = 0x00000001,
             HTTP_PROPERTY_FLAG_PRESENT = 0x00000001,
             HTTP_INITIALIZE_SERVER = 0x00000001,
+            HTTP_INITIALIZE_CONFIG = 0x00000002,
             HTTP_INITIALIZE_CBT = 0x00000004,
             HTTP_SEND_RESPONSE_FLAG_OPAQUE = 0x00000040,
             HTTP_SEND_RESPONSE_FLAG_GOAWAY = 0x00000100,
