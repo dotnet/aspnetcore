@@ -273,6 +273,49 @@ namespace Microsoft.AspNetCore.Components
             Assert.False(successfullyConverted);
         }
 
+        [Fact]
+        public void TryConvertTo_NullableGuid_Valid()
+        {
+            // Arrange
+            var expected = Guid.NewGuid();
+            var value = expected.ToString();
+
+            // Act
+            var successfullyConverted = BindConverter.TryConvertTo<Guid?>(value, System.Globalization.CultureInfo.CurrentCulture, out var actual);
+
+            // Assert
+            Assert.True(successfullyConverted);
+            Assert.Equal(expected, actual.Value);
+        }
+
+        [Fact]
+        public void TryConvertTo_NullableGuid_ValidNull()
+        {
+            // Arrange
+            var expected = (Guid?) null;
+            var value = (Guid?) null;
+
+            // Act
+            var successfullyConverted = BindConverter.TryConvertTo<Guid?>(value, System.Globalization.CultureInfo.CurrentCulture, out var actual);
+
+            // Assert
+            Assert.True(successfullyConverted);
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void TryConvertTo_NullableGuid__Invalid()
+        {
+            // Arrange
+            var value = "invalidguid";
+
+            // Act
+            var successfullyConverted = BindConverter.TryConvertTo<Guid?>(value, System.Globalization.CultureInfo.CurrentCulture, out var actual);
+
+            // Assert
+            Assert.False(successfullyConverted);
+        }
+
         private enum SomeLetters
         {
             A,
