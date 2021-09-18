@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <ContainsFunctionalTestAssets>true</ContainsFunctionalTestAssets>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -10,13 +9,30 @@
     <Compile Include="..\..\..\Shared\Process\ProcessEx.cs" Link="Helpers\ProcessEx.cs" />
     <Compile Include="..\..\..\Shared\Process\ProcessExtensions.cs" Link="Helpers\ProcessExtensions.cs" />
 
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(IsHelixJob)' != 'true'">
-      <_Parameter1>ServerLogPath</_Parameter1>
-      <_Parameter2>$(ArtifactsLogDir)InteropServer.log</_Parameter2>
-    </AssemblyAttribute>
-
-    <FunctionalTestAssetProjectReference Include="..\testassets\InteropClient\InteropClient.csproj" />
-    <FunctionalTestAssetProjectReference Include="..\testassets\InteropWebsite\InteropWebsite.csproj" />
+    <!-- Enforce build order. Need shared Fx before PublishTestAssets runs. -->
+    <ProjectReference Include="$(RepoRoot)\src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
+      Condition=" $(IsTargetingPackBuilding) "
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="$(RepoRoot)\src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
+      Condition=" !$(IsTargetingPackBuilding) "
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
+  <!-- Shared framework definitely exists when this target runs. Test asset builds require shared Fx. -->
+  <Target Name="PublishTestAssets" BeforeTargets="Publish;RunTests;Test">
+    <ItemGroup>
+      <_ProjectsToPublish Include="..\testassets\**\*.csproj"
+          AdditionalProperties="PublishDir=$(PublishDir)%(Filename)" />
+    </ItemGroup>
+
+    <!-- Separate invocations to ensure Publish sees restored setup. -->
+    <MSBuild Projects="@(_ProjectsToPublish)"
+        Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid())"
+        Targets="Restore" />
+    <MSBuild Projects="@(_ProjectsToPublish)" Targets="Publish" />
+  </Target>
 </Project>
