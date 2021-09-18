@@ -6,4 +6,6 @@ set -e
 # the repo directory on the container so we do this post-create
 git submodule update --init --recursive
 # Install SDK and tool dependencies before container starts
-./eng/build.sh --only-build-repo-tasks
+# Also run the full restore on the repo so that go-to definition
+# and other language features will be available in C# files
+./restore.sh

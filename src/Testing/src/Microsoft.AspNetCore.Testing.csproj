@@ -28,7 +28,6 @@
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Microsoft.Extensions.Logging" />
-    <Reference Include="Microsoft.Win32.Registry" />
     <Reference Include="Serilog.Extensions.Logging" />
     <Reference Include="Serilog.Sinks.File" />
     <Reference Include="System.ValueTuple" />
@@ -43,6 +42,12 @@
     -->
     <Reference Include="xunit.assert" />
     <Reference Include="xunit.extensibility.execution" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' OR
+      '$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR
+      '$(MSBuildRestoreSessionId)' == '' ">
+    <Reference Include="Microsoft.Win32.Registry" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR '$(MSBuildRestoreSessionId)' == ''">
