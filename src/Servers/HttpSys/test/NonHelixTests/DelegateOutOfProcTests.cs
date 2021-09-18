@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
+namespace Microsoft.AspNetCore.Server.HttpSys.NonHelixTests
 {
     public class DelegateOutOfProcTests : LoggedTest
     {

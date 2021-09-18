@@ -43,11 +43,6 @@
     <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\UpdateIISExpressCertificate.ps1" />
     <HelixPreCommand Include="call RunPowershell.cmd UpdateIISExpressCertificate.ps1 || exit /b 1" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="testroot\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
-    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
-  </ItemGroup>
   
   <ItemGroup>
     <EmbeddedResource Include="$(SharedSourceRoot)ServerInfrastructure\SharedStrings.resx" Link="Shared\SharedStrings.resx">
