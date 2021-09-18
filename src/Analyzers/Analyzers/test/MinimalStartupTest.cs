@@ -53,6 +53,9 @@ app.Run();");
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
+namespace MyApp;
+
 public class Program
 {
     public static void Main(string[] args)
