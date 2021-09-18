@@ -1213,8 +1213,8 @@ namespace Microsoft.AspNetCore.Components
             return false;
         }
 
-        internal readonly static BindParser<Guid> ConvertToGuid = ConvertToGuidCore;
-        internal readonly static BindParser<Guid?> ConvertToNullableGuid = ConvertToNullableGuidCore;
+        internal static readonly BindParser<Guid> ConvertToGuid = ConvertToGuidCore;
+        internal static readonly BindParser<Guid?> ConvertToNullableGuid = ConvertToNullableGuidCore;
 
         private static bool ConvertToGuidCore(object? obj, CultureInfo? culture, out Guid value)
         {
@@ -1241,7 +1241,7 @@ namespace Microsoft.AspNetCore.Components
             if (string.IsNullOrEmpty(text))
             {
                 value = default;
-                return false;
+                return true;
             }
 
             if (!Guid.TryParse(text, out var converted))
