@@ -63,20 +63,23 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <ItemGroup>
     <!-- Note: do not add _TransitiveExternalAspNetCoreAppReference to this list. This is intentionally not listed as a direct package reference. -->
     <Reference Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage);@(ExternalAspNetCoreAppReference)" />
+
     <ProjectReference Include="..\..\AspNetCoreAnalyzers\src\Analyzers\Microsoft.AspNetCore.App.Analyzers.csproj"
+      Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true"
       UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir" />
     <ProjectReference Include="..\..\AspNetCoreAnalyzers\src\CodeFixes\Microsoft.AspNetCore.App.CodeFixes.csproj"
+      Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true"
       UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir" />
 
-    <!-- Enforce build order. Targeting pack needs to bundle information about the runtime. -->
-    <ProjectReference Include="..\..\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-    </ProjectReference>
+    <!-- Enforce build order. Targeting pack needs to bundle analyzers and information about the runtime. -->
+    <ProjectReference Include="..\..\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

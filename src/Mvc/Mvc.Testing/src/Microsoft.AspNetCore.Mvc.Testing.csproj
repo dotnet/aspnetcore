@@ -19,11 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference
-        Include="Microsoft.AspNetCore.Mvc.Testing.Tasks"
-        ReferenceOutputAssembly="false"
-        SkipGetTargetFrameworkProperties="true"
-        UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Testing.Tasks"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir" />
   </ItemGroup>
 
   <ItemGroup>

@@ -18,7 +18,12 @@
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.JSInterop.WebAssembly" />
 
-    <ProjectReference Include="..\..\..\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj" ReferenceOutputAssemblies="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework" Private="false" Condition="'$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'" />
+    <ProjectReference Include="..\..\..\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"
+      Condition="'$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework" />
   </ItemGroup>
 
   <ItemGroup>

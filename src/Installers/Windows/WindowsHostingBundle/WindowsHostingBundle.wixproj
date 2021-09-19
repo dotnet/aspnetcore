@@ -54,10 +54,10 @@
       <Private>True</Private>
       <DoNotHarvest>true</DoNotHarvest>
     </ProjectReference>
-    <ProjectReference Include="..\SharedFrameworkBundle\SharedFrameworkBundle.wixproj">
-      <Private>True</Private>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
+    <ProjectReference Include="..\SharedFrameworkBundle\SharedFrameworkBundle.wixproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
   <Import Project="Product.targets" />

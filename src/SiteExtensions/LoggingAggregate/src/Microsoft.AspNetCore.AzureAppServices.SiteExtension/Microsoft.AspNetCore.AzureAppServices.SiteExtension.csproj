@@ -57,7 +57,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Web.Xdt.Extensions" PrivateAssets="All" />
+    <Reference Include="Microsoft.Web.Xdt.Extensions" Private="false" />
   </ItemGroup>
 
   <!--
