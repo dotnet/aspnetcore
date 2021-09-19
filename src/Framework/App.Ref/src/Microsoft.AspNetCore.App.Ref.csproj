@@ -67,13 +67,11 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <ProjectReference Include="..\..\AspNetCoreAnalyzers\src\Analyzers\Microsoft.AspNetCore.App.Analyzers.csproj"
       Private="false"
       ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true"
-      UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir" />
+      SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="..\..\AspNetCoreAnalyzers\src\CodeFixes\Microsoft.AspNetCore.App.CodeFixes.csproj"
       Private="false"
       ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true"
-      UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir" />
+      SkipGetTargetFrameworkProperties="true" />
 
     <!-- Enforce build order. Targeting pack needs to bundle analyzers and information about the runtime. -->
     <ProjectReference Include="..\..\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"

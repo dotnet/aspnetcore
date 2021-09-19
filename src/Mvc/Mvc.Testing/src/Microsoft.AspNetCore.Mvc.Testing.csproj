@@ -22,8 +22,7 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing.Tasks"
       Private="false"
       ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true"
-      UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir" />
+      SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
   <ItemGroup>

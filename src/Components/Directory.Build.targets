@@ -19,8 +19,7 @@
       Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' and '$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'"
       Private="false"
       ReferenceOutputAssemblies="false"
-      SkipGetTargetFrameworkProperties="true"
-      UndefineProperties="TargetFramework" />
+      SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
   <!-- blazor.webassembly.js should exist after Microsoft.AspNetCore.Components.Web.JS.npmproj builds. -->

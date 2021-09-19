@@ -23,8 +23,7 @@
       Targets="Publish"
       Private="false"
       ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true"
-      UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir" />
+      SkipGetTargetFrameworkProperties="true" />
     <Reference Include="GetDocument.Insider"
       Private="false"
       ReferenceOutputAssembly="false"
