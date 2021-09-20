@@ -6,9 +6,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
-namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints;
+namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
 
-public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
+public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 {
     private static void DisallowReturningActionResultFromMapMethods(
         in OperationAnalysisContext context,
@@ -40,7 +40,7 @@ public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
         {
             // if we don't have a method body, and the action is IResult or ActionResult<T> returning, produce diagnostics for the entire method.
             context.ReportDiagnostic(Diagnostic.Create(
-                DiagnosticDescriptors.DoNotReturnActionResultsFromMapActions,
+                DiagnosticDescriptors.DoNotReturnActionResultsFromRouteHandlers,
                 invocationOperation.Arguments[2].Syntax.GetLocation(),
                 invocationOperation.TargetMethod.Name));
             return;
@@ -74,7 +74,7 @@ public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
             if (wellKnownTypes.IActionResult.IsAssignableFrom(type))
             {
                 context.ReportDiagnostic(Diagnostic.Create(
-                    DiagnosticDescriptors.DoNotReturnActionResultsFromMapActions,
+                    DiagnosticDescriptors.DoNotReturnActionResultsFromRouteHandlers,
                     returnOperation.Syntax.GetLocation(),
                     invocationOperation.TargetMethod.Name));
             }

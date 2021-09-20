@@ -6,9 +6,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
-namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints;
+namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
 
-public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
+public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 {
     private static void DisallowMvcBindArgumentsOnParameters(
         in OperationAnalysisContext context,
@@ -33,7 +33,7 @@ public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
                 var methodName = invocation.TargetMethod.Name;
 
                 context.ReportDiagnostic(Diagnostic.Create(
-                    DiagnosticDescriptors.DoNotUseModelBindingAttributesOnDelegateEndpointParameters,
+                    DiagnosticDescriptors.DoNotUseModelBindingAttributesOnRouteHandlerParameters,
                     location,
                     modelBindingAttribute.AttributeClass.Name,
                     methodName));
