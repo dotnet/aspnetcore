@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.Analyzer.Testing;
 
-namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints;
+namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
 
 public partial class DisallowReturningActionResultsFromMapMethodsTest
 {
@@ -126,7 +126,7 @@ webApp.MapGet(""/"", () => /*MM*/new OkObjectResult(""cool story""));
 
         // Assert
         var diagnostic = Assert.Single(diagnostics);
-        Assert.Same(DiagnosticDescriptors.DoNotReturnActionResultsFromMapActions, diagnostic.Descriptor);
+        Assert.Same(DiagnosticDescriptors.DoNotReturnActionResultsFromRouteHandlers, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
         Assert.Equal("IActionResult instances should not be returned from a MapGet Delegate parameter. Consider returning an equivalent result from Microsoft.AspNetCore.Http.Results.", diagnostic.GetMessage());
     }
@@ -149,7 +149,7 @@ webApp.MapGet(""/"", (int id) => /*MM*/id == 0 ? (ActionResult)new NotFoundResul
 
         // Assert
         var diagnostic = Assert.Single(diagnostics);
-        Assert.Same(DiagnosticDescriptors.DoNotReturnActionResultsFromMapActions, diagnostic.Descriptor);
+        Assert.Same(DiagnosticDescriptors.DoNotReturnActionResultsFromRouteHandlers, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
         Assert.Equal("IActionResult instances should not be returned from a MapGet Delegate parameter. Consider returning an equivalent result from Microsoft.AspNetCore.Http.Results.", diagnostic.GetMessage());
     }
@@ -177,7 +177,7 @@ static object OkObjectResultReturningMethod()
 
         // Assert
         var diagnostic = Assert.Single(diagnostics);
-        Assert.Same(DiagnosticDescriptors.DoNotReturnActionResultsFromMapActions, diagnostic.Descriptor);
+        Assert.Same(DiagnosticDescriptors.DoNotReturnActionResultsFromRouteHandlers, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
         Assert.Equal("IActionResult instances should not be returned from a MapPost Delegate parameter. Consider returning an equivalent result from Microsoft.AspNetCore.Http.Results.", diagnostic.GetMessage());
     }
@@ -209,7 +209,7 @@ public record Person(string Name);
 
         // Assert
         var diagnostic = Assert.Single(diagnostics);
-        Assert.Same(DiagnosticDescriptors.DoNotReturnActionResultsFromMapActions, diagnostic.Descriptor);
+        Assert.Same(DiagnosticDescriptors.DoNotReturnActionResultsFromRouteHandlers, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
         Assert.Equal("IActionResult instances should not be returned from a MapPost Delegate parameter. Consider returning an equivalent result from Microsoft.AspNetCore.Http.Results.", diagnostic.GetMessage());
     }
@@ -247,7 +247,7 @@ public class MyController
 
         // Assert
         var diagnostic = Assert.Single(diagnostics);
-        Assert.Same(DiagnosticDescriptors.DoNotReturnActionResultsFromMapActions, diagnostic.Descriptor);
+        Assert.Same(DiagnosticDescriptors.DoNotReturnActionResultsFromRouteHandlers, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
         Assert.Equal("IActionResult instances should not be returned from a MapPost Delegate parameter. Consider returning an equivalent result from Microsoft.AspNetCore.Http.Results.", diagnostic.GetMessage());
     }

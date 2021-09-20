@@ -3,11 +3,11 @@
 
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
-using VerifyCS = Microsoft.AspNetCore.Analyzers.DelegateEndpoints.CSharpDelegateEndpointsCodeFixVerifier<
-    Microsoft.AspNetCore.Analyzers.DelegateEndpoints.RouteHandlerAnalyzer,
-    Microsoft.AspNetCore.Analyzers.DelegateEndpoints.Fixers.DetectMismatchedParameterOptionalityFixer>;
+using VerifyCS = Microsoft.AspNetCore.Analyzers.RouteHandlers.CSharpRouteHandlerCodeFixVerifier<
+    Microsoft.AspNetCore.Analyzers.RouteHandlers.RouteHandlerAnalyzer,
+    Microsoft.AspNetCore.Analyzers.RouteHandlers.Fixers.DetectMismatchedParameterOptionalityFixer>;
 
-namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints;
+namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
 
 public partial class DetectMismatchedParameterOptionalityTest
 {

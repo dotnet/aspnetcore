@@ -3,7 +3,7 @@
 
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
+namespace Microsoft.AspNetCore.Analyzers;
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("MicrosoftCodeAnalysisReleaseTracking", "RS2008:Enable analyzer release tracking")]
 internal static class DiagnosticDescriptors
