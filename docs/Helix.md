@@ -45,13 +45,12 @@ The easiest way to look at a test failure is via the tests tab in azdo which now
 You can also drill down into the helix web apis if you take the HelixJobId from the Debug tab of a failing test, and the HelixWorkItemName and go to: `https://helix.dot.net/api/2019-06-17/jobs/<jobId>/workitems/<workitemname>` which will show you more urls you can drill into for more info.
 
 An example of how to get the helix payload to inspect the contents of a test job more completely:
-```text
-Start at work item link: https://helix.dot.net/api/jobs/b1c333d0-1681-4140-9a36-ccc70c40a598/workitems?api-version=2019-06-17
-Remove /workitems to get jobs link: https://helix.dot.net/api/jobs/b1c333d0-1681-4140-9a36-ccc70c40a598?api-version=2019-06-17
-Click on DetailsUrl value: https://helix.dot.net/api/jobs/b1c333d0-1681-4140-9a36-ccc70c40a598/details?api-version=2019-06-17 (yes, 1 and 2 can be done in one go)
-Click on JobsList: https://helixde8s23ayyeko0k025g8.blob.core.windows.net/helix-job-2e4bec2b-d34f-44a7-976b-aab2c3f237f8e2112b024574d8c8c/job-list-068e8195-20ca-47cb-98de-4be39e9ecc22.json?sv=2019-07-07 (truncated)
-However that JSON opens, click on one of the PayloadUrl values e.g. https://helixde8s23ayyeko0k025g8.blob.core.windows.net/helix-job-2e4bec2b-d34f-44a7-976b-aab2c3f237f8e2112b024574d8c8c/26267e9c-6a79-4fb9-81ef-8c6e1f5a68a6.zip?sv=2019-07-07 (truncated)
-```
+
+- Start at work item link: https://helix.dot.net/api/jobs/b1c333d0-1681-4140-9a36-ccc70c40a598/workitems?api-version=2019-06-17
+- Remove `/workitems` to get jobs link: https://helix.dot.net/api/jobs/b1c333d0-1681-4140-9a36-ccc70c40a598?api-version=2019-06-17
+- Click on DetailsUrl value: https://helix.dot.net/api/jobs/b1c333d0-1681-4140-9a36-ccc70c40a598/details?api-version=2019-06-17 (yes, 1 and 2 can be done in one go)
+- Click on JobsList: https://helixde8s23ayyeko0k025g8.blob.core.windows.net/helix-job-2e4bec2b-d34f-44a7-976b-aab2c3f237f8e2112b024574d8c8c/job-list-068e8195-20ca-47cb-98de-4be39e9ecc22.json?sv=2019-07-07 (truncated)
+- However that JSON opens, click on one of the PayloadUrl values e.g. https://helixde8s23ayyeko0k025g8.blob.core.windows.net/helix-job-2e4bec2b-d34f-44a7-976b-aab2c3f237f8e2112b024574d8c8c/26267e9c-6a79-4fb9-81ef-8c6e1f5a68a6.zip?sv=2019-07-07 (truncated)
 
 There's also a link embedded in the build.cmd log of the Tests: Helix x64 job on Azure Pipelines, near the bottom right that will look something like this:
 
