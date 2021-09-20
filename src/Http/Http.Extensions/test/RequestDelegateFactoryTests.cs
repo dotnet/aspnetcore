@@ -2893,15 +2893,50 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             get
             {
-                string dateTimeParsing(DateTime time) => $"Time: {time.ToString("O")}, Kind: {time.Kind}";
-                string dateTimeOffsetParsing(DateTimeOffset time) => $"Time: {time.ToString("O")}";
-                string dateOnlyParsing(DateOnly time) => $"Time: {time.ToString("O")}";
-                string timeOnlyParsing(TimeOnly time) => $"Time: {time.ToString("O")}";
+                string dateTimeParsing(DateTime time) => $"Time: {time.ToString("O", CultureInfo.InvariantCulture)}";
+                string dateTimeOffsetParsing(DateTimeOffset time) => $"Time: {time.ToString("O", CultureInfo.InvariantCulture)}";
 
                 return new List<object?[]>
                 {
-                    new object?[] { (Func<DateTime, string>)dateTimeParsing, "09/20/2021 16:34:09", "Time: 2021-09-20T16:34:09.0000000Z, Kind: Utc" },
-                    new object?[] { (Func<DateTimeOffset, string>)dateTimeOffsetParsing, "09/20/2021 16:34:09 +00:00", "Time: 2021-09-20T16:34:09.0000000+00:00" },
+                    new object?[] { (Func<DateTime, string>)dateTimeParsing, "09/20/2021 16:34:09", "Time: 2021-09-20T16:34:09.0000000Z" },
+                    new object?[] { (Func<DateTimeOffset, string>)dateTimeOffsetParsing, "09/20/2021 16:34:09 +00:00", "Time: 2021-09-20T16:34:09.0000000+00:00" }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(DateTimeDelegates))]
+        public async Task RequestDelegateCanProcessDateTimesToUtc(Delegate @delegate, string inputTime, string expectedResponse)
+        {
+            var httpContext = CreateHttpContext();
+            var responseBodyStream = new MemoryStream();
+            httpContext.Response.Body = responseBodyStream;
+
+            httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["time"] = inputTime
+            });
+
+            var factoryResult = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = factoryResult.RequestDelegate;
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(200, httpContext.Response.StatusCode);
+            Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+            var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+            Assert.Equal(expectedResponse, decodedResponseBody);
+        }
+
+        public static IEnumerable<object?[]> DateOnlyDelegates
+        {
+            get
+            {
+                string dateOnlyParsing(DateOnly time) => $"Time: {time.ToString("O", CultureInfo.InvariantCulture)}";
+                string timeOnlyParsing(TimeOnly time) => $"Time: {time.ToString("O", CultureInfo.InvariantCulture)}";
+
+                return new List<object?[]>
+                {
                     new object?[] { (Func<DateOnly, string>)dateOnlyParsing, "9/20/2021", "Time: 2021-09-20" },
                     new object?[] { (Func<TimeOnly, string>)timeOnlyParsing, "4:34 PM", "Time: 16:34:00.0000000" },
                 };
@@ -2909,8 +2944,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Theory]
-        [MemberData(nameof(DateTimeDelegates))]
-        public async Task RequestDelegateCanProcessDateTimeValues(Delegate @delegate, string inputTime, string expectedResponse)
+        [MemberData(nameof(DateOnlyDelegates))]
+        public async Task RequestDelegateCanProcessDateOnlyValues(Delegate @delegate, string inputTime, string expectedResponse)
         {
             var httpContext = CreateHttpContext();
             var responseBodyStream = new MemoryStream();
