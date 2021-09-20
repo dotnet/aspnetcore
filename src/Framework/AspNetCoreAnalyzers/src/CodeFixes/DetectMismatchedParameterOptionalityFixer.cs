@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Collections.Immutable;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Analyzers.DelegateEndpoints;
+using Microsoft.AspNetCore.Analyzers.RouteHandlers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -13,7 +13,7 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.Editing;
 
-namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints.Fixers;
+namespace Microsoft.AspNetCore.Analyzers.RouteHandlers.Fixers;
 
 public class DetectMismatchedParameterOptionalityFixer : CodeFixProvider
 {

@@ -3,7 +3,7 @@
 
 using System.Collections.Immutable;
 using System.Globalization;
-using Microsoft.AspNetCore.Analyzers.DelegateEndpoints.Fixers;
+using Microsoft.AspNetCore.Analyzers.RouteHandlers.Fixers;
 using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Testing;
@@ -13,10 +13,10 @@ using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Testing.Verifiers;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints;
+namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
 
-public static class CSharpDelegateEndpointsCodeFixVerifier<TAnalyzer, TCodeFix>
-    where TAnalyzer : DelegateEndpointAnalyzer, new()
+public static class CSharpRouteHandlerCodeFixVerifier<TAnalyzer, TCodeFix>
+    where TAnalyzer : RouteHandlerAnalyzer, new()
     where TCodeFix : DetectMismatchedParameterOptionalityFixer, new()
 {
     public static DiagnosticResult Diagnostic(string diagnosticId = null)
@@ -27,7 +27,7 @@ public static class CSharpDelegateEndpointsCodeFixVerifier<TAnalyzer, TCodeFix>
 
     public static Task VerifyAnalyzerAsync(string source, params DiagnosticResult[] expected)
     {
-        var test = new CSharpDelegateEndpointsAnalyzerVerifier<TAnalyzer>.Test { TestCode = source };
+        var test = new CSharpRouteHandlerAnalyzerVerifier<TAnalyzer>.Test { TestCode = source };
         test.ExpectedDiagnostics.AddRange(expected);
         return test.RunAsync();
     }
@@ -43,7 +43,7 @@ public static class CSharpDelegateEndpointsCodeFixVerifier<TAnalyzer, TCodeFix>
 
     public static Task VerifyCodeFixAsync(string sources, DiagnosticResult[] expected, string fixedSources, string usageSource = "")
     {
-        var test = new DelegateEndpointAnalyzerTest
+        var test = new RouteHandlerAnalyzerTest
         {
             TestState =
             {
@@ -63,16 +63,16 @@ public static class CSharpDelegateEndpointsCodeFixVerifier<TAnalyzer, TCodeFix>
         return test.RunAsync();
     }
 
-    public class DelegateEndpointAnalyzerTest : CSharpCodeFixTest<TAnalyzer, TCodeFix, XUnitVerifier>
+    public class RouteHandlerAnalyzerTest : CSharpCodeFixTest<TAnalyzer, TCodeFix, XUnitVerifier>
     {
-        public DelegateEndpointAnalyzerTest()
+        public RouteHandlerAnalyzerTest()
         {
             // We populate the ReferenceAssemblies used in the tests with the locally-built AspNetCore
             // assemblies that are referenced in a minimal app to ensure that there are no reference
             // errors during the build.
             ReferenceAssemblies = ReferenceAssemblies.Net.Net60.AddAssemblies(ImmutableArray.Create(
                 TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Builder.WebApplication).Assembly.Location),
-                TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Builder.DelegateEndpointRouteBuilderExtensions).Assembly.Location),
+                TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions).Assembly.Location),
                 TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Builder.IApplicationBuilder).Assembly.Location),
                 TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Builder.IEndpointConventionBuilder).Assembly.Location),
                 TrimAssemblyExtension(typeof(Microsoft.Extensions.Hosting.IHost).Assembly.Location),
