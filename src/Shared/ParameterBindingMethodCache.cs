@@ -88,11 +88,18 @@ namespace Microsoft.AspNetCore.Http
 
                 if (TryGetDateTimeTryParseMethod(type, out methodInfo))
                 {
+                    // We generate `DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeLocal ` to
+                    // support parsing types into the UTC timezone for DateTime and DateTimeOffset.
+                    // DateOnly and TimeOnly types do not support conversion to Utc so we
+                    // default to `DateTimeStyles.None`.
+                    var supportsParseToUtc = type == typeof(DateTime) || type == typeof(DateTimeOffset);
+                    var dateTimeStyles = supportsParseToUtc ? DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeLocal : DateTimeStyles.None;
+
                     return (expression) => Expression.Call(
                         methodInfo!,
                         TempSourceStringExpr,
                         Expression.Constant(CultureInfo.InvariantCulture),
-                        Expression.Constant(DateTimeStyles.None),
+                        Expression.Constant(dateTimeStyles),
                         expression);
                 }
 
