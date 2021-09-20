@@ -37,10 +37,26 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
     ];
 
     this.modal.style.cssText = modalStyles.join(';');
-    this.modal.innerHTML = '<h5 style="margin-top: 20px"></h5><button style="margin:5px auto 5px">Retry</button><p>Alternatively, <a href>reload</a></p>';
-    this.message = this.modal.querySelector('h5')!;
-    this.button = this.modal.querySelector('button')!;
-    this.reloadParagraph = this.modal.querySelector('p')!;
+
+    this.message = this.document.createElement('h5') as HTMLHeadingElement;
+    this.message.style.cssText = 'margin-top: 20px';
+
+    this.button = this.document.createElement('button') as HTMLButtonElement;
+    this.button.style.cssText = 'margin:5px auto 5px';
+    this.button.textContent = 'Retry';
+
+    const link = this.document.createElement('a');
+    link.addEventListener('click', () => location.reload());
+    link.textContent = 'reload';
+
+    this.reloadParagraph = this.document.createElement('p') as HTMLParagraphElement;
+    this.reloadParagraph.textContent = 'Alternatively, ';
+    this.reloadParagraph.appendChild(link);
+
+    this.modal.appendChild(this.message);
+    this.modal.appendChild(this.button);
+    this.modal.appendChild(this.reloadParagraph);
+
     this.loader = this.getLoader();
 
     this.message.after(this.loader);
@@ -63,7 +79,6 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
         this.failed();
       }
     });
-    this.reloadParagraph.querySelector('a')!.addEventListener('click', () => location.reload());
   }
 
   show(): void {
@@ -98,16 +113,36 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
     this.button.style.display = 'block';
     this.reloadParagraph.style.display = 'none';
     this.loader.style.display = 'none';
-    this.message.innerHTML = 'Reconnection failed. Try <a href>reloading</a> the page if you\'re unable to reconnect.';
-    this.message.querySelector('a')!.addEventListener('click', () => location.reload());
+
+    const errorDescription = this.document.createElement('span');
+    errorDescription.textContent = 'Reconnection failed. Try ';
+  
+    const link = this.document.createElement('a');
+    link.textContent = 'reloading';
+    link.addEventListener('click', () => location.reload());
+  
+    const errorInstructions = this.document.createElement('span');
+    errorInstructions.textContent = ' the page if you\'re unable to reconnect.';
+
+    this.message.replaceChildren(errorDescription, link, errorInstructions);
   }
 
   rejected(): void {
     this.button.style.display = 'none';
     this.reloadParagraph.style.display = 'none';
     this.loader.style.display = 'none';
-    this.message.innerHTML = 'Could not reconnect to the server. <a href>Reload</a> the page to restore functionality.';
-    this.message.querySelector('a')!.addEventListener('click', () => location.reload());
+
+    const errorDescription = this.document.createElement('span');
+    errorDescription.textContent = 'Could not reconnect to the server. ';
+  
+    const link = this.document.createElement('a');
+    link.textContent = 'Reload';
+    link.addEventListener('click', () => location.reload());
+  
+    const errorInstructions = this.document.createElement('span');
+    errorInstructions.textContent = ' the page to restore functionality.';
+
+    this.message.replaceChildren(errorDescription, link, errorInstructions);
   }
 
   private getLoader(): HTMLDivElement {
