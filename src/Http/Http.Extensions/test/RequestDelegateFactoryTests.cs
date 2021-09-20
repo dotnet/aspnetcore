@@ -2893,13 +2893,18 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             get
             {
-                string dateTimeParsing(DateTime time) => $"Time: {time.ToString("O", CultureInfo.InvariantCulture)}";
-                string dateTimeOffsetParsing(DateTimeOffset time) => $"Time: {time.ToString("O", CultureInfo.InvariantCulture)}";
+                string dateTimeParsing(DateTime time) => $"Time: {time.ToString("O", CultureInfo.InvariantCulture)}, Kind: {time.Kind}";
 
                 return new List<object?[]>
                 {
-                    new object?[] { (Func<DateTime, string>)dateTimeParsing, "09/20/2021 16:34:09", "Time: 2021-09-20T16:34:09.0000000Z" },
-                    new object?[] { (Func<DateTimeOffset, string>)dateTimeOffsetParsing, "09/20/2021 16:34:09 +00:00", "Time: 2021-09-20T16:34:09.0000000+00:00" }
+                    new object?[] { (Func<DateTime, string>)dateTimeParsing, "9/20/2021 4:18:44 PM", "Time: 2021-09-20T16:18:44.0000000, Kind: Unspecified" },
+                    new object?[] { (Func<DateTime, string>)dateTimeParsing, "2021-09-20 4:18:44", "Time: 2021-09-20T04:18:44.0000000, Kind: Unspecified" },
+                    new object?[] { (Func<DateTime, string>)dateTimeParsing, "   9/20/2021    4:18:44 PM  ", "Time: 2021-09-20T16:18:44.0000000, Kind: Unspecified" },
+                    new object?[] { (Func<DateTime, string>)dateTimeParsing, "2021-09-20T16:28:02.000-07:00", "Time: 2021-09-20T23:28:02.0000000Z, Kind: Utc" },
+                    new object?[] { (Func<DateTime, string>)dateTimeParsing, "  2021-09-20T 16:28:02.000-07:00  ", "Time: 2021-09-20T23:28:02.0000000Z, Kind: Utc" },
+                    new object?[] { (Func<DateTime, string>)dateTimeParsing, "2021-09-20T23:30:02.000+00:00", "Time: 2021-09-20T23:30:02.0000000Z, Kind: Utc" },
+                    new object?[] { (Func<DateTime, string>)dateTimeParsing, "     2021-09-20T23:30: 02.000+00:00 ", "Time: 2021-09-20T23:30:02.0000000Z, Kind: Utc" },
+                    new object?[] { (Func<DateTime, string>)dateTimeParsing, "2021-09-20 16:48:02-07:00", "Time: 2021-09-20T23:48:02.0000000Z, Kind: Utc" },
                 };
             }
         }
@@ -2938,7 +2943,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 return new List<object?[]>
                 {
                     new object?[] { (Func<DateOnly, string>)dateOnlyParsing, "9/20/2021", "Time: 2021-09-20" },
+                    new object?[] { (Func<DateOnly, string>)dateOnlyParsing, "9 /20 /2021", "Time: 2021-09-20" },
                     new object?[] { (Func<TimeOnly, string>)timeOnlyParsing, "4:34 PM", "Time: 16:34:00.0000000" },
+                    new object?[] { (Func<TimeOnly, string>)timeOnlyParsing, "    4:34 PM   ", "Time: 16:34:00.0000000" },
                 };
             }
         }
