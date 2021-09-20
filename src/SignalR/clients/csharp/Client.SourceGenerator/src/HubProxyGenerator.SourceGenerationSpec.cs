@@ -25,7 +25,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
         public class ClassSpec
         {
             public string FullyQualifiedInterfaceTypeName;
-            public string InterfaceTypeName;
             public string ClassTypeName;
             public List<MethodSpec> Methods = new();
             public Location CallSite;

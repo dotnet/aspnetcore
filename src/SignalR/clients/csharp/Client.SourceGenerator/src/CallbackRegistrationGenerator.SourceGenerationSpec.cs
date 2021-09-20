@@ -10,6 +10,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
     {
         public class SourceGenerationSpec
         {
+            public string? RegisterCallbackProviderNamespace;
+            public string? RegisterCallbackProviderClassName;
+            public string? RegisterCallbackProviderMethodName;
+            public string? RegisterCallbackProviderTypeParameterName;
+            public string? RegisterCallbackProviderConnectionParameterName;
+            public string? RegisterCallbackProviderProviderParameterName;
+            public string? RegisterCallbackProviderMethodAccessibility;
+            public string? RegisterCallbackProviderClassAccessibility;
             public List<TypeSpec> Types = new();
         }
 

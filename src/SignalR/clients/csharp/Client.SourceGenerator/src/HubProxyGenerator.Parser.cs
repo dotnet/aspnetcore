@@ -119,27 +119,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                 }
                 if (!hasPartialModifier)
                 {
-                    // TODO: Emit diagnostic report
                     return false;
                 }
 
                 return true;
             }
 
-            internal static MethodDeclarationSyntax? GetSoleDeclarationSyntax(
-                ImmutableArray<MethodDeclarationSyntax?> syntax)
-            {
-                if (syntax.Length > 1)
-                {
-                    // TODO: Emit diagnostic report
-                }
-                else if (syntax.Length == 1)
-                {
-                    return syntax[0];
-                }
 
-                return null;
-            }
 
             internal static bool IsSyntaxTargetForGeneration(SyntaxNode node) => node is MemberAccessExpressionSyntax
             {
@@ -186,41 +172,31 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                 _compilation = compilation;
             }
 
-            private static string GetAccessibilityString(Accessibility accessibility)
-            {
-                switch (accessibility)
-                {
-                    case Accessibility.Private:
-                        return "private";
-                    case Accessibility.ProtectedAndInternal:
-                        return "protected internal";
-                    case Accessibility.Protected:
-                        return "protected";
-                    case Accessibility.Internal:
-                        return "internal";
-                    case Accessibility.Public:
-                        return "public";
-                    default:
-                        return null;
-                }
-            }
-
-            internal SourceGenerationSpec Parse(MethodDeclarationSyntax? methodDeclarationSyntax, ImmutableArray<MemberAccessExpressionSyntax> syntaxList)
+            internal SourceGenerationSpec Parse(ImmutableArray<MethodDeclarationSyntax> methodDeclarationSyntaxes, ImmutableArray<MemberAccessExpressionSyntax> syntaxList)
             {
                 // Source generation spec will be populated by type specs for each hub type.
                 // Type specs themselves are populated by method specs which are populated by argument specs.
                 // Source generation spec is then used by emitter to actually generate source.
                 var sourceGenerationSpec = new SourceGenerationSpec();
 
-                if (methodDeclarationSyntax is null)
+                // There must be exactly one attributed method
+                if (methodDeclarationSyntaxes.Length != 1)
                 {
+                    // Report diagnostic for each attributed method when there are many
+                    foreach (var extraneous in methodDeclarationSyntaxes)
+                    {
+                        _context.ReportDiagnostic(
+                            Diagnostic.Create(DiagnosticDescriptors.TooManyGetProxyAttributedMethods,
+                            extraneous.GetLocation()));
+                    }
+
                     // nothing to do
                     return sourceGenerationSpec;
                 }
 
-                var compilation = _compilation;
+                var methodDeclarationSyntax = methodDeclarationSyntaxes[0];
 
-                var getProxySemanticModel = compilation.GetSemanticModel(methodDeclarationSyntax.SyntaxTree);
+                var getProxySemanticModel = _compilation.GetSemanticModel(methodDeclarationSyntax.SyntaxTree);
                 var getProxyMethodSymbol = (IMethodSymbol)getProxySemanticModel.GetDeclaredSymbol(methodDeclarationSyntax);
                 var getProxyClassSymbol = (INamedTypeSymbol)getProxyMethodSymbol.ContainingSymbol;
 
@@ -235,9 +211,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                 }
 
                 sourceGenerationSpec.GetProxyMethodAccessibility =
-                    GetAccessibilityString(getProxyMethodSymbol.DeclaredAccessibility);
+                    GeneratorHelpers.GetAccessibilityString(getProxyMethodSymbol.DeclaredAccessibility);
                 sourceGenerationSpec.GetProxyClassAccessibility =
-                    GetAccessibilityString(getProxyClassSymbol.DeclaredAccessibility);
+                    GeneratorHelpers.GetAccessibilityString(getProxyClassSymbol.DeclaredAccessibility);
                 if (sourceGenerationSpec.GetProxyMethodAccessibility is null)
                 {
                     _context.ReportDiagnostic(Diagnostic.Create(
@@ -259,7 +235,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                     var proxyType = ((GenericNameSyntax)memberAccess.Name).TypeArgumentList.Arguments[0];
 
                     // Filter based on argument symbol
-                    var argumentModel = compilation.GetSemanticModel(proxyType.SyntaxTree);
+                    var argumentModel = _compilation.GetSemanticModel(proxyType.SyntaxTree);
                     if (ModelExtensions.GetSymbolInfo(argumentModel, proxyType).Symbol is not ITypeSymbol { IsAbstract: true } symbol)
                     {
                         // T in GetProxy<T> must be an interface
@@ -277,11 +253,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                 // Generate spec for each proxy
                 foreach (var (hubSymbol, memberAccess) in hubSymbols.Values)
                 {
-                    var classSpec = new ClassSpec();
-                    classSpec.InterfaceTypeName = hubSymbol.Name;
-                    classSpec.FullyQualifiedInterfaceTypeName = hubSymbol.ToString();
-                    classSpec.ClassTypeName = $"Generated{hubSymbol.Name}";
-                    classSpec.CallSite = memberAccess.GetLocation();
+                    var classSpec = new ClassSpec
+                    {
+                        FullyQualifiedInterfaceTypeName = hubSymbol.ToString(),
+                        ClassTypeName = $"Generated{hubSymbol.Name}",
+                        CallSite = memberAccess.GetLocation()
+                    };
 
                     var members = hubSymbol.GetMembers()
                         .Where(member => member.Kind == SymbolKind.Method)

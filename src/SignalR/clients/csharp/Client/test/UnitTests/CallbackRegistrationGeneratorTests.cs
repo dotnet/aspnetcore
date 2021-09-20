@@ -9,6 +9,12 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
+    internal static partial class RegisterCallbackProviderExtensions
+    {
+        [RegisterCallbackProvider]
+        public static partial IDisposable RegisterCallbackProvider<T>(this HubConnection conn, T provider);
+    }
+
     public class CallbackRegistrationGeneratorTests
     {
         public interface IMyClient

@@ -18,8 +18,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                 .CreateSyntaxProvider(static (s, _) => Parser.IsSyntaxTargetForAttribute(s),
                     static (ctx, _) => Parser.GetSemanticTargetForAttribute(ctx))
                 .Where(static m => m is not null)
-                .Collect()
-                .Select(static (s, _) => Parser.GetSoleDeclarationSyntax(s));
+                .Collect();
 
             var memberAccessExpressions = context.SyntaxProvider
                 .CreateSyntaxProvider(static (s, _) => Parser.IsSyntaxTargetForGeneration(s),
@@ -35,10 +34,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                 Execute(source.Left.Left, source.Left.Right, source.Right, spc));
         }
 
-        private static void Execute(Compilation compilation, MethodDeclarationSyntax methodDeclarationSyntax, ImmutableArray<MemberAccessExpressionSyntax> memberAccessExpressionSyntaxes, SourceProductionContext context)
+        private static void Execute(Compilation compilation, ImmutableArray<MethodDeclarationSyntax> methodDeclarationSyntaxes, ImmutableArray<MemberAccessExpressionSyntax> memberAccessExpressionSyntaxes, SourceProductionContext context)
         {
             var parser = new Parser(context, compilation);
-            var spec = parser.Parse(methodDeclarationSyntax, memberAccessExpressionSyntaxes);
+            var spec = parser.Parse(methodDeclarationSyntaxes, memberAccessExpressionSyntaxes);
             var emitter = new Emitter(context, spec);
             emitter.Emit();
         }

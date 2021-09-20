@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
         // SSG0100-0199: CallbackRegistrationGenerator
 
         public static DiagnosticDescriptor HubProxyNonInterfaceGenericTypeArgument { get; } = new DiagnosticDescriptor(
-            id: "SSG0001",
+            id: "SSG0000",
             title: "Non-interface generic type argument",
             messageFormat: "Only interfaces are accepted. '{0}' is not an interface.",
             category: "SignalR.Client.SourceGenerator",
@@ -20,11 +20,19 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
             isEnabledByDefault: true);
 
         public static DiagnosticDescriptor HubProxyUnsupportedReturnType { get; } = new DiagnosticDescriptor(
-            id: "SSG0002",
+            id: "SSG0001",
             title: "Unsupported return type",
             messageFormat: "'{0}' has a return type of '{1}' but only Task, ValueTask, Task<T> and ValueTask<T> are supported for source generation.",
             category: "SignalR.Client.SourceGenerator",
             defaultSeverity: DiagnosticSeverity.Warning,
+            isEnabledByDefault: true);
+
+        public static DiagnosticDescriptor TooManyGetProxyAttributedMethods { get; } = new DiagnosticDescriptor(
+            id: "SSG0002",
+            title: "Too many GetProxy attributed methods",
+            messageFormat: "There can only be one GetProxy attributed method.",
+            category: "SignalR.Client.SourceGenerator",
+            defaultSeverity: DiagnosticSeverity.Error,
             isEnabledByDefault: true);
 
         public static DiagnosticDescriptor HubProxyGetProxyAttributedMethodBadAccessibility { get; } = new DiagnosticDescriptor(
@@ -89,6 +97,78 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
             messageFormat: "'{0}' has a return type of '{1}' but only void and Task are supported for callback methods.",
             category: "SignalR.Client.SourceGenerator",
             defaultSeverity: DiagnosticSeverity.Warning,
+            isEnabledByDefault: true);
+
+        public static DiagnosticDescriptor TooManyRegisterCallbackProviderAttributedMethods { get; } = new DiagnosticDescriptor(
+            id: "SSG0102",
+            title: "Too many RegisterCallbackProvider attributed methods",
+            messageFormat: "There can only be one RegisterCallbackProvider attributed method.",
+            category: "SignalR.Client.SourceGenerator",
+            defaultSeverity: DiagnosticSeverity.Error,
+            isEnabledByDefault: true);
+
+        public static DiagnosticDescriptor RegisterCallbackProviderAttributedMethodBadAccessibility { get; } = new DiagnosticDescriptor(
+            id: "SSG0103",
+            title: "RegisterCallbackProvider attributed method has bad accessibility",
+            messageFormat: "RegisterCallbackProvider attributed method may only have an accessibility of public, internal, protected, protected internal or private.",
+            category: "SignalR.Client.SourceGenerator",
+            defaultSeverity: DiagnosticSeverity.Error,
+            isEnabledByDefault: true);
+
+        public static DiagnosticDescriptor RegisterCallbackProviderAttributedMethodIsNotPartial { get; } = new DiagnosticDescriptor(
+            id: "SSG0104",
+            title: "RegisterCallbackProvider attributed method has is not partial",
+            messageFormat: "RegisterCallbackProvider attributed method must be partial.",
+            category: "SignalR.Client.SourceGenerator",
+            defaultSeverity: DiagnosticSeverity.Error,
+            isEnabledByDefault: true);
+
+        public static DiagnosticDescriptor RegisterCallbackProviderAttributedMethodIsNotExtension { get; } = new DiagnosticDescriptor(
+            id: "SSG0105",
+            title: "RegisterCallbackProvider attributed method is not extension method",
+            messageFormat: "RegisterCallbackProvider attributed method must be an extension method for HubConnection.",
+            category: "SignalR.Client.SourceGenerator",
+            defaultSeverity: DiagnosticSeverity.Error,
+            isEnabledByDefault: true);
+
+        public static DiagnosticDescriptor RegisterCallbackProviderAttributedMethodTypeArgCountIsBad { get; } = new DiagnosticDescriptor(
+            id: "SSG0106",
+            title: "RegisterCallbackProvider attributed method has bad number of type arguments",
+            messageFormat: "RegisterCallbackProvider attributed method must have exactly one type argument.",
+            category: "SignalR.Client.SourceGenerator",
+            defaultSeverity: DiagnosticSeverity.Error,
+            isEnabledByDefault: true);
+
+        public static DiagnosticDescriptor RegisterCallbackProviderAttributedMethodTypeArgAndProviderTypeDoesNotMatch { get; } = new DiagnosticDescriptor(
+            id: "SSG0107",
+            title: "RegisterCallbackProvider attributed method type argument and return type does not match",
+            messageFormat: "RegisterCallbackProvider attributed method must have the same type argument and return type",
+            category: "SignalR.Client.SourceGenerator",
+            defaultSeverity: DiagnosticSeverity.Error,
+            isEnabledByDefault: true);
+
+        public static DiagnosticDescriptor RegisterCallbackProviderAttributedMethodArgCountIsBad { get; } = new DiagnosticDescriptor(
+            id: "SSG0108",
+            title: "RegisterCallbackProvider attributed method has bad number of arguments",
+            messageFormat: "RegisterCallbackProvider attributed method must have exactly two arguments.",
+            category: "SignalR.Client.SourceGenerator",
+            defaultSeverity: DiagnosticSeverity.Error,
+            isEnabledByDefault: true);
+
+        public static DiagnosticDescriptor RegisterCallbackProviderAttributedMethodArgIsNotHubConnection { get; } = new DiagnosticDescriptor(
+            id: "SSG0109",
+            title: "RegisterCallbackProvider attributed method has first argument of wrong type",
+            messageFormat: "RegisterCallbackProvider attributed method must have its first argument type be HubConnection.",
+            category: "SignalR.Client.SourceGenerator",
+            defaultSeverity: DiagnosticSeverity.Error,
+            isEnabledByDefault: true);
+
+        public static DiagnosticDescriptor RegisterCallbackProviderAttributedMethodHasBadReturnType { get; } = new DiagnosticDescriptor(
+            id: "SSG0110",
+            title: "RegisterCallbackProvider attributed method has wrong return type",
+            messageFormat: "RegisterCallbackProvider attributed method must have a return type of IDisposable.",
+            category: "SignalR.Client.SourceGenerator",
+            defaultSeverity: DiagnosticSeverity.Error,
             isEnabledByDefault: true);
     }
 }

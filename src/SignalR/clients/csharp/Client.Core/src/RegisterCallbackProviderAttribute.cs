@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.AspNetCore.SignalR.Client
 {
     /// <summary>
-    /// RegisterCallbackProvider
+    /// Marks a method for use by SignalR source generator for registering callback providers
     /// </summary>
     [System.AttributeUsage(AttributeTargets.Method)]
     public class RegisterCallbackProviderAttribute : System.Attribute

@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.AspNetCore.SignalR.Client
 {
     /// <summary>
-    /// GetProxy
+    /// Marks a method for use by SignalR source generator for serving strongly-typed hub proxies
     /// </summary>
     [System.AttributeUsage(AttributeTargets.Method)]
     public class GetProxyAttribute : System.Attribute

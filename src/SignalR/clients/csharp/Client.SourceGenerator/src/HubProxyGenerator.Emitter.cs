@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                     return;
                 }
 
-                   // Generate extensions and other user facing mostly-static code in a single source file
+                // Generate extensions and other user facing mostly-static code in a single source file
                 EmitExtensions();
                 // Generate hub proxy code in its own source file for each hub proxy type
                 foreach (var classSpec in _spec.Classes)
