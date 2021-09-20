@@ -56,6 +56,6 @@ Write-Host -ForegroundColor Yellow "And if packing for a different platform, add
 
 $HelixQueues = $HelixQueues -replace ";", "%3B"
 dotnet msbuild $Project /t:Helix /p:TargetArchitecture="$TargetArchitecture" `
-    /p:HelixTargetQueues=$HelixQueues /p:RunQuarantinedTests=$RunQuarantinedTests `
+    /p:HelixTargetQueues=$HelixQueues /p:RunQuarantinedTests=$RunQuarantinedTests /p:IsHelixJob=true `
     /p:_UseHelixOpenQueues=true /p:CrossgenOutput=false /p:ASPNETCORE_TEST_LOG_DIR=artifacts/log `
     /p:DoNotRequireSharedFxHelix=true @MSBuildArguments

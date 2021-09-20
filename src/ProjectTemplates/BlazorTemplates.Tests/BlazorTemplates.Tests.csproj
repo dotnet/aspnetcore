@@ -11,7 +11,7 @@
 
     <!-- https://github.com/dotnet/aspnetcore/issues/38818 -->
     <BuildHelixPayload>false</BuildHelixPayload>
-    
+
     <!-- Properties that affect test runs -->
     <!-- TestTemplateCreationFolder is the folder where the templates will be created. Will point out to $(OutputDir)$(TestTemplateCreationFolder) -->
     <TestTemplateCreationFolder>TestTemplates\</TestTemplateCreationFolder>
@@ -49,10 +49,6 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="PlaywrightSharp" Condition="'$(IsPlaywrightAvailable)' == 'true'" />
     <Reference Include="PlaywrightSharp" ExcludeAssets="build" Condition="'$(IsPlaywrightAvailable)' != 'true'" />
-    <ProjectReference Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
-      Private="false"
-      ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true" />
 
     <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Shared\BrowserTesting\src\Microsoft.AspNetCore.BrowserTesting.csproj" />
@@ -61,6 +57,20 @@
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="../Web.ProjectTemplates/Microsoft.DotNet.Web.ProjectTemplates.csproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
+  </ItemGroup>
+
+  <!-- When testing locally, helix.proj doesn't build the shared Fx for us. -->
+  <ItemGroup Condition=" '$(IsHelixJob)' != 'true' ">
+    <ProjectReference Include="$(RepoRoot)\src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
+      Condition=" $(IsTargetingPackBuilding) "
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="$(RepoRoot)\src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
+      Condition=" !$(IsTargetingPackBuilding) "
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
@@ -75,6 +85,4 @@
     </ItemGroup>
     <Copy SourceFiles="@(_PublishFiles)" DestinationFolder="$(PublishDir)\.playwright\%(_PublishFiles.RecursiveDir)\" />
   </Target>
-
-
 </Project>

@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test" TreatAsLocalProperty="ProjectToBuild">
-
   <PropertyGroup>
     <!--
       When invoking helix.proj for the whole repo with build.cmd, ProjectToBuild will be set to the path to this project.
@@ -11,6 +10,20 @@
   <Import Project="..\targets\Helix.Common.props" />
   <Import Project="..\Build.props" />
   <Import Project="..\Versions.props" />
+
+  <!-- Ensure shared framework package is available for correlation payload. -->
+  <ItemGroup Condition=" '$(DoNotRequireSharedFxHelix)' != 'true' " >
+    <ProjectReference Include="$(RepoRoot)\src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
+      Condition=" $(IsTargetingPackBuilding) "
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="$(RepoRoot)\src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
+      Condition=" !$(IsTargetingPackBuilding) "
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
+  </ItemGroup>
 
   <!-- Microsoft.DotNet.Helix.Sdk.MultiQueue.targets splits $(HelixTargetQueues) into @(HelixTargetQueue) items. -->
   <ItemGroup Condition=" '$(HelixTargetQueues)' == '' ">
@@ -126,5 +139,4 @@
       <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
     </MSBuild>
   </Target>
-
 </Project>

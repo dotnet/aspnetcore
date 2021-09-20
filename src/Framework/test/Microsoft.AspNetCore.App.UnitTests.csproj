@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore</RootNamespace>
@@ -70,7 +69,8 @@
     <Reference Include="NuGet.Versioning" />
   </ItemGroup>
 
-  <ItemGroup>
+  <!-- When testing locally, helix.proj doesn't build the shared Fx for us. -->
+  <ItemGroup Condition=" '$(IsHelixJob)' != 'true' ">
     <ProjectReference Include="$(RepoRoot)\src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
       Condition=" $(IsTargetingPackBuilding) "
       Private="false"
@@ -134,5 +134,4 @@
       </AssemblyAttribute>
     </ItemGroup>
   </Target>
-
 </Project>
