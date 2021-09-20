@@ -22,12 +22,11 @@
   </ItemGroup>
 
   <!-- These references are used when running locally -->
-  <ItemGroup>
+  <ItemGroup Condition="'$(BenchmarksTargetFramework)' == ''">
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
-
     <Reference Include="Microsoft.AspNetCore.Mvc" />
   </ItemGroup>
 </Project>
