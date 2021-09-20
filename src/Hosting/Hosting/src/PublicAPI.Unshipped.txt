@@ -11,6 +11,7 @@ Microsoft.AspNetCore.Hosting.Builder.IApplicationBuilderFactory.CreateBuilder(Mi
 Microsoft.AspNetCore.Hosting.Infrastructure.ISupportsConfigureWebHost
 Microsoft.AspNetCore.Hosting.Infrastructure.ISupportsConfigureWebHost.ConfigureWebHost(System.Action<Microsoft.AspNetCore.Hosting.IWebHostBuilder!>! configure, System.Action<Microsoft.Extensions.Hosting.WebHostBuilderOptions!>! configureOptions) -> Microsoft.Extensions.Hosting.IHostBuilder!
 Microsoft.AspNetCore.Hosting.Infrastructure.ISupportsStartup
+Microsoft.AspNetCore.Hosting.Infrastructure.ISupportsStartup.Configure(System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder!>! configure) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
 Microsoft.AspNetCore.Hosting.Infrastructure.ISupportsStartup.Configure(System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext!, Microsoft.AspNetCore.Builder.IApplicationBuilder!>! configure) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
 Microsoft.AspNetCore.Hosting.Infrastructure.ISupportsStartup.UseStartup(System.Type! startupType) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
 Microsoft.AspNetCore.Hosting.Infrastructure.ISupportsStartup.UseStartup<TStartup>(System.Func<Microsoft.AspNetCore.Hosting.WebHostBuilderContext!, TStartup>! startupFactory) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!

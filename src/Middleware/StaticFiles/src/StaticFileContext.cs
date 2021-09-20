@@ -265,7 +265,10 @@ namespace Microsoft.AspNetCore.StaticFiles
                 _response.ContentLength = _length;
             }
 
-            _options.OnPrepareResponse(new StaticFileResponseContext(_context, _fileInfo));
+            if (_options.OnPrepareResponse != StaticFileOptions._defaultOnPrepareResponse)
+            {
+                _options.OnPrepareResponse(new StaticFileResponseContext(_context, _fileInfo));
+            }
         }
 
         public PreconditionState GetPreconditionState()

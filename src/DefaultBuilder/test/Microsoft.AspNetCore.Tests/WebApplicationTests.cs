@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Tests;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -23,6 +24,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
+
+[assembly: HostingStartup(typeof(WebApplicationTests.TestHostingStartup))]
 
 namespace Microsoft.AspNetCore.Tests
 {
@@ -134,6 +137,67 @@ namespace Microsoft.AspNetCore.Tests
             await using var app = builder.Build();
 
             Assert.Throws<InvalidOperationException>(() => app.Urls);
+        }
+
+        [Fact]
+        public async Task HostedServicesRunBeforeTheServerStarts()
+        {
+            var builder = WebApplication.CreateBuilder();
+            var startOrder = new List<object>();
+            var server = new MockServer(startOrder);
+            var hostedService = new HostedService(startOrder);
+            builder.Services.AddSingleton<IHostedService>(hostedService);
+            builder.Services.AddSingleton<IServer>(server);
+            await using var app = builder.Build();
+
+            await app.StartAsync();
+
+            Assert.Equal(2, startOrder.Count);
+            Assert.Same(hostedService, startOrder[0]);
+            Assert.Same(server, startOrder[1]);
+        }
+
+        class HostedService : IHostedService
+        {
+            private readonly List<object> _startOrder;
+
+            public HostedService(List<object> startOrder)
+            {
+                _startOrder = startOrder;
+            }
+
+            public Task StartAsync(CancellationToken cancellationToken)
+            {
+                _startOrder.Add(this);
+                return Task.CompletedTask;
+            }
+
+            public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+        }
+
+        class MockServer : IServer
+        {
+            private readonly List<object> _startOrder;
+
+            public MockServer(List<object> startOrder)
+            {
+                _startOrder = startOrder;
+            }
+
+            public IFeatureCollection Features { get; } = new FeatureCollection();
+
+            public void Dispose() { }
+
+            public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken) where TContext : notnull
+            {
+                _startOrder.Add(this);
+                return Task.CompletedTask;
+            }
+
+            public Task StopAsync(CancellationToken cancellationToken)
+            {
+                return Task.CompletedTask;
+            }
         }
 
         [Fact]
@@ -991,13 +1055,25 @@ namespace Microsoft.AspNetCore.Tests
         {
             var builder = WebApplication.CreateBuilder();
 
-            Assert.Throws<NotSupportedException>(() => builder.WebHost.Configure(app => { }));
-            Assert.Throws<NotSupportedException>(() => builder.WebHost.UseStartup<MyStartup>());
-            Assert.Throws<NotSupportedException>(() => builder.WebHost.UseStartup(typeof(MyStartup)));
+            var ex = Assert.Throws<NotSupportedException>(() => builder.WebHost.Configure(app => { }));
+            var ex1 = Assert.Throws<NotSupportedException>(() => builder.WebHost.Configure((context, app) => { }));
+            var ex2 = Assert.Throws<NotSupportedException>(() => builder.WebHost.UseStartup<MyStartup>());
+            var ex3 = Assert.Throws<NotSupportedException>(() => builder.WebHost.UseStartup(typeof(MyStartup)));
+            var ex4 = Assert.Throws<NotSupportedException>(() => builder.WebHost.UseStartup(context => new MyStartup()));
 
-            Assert.Throws<NotSupportedException>(() => builder.Host.ConfigureWebHost(webHostBuilder => { }));
-            Assert.Throws<NotSupportedException>(() => builder.Host.ConfigureWebHost(webHostBuilder => { }, options => { }));
-            Assert.Throws<NotSupportedException>(() => builder.Host.ConfigureWebHostDefaults(webHostBuilder => { }));
+            Assert.Equal("Configure() is not supported by WebApplicationBuilder.WebHost. Use the WebApplication returned by WebApplicationBuilder.Build() instead.", ex.Message);
+            Assert.Equal("Configure() is not supported by WebApplicationBuilder.WebHost. Use the WebApplication returned by WebApplicationBuilder.Build() instead.", ex1.Message);
+            Assert.Equal("UseStartup() is not supported by WebApplicationBuilder.WebHost. Use the WebApplication returned by WebApplicationBuilder.Build() instead.", ex2.Message);
+            Assert.Equal("UseStartup() is not supported by WebApplicationBuilder.WebHost. Use the WebApplication returned by WebApplicationBuilder.Build() instead.", ex3.Message);
+            Assert.Equal("UseStartup() is not supported by WebApplicationBuilder.WebHost. Use the WebApplication returned by WebApplicationBuilder.Build() instead.", ex4.Message);
+
+            var ex5 = Assert.Throws<NotSupportedException>(() => builder.Host.ConfigureWebHost(webHostBuilder => { }));
+            var ex6 = Assert.Throws<NotSupportedException>(() => builder.Host.ConfigureWebHost(webHostBuilder => { }, options => { }));
+            var ex7 = Assert.Throws<NotSupportedException>(() => builder.Host.ConfigureWebHostDefaults(webHostBuilder => { }));
+
+            Assert.Equal("ConfigureWebHost() is not supported by WebApplicationBuilder.Host. Use the WebApplication returned by WebApplicationBuilder.Build() instead.", ex5.Message);
+            Assert.Equal("ConfigureWebHost() is not supported by WebApplicationBuilder.Host. Use the WebApplication returned by WebApplicationBuilder.Build() instead.", ex6.Message);
+            Assert.Equal("ConfigureWebHost() is not supported by WebApplicationBuilder.Host. Use the WebApplication returned by WebApplicationBuilder.Build() instead.", ex7.Message);
         }
 
         [Fact]
@@ -1217,6 +1293,223 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Equal("BOOM", ex.Message);
         }
 
+        [Fact]
+        public async Task HostingStartupRunsWhenApplicationIsNotEntryPoint()
+        {
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions { ApplicationName = typeof(WebApplicationTests).Assembly.FullName });
+            await using var app = builder.Build();
+
+            Assert.Equal("value", app.Configuration["testhostingstartup:config"]);
+        }
+
+        [Fact]
+        public async Task HostingStartupRunsWhenApplicationIsNotEntryPointWithArgs()
+        {
+            var builder = WebApplication.CreateBuilder(new[] { "--applicationName", typeof(WebApplicationTests).Assembly.FullName });
+            await using var app = builder.Build();
+
+            Assert.Equal("value", app.Configuration["testhostingstartup:config"]);
+        }
+
+        [Fact]
+        public async Task HostingStartupRunsWhenApplicationIsNotEntryPointApplicationNameWinsOverArgs()
+        {
+            var options = new WebApplicationOptions
+            {
+                Args = new[] { "--applicationName", typeof(WebApplication).Assembly.FullName },
+                ApplicationName = typeof(WebApplicationTests).Assembly.FullName,
+            };
+            var builder = WebApplication.CreateBuilder(options);
+            await using var app = builder.Build();
+
+            Assert.Equal("value", app.Configuration["testhostingstartup:config"]);
+        }
+
+        [Fact]
+        public async Task DeveloperExceptionPageWritesBadRequestDetailsToResponseByDefaltInDevelopment()
+        {
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions() { EnvironmentName = Environments.Development });
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            app.MapGet("/{parameterName}", (int parameterName) => { });
+
+            await app.StartAsync();
+
+            var client = app.GetTestClient();
+
+            var response = await client.GetAsync("/notAnInt");
+
+            Assert.False(response.IsSuccessStatusCode);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Contains("text/plain", response.Content.Headers.ContentType.MediaType);
+
+            var responseBody = await response.Content.ReadAsStringAsync();
+            Assert.Contains("parameterName", responseBody);
+            Assert.Contains("notAnInt", responseBody);
+        }
+
+        [Fact]
+        public async Task NoExceptionAreThrownForBadRequestsInProduction()
+        {
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions() { EnvironmentName = Environments.Production });
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            app.MapGet("/{parameterName}", (int parameterName) => { });
+
+            await app.StartAsync();
+
+            var client = app.GetTestClient();
+
+            var response = await client.GetAsync("/notAnInt");
+
+            Assert.False(response.IsSuccessStatusCode);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Null(response.Content.Headers.ContentType);
+
+            var responseBody = await response.Content.ReadAsStringAsync();
+            Assert.Equal(string.Empty, responseBody);
+        }
+
+        [Fact]
+        public void PropertiesArePropagated()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.Host.Properties["hello"] = "world";
+            var callbacks = 0;
+
+            builder.Host.ConfigureAppConfiguration((context, config) =>
+            {
+                callbacks |= 0b00000001;
+                Assert.Equal("world", context.Properties["hello"]);
+            });
+
+            builder.Host.ConfigureServices((context, config) =>
+            {
+                callbacks |= 0b00000010;
+                Assert.Equal("world", context.Properties["hello"]);
+            });
+
+            builder.Host.ConfigureContainer<IServiceCollection>((context, config) =>
+            {
+                callbacks |= 0b00000100;
+                Assert.Equal("world", context.Properties["hello"]);
+            });
+
+            using var app = builder.Build();
+
+            // Make sure all of the callbacks ran
+            Assert.Equal(0b00000111, callbacks);
+        }
+
+        [Fact]
+        public void HostConfigurationNotAffectedByConfiguration()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            var contentRoot = Path.GetTempPath();
+            var webRoot = Path.GetTempPath();
+            var envName = $"{nameof(WebApplicationTests)}_ENV";
+
+            builder.Configuration[WebHostDefaults.ApplicationKey] = nameof(WebApplicationTests);
+            builder.Configuration[WebHostDefaults.EnvironmentKey] = envName;
+            builder.Configuration[WebHostDefaults.ContentRootKey] = contentRoot;
+
+            var app = builder.Build();
+            var hostEnv = app.Services.GetRequiredService<IHostEnvironment>();
+            var webHostEnv = app.Services.GetRequiredService<IWebHostEnvironment>();
+
+            Assert.Equal(builder.Environment.ApplicationName, hostEnv.ApplicationName);
+            Assert.Equal(builder.Environment.EnvironmentName, hostEnv.EnvironmentName);
+            Assert.Equal(builder.Environment.ContentRootPath, hostEnv.ContentRootPath);
+
+            Assert.Equal(webHostEnv.ApplicationName, hostEnv.ApplicationName);
+            Assert.Equal(webHostEnv.EnvironmentName, hostEnv.EnvironmentName);
+            Assert.Equal(webHostEnv.ContentRootPath, hostEnv.ContentRootPath);
+
+            Assert.NotEqual(nameof(WebApplicationTests), hostEnv.ApplicationName);
+            Assert.NotEqual(envName, hostEnv.EnvironmentName);
+            Assert.NotEqual(contentRoot, hostEnv.ContentRootPath);
+        }
+
+        [Fact]
+        public void ClearingConfigurationDoesNotAffectHostConfiguration()
+        {
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+            {
+                ApplicationName = typeof(WebApplicationOptions).Assembly.FullName,
+                EnvironmentName = Environments.Staging,
+                ContentRootPath = Path.GetTempPath()
+            });
+
+            ((IConfigurationBuilder)builder.Configuration).Sources.Clear();
+
+            var app = builder.Build();
+            var hostEnv = app.Services.GetRequiredService<IHostEnvironment>();
+            var webHostEnv = app.Services.GetRequiredService<IWebHostEnvironment>();
+
+            Assert.Equal(builder.Environment.ApplicationName, hostEnv.ApplicationName);
+            Assert.Equal(builder.Environment.EnvironmentName, hostEnv.EnvironmentName);
+            Assert.Equal(builder.Environment.ContentRootPath, hostEnv.ContentRootPath);
+
+            Assert.Equal(webHostEnv.ApplicationName, hostEnv.ApplicationName);
+            Assert.Equal(webHostEnv.EnvironmentName, hostEnv.EnvironmentName);
+            Assert.Equal(webHostEnv.ContentRootPath, hostEnv.ContentRootPath);
+
+            Assert.Equal(typeof(WebApplicationOptions).Assembly.FullName, hostEnv.ApplicationName);
+            Assert.Equal(Environments.Staging, hostEnv.EnvironmentName);
+            Assert.Equal(Path.GetTempPath(), hostEnv.ContentRootPath);
+        }
+
+        [Fact]
+        public void ConfigurationCanBeReloaded()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            ((IConfigurationBuilder)builder.Configuration).Sources.Add(new RandomConfigurationSource());
+
+            var app = builder.Build();
+
+            var value0 = app.Configuration["Random"];
+            ((IConfigurationRoot)app.Configuration).Reload();
+            var value1 = app.Configuration["Random"];
+
+            Assert.NotEqual(value0, value1);
+        }
+
+        [Fact]
+        public void ConfigurationSourcesAreBuiltOnce()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            var configSource = new RandomConfigurationSource();
+            ((IConfigurationBuilder)builder.Configuration).Sources.Add(configSource);
+
+            var app = builder.Build();
+
+            Assert.Equal(1, configSource.ProvidersBuilt);
+        }
+
+        public class RandomConfigurationSource : IConfigurationSource
+        {
+            public int ProvidersBuilt { get; set; }
+
+            public IConfigurationProvider Build(IConfigurationBuilder builder)
+            {
+                ProvidersBuilt++;
+                return new RandomConfigurationProvider();
+            }
+        }
+
+        public class RandomConfigurationProvider : ConfigurationProvider
+        {
+            public override void Load()
+            {
+                Data["Random"] = Guid.NewGuid().ToString();
+            }
+        }
+
         class ThrowingStartupFilter : IStartupFilter
         {
             public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
@@ -1230,6 +1523,19 @@ namespace Microsoft.AspNetCore.Tests
 
                     next(app);
                 };
+            }
+        }
+
+        public class TestHostingStartup : IHostingStartup
+        {
+            public void Configure(IWebHostBuilder builder)
+            {
+                builder
+                    .ConfigureAppConfiguration((context, configurationBuilder) => configurationBuilder.AddInMemoryCollection(
+                        new[]
+                        {
+                            new KeyValuePair<string,string>("testhostingstartup:config", "value")
+                        }));
             }
         }
 

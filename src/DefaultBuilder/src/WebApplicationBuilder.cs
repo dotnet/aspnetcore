@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +18,7 @@ namespace Microsoft.AspNetCore.Builder
         private readonly HostBuilder _hostBuilder = new();
         private readonly BootstrapHostBuilder _bootstrapHostBuilder;
         private readonly WebApplicationServiceCollection _services = new();
+        private readonly List<KeyValuePair<string, string>> _hostConfigurationValues;
         private const string EndpointRouteBuilderKey = "__EndpointRouteBuilder";
 
         private WebApplication? _builtApplication;
@@ -57,9 +57,8 @@ namespace Microsoft.AspNetCore.Builder
                 // Runs inline.
                 webHostBuilder.Configure(ConfigureApplication);
 
-                // We need to override the application name since the call to Configure will set it to
-                // be the calling assembly's name.
-                webHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, (Assembly.GetEntryAssembly())?.GetName()?.Name ?? string.Empty);
+                // Attempt to set the application name from options
+                options.ApplyApplicationName(webHostBuilder);
             });
 
             // Apply the args to host configuration last since ConfigureWebHostDefaults overrides a host specific setting (the application name).
@@ -78,8 +77,19 @@ namespace Microsoft.AspNetCore.Builder
 
             Configuration = new();
 
+            // Collect the hosted services separately since we want those to run after the user's hosted services
+            _services.TrackHostedServices = true;
+
             // This is the application configuration
-            var hostContext = _bootstrapHostBuilder.RunDefaultCallbacks(Configuration, _hostBuilder);
+            var (hostContext, hostConfiguration) = _bootstrapHostBuilder.RunDefaultCallbacks(Configuration, _hostBuilder);
+
+            // Stop tracking here
+            _services.TrackHostedServices = false;
+
+            // Capture the host configuration values here. We capture the values so that
+            // changes to the host configuration have no effect on the final application. The
+            // host configuration is immutable at this point.
+            _hostConfigurationValues = new(hostConfiguration.AsEnumerable());
 
             // Grab the WebHostBuilderContext from the property bag to use in the ConfigureWebHostBuilder
             var webHostContext = (WebHostBuilderContext)hostContext.Properties[typeof(WebHostBuilderContext)];
@@ -129,12 +139,20 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>A configured <see cref="WebApplication"/>.</returns>
         public WebApplication Build()
         {
-            // Copy the configuration sources into the final IConfigurationBuilder
+            // Wire up the host configuration here. We don't try to preserve the configuration
+            // source itself here since we don't support mutating the host values after creating the builder.
             _hostBuilder.ConfigureHostConfiguration(builder =>
             {
-                foreach (var source in ((IConfigurationBuilder)Configuration).Sources)
+                builder.AddInMemoryCollection(_hostConfigurationValues);
+            });
+
+            // Wire up the application configuration by copying the already built configuration providers over to final configuration builder.
+            // We wrap the existing provider in a configuration source to avoid re-bulding the already added configuration sources.
+            _hostBuilder.ConfigureAppConfiguration(builder =>
+            {
+                foreach (var provider in ((IConfigurationRoot)Configuration).Providers)
                 {
-                    builder.Sources.Add(source);
+                    builder.Sources.Add(new ConfigurationProviderSource(provider));
                 }
 
                 foreach (var (key, value) in ((IConfigurationBuilder)Configuration).Properties)
@@ -155,6 +173,17 @@ namespace Microsoft.AspNetCore.Builder
                 {
                     services.Add(s);
                 }
+
+                // Add the hosted services that were initially added last
+                // this makes sure any hosted services that are added run after the initial set
+                // of hosted services. This means hosted services run before the web host starts.
+                foreach (var s in _services.HostedServices)
+                {
+                    services.Add(s);
+                }
+
+                // Clear the hosted services list out
+                _services.HostedServices.Clear();
 
                 // Add any services to the user visible service collection so that they are observable
                 // just in case users capture the Services property. Orchard does this to get a "blueprint"
@@ -249,7 +278,7 @@ namespace Microsoft.AspNetCore.Builder
             }
         }
 
-        private class LoggingBuilder : ILoggingBuilder
+        private sealed class LoggingBuilder : ILoggingBuilder
         {
             public LoggingBuilder(IServiceCollection services)
             {
@@ -257,6 +286,21 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             public IServiceCollection Services { get; }
+        }
+
+        private sealed class ConfigurationProviderSource : IConfigurationSource
+        {
+            private readonly IConfigurationProvider _configurationProvider;
+
+            public ConfigurationProviderSource(IConfigurationProvider configurationProvider)
+            {
+                _configurationProvider = configurationProvider;
+            }
+
+            public IConfigurationProvider Build(IConfigurationBuilder builder)
+            {
+                return _configurationProvider;
+            }
         }
     }
 }

@@ -13,11 +13,21 @@ namespace Microsoft.AspNetCore.BrowserTesting
 
         public BrowserTestOutputLogger(ILogger logger)
         {
+            if (logger is null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             _logger = logger;
         }
 
         public void WriteLine(string message)
         {
+            if (message is null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
             _logger.LogInformation(message);
         }
 

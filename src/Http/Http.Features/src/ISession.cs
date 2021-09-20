@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Http
     public interface ISession
     {
         /// <summary>
-        /// Indicate whether the current session has loaded.
+        /// Indicates whether the current session loaded successfully. Accessing this property before the session is loaded will cause it to be loaded inline.
         /// </summary>
         bool IsAvailable { get; }
 

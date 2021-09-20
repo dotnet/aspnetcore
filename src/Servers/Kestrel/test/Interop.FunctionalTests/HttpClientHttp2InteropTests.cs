@@ -1244,7 +1244,6 @@ namespace Interop.FunctionalTests
         }
 
         [Theory]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27370")]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_MaxConcurrentStreamsPost_Server(string scheme)
         {

@@ -20,9 +20,11 @@ Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature.Error.get -> System.Ex
 Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature.Path.get -> string!
 Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary?
 Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature.Path.get -> string!
+Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.Endpoint.get -> Microsoft.AspNetCore.Http.Endpoint?
 Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalPath.get -> string!
 Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalPath.set -> void
 Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalPathBase.get -> string!
 Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalPathBase.set -> void
 Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalQueryString.get -> string?
 Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalQueryString.set -> void
+Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary?

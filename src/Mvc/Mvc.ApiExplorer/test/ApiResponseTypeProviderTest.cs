@@ -715,7 +715,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             // Arrange
             var actionDescriptor = GetControllerActionDescriptor(typeof(TestController), nameof(TestController.GetUser));
             actionDescriptor.FilterDescriptors.Add(new FilterDescriptor(new ProducesAttribute("text/xml") { Type = typeof(BaseModel) }, FilterScope.Action));
-            actionDescriptor.FilterDescriptors.Add(new FilterDescriptor(new ProducesResponseTypeAttribute(typeof(ValidationProblemDetails), 400, "application/validationproblem+json"), FilterScope.Action));
+            actionDescriptor.FilterDescriptors.Add(new FilterDescriptor(new ProducesResponseTypeAttribute(typeof(ValidationProblemDetails), 400, "application/problem+json"), FilterScope.Action));
             actionDescriptor.FilterDescriptors.Add(new FilterDescriptor(new ProducesResponseTypeAttribute(typeof(ProblemDetails), 404, "application/problem+json"), FilterScope.Action));
             actionDescriptor.FilterDescriptors.Add(new FilterDescriptor(new ProducesResponseTypeAttribute(409), FilterScope.Action));
 
@@ -738,7 +738,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 {
                     Assert.Equal(typeof(ValidationProblemDetails), responseType.Type);
                     Assert.Equal(400, responseType.StatusCode);
-                    Assert.Equal(new[] { "application/validationproblem+json" }, GetSortedMediaTypes(responseType));
+                    Assert.Equal(new[] { "application/problem+json" }, GetSortedMediaTypes(responseType));
                 },
                 responseType =>
                 {

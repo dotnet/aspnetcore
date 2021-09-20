@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
             var transaction = await server.SendAsync("http://example.com/base/login");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
-            Assert.Contains("https://www.facebook.com/v8.0/dialog/oauth", location);
+            Assert.Contains("https://www.facebook.com/v11.0/dialog/oauth", location);
             Assert.Contains("response_type=code", location);
             Assert.Contains("client_id=", location);
             Assert.Contains("redirect_uri=" + UrlEncoder.Default.Encode("http://example.com/base/signin-facebook"), location);
@@ -266,7 +266,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
             var transaction = await server.SendAsync("http://example.com/login");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
-            Assert.Contains("https://www.facebook.com/v8.0/dialog/oauth", location);
+            Assert.Contains("https://www.facebook.com/v11.0/dialog/oauth", location);
             Assert.Contains("response_type=code", location);
             Assert.Contains("client_id=", location);
             Assert.Contains("redirect_uri=" + UrlEncoder.Default.Encode("http://example.com/signin-facebook"), location);
@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
             var transaction = await server.SendAsync("http://example.com/challenge");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
-            Assert.Contains("https://www.facebook.com/v8.0/dialog/oauth", location);
+            Assert.Contains("https://www.facebook.com/v11.0/dialog/oauth", location);
             Assert.Contains("response_type=code", location);
             Assert.Contains("client_id=", location);
             Assert.Contains("redirect_uri=", location);
@@ -369,6 +369,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
             Assert.Equal(1, finalUserInfoEndpoint.Count(c => c == '?'));
             Assert.Contains("fields=email,timezone,picture", finalUserInfoEndpoint);
             Assert.Contains("&access_token=", finalUserInfoEndpoint);
+            Assert.Contains("&appsecret_proof=b7fb6d5a4510926b4af6fe080497827d791dc45fe6541d88ba77bdf6e8e208c6&", finalUserInfoEndpoint);
         }
 
         private static async Task<IHost> CreateHost(Action<IApplicationBuilder> configure, Action<IServiceCollection> configureServices, Func<HttpContext, Task<bool>> handler)

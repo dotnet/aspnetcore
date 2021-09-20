@@ -1646,7 +1646,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var email = await manager.GetUserNameAsync(user) + "@diddly.bop";
             IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user, email));
             var token = await manager.GenerateEmailConfirmationTokenAsync(user);
-            await manager.ConfirmEmailAsync(user, token);
+            IdentityResultAssert.IsSuccess(await manager.ConfirmEmailAsync(user, token));
 
             var stamp = await manager.GetSecurityStampAsync(user);
             Assert.NotNull(stamp);
@@ -1823,7 +1823,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal("Phone", factors[0]);
             IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user, "test@test.com"));
             token = await manager.GenerateEmailConfirmationTokenAsync(user);
-            await manager.ConfirmEmailAsync(user, token);
+            IdentityResultAssert.IsSuccess(await manager.ConfirmEmailAsync(user, token));
             factors = await manager.GetValidTwoFactorProvidersAsync(user);
             Assert.NotNull(factors);
             Assert.Equal(2, factors.Count);

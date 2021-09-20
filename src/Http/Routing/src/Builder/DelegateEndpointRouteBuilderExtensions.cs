@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -89,6 +91,99 @@ namespace Microsoft.AspNetCore.Builder
             return MapMethods(endpoints, pattern, DeleteVerb, handler);
         }
 
+        private static DelegateEndpointConventionBuilder Map(
+            this IEndpointRouteBuilder endpoints,
+            RoutePattern pattern,
+            Delegate handler,
+            bool DisableInferBodyFromParameters)
+        {
+            if (endpoints is null)
+            {
+                throw new ArgumentNullException(nameof(endpoints));
+            }
+
+            if (pattern is null)
+            {
+                throw new ArgumentNullException(nameof(pattern));
+            }
+
+            if (handler is null)
+            {
+                throw new ArgumentNullException(nameof(handler));
+            }
+
+            const int defaultOrder = 0;
+
+            var routeParams = new List<string>(pattern.Parameters.Count);
+            foreach (var part in pattern.Parameters)
+            {
+                routeParams.Add(part.Name);
+            }
+
+            var routeHandlerOptions = endpoints.ServiceProvider?.GetService<IOptions<RouteHandlerOptions>>();
+
+            var options = new RequestDelegateFactoryOptions
+            {
+                ServiceProvider = endpoints.ServiceProvider,
+                RouteParameterNames = routeParams,
+                ThrowOnBadRequest = routeHandlerOptions?.Value.ThrowOnBadRequest ?? false,
+                DisableInferBodyFromParameters = DisableInferBodyFromParameters,
+            };
+
+            var requestDelegateResult = RequestDelegateFactory.Create(handler, options);
+
+            var builder = new RouteEndpointBuilder(
+                requestDelegateResult.RequestDelegate,
+                pattern,
+                defaultOrder)
+            {
+                DisplayName = pattern.RawText ?? pattern.DebuggerToString(),
+            };
+
+            // REVIEW: Should we add an IActionMethodMetadata with just MethodInfo on it so we are
+            // explicit about the MethodInfo representing the "handler" and not the RequestDelegate?
+
+            // Add MethodInfo as metadata to assist with OpenAPI generation for the endpoint.
+            builder.Metadata.Add(handler.Method);
+
+            // Methods defined in a top-level program are generated as statics so the delegate
+            // target will be null. Inline lambdas are compiler generated method so they can
+            // be filtered that way.
+            if (GeneratedNameParser.TryParseLocalFunctionName(handler.Method.Name, out var endpointName)
+                || !TypeHelper.IsCompilerGeneratedMethod(handler.Method))
+            {
+                endpointName ??= handler.Method.Name;
+                builder.DisplayName = $"{builder.DisplayName} => {endpointName}";
+            }
+
+            // Add delegate attributes as metadata
+            var attributes = handler.Method.GetCustomAttributes();
+
+            // Add add request delegate metadata
+            foreach (var metadata in requestDelegateResult.EndpointMetadata)
+            {
+                builder.Metadata.Add(metadata);
+            }
+
+            // This can be null if the delegate is a dynamic method or compiled from an expression tree
+            if (attributes is not null)
+            {
+                foreach (var attribute in attributes)
+                {
+                    builder.Metadata.Add(attribute);
+                }
+            }
+
+            var dataSource = endpoints.DataSources.OfType<ModelEndpointDataSource>().FirstOrDefault();
+            if (dataSource is null)
+            {
+                dataSource = new ModelEndpointDataSource();
+                endpoints.DataSources.Add(dataSource);
+            }
+
+            return new DelegateEndpointConventionBuilder(dataSource.AddEndpointBuilder(builder));
+        }
+
         /// <summary>
         /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP requests
         /// for the specified HTTP methods and pattern.
@@ -109,11 +204,32 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(httpMethods));
             }
 
-            var builder = endpoints.Map(RoutePatternFactory.Parse(pattern), handler);
+            var disableInferredBody = false;
+            foreach (var method in httpMethods)
+            {
+                disableInferredBody = ShouldDisableInferredBody(method);
+                if (disableInferredBody is true)
+                {
+                    break;
+                }
+            }
+
+            var builder = endpoints.Map(RoutePatternFactory.Parse(pattern), handler, disableInferredBody);
             // Prepends the HTTP method to the DisplayName produced with pattern + method name
             builder.Add(b => b.DisplayName = $"HTTP: {string.Join(", ", httpMethods)} {b.DisplayName}");
             builder.WithMetadata(new HttpMethodMetadata(httpMethods));
             return builder;
+
+            static bool ShouldDisableInferredBody(string method)
+            {
+                 // GET, DELETE, HEAD, CONNECT, TRACE, and OPTIONS normally do not contain bodies
+                return method.Equals(HttpMethods.Get, StringComparison.Ordinal) ||
+                       method.Equals(HttpMethods.Delete, StringComparison.Ordinal) ||
+                       method.Equals(HttpMethods.Head, StringComparison.Ordinal) ||
+                       method.Equals(HttpMethods.Options, StringComparison.Ordinal) ||
+                       method.Equals(HttpMethods.Trace, StringComparison.Ordinal) ||
+                       method.Equals(HttpMethods.Connect, StringComparison.Ordinal);
+            }
         }
 
         /// <summary>
@@ -145,90 +261,7 @@ namespace Microsoft.AspNetCore.Builder
             RoutePattern pattern,
             Delegate handler)
         {
-            if (endpoints is null)
-            {
-                throw new ArgumentNullException(nameof(endpoints));
-            }
-
-            if (pattern is null)
-            {
-                throw new ArgumentNullException(nameof(pattern));
-            }
-
-            if (handler is null)
-            {
-                throw new ArgumentNullException(nameof(handler));
-            }
-
-            const int defaultOrder = 0;
-
-            var routeParams = new List<string>(pattern.Parameters.Count);
-            foreach (var part in pattern.Parameters)
-            {
-                routeParams.Add(part.Name);
-            }
-
-            var options = new RequestDelegateFactoryOptions
-            {
-                ServiceProvider = endpoints.ServiceProvider,
-                RouteParameterNames = routeParams
-            };
-
-            var requestDelegateResult = RequestDelegateFactory.Create(handler, options);
-
-            var builder = new RouteEndpointBuilder(
-                requestDelegateResult.RequestDelegate,
-                pattern,
-                defaultOrder)
-            {
-                DisplayName = pattern.RawText ?? pattern.DebuggerToString(),
-            };
-
-            // REVIEW: Should we add an IActionMethodMetadata with just MethodInfo on it so we are
-            // explicit about the MethodInfo representing the "handler" and not the RequestDelegate?
-
-            // Add MethodInfo as metadata to assist with OpenAPI generation for the endpoint.
-            builder.Metadata.Add(handler.Method);
-
-            // Methods defined in a top-level program are generated as statics so the delegate
-            // target will be null. Inline lambdas are compiler generated method so they can
-            // be filtered that way.
-            if (GeneratedNameParser.TryParseLocalFunctionName(handler.Method.Name, out var endpointName)
-                || !TypeHelper.IsCompilerGeneratedMethod(handler.Method))
-            {
-                endpointName ??= handler.Method.Name;
-
-                builder.Metadata.Add(new EndpointNameMetadata(endpointName));
-                builder.Metadata.Add(new RouteNameMetadata(endpointName));
-                builder.DisplayName = $"{builder.DisplayName} => {endpointName}";
-            }
-
-            // Add delegate attributes as metadata
-            var attributes = handler.Method.GetCustomAttributes();
-
-            // Add add request delegate metadata 
-            foreach (var metadata in requestDelegateResult.EndpointMetadata)
-            {
-                builder.Metadata.Add(metadata);
-            }
-
-            // This can be null if the delegate is a dynamic method or compiled from an expression tree
-            if (attributes is not null)
-            {
-                foreach (var attribute in attributes)
-                {
-                    builder.Metadata.Add(attribute);
-                }
-            }
-
-            var dataSource = endpoints.DataSources.OfType<ModelEndpointDataSource>().FirstOrDefault();
-            if (dataSource is null)
-            {
-                dataSource = new ModelEndpointDataSource();
-                endpoints.DataSources.Add(dataSource);
-            }
-
-            return new DelegateEndpointConventionBuilder(dataSource.AddEndpointBuilder(builder));
+            return Map(endpoints, pattern, handler, DisableInferBodyFromParameters: false);
         }
 
         /// <summary>

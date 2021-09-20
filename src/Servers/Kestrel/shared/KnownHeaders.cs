@@ -843,7 +843,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }}
             set
             {{
-                {header.SetBit()};
+                if (!StringValues.IsNullOrEmpty(value))
+                {{
+                    {header.SetBit()};
+                }}
+                else
+                {{
+                    {header.ClearBit()};
+                }}
                 _headers._{header.Identifier} = value; {(header.EnhancedSetter == false ? "" : $@"
                 _headers._raw{header.Identifier} = null;")}
             }}")}

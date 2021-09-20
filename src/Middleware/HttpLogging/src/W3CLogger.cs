@@ -48,16 +48,6 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         private string Format(string[] elements)
         {
-            // Need to calculate TimeTaken now, if applicable
-            var date = elements[W3CLoggingMiddleware._dateIndex];
-            var time = elements[W3CLoggingMiddleware._timeIndex];
-            if (!string.IsNullOrEmpty(date) && !string.IsNullOrEmpty(time) && _loggingFields.HasFlag(W3CLoggingFields.TimeTaken))
-            {
-                DateTime start = DateTime.ParseExact(date + time, "yyyy-MM-ddHH:mm:ss", CultureInfo.InvariantCulture);
-                var elapsed = DateTime.UtcNow.Subtract(start);
-                elements[W3CLoggingMiddleware._timeTakenIndex] = elapsed.TotalMilliseconds.ToString(CultureInfo.InvariantCulture);
-            }
-
             // 200 is around the length of an average cookie-less entry
             var sb = new ValueStringBuilder(200);
             var firstElement = true;

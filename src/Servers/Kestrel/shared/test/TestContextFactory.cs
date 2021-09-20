@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Testing
                 localEndPoint: localEndPoint,
                 remoteEndPoint: remoteEndPoint,
                 streamLifetimeHandler: streamLifetimeHandler,
-                streamContext: null,
+                streamContext: new DefaultConnectionContext(),
                 clientPeerSettings: new Http3PeerSettings(),
                 serverPeerSettings: null
             );

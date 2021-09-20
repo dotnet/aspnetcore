@@ -14,7 +14,7 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
   constructor(logger: Logger, overrideDisplay?: ReconnectDisplay, reconnectCallback?: () => Promise<boolean>) {
     this._logger = logger;
     this._reconnectionDisplay = overrideDisplay;
-    this._reconnectCallback = reconnectCallback || (() => (Blazor.reconnect as any)());
+    this._reconnectCallback = reconnectCallback || Blazor.reconnect!;
   }
 
   onConnectionDown (options: ReconnectionOptions, error?: Error) {
@@ -80,9 +80,9 @@ class ReconnectionProcess {
           return;
         }
         return;
-      } catch (err) {
+      } catch (err: any) {
         // We got an exception so will try again momentarily
-        this.logger.log(LogLevel.Error, err);
+        this.logger.log(LogLevel.Error, err as Error);
       }
     }
 

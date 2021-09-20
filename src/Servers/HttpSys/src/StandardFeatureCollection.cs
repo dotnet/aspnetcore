@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 _featureFuncLookup[typeof(ITlsHandshakeFeature)] = ctx => ctx.GetTlsHandshakeFeature();
             }
 
-            if (HttpApi.IsFeatureSupported(HttpApiTypes.HTTP_FEATURE_ID.HttpFeatureDelegateEx))
+            if (HttpApi.SupportsDelegation)
             {
                 _featureFuncLookup[typeof(IHttpSysRequestDelegationFeature)] = _identityFunc;
             }

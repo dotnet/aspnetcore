@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Xml;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.DotNet.OpenApi.Tests;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.OpenApi.Add.Tests
@@ -16,18 +12,18 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
     {
         public OpenApiAddFileTests(ITestOutputHelper output) : base(output) { }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
+        [Fact]
         public void OpenApi_Empty_ShowsHelp()
         {
             var app = GetApplication();
-            var run = app.Execute(new string[] { });
+            var run = app.Execute(Array.Empty<string>());
 
             AssertNoErrors(run);
 
             Assert.Contains("Usage: openapi ", _output.ToString());
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
+        [Fact]
         public void OpenApi_NoProjectExists()
         {
             var app = GetApplication();
@@ -38,7 +34,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             Assert.Equal(1, run);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
+        [Fact]
         public void OpenApi_ExplicitProject_Missing()
         {
             var app = GetApplication();
@@ -50,7 +46,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             Assert.Equal(1, run);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
+        [Fact]
         public void OpenApi_Add_Empty_ShowsHelp()
         {
             var app = GetApplication();
@@ -61,7 +57,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             Assert.Contains("Usage: openapi add", _output.ToString());
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
+        [Fact]
         public void OpenApi_Add_File_Empty_ShowsHelp()
         {
             var app = GetApplication();
@@ -72,7 +68,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             Assert.Contains("Usage: openapi ", _output.ToString());
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
+        [Fact]
         public async Task OpenApi_Add_ReuseItemGroup()
         {
             var project = CreateBasicProject(withOpenApi: true);
@@ -101,7 +97,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             Assert.Same(openApiRefs[0].ParentNode, openApiRefs[1].ParentNode);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
+        [Fact]
         public void OpenApi_Add_File_EquivilentPaths()
         {
             var project = CreateBasicProject(withOpenApi: true);
@@ -126,7 +122,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             Assert.Single(openApiRefs);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
+        [Fact]
         public async Task OpenApi_Add_NSwagTypeScript()
         {
             var project = CreateBasicProject(withOpenApi: true);
@@ -146,7 +142,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             Assert.Contains($"<OpenApiReference Include=\"{nswagJsonFile}\" CodeGenerator=\"NSwagTypeScript\" />", content);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
+        [Fact]
         public async Task OpenApi_Add_FromJson()
         {
             var project = CreateBasicProject(withOpenApi: true);
@@ -166,7 +162,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             Assert.Contains($"<OpenApiReference Include=\"{nswagJsonFile}\"", content);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
+        [Fact]
         public async Task OpenApi_Add_File_UseProjectOption()
         {
             var project = CreateBasicProject(withOpenApi: true);
@@ -186,7 +182,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             Assert.Contains($"<OpenApiReference Include=\"{nswagJsonFIle}\"", content);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
+        [Fact]
         public async Task OpenApi_Add_MultipleTimes_OnlyOneReference()
         {
             var project = CreateBasicProject(withOpenApi: true);

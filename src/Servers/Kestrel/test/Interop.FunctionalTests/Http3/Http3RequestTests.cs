@@ -25,7 +25,7 @@ namespace Interop.FunctionalTests.Http3
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35070")]
     public class Http3RequestTests : LoggedTest
     {
-        private class StreamingHttpContext : HttpContent
+        private class StreamingHttpContent : HttpContent
         {
             private readonly TaskCompletionSource _completeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             private readonly TaskCompletionSource<Stream> _getStreamTcs = new TaskCompletionSource<Stream>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -234,7 +234,7 @@ namespace Interop.FunctionalTests.Http3
             {
                 await host.StartAsync();
 
-                var requestContent = new StreamingHttpContext();
+                var requestContent = new StreamingHttpContent();
 
                 var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
                 request.Content = requestContent;
@@ -278,7 +278,7 @@ namespace Interop.FunctionalTests.Http3
             {
                 await host.StartAsync().DefaultTimeout();
 
-                var requestContent = new StreamingHttpContext();
+                var requestContent = new StreamingHttpContent();
 
                 var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
                 request.Content = requestContent;
@@ -347,7 +347,7 @@ namespace Interop.FunctionalTests.Http3
                 await host.StartAsync().DefaultTimeout();
 
                 var cts = new CancellationTokenSource();
-                var requestContent = new StreamingHttpContext();
+                var requestContent = new StreamingHttpContent();
 
                 var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
                 request.Content = requestContent;
@@ -418,7 +418,7 @@ namespace Interop.FunctionalTests.Http3
             {
                 await host.StartAsync().DefaultTimeout();
 
-                var requestContent = new StreamingHttpContext();
+                var requestContent = new StreamingHttpContent();
 
                 var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
                 request.Content = requestContent;
@@ -438,7 +438,7 @@ namespace Interop.FunctionalTests.Http3
                 if (protocol == HttpProtocols.Http3)
                 {
                     var innerEx = Assert.IsType<QuicStreamAbortedException>(ex.InnerException);
-                    Assert.Equal(Http3ErrorCode.RequestCancelled, (Http3ErrorCode)innerEx.ErrorCode);
+                    Assert.Equal(Http3ErrorCode.InternalError, (Http3ErrorCode)innerEx.ErrorCode);
                 }
 
                 await cancelledTcs.Task.DefaultTimeout();
@@ -495,7 +495,7 @@ namespace Interop.FunctionalTests.Http3
                 if (protocol == HttpProtocols.Http3)
                 {
                     var innerEx = Assert.IsType<QuicStreamAbortedException>(ex.InnerException);
-                    Assert.Equal(Http3ErrorCode.RequestCancelled, (Http3ErrorCode)innerEx.ErrorCode);
+                    Assert.Equal(Http3ErrorCode.InternalError, (Http3ErrorCode)innerEx.ErrorCode);
                 }
 
                 await cancelledTcs.Task.DefaultTimeout();
@@ -510,6 +510,51 @@ namespace Interop.FunctionalTests.Http3
                 await host.StopAsync().DefaultTimeout();
             }
         }
+
+        [ConditionalFact]
+        [MsQuicSupported]
+        public async Task POST_Expect100Continue_Get100Continue()
+        {
+            // Arrange
+            var builder = CreateHostBuilder(async context =>
+            {
+                var body = context.Request.Body;
+
+                var data = await body.ReadAtLeastLengthAsync(TestData.Length).DefaultTimeout();
+
+                await context.Response.Body.WriteAsync(data);
+            });
+
+            using (var host = builder.Build())
+            using (var client = Http3Helpers.CreateClient(expect100ContinueTimeout: TimeSpan.FromMinutes(20)))
+            {
+                await host.StartAsync().DefaultTimeout();
+
+                var requestContent = new StringContent("Hello world");
+
+                var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
+                request.Content = requestContent;
+                request.Version = HttpVersion.Version30;
+                request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+                request.Headers.ExpectContinue = true;
+
+                // Act
+                using var cts = new CancellationTokenSource();
+                cts.CancelAfter(TimeSpan.FromSeconds(1));
+                var responseTask = client.SendAsync(request, cts.Token);
+
+                var response = await responseTask.DefaultTimeout();
+
+                // Assert
+                response.EnsureSuccessStatusCode();
+                Assert.Equal(HttpVersion.Version30, response.Version);
+                var responseText = await response.Content.ReadAsStringAsync().DefaultTimeout();
+                Assert.Equal("Hello world", responseText);
+
+                await host.StopAsync().DefaultTimeout();
+            }
+        }
+
 
         private static Version GetProtocol(HttpProtocols protocol)
         {
@@ -593,6 +638,8 @@ namespace Interop.FunctionalTests.Http3
             var readAsyncTask = new TaskCompletionSource<Task>(TaskCreationOptions.RunContinuationsAsynchronously);
             var clientHasCancelledSyncPoint = new SyncPoint();
 
+            using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
+
             var builder = CreateHostBuilder(async context =>
             {
                 context.RequestAborted.Register(() =>
@@ -630,7 +677,7 @@ namespace Interop.FunctionalTests.Http3
                 await host.StartAsync().DefaultTimeout();
 
                 var cts = new CancellationTokenSource();
-                var requestContent = new StreamingHttpContext();
+                var requestContent = new StreamingHttpContent();
 
                 var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
                 request.Content = requestContent;
@@ -683,7 +730,98 @@ namespace Interop.FunctionalTests.Http3
         // Verify HTTP/2 and HTTP/3 match behavior
         [ConditionalTheory]
         [MsQuicSupported]
-        [InlineData(HttpProtocols.Http3, Skip = "https://github.com/dotnet/runtime/issues/56129")]
+        [InlineData(HttpProtocols.Http3)]
+        [InlineData(HttpProtocols.Http2)]
+        public async Task POST_Bidirectional_LargeData_Cancellation_Error(HttpProtocols protocol)
+        {
+            // Arrange
+            var data = new byte[1024 * 64 * 10];
+
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var builder = CreateHostBuilder(async context =>
+            {
+                var requestBody = context.Request.Body;
+
+                await context.Response.BodyWriter.FlushAsync();
+
+                while (true)
+                {
+                    Logger.LogInformation("Server reading request body.");
+                    var currentData = await requestBody.ReadAtLeastLengthAsync(data.Length);
+                    if (currentData == null)
+                    {
+                        break;
+                    }
+
+                    tcs.TrySetResult();
+
+                    Logger.LogInformation("Server writing response body.");
+
+                    context.Response.BodyWriter.GetSpan(data.Length);
+                    context.Response.BodyWriter.Advance(data.Length);
+
+                    await context.Response.BodyWriter.FlushAsync();
+                }
+            }, protocol: protocol);
+
+            var httpClientHandler = new HttpClientHandler();
+            httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+
+            using (var host = builder.Build())
+            using (var client = new HttpClient(httpClientHandler))
+            {
+                await host.StartAsync().DefaultTimeout();
+
+                var cts = new CancellationTokenSource();
+                var requestContent = new StreamingHttpContent();
+
+                var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
+                request.Content = requestContent;
+                request.Version = GetProtocol(protocol);
+                request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+                // Act
+                var responseTask = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+
+                var requestStream = await requestContent.GetStreamAsync().DefaultTimeout();
+
+                Logger.LogInformation("Client sending headers.");
+                await requestStream.FlushAsync().DefaultTimeout();
+
+                Logger.LogInformation("Client waiting for headers.");
+                var response = await responseTask.DefaultTimeout();
+                var responseStream = await response.Content.ReadAsStreamAsync().DefaultTimeout();
+
+                Logger.LogInformation("Client writing request.");
+                await requestStream.WriteAsync(data).DefaultTimeout();
+                await requestStream.FlushAsync().DefaultTimeout();
+
+                await tcs.Task;
+
+                Logger.LogInformation("Client canceled request.");
+                response.Dispose();
+
+                await Task.Delay(50);
+
+                // Ensure this log wasn't written:
+                // Critical: Http3OutputProducer.ProcessDataWrites observed an unexpected exception.
+                var badLogWrite = TestSink.Writes.FirstOrDefault(w => w.LogLevel >= LogLevel.Critical);
+                if (badLogWrite != null)
+                {
+                    Debugger.Launch();
+                    Assert.True(false, "Bad log write: " + badLogWrite + Environment.NewLine + badLogWrite.Exception);
+                }
+
+                // Assert
+                await host.StopAsync().DefaultTimeout();
+            }
+        }
+
+        // Verify HTTP/2 and HTTP/3 match behavior
+        [ConditionalTheory]
+        [MsQuicSupported]
+        [InlineData(HttpProtocols.Http3)]
         [InlineData(HttpProtocols.Http2)]
         public async Task GET_ClientCancellationAfterResponseHeaders_RequestAbortRaised(HttpProtocols protocol)
         {
@@ -1363,7 +1501,7 @@ namespace Interop.FunctionalTests.Http3
             {
                 await host.StartAsync().DefaultTimeout();
 
-                var requestContent = new StreamingHttpContext();
+                var requestContent = new StreamingHttpContent();
 
                 var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
                 request.Content = requestContent;
@@ -1458,7 +1596,7 @@ namespace Interop.FunctionalTests.Http3
             {
                 await host.StartAsync().DefaultTimeout();
 
-                var requestContent = new StreamingHttpContext();
+                var requestContent = new StreamingHttpContent();
 
                 var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
                 request.Content = requestContent;

@@ -134,6 +134,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public void Abort(ConnectionAbortedException abortReason, Http3ErrorCode errorCode)
         {
+            AbortCore(abortReason, errorCode);
+        }
+
+        private void AbortCore(Exception exception, Http3ErrorCode errorCode)
+        {
             lock (_completionLock)
             {
                 if (IsCompleted)
@@ -148,26 +153,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     return;
                 }
 
+                if (!(exception is ConnectionAbortedException abortReason))
+                {
+                    abortReason = new ConnectionAbortedException(exception.Message, exception);
+                }
+
                 Log.Http3StreamAbort(TraceIdentifier, errorCode, abortReason);
 
+                // Call _http3Output.Stop() prior to poisoning the request body stream or pipe to
+                // ensure that an app that completes early due to the abort doesn't result in header frames being sent.
+                _http3Output.Stop();
+
+                CancelRequestAbortedToken();
+
+                // Unblock the request body.
+                PoisonBody(exception);
+                RequestBodyPipe.Writer.Complete(exception);
+
+                // Abort framewriter and underlying transport after stopping output.
                 _errorCodeFeature.Error = (long)errorCode;
                 _frameWriter.Abort(abortReason);
-
-                AbortCore(abortReason);
             }
-        }
-
-        private void AbortCore(Exception exception)
-        {
-            // Call _http3Output.Stop() prior to poisoning the request body stream or pipe to
-            // ensure that an app that completes early due to the abort doesn't result in header frames being sent.
-            _http3Output.Stop();
-
-            CancelRequestAbortedToken();
-
-            // Unblock the request body.
-            PoisonBody(exception);
-            RequestBodyPipe.Writer.Complete(exception);
         }
 
         protected override void OnErrorAfterResponseStarted()
@@ -470,7 +476,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             catch (ConnectionResetException ex)
             {
                 error = ex;
-                AbortCore(new IOException(CoreStrings.HttpStreamResetByClient, ex));
+                var resolvedErrorCode = _errorCodeFeature.Error >= 0 ? _errorCodeFeature.Error : 0;
+                AbortCore(new IOException(CoreStrings.HttpStreamResetByClient, ex), (Http3ErrorCode)resolvedErrorCode);
             }
             catch (Exception ex)
             {
@@ -484,10 +491,44 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 await Input.CompleteAsync();
 
-                // Make sure application func is completed before completing writer.
-                if (_appCompleted != null)
+                var appCompleted = _appCompleted?.Task ?? Task.CompletedTask;
+                if (!appCompleted.IsCompletedSuccessfully)
                 {
-                    await _appCompleted.Task;
+                    // At this point in the stream's read-side is complete. However, with HTTP/3
+                    // the write-side of the stream can still be aborted by the client on request
+                    // aborted.
+                    //
+                    // To get notification of request aborted we register to connection closed
+                    // token. It will notify this type that the client has aborted the request
+                    // and Kestrel will complete pipes and cancel the RequestAborted token.
+                    //
+                    // Only subscribe to this event after the stream's read-side is complete to
+                    // avoid interactions between reading that is in-progress and an abort.
+                    // This means while reading, read-side abort will handle getting abort notifications.
+                    //
+                    // We don't need to hang on to the CancellationTokenRegistration from register.
+                    // The CTS is cleaned up in StreamContext.DisposeAsync.
+                    //
+                    // TODO: Consider a better way to provide this notification. For perf we want to
+                    // make the ConnectionClosed CTS pay-for-play, and change this event to use
+                    // something that is more lightweight than a CTS.
+                    _context.StreamContext.ConnectionClosed.Register(static s =>
+                    {
+                        var stream = (Http3Stream)s!;
+
+                        if (!stream.IsCompleted)
+                        {
+                            // An error code value other than -1 indicates a value was set and the request didn't gracefully complete.
+                            var errorCode = stream._errorCodeFeature.Error;
+                            if (errorCode >= 0)
+                            {
+                                stream.AbortCore(new IOException(CoreStrings.HttpStreamResetByClient), (Http3ErrorCode)errorCode);
+                            }
+                        }
+                    }, this);
+
+                    // Make sure application func is completed before completing writer.
+                    await appCompleted;
                 }
 
                 try
@@ -746,12 +787,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // proxy or gateway can translate requests for non - HTTP schemes,
             // enabling the use of HTTP to interact with non - HTTP services.
             var headerScheme = HttpRequestHeaders.HeaderScheme.ToString();
+            HttpRequestHeaders.HeaderScheme = default; // Suppress pseduo headers from the public headers collection.
             if (!ReferenceEquals(headerScheme, Scheme) &&
                 !string.Equals(headerScheme, Scheme, StringComparison.OrdinalIgnoreCase))
             {
                 if (!ServerOptions.AllowAlternateSchemes || !Uri.CheckSchemeName(headerScheme))
                 {
-                    var str = CoreStrings.FormatHttp3StreamErrorSchemeMismatch(RequestHeaders[HeaderNames.Scheme], Scheme);
+                    var str = CoreStrings.FormatHttp3StreamErrorSchemeMismatch(headerScheme, Scheme);
                     Abort(new ConnectionAbortedException(str), Http3ErrorCode.ProtocolError);
                     return false;
                 }
@@ -761,7 +803,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             // :path (and query) - Required
             // Must start with / except may be * for OPTIONS
-            var path = RequestHeaders[HeaderNames.Path].ToString();
+            var path = HttpRequestHeaders.HeaderPath.ToString();
+            HttpRequestHeaders.HeaderPath = default; // Suppress pseduo headers from the public headers collection.
             RawTarget = path;
 
             // OPTIONS - https://tools.ietf.org/html/rfc7540#section-8.1.2.3
@@ -799,7 +842,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private bool TryValidateMethod()
         {
             // :method
-            _methodText = RequestHeaders[HeaderNames.Method].ToString();
+            _methodText = HttpRequestHeaders.HeaderMethod.ToString();
+            HttpRequestHeaders.HeaderMethod = default; // Suppress pseduo headers from the public headers collection.
             Method = HttpUtilities.GetKnownMethod(_methodText);
 
             if (Method == Http.HttpMethod.None)
@@ -825,7 +869,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // :authority (optional)
             // Prefer this over Host
 
-            var authority = RequestHeaders[HeaderNames.Authority];
+            var authority = HttpRequestHeaders.HeaderAuthority;
+            HttpRequestHeaders.HeaderAuthority = default; // Suppress pseduo headers from the public headers collection.
             var host = HttpRequestHeaders.HeaderHost;
             if (!StringValues.IsNullOrEmpty(authority))
             {

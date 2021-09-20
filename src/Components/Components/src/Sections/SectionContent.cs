@@ -12,10 +12,16 @@ namespace Microsoft.AspNetCore.Components.Sections
         private SectionRegistry _registry = default!;
 
         /// <summary>
-        /// Gets or sets the name that determines which <see cref="SectionOutlet"/> instances will render
+        /// Gets or sets the name that determines which <see cref="SectionOutlet"/> instance will render
         /// the content of this instance.
         /// </summary>
         [Parameter] public string Name { get; set; } = default!;
+
+        /// <summary>
+        /// Gets or sets whether this component should provide the default content for the target
+        /// <see cref="SectionOutlet"/>.
+        /// </summary>
+        [Parameter] public bool IsDefaultContent { get; set; }
 
         /// <summary>
         /// Gets or sets the content to be rendered in corresponding <see cref="SectionOutlet"/> instances.
@@ -45,7 +51,7 @@ namespace Microsoft.AspNetCore.Components.Sections
                     _registry.RemoveProvider(_registeredName, this);
                 }
 
-                _registry.AddProvider(Name, this);
+                _registry.AddProvider(Name, this, IsDefaultContent);
                 _registeredName = Name;
             }
 
