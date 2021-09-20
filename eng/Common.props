@@ -1,5 +1,6 @@
 <Project>
   <PropertyGroup>
+    <ImportedCommonProps>true</ImportedCommonProps>
     <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('Windows'))">win</TargetOsName>
     <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx</TargetOsName>
     <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('Linux'))">linux</TargetOsName>

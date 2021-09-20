@@ -33,14 +33,20 @@
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
 
-    <!-- Make sure redist folder is built and ready -->
+    <NativeProjectReference Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="$(TargetArchitecture)" />
+    <NativeProjectReference Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" HandlerPath="2.0.0" Platform="$(TargetArchitecture)" />
+  </ItemGroup>
+
+  <!--
+    Make sure redist folder (DotNetUnpackFolder aka RedistSharedFrameworkLayoutRoot) is built and ready.
+    In a CI build, a prior build step included the App.Runtime project.
+    All local builds need this because $(IsFrameworkBuilding) does not guarantee build order.
+  -->
+  <ItemGroup Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">
     <ProjectReference Include="..\..\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
-
-    <NativeProjectReference Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="$(TargetArchitecture)" />
-    <NativeProjectReference Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" HandlerPath="2.0.0" Platform="$(TargetArchitecture)" />
   </ItemGroup>
 
   <Target Name="ResolveReferenceItemsForPackage" DependsOnTargets="ResolveReferences" BeforeTargets="_GetPackageFiles">

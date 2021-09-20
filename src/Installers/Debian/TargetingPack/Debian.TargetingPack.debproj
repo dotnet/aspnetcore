@@ -27,7 +27,11 @@
 
   </PropertyGroup>
 
-  <ItemGroup>
+  <!--
+    In a CI build, a prior build step included the App.Ref project.
+    All local builds need this because $(IsFrameworkBuilding) does not guarantee build order.
+  -->
+  <ItemGroup Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">
     <ProjectReference Include="..\..\..\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
       Private="false"
       ReferenceOutputAssembly="false"

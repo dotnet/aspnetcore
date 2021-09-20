@@ -1,4 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)eng/Build.props" />
+
   <PropertyGroup>
     <!-- Use fixed version instead of $(DefaultNetCoreTargetFramework) to avoid needing workarounds set up here. -->
     <TargetFramework>net5.0</TargetFramework>
@@ -12,9 +14,23 @@
   <!-- Update artifacts/bin/GenerateFiles/Directory.Build.* files. -->
   <Target Name="GenerateDirectoryBuildFiles">
     <PropertyGroup>
+      <!--
+        Are we going to build Framework projects unconditionally? The listed projects are App.Runtime or have
+        unconditional references to App.Runtime. Other projects reference App.Runtime but mostly use this (often
+        together w/ checks on what helix.proj will do) in their conditions to minimize reference duplication.
+        Installers and Site Extension projects are a special case because they build separately and can make
+        assumptions about what was built in earlier steps.
+      -->
+      <_IsFrameworkBuilding>false</_IsFrameworkBuilding>
+      <_IsFrameworkBuilding Condition=" '@(ProjectToBuild)' != '' AND
+        (@(ProjectToBuild -> AnyHaveMetadataValue('Identity', '$(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj')) OR
+         @(ProjectToBuild -> AnyHaveMetadataValue('Identity', '$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj')) OR
+         @(ProjectToBuild -> AnyHaveMetadataValue('Identity', '$(RepoRoot)src\Grpc\InteropTests\*.csproj'))) ">true</_IsFrameworkBuilding>
+
       <_TemplateProperties>
         AspNetCorePatchVersion=$(AspNetCorePatchVersion);
         DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
+        IsFrameworkBuilding=$(_IsFrameworkBuilding);
         MicrosoftAspNetCoreAppRefVersion=$(TargetingPackVersion);
         MicrosoftAspNetCoreAppRuntimeVersion=$(SharedFxVersion);
         MicrosoftNETCoreAppRefVersion=$(MicrosoftNETCoreAppRefVersion);

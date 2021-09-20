@@ -19,12 +19,18 @@
     <MicrosoftNETCoreAppRuntimeMajorMinorVersion>$(MicrosoftNETCoreAppRuntimeVersion.Split('.')[0]).$(MicrosoftNETCoreAppRuntimeVersion.Split('.')[1])</MicrosoftNETCoreAppRuntimeMajorMinorVersion>
   </PropertyGroup>
 
-  <ItemGroup>
+  <!--
+    In a CI build, a prior build step included the App.Runtime project.
+    All local builds need this because $(IsFrameworkBuilding) does not guarantee build order.
+  -->
+  <ItemGroup Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">
     <ProjectReference Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
+  </ItemGroup>
 
+  <ItemGroup>
     <InstallerOwnedDirectory Include="$(RpmPackageInstallRoot)shared/Microsoft.AspNetCore.App" />
     <RpmDependency Include="dotnet-runtime-$(MicrosoftNETCoreAppRuntimeMajorMinorVersion)" Version="$(MicrosoftNETCoreAppRuntimeVersion.Split('-')[0])" />
   </ItemGroup>

@@ -25,9 +25,11 @@
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Templating" PrivateAssets="All" Version="$(MicrosoftDotNetBuildTasksTemplatingVersion)" IsImplicitlyDefined="true" AllowExplicitReference="true" />
   </ItemGroup>
 
-  <!--  We include this here to ensure that the shared framework is built before we leverage it when running
-  the dev server. -->
-  <ItemGroup>
+  <!--
+    Do not enforce build order in most cases but make sure builds of this project are done together with
+    App.Runtime. Need latest App.Runtime due to blazor-devserver.runtimeconfig.json setup below.
+  -->
+  <ItemGroup Condition=" !$(IsFrameworkBuilding) AND ('$(IsHelixJob)' != 'true' OR '$(DoNotRequireSharedFxHelix)' == 'true') ">
     <ProjectReference Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
       Private="false"
       ReferenceOutputAssembly="false"

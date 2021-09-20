@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <!-- Shared testing infrastructure for running E2E tests using selenium -->
   <Import Condition="'$(SkipTestBuild)' != 'true'" Project="$(SharedSourceRoot)E2ETesting\E2ETesting.props" />
 
@@ -47,10 +46,6 @@
   <ItemGroup>
     <Reference Include="AngleSharp" />
     <Reference Include="System.Net.Http" />
-    <ProjectReference Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
-      Private="false"
-      ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true" />
 
     <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Shared\BrowserTesting\src\Microsoft.AspNetCore.BrowserTesting.csproj" />
@@ -71,6 +66,17 @@
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="$(RepoRoot)src\submodules\spa-templates\src\Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
+  </ItemGroup>
+
+  <!--
+    Do not enforce build order in most cases but make sure builds of this project are done together with
+    App.Runtime. Need latest App.Runtime when testing.
+  -->
+  <ItemGroup Condition=" !$(IsFrameworkBuilding) AND ('$(IsHelixJob)' != 'true' OR '$(DoNotRequireSharedFxHelix)' == 'true') ">
+    <ProjectReference Include="$(RepoRoot)\src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />

@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test" TreatAsLocalProperty="ProjectToBuild">
-
   <PropertyGroup>
     <!--
       When invoking helix.proj for the whole repo with build.cmd, ProjectToBuild will be set to the path to this project.
@@ -8,9 +7,21 @@
     <ProjectToBuild Condition="'$(ProjectToBuild)' == '$(MSBuildProjectFullPath)'"/>
   </PropertyGroup>
 
+  <Import Project="$(RepoRoot)artifacts\bin\GenerateFiles\Directory.Build.props" />
   <Import Project="..\targets\Helix.Common.props" />
   <Import Project="..\Build.props" />
   <Import Project="..\Versions.props" />
+
+  <!--
+    Ensure shared framework and targeting pack packages are available for correlation payload but not when
+    requirement is suppressed (the default RunHelix.ps1 case).
+  -->
+  <ItemGroup Condition=" !$(IsFrameworkBuilding) AND '$(DoNotRequireSharedFxHelix)' != 'true' ">
+    <ProjectReference Include="$(RepoRoot)\src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
+  </ItemGroup>
 
   <!-- Microsoft.DotNet.Helix.Sdk.MultiQueue.targets splits $(HelixTargetQueues) into @(HelixTargetQueue) items. -->
   <ItemGroup Condition=" '$(HelixTargetQueues)' == '' ">
@@ -44,23 +55,28 @@
     </AdditionalDotNetPackage>
   </ItemGroup>
 
-  <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">
-    <HelixType>ci</HelixType>
-    <!-- Creator is not valid for internal queues -->
-    <Creator Condition="'$(_UseHelixOpenQueues)' == 'true'">aspnetcore</Creator>
-    <HelixBuild>$(BUILD_BUILDNUMBER).$(SYSTEM_JOBATTEMPT)</HelixBuild>
-    <WaitForWorkItemCompletion>true</WaitForWorkItemCompletion>
-    <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
-    <EnableXUnitReporter>true</EnableXUnitReporter>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">
-    <HelixType>dev</HelixType>
-    <!-- Creator is not valid for internal queues -->
-    <Creator Condition="'$(_UseHelixOpenQueues)' == 'true'">$(USERNAME)</Creator>
-    <Creator Condition="'$(USERNAME)' == '' AND '$(_UseHelixOpenQueues)' == 'true'">$(USER)</Creator>
-    <HelixBuild>$([System.DateTime]::Now.ToString('yyyyMMddHHmm'))</HelixBuild>
-  </PropertyGroup>
+  <Choose>
+    <When Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">
+      <PropertyGroup>
+        <HelixType>ci</HelixType>
+        <!-- Creator is not valid for internal queues -->
+        <Creator Condition="'$(_UseHelixOpenQueues)' == 'true'">aspnetcore</Creator>
+        <HelixBuild>$(BUILD_BUILDNUMBER).$(SYSTEM_JOBATTEMPT)</HelixBuild>
+        <WaitForWorkItemCompletion>true</WaitForWorkItemCompletion>
+        <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
+        <EnableXUnitReporter>true</EnableXUnitReporter>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <HelixType>dev</HelixType>
+        <!-- Creator is not valid for internal queues -->
+        <Creator Condition="'$(_UseHelixOpenQueues)' == 'true'">$(USERNAME)</Creator>
+        <Creator Condition="'$(USERNAME)' == '' AND '$(_UseHelixOpenQueues)' == 'true'">$(USER)</Creator>
+        <HelixBuild>$([System.DateTime]::Now.ToString('yyyyMMddHHmm'))</HelixBuild>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
 
   <!-- Items with the type "HelixProperties" will become arbitrary JSON associated with the job -->
   <!-- NOTE: These are global to the whole Job, so don't include project-specific content here. -->
@@ -79,7 +95,7 @@
     <HelixCorrelationPayload Include="$(HelixTestConfigurationFilePath)" AsArchive="false" />
   </ItemGroup>
 
-  <Target Name="IncludeAspNetRuntime" BeforeTargets="Gather"
+  <Target Name="IncludeAspNetRuntime"
     Condition="'$(DoNotRequireSharedFxHelix)' != 'true' OR
     EXISTS('$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.$(TargetRuntimeIdentifier).$(SharedFxVersion).nupkg')">
     <MSBuild Projects="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
@@ -119,12 +135,15 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="Gather" BeforeTargets="Build">
+  <Target Name="_Gather">
     <MSBuild Projects="@(ProjectToBuild)"
-              Targets="CreateHelixPayload"
-              SkipNonexistentTargets="true">
+             Targets="CreateHelixPayload"
+             SkipNonexistentTargets="true">
       <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
     </MSBuild>
   </Target>
 
+  <Target Name="Gather"
+      BeforeTargets="Build"
+      DependsOnTargets="ResolveProjectReferences;_Gather;IncludeAspNetRuntime" />
 </Project>

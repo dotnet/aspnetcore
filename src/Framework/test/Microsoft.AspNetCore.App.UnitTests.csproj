@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore</RootNamespace>
@@ -66,7 +65,11 @@
     <Reference Include="NuGet.Versioning" />
   </ItemGroup>
 
-  <ItemGroup>
+  <!--
+    Do not enforce build order in most cases but make sure builds of this project are done together with
+    App.Runtime. Need latest App.Runtime when testing.
+  -->
+  <ItemGroup Condition=" !$(IsFrameworkBuilding) AND ('$(IsHelixJob)' != 'true' OR '$(DoNotRequireSharedFxHelix)' == 'true') ">
     <ProjectReference Include="$(RepoRoot)\src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
       Private="false"
       ReferenceOutputAssembly="false"
@@ -124,5 +127,4 @@
       </AssemblyAttribute>
     </ItemGroup>
   </Target>
-
 </Project>

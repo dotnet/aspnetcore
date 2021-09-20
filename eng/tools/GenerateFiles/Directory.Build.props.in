@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
     <DefaultNetCoreTargetFramework>${DefaultNetCoreTargetFramework}</DefaultNetCoreTargetFramework>
+    <IsFrameworkBuilding>${IsFrameworkBuilding}</IsFrameworkBuilding>
     <TreatWarningsAsErrors Condition="'$(BuildingInsideVisualStudio)' != 'true'">true</TreatWarningsAsErrors>
   </PropertyGroup>
 </Project>

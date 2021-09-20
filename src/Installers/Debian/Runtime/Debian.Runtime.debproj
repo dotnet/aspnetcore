@@ -23,7 +23,11 @@
     </DebianConfigProperties>
   </PropertyGroup>
 
-  <ItemGroup>
+  <!--
+    In a CI build, a prior build step included the App.Runtime project.
+    All local builds need this because $(IsFrameworkBuilding) does not guarantee build order.
+  -->
+  <ItemGroup Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">
     <ProjectReference Include="..\..\..\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
       Private="false"
       ReferenceOutputAssembly="false"

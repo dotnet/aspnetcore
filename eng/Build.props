@@ -1,5 +1,5 @@
 <Project>
-  <Import Project="Common.props" />
+  <Import Project="Common.props" Condition=" '$(ImportedCommonProps)' != 'true' " />
 
   <!-- These projects are always excluded, even when -projects is specified on command line. -->
   <ItemGroup>
@@ -144,7 +144,6 @@
         -->
         <DotNetProjects Include="
                           $(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj;
-                          $(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj;
                           $(RepoRoot)src\Framework\App.Ref.Internal\src\Microsoft.AspNetCore.App.Ref.Internal.csproj;
                           $(RepoRoot)src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj;
                           $(RepoRoot)src\Caching\**\*.*proj;
