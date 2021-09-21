@@ -476,7 +476,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     new object[] { (Action<HttpContext, float>)Store, "0.5", 0.5f },
                     new object[] { (Action<HttpContext, Half>)Store, "0.5", (Half)0.5f },
                     new object[] { (Action<HttpContext, decimal>)Store, "0.5", 0.5m },
-                    new object[] { (Action<HttpContext, DateTime>)Store, now.ToString("o"), now },
+                    new object[] { (Action<HttpContext, DateTime>)Store, now.ToString("o"), now.ToUniversalTime() },
                     new object[] { (Action<HttpContext, DateTimeOffset>)Store, "1970-01-01T00:00:00.0000000+00:00", DateTimeOffset.UnixEpoch },
                     new object[] { (Action<HttpContext, TimeSpan>)Store, "00:00:42", TimeSpan.FromSeconds(42) },
                     new object[] { (Action<HttpContext, Guid>)Store, "00000000-0000-0000-0000-000000000000", Guid.Empty },
@@ -2937,13 +2937,13 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             get
             {
-                string dateTimeOffsetParsing(DateTimeOffset time) => $"Time: {time.ToString("O", CultureInfo.InvariantCulture)}, Offset: {time.Offset}";
+                string dateTimeOffsetParsing(DateTimeOffset time) => $"Offset: {time.Offset}";
 
                 return new List<object?[]>
                 {
-                    new object?[] { (Func<DateTimeOffset, string>)dateTimeOffsetParsing, "09/20/2021 16:35:12 +00:00", "Time: 2021-09-20T16:35:12.0000000+00:00, Offset: 00:00:00" },
-                    new object?[] { (Func<DateTimeOffset, string>)dateTimeOffsetParsing, "09/20/2021 16:35:12", "Time: 2021-09-20T16:35:12.0000000+00:00, Offset: 00:00:00" },
-                    new object?[] { (Func<DateTimeOffset, string>)dateTimeOffsetParsing, "    09/20/2021    16:35:12   ", "Time: 2021-09-20T16:35:12.0000000+00:00, Offset: 00:00:00" },
+                    new object?[] { (Func<DateTimeOffset, string>)dateTimeOffsetParsing, "09/20/2021 16:35:12 +00:00", "Offset: 00:00:00" },
+                    new object?[] { (Func<DateTimeOffset, string>)dateTimeOffsetParsing, "09/20/2021 16:35:12", "Offset: 00:00:00" },
+                    new object?[] { (Func<DateTimeOffset, string>)dateTimeOffsetParsing, "    09/20/2021    16:35:12   ", "Offset: 00:00:00" },
                 };
             }
         }
