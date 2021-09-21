@@ -116,11 +116,12 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
 
     const errorDescription = this.document.createElement('span');
     errorDescription.textContent = 'Reconnection failed. Try ';
-  
+
     const link = this.document.createElement('a');
     link.textContent = 'reloading';
+    link.setAttribute('href', '');
     link.addEventListener('click', () => location.reload());
-  
+
     const errorInstructions = this.document.createElement('span');
     errorInstructions.textContent = ' the page if you\'re unable to reconnect.';
 
@@ -134,11 +135,12 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
 
     const errorDescription = this.document.createElement('span');
     errorDescription.textContent = 'Could not reconnect to the server. ';
-  
+
     const link = this.document.createElement('a');
     link.textContent = 'Reload';
+    link.setAttribute('href', '');
     link.addEventListener('click', () => location.reload());
-  
+
     const errorInstructions = this.document.createElement('span');
     errorInstructions.textContent = ' the page to restore functionality.';
 

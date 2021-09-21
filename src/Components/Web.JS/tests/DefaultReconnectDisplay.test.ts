@@ -59,7 +59,7 @@ describe('DefaultReconnectDisplay', () => {
         display.failed();
 
         expect(display.modal.style.display).toBe('block');
-        expect(display.message.innerHTML).toBe('Reconnection failed. Try <a href=\"\">reloading</a> the page if you\'re unable to reconnect.');
+        expect(display.message.innerHTML).toBe('<span>Reconnection failed. Try </span><a href=\"\">reloading</a><span> the page if you\'re unable to reconnect.</span>');
         expect(display.button.style.display).toBe('block');
         expect(display.loader.style.display).toBe('none');
     });
@@ -71,12 +71,12 @@ describe('DefaultReconnectDisplay', () => {
         display.rejected();
 
         expect(display.modal.style.display).toBe('block');
-        expect(display.message.innerHTML).toBe('Could not reconnect to the server. <a href=\"\">Reload</a> the page to restore functionality.');
+        expect(display.message.innerHTML).toBe('<span>Could not reconnect to the server. </span><a href=\"\">Reload</a><span> the page to restore functionality.</span>');
         expect(display.button.style.display).toBe('none');
         expect(display.loader.style.display).toBe('none');
     });
 
-    it('update message with current attempt', () => { 
+    it('update message with current attempt', () => {
         const maxRetires = 6;
         const display = new DefaultReconnectDisplay('test-dialog-id', maxRetires, testDocument, NullLogger.instance);
 
