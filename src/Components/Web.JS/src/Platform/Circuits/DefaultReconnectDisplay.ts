@@ -114,16 +114,14 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
     this.reloadParagraph.style.display = 'none';
     this.loader.style.display = 'none';
 
-    const errorDescription = this.document.createElement('span');
-    errorDescription.textContent = 'Reconnection failed. Try ';
+    const errorDescription = this.document.createTextNode('Reconnection failed. Try ');
 
     const link = this.document.createElement('a');
     link.textContent = 'reloading';
     link.setAttribute('href', '');
     link.addEventListener('click', () => location.reload());
 
-    const errorInstructions = this.document.createElement('span');
-    errorInstructions.textContent = ' the page if you\'re unable to reconnect.';
+    const errorInstructions = this.document.createTextNode(' the page if you\'re unable to reconnect.');
 
     this.message.replaceChildren(errorDescription, link, errorInstructions);
   }
@@ -133,16 +131,14 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
     this.reloadParagraph.style.display = 'none';
     this.loader.style.display = 'none';
 
-    const errorDescription = this.document.createElement('span');
-    errorDescription.textContent = 'Could not reconnect to the server. ';
+    const errorDescription = this.document.createTextNode('Could not reconnect to the server. ');
 
     const link = this.document.createElement('a');
     link.textContent = 'Reload';
     link.setAttribute('href', '');
     link.addEventListener('click', () => location.reload());
 
-    const errorInstructions = this.document.createElement('span');
-    errorInstructions.textContent = ' the page to restore functionality.';
+    const errorInstructions = this.document.createTextNode(' the page to restore functionality.');
 
     this.message.replaceChildren(errorDescription, link, errorInstructions);
   }
