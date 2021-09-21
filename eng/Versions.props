@@ -64,74 +64,74 @@
   -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/runtime -->
-    <MicrosoftExtensionsDependencyModelVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsDependencyModelVersion>
-    <MicrosoftNETCoreAppRefVersion>6.0.0-rtm.21470.18</MicrosoftNETCoreAppRefVersion>
-    <MicrosoftNETCoreAppRuntimewinx64Version>6.0.0-rtm.21470.18</MicrosoftNETCoreAppRuntimewinx64Version>
-    <MicrosoftNETRuntimeMonoAOTCompilerTaskVersion>6.0.0-rtm.21470.18</MicrosoftNETRuntimeMonoAOTCompilerTaskVersion>
-    <MicrosoftNETRuntimeWebAssemblySdkVersion>6.0.0-rtm.21470.18</MicrosoftNETRuntimeWebAssemblySdkVersion>
-    <MicrosoftNETCoreAppRuntimeAOTwinx64CrossbrowserwasmVersion>6.0.0-rtm.21470.18</MicrosoftNETCoreAppRuntimeAOTwinx64CrossbrowserwasmVersion>
-    <MicrosoftNETCoreBrowserDebugHostTransportVersion>6.0.0-rtm.21470.18</MicrosoftNETCoreBrowserDebugHostTransportVersion>
-    <MicrosoftExtensionsCachingAbstractionsVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsCachingAbstractionsVersion>
-    <MicrosoftExtensionsCachingMemoryVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsCachingMemoryVersion>
-    <MicrosoftExtensionsConfigurationAbstractionsVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsConfigurationAbstractionsVersion>
-    <MicrosoftExtensionsConfigurationBinderVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsConfigurationBinderVersion>
-    <MicrosoftExtensionsConfigurationCommandLineVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsConfigurationCommandLineVersion>
-    <MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>
-    <MicrosoftExtensionsConfigurationFileExtensionsVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsConfigurationFileExtensionsVersion>
-    <MicrosoftExtensionsConfigurationIniVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsConfigurationIniVersion>
-    <MicrosoftExtensionsConfigurationJsonVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsConfigurationJsonVersion>
-    <MicrosoftExtensionsConfigurationVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsConfigurationVersion>
-    <MicrosoftExtensionsConfigurationUserSecretsVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsConfigurationUserSecretsVersion>
-    <MicrosoftExtensionsConfigurationXmlVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsConfigurationXmlVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
-    <MicrosoftExtensionsDependencyInjectionVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsDependencyInjectionVersion>
-    <MicrosoftExtensionsFileProvidersAbstractionsVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsFileProvidersAbstractionsVersion>
-    <MicrosoftExtensionsFileProvidersCompositeVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsFileProvidersCompositeVersion>
-    <MicrosoftExtensionsFileProvidersPhysicalVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsFileProvidersPhysicalVersion>
-    <MicrosoftExtensionsFileSystemGlobbingVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsFileSystemGlobbingVersion>
-    <MicrosoftExtensionsHostFactoryResolverSourcesVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsHostFactoryResolverSourcesVersion>
-    <MicrosoftExtensionsHostingAbstractionsVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsHostingAbstractionsVersion>
-    <MicrosoftExtensionsHostingVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsHostingVersion>
-    <MicrosoftExtensionsHttpVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsHttpVersion>
-    <MicrosoftExtensionsLoggingAbstractionsVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsLoggingAbstractionsVersion>
-    <MicrosoftExtensionsLoggingConfigurationVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsLoggingConfigurationVersion>
-    <MicrosoftExtensionsLoggingConsoleVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsLoggingConsoleVersion>
-    <MicrosoftExtensionsLoggingDebugVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsLoggingDebugVersion>
-    <MicrosoftExtensionsLoggingEventSourceVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsLoggingEventSourceVersion>
-    <MicrosoftExtensionsLoggingEventLogVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsLoggingEventLogVersion>
-    <MicrosoftExtensionsLoggingVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsLoggingVersion>
-    <MicrosoftExtensionsLoggingTraceSourceVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsLoggingTraceSourceVersion>
-    <MicrosoftExtensionsOptionsConfigurationExtensionsVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsOptionsConfigurationExtensionsVersion>
-    <MicrosoftExtensionsOptionsDataAnnotationsVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsOptionsDataAnnotationsVersion>
-    <MicrosoftExtensionsOptionsVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsOptionsVersion>
-    <MicrosoftExtensionsPrimitivesVersion>6.0.0-rtm.21470.18</MicrosoftExtensionsPrimitivesVersion>
-    <MicrosoftInternalRuntimeAspNetCoreTransportVersion>6.0.0-rtm.21470.18</MicrosoftInternalRuntimeAspNetCoreTransportVersion>
-    <SystemDiagnosticsDiagnosticSourceVersion>6.0.0-rtm.21470.18</SystemDiagnosticsDiagnosticSourceVersion>
-    <SystemDiagnosticsEventLogVersion>6.0.0-rtm.21470.18</SystemDiagnosticsEventLogVersion>
-    <SystemDirectoryServicesProtocolsVersion>6.0.0-rtm.21470.18</SystemDirectoryServicesProtocolsVersion>
-    <SystemIOPipelinesVersion>6.0.0-rtm.21470.18</SystemIOPipelinesVersion>
-    <SystemNetHttpJsonVersion>6.0.0-rtm.21470.18</SystemNetHttpJsonVersion>
-    <SystemNetHttpWinHttpHandlerVersion>6.0.0-rtm.21470.18</SystemNetHttpWinHttpHandlerVersion>
-    <SystemReflectionMetadataVersion>6.0.0-rtm.21470.18</SystemReflectionMetadataVersion>
-    <SystemResourcesExtensionsVersion>6.0.0-rtm.21470.18</SystemResourcesExtensionsVersion>
-    <SystemRuntimeCompilerServicesUnsafeVersion>6.0.0-rtm.21470.18</SystemRuntimeCompilerServicesUnsafeVersion>
-    <SystemSecurityCryptographyPkcsVersion>6.0.0-rtm.21470.18</SystemSecurityCryptographyPkcsVersion>
-    <SystemSecurityCryptographyXmlVersion>6.0.0-rtm.21470.18</SystemSecurityCryptographyXmlVersion>
-    <SystemServiceProcessServiceControllerVersion>6.0.0-rtm.21470.18</SystemServiceProcessServiceControllerVersion>
-    <SystemTextEncodingsWebVersion>6.0.0-rtm.21470.18</SystemTextEncodingsWebVersion>
-    <SystemTextJsonVersion>6.0.0-rtm.21470.18</SystemTextJsonVersion>
-    <SystemThreadingChannelsVersion>6.0.0-rtm.21470.18</SystemThreadingChannelsVersion>
+    <MicrosoftExtensionsDependencyModelVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsDependencyModelVersion>
+    <MicrosoftNETCoreAppRefVersion>6.0.0-rtm.21470.22</MicrosoftNETCoreAppRefVersion>
+    <MicrosoftNETCoreAppRuntimewinx64Version>6.0.0-rtm.21470.22</MicrosoftNETCoreAppRuntimewinx64Version>
+    <MicrosoftNETRuntimeMonoAOTCompilerTaskVersion>6.0.0-rtm.21470.22</MicrosoftNETRuntimeMonoAOTCompilerTaskVersion>
+    <MicrosoftNETRuntimeWebAssemblySdkVersion>6.0.0-rtm.21470.22</MicrosoftNETRuntimeWebAssemblySdkVersion>
+    <MicrosoftNETCoreAppRuntimeAOTwinx64CrossbrowserwasmVersion>6.0.0-rtm.21470.22</MicrosoftNETCoreAppRuntimeAOTwinx64CrossbrowserwasmVersion>
+    <MicrosoftNETCoreBrowserDebugHostTransportVersion>6.0.0-rtm.21470.22</MicrosoftNETCoreBrowserDebugHostTransportVersion>
+    <MicrosoftExtensionsCachingAbstractionsVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsCachingAbstractionsVersion>
+    <MicrosoftExtensionsCachingMemoryVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsCachingMemoryVersion>
+    <MicrosoftExtensionsConfigurationAbstractionsVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsConfigurationAbstractionsVersion>
+    <MicrosoftExtensionsConfigurationBinderVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsConfigurationBinderVersion>
+    <MicrosoftExtensionsConfigurationCommandLineVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsConfigurationCommandLineVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>
+    <MicrosoftExtensionsConfigurationFileExtensionsVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsConfigurationFileExtensionsVersion>
+    <MicrosoftExtensionsConfigurationIniVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsConfigurationIniVersion>
+    <MicrosoftExtensionsConfigurationJsonVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsConfigurationJsonVersion>
+    <MicrosoftExtensionsConfigurationVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsConfigurationVersion>
+    <MicrosoftExtensionsConfigurationUserSecretsVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsConfigurationUserSecretsVersion>
+    <MicrosoftExtensionsConfigurationXmlVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsConfigurationXmlVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
+    <MicrosoftExtensionsDependencyInjectionVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsDependencyInjectionVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsFileProvidersAbstractionsVersion>
+    <MicrosoftExtensionsFileProvidersCompositeVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsFileProvidersCompositeVersion>
+    <MicrosoftExtensionsFileProvidersPhysicalVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsFileProvidersPhysicalVersion>
+    <MicrosoftExtensionsFileSystemGlobbingVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsFileSystemGlobbingVersion>
+    <MicrosoftExtensionsHostFactoryResolverSourcesVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsHostFactoryResolverSourcesVersion>
+    <MicrosoftExtensionsHostingAbstractionsVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsHostingAbstractionsVersion>
+    <MicrosoftExtensionsHostingVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsHostingVersion>
+    <MicrosoftExtensionsHttpVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsHttpVersion>
+    <MicrosoftExtensionsLoggingAbstractionsVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsLoggingAbstractionsVersion>
+    <MicrosoftExtensionsLoggingConfigurationVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsLoggingConfigurationVersion>
+    <MicrosoftExtensionsLoggingConsoleVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsLoggingConsoleVersion>
+    <MicrosoftExtensionsLoggingDebugVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsLoggingDebugVersion>
+    <MicrosoftExtensionsLoggingEventSourceVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsLoggingEventSourceVersion>
+    <MicrosoftExtensionsLoggingEventLogVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsLoggingEventLogVersion>
+    <MicrosoftExtensionsLoggingVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsLoggingVersion>
+    <MicrosoftExtensionsLoggingTraceSourceVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsLoggingTraceSourceVersion>
+    <MicrosoftExtensionsOptionsConfigurationExtensionsVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsOptionsConfigurationExtensionsVersion>
+    <MicrosoftExtensionsOptionsDataAnnotationsVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsOptionsDataAnnotationsVersion>
+    <MicrosoftExtensionsOptionsVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsOptionsVersion>
+    <MicrosoftExtensionsPrimitivesVersion>6.0.0-rtm.21470.22</MicrosoftExtensionsPrimitivesVersion>
+    <MicrosoftInternalRuntimeAspNetCoreTransportVersion>6.0.0-rtm.21470.22</MicrosoftInternalRuntimeAspNetCoreTransportVersion>
+    <SystemDiagnosticsDiagnosticSourceVersion>6.0.0-rtm.21470.22</SystemDiagnosticsDiagnosticSourceVersion>
+    <SystemDiagnosticsEventLogVersion>6.0.0-rtm.21470.22</SystemDiagnosticsEventLogVersion>
+    <SystemDirectoryServicesProtocolsVersion>6.0.0-rtm.21470.22</SystemDirectoryServicesProtocolsVersion>
+    <SystemIOPipelinesVersion>6.0.0-rtm.21470.22</SystemIOPipelinesVersion>
+    <SystemNetHttpJsonVersion>6.0.0-rtm.21470.22</SystemNetHttpJsonVersion>
+    <SystemNetHttpWinHttpHandlerVersion>6.0.0-rtm.21470.22</SystemNetHttpWinHttpHandlerVersion>
+    <SystemReflectionMetadataVersion>6.0.0-rtm.21470.22</SystemReflectionMetadataVersion>
+    <SystemResourcesExtensionsVersion>6.0.0-rtm.21470.22</SystemResourcesExtensionsVersion>
+    <SystemRuntimeCompilerServicesUnsafeVersion>6.0.0-rtm.21470.22</SystemRuntimeCompilerServicesUnsafeVersion>
+    <SystemSecurityCryptographyPkcsVersion>6.0.0-rtm.21470.22</SystemSecurityCryptographyPkcsVersion>
+    <SystemSecurityCryptographyXmlVersion>6.0.0-rtm.21470.22</SystemSecurityCryptographyXmlVersion>
+    <SystemServiceProcessServiceControllerVersion>6.0.0-rtm.21470.22</SystemServiceProcessServiceControllerVersion>
+    <SystemTextEncodingsWebVersion>6.0.0-rtm.21470.22</SystemTextEncodingsWebVersion>
+    <SystemTextJsonVersion>6.0.0-rtm.21470.22</SystemTextJsonVersion>
+    <SystemThreadingChannelsVersion>6.0.0-rtm.21470.22</SystemThreadingChannelsVersion>
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
-    <MicrosoftNETCorePlatformsVersion>6.0.0-rtm.21470.18</MicrosoftNETCorePlatformsVersion>
+    <MicrosoftNETCorePlatformsVersion>6.0.0-rtm.21470.22</MicrosoftNETCorePlatformsVersion>
     <!-- Packages from dotnet/efcore -->
-    <dotnetefVersion>6.0.0-rtm.21470.21</dotnetefVersion>
-    <MicrosoftEntityFrameworkCoreInMemoryVersion>6.0.0-rtm.21470.21</MicrosoftEntityFrameworkCoreInMemoryVersion>
-    <MicrosoftEntityFrameworkCoreRelationalVersion>6.0.0-rtm.21470.21</MicrosoftEntityFrameworkCoreRelationalVersion>
-    <MicrosoftEntityFrameworkCoreSqliteVersion>6.0.0-rtm.21470.21</MicrosoftEntityFrameworkCoreSqliteVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerVersion>6.0.0-rtm.21470.21</MicrosoftEntityFrameworkCoreSqlServerVersion>
-    <MicrosoftEntityFrameworkCoreToolsVersion>6.0.0-rtm.21470.21</MicrosoftEntityFrameworkCoreToolsVersion>
-    <MicrosoftEntityFrameworkCoreVersion>6.0.0-rtm.21470.21</MicrosoftEntityFrameworkCoreVersion>
-    <MicrosoftEntityFrameworkCoreDesignVersion>6.0.0-rtm.21470.21</MicrosoftEntityFrameworkCoreDesignVersion>
+    <dotnetefVersion>6.0.0-rtm.21470.24</dotnetefVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryVersion>6.0.0-rtm.21470.24</MicrosoftEntityFrameworkCoreInMemoryVersion>
+    <MicrosoftEntityFrameworkCoreRelationalVersion>6.0.0-rtm.21470.24</MicrosoftEntityFrameworkCoreRelationalVersion>
+    <MicrosoftEntityFrameworkCoreSqliteVersion>6.0.0-rtm.21470.24</MicrosoftEntityFrameworkCoreSqliteVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerVersion>6.0.0-rtm.21470.24</MicrosoftEntityFrameworkCoreSqlServerVersion>
+    <MicrosoftEntityFrameworkCoreToolsVersion>6.0.0-rtm.21470.24</MicrosoftEntityFrameworkCoreToolsVersion>
+    <MicrosoftEntityFrameworkCoreVersion>6.0.0-rtm.21470.24</MicrosoftEntityFrameworkCoreVersion>
+    <MicrosoftEntityFrameworkCoreDesignVersion>6.0.0-rtm.21470.24</MicrosoftEntityFrameworkCoreDesignVersion>
     <!-- Packages from dotnet/arcade -->
     <MicrosoftDotNetBuildTasksInstallersVersion>6.0.0-beta.21460.7</MicrosoftDotNetBuildTasksInstallersVersion>
     <MicrosoftDotNetBuildTasksTemplatingVersion>6.0.0-beta.21460.7</MicrosoftDotNetBuildTasksTemplatingVersion>
@@ -189,7 +189,6 @@
     -->
     <Analyzer_MicrosoftCodeAnalysisCSharpVersion>3.3.1</Analyzer_MicrosoftCodeAnalysisCSharpVersion>
     <Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion>3.3.1</Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion>
-
     <MicrosoftCodeAnalysisCommonVersion>4.0.0-4.final</MicrosoftCodeAnalysisCommonVersion>
     <MicrosoftCodeAnalysisCSharpVersion>4.0.0-4.final</MicrosoftCodeAnalysisCSharpVersion>
     <MicrosoftCodeAnalysisCSharpWorkspacesVersion>4.0.0-4.final</MicrosoftCodeAnalysisCSharpWorkspacesVersion>
