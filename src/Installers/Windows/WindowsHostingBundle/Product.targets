@@ -122,10 +122,10 @@
     </ItemGroup>
 
     <!-- Read MSI properties -->
-    <GetMsiProperty InstallPackage="%(DotNetPayload.Identity)" Property="ProductVersion">
+    <GetMsiProperty InstallPackage="%(SharedFxPayload.Identity)" Property="ProductVersion">
       <Output TaskParameter="Value" PropertyName="%(ProductVersionProperty)" />
     </GetMsiProperty>
-    <GetMsiProperty InstallPackage="%(DotNetPayload.Identity)" Property="ProductCode">
+    <GetMsiProperty InstallPackage="%(SharedFxPayload.Identity)" Property="ProductCode">
       <Output TaskParameter="Value" PropertyName="%(ProductCodeProperty)" />
     </GetMsiProperty>
 
