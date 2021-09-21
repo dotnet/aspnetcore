@@ -1,9 +1,9 @@
 {
   "sdk": {
-    "version": "7.0.100-alpha.1.21463.2"
+    "version": "7.0.100-alpha.1.21470.6"
   },
   "tools": {
-    "dotnet": "7.0.100-alpha.1.21463.2",
+    "dotnet": "7.0.100-alpha.1.21470.6",
     "runtimes": {
       "dotnet/x64": [
         "2.1.27",
