@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Builder
         private static readonly string[] PostVerb = new[] { "POST" };
         private static readonly string[] PutVerb = new[] { "PUT" };
         private static readonly string[] DeleteVerb = new[] { "DELETE" };
-
+        private static readonly string[] PatchVerb = new[] { "PATCH" };
         /// <summary>
         /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP GET requests
         /// for the specified pattern.
@@ -86,6 +86,22 @@ namespace Microsoft.AspNetCore.Builder
             RequestDelegate requestDelegate)
         {
             return MapMethods(endpoints, pattern, DeleteVerb, requestDelegate);
+        }
+
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP PATCH requests
+        /// for the specified pattern.
+        /// </summary>
+        /// <param name="endpoints"></param>
+        /// <param name="pattern"></param>
+        /// <param name="requestDelegate"></param>
+        /// <returns></returns>
+        public static IEndpointConventionBuilder MapPatch(
+            this IEndpointRouteBuilder endpoints,
+            string pattern,
+            RequestDelegate requestDelegate)
+        {
+            return MapMethods(endpoints, pattern, PatchVerb, requestDelegate);
         }
 
         /// <summary>
@@ -253,6 +269,23 @@ namespace Microsoft.AspNetCore.Builder
             Delegate handler)
         {
             return MapMethods(endpoints, pattern, DeleteVerb, handler);
+        }
+
+
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP PATCH requests
+        /// for the specified pattern.
+        /// </summary>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="handler">The delegate executed when the endpoint is matched.</param>
+        /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static RouteHandlerBuilder MapPatch(
+            this IEndpointRouteBuilder endpoints,
+            string pattern,
+            Delegate handler)
+        {
+            return MapMethods(endpoints, pattern, PatchVerb, handler);
         }
 
         /// <summary>
