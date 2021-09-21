@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Identity
             new Dictionary<string, IUserTwoFactorTokenProvider<TUser>>();
 
         private bool _disposed;
-#if NETSTANDARD2_0 || NET461
+#if NETSTANDARD2_0 || NETFRAMEWORK
         private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
 #endif
         private readonly IServiceProvider _services;
@@ -2429,7 +2429,7 @@ namespace Microsoft.AspNetCore.Identity
         private static string NewSecurityStamp()
         {
             byte[] bytes = new byte[20];
-#if NETSTANDARD2_0 || NET461
+#if NETSTANDARD2_0 || NETFRAMEWORK
             _rng.GetBytes(bytes);
 #else
             RandomNumberGenerator.Fill(bytes);

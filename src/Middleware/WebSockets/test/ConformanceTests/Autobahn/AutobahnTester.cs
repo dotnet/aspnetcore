@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
             {
                 Scheme = (ssl ? Uri.UriSchemeHttps : Uri.UriSchemeHttp),
                 ApplicationType = ApplicationType.Portable,
-                TargetFramework = "Net6.0",
+                TargetFramework = "Net7.0",
                 EnvironmentName = environment,
                 SiteName = "HttpTestSite", // This is configured in the Http.config
                 ServerConfigTemplateContent = (server == ServerType.IISExpress) ? File.ReadAllText(configPath) : null,

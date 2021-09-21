@@ -59,7 +59,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
                         cleanupExecutable = true;
                         toolsDirectory = Path.Combine(
                             thisPath,
-                            _projectOptions.Platform.Value() == "x86" ? "net461-x86" : "net461");
+                            _projectOptions.Platform.Value() == "x86" ? "net462-x86" : "net462");
 
                         var executableSource = Path.Combine(toolsDirectory, InsideManName + ".exe");
                         executable = Path.Combine(targetDirectory, InsideManName + ".exe");

@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
                         }
                         catch (ArgumentException)
                         {
-                            // On net461, certain header names are reserved and can't be set.
+                            // On net462, certain header names are reserved and can't be set.
                             // We filter out the known ones via the test above, but there could
                             // be others arbitrarily set by the client. It's not helpful to
                             // consider it an error, so just skip non-forwardable headers.

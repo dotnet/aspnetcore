@@ -13,7 +13,7 @@ namespace BasicApi.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-#if !NET461
+#if !NETFRAMEWORK
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn)
 #endif
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn)
@@ -31,7 +31,7 @@ namespace BasicApi.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-#if !NET461
+#if !NETFRAMEWORK
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn)
 #endif
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn)
@@ -59,7 +59,7 @@ namespace BasicApi.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-#if !NET461
+#if !NETFRAMEWORK
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn)
 #endif
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn)
@@ -84,7 +84,7 @@ namespace BasicApi.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-#if !NET461
+#if !NETFRAMEWORK
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn)
 #endif
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn)

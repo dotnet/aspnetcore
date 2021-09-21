@@ -14,11 +14,28 @@
       TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="@(KnownAppHostPack->Count()) != '0' AND
         !(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
+    <KnownRuntimePack
+      Include="@(KnownRuntimePack->WithMetadataValue('TargetFramework', 'net6.0'))"
+      TargetFramework="${DefaultNetCoreTargetFramework}"
+      Condition="@(KnownRuntimePack->Count()) != '0' AND
+        !(@(KnownRuntimePack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
     <KnownFrameworkReference
       Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'net6.0'))"
       TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="@(KnownFrameworkReference->Count()) != '0' AND
         !(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      Reference base shared framework at incoming dependency flow version, not bundled sdk version.
+      Apply this to all projects that target the default tfm (e.g. net7.0) or a rid-based variant of it (e.g. net7.0-windows)
+    -->
+    <FrameworkReference
+      Update="Microsoft.NETCore.App"
+      Condition=" (('$(ProjectTargetFrameworkIdentifier)' == '${DefaultNetCoreTargetFramework}') AND '${DefaultNetCoreTargetFramework}' == '$(ProjectTargetFrameworkVersion)') AND '$(TargetLatestDotNetRuntime)' != 'false' "
+      RuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimeVersion}"
+      TargetingPackVersion="${MicrosoftNETCoreAppRefVersion}" />
   </ItemGroup>
 
   <ItemGroup>

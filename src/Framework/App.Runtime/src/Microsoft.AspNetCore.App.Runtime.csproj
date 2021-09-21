@@ -123,7 +123,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <!-- Omit System.Security.Permissions closure. https://github.com/dotnet/runtime/issues/54341
          It is brought in by System.Security.Cryptography.Xml for netstandard2.0 compatibility
-         but not required in net6.0 since the types required exist in System.Security.AccessControl. -->
+         but not required in net7.0 since the types required exist in System.Security.AccessControl. -->
     <Reference Include="Microsoft.Win32.SystemEvents" ExcludeAssets="All" />
     <Reference Include="System.Drawing.Common" ExcludeAssets="All" />
     <Reference Include="System.Security.Permissions" ExcludeAssets="All" />

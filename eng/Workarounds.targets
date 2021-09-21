@@ -8,18 +8,6 @@
     <ProjectTargetFrameworkVersion>v$([MSBuild]::GetTargetFrameworkVersion('$(TargetFramework)', 2))</ProjectTargetFrameworkVersion>
   </PropertyGroup>
 
-  <ItemGroup>
-    <!--
-      Reference base shared framework at incoming dependency flow version, not bundled sdk version.
-      Apply this to all projects that target the default tfm (e.g. net6.0) or a rid-based variant of it (e.g. net6.0-windows)
-    -->
-    <FrameworkReference
-      Update="Microsoft.NETCore.App"
-      Condition=" (('$(ProjectTargetFrameworkIdentifier)' == '$(DefaultNetCoreTargetFrameworkIdentifier)') AND '$(DefaultNetCoreTargetFrameworkVersion)' == '$(ProjectTargetFrameworkVersion)') AND '$(TargetLatestDotNetRuntime)' != 'false' "
-      RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimeVersion)"
-      TargetingPackVersion="$(MicrosoftNETCoreAppRefVersion)" />
-  </ItemGroup>
-
   <!--
     Workaround https://github.com/dotnet/aspnetcore/issues/4257.
     The web sdk adds an implicit framework reference. This removes it until we can update our build to use framework references.

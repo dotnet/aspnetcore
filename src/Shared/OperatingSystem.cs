@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore
 {
     internal sealed class OperatingSystem
     {
-#if NET461
+#if NETFRAMEWORK
         private const bool _isBrowser = false;
 #else
         private static readonly bool _isBrowser = RuntimeInformation.IsOSPlatform(OSPlatform.Create("browser"));
