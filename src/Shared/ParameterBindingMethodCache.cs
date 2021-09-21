@@ -95,13 +95,15 @@ namespace Microsoft.AspNetCore.Http
                     //
                     // `DateTimeOffset`s are always in UTC and don't allow specifying an `Unspecific` kind.
                     // For this, we always assume that the original value is already in UTC to avoid resolving
-                    // the offset incorrectly dependening on the timezone of the machine.
+                    // the offset incorrectly dependening on the timezone of the machine. We don't bother mapping
+                    // it to UTC in this case. In the event that the original timestamp is not in UTC, it's offset
+                    // value will be maintained.
                     //
                     // DateOnly and TimeOnly types do not support conversion to Utc so we
                     // default to `DateTimeStyles.AllowWhiteSpaces`.
                     var dateTimeStyles = type switch {
                         Type t when t == typeof(DateTime) => DateTimeStyles.AdjustToUniversal | DateTimeStyles.AllowWhiteSpaces,
-                        Type t when t == typeof(DateTimeOffset) => DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal | DateTimeStyles.AllowWhiteSpaces,
+                        Type t when t == typeof(DateTimeOffset) => DateTimeStyles.AssumeUniversal | DateTimeStyles.AllowWhiteSpaces,
                         _ => DateTimeStyles.AllowWhiteSpaces
                     };
 

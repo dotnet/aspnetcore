@@ -2942,6 +2942,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 return new List<object?[]>
                 {
                     new object?[] { (Func<DateTimeOffset, string>)dateTimeOffsetParsing, "09/20/2021 16:35:12 +00:00", "Time: 2021-09-20T16:35:12.0000000+00:00, Offset: 00:00:00" },
+                    new object?[] { (Func<DateTimeOffset, string>)dateTimeOffsetParsing, "09/20/2021 11:35:12 +07:00", "Time: 2021-09-20T11:35:12.0000000+07:00, Offset: 07:00:00" },
                     new object?[] { (Func<DateTimeOffset, string>)dateTimeOffsetParsing, "09/20/2021 16:35:12", "Time: 2021-09-20T16:35:12.0000000+00:00, Offset: 00:00:00" },
                     new object?[] { (Func<DateTimeOffset, string>)dateTimeOffsetParsing, " 09/20/2021 16:35:12 ", "Time: 2021-09-20T16:35:12.0000000+00:00, Offset: 00:00:00" },
                 };
