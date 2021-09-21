@@ -12,7 +12,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Builder
 {
-    public class DelegateEndpointRouteBuilderExtensionsTest
+    public class RouteHandlerEndpointRouteBuilderExtensionsTest
     {
         private ModelEndpointDataSource GetBuilderEndpointDataSource(IEndpointRouteBuilder endpointRouteBuilder)
         {

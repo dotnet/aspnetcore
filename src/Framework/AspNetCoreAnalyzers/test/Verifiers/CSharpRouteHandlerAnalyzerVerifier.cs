@@ -11,13 +11,13 @@ using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Testing.Verifiers;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints;
+namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
 
-public static class CSharpDelegateEndpointsAnalyzerVerifier<TAnalyzer>
-    where TAnalyzer : DelegateEndpointAnalyzer, new()
+public static class CSharpRouteHandlerAnalyzerVerifier<TAnalyzer>
+    where TAnalyzer : RouteHandlerAnalyzer, new()
 {
     public static DiagnosticResult Diagnostic(string diagnosticId = null)
-        => CSharpDelegateEndpointsAnalyzerVerifier<DelegateEndpointAnalyzer>.Diagnostic(diagnosticId);
+        => CSharpRouteHandlerAnalyzerVerifier<RouteHandlerAnalyzer>.Diagnostic(diagnosticId);
 
     public static DiagnosticResult Diagnostic(DiagnosticDescriptor descriptor)
         => new DiagnosticResult(descriptor);

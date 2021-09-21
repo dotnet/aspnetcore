@@ -13,7 +13,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Routing.FunctionalTests
 {
-    public class DelegateEndpointTest
+    public class RouteHandlerTest
     {
         [Fact]
         public async Task MapPost_FromBodyWorksWithJsonPayload()
