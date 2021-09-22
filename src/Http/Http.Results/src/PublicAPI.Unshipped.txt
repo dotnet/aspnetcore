@@ -32,6 +32,5 @@ static Microsoft.AspNetCore.Http.Results.Text(string! content, string? contentTy
 static Microsoft.AspNetCore.Http.Results.Unauthorized() -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.UnprocessableEntity(object? error = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.ValidationProblem(System.Collections.Generic.IDictionary<string!, string![]!>! errors, string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null) -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.ValidationProblem(Microsoft.AspNetCore.Http.HttpValidationProblemDetails! problemDetails) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Extensions.get -> Microsoft.AspNetCore.Http.IResultExtensions!
 Microsoft.AspNetCore.Http.IResultExtensions

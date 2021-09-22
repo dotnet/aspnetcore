@@ -487,7 +487,7 @@ namespace Microsoft.AspNetCore.Http
                 Instance = instance,
                 Status = statusCode,
                 Title = title,
-                Type = type
+                Type = type,
             };
 
             if (extensions is not null)
@@ -544,7 +544,7 @@ namespace Microsoft.AspNetCore.Http
                 Instance = instance,
                 Title = title,
                 Type = type,
-                Status = statusCode
+                Status = statusCode,
             };
 
             if (extensions is not null)
@@ -555,19 +555,6 @@ namespace Microsoft.AspNetCore.Http
                 }
             }
 
-            return new ObjectResult(problemDetails)
-            {
-                ContentType = "application/problem+json",
-            };
-        }
-
-        /// <summary>
-        /// Produces a <see cref="HttpValidationProblemDetails"/> response.
-        /// </summary>
-        /// <param name="problemDetails">The <see cref="HttpValidationProblemDetails"/>  object to produce a response from.</param>
-        /// <returns>The created <see cref="IResult"/> for the response.</returns>
-        public static IResult ValidationProblem(HttpValidationProblemDetails problemDetails)
-        {
             return new ObjectResult(problemDetails)
             {
                 ContentType = "application/problem+json",

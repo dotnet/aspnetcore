@@ -34,6 +34,6 @@ app.MapGet("/validation-problem", () =>
     Results.ValidationProblem(errors, statusCode: 400, extensions: extensions));
 
 app.MapGet("/validation-problem-object", () =>
-    Results.ValidationProblem(new HttpValidationProblemDetails(errors) { Status = 400, Extensions = { { "traceId", "traceId123"}}}));
+    Results.Problem(new HttpValidationProblemDetails(errors) { Status = 400, Extensions = { { "traceId", "traceId123"}}}));
 
 app.Run();
