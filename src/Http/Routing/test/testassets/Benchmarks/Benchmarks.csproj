@@ -1,8 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <TargetFramework Condition="'$(BenchmarksTargetFramework)' != ''">$(BenchmarksTargetFramework)</TargetFramework>
     <UseP2PReferences Condition="'$(UseP2PReferences)'=='' AND '$(BenchmarksTargetFramework)'==''">true</UseP2PReferences>
   </PropertyGroup>
 
@@ -14,14 +12,4 @@
     <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
     <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
   </ItemGroup>
-
-   <!--These references are used when running on the Benchmarks Server-->
-  <ItemGroup Condition="'$(BenchmarksTargetFramework)'!=''">
-    <KnownFrameworkReference
-      Update="Microsoft.AspNetCore.App"
-      DefaultRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppVersion)"
-      LatestRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppVersion)"
-      TargetingPackVersion="$(MicrosoftAspNetCoreAppVersion)" />
-  </ItemGroup>
-
 </Project>
