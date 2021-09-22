@@ -133,18 +133,22 @@
       <SharedFxPayload Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxPackageVersion)-win-x64.msi">
         <ProductVersionProperty>SharedFxInstallerProductVersionx64</ProductVersionProperty>
         <ProductCodeProperty>SharedFxInstallerProductCodex64</ProductCodeProperty>
+        <CopyDir>$(InstallersOutputPath)temp/$(RuntimeInstallerBaseName)-$(SharedFxPackageVersion)-win-x64.msi</CopyDir>
       </SharedFxPayload>
       <SharedFxPayload Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxPackageVersion)-win-x86.msi">
         <ProductVersionProperty>SharedFxInstallerProductVersionx86</ProductVersionProperty>
         <ProductCodeProperty>SharedFxInstallerProductCodex86</ProductCodeProperty>
+        <CopyDir>$(InstallersOutputPath)temp/$(RuntimeInstallerBaseName)-$(SharedFxPackageVersion)-win-x86.msi</CopyDir>
       </SharedFxPayload>
     </ItemGroup>
 
+    <Copy SourceFiles="@(SharedFxPayload)" DestinationFiles="$(InstallersOutputPath)temp/$%(Filename)" />
+
     <!-- Read MSI properties -->
-    <GetMsiProperty InstallPackage="%(SharedFxPayload.Identity)" Property="ProductVersion">
+    <GetMsiProperty InstallPackage="%(SharedFxPayload.CopyDir)" Property="ProductVersion">
       <Output TaskParameter="Value" PropertyName="%(ProductVersionProperty)" />
     </GetMsiProperty>
-    <GetMsiProperty InstallPackage="%(SharedFxPayload.Identity)" Property="ProductCode">
+    <GetMsiProperty InstallPackage="%(SharedFxPayload.CopyDir)" Property="ProductCode">
       <Output TaskParameter="Value" PropertyName="%(ProductCodeProperty)" />
     </GetMsiProperty>
 
