@@ -125,6 +125,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal static bool SupportsTrailers { get; private set; }
         [MemberNotNullWhen(true, nameof(HttpSetRequestProperty))]
         internal static bool SupportsReset { get; private set; }
+        internal static bool SupportsDelegation { get; private set; }
 
         static HttpApi()
         {
@@ -136,7 +137,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             version.HttpApiMajorVersion = majorVersion;
             version.HttpApiMinorVersion = minorVersion;
 
-            var statusCode = HttpInitialize(version, (uint)HTTP_FLAGS.HTTP_INITIALIZE_SERVER, null);
+            var statusCode = HttpInitialize(version, (uint)(HTTP_FLAGS.HTTP_INITIALIZE_SERVER | HTTP_FLAGS.HTTP_INITIALIZE_CONFIG), null);
 
             supported = statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS;
 
@@ -144,10 +145,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 HttpApiModule = SafeLibraryHandle.Open(HTTPAPI);
                 HttpSetRequestProperty = HttpApiModule.GetProcAddress<HttpSetRequestPropertyInvoker>("HttpSetRequestProperty", throwIfNotFound: false);
-
                 SupportsReset = HttpSetRequestProperty != null;
-                // Trailers support was added in the same release as Reset, but there's no method we can export to check it directly.
-                SupportsTrailers = SupportsReset;
+                SupportsTrailers = IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureResponseTrailers);
+                SupportsDelegation = IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureDelegateEx);
             }
         }
 
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        internal static bool IsFeatureSupported(HTTP_FEATURE_ID feature)
+        private static bool IsFeatureSupported(HTTP_FEATURE_ID feature)
         {
             try
             {

@@ -6,6 +6,7 @@
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Http.Extensions.Tests
 {
@@ -76,6 +77,7 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         [Theory]
         [InlineData(typeof(TryParseStringRecord))]
         [InlineData(typeof(TryParseStringStruct))]
+        [InlineData(typeof(TryParseInheritClassWithFormatProvider))]
         public void FindTryParseStringMethod_ReturnsTheExpectedTryParseMethodWithInvariantCultureCustomType(Type type)
         {
             var methodFound = new ParameterBindingMethodCache().FindTryParseMethod(@type);
@@ -91,6 +93,24 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
             Assert.Equal(typeof(IFormatProvider), parameters[1].ParameterType);
             Assert.True(parameters[2].IsOut);
             Assert.True(((call.Arguments[1] as ConstantExpression)!.Value as CultureInfo)!.Equals(CultureInfo.InvariantCulture));
+        }
+
+        [Theory]
+        [InlineData(typeof(TryParseNoFormatProviderRecord))]
+        [InlineData(typeof(TryParseNoFormatProviderStruct))]
+        [InlineData(typeof(TryParseInheritClass))]
+        public void FindTryParseMethod_WithNoFormatProvider(Type type)
+        {
+            var methodFound = new ParameterBindingMethodCache().FindTryParseMethod(@type);
+            Assert.NotNull(methodFound);
+
+            var call = methodFound!(Expression.Variable(type, "parsedValue")) as MethodCallExpression;
+            Assert.NotNull(call);
+            var parameters = call!.Method.GetParameters();
+
+            Assert.Equal(2, parameters.Length);
+            Assert.Equal(typeof(string), parameters[0].ParameterType);
+            Assert.True(parameters[1].IsOut);
         }
 
         public static IEnumerable<object[]> TryParseStringParameterInfoData
@@ -248,6 +268,14 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
                     new[]
                     {
                         GetFirstParameter((BindAsyncSingleArgStruct arg) => BindAsyncSingleArgStructMethod(arg)),
+                    },
+                    new[]
+                    {
+                        GetFirstParameter((InheritBindAsync arg) => InheritBindAsyncMethod(arg))
+                    },
+                    new[]
+                    {
+                        GetFirstParameter((InheritBindAsyncWithParameterInfo arg) => InheritBindAsyncWithParameterInfoMethod(arg))
                     }
                 };
             }
@@ -274,6 +302,66 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
             Assert.True(new ParameterBindingMethodCache().HasBindAsyncMethod(parameterInfo));
         }
 
+        [Theory]
+        [InlineData(typeof(InvalidVoidReturnTryParseStruct))]
+        [InlineData(typeof(InvalidVoidReturnTryParseClass))]
+        [InlineData(typeof(InvalidWrongTypeTryParseStruct))]
+        [InlineData(typeof(InvalidWrongTypeTryParseClass))]
+        [InlineData(typeof(InvalidTryParseNullableStruct))]
+        [InlineData(typeof(InvalidTooFewArgsTryParseStruct))]
+        [InlineData(typeof(InvalidTooFewArgsTryParseClass))]
+        [InlineData(typeof(InvalidNonStaticTryParseStruct))]
+        [InlineData(typeof(InvalidNonStaticTryParseClass))]
+        [InlineData(typeof(TryParseWrongTypeInheritClass))]
+        public void FindTryParseMethod_ThrowsIfInvalidTryParseOnType(Type type)
+        {
+            var ex = Assert.Throws<InvalidOperationException>(
+                () => new ParameterBindingMethodCache().FindTryParseMethod(type));
+            Assert.StartsWith($"TryParse method found on {TypeNameHelper.GetTypeDisplayName(type, fullName: false)} with incorrect format. Must be a static method with format", ex.Message);
+            Assert.Contains($"bool TryParse(string, IFormatProvider, out {TypeNameHelper.GetTypeDisplayName(type, fullName: false)})", ex.Message);
+            Assert.Contains($"bool TryParse(string, out {TypeNameHelper.GetTypeDisplayName(type, fullName: false)})", ex.Message);
+        }
+
+        [Theory]
+        [InlineData(typeof(TryParseClassWithGoodAndBad))]
+        [InlineData(typeof(TryParseStructWithGoodAndBad))]
+        public void FindTryParseMethod_IgnoresInvalidTryParseIfGoodOneFound(Type type)
+        {
+            var method = new ParameterBindingMethodCache().FindTryParseMethod(type);
+            Assert.NotNull(method);
+        }
+
+        [Theory]
+        [InlineData(typeof(InvalidWrongReturnBindAsyncStruct))]
+        [InlineData(typeof(InvalidWrongReturnBindAsyncClass))]
+        [InlineData(typeof(InvalidWrongParamBindAsyncStruct))]
+        [InlineData(typeof(InvalidWrongParamBindAsyncClass))]
+        [InlineData(typeof(BindAsyncWrongTypeInherit))]
+        [InlineData(typeof(BindAsyncWithParameterInfoWrongTypeInherit))]
+        public void FindBindAsyncMethod_ThrowsIfInvalidBindAsyncOnType(Type type)
+        {
+            var cache = new ParameterBindingMethodCache();
+            var parameter = new MockParameterInfo(type, "anything");
+            var ex = Assert.Throws<InvalidOperationException>(
+                () => cache.FindBindAsyncMethod(parameter));
+            Assert.StartsWith($"BindAsync method found on {TypeNameHelper.GetTypeDisplayName(type, fullName: false)} with incorrect format. Must be a static method with format", ex.Message);
+            Assert.Contains($"ValueTask<{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}> BindAsync(HttpContext context, ParameterInfo parameter)", ex.Message);
+            Assert.Contains($"ValueTask<{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}> BindAsync(HttpContext context)", ex.Message);
+            Assert.Contains($"ValueTask<{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}?> BindAsync(HttpContext context, ParameterInfo parameter)", ex.Message);
+            Assert.Contains($"ValueTask<{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}?> BindAsync(HttpContext context)", ex.Message);
+        }
+
+        [Theory]
+        [InlineData(typeof(BindAsyncStructWithGoodAndBad))]
+        [InlineData(typeof(BindAsyncClassWithGoodAndBad))]
+        public void FindBindAsyncMethod_IgnoresInvalidBindAsyncIfGoodOneFound(Type type)
+        {
+            var cache = new ParameterBindingMethodCache();
+            var parameter = new MockParameterInfo(type, "anything");
+            var (expression, _) = cache.FindBindAsyncMethod(parameter);
+            Assert.NotNull(expression);
+        }
+
         enum Choice
         {
             One,
@@ -292,8 +380,8 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
 
         private static void BindAsyncSingleArgRecordMethod(BindAsyncSingleArgRecord arg) { }
         private static void BindAsyncSingleArgStructMethod(BindAsyncSingleArgStruct arg) { }
-        private static void BindAsyncNullableSingleArgStructMethod(BindAsyncSingleArgStruct? arg) { }
-        private static void NullableReturningBindAsyncSingleArgStructMethod(NullableReturningBindAsyncSingleArgStruct arg) { }
+        private static void InheritBindAsyncMethod(InheritBindAsync arg) { }
+        private static void InheritBindAsyncWithParameterInfoMethod(InheritBindAsyncWithParameterInfo args) { }
 
         private static ParameterInfo GetFirstParameter<T>(Expression<Action<T>> expr)
         {
@@ -329,6 +417,218 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
                 result = new TryParseStringStruct(val);
                 return true;
             }
+        }
+
+        private record struct InvalidVoidReturnTryParseStruct(int Value)
+        {
+            public static void TryParse(string? value, IFormatProvider formatProvider, out InvalidVoidReturnTryParseStruct result)
+            {
+                if (!int.TryParse(value, NumberStyles.Integer, formatProvider, out var val))
+                {
+                    result = default;
+                    return;
+                }
+
+                result = new InvalidVoidReturnTryParseStruct(val);
+                return;
+            }
+        }
+
+        private record struct InvalidWrongTypeTryParseStruct(int Value)
+        {
+            public static bool TryParse(string? value, IFormatProvider formatProvider, out InvalidVoidReturnTryParseStruct result)
+            {
+                if (!int.TryParse(value, NumberStyles.Integer, formatProvider, out var val))
+                {
+                    result = default;
+                    return false;
+                }
+
+                result = new InvalidVoidReturnTryParseStruct(val);
+                return true;
+            }
+        }
+
+        private record struct InvalidTryParseNullableStruct(int Value)
+        {
+            public static bool TryParse(string? value, IFormatProvider formatProvider, out InvalidTryParseNullableStruct? result)
+            {
+                if (!int.TryParse(value, NumberStyles.Integer, formatProvider, out var val))
+                {
+                    result = default;
+                    return false;
+                }
+
+                result = new InvalidTryParseNullableStruct(val);
+                return true;
+            }
+        }
+
+        private record struct InvalidTooFewArgsTryParseStruct(int Value)
+        {
+            public static bool TryParse(out InvalidTooFewArgsTryParseStruct result)
+            {
+                result = default;
+                return false;
+            }
+        }
+
+        private struct TryParseStructWithGoodAndBad
+        {
+            public static bool TryParse(string? value, out TryParseStructWithGoodAndBad result)
+            {
+                result = new();
+                return false;
+            }
+
+            public static void TryParse(out TryParseStructWithGoodAndBad result)
+            {
+                result = new();
+            }
+        }
+
+        private record struct InvalidNonStaticTryParseStruct(int Value)
+        {
+            public bool TryParse(string? value, IFormatProvider formatProvider, out InvalidVoidReturnTryParseStruct result)
+            {
+                if (!int.TryParse(value, NumberStyles.Integer, formatProvider, out var val))
+                {
+                    result = default;
+                    return false;
+                }
+
+                result = new InvalidVoidReturnTryParseStruct(val);
+                return true;
+            }
+        }
+
+        private class InvalidVoidReturnTryParseClass
+        {
+            public static void TryParse(string? value, IFormatProvider formatProvider, out InvalidVoidReturnTryParseClass result)
+            {
+                if (!int.TryParse(value, NumberStyles.Integer, formatProvider, out var val))
+                {
+                    result = new();
+                    return;
+                }
+
+                result = new();
+            }
+        }
+
+        private class InvalidWrongTypeTryParseClass
+        {
+            public static bool TryParse(string? value, IFormatProvider formatProvider, out InvalidVoidReturnTryParseClass result)
+            {
+                if (!int.TryParse(value, NumberStyles.Integer, formatProvider, out var val))
+                {
+                    result = new();
+                    return false;
+                }
+
+                result = new();
+                return true;
+            }
+        }
+
+        private class InvalidTooFewArgsTryParseClass
+        {
+            public static bool TryParse(out InvalidTooFewArgsTryParseClass result)
+            {
+                result = new();
+                return false;
+            }
+        }
+
+        private class TryParseClassWithGoodAndBad
+        {
+            public static bool TryParse(string? value, out TryParseClassWithGoodAndBad result)
+            {
+                result = new();
+                return false;
+            }
+
+            public static bool TryParse(out TryParseClassWithGoodAndBad result)
+            {
+                result = new();
+                return false;
+            }
+        }
+
+        private class InvalidNonStaticTryParseClass
+        {
+            public bool TryParse(string? value, IFormatProvider formatProvider, out InvalidNonStaticTryParseClass result)
+            {
+                if (!int.TryParse(value, NumberStyles.Integer, formatProvider, out var val))
+                {
+                    result = new();
+                    return false;
+                }
+
+                result = new();
+                return true;
+            }
+        }
+
+        private record TryParseNoFormatProviderRecord(int Value)
+        {
+            public static bool TryParse(string? value, out TryParseNoFormatProviderRecord? result)
+            {
+                if (!int.TryParse(value, out var val))
+                {
+                    result = null;
+                    return false;
+                }
+
+                result = new TryParseNoFormatProviderRecord(val);
+                return true;
+            }
+        }
+
+        private record struct TryParseNoFormatProviderStruct(int Value)
+        {
+            public static bool TryParse(string? value, out TryParseNoFormatProviderStruct result)
+            {
+                if (!int.TryParse(value, out var val))
+                {
+                    result = default;
+                    return false;
+                }
+
+                result = new TryParseNoFormatProviderStruct(val);
+                return true;
+            }
+        }
+
+        private class BaseTryParseClass<T>
+        {
+            public static bool TryParse(string? value, out T? result)
+            {
+                result = default(T);
+                return false;
+            }
+        }
+
+        private class TryParseInheritClass : BaseTryParseClass<TryParseInheritClass>
+        {
+        }
+
+        // using wrong T on purpose
+        private class TryParseWrongTypeInheritClass : BaseTryParseClass<TryParseInheritClass>
+        {
+        }
+
+        private class BaseTryParseClassWithFormatProvider<T>
+        {
+            public static bool TryParse(string? value, IFormatProvider formatProvider, out T? result)
+            {
+                result = default(T);
+                return false;
+            }
+        }
+
+        private class TryParseInheritClassWithFormatProvider : BaseTryParseClassWithFormatProvider<TryParseInheritClassWithFormatProvider>
+        {
         }
 
         private record BindAsyncRecord(int Value)
@@ -395,10 +695,80 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
             }
         }
 
-        private record struct NullableReturningBindAsyncSingleArgStruct(int Value)
+        private record struct InvalidWrongReturnBindAsyncStruct(int Value)
         {
-            public static ValueTask<NullableReturningBindAsyncStruct?> BindAsync(HttpContext context, ParameterInfo parameter) =>
+            public static Task<InvalidWrongReturnBindAsyncStruct> BindAsync(HttpContext context, ParameterInfo parameter) =>
                 throw new NotImplementedException();
+        }
+
+        private class InvalidWrongReturnBindAsyncClass
+        {
+            public static Task<InvalidWrongReturnBindAsyncClass> BindAsync(HttpContext context, ParameterInfo parameter) =>
+                throw new NotImplementedException();
+        }
+
+        private record struct InvalidWrongParamBindAsyncStruct(int Value)
+        {
+            public static ValueTask<InvalidWrongParamBindAsyncStruct> BindAsync(ParameterInfo parameter) =>
+                throw new NotImplementedException();
+        }
+
+        private class InvalidWrongParamBindAsyncClass
+        {
+            public static Task<InvalidWrongParamBindAsyncClass> BindAsync(ParameterInfo parameter) =>
+                throw new NotImplementedException();
+        }
+
+        private record struct BindAsyncStructWithGoodAndBad(int Value)
+        {
+            public static ValueTask<BindAsyncStructWithGoodAndBad> BindAsync(HttpContext context, ParameterInfo parameter) =>
+                throw new NotImplementedException();
+
+            public static ValueTask<BindAsyncStructWithGoodAndBad> BindAsync(ParameterInfo parameter) =>
+                throw new NotImplementedException();
+        }
+
+        private class BindAsyncClassWithGoodAndBad
+        {
+            public static ValueTask<BindAsyncClassWithGoodAndBad> BindAsync(HttpContext context, ParameterInfo parameter) =>
+                throw new NotImplementedException();
+
+            public static ValueTask<BindAsyncClassWithGoodAndBad> BindAsync(ParameterInfo parameter) =>
+                throw new NotImplementedException();
+        }
+
+        private class BaseBindAsync<T>
+        {
+            public static ValueTask<T?> BindAsync(HttpContext context)
+            {
+                return new(default(T));
+            }
+        }
+
+        private class InheritBindAsync : BaseBindAsync<InheritBindAsync>
+        {
+        }
+
+        // Using wrong T on purpose
+        private class BindAsyncWrongTypeInherit : BaseBindAsync<InheritBindAsync>
+        {
+        }
+
+        private class BaseBindAsyncWithParameterInfo<T>
+        {
+            public static ValueTask<T?> BindAsync(HttpContext context, ParameterInfo parameter)
+            {
+                return new(default(T));
+            }
+        }
+
+        private class InheritBindAsyncWithParameterInfo : BaseBindAsyncWithParameterInfo<InheritBindAsyncWithParameterInfo>
+        {
+        }
+
+        // Using wrong T on purpose
+        private class BindAsyncWithParameterInfoWrongTypeInherit : BaseBindAsyncWithParameterInfo<InheritBindAsync>
+        {
         }
 
         private class MockParameterInfo : ParameterInfo

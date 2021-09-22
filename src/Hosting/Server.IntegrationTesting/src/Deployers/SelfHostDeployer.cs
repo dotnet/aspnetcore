@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 HostProcess.EnableRaisingEvents = true;
                 HostProcess.OutputDataReceived += (sender, dataArgs) =>
                 {
-                    if (string.Equals(dataArgs.Data, ApplicationStartedMessage))
+                    if (!string.IsNullOrEmpty(dataArgs.Data) && dataArgs.Data.Contains(ApplicationStartedMessage))
                     {
                         started.TrySetResult();
                     }

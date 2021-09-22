@@ -148,6 +148,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         [DelegateSupportedCondition(false)]
         public async Task DelegationFeaturesAreNull()
         {
+            // Testing the DelegateSupportedCondition
+            Assert.True(Environment.OSVersion.Version < new Version(10, 0, 22000), "This should be supported on Win 11.");
+
             using var delegator = Utilities.CreateHttpServer(out var delegatorAddress, httpContext =>
             {
                 var delegateFeature = httpContext.Features.Get<IHttpSysRequestDelegationFeature>();
