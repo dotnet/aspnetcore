@@ -9,15 +9,15 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
-namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints;
+namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
+public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(new[]
     {
-        DiagnosticDescriptors.DoNotUseModelBindingAttributesOnDelegateEndpointParameters,
-        DiagnosticDescriptors.DoNotReturnActionResultsFromMapActions,
+        DiagnosticDescriptors.DoNotUseModelBindingAttributesOnRouteHandlerParameters,
+        DiagnosticDescriptors.DoNotReturnActionResultsFromRouteHandlers,
         DiagnosticDescriptors.DetectMisplacedLambdaAttribute,
         DiagnosticDescriptors.DetectMismatchedParameterOptionality
     });
@@ -40,7 +40,7 @@ public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
             {
                 var invocation = (IInvocationOperation)operationAnalysisContext.Operation;
                 var targetMethod = invocation.TargetMethod;
-                if (IsDelegateHandlerInvocation(wellKnownTypes, invocation, targetMethod))
+                if (!IsRouteHandlerInvocation(wellKnownTypes, invocation, targetMethod))
                 {
                     return;
                 }
@@ -109,13 +109,15 @@ public partial class DelegateEndpointAnalyzer : DiagnosticAnalyzer
         });
     }
 
-    private static bool IsDelegateHandlerInvocation(
+    private static bool IsRouteHandlerInvocation(
         WellKnownTypes wellKnownTypes,
         IInvocationOperation invocation,
         IMethodSymbol targetMethod)
     {
-        return !targetMethod.Name.StartsWith("Map", StringComparison.Ordinal) ||
-            !SymbolEqualityComparer.Default.Equals(wellKnownTypes.DelegateEndpointRouteBuilderExtensions, targetMethod.ContainingType) ||
-            invocation.Arguments.Length != 3;
+        return targetMethod.Name.StartsWith("Map", StringComparison.Ordinal) &&
+            SymbolEqualityComparer.Default.Equals(wellKnownTypes.EndpointRouteBuilderExtensions, targetMethod.ContainingType) &&
+            invocation.Arguments.Length == 3 &&
+            targetMethod.Parameters.Length == 3 &&
+            SymbolEqualityComparer.Default.Equals(wellKnownTypes.Delegate, targetMethod.Parameters[2].Type);
     }
 }

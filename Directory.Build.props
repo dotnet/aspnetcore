@@ -104,7 +104,7 @@
     <NuspecBasePath>$(MSBuildProjectDirectory)</NuspecBasePath>
 
     <IncludeSymbols>true</IncludeSymbols>
-    <DefaultNetFxTargetFramework>net461</DefaultNetFxTargetFramework>
+    <DefaultNetFxTargetFramework>net462</DefaultNetFxTargetFramework>
   </PropertyGroup>
 
   <!-- Warnings and errors -->

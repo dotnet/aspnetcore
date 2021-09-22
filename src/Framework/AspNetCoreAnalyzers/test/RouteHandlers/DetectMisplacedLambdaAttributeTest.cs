@@ -5,11 +5,11 @@ using System.Globalization;
 using Microsoft.AspNetCore.Analyzer.Testing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints;
+namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
 
 public partial class DetectMisplacedLambdaAttributeTest
 {
-    private TestDiagnosticAnalyzerRunner Runner { get; } = new(new DelegateEndpointAnalyzer());
+    private TestDiagnosticAnalyzerRunner Runner { get; } = new(new RouteHandlerAnalyzer());
 
     [Fact]
     public async Task MinimalAction_WithCorrectlyPlacedAttribute_Works()
@@ -48,7 +48,7 @@ void Hello() { }
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DetectMisplacedLambdaAttribute, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("'AuthorizeAttribute' should be placed on the endpoint delegate to be effective", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("'AuthorizeAttribute' should be placed directly on the route handler lambda to be effective", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -70,7 +70,7 @@ string Hello() { return ""foo""; }
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DetectMisplacedLambdaAttribute, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("'AuthorizeAttribute' should be placed on the endpoint delegate to be effective", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("'AuthorizeAttribute' should be placed directly on the route handler lambda to be effective", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -95,12 +95,12 @@ void Hello() { }
             diagnostic => {
                 Assert.Same(DiagnosticDescriptors.DetectMisplacedLambdaAttribute, diagnostic.Descriptor);
                 AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-                Assert.Equal("'AuthorizeAttribute' should be placed on the endpoint delegate to be effective", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+                Assert.Equal("'AuthorizeAttribute' should be placed directly on the route handler lambda to be effective", diagnostic.GetMessage(CultureInfo.InvariantCulture));
             },
             diagnostic => {
                 Assert.Same(DiagnosticDescriptors.DetectMisplacedLambdaAttribute, diagnostic.Descriptor);
                 AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-                Assert.Equal("'ProducesAttribute' should be placed on the endpoint delegate to be effective", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+                Assert.Equal("'ProducesAttribute' should be placed directly on the route handler lambda to be effective", diagnostic.GetMessage(CultureInfo.InvariantCulture));
             }
         );
     }
@@ -126,7 +126,7 @@ void Hello() { }
             diagnostic => {
                 Assert.Same(DiagnosticDescriptors.DetectMisplacedLambdaAttribute, diagnostic.Descriptor);
                 AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-                Assert.Equal("'ProducesAttribute' should be placed on the endpoint delegate to be effective", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+                Assert.Equal("'ProducesAttribute' should be placed directly on the route handler lambda to be effective", diagnostic.GetMessage(CultureInfo.InvariantCulture));
             }
         );
     }
@@ -215,7 +215,7 @@ public static class Helpers
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DetectMisplacedLambdaAttribute, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("'AuthorizeAttribute' should be placed on the endpoint delegate to be effective", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("'AuthorizeAttribute' should be placed directly on the route handler lambda to be effective", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]

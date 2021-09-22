@@ -47,8 +47,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 return urlHelper;
             }
 
-            var endpointFeature = httpContext.Features.Get<IEndpointFeature>();
-            if (endpointFeature?.Endpoint != null)
+            var endpoint = httpContext.GetEndpoint();
+            if (endpoint != null)
             {
                 var services = httpContext.RequestServices;
                 var linkGenerator = services.GetRequiredService<LinkGenerator>();
