@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             AssertLogContainsMessages(
                 "Starting up Blazor server-side application.",
                 "Unable to connect to the server with any of the available transports. LongPolling failed: Error: 'LongPolling' is disabled by the client.",
-                "Unable to initiate a SignalR connection to the server. This might be because the server is not configured to support WebSockets. To troubleshoot this, visit");
+                "Unable to initiate a SignalR connection to the server. This might be because the server is not configured to support WebSockets. For additional details, visit");
 
             AssertGlobalErrorState(hasGlobalError: true);
         }
