@@ -54,20 +54,7 @@
       <Private>True</Private>
       <DoNotHarvest>true</DoNotHarvest>
     </ProjectReference>
-    <ProjectReference Include="..\SharedFrameworkLib\SharedFrameworkLib.wixproj">
-      <SetPlatform>Platform=x86</SetPlatform>
-      <Name>SharedFrameworkLib_x86</Name>
-      <Project>{5244BC49-2568-4701-80A6-EAB8950AB5FA}</Project>
-      <Private>True</Private>
-      <DoNotHarvest>true</DoNotHarvest>
-    </ProjectReference>
-    <ProjectReference Include="..\SharedFrameworkLib\SharedFrameworkLib.wixproj">
-      <SetPlatform>Platform=x64</SetPlatform>
-      <Name>SharedFrameworkLib_x64</Name>
-      <Project>{5244BC49-2568-4701-80A6-EAB8950AB5FA}</Project>
-      <Private>True</Private>
-      <DoNotHarvest>true</DoNotHarvest>
-    </ProjectReference>
+    <ProjectReference Include="..\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" />
   </ItemGroup>
 
   <Import Project="Product.targets" />
@@ -133,22 +120,18 @@
       <SharedFxPayload Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxPackageVersion)-win-x64.msi">
         <ProductVersionProperty>SharedFxInstallerProductVersionx64</ProductVersionProperty>
         <ProductCodeProperty>SharedFxInstallerProductCodex64</ProductCodeProperty>
-        <CopyDir>$(InstallersOutputPath)temp/$(RuntimeInstallerBaseName)-$(SharedFxPackageVersion)-win-x64.msi</CopyDir>
       </SharedFxPayload>
       <SharedFxPayload Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxPackageVersion)-win-x86.msi">
         <ProductVersionProperty>SharedFxInstallerProductVersionx86</ProductVersionProperty>
         <ProductCodeProperty>SharedFxInstallerProductCodex86</ProductCodeProperty>
-        <CopyDir>$(InstallersOutputPath)temp/$(RuntimeInstallerBaseName)-$(SharedFxPackageVersion)-win-x86.msi</CopyDir>
       </SharedFxPayload>
     </ItemGroup>
 
-    <Copy SourceFiles="@(SharedFxPayload)" DestinationFiles="$(InstallersOutputPath)temp/$%(Filename)" />
-
     <!-- Read MSI properties -->
-    <GetMsiProperty InstallPackage="%(SharedFxPayload.CopyDir)" Property="ProductVersion">
+    <GetMsiProperty InstallPackage="%(SharedFxPayload.Identity)" Property="ProductVersion">
       <Output TaskParameter="Value" PropertyName="%(ProductVersionProperty)" />
     </GetMsiProperty>
-    <GetMsiProperty InstallPackage="%(SharedFxPayload.CopyDir)" Property="ProductCode">
+    <GetMsiProperty InstallPackage="%(SharedFxPayload.Identity)" Property="ProductCode">
       <Output TaskParameter="Value" PropertyName="%(ProductCodeProperty)" />
     </GetMsiProperty>
 
