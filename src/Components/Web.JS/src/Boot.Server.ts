@@ -144,21 +144,23 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
       // Throw this exception so it can be handled at the reconnection layer, and don't show the
       // error notification.
       throw ex;
-    } else if (!isNestedError(ex)) {
+    } else {
       showErrorNotification();
-    } else if (ex.innerErrors && ex.innerErrors.some(e => e.errorType === 'UnsupportedTransportError' && e.transport === HttpTransportType.WebSockets)) {
+    }
+
+    if (ex.innerErrors && ex.innerErrors.some(e => e.errorType === 'UnsupportedTransportError' && e.transport === HttpTransportType.WebSockets)) {
       logger.log(LogLevel.Error, 'Unable to connect, please ensure you are using an updated browser that supports WebSockets.');
     } else if (ex.innerErrors && ex.innerErrors.some(e => e.errorType === 'FailedToStartTransportError' && e.transport === HttpTransportType.WebSockets)) {
       logger.log(LogLevel.Error, 'Unable to connect, please ensure WebSockets are available. A VPN or proxy may be blocking the connection.');
     } else if (ex.innerErrors && ex.innerErrors.some(e => e.errorType === 'DisabledTransportError' && e.transport === HttpTransportType.LongPolling)) {
-      logger.log(LogLevel.Error, 'Unable to initiate a SignalR connection to the server. This might be because the server is not configured to support WebSockets. To troubleshoot this, visit https://aka.ms/blazor-server-websockets-error.');
+      logger.log(LogLevel.Error, 'Unable to initiate a SignalR connection to the server. This might be because the server is not configured to support WebSockets. For additional details, visit https://aka.ms/blazor-server-websockets-error.');
     }
   }
 
   // Check if the connection is established using the long polling transport,
   // using the `features.inherentKeepAlive` property only present with long polling.
-  if ((connection as any).connection.features.inherentKeepAlive) {
-    logger.log(LogLevel.Error, 'Failed to connect via WebSockets, using the Long Polling fallback transport. This may be due to a VPN or proxy blocking the connection. To troubleshoot this, visit https://aka.ms/blazor-server-using-fallback-long-polling.');
+  if ((connection as any).connection?.features?.inherentKeepAlive) {
+    logger.log(LogLevel.Warning, 'Failed to connect via WebSockets, using the Long Polling fallback transport. This may be due to a VPN or proxy blocking the connection. To troubleshoot this, visit https://aka.ms/blazor-server-using-fallback-long-polling.');
   }
 
   DotNet.attachDispatcher({
@@ -174,12 +176,6 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
   });
 
   return connection;
-
-  function isNestedError(error: any): error is AggregateError {
-    return error && ('innerErrors' in error);
-  }
-
-  type AggregateError = Error & { innerErrors: { errorType: string, transport: HttpTransportType }[] };
 }
 
 function unhandledError(connection: HubConnection, err: Error, logger: Logger): void {
