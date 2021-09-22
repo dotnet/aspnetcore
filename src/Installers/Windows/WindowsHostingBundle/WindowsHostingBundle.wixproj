@@ -109,7 +109,7 @@
     <DefineConstants>$(DefineConstants);BundleRegName=$(BundleRegName)</DefineConstants>
   </PropertyGroup>
 
-  <Target Name="ExtractPropertiesFromSharedFxMsi" DependsOnTargets="FetchDependencies" BeforeTargets="BeforeBuild">
+  <Target Name="ExtractPropertiesFromSharedFxMsi" DependsOnTargets="FetchDependencies" AfterTargets="ResolveProjectReferences">
     <!-- Create properties that holds the executable name. These are passed to the bundles so we can reference them as variables
              from inside the ExePackage authoring. -->
     <CreateProperty Value="%(SharedFxInstallers.Filename)%(Extension)">
