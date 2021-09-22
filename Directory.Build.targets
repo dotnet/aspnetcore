@@ -198,4 +198,11 @@
   <Import Project="eng\targets\FunctionalTestAsset.targets" Condition="'$(IsTestAssetProject)' == 'true'" />
   <Import Project="eng\targets\FunctionalTestWithAssets.targets" Condition="'$(ContainsFunctionalTestAssets)' == 'true'" />
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset"
+      Version="4.0.0-ci.final"
+      PrivateAssets="all"
+      IsImplicitlyDefined="true" />
+  </ItemGroup>
+
 </Project>

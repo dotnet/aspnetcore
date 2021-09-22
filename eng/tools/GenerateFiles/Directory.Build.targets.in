@@ -53,6 +53,12 @@
       <DefaultRuntimeFrameworkVersion Condition=" '$(IsServicingBuild)' != 'true' AND
           '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftAspNetCoreAppRuntimeVersion}</DefaultRuntimeFrameworkVersion>
     </KnownFrameworkReference>
+
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset"
+      Version="4.0.0-ci.final"
+      PrivateAssets="all"
+      IsImplicitlyDefined="true" />
+
   </ItemGroup>
 
   <!-- Warn if the "just-built" ASP.NET Core shared framework does not exist. -->
