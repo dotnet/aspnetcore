@@ -99,6 +99,8 @@ namespace Microsoft.AspNetCore.Builder
             Logging = new LoggingBuilder(Services);
             Host = new ConfigureHostBuilder(hostContext, Configuration, Services);
             WebHost = new ConfigureWebHostBuilder(webHostContext, Configuration, Services);
+
+            Services.AddSingleton<IConfiguration>(Configuration);
         }
 
         /// <summary>
@@ -171,6 +173,17 @@ namespace Microsoft.AspNetCore.Builder
                 // we called ConfigureWebHostDefaults on both the _deferredHostBuilder and _hostBuilder.
                 foreach (var s in _services)
                 {
+                    // Skip the configuration manager instance we added earlier
+                    // we're already going to wire it up to this new configuration source
+                    // after we've built the application. There's a chance the user manually added
+                    // this as well but we still need to remove it from the final configuration
+                    // to avoid cycles in the configuration graph
+                    if (s.ServiceType == typeof(IConfiguration) &&
+                        s.ImplementationInstance == Configuration)
+                    {
+                        continue;
+                    }
+
                     services.Add(s);
                 }
 
