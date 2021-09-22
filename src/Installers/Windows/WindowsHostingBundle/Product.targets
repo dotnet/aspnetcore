@@ -4,9 +4,6 @@
     <DepsPath>$(BaseIntermediateOutputPath)</DepsPath>
     <DefineConstants>$(DefineConstants);DepsPath=$(DepsPath)</DefineConstants>
     <DefineConstants>$(DefineConstants);InstallersOutputPath=$(InstallersOutputPath)</DefineConstants>
-    <SharedFxPackageVersion>$(PackageVersion)</SharedFxPackageVersion>
-    <SharedFxPackageVersion
-        Condition="! $(PackageVersion.Contains('$(_PreReleaseLabel)'))">$(PackageVersion)-$(_PreReleaseLabel)$(_BuildNumberLabels)</SharedFxPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,17 +18,6 @@
       <BundleNameProperty>DotNetRedistLtsInstallerx86</BundleNameProperty>
       <Version>$(MicrosoftNETCoreAppRuntimeVersion)</Version>
     </RuntimeInstallers>
-
-    <SharedFxInstallers Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxPackageVersion)-win-x64.exe">
-      <TargetPlatform>x64</TargetPlatform>
-      <BundleNameProperty>SharedFxRedistInstallerx64</BundleNameProperty>
-      <Version>$(SharedFxPackageVersion)</Version>
-    </SharedFxInstallers>
-    <SharedFxInstallers Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxPackageVersion)-win-x86.exe">
-      <TargetPlatform>x86</TargetPlatform>
-      <BundleNameProperty>SharedFxRedistInstallerx86</BundleNameProperty>
-      <Version>$(SharedFxPackageVersion)</Version>
-    </SharedFxInstallers>
   </ItemGroup>
 
   <Target Name="FetchDependencies" BeforeTargets="Restore;CollectPackageReferences">
@@ -99,42 +85,6 @@
       <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerProductVersionx86=$(DotNetRedistLtsInstallerProductVersionx86)</DefineConstants>
       <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerProductCodex86=$(DotNetRedistLtsInstallerProductCodex86)</DefineConstants>
       <DefineConstants>$(DefineConstants);DotNetRedistLtsInstallerUpgradeCodex86=$(DotNetRedistLtsInstallerUpgradeCodex86)</DefineConstants>
-    </PropertyGroup>
-  </Target>
-
-  <Target Name="ExtractPropertiesFromSharedFxMsi" DependsOnTargets="FetchDependencies" BeforeTargets="BeforeBuild">
-    <!-- Create properties that holds the executable name. These are passed to the bundles so we can reference them as variables
-             from inside the ExePackage authoring. -->
-    <CreateProperty Value="%(SharedFxInstallers.Filename)%(Extension)">
-      <Output TaskParameter="Value" PropertyName="%(SharedFxInstallers.BundleNameProperty)"/>
-    </CreateProperty>
-
-    <ItemGroup>
-      <SharedFxPayload Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxPackageVersion)-win-x64.msi">
-        <ProductVersionProperty>SharedFxInstallerProductVersionx64</ProductVersionProperty>
-        <ProductCodeProperty>SharedFxInstallerProductCodex64</ProductCodeProperty>
-      </SharedFxPayload>
-      <SharedFxPayload Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxPackageVersion)-win-x86.msi">
-        <ProductVersionProperty>SharedFxInstallerProductVersionx86</ProductVersionProperty>
-        <ProductCodeProperty>SharedFxInstallerProductCodex86</ProductCodeProperty>
-      </SharedFxPayload>
-    </ItemGroup>
-
-    <!-- Read MSI properties -->
-    <GetMsiProperty InstallPackage="%(SharedFxPayload.Identity)" Property="ProductVersion">
-      <Output TaskParameter="Value" PropertyName="%(ProductVersionProperty)" />
-    </GetMsiProperty>
-    <GetMsiProperty InstallPackage="%(SharedFxPayload.Identity)" Property="ProductCode">
-      <Output TaskParameter="Value" PropertyName="%(ProductCodeProperty)" />
-    </GetMsiProperty>
-
-    <PropertyGroup>
-      <DefineConstants>$(DefineConstants);SharedFxRedistInstallerx64=$(SharedFxRedistInstallerx64)</DefineConstants>
-      <DefineConstants>$(DefineConstants);SharedFxInstallerProductVersionx64=$(SharedFxInstallerProductVersionx64)</DefineConstants>
-      <DefineConstants>$(DefineConstants);SharedFxInstallerProductCodex64=$(SharedFxInstallerProductCodex64)</DefineConstants>
-      <DefineConstants>$(DefineConstants);SharedFxRedistInstallerx86=$(SharedFxRedistInstallerx86)</DefineConstants>
-      <DefineConstants>$(DefineConstants);SharedFxInstallerProductVersionx86=$(SharedFxInstallerProductVersionx86)</DefineConstants>
-      <DefineConstants>$(DefineConstants);SharedFxInstallerProductCodex86=$(SharedFxInstallerProductCodex86)</DefineConstants>
     </PropertyGroup>
   </Target>
 </Project>
