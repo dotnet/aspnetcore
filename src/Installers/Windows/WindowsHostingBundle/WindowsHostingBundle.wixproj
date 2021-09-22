@@ -66,8 +66,9 @@
 
     <BundleNameShort>Microsoft .NET $(PackageBrandingVersion)</BundleNameShort>
     <SharedFxPackageVersion>$(PackageVersion)</SharedFxPackageVersion>
-    <SharedFxPackageVersion
-        Condition="! $(PackageVersion.Contains('$(_PreReleaseLabel)'))">$(PackageVersion)-$(_PreReleaseLabel)$(_BuildNumberLabels)</SharedFxPackageVersion>
+    <SharedFxMsiVersion>$(PackageVersion)</SharedFxMsiVersion>
+    <SharedFxMsiVersion
+        Condition="! $(PackageVersion.Contains('$(_PreReleaseLabel)'))">$(PackageVersion)-$(_PreReleaseLabel)$(_BuildNumberLabels)</SharedFxMsiVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -117,11 +118,11 @@
     </CreateProperty>
 
     <ItemGroup>
-      <SharedFxPayload Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxPackageVersion)-win-x64.msi">
+      <SharedFxPayload Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-x64.msi">
         <ProductVersionProperty>SharedFxInstallerProductVersionx64</ProductVersionProperty>
         <ProductCodeProperty>SharedFxInstallerProductCodex64</ProductCodeProperty>
       </SharedFxPayload>
-      <SharedFxPayload Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxPackageVersion)-win-x86.msi">
+      <SharedFxPayload Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-x86.msi">
         <ProductVersionProperty>SharedFxInstallerProductVersionx86</ProductVersionProperty>
         <ProductCodeProperty>SharedFxInstallerProductCodex86</ProductCodeProperty>
       </SharedFxPayload>
