@@ -43,7 +43,6 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var diagnostic = Assert.Single(generated.Diagnostics);
             Assert.Equal("RZ9979", diagnostic.Id);
             Assert.NotNull(diagnostic.GetMessage(CultureInfo.CurrentCulture));
-
         }
 
         [Fact]
@@ -147,23 +146,25 @@ namespace Test
                 diagnostic.GetMessage(CultureInfo.CurrentCulture));
         }
 
-        [Fact]
-        public void Element_DoesNotStartWithLowerCase_ReportsWarning()
+        [Theory]
+        [InlineData("PossibleComponent")]
+        [InlineData("繁体字")]
+        public void Component_NotFound_ReportsWarning(string componentName)
         {
             // Arrange & Act
-            var generated = CompileToCSharp(@"
-<PossibleComponent></PossibleComponent>
+            var generated = CompileToCSharp(@$"
+<{componentName}></{componentName}>
 
-@functions {
-    public string Text { get; set; } = ""text"";
-}");
+@functions {{
+    public string Text {{ get; set; }} = ""text"";
+}}");
 
             // Assert
             var diagnostic = Assert.Single(generated.Diagnostics);
             Assert.Equal("RZ10012", diagnostic.Id);
             Assert.Equal(RazorDiagnosticSeverity.Warning, diagnostic.Severity);
             Assert.Equal(
-                "Found markup element with unexpected name 'PossibleComponent'. If this is intended to be a component, add a @using directive for its namespace.",
+                $"Found markup element with unexpected name '{componentName}'. If this is intended to be a component, add a @using directive for its namespace.",
                 diagnostic.GetMessage(CultureInfo.CurrentCulture));
         }
 
