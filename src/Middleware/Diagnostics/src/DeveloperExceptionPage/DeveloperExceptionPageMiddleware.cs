@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.Diagnostics
 
         private Task DisplayRuntimeException(HttpContext context, Exception ex)
         {
-            var endpoint = context.Features.Get<IEndpointFeature>()?.Endpoint;
+            var endpoint = context.GetEndpoint();
 
             EndpointModel? endpointModel = null;
             if (endpoint != null)

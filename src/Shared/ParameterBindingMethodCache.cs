@@ -9,6 +9,8 @@ using System.Linq.Expressions;
 using System.Numerics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
+using Microsoft.Extensions.Internal;
 
 #nullable enable
 
@@ -86,11 +88,30 @@ namespace Microsoft.AspNetCore.Http
 
                 if (TryGetDateTimeTryParseMethod(type, out methodInfo))
                 {
+                    // We generate `DateTimeStyles.AdjustToUniversal | DateTimeStyles.AllowWhiteSpaces ` to
+                    // support parsing types into the UTC timezone for DateTime. We don't assume the timezone
+                    // on the original value which will cause the parser to set the `Kind` property on the
+                    // `DateTime` as `Unspecified` indicating that it was parsed from an ambiguous timezone.
+                    //
+                    // `DateTimeOffset`s are always in UTC and don't allow specifying an `Unspecific` kind.
+                    // For this, we always assume that the original value is already in UTC to avoid resolving
+                    // the offset incorrectly dependening on the timezone of the machine. We don't bother mapping
+                    // it to UTC in this case. In the event that the original timestamp is not in UTC, it's offset
+                    // value will be maintained.
+                    //
+                    // DateOnly and TimeOnly types do not support conversion to Utc so we
+                    // default to `DateTimeStyles.AllowWhiteSpaces`.
+                    var dateTimeStyles = type switch {
+                        Type t when t == typeof(DateTime) => DateTimeStyles.AdjustToUniversal | DateTimeStyles.AllowWhiteSpaces,
+                        Type t when t == typeof(DateTimeOffset) => DateTimeStyles.AssumeUniversal | DateTimeStyles.AllowWhiteSpaces,
+                        _ => DateTimeStyles.AllowWhiteSpaces
+                    };
+
                     return (expression) => Expression.Call(
                         methodInfo!,
                         TempSourceStringExpr,
                         Expression.Constant(CultureInfo.InvariantCulture),
-                        Expression.Constant(DateTimeStyles.None),
+                        Expression.Constant(dateTimeStyles),
                         expression);
                 }
 
@@ -104,9 +125,9 @@ namespace Microsoft.AspNetCore.Http
                         expression);
                 }
 
-                methodInfo = type.GetMethod("TryParse", BindingFlags.Public | BindingFlags.Static, new[] { typeof(string), typeof(IFormatProvider), type.MakeByRefType() });
+                methodInfo = type.GetMethod("TryParse", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy, new[] { typeof(string), typeof(IFormatProvider), type.MakeByRefType() });
 
-                if (methodInfo != null)
+                if (methodInfo is not null && methodInfo.ReturnType == typeof(bool))
                 {
                     return (expression) => Expression.Call(
                         methodInfo,
@@ -115,11 +136,24 @@ namespace Microsoft.AspNetCore.Http
                         expression);
                 }
 
-                methodInfo = type.GetMethod("TryParse", BindingFlags.Public | BindingFlags.Static, new[] { typeof(string), type.MakeByRefType() });
+                methodInfo = type.GetMethod("TryParse", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy, new[] { typeof(string), type.MakeByRefType() });
 
-                if (methodInfo != null)
+                if (methodInfo is not null && methodInfo.ReturnType == typeof(bool))
                 {
                     return (expression) => Expression.Call(methodInfo, TempSourceStringExpr, expression);
+                }
+
+                if (type.GetMethod("TryParse", BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.FlattenHierarchy) is MethodInfo invalidMethod)
+                {
+                    var stringBuilder = new StringBuilder();
+                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"TryParse method found on {TypeNameHelper.GetTypeDisplayName(type, fullName: false)} with incorrect format. Must be a static method with format");
+                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"bool TryParse(string, IFormatProvider, out {TypeNameHelper.GetTypeDisplayName(type, fullName: false)})");
+                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"bool TryParse(string, out {TypeNameHelper.GetTypeDisplayName(type, fullName: false)})");
+                    stringBuilder.AppendLine("but found");
+                    stringBuilder.Append(invalidMethod.IsStatic ? "static " : "not-static ");
+                    stringBuilder.Append(invalidMethod.ToString());
+
+                    throw new InvalidOperationException(stringBuilder.ToString());
                 }
 
                 return null;
@@ -134,11 +168,11 @@ namespace Microsoft.AspNetCore.Http
             {
                 var hasParameterInfo = true;
                 // There should only be one BindAsync method with these parameters since C# does not allow overloading on return type.
-                var methodInfo = nonNullableParameterType.GetMethod("BindAsync", BindingFlags.Public | BindingFlags.Static, new[] { typeof(HttpContext), typeof(ParameterInfo) });
+                var methodInfo = nonNullableParameterType.GetMethod("BindAsync", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy, new[] { typeof(HttpContext), typeof(ParameterInfo) });
                 if (methodInfo is null)
                 {
                     hasParameterInfo = false;
-                    methodInfo = nonNullableParameterType.GetMethod("BindAsync", BindingFlags.Public | BindingFlags.Static, new[] { typeof(HttpContext) });
+                    methodInfo = nonNullableParameterType.GetMethod("BindAsync", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy, new[] { typeof(HttpContext) });
                 }
 
                 // We're looking for a method with the following signatures:
@@ -190,6 +224,21 @@ namespace Microsoft.AspNetCore.Http
                             return Expression.Call(ConvertValueTaskOfNullableResultMethod.MakeGenericMethod(nonNullableParameterType), typedCall);
                         }, hasParameterInfo ? 2 : 1);
                     }
+                }
+
+                if (nonNullableParameterType.GetMethod("BindAsync", BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.FlattenHierarchy) is MethodInfo invalidBindMethod)
+                {
+                    var stringBuilder = new StringBuilder();
+                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"BindAsync method found on {TypeNameHelper.GetTypeDisplayName(nonNullableParameterType, fullName: false)} with incorrect format. Must be a static method with format");
+                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"ValueTask<{TypeNameHelper.GetTypeDisplayName(nonNullableParameterType, fullName: false)}> BindAsync(HttpContext context, ParameterInfo parameter)");
+                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"ValueTask<{TypeNameHelper.GetTypeDisplayName(nonNullableParameterType, fullName: false)}> BindAsync(HttpContext context)");
+                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"ValueTask<{TypeNameHelper.GetTypeDisplayName(nonNullableParameterType, fullName: false)}?> BindAsync(HttpContext context, ParameterInfo parameter)");
+                    stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"ValueTask<{TypeNameHelper.GetTypeDisplayName(nonNullableParameterType, fullName: false)}?> BindAsync(HttpContext context)");
+                    stringBuilder.AppendLine("but found");
+                    stringBuilder.Append(invalidBindMethod.IsStatic ? "static " : "not-static");
+                    stringBuilder.Append(invalidBindMethod.ToString());
+
+                    throw new InvalidOperationException(stringBuilder.ToString());
                 }
 
                 return (null, 0);

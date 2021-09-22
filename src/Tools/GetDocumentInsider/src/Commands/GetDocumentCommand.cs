@@ -88,7 +88,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
                 return loadContext.LoadFromAssemblyPath(assemblyPath);
             };
 
-#elif NET461
+#elif NETFRAMEWORK
             AppDomain.CurrentDomain.AssemblyResolve += (source, eventArgs) =>
             {
                 var assemblyName = new AssemblyName(eventArgs.Name);

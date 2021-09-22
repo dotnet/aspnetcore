@@ -164,7 +164,7 @@ namespace Microsoft.Extensions.Internal
             var helper = Assert.Single(PropertyHelper.GetProperties(obj.GetType().GetTypeInfo()));
             Assert.Equal("Prop5", helper.Name);
         }
-#elif NET46 || NET461
+#elif NETFRAMEWORK
 #else
 #error Unknown TFM - update the set of TFMs where we test for ref structs
 #endif
@@ -746,7 +746,7 @@ namespace Microsoft.Extensions.Internal
         private readonly ref struct MyRefStruct
         {
         }
-#elif NET46 || NET461
+#elif NETFRAMEWORK
 #else
 #error Unknown TFM - update the set of TFMs where we test for ref structs
 #endif
