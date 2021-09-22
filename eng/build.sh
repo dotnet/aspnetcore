@@ -369,13 +369,14 @@ if [ "$build_repo_tasks" = true ]; then
         -p:Restore=$run_restore \
         -p:Build=true \
         -clp:NoSummary \
+        -nowarn:NETSDK1023 \
         ${toolset_build_args[@]+"${toolset_build_args[@]}"}
 fi
 
 if [ "$only_build_repo_tasks" != true ]; then
     # This incantation avoids unbound variable issues if msbuild_args is empty
     # https://stackoverflow.com/questions/7577052/bash-empty-array-expansion-with-set-u
-    MSBuild $_InitializeToolset -p:RepoRoot="$repo_root" ${msbuild_args[@]+"${msbuild_args[@]}"}
+    MSBuild $_InitializeToolset -p:RepoRoot="$repo_root" -nowarn:NETSDK1023 ${msbuild_args[@]+"${msbuild_args[@]}"}
 fi
 
 ExitWithExitCode 0

@@ -433,6 +433,7 @@ try {
             /p:Restore=$RunRestore `
             /p:Build=true `
             /clp:NoSummary `
+            /nowarn:NETSDK1023 `
             @ToolsetBuildArguments
     }
 
@@ -441,7 +442,7 @@ try {
         Remove-Item variable:global:_BuildTool -ErrorAction Ignore
         $msbuildEngine = 'vs'
 
-        MSBuild $toolsetBuildProj /p:RepoRoot=$RepoRoot @MSBuildArguments
+        MSBuild $toolsetBuildProj /p:RepoRoot=$RepoRoot /nowarn:NETSDK1023 @MSBuildArguments
     }
 
     if ($performDotnetBuild) {
@@ -449,7 +450,7 @@ try {
         Remove-Item variable:global:_BuildTool -ErrorAction Ignore
         $msbuildEngine = 'dotnet'
 
-        MSBuild $toolsetBuildProj /p:RepoRoot=$RepoRoot @dotnetBuildArguments
+        MSBuild $toolsetBuildProj /p:RepoRoot=$RepoRoot /nowarn:NETSDK1023 @dotnetBuildArguments
     }
 }
 catch {
