@@ -694,6 +694,39 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
+        public void CanResolveIConfigurationBeforeBuildingApplication()
+        {
+            var builder = WebApplication.CreateBuilder();
+            var sp = builder.Services.BuildServiceProvider();
+
+            var config = sp.GetService<IConfiguration>();
+            Assert.NotNull(config);
+            Assert.Same(config, builder.Configuration);
+
+            var app = builder.Build();
+
+            // These are different
+            Assert.NotSame(app.Configuration, builder.Configuration);
+        }
+
+        [Fact]
+        public void ManuallyAddingConfigurationAsServiceWorks()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
+            var sp = builder.Services.BuildServiceProvider();
+
+            var config = sp.GetService<IConfiguration>();
+            Assert.NotNull(config);
+            Assert.Same(config, builder.Configuration);
+
+            var app = builder.Build();
+
+            // These are different
+            Assert.NotSame(app.Configuration, builder.Configuration);
+        }
+
+        [Fact]
         public async Task WebApplicationConfiguration_EnablesForwardedHeadersFromConfig()
         {
             var builder = WebApplication.CreateBuilder();
