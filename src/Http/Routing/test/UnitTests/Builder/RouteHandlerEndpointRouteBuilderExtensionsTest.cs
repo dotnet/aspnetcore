@@ -40,6 +40,9 @@ namespace Microsoft.AspNetCore.Builder
                 IEndpointConventionBuilder MapDelete(IEndpointRouteBuilder routes, string template, Delegate action) =>
                     routes.MapDelete(template, action);
 
+                IEndpointConventionBuilder MapPatch(IEndpointRouteBuilder routes, string template, Delegate action) =>
+                    routes.MapPatch(template, action);
+
                 IEndpointConventionBuilder Map(IEndpointRouteBuilder routes, string template, Delegate action) =>
                     routes.Map(template, action);
 
@@ -49,6 +52,7 @@ namespace Microsoft.AspNetCore.Builder
                     new object?[] { (Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder>)MapPost, "POST" },
                     new object?[] { (Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder>)MapPut, "PUT" },
                     new object?[] { (Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder>)MapDelete, "DELETE" },
+                    new object?[] { (Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder>)MapPatch, "PATCH" },
                     new object?[] { (Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder>)Map, null },
                 };
             }
@@ -99,6 +103,26 @@ namespace Microsoft.AspNetCore.Builder
 
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
             Assert.Equal("HTTP: GET /", routeEndpointBuilder.DisplayName);
+            Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
+        }
+
+        [Fact]
+        public void MapPatch_BuildsEndpointWithCorrectMethod()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+            _ = builder.MapPatch("/", () => { });
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+            Assert.NotNull(methodMetadata);
+            var method = Assert.Single(methodMetadata!.HttpMethods);
+            Assert.Equal("PATCH", method);
+
+            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+            Assert.Equal("HTTP: PATCH /", routeEndpointBuilder.DisplayName);
             Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
         }
 
@@ -264,6 +288,26 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
         }
 
+        [Fact]
+        public void MapPatch_ImplicitFromService()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().AddSingleton<TodoService>().BuildServiceProvider()));
+            _ = builder.MapPatch("/", (TodoService todo) => { });
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+            Assert.NotNull(methodMetadata);
+            var method = Assert.Single(methodMetadata!.HttpMethods);
+            Assert.Equal("PATCH", method);
+
+            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+            Assert.Equal("HTTP: PATCH /", routeEndpointBuilder.DisplayName);
+            Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
+        }
+
         [AttributeUsage(AttributeTargets.Parameter)]
         private class TestFromServiceAttribute : Attribute, IFromServiceMetadata
         { }
@@ -308,6 +352,26 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
         }
 
+        [Fact]
+        public void MapPatch_ExplicitFromService()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().AddSingleton<TodoService>().BuildServiceProvider()));
+            _ = builder.MapPatch("/", ([TestFromServiceAttribute] TodoService todo) => { });
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+            Assert.NotNull(methodMetadata);
+            var method = Assert.Single(methodMetadata!.HttpMethods);
+            Assert.Equal("PATCH", method);
+
+            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+            Assert.Equal("HTTP: PATCH /", routeEndpointBuilder.DisplayName);
+            Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
+        }
+
         [AttributeUsage(AttributeTargets.Parameter)]
         private class TestFromBodyAttribute : Attribute, IFromBodyMetadata
         { }
@@ -349,6 +413,26 @@ namespace Microsoft.AspNetCore.Builder
 
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
             Assert.Equal("HTTP: DELETE /", routeEndpointBuilder.DisplayName);
+            Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
+        }
+
+        [Fact]
+        public void MapPatch_ExplicitFromBody_BuildsEndpointWithCorrectMethod()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+            _ = builder.MapPatch("/", ([TestFromBody] Todo todo) => { });
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+            Assert.NotNull(methodMetadata);
+            var method = Assert.Single(methodMetadata!.HttpMethods);
+            Assert.Equal("PATCH", method);
+
+            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+            Assert.Equal("HTTP: PATCH /", routeEndpointBuilder.DisplayName);
             Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
         }
 
