@@ -15,7 +15,7 @@
                         DetectCondition="SharedFxRedistProductVersion_x64 = v$(var.SharedFxInstallerProductVersionx64)">
             </ExePackage>
 
-            <ExePackage Id="SharedFxRedist_x86" SourceFile="$(var.DepsPath)\$(var.SharedFxRedistInstallerx86)"
+            <ExePackage Id="SharedFxRedist_x86" SourceFile="$(var.InstallersOutputPath)\$(var.SharedFxRedistInstallerx86)"
                         Name="$(var.SharedFxRedistInstallerx86)"
                         Compressed="yes"
                         Vital="yes"
