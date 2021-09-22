@@ -535,7 +535,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
                     if (property.PropertyHasValidators)
                     {
-                        // When constructing the mapping of paramets -> properties, also determine
+                        // When constructing the mapping of parameters -> properties, also determine
                         // if the property has any validators (without looking at metadata on the type).
                         // This will help us throw during validation if a user defines validation attributes
                         // on the property of a record type.
