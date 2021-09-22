@@ -5,8 +5,12 @@
 	"build": {
 		"dockerfile": "Dockerfile",
 		"args": {
-			// Update 'VARIANT' to pick a .NET Core version: 2.1, 3.1, 5.0, 6.0, 7.0
-			"VARIANT": "7.0",
+			// The VARIANT here must align with a dotnet container image that
+			// is publicly available on https://mcr.microsoft.com/v2/vscode/devcontainers/dotnet/tags/list.
+			// We'll default to `latest` as the default. Generally, the .NET version that is baked
+			// into the image by default doesn't matter since we end up installing our own
+			// local version and using that by default in the container environment.
+			"VARIANT": "latest",
 			// Options
 			"INSTALL_NODE": "true",
 			"NODE_VERSION": "lts/*"
