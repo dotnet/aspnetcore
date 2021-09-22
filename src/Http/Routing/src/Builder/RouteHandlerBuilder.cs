@@ -11,7 +11,8 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public sealed class RouteHandlerBuilder : IEndpointConventionBuilder
     {
-        private readonly IEnumerable<IEndpointConventionBuilder> _endpointConventionBuilders;
+        private readonly IEnumerable<IEndpointConventionBuilder>? _endpointConventionBuilders;
+        private readonly IEndpointConventionBuilder? _endpointConventionBuilder;
 
         /// <summary>
         /// Instantiates a new <see cref="RouteHandlerBuilder" /> given a single
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="endpointConventionBuilder">The <see cref="IEndpointConventionBuilder" /> to instantiate with.</param>
         internal RouteHandlerBuilder(IEndpointConventionBuilder endpointConventionBuilder)
         {
-            _endpointConventionBuilders = new List<IEndpointConventionBuilder>() { endpointConventionBuilder };
+            _endpointConventionBuilder = endpointConventionBuilder;
         }
 
         /// <summary>
@@ -39,9 +40,16 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="convention">The convention to add to the builder.</param>
         public void Add(Action<EndpointBuilder> convention)
         {
-            foreach (var endpointConventionBuilder in _endpointConventionBuilders)
+            if (_endpointConventionBuilder != null)
             {
-                endpointConventionBuilder.Add(convention);
+                _endpointConventionBuilder.Add(convention);
+            }
+            else
+            {
+                foreach (var endpointConventionBuilder in _endpointConventionBuilders!)
+                {
+                    endpointConventionBuilder.Add(convention);
+                }
             }
         }
     }
