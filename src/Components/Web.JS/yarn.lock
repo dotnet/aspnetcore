@@ -1355,16 +1355,22 @@
     chalk "^4.0.0"
 
 "@microsoft/dotnet-js-interop@link:../../JSInterop/Microsoft.JSInterop.JS/src":
-  version "0.0.0"
-  uid ""
+  version "5.0.0-dev"
 
 "@microsoft/signalr-protocol-msgpack@link:../../SignalR/clients/ts/signalr-protocol-msgpack":
-  version "0.0.0"
-  uid ""
+  version "5.0.0-dev"
+  dependencies:
+    "@microsoft/signalr" "link:../../SignalR/clients/ts/signalr"
+    "@msgpack/msgpack" "^2.7.0"
 
 "@microsoft/signalr@link:../../SignalR/clients/ts/signalr":
-  version "0.0.0"
-  uid ""
+  version "5.0.0-dev"
+  dependencies:
+    abort-controller "^3.0.0"
+    eventsource "^1.0.7"
+    fetch-cookie "^0.11.0"
+    node-fetch "^2.6.1"
+    ws "^7.4.5"
 
 "@msgpack/msgpack@^2.7.0":
   version "2.7.0"
@@ -1883,9 +1889,9 @@ ansi-escapes@^4.2.1:
     type-fest "^0.21.3"
 
 ansi-regex@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/ansi-regex/-/ansi-regex-5.0.0.tgz#388539f55179bf39339c81af30a654d69f87cb75"
-  integrity sha512-bY6fj56OUQ0hU1KjFNDQuJFezqKdrAyFdIevADiqrWHwSlbmBNMHp5ak2f40Pm8JTFyM2mqxkG6ngkHO11f/lg==
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/ansi-regex/-/ansi-regex-5.0.1.tgz#082cb2c89c9fe8659a311a53bd6a4dc5301db304"
+  integrity sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ==
 
 ansi-styles@^3.2.1:
   version "3.2.1"
