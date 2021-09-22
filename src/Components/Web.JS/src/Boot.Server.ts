@@ -1,6 +1,6 @@
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { Blazor } from './GlobalExports';
-import { HubConnectionBuilder, HubConnection, HttpTransportType } from '@microsoft/signalr';
+import { HubConnectionBuilder, HubConnection } from '@microsoft/signalr';
 import { MessagePackHubProtocol } from '@microsoft/signalr-protocol-msgpack';
 import { showErrorNotification } from './BootErrors';
 import { shouldAutoStart } from './BootCommon';
@@ -86,7 +86,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
   (hubProtocol as unknown as { name: string }).name = 'blazorpack';
 
   const connectionBuilder = new HubConnectionBuilder()
-    .withUrl('_blazor', HttpTransportType.WebSockets)
+    .withUrl('_blazor')
     .withHubProtocol(hubProtocol);
 
   options.configureSignalR(connectionBuilder);
@@ -144,14 +144,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
       // Throw this exception so it can be handled at the reconnection layer, and don't show the
       // error notification.
       throw ex;
-    } else if (!isNestedError(ex)) {
-      showErrorNotification();
-    } else if (ex.innerErrors && ex.innerErrors.some(e => e.errorType === 'UnsupportedTransportError' && e.transport === HttpTransportType.WebSockets)) {
-      showErrorNotification('Unable to connect, please ensure you are using an updated browser that supports WebSockets.');
-    } else if (ex.innerErrors && ex.innerErrors.some(e => e.errorType === 'FailedToStartTransportError' && e.transport === HttpTransportType.WebSockets)) {
-      showErrorNotification('Unable to connect, please ensure WebSockets are available. A VPN or proxy may be blocking the connection.');
-    } else if (ex.innerErrors && ex.innerErrors.some(e => e.errorType === 'DisabledTransportError' && e.transport === HttpTransportType.LongPolling)) {
-      logger.log(LogLevel.Error, 'Unable to initiate a SignalR connection to the server. This might be because the server is not configured to support WebSockets. To troubleshoot this, visit https://aka.ms/blazor-server-websockets-error.');
+    } else {
       showErrorNotification();
     }
   }
@@ -169,13 +162,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
   });
 
   return connection;
-
-  function isNestedError(error: any): error is AggregateError {
-    return error && ('innerErrors' in error);
-  }
 }
-
-type AggregateError = Error & { innerErrors: { errorType: string, transport: HttpTransportType }[] };
 
 function unhandledError(connection: HubConnection, err: Error, logger: Logger): void {
   logger.log(LogLevel.Error, err);

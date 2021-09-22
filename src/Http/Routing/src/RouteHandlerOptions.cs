@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.Routing
 {
     /// <summary>
-    /// Options for controlling the behavior of <see cref="DelegateEndpointRouteBuilderExtensions.MapGet(IEndpointRouteBuilder, string, Delegate)"/>
+    /// Options for controlling the behavior of <see cref="EndpointRouteBuilderExtensions.MapGet(IEndpointRouteBuilder, string, Delegate)"/>
     /// and similar methods.
     /// </summary>
     public sealed class RouteHandlerOptions

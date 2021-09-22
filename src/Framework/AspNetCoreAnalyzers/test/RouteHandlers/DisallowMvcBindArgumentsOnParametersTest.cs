@@ -5,11 +5,11 @@ using System.Globalization;
 using Microsoft.AspNetCore.Analyzer.Testing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints;
+namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
 
 public partial class DisallowMvcBindArgumentsOnParametersTest
 {
-    private TestDiagnosticAnalyzerRunner Runner { get; } = new(new DelegateEndpointAnalyzer());
+    private TestDiagnosticAnalyzerRunner Runner { get; } = new(new RouteHandlerAnalyzer());
 
     [Fact]
     public async Task MinimalAction_WithoutBindAttributes_Works()
@@ -59,7 +59,7 @@ webApp.MapGet(""/"", (/*MM*/[Bind] string name) => {});
 
         // Assert
         var diagnostic = Assert.Single(diagnostics);
-        Assert.Same(DiagnosticDescriptors.DoNotUseModelBindingAttributesOnDelegateEndpointParameters, diagnostic.Descriptor);
+        Assert.Same(DiagnosticDescriptors.DoNotUseModelBindingAttributesOnRouteHandlerParameters, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
         Assert.Equal("BindAttribute should not be specified for a MapGet Delegate parameter", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
@@ -81,7 +81,7 @@ static void PostWithBind(/*MM*/[ModelBinder] string name) {}
 
         // Assert
         var diagnostic = Assert.Single(diagnostics);
-        Assert.Same(DiagnosticDescriptors.DoNotUseModelBindingAttributesOnDelegateEndpointParameters, diagnostic.Descriptor);
+        Assert.Same(DiagnosticDescriptors.DoNotUseModelBindingAttributesOnRouteHandlerParameters, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
         Assert.Equal("ModelBinderAttribute should not be specified for a MapPost Delegate parameter", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
