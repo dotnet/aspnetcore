@@ -168,7 +168,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 {
                     var hasHttp1 = options.Protocols.HasFlag(HttpProtocols.Http1);
                     var hasHttp2 = options.Protocols.HasFlag(HttpProtocols.Http2);
+#pragma warning disable CA2252 // Preview Features
                     var hasHttp3 = options.Protocols.HasFlag(HttpProtocols.Http3);
+#pragma warning restore CA2252
                     var hasTls = options.IsTls;
 
                     // Filter out invalid combinations.
