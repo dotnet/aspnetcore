@@ -471,13 +471,15 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
         /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
         /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+        /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
         public static IResult Problem(
             string? detail = null,
             string? instance = null,
             int? statusCode = null,
             string? title = null,
-            string? type = null)
+            string? type = null,
+            IDictionary<string, object?>? extensions = null)
         {
             var problemDetails = new ProblemDetails
             {
@@ -485,9 +487,30 @@ namespace Microsoft.AspNetCore.Http
                 Instance = instance,
                 Status = statusCode,
                 Title = title,
-                Type = type
+                Type = type,
             };
 
+            if (extensions is not null)
+            {
+                foreach (var extension in extensions)
+                {
+                    problemDetails.Extensions.Add(extension);
+                }
+            }
+
+            return new ObjectResult(problemDetails)
+            {
+                ContentType = "application/problem+json",
+            };
+        }
+
+        /// <summary>
+        /// Produces a <see cref="ProblemDetails"/> response.
+        /// </summary>
+        /// <param name="problemDetails">The <see cref="ProblemDetails"/>  object to produce a response from.</param>
+        /// <returns>The created <see cref="IResult"/> for the response.</returns>
+        public static IResult Problem(ProblemDetails problemDetails)
+        {
             return new ObjectResult(problemDetails)
             {
                 ContentType = "application/problem+json",
@@ -502,8 +525,9 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
         /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
         /// <param name="statusCode">The status code.</param>
-        /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
+        /// <param name="title">The value for <see cref="ProblemDetails.Title" />. Defaults to "One or more validation errors occurred."</param>
         /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+        /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
         public static IResult ValidationProblem(
             IDictionary<string, string[]> errors,
@@ -511,16 +535,26 @@ namespace Microsoft.AspNetCore.Http
             string? instance = null,
             int? statusCode = null,
             string? title = null,
-            string? type = null)
+            string? type = null,
+            IDictionary<string, object?>? extensions = null)
         {
             var problemDetails = new HttpValidationProblemDetails(errors)
             {
                 Detail = detail,
                 Instance = instance,
-                Title = title,
                 Type = type,
                 Status = statusCode,
             };
+            
+            problemDetails.Title = title ?? problemDetails.Title;
+
+            if (extensions is not null)
+            {
+                foreach (var extension in extensions)
+                {
+                    problemDetails.Extensions.Add(extension);
+                }
+            }
 
             return new ObjectResult(problemDetails)
             {
