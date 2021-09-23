@@ -1,7 +1,6 @@
 <Project>
   <PropertyGroup>
-    <!-- Keep this project at net6.0 until there is an SDK with net7.0 runtimes -->
-    <_RepoTaskAssemblyFolder Condition="'$(MSBuildRuntimeType)' == 'core'">net6.0</_RepoTaskAssemblyFolder>
+    <_RepoTaskAssemblyFolder Condition="'$(MSBuildRuntimeType)' == 'core'">net7.0</_RepoTaskAssemblyFolder>
     <_RepoTaskAssemblyFolder Condition="'$(MSBuildRuntimeType)' != 'core'">net472</_RepoTaskAssemblyFolder>
     <_RepoTaskAssembly>$(ArtifactsBinDir)RepoTasks\Release\$(_RepoTaskAssemblyFolder)\RepoTasks.dll</_RepoTaskAssembly>
   </PropertyGroup>
