@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// <summary>
         /// Gets a value that determines if localized component names are to be supported.
         /// </summary>
-        public virtual bool SupportLocalizedComponentNames { get; }
+        public virtual bool SupportLocalizedComponentNames { get; set; }
 
         /// <summary>
         /// Gets a value that determines if enhanced line pragmas are to be utilized.

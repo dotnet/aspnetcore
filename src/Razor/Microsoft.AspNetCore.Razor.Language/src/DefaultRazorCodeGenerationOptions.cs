@@ -45,8 +45,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override bool OmitMinimizedComponentAttributeValues { get; }
 
-        public override bool SupportLocalizedComponentNames { get; }
-
         public override bool UseEnhancedLinePragma { get; }
     }
 }

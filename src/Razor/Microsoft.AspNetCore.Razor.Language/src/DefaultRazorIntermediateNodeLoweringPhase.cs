@@ -1223,10 +1223,10 @@ namespace Microsoft.AspNetCore.Razor.Language
                     // In certain cultures, characters are not explicitly Uppercase/Lowercase, hence we must check
                     // the specific UnicodeCategory to see if we may still be able to treat it as a component.
                     //
-                    //    The goal here is to avoid clashing with any future standard-HTML elements.
+                    // The goal here is to avoid clashing with any future standard-HTML elements.
                     //
-                    //    To avoid a breaking change, the support of localized component names (without explicit
-                    //    Uppercase classification) is behind a `SupportLocalizedComponentNames` feature flag.
+                    // To avoid a breaking change, the support of localized component names (without explicit
+                    // Uppercase classification) is behind a `SupportLocalizedComponentNames` feature flag.
                     return category is UnicodeCategory.UppercaseLetter ||
                         (document.Options.SupportLocalizedComponentNames &&
                             (category is UnicodeCategory.TitlecaseLetter || category is UnicodeCategory.OtherLetter));

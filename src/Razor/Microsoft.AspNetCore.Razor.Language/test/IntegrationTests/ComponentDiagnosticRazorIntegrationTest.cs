@@ -147,34 +147,60 @@ namespace Test
         }
 
         [Theory]
-        [InlineData("PossibleComponent", true, true)]
-        [InlineData("PossibleComponent", false, true)]
-        [InlineData("繁体字", true, true)]
-        [InlineData("繁体字", false, false)]
-        public void Component_NotFound_ReportsWarning(string componentName, bool supportLocalizedComponentNames, bool diagnosticExpected)
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Component_NotFound_ReportsWarning(bool supportLocalizedComponentNames)
         {
             // Arrange & Act
-            var generated = CompileToCSharp(@$"
-<{componentName}></{componentName}>
+            var generated = CompileToCSharp(@"
+<PossibleComponent></PossibleComponent>
 
-@functions {{
-    public string Text {{ get; set; }} = ""text"";
-}}", supportLocalizedComponentNames: supportLocalizedComponentNames);
+@functions {
+    public string Text { get; set; } = ""text"";
+}", supportLocalizedComponentNames: supportLocalizedComponentNames);
 
             // Assert
-            if (diagnosticExpected)
-            {
-                var diagnostic = Assert.Single(generated.Diagnostics);
-                Assert.Equal("RZ10012", diagnostic.Id);
-                Assert.Equal(RazorDiagnosticSeverity.Warning, diagnostic.Severity);
-                Assert.Equal(
-                    $"Found markup element with unexpected name '{componentName}'. If this is intended to be a component, add a @using directive for its namespace.",
-                    diagnostic.GetMessage(CultureInfo.CurrentCulture));
-            }
-            else
-            {
-                Assert.Empty(generated.Diagnostics);
-            }
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Equal("RZ10012", diagnostic.Id);
+            Assert.Equal(RazorDiagnosticSeverity.Warning, diagnostic.Severity);
+            Assert.Equal(
+                "Found markup element with unexpected name 'PossibleComponent'. If this is intended to be a component, add a @using directive for its namespace.",
+                diagnostic.GetMessage(CultureInfo.CurrentCulture));
+        }
+
+        [Fact]
+        public void Component_NotFound_StartsWithOtherLetter_WhenLocalizedComponentNamesIsAllowed_ReportsWarning()
+        {
+            // Arrange & Act
+            var generated = CompileToCSharp(@"
+<繁体字></繁体字>
+
+@functions {
+    public string Text { get; set; } = ""text"";
+}", supportLocalizedComponentNames: true);
+
+            // Assert
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Equal("RZ10012", diagnostic.Id);
+            Assert.Equal(RazorDiagnosticSeverity.Warning, diagnostic.Severity);
+            Assert.Equal(
+                "Found markup element with unexpected name '繁体字'. If this is intended to be a component, add a @using directive for its namespace.",
+                diagnostic.GetMessage(CultureInfo.CurrentCulture));
+        }
+
+        [Fact]
+        public void Component_NotFound_StartsWithOtherLetter_WhenLocalizedComponentNamesIsDisallowed()
+        {
+            // Arrange & Act
+            var generated = CompileToCSharp(@"
+<繁体字></繁体字>
+
+@functions {
+    public string Text { get; set; } = ""text"";
+}", supportLocalizedComponentNames: false);
+
+            // Assert
+            Assert.Empty(generated.Diagnostics);
         }
 
         [Fact]
