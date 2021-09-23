@@ -107,11 +107,9 @@
     <MicrosoftExtensionsOptionsVersion>7.0.0-alpha.1.21472.1</MicrosoftExtensionsOptionsVersion>
     <MicrosoftExtensionsPrimitivesVersion>7.0.0-alpha.1.21472.1</MicrosoftExtensionsPrimitivesVersion>
     <MicrosoftInternalRuntimeAspNetCoreTransportVersion>7.0.0-alpha.1.21472.1</MicrosoftInternalRuntimeAspNetCoreTransportVersion>
-    <MicrosoftWin32SystemEventsVersion>7.0.0-alpha.1.21472.1</MicrosoftWin32SystemEventsVersion>
     <SystemDiagnosticsDiagnosticSourceVersion>7.0.0-alpha.1.21472.1</SystemDiagnosticsDiagnosticSourceVersion>
     <SystemDiagnosticsEventLogVersion>7.0.0-alpha.1.21472.1</SystemDiagnosticsEventLogVersion>
     <SystemDirectoryServicesProtocolsVersion>7.0.0-alpha.1.21472.1</SystemDirectoryServicesProtocolsVersion>
-    <SystemDrawingCommonVersion>7.0.0-alpha.1.21472.1</SystemDrawingCommonVersion>
     <SystemIOPipelinesVersion>7.0.0-alpha.1.21472.1</SystemIOPipelinesVersion>
     <SystemNetHttpJsonVersion>7.0.0-alpha.1.21472.1</SystemNetHttpJsonVersion>
     <SystemNetHttpWinHttpHandlerVersion>7.0.0-alpha.1.21472.1</SystemNetHttpWinHttpHandlerVersion>
@@ -120,12 +118,10 @@
     <SystemRuntimeCompilerServicesUnsafeVersion>7.0.0-alpha.1.21472.1</SystemRuntimeCompilerServicesUnsafeVersion>
     <SystemSecurityCryptographyPkcsVersion>7.0.0-alpha.1.21472.1</SystemSecurityCryptographyPkcsVersion>
     <SystemSecurityCryptographyXmlVersion>7.0.0-alpha.1.21472.1</SystemSecurityCryptographyXmlVersion>
-    <SystemSecurityPermissionsVersion>7.0.0-alpha.1.21472.1</SystemSecurityPermissionsVersion>
     <SystemServiceProcessServiceControllerVersion>7.0.0-alpha.1.21472.1</SystemServiceProcessServiceControllerVersion>
     <SystemTextEncodingsWebVersion>7.0.0-alpha.1.21472.1</SystemTextEncodingsWebVersion>
     <SystemTextJsonVersion>7.0.0-alpha.1.21472.1</SystemTextJsonVersion>
     <SystemThreadingChannelsVersion>7.0.0-alpha.1.21472.1</SystemThreadingChannelsVersion>
-    <SystemWindowsExtensionsVersion>7.0.0-alpha.1.21472.1</SystemWindowsExtensionsVersion>
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <MicrosoftNETCorePlatformsVersion>7.0.0-alpha.1.21472.1</MicrosoftNETCorePlatformsVersion>
     <!-- Packages from dotnet/efcore -->
