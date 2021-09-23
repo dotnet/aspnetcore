@@ -1216,7 +1216,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 static bool LooksLikeAComponentName(DocumentIntermediateNode document, string startTagName)
                 {
-                    var category = CharUnicodeInfo.GetUnicodeCategory(startTagName, 0);
+                    var category = char.GetUnicodeCategory(startTagName, 0);
 
                     // A markup element which starts with an uppercase character is likely a component.
                     //
