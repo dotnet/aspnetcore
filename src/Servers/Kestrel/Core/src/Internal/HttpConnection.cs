@@ -70,8 +70,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                         requestProcessor = new Http2Connection((HttpConnectionContext)_context);
                         _protocolSelectionState = ProtocolSelectionState.Selected;
                         break;
+#pragma warning disable CA2252 // Preview Features
                     case HttpProtocols.Http3:
                         requestProcessor = new Http3Connection((HttpMultiplexedConnectionContext)_context);
+#pragma warning restore CA2252
                         _protocolSelectionState = ProtocolSelectionState.Selected;
                         break;
                     case HttpProtocols.None:
@@ -205,7 +207,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             var isMultiplexTransport = _context is HttpMultiplexedConnectionContext;
             var http1Enabled = _context.Protocols.HasFlag(HttpProtocols.Http1);
             var http2Enabled = _context.Protocols.HasFlag(HttpProtocols.Http2);
+#pragma warning disable CA2252 // Preview Features
             var http3Enabled = _context.Protocols.HasFlag(HttpProtocols.Http3);
+#pragma warning restore CA2252
 
             string? error = null;
 
@@ -218,7 +222,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 if (http3Enabled)
                 {
+#pragma warning disable CA2252 // Preview Features
                     return HttpProtocols.Http3;
+#pragma warning restore CA2252
                 }
 
                 error = $"Protocols {_context.Protocols} not supported on multiplexed transport.";
