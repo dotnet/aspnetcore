@@ -222,7 +222,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 if (http3Enabled)
                 {
+#pragma warning disable CA2252 // Preview Features
                     return HttpProtocols.Http3;
+#pragma warning restore CA2252
                 }
 
                 error = $"Protocols {_context.Protocols} not supported on multiplexed transport.";
