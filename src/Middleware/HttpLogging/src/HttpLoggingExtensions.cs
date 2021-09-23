@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         [LoggerMessage(4, LogLevel.Information, "ResponseBody: {Body}", EventName = "ResponseBody")]
         public static partial void ResponseBody(this ILogger logger, string body);
 
-        [LoggerMessage(5, LogLevel.Debug, "Decode failure while converting body.", EventName = "DecodeFaulure")]
+        [LoggerMessage(5, LogLevel.Debug, "Decode failure while converting body.", EventName = "DecodeFailure")]
         public static partial void DecodeFailure(this ILogger logger, Exception ex);
 
         [LoggerMessage(6, LogLevel.Debug, "Unrecognized Content-Type for body.", EventName = "UnrecognizedMediaType")]
