@@ -1201,7 +1201,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     // We only want this error during the second phase of the two phase compilation.
                     var startTagName = node.StartTag.GetTagNameWithOptionalBang();
-                    if (startTagName != null && startTagName.Length > 0 && LooksLikeAComponentName(startTagName))
+                    if (!string.IsNullOrEmpty(startTagName) && LooksLikeAComponentName(_document, startTagName))
                     {
                         element.Diagnostics.Add(
                             ComponentDiagnosticFactory.Create_UnexpectedMarkupElement(startTagName, BuildSourceSpanFromNode(node.StartTag)));
@@ -1214,20 +1214,22 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 _builder.Pop();
 
-                bool LooksLikeAComponentName(string startTagName)
+                static bool LooksLikeAComponentName(DocumentIntermediateNode document, string startTagName)
                 {
-                    if (char.IsUpper(startTagName, 0))
-                    {
-                        // A markup element that starts with an uppercase character.
-                        // It is most likely intended to be a component.
-                        return true;
-                    }
-
-                    // In certain cultures characters are not explicitly Uppercase/Lowercase, hence we check
-                    // the specific UnicodeCategory to see if we may still be able to treat it as a component.
-                    // The goal here is to avoid clashing with any future standard-HTML elements.
                     var category = CharUnicodeInfo.GetUnicodeCategory(startTagName, 0);
-                    return category == UnicodeCategory.TitlecaseLetter || category == UnicodeCategory.OtherLetter;
+
+                    // A markup element which starts with an uppercase character is likely a component.
+                    //
+                    // In certain cultures, characters are not explicitly Uppercase/Lowercase, hence we must check
+                    // the specific UnicodeCategory to see if we may still be able to treat it as a component.
+                    //
+                    //    The goal here is to avoid clashing with any future standard-HTML elements.
+                    //
+                    //    To avoid a breaking change, the support of localized component names (without explicit
+                    //    Uppercase classification) is behind a `SupportLocalizedComponentNames` feature flag.
+                    return category is UnicodeCategory.UppercaseLetter ||
+                        (document.Options.SupportLocalizedComponentNames &&
+                            (category is UnicodeCategory.TitlecaseLetter || category is UnicodeCategory.OtherLetter));
                 }
             }
 

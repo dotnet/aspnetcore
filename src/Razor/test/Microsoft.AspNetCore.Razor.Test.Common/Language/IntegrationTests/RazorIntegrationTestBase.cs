@@ -121,6 +121,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 // Turn off checksums, we're testing code generation.
                 b.Features.Add(new SuppressChecksum());
 
+                b.Features.Add(new SupportLocalizedComponentNames());
+
                 b.Features.Add(new TestImportProjectFeature(ImportItems));
 
                 if (LineEnding != null)
@@ -443,6 +445,18 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             public void Configure(RazorCodeGenerationOptionsBuilder options)
             {
                 options.SuppressChecksum = true;
+            }
+        }
+
+        private class SupportLocalizedComponentNames : IConfigureRazorCodeGenerationOptionsFeature
+        {
+            public int Order => 0;
+
+            public RazorEngine Engine { get; set; }
+
+            public void Configure(RazorCodeGenerationOptionsBuilder options)
+            {
+                options.SupportLocalizedComponentNames = true;
             }
         }
 
