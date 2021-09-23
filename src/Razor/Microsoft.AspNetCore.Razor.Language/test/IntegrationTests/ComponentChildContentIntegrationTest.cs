@@ -116,9 +116,11 @@ Some Content
         }
 
         [Theory]
-        [InlineData("UnrecognizedChildContent")]
-        [InlineData("繁体字")]
-        public void ChildContent_ExplicitChildContent_UnrecogizedElement_ProducesDiagnostic(string unrecognizedComponentName)
+        [InlineData("UnrecognizedChildContent", true, true)]
+        [InlineData("UnrecognizedChildContent", false, true)]
+        [InlineData("繁体字", true, true)]
+        [InlineData("繁体字", false, false)]
+        public void ChildContent_ExplicitChildContent_UnrecogizedElement_ProducesDiagnostic(string unrecognizedComponentName, bool supportLocalizedComponentNames, bool diagnosticExpected)
         {
             // Arrange
             AdditionalSyntaxTrees.Add(RenderChildContentComponent);
@@ -129,13 +131,22 @@ Some Content
 <ChildContent>
 </ChildContent>
 <{unrecognizedComponentName}></{unrecognizedComponentName}>
-</RenderChildContent>");
+</RenderChildContent>", supportLocalizedComponentNames: supportLocalizedComponentNames);
 
             // Assert
-            Assert.Collection(
-                generated.Diagnostics,
-                d => Assert.Equal("RZ10012", d.Id),
-                d => Assert.Equal("RZ9996", d.Id));
+            if (diagnosticExpected)
+            {
+                Assert.Collection(
+                    generated.Diagnostics,
+                    d => Assert.Equal("RZ10012", d.Id),
+                    d => Assert.Equal("RZ9996", d.Id));
+            }
+            else
+            {
+                Assert.Collection(
+                    generated.Diagnostics,
+                    d => Assert.Equal("RZ9996", d.Id));
+            }
         }
 
         [Fact]
