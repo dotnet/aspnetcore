@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
@@ -1200,10 +1201,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     // We only want this error during the second phase of the two phase compilation.
                     var startTagName = node.StartTag.GetTagNameWithOptionalBang();
-                    if (startTagName != null && startTagName.Length > 0 && char.IsUpper(startTagName, 0))
+                    if (startTagName != null && startTagName.Length > 0 && LooksLikeAComponentName(startTagName))
                     {
-                        // A markup element that starts with an uppercase character.
-                        // It is most likely intended to be a component. Add a warning.
                         element.Diagnostics.Add(
                             ComponentDiagnosticFactory.Create_UnexpectedMarkupElement(startTagName, BuildSourceSpanFromNode(node.StartTag)));
                     }
@@ -1214,6 +1213,22 @@ namespace Microsoft.AspNetCore.Razor.Language
                 base.VisitMarkupElement(node);
 
                 _builder.Pop();
+
+                bool LooksLikeAComponentName(string startTagName)
+                {
+                    if (char.IsUpper(startTagName, 0))
+                    {
+                        // A markup element that starts with an uppercase character.
+                        // It is most likely intended to be a component.
+                        return true;
+                    }
+
+                    // In certain cultures characters are not explicitly Uppercase/Lowercase, hence we check
+                    // the specific UnicodeCategory to see if we may still be able to treat it as a component.
+                    // The goal here is to avoid clashing with any future standard-HTML elements.
+                    var category = CharUnicodeInfo.GetUnicodeCategory(startTagName, 0);
+                    return category == UnicodeCategory.TitlecaseLetter || category == UnicodeCategory.OtherLetter;
+                }
             }
 
             public override void VisitMarkupStartTag(MarkupStartTagSyntax node)
