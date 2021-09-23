@@ -72,8 +72,7 @@
             <PackageGroupRef Id="PG_ANCM" />
             <PackageGroupRef Id="PG_DOTNET_REDIST_LTS_BUNDLE" />
             <!--<PackageGroupRef Id="PG_DOTNET_REDIST_FTS_BUNDLE" />-->
-            <PackageGroupRef Id="PG_AspNetCoreSharedFramework_x86" />
-            <PackageGroupRef Id="PG_AspNetCoreSharedFramework_x64" />
+            <PackageGroupRef Id="PG_SHAREDFX_REDIST_BUNDLE" />
         </Chain>
     </Bundle>
 </Wix>

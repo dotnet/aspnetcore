@@ -17,8 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SharedFrameworkLib\SharedFrameworkLib.wixproj" SetPlatform="Platform=x86" />
-    <ProjectReference Include="..\SharedFrameworkLib\SharedFrameworkLib.wixproj" SetPlatform="Platform=x64" />
+    <ProjectReference Include="..\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" />
     <WixExtension Include="WixUtilExtension">
       <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
       <Name>WixUtilExtension</Name>
@@ -40,4 +39,60 @@
   <Import Project="Product.targets" />
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+
+  <PropertyGroup>
+    <SharedFxPackageVersion>$(PackageVersion)</SharedFxPackageVersion>
+    <SharedFxMsiVersion>$(PackageVersion)</SharedFxMsiVersion>
+    <SharedFxMsiVersion
+        Condition="! $(PackageVersion.Contains('$(_PreReleaseLabel)'))">$(PackageVersion)-$(_PreReleaseLabel)$(_BuildNumberLabels)</SharedFxMsiVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SharedFxInstallers Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxPackageVersion)-win-x64.exe">
+      <TargetPlatform>x64</TargetPlatform>
+      <BundleNameProperty>SharedFxRedistInstallerx64</BundleNameProperty>
+      <Version>$(SharedFxPackageVersion)</Version>
+    </SharedFxInstallers>
+    <SharedFxInstallers Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxPackageVersion)-win-x86.exe">
+      <TargetPlatform>x86</TargetPlatform>
+      <BundleNameProperty>SharedFxRedistInstallerx86</BundleNameProperty>
+      <Version>$(SharedFxPackageVersion)</Version>
+    </SharedFxInstallers>
+  </ItemGroup>
+
+  <Target Name="ExtractPropertiesFromSharedFxMsi" DependsOnTargets="FetchDependencies" AfterTargets="ResolveProjectReferences">
+    <!-- Create properties that holds the executable name. These are passed to the bundles so we can reference them as variables
+             from inside the ExePackage authoring. -->
+    <CreateProperty Value="%(SharedFxInstallers.Filename)%(Extension)">
+      <Output TaskParameter="Value" PropertyName="%(SharedFxInstallers.BundleNameProperty)"/>
+    </CreateProperty>
+
+    <ItemGroup>
+      <SharedFxPayload Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-x64.msi">
+        <ProductVersionProperty>SharedFxInstallerProductVersionx64</ProductVersionProperty>
+        <ProductCodeProperty>SharedFxInstallerProductCodex64</ProductCodeProperty>
+      </SharedFxPayload>
+      <SharedFxPayload Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-x86.msi">
+        <ProductVersionProperty>SharedFxInstallerProductVersionx86</ProductVersionProperty>
+        <ProductCodeProperty>SharedFxInstallerProductCodex86</ProductCodeProperty>
+      </SharedFxPayload>
+    </ItemGroup>
+
+    <!-- Read MSI properties -->
+    <GetMsiProperty InstallPackage="%(SharedFxPayload.Identity)" Property="ProductVersion">
+      <Output TaskParameter="Value" PropertyName="%(ProductVersionProperty)" />
+    </GetMsiProperty>
+    <GetMsiProperty InstallPackage="%(SharedFxPayload.Identity)" Property="ProductCode">
+      <Output TaskParameter="Value" PropertyName="%(ProductCodeProperty)" />
+    </GetMsiProperty>
+
+    <PropertyGroup>
+      <DefineConstants>$(DefineConstants);SharedFxRedistInstallerx64=$(SharedFxRedistInstallerx64)</DefineConstants>
+      <DefineConstants>$(DefineConstants);SharedFxInstallerProductVersionx64=$(SharedFxInstallerProductVersionx64)</DefineConstants>
+      <DefineConstants>$(DefineConstants);SharedFxInstallerProductCodex64=$(SharedFxInstallerProductCodex64)</DefineConstants>
+      <DefineConstants>$(DefineConstants);SharedFxRedistInstallerx86=$(SharedFxRedistInstallerx86)</DefineConstants>
+      <DefineConstants>$(DefineConstants);SharedFxInstallerProductVersionx86=$(SharedFxInstallerProductVersionx86)</DefineConstants>
+      <DefineConstants>$(DefineConstants);SharedFxInstallerProductCodex86=$(SharedFxInstallerProductCodex86)</DefineConstants>
+    </PropertyGroup>
+  </Target>
 </Project>
