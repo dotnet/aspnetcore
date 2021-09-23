@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Routing
         /// Gets the <see cref="RouteData"/> associated with the provided <paramref name="httpContext"/>.
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
-        /// <returns>The <see cref="RouteData"/>, or null.</returns>
+        /// <returns>The <see cref="RouteData"/>.</returns>
         public static RouteData GetRouteData(this HttpContext httpContext)
         {
             if (httpContext == null)
