@@ -75,6 +75,8 @@ namespace Microsoft.AspNetCore.HttpLogging
             var options = _options.CurrentValue;
             RequestBufferingStream? requestBufferingStream = null;
             Stream? originalBody = null;
+            HttpRequestLog? httpRequestLog = null;
+            Encoding? encoding = null;
 
             if ((HttpLoggingFields.Request & options.LoggingFields) != HttpLoggingFields.None)
             {
@@ -117,7 +119,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     if (MediaTypeHelpers.TryGetEncodingForMediaType(request.ContentType,
                         options.MediaTypeOptions.MediaTypeStates,
-                        out var encoding))
+                        out encoding))
                     {
                         originalBody = request.Body;
                         requestBufferingStream = new RequestBufferingStream(
@@ -133,14 +135,13 @@ namespace Microsoft.AspNetCore.HttpLogging
                     }
                 }
 
-                var httpRequestLog = new HttpRequestLog(list);
-
-                _logger.RequestLog(httpRequestLog);
+                httpRequestLog = new HttpRequestLog(list);
             }
 
             ResponseBufferingStream? responseBufferingStream = null;
             IHttpResponseBodyFeature? originalBodyFeature = null;
 
+            var logLevel = LogLevel.Information;
             try
             {
                 var response = context.Response;
@@ -161,27 +162,31 @@ namespace Microsoft.AspNetCore.HttpLogging
                 }
 
                 await _next(context);
-
-                if (requestBufferingStream?.HasLogged == false)
+                if (options.LogLevelFactory != null)
                 {
-                    // If the middleware pipeline didn't read until 0 was returned from readasync,
-                    // make sure we log the request body.
-                    requestBufferingStream.LogRequestBody();
-                }
-
-                if (responseBufferingStream == null || responseBufferingStream.FirstWrite == false)
-                {
-                    // No body, write headers here.
-                    LogResponseHeaders(response, options, _logger);
-                }
-
-                if (responseBufferingStream != null)
-                {
-                    var responseBody = responseBufferingStream.GetString(responseBufferingStream.Encoding);
-                    if (!string.IsNullOrEmpty(responseBody))
+                    try
                     {
-                        _logger.ResponseBody(responseBody);
+                        logLevel = options.LogLevelFactory(context);
                     }
+                    catch
+                    {
+                    }
+                }
+                if (httpRequestLog != null)
+                {
+                    _logger.RequestLog(httpRequestLog, logLevel);
+                }
+                var requestBody = requestBufferingStream?.GetString(encoding);
+                if (requestBody != null)
+                {
+                    _logger.RequestBody(requestBody, logLevel);
+                }
+
+                LogResponseHeaders(response, options, _logger, logLevel);
+                var responseBody = responseBufferingStream?.GetString(responseBufferingStream.Encoding);
+                if (!string.IsNullOrEmpty(responseBody))
+                {
+                    _logger.ResponseBody(responseBody, logLevel);
                 }
             }
             finally
@@ -207,7 +212,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             list.Add(new KeyValuePair<string, object?>(key, value));
         }
 
-        public static void LogResponseHeaders(HttpResponse response, HttpLoggingOptions options, ILogger logger)
+        public static void LogResponseHeaders(HttpResponse response, HttpLoggingOptions options, ILogger logger, LogLevel logLevel)
         {
             var list = new List<KeyValuePair<string, object?>>(
                 response.Headers.Count + DefaultResponseFieldsMinusHeaders);
@@ -223,8 +228,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
 
             var httpResponseLog = new HttpResponseLog(list);
-
-            logger.ResponseLog(httpResponseLog);
+            logger.ResponseLog(httpResponseLog, logLevel);
         }
 
         internal static void FilterHeaders(List<KeyValuePair<string, object?>> keyValues,

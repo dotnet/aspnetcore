@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.HttpLogging
@@ -108,5 +110,10 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// Maximum response body size to log (in bytes). Defaults to 32 KB.
         /// </summary>
         public int ResponseBodyLogLimit { get; set; } = 32 * 1024;
+
+        /// <summary>
+        /// Log level factory to customize the http logging log level, Information by default, minimal level as information
+        /// </summary>
+        public Func<HttpContext, LogLevel>? LogLevelFactory { get; set; }
     }
 }

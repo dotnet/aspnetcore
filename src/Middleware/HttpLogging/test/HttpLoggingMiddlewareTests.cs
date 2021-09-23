@@ -753,81 +753,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             Assert.Contains(TestSink.Writes, w => w.Message.Contains(expected));
         }
 
-        [Fact]
-        public async Task FirstWriteResponseHeadersLogged()
-        {
-            var options = CreateOptionsAccessor();
-            options.CurrentValue.LoggingFields = HttpLoggingFields.Response;
 
-            var writtenHeaders = new TaskCompletionSource<object>();
-            var letBodyFinish = new TaskCompletionSource<object>();
-
-            var middleware = new HttpLoggingMiddleware(
-                async c =>
-                {
-                    c.Response.StatusCode = 200;
-                    c.Response.Headers[HeaderNames.TransferEncoding] = "test";
-                    c.Response.ContentType = "text/plain";
-                    await c.Response.WriteAsync("test");
-                    writtenHeaders.SetResult(null);
-                    await letBodyFinish.Task;
-                },
-                options,
-                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
-
-            var httpContext = new DefaultHttpContext();
-
-            var middlewareTask = middleware.Invoke(httpContext);
-
-            await writtenHeaders.Task;
-
-            Assert.Contains(TestSink.Writes, w => w.Message.Contains("StatusCode: 200"));
-            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Transfer-Encoding: test"));
-            Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Body: test"));
-
-            letBodyFinish.SetResult(null);
-
-            await middlewareTask;
-
-            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Body: test"));
-        }
-
-        [Fact]
-        public async Task StartAsyncResponseHeadersLogged()
-        {
-            var options = CreateOptionsAccessor();
-            options.CurrentValue.LoggingFields = HttpLoggingFields.Response;
-
-            var writtenHeaders = new TaskCompletionSource<object>();
-            var letBodyFinish = new TaskCompletionSource<object>();
-
-            var middleware = new HttpLoggingMiddleware(
-                async c =>
-                {
-                    c.Response.StatusCode = 200;
-                    c.Response.Headers[HeaderNames.TransferEncoding] = "test";
-                    c.Response.ContentType = "text/plain";
-                    await c.Response.StartAsync();
-                    writtenHeaders.SetResult(null);
-                    await letBodyFinish.Task;
-                },
-                options,
-                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
-
-            var httpContext = new DefaultHttpContext();
-
-            var middlewareTask = middleware.Invoke(httpContext);
-
-            await writtenHeaders.Task;
-
-            Assert.Contains(TestSink.Writes, w => w.Message.Contains("StatusCode: 200"));
-            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Transfer-Encoding: test"));
-            Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Body: test"));
-
-            letBodyFinish.SetResult(null);
-
-            await middlewareTask;
-        }
 
         [Fact]
         public async Task UnrecognizedMediaType()
@@ -849,6 +775,40 @@ namespace Microsoft.AspNetCore.HttpLogging
             await middleware.Invoke(httpContext);
 
             Assert.Contains(TestSink.Writes, w => w.Message.Contains("Unrecognized Content-Type for body."));
+        }
+
+        [Fact]
+        public async Task DynamicLogLevelTest()
+        {
+            var options = CreateOptionsAccessor();
+            options.CurrentValue.LogLevelFactory = context => context.Response.StatusCode >= 400 ? LogLevel.Error : LogLevel.Information;
+            options.CurrentValue.LoggingFields = HttpLoggingFields.All;
+
+            var middleware = new HttpLoggingMiddleware(
+                async c =>
+                {
+                    c.Response.StatusCode = 400;
+                    c.Response.Headers[HeaderNames.TransferEncoding] = "test";
+                    c.Response.ContentType = "text/plain";
+                    await c.Response.WriteAsync("test");
+                },
+                options,
+                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Protocol = "HTTP/1.0";
+            httpContext.Request.Method = "GET";
+            httpContext.Request.Scheme = "http";
+            httpContext.Request.Path = new PathString("/foo");
+            httpContext.Request.PathBase = new PathString("/foo");
+            httpContext.Request.QueryString = new QueryString("?foo");
+            httpContext.Request.Headers["Connection"] = "keep-alive";
+            httpContext.Request.ContentType = "text/plain";
+            httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("test"));
+
+            await middleware.Invoke(httpContext);
+
+            Assert.All(TestSink.Writes, w => Assert.Equal(LogLevel.Error, w.LogLevel));
         }
 
         private IOptionsMonitor<HttpLoggingOptions> CreateOptionsAccessor()

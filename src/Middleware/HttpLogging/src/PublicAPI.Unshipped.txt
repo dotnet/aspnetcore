@@ -24,6 +24,8 @@ Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.HttpLoggingOptions() -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.LoggingFields.get -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.LoggingFields.set -> void
+Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.LogLevelFactory.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, Microsoft.Extensions.Logging.LogLevel>?
+Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.LogLevelFactory.set -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.MediaTypeOptions.get -> Microsoft.AspNetCore.HttpLogging.MediaTypeOptions!
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.RequestBodyLogLimit.get -> int
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.RequestBodyLogLimit.set -> void
