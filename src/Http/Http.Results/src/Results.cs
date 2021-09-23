@@ -542,10 +542,11 @@ namespace Microsoft.AspNetCore.Http
             {
                 Detail = detail,
                 Instance = instance,
-                Title = title ?? "One or more validation errors occurred.",
                 Type = type,
                 Status = statusCode,
             };
+            
+            problemDetails.Title = title ?? problemDetails.Title;
 
             if (extensions is not null)
             {
