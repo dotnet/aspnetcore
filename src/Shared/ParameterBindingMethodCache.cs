@@ -88,11 +88,30 @@ namespace Microsoft.AspNetCore.Http
 
                 if (TryGetDateTimeTryParseMethod(type, out methodInfo))
                 {
+                    // We generate `DateTimeStyles.AdjustToUniversal | DateTimeStyles.AllowWhiteSpaces ` to
+                    // support parsing types into the UTC timezone for DateTime. We don't assume the timezone
+                    // on the original value which will cause the parser to set the `Kind` property on the
+                    // `DateTime` as `Unspecified` indicating that it was parsed from an ambiguous timezone.
+                    //
+                    // `DateTimeOffset`s are always in UTC and don't allow specifying an `Unspecific` kind.
+                    // For this, we always assume that the original value is already in UTC to avoid resolving
+                    // the offset incorrectly dependening on the timezone of the machine. We don't bother mapping
+                    // it to UTC in this case. In the event that the original timestamp is not in UTC, it's offset
+                    // value will be maintained.
+                    //
+                    // DateOnly and TimeOnly types do not support conversion to Utc so we
+                    // default to `DateTimeStyles.AllowWhiteSpaces`.
+                    var dateTimeStyles = type switch {
+                        Type t when t == typeof(DateTime) => DateTimeStyles.AdjustToUniversal | DateTimeStyles.AllowWhiteSpaces,
+                        Type t when t == typeof(DateTimeOffset) => DateTimeStyles.AssumeUniversal | DateTimeStyles.AllowWhiteSpaces,
+                        _ => DateTimeStyles.AllowWhiteSpaces
+                    };
+
                     return (expression) => Expression.Call(
                         methodInfo!,
                         TempSourceStringExpr,
                         Expression.Constant(CultureInfo.InvariantCulture),
-                        Expression.Constant(DateTimeStyles.None),
+                        Expression.Constant(dateTimeStyles),
                         expression);
                 }
 
