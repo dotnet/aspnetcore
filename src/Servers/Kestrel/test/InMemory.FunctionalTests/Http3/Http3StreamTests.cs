@@ -603,5 +603,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError, CoreStrings.Http3StreamErrorLessDataThanLength);
         }
+
+        [Theory]
+        [InlineData(1000)]
+        [InlineData(4096)]
+        [InlineData(8000)] // Greater than the default max pool size (4096)
+        public async Task GetMemory_AfterAbort_GetsFakeMemory(int sizeHint)
+        {
+            var tcs = new TaskCompletionSource();
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            var requestStream = await InitializeConnectionAndStreamsAsync(async context =>
+            {
+                context.Abort();
+
+                var memory = context.Response.BodyWriter.GetMemory(sizeHint);
+
+                Assert.True(memory.Length >= sizeHint);
+                await context.Response.CompleteAsync();
+                context.Response.BodyWriter.Advance(memory.Length);
+            });
+        }
     }
 }
