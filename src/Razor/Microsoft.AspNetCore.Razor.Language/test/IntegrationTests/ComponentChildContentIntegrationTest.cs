@@ -115,18 +115,20 @@ Some Content
                 diagnostic.GetMessage(CultureInfo.CurrentCulture));
         }
 
-        [Fact]
-        public void ChildContent_ExplicitChildContent_UnrecogizedElement_ProducesDiagnostic()
+        [Theory]
+        [InlineData("UnrecognizedChildContent")]
+        [InlineData("繁体字")]
+        public void ChildContent_ExplicitChildContent_UnrecogizedElement_ProducesDiagnostic(string unrecognizedComponentName)
         {
             // Arrange
             AdditionalSyntaxTrees.Add(RenderChildContentComponent);
 
             // Act
-            var generated = CompileToCSharp(@"
+            var generated = CompileToCSharp(@$"
 <RenderChildContent>
 <ChildContent>
 </ChildContent>
-<UnrecognizedChildContent></UnrecognizedChildContent>
+<{unrecognizedComponentName}></{unrecognizedComponentName}>
 </RenderChildContent>");
 
             // Assert
