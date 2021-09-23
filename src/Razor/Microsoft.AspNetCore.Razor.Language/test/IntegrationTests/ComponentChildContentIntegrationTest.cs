@@ -116,11 +116,30 @@ Some Content
         }
 
         [Theory]
-        [InlineData("UnrecognizedChildContent", true, true)]
-        [InlineData("UnrecognizedChildContent", false, true)]
-        [InlineData("繁体字", true, true)]
-        [InlineData("繁体字", false, false)]
-        public void ChildContent_ExplicitChildContent_UnrecogizedElement_ProducesDiagnostic(string unrecognizedComponentName, bool supportLocalizedComponentNames, bool diagnosticExpected)
+        [InlineData(true)]
+        [InlineData(false)]
+        public void ChildContent_ExplicitChildContent_UnrecogizedElement_ProducesDiagnostic(bool supportLocalizedComponentNames)
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(RenderChildContentComponent);
+
+            // Act
+            var generated = CompileToCSharp(@"
+<RenderChildContent>
+<ChildContent>
+</ChildContent>
+<UnrecognizedChildContent></UnrecognizedChildContent>
+</RenderChildContent>", supportLocalizedComponentNames: supportLocalizedComponentNames);
+
+            // Assert
+            Assert.Collection(
+                generated.Diagnostics,
+                d => Assert.Equal("RZ10012", d.Id),
+                d => Assert.Equal("RZ9996", d.Id));
+        }
+
+        [Fact]
+        public void ChildContent_ExplicitChildContent_StartsWithCharThatIsOtherLetterCategory_WhenLocalizedComponentNamesIsAllowed()
         {
             // Arrange
             AdditionalSyntaxTrees.Add(RenderChildContentComponent);
@@ -130,23 +149,34 @@ Some Content
 <RenderChildContent>
 <ChildContent>
 </ChildContent>
-<{unrecognizedComponentName}></{unrecognizedComponentName}>
-</RenderChildContent>", supportLocalizedComponentNames: supportLocalizedComponentNames);
+<繁体字></繁体字>
+</RenderChildContent>", supportLocalizedComponentNames: true);
 
             // Assert
-            if (diagnosticExpected)
-            {
-                Assert.Collection(
-                    generated.Diagnostics,
-                    d => Assert.Equal("RZ10012", d.Id),
-                    d => Assert.Equal("RZ9996", d.Id));
-            }
-            else
-            {
-                Assert.Collection(
-                    generated.Diagnostics,
-                    d => Assert.Equal("RZ9996", d.Id));
-            }
+            Assert.Collection(
+                generated.Diagnostics,
+                d => Assert.Equal("RZ10012", d.Id),
+                d => Assert.Equal("RZ9996", d.Id));
+        }
+
+        [Fact]
+        public void ChildContent_ExplicitChildContent_StartsWithCharThatIsOtherLetterCategory_WhenLocalizedComponentNamesIsDisallowed()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(RenderChildContentComponent);
+
+            // Act
+            var generated = CompileToCSharp(@$"
+<RenderChildContent>
+<ChildContent>
+</ChildContent>
+<繁体字></繁体字>
+</RenderChildContent>", supportLocalizedComponentNames: false);
+
+            // Assert
+            Assert.Collection(
+                generated.Diagnostics,
+                d => Assert.Equal("RZ9996", d.Id));
         }
 
         [Fact]
