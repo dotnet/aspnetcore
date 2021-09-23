@@ -29,7 +29,9 @@ namespace Microsoft.AspNetCore.Hosting
         /// </returns>
         public static IWebHostBuilder UseKestrel(this IWebHostBuilder hostBuilder)
         {
+#pragma warning disable CA2252 // Preview Features
             hostBuilder.UseQuic();
+#pragma warning restore CA2252
             return hostBuilder.ConfigureServices(services =>
             {
                 // Don't override an already-configured transport

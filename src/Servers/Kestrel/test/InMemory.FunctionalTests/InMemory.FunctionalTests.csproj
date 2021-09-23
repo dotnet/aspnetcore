@@ -6,6 +6,7 @@
     <TestGroupName>InMemory.FunctionalTests</TestGroupName>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DefineConstants>$(DefineConstants);IS_FUNCTIONAL_TESTS</DefineConstants>
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
    </PropertyGroup>
 
   <ItemGroup>

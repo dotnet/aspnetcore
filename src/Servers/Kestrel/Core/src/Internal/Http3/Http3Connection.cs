@@ -457,7 +457,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             var httpConnectionContext = new Http3StreamContext(
                 _multiplexedContext.ConnectionId,
+#pragma warning disable CA2252 // Preview Features
                 HttpProtocols.Http3,
+#pragma warning restore CA2252
                 _context.AltSvcHeader,
                 _multiplexedContext,
                 _context.ServiceContext,
@@ -537,7 +539,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             var streamContext = await _multiplexedContext.ConnectAsync(features);
             var httpConnectionContext = new Http3StreamContext(
                 _multiplexedContext.ConnectionId,
+#pragma warning disable CA2252 // Preview Features
                 HttpProtocols.Http3,
+#pragma warning restore CA2252
                 _context.AltSvcHeader,
                 _multiplexedContext,
                 _context.ServiceContext,
