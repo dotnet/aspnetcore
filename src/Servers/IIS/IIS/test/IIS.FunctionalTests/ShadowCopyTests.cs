@@ -212,6 +212,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/36887")]
         public async Task ShadowCopyCleansUpOlderFolders()
         {
             using var directory = TempDirectory.Create();
