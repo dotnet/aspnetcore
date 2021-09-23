@@ -525,7 +525,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
         /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
         /// <param name="statusCode">The status code.</param>
-        /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
+        /// <param name="title">The value for <see cref="ProblemDetails.Title" />. Defaults to "One or more validation errors occurred."</param>
         /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
         /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
@@ -542,7 +542,7 @@ namespace Microsoft.AspNetCore.Http
             {
                 Detail = detail,
                 Instance = instance,
-                Title = title,
+                Title = title ?? "One or more validation errors occurred.",
                 Type = type,
                 Status = statusCode,
             };
