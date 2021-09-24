@@ -33,3 +33,8 @@ Microsoft.AspNetCore.Razor.Language.SourceSpan.EndCharacterIndex.get -> int
 virtual Microsoft.AspNetCore.Razor.Language.RazorCodeGenerationOptionsBuilder.UseEnhancedLinePragma.get -> bool
 virtual Microsoft.AspNetCore.Razor.Language.RazorCodeGenerationOptionsBuilder.UseEnhancedLinePragma.set -> void
 virtual Microsoft.AspNetCore.Razor.Language.RazorCodeGenerationOptions.UseEnhancedLinePragma.get -> bool
+virtual Microsoft.AspNetCore.Razor.Language.RazorCodeGenerationOptionsBuilder.SupportLocalizedComponentNames.get -> bool
+virtual Microsoft.AspNetCore.Razor.Language.RazorCodeGenerationOptionsBuilder.SupportLocalizedComponentNames.set -> void
+virtual Microsoft.AspNetCore.Razor.Language.RazorCodeGenerationOptions.SupportLocalizedComponentNames.get -> bool
+virtual Microsoft.AspNetCore.Razor.Language.RazorCodeGenerationOptions.SupportLocalizedComponentNames.set -> void
+~static Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilderExtensions.SetSupportLocalizedComponentNames(this Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder builder) -> Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder
