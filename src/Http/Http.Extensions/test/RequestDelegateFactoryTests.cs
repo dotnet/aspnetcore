@@ -660,6 +660,28 @@ namespace Microsoft.AspNetCore.Routing.Internal
             }
         }
 
+        private interface IBindAsync<T>
+        {
+            static ValueTask<T?> BindAsync(HttpContext context)
+            {
+                if (typeof(T) != typeof(MyBindAsyncFromInterfaceRecord))
+                {
+                    throw new InvalidOperationException();
+                }
+
+                if (!Uri.TryCreate(context.Request.Headers.Referer, UriKind.Absolute, out var uri))
+                {
+                    return new(default(T));
+                }
+
+                return new(result: (T)(object)new MyBindAsyncFromInterfaceRecord(uri));
+            }
+        }
+
+        private record MyBindAsyncFromInterfaceRecord(Uri uri) : IBindAsync<MyBindAsyncFromInterfaceRecord>
+        {
+        }
+
         [Theory]
         [MemberData(nameof(TryParsableParameters))]
         public async Task RequestDelegatePopulatesUnattributedTryParsableParametersFromRouteValue(Delegate action, string? routeValue, object? expectedParameterValue)
@@ -830,6 +852,26 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             Assert.Equal(new MyAwaitedBindAsyncRecord(new Uri("https://example.org")), httpContext.Items["myAwaitedBindAsyncRecord"]);
             Assert.Equal(new MyAwaitedBindAsyncStruct(new Uri("https://example.org")), httpContext.Items["myAwaitedBindAsyncStruct"]);
+        }
+
+        [Fact]
+        public async Task RequestDelegateUsesBindAsyncFromImplementedInterface()
+        {
+            var httpContext = CreateHttpContext();
+
+            httpContext.Request.Headers.Referer = "https://example.org";
+
+            var resultFactory = RequestDelegateFactory.Create((HttpContext httpContext, MyBindAsyncFromInterfaceRecord myBindAsyncRecord) =>
+            {
+                httpContext.Items["myBindAsyncFromInterfaceRecord"] = myBindAsyncRecord;
+            });
+
+            var requestDelegate = resultFactory.RequestDelegate;
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(new MyBindAsyncFromInterfaceRecord(new Uri("https://example.org")), httpContext.Items["myBindAsyncFromInterfaceRecord"]);
+
         }
 
         public static object[][] DelegatesWithAttributesOnNotTryParsableParameters
