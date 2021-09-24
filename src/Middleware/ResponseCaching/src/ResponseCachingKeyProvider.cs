@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     var requestHeaders = context.HttpContext.Request.Headers;
                     for (var i = 0; i < headersCount; i++)
                     {
-                        var header = varyByRules!.Headers[i];
+                        var header = varyByRules!.Headers[i]!;
                         var headerValues = requestHeaders[header];
                         builder.Append(KeyDelimiter)
                             .Append(header)
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     {
                         for (var i = 0; i < varyByRules.QueryKeys.Count; i++)
                         {
-                            var queryKey = varyByRules.QueryKeys[i];
+                            var queryKey = varyByRules.QueryKeys[i]!;
                             var queryKeyValues = context.HttpContext.Request.Query[queryKey];
                             builder.Append(KeyDelimiter)
                                 .Append(queryKey)

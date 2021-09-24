@@ -1,12 +1,12 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
     /// <summary>
-    /// Provides access to HTTP status code reason phrases as listed in 
+    /// Provides access to HTTP status code reason phrases as listed in
     /// http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml.
     /// </summary>
     public static class ReasonPhrases
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         };
 
         /// <summary>
-        /// Gets the reason phrase for the specified status code. 
+        /// Gets the reason phrase for the specified status code.
         /// </summary>
         /// <param name="statusCode">The status code.</param>
         /// <returns>The reason phrase, or <see cref="string.Empty"/> if the status code is unknown.</returns>

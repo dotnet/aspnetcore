@@ -1,13 +1,17 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.JSInterop;
+using Microsoft.AspNetCore.StaticWebAssets;
 
 namespace Microsoft.AspNetCore.Components.WebView
 {
@@ -16,7 +20,7 @@ namespace Microsoft.AspNetCore.Components.WebView
     /// should subclass this to wire up the abstract and protected methods to the APIs of
     /// the platform's web view.
     /// </summary>
-    public abstract class WebViewManager : IDisposable
+    public abstract class WebViewManager : IAsyncDisposable
     {
         // These services are not DI services, because their lifetime isn't limited to a single
         // per-page-load scope. Instead, their lifetime matches the webview itself.
@@ -26,6 +30,7 @@ namespace Microsoft.AspNetCore.Components.WebView
         private readonly IpcReceiver _ipcReceiver;
         private readonly Uri _appBaseUri;
         private readonly StaticContentProvider _staticContentProvider;
+        private readonly JSComponentConfigurationStore _jsComponents;
         private readonly Dictionary<string, RootComponent> _rootComponentsBySelector = new();
 
         // Each time a web page connects, we establish a new per-page context
@@ -39,13 +44,15 @@ namespace Microsoft.AspNetCore.Components.WebView
         /// <param name="dispatcher">A <see cref="Dispatcher"/> instance that can marshal calls to the required thread or sync context.</param>
         /// <param name="appBaseUri">The base URI for the application. Since this is a webview, the base URI is typically on a private origin such as http://0.0.0.0/ or app://example/</param>
         /// <param name="fileProvider">Provides static content to the webview.</param>
+        /// <param name="jsComponents">Describes configuration for adding, removing, and updating root components from JavaScript code.</param>
         /// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
-        public WebViewManager(IServiceProvider provider, Dispatcher dispatcher, Uri appBaseUri, IFileProvider fileProvider, string hostPageRelativePath)
+        public WebViewManager(IServiceProvider provider, Dispatcher dispatcher, Uri appBaseUri, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
         {
             _provider = provider ?? throw new ArgumentNullException(nameof(provider));
             _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
             _appBaseUri = EnsureTrailingSlash(appBaseUri ?? throw new ArgumentNullException(nameof(appBaseUri)));
             fileProvider = StaticWebAssetsLoader.UseStaticWebAssets(fileProvider);
+            _jsComponents = jsComponents;
             _staticContentProvider = new StaticContentProvider(fileProvider, appBaseUri, hostPageRelativePath);
             _ipcSender = new IpcSender(_dispatcher, SendMessage);
             _ipcReceiver = new IpcReceiver(AttachToPageAsync);
@@ -96,7 +103,13 @@ namespace Microsoft.AspNetCore.Components.WebView
             // add it when the page attaches later.
             if (_currentPageContext != null)
             {
-                return Dispatcher.InvokeAsync(() => _currentPageContext.Renderer.AddRootComponentAsync(componentType, selector, parameters));
+                return Dispatcher.InvokeAsync(() =>
+                {
+                    rootComponent.ComponentId = _currentPageContext.Renderer.AddRootComponent(
+                        componentType, selector);
+                    return _currentPageContext.Renderer.RenderRootComponentAsync(
+                        rootComponent.ComponentId.Value, rootComponent.Parameters);
+                });
             }
             else
             {
@@ -110,16 +123,16 @@ namespace Microsoft.AspNetCore.Components.WebView
         /// <param name="selector">The CSS selector describing where in the page the component was placed. This must exactly match the selector provided on an earlier call to <see cref="AddRootComponentAsync(Type, string, ParameterView)"/>.</param>
         public Task RemoveRootComponentAsync(string selector)
         {
-            if (!_rootComponentsBySelector.Remove(selector))
+            if (!_rootComponentsBySelector.Remove(selector, out var rootComponent))
             {
                 throw new InvalidOperationException($"There is no root component with selector '{selector}'.");
             }
 
             // If the page is already attached, remove the root component from it now. Otherwise it's
             // enough to have updated the dictionary.
-            if (_currentPageContext != null)
+            if (_currentPageContext != null && rootComponent.ComponentId.HasValue)
             {
-                return Dispatcher.InvokeAsync(() => _currentPageContext.Renderer.RemoveRootComponentAsync(selector));
+                return Dispatcher.InvokeAsync(() => _currentPageContext.Renderer.RemoveRootComponent(rootComponent.ComponentId.Value));
             }
             else
             {
@@ -176,53 +189,95 @@ namespace Microsoft.AspNetCore.Components.WebView
             // If there was some previous attached page, dispose all its resources. We're not eagerly disposing
             // page contexts when the user navigates away, because we don't get notified about that. We could
             // change this if any important reason emerges.
-            _currentPageContext?.Dispose();
+            if (_currentPageContext != null)
+            {
+                await _currentPageContext.DisposeAsync();
+            }
 
             var serviceScope = _provider.CreateAsyncScope();
-            _currentPageContext = new PageContext(_dispatcher, serviceScope, _ipcSender, baseUrl, startUrl);
 
-            // Add any root components that were registered before the page attached
+            _currentPageContext = new PageContext(_dispatcher, serviceScope, _ipcSender, _jsComponents, baseUrl, startUrl);
+
+            // Add any root components that were registered before the page attached. We don't await any of the
+            // returned render tasks so that the components can be processed in parallel.
+            var pendingRenders = new List<Task>(_rootComponentsBySelector.Count);
             foreach (var (selector, rootComponent) in _rootComponentsBySelector)
             {
-                await _currentPageContext.Renderer.AddRootComponentAsync(
-                    rootComponent.ComponentType,
-                    selector,
-                    rootComponent.Parameters);
+                rootComponent.ComponentId = _currentPageContext.Renderer.AddRootComponent(
+                    rootComponent.ComponentType, selector);
+                pendingRenders.Add(_currentPageContext.Renderer.RenderRootComponentAsync(
+                    rootComponent.ComponentId.Value, rootComponent.Parameters));
             }
+
+            // Now we wait for all components to finish rendering.
+            await Task.WhenAll(pendingRenders);
         }
 
         private static Uri EnsureTrailingSlash(Uri uri)
             => uri.AbsoluteUri.EndsWith('/') ? uri : new Uri(uri.AbsoluteUri + '/');
 
-        record RootComponent
+        private class RootComponent
         {
             public Type ComponentType { get; init; }
-            public ParameterView Parameters { get; set; }
+            public ParameterView Parameters { get; init; }
+            public int? ComponentId { get; set; }
         }
 
         /// <summary>
         /// Disposes the current <see cref="WebViewManager"/> instance.
         /// </summary>
-        /// <param name="disposing"><c>true</c> when dispose was called explicitly; <c>false</c> when it is called as part of the finalizer.</param>
-        protected virtual void Dispose(bool disposing)
+        protected virtual async ValueTask DisposeAsyncCore()
         {
             if (!_disposed)
             {
-                if (disposing)
-                {
-                    _currentPageContext?.Dispose();
-                }
-
                 _disposed = true;
+
+                if (_currentPageContext != null)
+                {
+                    await _currentPageContext.DisposeAsync();
+                }
             }
         }
 
         /// <inheritdoc/>
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
+            // Do not change this code. Put cleanup code in 'DisposeAsync(bool disposing)' method
             GC.SuppressFinalize(this);
+            await DisposeAsyncCore();
+        }
+
+        private class StaticWebAssetsLoader
+        {
+            internal static IFileProvider UseStaticWebAssets(IFileProvider fileProvider)
+            {
+                var manifestPath = ResolveRelativeToAssembly();
+                if (File.Exists(manifestPath))
+                {
+                    using var manifestStream = File.OpenRead(manifestPath);
+                    var manifest = ManifestStaticWebAssetFileProvider.StaticWebAssetManifest.Parse(manifestStream);
+                    if (manifest.ContentRoots.Length > 0)
+                    {
+                        var manifestProvider = new ManifestStaticWebAssetFileProvider(manifest, (path) => new PhysicalFileProvider(path));
+                        return new CompositeFileProvider(manifestProvider, fileProvider);
+                    }
+                }
+
+                return fileProvider;
+            }
+
+            private static string? ResolveRelativeToAssembly()
+            {
+                var assembly = Assembly.GetEntryAssembly();
+                if (string.IsNullOrEmpty(assembly?.Location))
+                {
+                    return null;
+                }
+
+                var name = Path.GetFileNameWithoutExtension(assembly.Location);
+
+                return Path.Combine(Path.GetDirectoryName(assembly.Location)!, $"{name}.staticwebassets.runtime.json");
+            }
         }
     }
 }

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
                     if (_fallbackServerCertificateSelector is null)
                     {
-                        // Cache the fallback ServerCertificate since there's no fallback ServerCertificateSelector taking precedence. 
+                        // Cache the fallback ServerCertificate since there's no fallback ServerCertificateSelector taking precedence.
                         sslOptions.ServerCertificate = fallbackHttpsOptions.ServerCertificate;
                     }
                 }
@@ -176,11 +176,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             return (sslOptions, sniOptions.ClientCertificateMode);
         }
 
-        public static ValueTask<(SslServerAuthenticationOptions, ClientCertificateMode)> OptionsCallback(ConnectionContext connection, SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken)
+        public static ValueTask<SslServerAuthenticationOptions> OptionsCallback(TlsHandshakeCallbackContext callbackContext)
         {
-            var sniOptionsSelector = (SniOptionsSelector)state;
-            var (options, clientCertificateMode) = sniOptionsSelector.GetOptions(connection, clientHelloInfo.ServerName);
-            return new ValueTask<(SslServerAuthenticationOptions, ClientCertificateMode)>((options, clientCertificateMode));
+            var sniOptionsSelector = (SniOptionsSelector)callbackContext.State!;
+            var (options, clientCertificateMode) = sniOptionsSelector.GetOptions(callbackContext.Connection, callbackContext.ClientHelloInfo.ServerName);
+            callbackContext.AllowDelayedClientCertificateNegotation = clientCertificateMode == ClientCertificateMode.DelayCertificate;
+            return new ValueTask<SslServerAuthenticationOptions>(options);
         }
 
         internal static SslServerAuthenticationOptions CloneSslOptions(SslServerAuthenticationOptions sslOptions) =>

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.Http;
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         public virtual bool IsCachedEntryFresh(ResponseCachingContext context)
         {
             var age = context.CachedEntryAge!.Value;
-            var cachedCacheControlHeaders = context.CachedResponseHeaders[HeaderNames.CacheControl];
+            var cachedCacheControlHeaders = context.CachedResponseHeaders.CacheControl;
             var requestCacheControlHeaders = context.HttpContext.Request.Headers.CacheControl;
 
             // Add min-fresh requirements
@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 {
                     // Validate expiration
                     DateTimeOffset expires;
-                    if (HeaderUtilities.TryParseDate(context.CachedResponseHeaders[HeaderNames.Expires].ToString(), out expires) &&
+                    if (HeaderUtilities.TryParseDate(context.CachedResponseHeaders.Expires.ToString(), out expires) &&
                         context.ResponseTime!.Value >= expires)
                     {
                         context.Logger.ExpirationExpiresExceeded(context.ResponseTime.Value, expires);

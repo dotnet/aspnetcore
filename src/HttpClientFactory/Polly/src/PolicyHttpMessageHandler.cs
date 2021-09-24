@@ -1,6 +1,5 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Net.Http;
@@ -74,6 +73,7 @@ namespace Microsoft.Extensions.Http
     /// </remarks>
     public class PolicyHttpMessageHandler : DelegatingHandler
     {
+        private const string PriorResponseKey = "PolicyHttpMessageHandler.PriorResponse";
         private readonly IAsyncPolicy<HttpResponseMessage> _policy;
         private readonly Func<HttpRequestMessage, IAsyncPolicy<HttpResponseMessage>> _policySelector;
 
@@ -148,7 +148,7 @@ namespace Microsoft.Extensions.Http
         /// <param name="context">The <see cref="Context"/>.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         /// <returns>Returns a <see cref="Task{HttpResponseMessage}"/> that will yield a response when completed.</returns>
-        protected virtual Task<HttpResponseMessage> SendCoreAsync(HttpRequestMessage request, Context context, CancellationToken cancellationToken)
+        protected virtual async Task<HttpResponseMessage> SendCoreAsync(HttpRequestMessage request, Context context, CancellationToken cancellationToken)
         {
             if (request == null)
             {
@@ -160,7 +160,18 @@ namespace Microsoft.Extensions.Http
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return base.SendAsync(request, cancellationToken);
+            if (request.Properties.TryGetValue(PriorResponseKey, out var priorResult) && priorResult is IDisposable disposable)
+            {
+                // This is a retry, dispose the prior response to free up the connection.
+                request.Properties.Remove(PriorResponseKey);
+                disposable.Dispose();
+            }
+
+            var result = await base.SendAsync(request, cancellationToken);
+
+            request.Properties.Add(PriorResponseKey, result);
+
+            return result;
         }
 
         private IAsyncPolicy<HttpResponseMessage> SelectPolicy(HttpRequestMessage request)

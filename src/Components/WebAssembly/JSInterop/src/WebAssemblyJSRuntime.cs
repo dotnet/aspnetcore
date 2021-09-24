@@ -1,10 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.Json;
 using Microsoft.JSInterop.Infrastructure;
 using WebAssembly.JSInterop;
@@ -92,6 +91,7 @@ namespace Microsoft.JSInterop.WebAssembly
             switch (resultType)
             {
                 case JSCallResultType.Default:
+                case JSCallResultType.JSVoidResult:
                     var result = InternalCalls.InvokeJS<T0, T1, T2, TResult>(out exception, ref callInfo, arg0, arg1, arg2);
                     return exception != null
                         ? throw new JSException(exception)
@@ -101,9 +101,26 @@ namespace Microsoft.JSInterop.WebAssembly
                     return exception != null
                         ? throw new JSException(exception)
                         : (TResult)(object)new WebAssemblyJSObjectReference(this, id);
+                case JSCallResultType.JSStreamReference:
+                    var serializedStreamReference = InternalCalls.InvokeJS<T0, T1, T2, string>(out exception, ref callInfo, arg0, arg1, arg2);
+                    return exception != null
+                        ? throw new JSException(exception)
+                        : (TResult)(object)DeserializeJSStreamReference(serializedStreamReference);
                 default:
                     throw new InvalidOperationException($"Invalid result type '{resultType}'.");
             }
+        }
+
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "IJSStreamReference is referenced in Microsoft.JSInterop.Infrastructure.JSStreamReferenceJsonConverter")]
+        private IJSStreamReference DeserializeJSStreamReference(string serializedStreamReference)
+        {
+            var jsStreamReference = JsonSerializer.Deserialize<IJSStreamReference>(serializedStreamReference, JsonSerializerOptions);
+            if (jsStreamReference is null)
+            {
+                throw new NullReferenceException($"Unable to parse the {nameof(serializedStreamReference)}.");
+            }
+
+            return jsStreamReference;
         }
 
         /// <inheritdoc />

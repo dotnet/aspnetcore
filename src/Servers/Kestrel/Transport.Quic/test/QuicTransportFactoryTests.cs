@@ -1,12 +1,14 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Net;
 using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -14,9 +16,11 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 {
-    public class QuicTransportFactoryTests
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35070")]
+    public class QuicTransportFactoryTests : TestApplicationErrorLoggerLoggedTest
     {
-        [Fact]
+        [ConditionalFact]
+        [MsQuicSupported]
         public async Task BindAsync_NoFeature_Error()
         {
             // Arrange
@@ -30,7 +34,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             Assert.Equal("Couldn't find HTTPS configuration for QUIC transport.", ex.Message);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [MsQuicSupported]
         public async Task BindAsync_NoServerCertificate_Error()
         {
             // Arrange
@@ -43,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => quicTransportFactory.BindAsync(new IPEndPoint(0, 0), features: features, cancellationToken: CancellationToken.None).AsTask()).DefaultTimeout();
 
             // Assert
-            Assert.Equal("SslServerAuthenticationOptions.ServerCertificate must be configured with a value.", ex.Message);
+            Assert.Equal("SslServerAuthenticationOptions must provide a server certificate using ServerCertificate, ServerCertificateContext, or ServerCertificateSelectionCallback.", ex.Message);
         }
     }
 }

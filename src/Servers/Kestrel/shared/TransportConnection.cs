@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -18,6 +18,9 @@ namespace Microsoft.AspNetCore.Connections
     {
         private IDictionary<object, object?>? _items;
         private string? _connectionId;
+
+        // Will only have a value if the transport is created from a multiplexed transport.
+        public IFeatureCollection? MultiplexedConnectionFeatures { get; protected set; }
 
         public TransportConnection()
         {
@@ -52,6 +55,11 @@ namespace Microsoft.AspNetCore.Connections
             {
                 _items = value;
             }
+        }
+
+        internal void ResetItems()
+        {
+            _items?.Clear();
         }
 
         public override CancellationToken ConnectionClosed { get; set; }

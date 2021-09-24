@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -78,17 +78,74 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
            Type? type,
            Type defaultErrorType)
         {
+            var contentTypes = new MediaTypeCollection();
+            var responseTypeMetadataProviders = _mvcOptions.OutputFormatters.OfType<IApiResponseTypeMetadataProvider>();
+
+            var responseTypes = ReadResponseMetadata(
+                responseMetadataAttributes,
+                type,
+                defaultErrorType,
+                contentTypes,
+                responseTypeMetadataProviders);
+
+            // Set the default status only when no status has already been set explicitly
+            if (responseTypes.Count == 0 && type != null)
+            {
+                responseTypes.Add(new ApiResponseType
+                {
+                    StatusCode = StatusCodes.Status200OK,
+                    Type = type,
+                });
+            }
+
+            if (contentTypes.Count == 0)
+            {
+                // None of the IApiResponseMetadataProvider specified a content type. This is common for actions that
+                // specify one or more ProducesResponseType but no ProducesAttribute. In this case, formatters will participate in conneg
+                // and respond to the incoming request.
+                // Querying IApiResponseTypeMetadataProvider.GetSupportedContentTypes with "null" should retrieve all supported
+                // content types that each formatter may respond in.
+                contentTypes.Add((string)null!);
+            }
+
+            foreach (var apiResponse in responseTypes)
+            {
+                CalculateResponseFormatForType(apiResponse, contentTypes, responseTypeMetadataProviders, _modelMetadataProvider);
+            }
+
+            return responseTypes;
+        }
+
+        // Shared with EndpointMetadataApiDescriptionProvider
+        internal static List<ApiResponseType> ReadResponseMetadata(
+            IReadOnlyList<IApiResponseMetadataProvider> responseMetadataAttributes,
+            Type? type,
+            Type defaultErrorType,
+            MediaTypeCollection contentTypes,
+            IEnumerable<IApiResponseTypeMetadataProvider>? responseTypeMetadataProviders = null,
+            IModelMetadataProvider? modelMetadataProvider = null)
+        {
             var results = new Dictionary<int, ApiResponseType>();
 
             // Get the content type that the action explicitly set to support.
             // Walk through all 'filter' attributes in order, and allow each one to see or override
             // the results of the previous ones. This is similar to the execution path for content-negotiation.
-            var contentTypes = new MediaTypeCollection();
             if (responseMetadataAttributes != null)
             {
                 foreach (var metadataAttribute in responseMetadataAttributes)
                 {
-                    metadataAttribute.SetContentTypes(contentTypes);
+                    // All ProducesXAttributes, except for ProducesResponseTypeAttribute do
+                    // not allow multiple instances on the same method/class/etc. For those
+                    // scenarios, the `SetContentTypes` method on the attribute continuously
+                    // clears out more general content types in favor of more specific ones
+                    // since we iterate through the attributes in order. For example, if a
+                    // Produces exists on both a controller and an action within the controller,
+                    // we favor the definition in the action. This is a semantic that does not
+                    // apply to ProducesResponseType, which allows multiple instances on an target.
+                    if (metadataAttribute is not ProducesResponseTypeAttribute)
+                    {
+                        metadataAttribute.SetContentTypes(contentTypes);
+                    }
 
                     var statusCode = metadataAttribute.StatusCode;
 
@@ -105,7 +162,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                         {
                             // ProducesResponseTypeAttribute's constructor defaults to setting "Type" to void when no value is specified.
                             // In this event, use the action's return type for 200 or 201 status codes. This lets you decorate an action with a
-                            // [ProducesResponseType(201)] instead of [ProducesResponseType(201, typeof(Person)] when typeof(Person) can be inferred
+                            // [ProducesResponseType(201)] instead of [ProducesResponseType(typeof(Person), 201] when typeof(Person) can be inferred
                             // from the return type.
                             apiResponseType.Type = type;
                         }
@@ -122,6 +179,18 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                         }
                     }
 
+                    // We special case the handling of ProcuesResponseTypeAttributes since
+                    // multiple ProducesResponseTypeAttributes are permitted on a single
+                    // action/controller/etc. In that scenario, instead of picking the most-specific
+                    // set of content types (like we do with the Produces attribute above) we process
+                    // the content types for each attribute independently.
+                    if (metadataAttribute is ProducesResponseTypeAttribute)
+                    {
+                        var attributeContentTypes = new MediaTypeCollection();
+                        metadataAttribute.SetContentTypes(attributeContentTypes);
+                        CalculateResponseFormatForType(apiResponseType, attributeContentTypes, responseTypeMetadataProviders, modelMetadataProvider);
+                    }
+
                     if (apiResponseType.Type != null)
                     {
                         results[apiResponseType.StatusCode] = apiResponseType;
@@ -129,34 +198,19 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 }
             }
 
-            // Set the default status only when no status has already been set explicitly
-            if (results.Count == 0 && type != null)
-            {
-                results[StatusCodes.Status200OK] = new ApiResponseType
-                {
-                    StatusCode = StatusCodes.Status200OK,
-                    Type = type,
-                };
-            }
-
-            if (contentTypes.Count == 0)
-            {
-                // None of the IApiResponseMetadataProvider specified a content type. This is common for actions that
-                // specify one or more ProducesResponseType but no ProducesAttribute. In this case, formatters will participate in conneg
-                // and respond to the incoming request.
-                // Querying IApiResponseTypeMetadataProvider.GetSupportedContentTypes with "null" should retrieve all supported
-                // content types that each formatter may respond in.
-                contentTypes.Add((string)null!);
-            }
-
-            var responseTypes = results.Values;
-            CalculateResponseFormats(responseTypes, contentTypes);
-            return responseTypes;
+            return results.Values.ToList();
         }
 
-        private void CalculateResponseFormats(ICollection<ApiResponseType> responseTypes, MediaTypeCollection declaredContentTypes)
+        // Shared with EndpointMetadataApiDescriptionProvider
+        internal static void CalculateResponseFormatForType(ApiResponseType apiResponse, MediaTypeCollection declaredContentTypes, IEnumerable<IApiResponseTypeMetadataProvider>? responseTypeMetadataProviders, IModelMetadataProvider? modelMetadataProvider)
         {
-            var responseTypeMetadataProviders = _mvcOptions.OutputFormatters.OfType<IApiResponseTypeMetadataProvider>();
+            // If response formats have already been calculate for this type,
+            // then exit early. This avoids populating the ApiResponseFormat for
+            // types that have already been handled, specifically ProducesResponseTypes.
+            if (apiResponse.ApiResponseFormats.Count > 0)
+            {
+                return;
+            }
 
             // Given the content-types that were declared for this action, determine the formatters that support the content-type for the given
             // response type.
@@ -166,21 +220,20 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             // 3. When no formatter supports the specified content-type, use the user specified value as is. This is useful in actions where the user
             // dictates the content-type.
             // e.g. [Produces("application/pdf")] Action() => FileStream("somefile.pdf", "application/pdf");
-
-            foreach (var apiResponse in responseTypes)
+            var responseType = apiResponse.Type;
+            if (responseType == null || responseType == typeof(void))
             {
-                var responseType = apiResponse.Type;
-                if (responseType == null || responseType == typeof(void))
+                return;
+            }
+
+            apiResponse.ModelMetadata = modelMetadataProvider?.GetMetadataForType(responseType);
+
+            foreach (var contentType in declaredContentTypes)
+            {
+                var isSupportedContentType = false;
+
+                if (responseTypeMetadataProviders != null)
                 {
-                    continue;
-                }
-
-                apiResponse.ModelMetadata = _modelMetadataProvider.GetMetadataForType(responseType);
-
-                foreach (var contentType in declaredContentTypes)
-                {
-                    var isSupportedContentType = false;
-
                     foreach (var responseTypeMetadataProvider in responseTypeMetadataProviders)
                     {
                         var formatterSupportedContentTypes = responseTypeMetadataProvider.GetSupportedContentTypes(
@@ -203,15 +256,17 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                             });
                         }
                     }
+                }
 
-                    if (!isSupportedContentType && contentType != null)
+
+
+                if (!isSupportedContentType && contentType != null)
+                {
+                    // No output formatter was found that supports this content type. Add the user specified content type as-is to the result.
+                    apiResponse.ApiResponseFormats.Add(new ApiResponseFormat
                     {
-                        // No output formatter was found that supports this content type. Add the user specified content type as-is to the result.
-                        apiResponse.ApiResponseFormats.Add(new ApiResponseFormat
-                        {
-                            MediaType = contentType,
-                        });
-                    }
+                        MediaType = contentType,
+                    });
                 }
             }
         }

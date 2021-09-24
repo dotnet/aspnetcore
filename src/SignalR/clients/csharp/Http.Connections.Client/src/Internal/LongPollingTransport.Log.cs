@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Net.Http;
@@ -12,6 +12,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
     {
         private static class Log
         {
+            private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
+
             private static readonly Action<ILogger, TransferFormat, Exception?> _startTransport =
                 LoggerMessage.Define<TransferFormat>(LogLevel.Information, new EventId(1, "StartTransport"), "Starting transport. Transfer mode: {TransferFormat}.");
 
@@ -43,7 +45,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             private static readonly Action<ILogger, int, long?, Exception?> _pollResponseReceived =
                 LoggerMessage.Define<int, long?>(LogLevel.Trace, new EventId(10, "PollResponseReceived"),
                     "Poll response with status code {StatusCode} received from server. Content length: {ContentLength}.",
-                    skipEnabledCheck: true);
+                    SkipEnabledCheckLogOptions);
 
             private static readonly Action<ILogger, Uri, Exception?> _sendingDeleteRequest =
                 LoggerMessage.Define<Uri>(LogLevel.Debug, new EventId(11, "SendingDeleteRequest"), "Sending DELETE request to '{PollUrl}'.");

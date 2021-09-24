@@ -1,11 +1,12 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Moq;
 using Xunit;
@@ -51,9 +52,12 @@ namespace Microsoft.AspNetCore.Components.Server.Tests
             // Assert
             Assert.True(called);
         }
-        
+
         private IApplicationBuilder CreateAppBuilder()
         {
+            var environment = new Mock<IWebHostEnvironment>();
+            environment.SetupGet(e => e.ApplicationName).Returns("app");
+            environment.SetupGet(e => e.WebRootFileProvider).Returns(new NullFileProvider());
             var services = new ServiceCollection();
             services.AddSingleton(Mock.Of<IHostApplicationLifetime>());
             services.AddLogging();
@@ -64,6 +68,7 @@ namespace Microsoft.AspNetCore.Components.Server.Tests
             services.AddRouting();
             services.AddSignalR();
             services.AddServerSideBlazor();
+            services.AddSingleton(environment.Object);
             services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
 
             var serviceProvider = services.BuildServiceProvider();

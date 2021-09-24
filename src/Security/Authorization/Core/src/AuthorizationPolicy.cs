@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNetCore.Authorization
 {
     /// <summary>
-    /// Represents a collection of authorization requirements and the scheme or 
+    /// Represents a collection of authorization requirements and the scheme or
     /// schemes they are evaluated against, all of which must succeed
     /// for authorization to succeed.
     /// </summary>
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Authorization
         public IReadOnlyList<IAuthorizationRequirement> Requirements { get; }
 
         /// <summary>
-        /// Gets a readonly list of the authentication schemes the <see cref="AuthorizationPolicy.Requirements"/> 
+        /// Gets a readonly list of the authentication schemes the <see cref="AuthorizationPolicy.Requirements"/>
         /// are evaluated against.
         /// </summary>
         public IReadOnlyList<string> AuthenticationSchemes { get; }

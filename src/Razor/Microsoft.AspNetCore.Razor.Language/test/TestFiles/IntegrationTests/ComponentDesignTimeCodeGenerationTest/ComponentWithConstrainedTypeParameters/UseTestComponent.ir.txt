@@ -1,0 +1,44 @@
+Document - 
+    NamespaceDeclaration -  - Test
+        UsingDirective - (3:1,1 [12] ) - System
+        UsingDirective - (18:2,1 [32] ) - System.Collections.Generic
+        UsingDirective - (53:3,1 [17] ) - System.Linq
+        UsingDirective - (73:4,1 [28] ) - System.Threading.Tasks
+        UsingDirective - (104:5,1 [37] ) - Microsoft.AspNetCore.Components
+        UsingDirective - (1:0,1 [10] x:\dir\subdir\Test\UseTestComponent.cshtml) - Test
+        ClassDeclaration -  - public partial - UseTestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+            DesignTimeDirective - 
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
+            MethodDeclaration -  - protected override - void - BuildRenderTree
+                HtmlContent - (11:0,11 [2] x:\dir\subdir\Test\UseTestComponent.cshtml)
+                    LazyIntermediateToken - (11:0,11 [2] x:\dir\subdir\Test\UseTestComponent.cshtml) - Html - \n
+                Component - (13:1,0 [94] x:\dir\subdir\Test\UseTestComponent.cshtml) - TestComponent
+                    ComponentChildContent -  - ChildContent - context
+                        HtmlContent - (68:1,55 [6] x:\dir\subdir\Test\UseTestComponent.cshtml)
+                            LazyIntermediateToken - (68:1,55 [6] x:\dir\subdir\Test\UseTestComponent.cshtml) - Html - \n    
+                        MarkupElement - (74:2,4 [15] x:\dir\subdir\Test\UseTestComponent.cshtml) - p
+                            CSharpExpression - (78:2,8 [7] x:\dir\subdir\Test\UseTestComponent.cshtml)
+                                LazyIntermediateToken - (78:2,8 [7] x:\dir\subdir\Test\UseTestComponent.cshtml) - CSharp - context
+                        HtmlContent - (89:2,19 [2] x:\dir\subdir\Test\UseTestComponent.cshtml)
+                            LazyIntermediateToken - (89:2,19 [2] x:\dir\subdir\Test\UseTestComponent.cshtml) - Html - \n
+                    ComponentAttribute - (34:1,21 [6] x:\dir\subdir\Test\UseTestComponent.cshtml) - Item1 - Item1 - AttributeStructure.DoubleQuotes
+                        CSharpExpression - (35:1,22 [5] x:\dir\subdir\Test\UseTestComponent.cshtml)
+                            LazyIntermediateToken - (35:1,22 [5] x:\dir\subdir\Test\UseTestComponent.cshtml) - CSharp - item1
+                    ComponentAttribute - (48:1,35 [6] x:\dir\subdir\Test\UseTestComponent.cshtml) - Items2 - Items2 - AttributeStructure.DoubleQuotes
+                        CSharpExpression - (49:1,36 [5] x:\dir\subdir\Test\UseTestComponent.cshtml)
+                            LazyIntermediateToken - (49:1,36 [5] x:\dir\subdir\Test\UseTestComponent.cshtml) - CSharp - items
+                    ComponentAttribute - (61:1,48 [6] x:\dir\subdir\Test\UseTestComponent.cshtml) - Item3 - Item3 - AttributeStructure.DoubleQuotes
+                        CSharpExpression - (62:1,49 [5] x:\dir\subdir\Test\UseTestComponent.cshtml)
+                            LazyIntermediateToken - (62:1,49 [5] x:\dir\subdir\Test\UseTestComponent.cshtml) - CSharp - item1
+                HtmlContent - (107:3,16 [4] x:\dir\subdir\Test\UseTestComponent.cshtml)
+                    LazyIntermediateToken - (107:3,16 [4] x:\dir\subdir\Test\UseTestComponent.cshtml) - Html - \n\n
+            CSharpCode - (118:5,7 [268] x:\dir\subdir\Test\UseTestComponent.cshtml)
+                LazyIntermediateToken - (118:5,7 [268] x:\dir\subdir\Test\UseTestComponent.cshtml) - CSharp - \n    Image item1 = new Image() { id = 1, url="https://example.com"};\n    static Tag tag1 = new Tag() { description = "A description."};\n    static Tag tag2 = new Tag() { description = "Another description."};\n    List<Tag> items = new List<Tag>() { tag1, tag2 };\n
+    NamespaceDeclaration -  - __Blazor.Test.UseTestComponent
+        ClassDeclaration -  - internal static - TypeInference -  - 
+            ComponentTypeInferenceMethod -  - __Blazor.Test.UseTestComponent.TypeInference - CreateTestComponent_0

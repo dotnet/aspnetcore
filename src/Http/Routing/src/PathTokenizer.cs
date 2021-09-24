@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Routing
                 }
 
                 // If we get here we're at the end of the string. The implementation of .Count should protect us
-                // from these cases. 
+                // from these cases.
                 Debug.Assert(_path[_path.Length - 1] != '/');
                 Debug.Assert(currentSegmentIndex == index);
 

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.E2ETesting
 {
     public class SauceConnectServer : IDisposable
     {
-        private static SemaphoreSlim _semaphore = new SemaphoreSlim(1);
+        private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
 
         private Process _process;
         private string _sentinelPath;
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.E2ETesting
         private static IMessageSink _diagnosticsMessageSink;
 
         // 2h
-        private static int SauceConnectProcessTimeout = 7200;
+        private const int SauceConnectProcessTimeout = 7200;
 
         public SauceConnectServer(IMessageSink diagnosticsMessageSink)
         {

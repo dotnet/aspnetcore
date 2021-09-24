@@ -1,5 +1,5 @@
-// Copyright (c) Barry Dorrans. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Globalization;
@@ -782,7 +782,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             return host;
         }
 
-        private CertificateAuthenticationEvents successfulValidationEvents = new CertificateAuthenticationEvents()
+        private readonly CertificateAuthenticationEvents successfulValidationEvents = new CertificateAuthenticationEvents()
         {
             OnCertificateValidated = context =>
             {
@@ -798,7 +798,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             }
         };
 
-        private CertificateAuthenticationEvents failedValidationEvents = new CertificateAuthenticationEvents()
+        private readonly CertificateAuthenticationEvents failedValidationEvents = new CertificateAuthenticationEvents()
         {
             OnCertificateValidated = context =>
             {
@@ -807,7 +807,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             }
         };
 
-        private CertificateAuthenticationEvents unprocessedValidationEvents = new CertificateAuthenticationEvents()
+        private readonly CertificateAuthenticationEvents unprocessedValidationEvents = new CertificateAuthenticationEvents()
         {
             OnCertificateValidated = context =>
             {

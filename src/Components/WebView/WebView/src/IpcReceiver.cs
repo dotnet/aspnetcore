@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Text.Json;
@@ -27,7 +27,6 @@ namespace Microsoft.AspNetCore.Components.WebView
     internal class IpcReceiver
     {
         private readonly Func<string, string, Task> _onAttachMessage;
-        private WebEventJsonContext _jsonContext;
 
         public IpcReceiver(Func<string,string,Task> onAttachMessage)
         {
@@ -62,9 +61,6 @@ namespace Microsoft.AspNetCore.Components.WebView
                     case IpcCommon.IncomingMessageType.ReceiveByteArrayFromJS:
                         ReceiveByteArrayFromJS(pageContext, args[0].GetInt32(), args[1].GetBytesFromBase64());
                         break;
-                    case IpcCommon.IncomingMessageType.DispatchBrowserEvent:
-                        await DispatchBrowserEventAsync(pageContext, args[0].GetRawText(), args[1].GetRawText());
-                        break;
                     case IpcCommon.IncomingMessageType.OnRenderCompleted:
                         OnRenderCompleted(pageContext, args[0].GetInt64(), args[1].GetString());
                         break;
@@ -93,24 +89,6 @@ namespace Microsoft.AspNetCore.Components.WebView
         private static void ReceiveByteArrayFromJS(PageContext pageContext, int id, byte[] data)
         {
             DotNetDispatcher.ReceiveByteArray(pageContext.JSRuntime, id, data);
-        }
-
-        private Task DispatchBrowserEventAsync(PageContext pageContext, string eventDescriptor, string eventArgs)
-        {
-            var renderer = pageContext.Renderer;
-            // JsonSerializerOptions are tightly bound to the JsonContext. Cache it on first use using a copy
-            // of the serializer settings.
-            if (_jsonContext is null)
-            {
-                var jsonSerializerOptions = pageContext.JSRuntime.ReadJsonSerializerOptions();
-                _jsonContext = new(new JsonSerializerOptions(jsonSerializerOptions));
-            }
-
-            var webEventData = WebEventData.Parse(renderer, _jsonContext, eventDescriptor, eventArgs);
-            return renderer.DispatchEventAsync(
-                webEventData.EventHandlerId,
-                webEventData.EventFieldInfo,
-                webEventData.EventArgs);
         }
 
         private void OnRenderCompleted(PageContext pageContext, long batchId, string errorMessageOrNull)

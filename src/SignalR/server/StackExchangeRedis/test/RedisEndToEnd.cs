@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -60,6 +60,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         [ConditionalTheory]
         [SkipIfDockerNotPresent]
         [MemberData(nameof(TransportTypesAndProtocolTypes))]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/33851")]
         public async Task HubConnectionCanSendAndReceiveGroupMessages(HttpTransportType transportType, string protocolName)
         {
             using (StartVerifiableLog())
@@ -121,6 +122,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         [ConditionalTheory]
         [SkipIfDockerNotPresent]
         [MemberData(nameof(TransportTypesAndProtocolTypes))]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/33851")]
         public async Task CanSendAndReceiveUserMessagesWhenOneConnectionWithUserDisconnects(HttpTransportType transportType, string protocolName)
         {
             // Regression test:

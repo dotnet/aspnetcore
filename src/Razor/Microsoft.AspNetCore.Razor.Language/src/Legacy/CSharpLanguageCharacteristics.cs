@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal class CSharpLanguageCharacteristics : LanguageCharacteristics<CSharpTokenizer>
     {
-        private static Dictionary<SyntaxKind, string> _tokenSamples = new Dictionary<SyntaxKind, string>()
+        private static readonly Dictionary<SyntaxKind, string> _tokenSamples = new Dictionary<SyntaxKind, string>()
         {
             { SyntaxKind.Arrow, "->" },
             { SyntaxKind.Minus, "-" },
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         };
 
         // Allows performance optimization of GetKeyword such that it need not do Enum.ToString
-        private static IReadOnlyDictionary<CSharpKeyword, string> _keywordNames = new Dictionary<CSharpKeyword, string>()
+        private static readonly IReadOnlyDictionary<CSharpKeyword, string> _keywordNames = new Dictionary<CSharpKeyword, string>()
         {
             { CSharpKeyword.Await, "await" },
             { CSharpKeyword.Abstract, "abstract" },

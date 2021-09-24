@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class Http3FrameWriterTests
     {
-        private MemoryPool<byte> _dirtyMemoryPool;
+        private readonly MemoryPool<byte> _dirtyMemoryPool;
 
         public Http3FrameWriterTests()
         {
@@ -55,17 +55,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var pipe = new Pipe(new PipeOptions(_dirtyMemoryPool, PipeScheduler.Inline, PipeScheduler.Inline));
             var frameWriter = CreateFrameWriter(pipe);
 
-            var limits = new Http3Limits();
+            var kestrelLimits = new KestrelServerLimits();
             var settings = new Http3PeerSettings();
-            settings.HeaderTableSize = (uint)limits.HeaderTableSize;
-            settings.MaxRequestHeaderFieldSize = (uint)limits.MaxRequestHeaderFieldSize;
+            settings.HeaderTableSize = (uint)kestrelLimits.Http3.HeaderTableSize;
+            settings.MaxRequestHeaderFieldSectionSize = (uint)kestrelLimits.MaxRequestHeadersTotalSize;
 
             await frameWriter.WriteSettingsAsync(settings.GetNonProtocolDefaults());
 
-            // variable length ints make it so the results isn't know without knowing the values 
+            // variable length ints make it so the results isn't know without knowing the values
             var payload = await pipe.Reader.ReadForLengthAsync(5);
 
-            Assert.Equal(new byte[] { 0x04, 0x03, 0x06, 0x60, 0x00 }, payload.ToArray());
+            Assert.Equal(new byte[] { 0x04, 0x05, 0x06, 0x80, 0x00 }, payload.ToArray());
         }
 
         [Fact]
@@ -76,11 +76,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var settings = new Http3PeerSettings();
             settings.HeaderTableSize = 1234;
-            settings.MaxRequestHeaderFieldSize = 567890;
+            settings.MaxRequestHeaderFieldSectionSize = 567890;
 
             await frameWriter.WriteSettingsAsync(settings.GetNonProtocolDefaults());
 
-            // variable length ints make it so the results isn't know without knowing the values 
+            // variable length ints make it so the results isn't know without knowing the values
             var payload = await pipe.Reader.ReadForLengthAsync(10);
 
             Assert.Equal(new byte[] { 0x04, 0x08, 0x01, 0x44, 0xD2, 0x06, 0x80, 0x08, 0xAA, 0x52 }, payload.ToArray());
@@ -88,7 +88,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private Http3FrameWriter CreateFrameWriter(Pipe pipe)
         {
-            return new Http3FrameWriter(pipe.Writer, null, null, null, null, _dirtyMemoryPool, null, Mock.Of<IStreamIdFeature>());
+            var frameWriter = new Http3FrameWriter(null, null, null, _dirtyMemoryPool, null, Mock.Of<IStreamIdFeature>(), new Http3PeerSettings(), null);
+            frameWriter.Reset(pipe.Writer, null);
+
+            return frameWriter;
         }
     }
 }

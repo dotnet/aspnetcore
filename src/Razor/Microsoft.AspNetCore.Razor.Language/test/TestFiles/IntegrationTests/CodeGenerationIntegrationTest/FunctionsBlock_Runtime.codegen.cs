@@ -14,8 +14,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
             WriteLiteral("\r\n");
             WriteLiteral("\r\nHere\'s a random number: ");
 #nullable restore
-#line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/FunctionsBlock.cshtml"
-                   Write(RandomInt());
+#line (12,26)-(12,37) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/FunctionsBlock.cshtml"
+Write(RandomInt());
 
 #line default
 #line hidden

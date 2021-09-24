@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
-        private static IDictionary<Type, object> KnownParsers = new Dictionary<Type, object>()
+        private static readonly IDictionary<Type, object> KnownParsers = new Dictionary<Type, object>()
         {
             { typeof(CacheControlHeaderValue), new Func<string, CacheControlHeaderValue?>(value => { return CacheControlHeaderValue.TryParse(value, out var result) ? result : null; }) },
             { typeof(ContentDispositionHeaderValue), new Func<string, ContentDispositionHeaderValue?>(value => { return ContentDispositionHeaderValue.TryParse(value, out var result) ? result : null; }) },
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Http
             { typeof(long?), new Func<string, long?>(value => { return HeaderUtilities.TryParseNonNegativeInt64(value, out var result) ? result : null; }) },
         };
 
-        private static IDictionary<Type, object> KnownListParsers = new Dictionary<Type, object>()
+        private static readonly IDictionary<Type, object> KnownListParsers = new Dictionary<Type, object>()
         {
             { typeof(MediaTypeHeaderValue), new Func<IList<string>, IList<MediaTypeHeaderValue>>(value => { return MediaTypeHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<MediaTypeHeaderValue>(); })  },
             { typeof(StringWithQualityHeaderValue), new Func<IList<string>, IList<StringWithQualityHeaderValue>>(value => { return StringWithQualityHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<StringWithQualityHeaderValue>(); })  },
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Http
             if (KnownParsers.TryGetValue(typeof(T), out var temp))
             {
                 var func = (Func<string, T>)temp;
-                return func(value);
+                return func(value.ToString());
             }
 
             return GetViaReflection<T>(value.ToString());

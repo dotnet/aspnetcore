@@ -68,7 +68,9 @@ export const monoPlatform: Platform = {
   toUint8Array: function toUint8Array(array: System_Array<any>): Uint8Array {
     const dataPtr = getArrayDataPointer(array);
     const length = getValueI32(dataPtr);
-    return new Uint8Array(Module.HEAPU8.buffer, dataPtr + 4, length);
+    const uint8Array = new Uint8Array(length);
+    uint8Array.set(Module.HEAPU8.subarray(dataPtr + 4, dataPtr + 4 + length));
+    return uint8Array;
   },
 
   getArrayLength: function getArrayLength(array: System_Array<any>): number {
@@ -269,12 +271,20 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
         const dotnetWasmResource = await wasmBeingLoaded;
         compiledInstance = await compileWasmModule(dotnetWasmResource, imports);
       } catch (ex) {
-        module.printErr(ex);
+        module.printErr((ex as Error).toString());
         throw ex;
       }
       successCallback(compiledInstance);
     })();
     return []; // No exports
+  };
+
+  // Environment variables could be set via mono only after the runtime is ready.
+  module.onRuntimeInitialized = () => {
+    if (!icuDataResource) {
+      // Use invariant culture if the app does not carry icu data.
+      MONO.mono_wasm_setenv('DOTNET_SYSTEM_GLOBALIZATION_INVARIANT', '1');
+    }
   };
 
   module.preRun.push(() => {
@@ -288,9 +298,6 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
 
     if (icuDataResource) {
       loadICUData(icuDataResource);
-    } else {
-      // Use invariant culture if the app does not carry icu data.
-      MONO.mono_wasm_setenv('DOTNET_SYSTEM_GLOBALIZATION_INVARIANT', '1');
     }
 
     // Fetch the assemblies and PDBs in the background, telling Mono to wait until they are loaded
@@ -487,7 +494,6 @@ function attachInteropInvoker(): void {
   const dotNetDispatcherBeginInvokeMethodHandle = bindStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime', 'BeginInvokeDotNet');
   const dotNetDispatcherEndInvokeJSMethodHandle = bindStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime', 'EndInvokeJS');
   const dotNetDispatcherNotifyByteArrayAvailableMethodHandle = bindStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime', 'NotifyByteArrayAvailable');
-
 
   DotNet.attachDispatcher({
     beginInvokeDotNetFromJS: (callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: any | null, argsJson: string): void => {

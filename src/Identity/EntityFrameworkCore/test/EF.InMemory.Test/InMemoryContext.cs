@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Data.Common;
@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         private InMemoryContext(DbConnection connection) : base(connection)
         { }
 
-        public new static InMemoryContext Create(DbConnection connection)
+        public static new InMemoryContext Create(DbConnection connection)
             => Initialize(new InMemoryContext(connection));
 
         public static TContext Initialize<TContext>(TContext context) where TContext : DbContext

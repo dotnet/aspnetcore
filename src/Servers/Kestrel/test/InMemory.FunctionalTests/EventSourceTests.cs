@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
         // To log all KestrelEventSource events, add `_listener = new TestEventListener(Logger);` to the start of the test method.
         // We could always construct TestEventListener with the test logger, but other concurrent tests could make this noisy.
-        private TestEventListener _listener = new TestEventListener();
+        private readonly TestEventListener _listener = new TestEventListener();
 
         [Fact]
         public async Task Http1_EmitsStartAndStopEventsWithActivityIds()
@@ -66,8 +66,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 await connection.SendEmptyGet();
                 await connection.Receive(
                     "HTTP/1.1 200 OK",
-                    $"Date: {server.Context.DateHeaderValue}",
                     "Content-Length: 0",
+                    $"Date: {server.Context.DateHeaderValue}",
                     "",
                     "");
 
@@ -423,7 +423,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Equal(eventIndex, events.Count);
         }
 
-        private string GetProperty(EventSnapshot data, string propName) => data.Payload[propName];
+        private string GetProperty(EventSnapshot data, string propName) => data.Payload.TryGetValue(propName, out var value) ? value : null;
 
         private class TestEventListener : EventListener
         {

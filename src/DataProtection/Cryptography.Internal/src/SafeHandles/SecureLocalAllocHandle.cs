@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Runtime.InteropServices;
@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
     /// Represents a handle returned by LocalAlloc.
     /// The memory will be zeroed out before it's freed.
     /// </summary>
-    internal unsafe sealed class SecureLocalAllocHandle : LocalAllocHandle
+    internal sealed unsafe class SecureLocalAllocHandle : LocalAllocHandle
     {
         private readonly IntPtr _cb;
 

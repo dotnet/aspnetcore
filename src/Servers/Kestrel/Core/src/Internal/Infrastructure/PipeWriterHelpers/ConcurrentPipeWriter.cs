@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -346,19 +346,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             }
         }
 
-        private BufferSegment AllocateSegmentUnsynchronized(int sizeHint)
+        private BufferSegment AllocateSegmentUnsynchronized(int minSize)
         {
             BufferSegment newSegment = CreateSegmentUnsynchronized();
 
-            if (sizeHint <= _pool.MaxBufferSize)
+            if (minSize <= _pool.MaxBufferSize)
             {
                 // Use the specified pool if it fits
-                newSegment.SetOwnedMemory(_pool.Rent(GetSegmentSize(sizeHint, _pool.MaxBufferSize)));
+                newSegment.SetOwnedMemory(_pool.Rent(GetSegmentSize(minSize, _pool.MaxBufferSize)));
             }
             else
             {
                 // We can't use the recommended pool so use the ArrayPool
-                newSegment.SetOwnedMemory(ArrayPool<byte>.Shared.Rent(sizeHint));
+                newSegment.SetOwnedMemory(ArrayPool<byte>.Shared.Rent(minSize));
             }
 
             _tailMemory = newSegment.AvailableMemory;

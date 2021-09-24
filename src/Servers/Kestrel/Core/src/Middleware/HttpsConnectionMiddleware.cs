@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -26,8 +26,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 {
-    internal delegate ValueTask<(SslServerAuthenticationOptions, ClientCertificateMode)> HttpsOptionsCallback(ConnectionContext connection, SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken);
-
     internal class HttpsConnectionMiddleware
     {
         private const string EnableWindows81Http2 = "Microsoft.AspNetCore.Server.Kestrel.EnableWindows81Http2";
@@ -45,9 +43,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
         private readonly X509Certificate2? _serverCertificate;
         private readonly Func<ConnectionContext, string?, X509Certificate2?>? _serverCertificateSelector;
 
-        // The following fields are only set by ServerOptionsSelectionCallback ctor.
-        private readonly HttpsOptionsCallback? _httpsOptionsCallback;
-        private readonly object? _httpsOptionsCallbackState;
+        // The following fields are only set by TlsHandshakeCallbackOptions ctor.
+        private readonly Func<TlsHandshakeCallbackContext, ValueTask<SslServerAuthenticationOptions>>? _tlsCallbackOptions;
+        private readonly object? _tlsCallbackOptionsState;
+        private readonly HttpProtocols _httpProtocols;
 
         // Pool for cancellation tokens that cancel the handshake
         private readonly CancellationTokenSourcePool _ctsPool = new();
@@ -120,17 +119,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
         internal HttpsConnectionMiddleware(
             ConnectionDelegate next,
-            HttpsOptionsCallback httpsOptionsCallback,
-            object httpsOptionsCallbackState,
-            TimeSpan handshakeTimeout,
+            TlsHandshakeCallbackOptions tlsCallbackOptions,
             ILoggerFactory loggerFactory)
         {
             _next = next;
-            _handshakeTimeout = handshakeTimeout;
+            _handshakeTimeout = tlsCallbackOptions.HandshakeTimeout;
             _logger = loggerFactory.CreateLogger<HttpsConnectionMiddleware>();
 
-            _httpsOptionsCallback = httpsOptionsCallback;
-            _httpsOptionsCallbackState = httpsOptionsCallbackState;
+            _tlsCallbackOptions = tlsCallbackOptions.OnConnection;
+            _tlsCallbackOptionsState = tlsCallbackOptions.OnConnectionState;
+            _httpProtocols = ValidateAndNormalizeHttpProtocols(tlsCallbackOptions.HttpProtocols, _logger);
             _sslStreamFactory = s => new SslStream(s);
         }
 
@@ -149,7 +147,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
             var feature = new Core.Internal.TlsConnectionFeature(sslStream);
             // Set the mode if options were used. If the callback is used it will set the mode later.
-            feature.ClientCertificateMode = _options?.ClientCertificateMode ?? ClientCertificateMode.NoCertificate;
+            feature.AllowDelayedClientCertificateNegotation =
+                _options?.ClientCertificateMode == ClientCertificateMode.DelayCertificate;
             context.Features.Set<ITlsConnectionFeature>(feature);
             context.Features.Set<ITlsHandshakeFeature>(feature);
             context.Features.Set<ITlsApplicationProtocolFeature>(feature);
@@ -159,7 +158,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 using var cancellationTokenSource = _ctsPool.Rent();
                 cancellationTokenSource.CancelAfter(_handshakeTimeout);
 
-                if (_httpsOptionsCallback is null)
+                if (_tlsCallbackOptions is null)
                 {
                     await DoOptionsBasedHandshakeAsync(context, sslStream, feature, cancellationTokenSource.Token);
                 }
@@ -426,10 +425,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
             feature.HostName = clientHelloInfo.ServerName;
             context.Features.Set(sslStream);
+            var callbackContext = new TlsHandshakeCallbackContext()
+            {
+                Connection = context,
+                SslStream = sslStream,
+                State = middleware._tlsCallbackOptionsState,
+                CancellationToken = cancellationToken,
+                ClientHelloInfo = clientHelloInfo,
+            };
+            var sslOptions = await middleware._tlsCallbackOptions!(callbackContext);
+            feature.AllowDelayedClientCertificateNegotation = callbackContext.AllowDelayedClientCertificateNegotation;
 
-            var (sslOptions, clientCertificateMode) = await middleware._httpsOptionsCallback!(context, sslStream, clientHelloInfo, middleware._httpsOptionsCallbackState!, cancellationToken);
-            feature.ClientCertificateMode = clientCertificateMode;
-
+            // The callback didn't set ALPN so we will.
+            if (sslOptions.ApplicationProtocols == null)
+            {
+                ConfigureAlpn(sslOptions, middleware._httpProtocols);
+            }
             KestrelEventSource.Log.TlsHandshakeStart(context, sslOptions);
 
             return sslOptions;
@@ -496,83 +507,93 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
             return false;
         }
+
+        internal static SslServerAuthenticationOptions CreateHttp3Options(HttpsConnectionAdapterOptions httpsOptions)
+        {
+            if (httpsOptions.OnAuthenticate != null)
+            {
+                throw new NotSupportedException($"The {nameof(HttpsConnectionAdapterOptions.OnAuthenticate)} callback is not supported with HTTP/3.");
+            }
+
+            // TODO Set other relevant values on options
+            var sslServerAuthenticationOptions = new SslServerAuthenticationOptions
+            {
+                ServerCertificate = httpsOptions.ServerCertificate,
+                ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol("h3"), new SslApplicationProtocol("h3-29") },
+                CertificateRevocationCheckMode = httpsOptions.CheckCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
+            };
+
+            if (httpsOptions.ServerCertificateSelector != null)
+            {
+                // We can't set both
+                sslServerAuthenticationOptions.ServerCertificate = null;
+                sslServerAuthenticationOptions.ServerCertificateSelectionCallback = (sender, host) =>
+                {
+                    // There is no ConnectionContext available durring the QUIC handshake.
+                    var cert = httpsOptions.ServerCertificateSelector(null, host);
+                    if (cert != null)
+                    {
+                        EnsureCertificateIsAllowedForServerAuth(cert);
+                    }
+                    return cert!;
+                };
+            }
+
+            // DelayCertificate is prohibited by the HTTP/2 and HTTP/3 protocols, ignore it here.
+            if (httpsOptions.ClientCertificateMode == ClientCertificateMode.AllowCertificate
+                    || httpsOptions.ClientCertificateMode == ClientCertificateMode.RequireCertificate)
+            {
+                sslServerAuthenticationOptions.ClientCertificateRequired = true; // We have to set this to prompt the client for a cert.
+                // For AllowCertificate we override the missing cert error in RemoteCertificateValidationCallback,
+                // except QuicListener doesn't call the callback for missing certs https://github.com/dotnet/runtime/issues/57308.
+                sslServerAuthenticationOptions.RemoteCertificateValidationCallback
+                    = (object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors) =>
+                        RemoteCertificateValidationCallback(httpsOptions.ClientCertificateMode, httpsOptions.ClientCertificateValidation, certificate, chain, sslPolicyErrors);
+            }
+
+            return sslServerAuthenticationOptions;
+        }
     }
 
-    internal static class HttpsConnectionMiddlewareLoggerExtensions
+    internal static partial class HttpsConnectionMiddlewareLoggerExtensions
     {
-        private static readonly Action<ILogger, Exception> _authenticationFailed =
-            LoggerMessage.Define(
-                logLevel: LogLevel.Debug,
-                eventId: new EventId(1, "AuthenticationFailed"),
-                formatString: CoreStrings.AuthenticationFailed);
+        [LoggerMessage(1, LogLevel.Debug, "Failed to authenticate HTTPS connection.", EventName = "AuthenticationFailed")]
+        public static partial void AuthenticationFailed(this ILogger<HttpsConnectionMiddleware> logger, Exception exception);
 
-        private static readonly Action<ILogger, Exception?> _authenticationTimedOut =
-            LoggerMessage.Define(
-                logLevel: LogLevel.Debug,
-                eventId: new EventId(2, "AuthenticationTimedOut"),
-                formatString: CoreStrings.AuthenticationTimedOut);
+        [LoggerMessage(2, LogLevel.Debug, "Authentication of the HTTPS connection timed out.", EventName = "AuthenticationTimedOut")]
+        public static partial void AuthenticationTimedOut(this ILogger<HttpsConnectionMiddleware> logger);
 
-        private static readonly Action<ILogger, string, SslProtocols, Exception?> _httpsConnectionEstablished =
-            LoggerMessage.Define<string, SslProtocols>(
-                logLevel: LogLevel.Debug,
-                eventId: new EventId(3, "HttpsConnectionEstablished"),
-                formatString: CoreStrings.HttpsConnectionEstablished);
+        [LoggerMessage(3, LogLevel.Debug, "Connection {connectionId} established using the following protocol: {protocol}", EventName = "HttpsConnectionEstablished")]
+        public static partial void HttpsConnectionEstablished(this ILogger<HttpsConnectionMiddleware> logger, string connectionId, SslProtocols protocol);
 
-        private static readonly Action<ILogger, Exception?> _http2DefaultCiphersInsufficient =
-            LoggerMessage.Define(
-                logLevel: LogLevel.Information,
-                eventId: new EventId(4, "Http2DefaultCiphersInsufficient"),
-                formatString: CoreStrings.Http2DefaultCiphersInsufficient);
+        [LoggerMessage(4, LogLevel.Information, "HTTP/2 over TLS is not supported on Windows versions older than Windows 10 and Windows Server 2016 due to incompatible ciphers or missing ALPN support. Falling back to HTTP/1.1 instead.",
+            EventName = "Http2DefaultCiphersInsufficient")]
+        public static partial void Http2DefaultCiphersInsufficient(this ILogger<HttpsConnectionMiddleware> logger);
 
-        private static readonly Action<ILogger, string, Exception?> _locatingCertWithPrivateKey =
-            LoggerMessage.Define<string>(
-                logLevel: LogLevel.Debug,
-                eventId: new EventId(5, "LocateCertWithPrivateKey"),
-                formatString: CoreStrings.LocatingCertWithPrivateKey);
+        [LoggerMessage(5, LogLevel.Debug, "Searching for certificate with private key and thumbprint {Thumbprint} in the certificate store.", EventName = "LocateCertWithPrivateKey")]
+        private static partial void LocatingCertWithPrivateKey(this ILogger<HttpsConnectionMiddleware> logger, string thumbPrint);
 
-        private static readonly Action<ILogger, string, string, Exception?> _foundCertWithPrivateKey =
-            LoggerMessage.Define<string, string>(
-                logLevel: LogLevel.Debug,
-                eventId: new EventId(6, "FoundCertWithPrivateKey"),
-                formatString: CoreStrings.FoundCertWithPrivateKey);
+        public static void LocatingCertWithPrivateKey(this ILogger<HttpsConnectionMiddleware> logger, X509Certificate2 certificate) => LocatingCertWithPrivateKey(logger, certificate.Thumbprint);
 
-        private static readonly Action<ILogger, Exception> _failedToFindCertificateInStore =
-            LoggerMessage.Define(
-                logLevel: LogLevel.Debug,
-                eventId: new EventId(7, "FailToLocateCertificate"),
-                formatString: CoreStrings.FailedToLocateCertificateFromStore);
-
-
-        private static readonly Action<ILogger, string, Exception> _failedToOpenCertificateStore =
-            LoggerMessage.Define<string>(
-                logLevel: LogLevel.Debug,
-                eventId: new EventId(8, "FailToOpenStore"),
-                formatString: CoreStrings.FailedToOpenCertStore);
-
-        public static void AuthenticationFailed(this ILogger<HttpsConnectionMiddleware> logger, Exception exception) => _authenticationFailed(logger, exception);
-
-        public static void AuthenticationTimedOut(this ILogger<HttpsConnectionMiddleware> logger) => _authenticationTimedOut(logger, null);
-
-        public static void HttpsConnectionEstablished(this ILogger<HttpsConnectionMiddleware> logger, string connectionId, SslProtocols sslProtocol) => _httpsConnectionEstablished(logger, connectionId, sslProtocol, null);
-
-        public static void Http2DefaultCiphersInsufficient(this ILogger<HttpsConnectionMiddleware> logger) => _http2DefaultCiphersInsufficient(logger, null);
-
-        public static void LocatingCertWithPrivateKey(this ILogger<HttpsConnectionMiddleware> logger, X509Certificate2 certificate) => _locatingCertWithPrivateKey(logger, certificate.Thumbprint, null);
+        [LoggerMessage(6, LogLevel.Debug, "Found certificate with private key and thumbprint {Thumbprint} in certificate store {StoreName}.", EventName = "FoundCertWithPrivateKey")]
+        public static partial void FoundCertWithPrivateKey(this ILogger<HttpsConnectionMiddleware> logger, string thumbprint, string? storeName);
 
         public static void FoundCertWithPrivateKey(this ILogger<HttpsConnectionMiddleware> logger, X509Certificate2 certificate, StoreLocation storeLocation)
         {
             var storeLocationString = storeLocation == StoreLocation.LocalMachine ? nameof(StoreLocation.LocalMachine) : nameof(StoreLocation.CurrentUser);
-
-            _foundCertWithPrivateKey(logger, certificate.Thumbprint, storeLocationString, null);
+            FoundCertWithPrivateKey(logger, certificate.Thumbprint, storeLocationString);
         }
 
-        public static void FailedToFindCertificateInStore(this ILogger<HttpsConnectionMiddleware> logger, Exception exception) => _failedToFindCertificateInStore(logger, exception);
+        [LoggerMessage(7, LogLevel.Debug, "Failure to locate certificate from store.", EventName = "FailToLocateCertificate")]
+        public static partial void FailedToFindCertificateInStore(this ILogger<HttpsConnectionMiddleware> logger, Exception exception);
+
+        [LoggerMessage(8, LogLevel.Debug, "Failed to open certificate store {StoreName}.", EventName = "FailToOpenStore")]
+        public static partial void FailedToOpenStore(this ILogger<HttpsConnectionMiddleware> logger, string? storeName, Exception exception);
 
         public static void FailedToOpenStore(this ILogger<HttpsConnectionMiddleware> logger, StoreLocation storeLocation, Exception exception)
         {
             var storeLocationString = storeLocation == StoreLocation.LocalMachine ? nameof(StoreLocation.LocalMachine) : nameof(StoreLocation.CurrentUser);
-
-            _failedToOpenCertificateStore(logger, storeLocationString, exception);
+            FailedToOpenStore(logger, storeLocationString, exception);
         }
     }
 }

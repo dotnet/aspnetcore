@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -1013,8 +1013,8 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private class TestRouteTableBuilder
         {
-            IList<(string Template, Type Handler)> _routeTemplates = new List<(string, Type)>();
-            Type _handler = typeof(object);
+            readonly IList<(string Template, Type Handler)> _routeTemplates = new List<(string, Type)>();
+            readonly Type _handler = typeof(object);
 
             public TestRouteTableBuilder AddRoute(string template, Type handler = null)
             {

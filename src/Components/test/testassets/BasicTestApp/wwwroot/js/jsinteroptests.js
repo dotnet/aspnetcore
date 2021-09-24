@@ -49,6 +49,13 @@ async function invokeDotNetInteropMethodsAsync(shouldSupportSyncInterop, dotNetO
     var returnedByteArrayWrapper = DotNet.invokeMethod(assemblyName, 'RoundTripByteArrayWrapperObject', byteArrayWrapper);
     results['roundTripByteArrayWrapperObjectFromJS'] = returnedByteArrayWrapper;
 
+    // Note the following .NET Stream Reference E2E tests are synchronous for the test execution
+    // however the validation is async (due to the nature of stream validations).
+    var streamRef = DotNet.invokeMethod(assemblyName, 'GetDotNetStreamReference');
+    results['requestDotNetStreamReference'] = await validateDotNetStreamReference(streamRef);
+    var streamWrapper = DotNet.invokeMethod(assemblyName, 'GetDotNetStreamWrapperReference');
+    results['requestDotNetStreamWrapperReference'] = await validateDotNetStreamWrapperReference(streamWrapper);
+
     var instanceMethodResult = instanceMethodsTarget.invokeMethod('InstanceMethod', {
       stringValue: 'My string',
       dtoByRef: dotNetObjectByRef
@@ -103,6 +110,19 @@ async function invokeDotNetInteropMethodsAsync(shouldSupportSyncInterop, dotNetO
   var byteArrayWrapper = { 'strVal': "Some string", 'byteArrayVal': byteArray, 'intVal': 42 };
   var returnedByteArrayWrapper = await DotNet.invokeMethodAsync(assemblyName, 'RoundTripByteArrayWrapperObjectAsync', byteArrayWrapper);
   results['roundTripByteArrayWrapperObjectAsyncFromJS'] = returnedByteArrayWrapper;
+
+  const largeArray = Array.from({ length: 100000 }).map((_, index) => index % 256);
+  const largeByteArray = new Uint8Array(largeArray);
+  const jsStreamReference = DotNet.createJSStreamReference(largeByteArray);
+  results['jsToDotNetStreamParameterAsync'] = await DotNet.invokeMethodAsync(assemblyName, 'JSToDotNetStreamParameterAsync', jsStreamReference);
+
+  var streamWrapper = { 'strVal': "SomeStr", 'jsStreamReferenceVal': jsStreamReference, 'intVal': 5 };
+  results['jsToDotNetStreamWrapperObjectParameterAsync'] = await DotNet.invokeMethodAsync(assemblyName, 'JSToDotNetStreamWrapperObjectParameterAsync', streamWrapper);
+
+  var streamRef = await DotNet.invokeMethodAsync(assemblyName, 'GetDotNetStreamReferenceAsync');
+  results['requestDotNetStreamReferenceAsync'] = await validateDotNetStreamReference(streamRef);
+  var wrapper = await DotNet.invokeMethodAsync(assemblyName, 'GetDotNetStreamWrapperReferenceAsync');
+  results['requestDotNetStreamWrapperReferenceAsync'] = await validateDotNetStreamWrapperReference(wrapper);
 
   const instanceMethodAsync = await instanceMethodsTarget.invokeMethodAsync('InstanceMethodAsync', {
     stringValue: 'My string',
@@ -208,7 +228,9 @@ window.jsInteropTests = {
   returnJSObjectReference: returnJSObjectReference,
   addViaJSObjectReference: addViaJSObjectReference,
   receiveDotNetObjectByRef: receiveDotNetObjectByRef,
-  receiveDotNetObjectByRefAsync: receiveDotNetObjectByRefAsync
+  receiveDotNetObjectByRefAsync: receiveDotNetObjectByRefAsync,
+  receiveDotNetStreamReference: receiveDotNetStreamReference,
+  receiveDotNetStreamWrapperReference: receiveDotNetStreamWrapperReference,
 };
 
 function returnPrimitive() {
@@ -260,6 +282,32 @@ function roundTripByteArrayWrapperObject(byteArrayWrapperObject) {
   return byteArrayWrapperObject;
 }
 
+function jsToDotNetStreamReturnValueAsync() {
+  return new Promise((resolve, reject) => {
+    setTimeout(function () {
+      const largeArray = Array.from({ length: 100000 }).map((_, index) => index % 256);
+      resolve(new Uint8Array(largeArray));
+    }, 100);
+  });
+}
+
+function jsToDotNetStreamReturnValue() {
+  const largeArray = Array.from({ length: 100000 }).map((_, index) => index % 256);
+  return new Uint8Array(largeArray);
+}
+
+function jsToDotNetStreamWrapperObjectReturnValueAsync() {
+  return new Promise((resolve, reject) => {
+    setTimeout(function () {
+      const largeArray = Array.from({ length: 100000 }).map((_, index) => index % 256);
+      const byteArray = new Uint8Array(largeArray);
+      const jsStreamReference = DotNet.createJSStreamReference(byteArray);
+      const returnValue = { strVal: 'SomeStr', intVal: 5, jsStreamReferenceVal: jsStreamReference }
+      resolve(returnValue);
+    }, 100);
+  });
+}
+
 function roundTripByteArrayWrapperObjectAsync(byteArrayWrapperObject) {
   return new Promise((resolve, reject) => {
     setTimeout(function () {
@@ -275,6 +323,9 @@ function returnJSObjectReference() {
   return {
     identity: function (value) {
       return value;
+    },
+    getWindow: function() {
+      return window;
     },
     nonFunction: 123,
     nested: {
@@ -360,4 +411,25 @@ function receiveDotNetObjectByRefAsync(incomingData) {
       testDto: testDto
     };
   });
+}
+
+async function validateDotNetStreamReference(streamRef) {
+  const data = new Uint8Array(await streamRef.arrayBuffer());
+  const isValid = data.length == 100000 && data.every((value, index) => value == index % 256);
+  return isValid ? "Success" : `Failure, got length ${data.length} with data ${data}`;
+}
+
+async function validateDotNetStreamWrapperReference(wrapper) {
+  const isValid = await validateDotNetStreamReference(wrapper.dotNetStreamReferenceVal) == "Success" &&
+    wrapper.strVal == "somestr" &&
+    wrapper.intVal == 25;
+  return isValid ? "Success" : `Failure, got ${JSON.stringify(wrapper)}`;
+}
+
+async function receiveDotNetStreamReference(streamRef) {
+  return await validateDotNetStreamReference(streamRef);
+}
+
+async function receiveDotNetStreamWrapperReference(wrapper) {
+  return await validateDotNetStreamWrapperReference(wrapper);
 }

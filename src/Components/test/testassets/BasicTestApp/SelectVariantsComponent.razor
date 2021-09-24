@@ -20,14 +20,39 @@
     }
 </select>
 
+<select id="select-cars" name="cars" @onchange="SelectedCarsChanged" multiple>
+    <option value="volvo">Volvo</option>
+    <option value="saab">Saab</option>
+    <option value="opel">Opel</option>
+    <option value="audi">Audi</option>
+</select>
+
+<span id="selected-cars-label">@string.Join(", ", SelectedCars)</span>
+
+<select id="select-cities" name="cities" @bind="SelectedCities" multiple>
+    <option value="@("\"sf\"")">San Francisco</option>
+    <option value="@("\"la\"")">Los Angeles</option>
+    <option value="@("\"pdx\"")">Portland</option>
+    <option value="@("\"sea\"")">Seattle</option>
+</select>
+
+<span id="selected-cities-label">@string.Join(", ", SelectedCities)</span>
+
 <button @onclick="ToggleShowAdditionalOption" id="show-additional-option"> Show Additional Option</button>
 
 @code
 {
     public string SelectValue { get; set; } = "B";
+    public string[] SelectedCities { get; set; } = new[] { "\"sf\"", "\"sea\"" };
+    public string[] SelectedCars { get; set; } = new string[] { };
     public bool ShowAdditionalOption = false;
 
     void ToggleShowAdditionalOption() {
         ShowAdditionalOption = true;
+    }
+
+    void SelectedCarsChanged(ChangeEventArgs e)
+    {
+        SelectedCars = (string[])e.Value;
     }
 }

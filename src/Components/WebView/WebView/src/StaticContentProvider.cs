@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.WebView
         private readonly Uri _appBaseUri;
         private readonly string _hostPageRelativePath;
         private static readonly FileExtensionContentTypeProvider ContentTypeProvider = new();
-        private static ManifestEmbeddedFileProvider _manifestProvider =
+        private static readonly ManifestEmbeddedFileProvider _manifestProvider =
             new ManifestEmbeddedFileProvider(typeof(StaticContentProvider).Assembly);
 
         public StaticContentProvider(IFileProvider fileProvider, Uri appBaseUri, string hostPageRelativePath)

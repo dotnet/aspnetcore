@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private readonly ILogger _logger;
         private readonly HttpSysOptions _options;
 
-        private int _maxAccepts;
+        private readonly int _maxAccepts;
         private int _acceptorCounts;
 
         private volatile int _stopping;
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _serverAddresses = new ServerAddressesFeature();
             Features.Set<IServerAddressesFeature>(_serverAddresses);
 
-            if (HttpApi.IsFeatureSupported(HttpApiTypes.HTTP_FEATURE_ID.HttpFeatureDelegateEx))
+            if (HttpApi.SupportsDelegation)
             {
                 var delegationProperty = new ServerDelegationPropertyFeature(Listener.RequestQueue, _logger);
                 Features.Set<IServerDelegationFeature>(delegationProperty);
@@ -214,11 +214,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 try
                 {
-                    ThreadPool.UnsafeQueueUserWorkItem(requestContext, preferLocal: false);
+                    if (_options.UnsafePreferInlineScheduling)
+                    {
+                        await requestContext.ExecuteAsync();
+                    }
+                    else
+                    {
+                        ThreadPool.UnsafeQueueUserWorkItem(requestContext, preferLocal: false);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    // Request processing failed to be queued in threadpool
+                    // Request processing failed
                     // Log the error message, release throttle and move on
                     Log.RequestListenerProcessError(_logger, ex);
                 }

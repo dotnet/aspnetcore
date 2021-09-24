@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             Assert.Equal(
 @"
 #nullable restore
-#line 1 ""test.cshtml""
+#line (1,28)-(1,35) 31 ""test.cshtml""
 AddHtmlAttributeValue("" "", 27, false, 28, 6, false);
 
 #line default

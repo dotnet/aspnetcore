@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -118,13 +118,16 @@ namespace Microsoft.AspNetCore.Diagnostics
             }
             try
             {
-                ClearHttpContext(context);
-
                 var exceptionHandlerFeature = new ExceptionHandlerFeature()
                 {
                     Error = edi.SourceException,
                     Path = originalPath.Value!,
+                    Endpoint = context.GetEndpoint(),
+                    RouteValues = context.Features.Get<IRouteValuesFeature>()?.RouteValues
                 };
+
+                ClearHttpContext(context);
+
                 context.Features.Set<IExceptionHandlerFeature>(exceptionHandlerFeature);
                 context.Features.Set<IExceptionHandlerPathFeature>(exceptionHandlerFeature);
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
@@ -168,7 +171,10 @@ namespace Microsoft.AspNetCore.Diagnostics
             // the endpoint and route values to ensure things are re-calculated.
             context.SetEndpoint(endpoint: null);
             var routeValuesFeature = context.Features.Get<IRouteValuesFeature>();
-            routeValuesFeature?.RouteValues?.Clear();
+            if (routeValuesFeature != null)
+            {
+                routeValuesFeature.RouteValues = null!;
+            }
         }
 
         private static Task ClearCacheHeaders(object state)

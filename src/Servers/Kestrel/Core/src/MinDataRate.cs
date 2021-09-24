@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -43,5 +43,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// starting at the time data is first read or written.
         /// </summary>
         public TimeSpan GracePeriod { get; }
+
+        public override string ToString()
+        {
+            return $"Bytes per second: {BytesPerSecond}, Grace Period: {GracePeriod}";
+        }
     }
 }

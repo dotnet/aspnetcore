@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 using System.IO;
 using Microsoft.Extensions.FileProviders;
@@ -47,6 +50,12 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile
         /// avoid triggering reload before a file is completely written. Default is 250.
         /// </summary>
         public int ReloadDelay { get; set; } = 250;
+
+        /// <summary>
+        /// The delimiter used to separate individual keys in a path.
+        /// </summary>
+        /// <value>Default is <c>__</c>.</value>
+        public string SectionDelimiter { get; set; } = "__";
 
         /// <summary>
         /// Builds the <see cref="KeyPerFileConfigurationProvider"/> for this source.

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Globalization;
@@ -174,7 +174,34 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            return app.UseStatusCodePages(async context =>
+            const string globalRouteBuilderKey = "__GlobalEndpointRouteBuilder";
+            // Only use this path if there's a global router (in the 'WebApplication' case).
+            if (app.Properties.TryGetValue(globalRouteBuilderKey, out var routeBuilder) && routeBuilder is not null)
+            {
+                return app.Use(next =>
+                {
+                    RequestDelegate? newNext = null;
+                    // start a new middleware pipeline
+                    var builder = app.New();
+                    // use the old routing pipeline if it exists so we preserve all the routes and matching logic
+                    // ((IApplicationBuilder)WebApplication).New() does not copy globalRouteBuilderKey automatically like it does for all other properties.
+                    builder.Properties[globalRouteBuilderKey] = routeBuilder;
+                    builder.UseRouting();
+                    // apply the next middleware
+                    builder.Run(next);
+                    newNext = builder.Build();
+
+                    return new StatusCodePagesMiddleware(next,
+                        Options.Create(new StatusCodePagesOptions() { HandleAsync = CreateHandler(pathFormat, queryFormat, newNext) })).Invoke;
+                });
+            }
+
+            return app.UseStatusCodePages(CreateHandler(pathFormat, queryFormat));
+        }
+
+        private static Func<StatusCodeContext, Task> CreateHandler(string pathFormat, string? queryFormat, RequestDelegate? next = null)
+        {
+            var handler = async (StatusCodeContext context) =>
             {
                 var newPath = new PathString(
                     string.Format(CultureInfo.InvariantCulture, pathFormat, context.HttpContext.Response.StatusCode));
@@ -184,25 +211,39 @@ namespace Microsoft.AspNetCore.Builder
 
                 var originalPath = context.HttpContext.Request.Path;
                 var originalQueryString = context.HttpContext.Request.QueryString;
+
+                var routeValuesFeature = context.HttpContext.Features.Get<IRouteValuesFeature>();
+
                 // Store the original paths so the app can check it.
                 context.HttpContext.Features.Set<IStatusCodeReExecuteFeature>(new StatusCodeReExecuteFeature()
                 {
                     OriginalPathBase = context.HttpContext.Request.PathBase.Value!,
                     OriginalPath = originalPath.Value!,
                     OriginalQueryString = originalQueryString.HasValue ? originalQueryString.Value : null,
+                    Endpoint = context.HttpContext.GetEndpoint(),
+                    RouteValues = routeValuesFeature?.RouteValues
                 });
 
                 // An endpoint may have already been set. Since we're going to re-invoke the middleware pipeline we need to reset
                 // the endpoint and route values to ensure things are re-calculated.
                 context.HttpContext.SetEndpoint(endpoint: null);
-                var routeValuesFeature = context.HttpContext.Features.Get<IRouteValuesFeature>();
-                routeValuesFeature?.RouteValues?.Clear();
+                if (routeValuesFeature != null)
+                {
+                    routeValuesFeature.RouteValues = null!;
+                }
 
                 context.HttpContext.Request.Path = newPath;
                 context.HttpContext.Request.QueryString = newQueryString;
                 try
                 {
-                    await context.Next(context.HttpContext);
+                    if (next is not null)
+                    {
+                        await next(context.HttpContext);
+                    }
+                    else
+                    {
+                        await context.Next(context.HttpContext);
+                    }
                 }
                 finally
                 {
@@ -210,7 +251,9 @@ namespace Microsoft.AspNetCore.Builder
                     context.HttpContext.Request.Path = originalPath;
                     context.HttpContext.Features.Set<IStatusCodeReExecuteFeature?>(null);
                 }
-            });
+            };
+
+            return handler;
         }
     }
 }

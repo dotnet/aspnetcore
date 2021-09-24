@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -24,15 +24,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private readonly IKestrelTrace _log;
         private readonly MemoryPool<byte> _memoryPool;
         private readonly Http3Stream _stream;
+        private readonly Pipe _pipe;
         private readonly PipeWriter _pipeWriter;
         private readonly PipeReader _pipeReader;
         private readonly object _dataWriterLock = new object();
-        private readonly ValueTask<FlushResult> _dataWriteProcessingTask;
+        private ValueTask<FlushResult> _dataWriteProcessingTask;
         private bool _startedWritingDataFrames;
-        private bool _completed;
+        private bool _streamCompleted;
         private bool _disposed;
         private bool _suffixSent;
         private IMemoryOwner<byte>? _fakeMemoryOwner;
+        private byte[]? _fakeMemory;
 
         public Http3OutputProducer(
              Http3FrameWriter frameWriter,
@@ -45,12 +47,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _stream = stream;
             _log = log;
 
-            var pipe = CreateDataPipe(pool);
+            _pipe = CreateDataPipe(pool);
 
-            _pipeWriter = pipe.Writer;
-            _pipeReader = pipe.Reader;
+            _pipeWriter = _pipe.Writer;
+            _pipeReader = _pipe.Reader;
 
-            _flusher = new TimingPipeFlusher(_pipeWriter, timeoutControl: null, log);
+            _flusher = new TimingPipeFlusher(timeoutControl: null, log);
+            _flusher.Initialize(_pipeWriter);
+            _dataWriteProcessingTask = ProcessDataWrites().Preserve();
+        }
+
+        public void StreamReset()
+        {
+            // Data background task has finished.
+            Debug.Assert(_dataWriteProcessingTask.IsCompleted);
+
+            _suffixSent = false;
+            _startedWritingDataFrames = false;
+            _streamCompleted = false;
+
+            _pipe.Reset();
+
             _dataWriteProcessingTask = ProcessDataWrites().Preserve();
         }
 
@@ -72,6 +89,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     _fakeMemoryOwner.Dispose();
                     _fakeMemoryOwner = null;
                 }
+
+                if (_fakeMemory != null)
+                {
+                    ArrayPool<byte>.Shared.Return(_fakeMemory);
+                    _fakeMemory = null;
+                }
             }
         }
 
@@ -91,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 ThrowIfSuffixSent();
 
-                if (_completed)
+                if (_streamCompleted)
                 {
                     return;
                 }
@@ -106,7 +129,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             lock (_dataWriterLock)
             {
-                if (_completed)
+                if (_streamCompleted)
                 {
                     return;
                 }
@@ -141,7 +164,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 ThrowIfSuffixSent();
 
-                if (_completed)
+                if (_streamCompleted)
                 {
                     return default;
                 }
@@ -167,7 +190,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 ThrowIfSuffixSent();
 
-                if (_completed)
+                if (_streamCompleted)
                 {
                     return GetFakeMemory(sizeHint);
                 }
@@ -183,7 +206,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 ThrowIfSuffixSent();
 
-                if (_completed)
+                if (_streamCompleted)
                 {
                     return GetFakeMemory(sizeHint).Span;
                 }
@@ -192,14 +215,48 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        private Memory<byte> GetFakeMemory(int sizeHint)
+        internal Memory<byte> GetFakeMemory(int minSize)
         {
-            if (_fakeMemoryOwner == null)
+            // Try to reuse _fakeMemoryOwner
+            if (_fakeMemoryOwner != null)
             {
-                _fakeMemoryOwner = _memoryPool.Rent(sizeHint);
+                if (_fakeMemoryOwner.Memory.Length < minSize)
+                {
+                    _fakeMemoryOwner.Dispose();
+                    _fakeMemoryOwner = null;
+                }
+                else
+                {
+                    return _fakeMemoryOwner.Memory;
+                }
             }
 
-            return _fakeMemoryOwner.Memory;
+            // Try to reuse _fakeMemory
+            if (_fakeMemory != null)
+            {
+                if (_fakeMemory.Length < minSize)
+                {
+                    ArrayPool<byte>.Shared.Return(_fakeMemory);
+                    _fakeMemory = null;
+                }
+                else
+                {
+                    return _fakeMemory;
+                }
+            }
+
+            // Requesting a bigger buffer could throw.
+            if (minSize <= _memoryPool.MaxBufferSize)
+            {
+                // Use the specified pool as it fits.
+                _fakeMemoryOwner = _memoryPool.Rent(minSize);
+                return _fakeMemoryOwner.Memory;
+            }
+            else
+            {
+                // Use the array pool. Its MaxBufferSize is int.MaxValue.
+                return _fakeMemory = ArrayPool<byte>.Shared.Rent(minSize);
+            }
         }
 
         [StackTraceHidden]
@@ -225,12 +282,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             lock (_dataWriterLock)
             {
-                if (_completed)
+                if (_streamCompleted)
                 {
                     return;
                 }
 
-                _completed = true;
+                _streamCompleted = true;
 
                 _pipeWriter.Complete(new OperationCanceledException());
             }
@@ -238,7 +295,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public ValueTask<FlushResult> Write100ContinueAsync()
         {
-            throw new NotImplementedException();
+            lock (_dataWriterLock)
+            {
+                ThrowIfSuffixSent();
+
+                if (_streamCompleted)
+                {
+                    return default;
+                }
+
+                return _frameWriter.Write100ContinueAsync();
+            }
         }
 
         public ValueTask<FlushResult> WriteChunkAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken)
@@ -259,7 +326,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 // This length check is important because we don't want to set _startedWritingDataFrames unless a data
                 // frame will actually be written causing the headers to be flushed.
-                if (_completed || data.Length == 0)
+                if (_streamCompleted || data.Length == 0)
                 {
                     return Task.CompletedTask;
                 }
@@ -284,7 +351,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 // This length check is important because we don't want to set _startedWritingDataFrames unless a data
                 // frame will actually be written causing the headers to be flushed.
-                if (_completed || data.Length == 0)
+                if (_streamCompleted || data.Length == 0)
                 {
                     return default;
                 }
@@ -298,16 +365,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public void WriteResponseHeaders(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool appCompleted)
         {
+            // appCompleted flag is not used here. The write FIN is sent via the transport and not via the frame.
+            // Headers are written to buffer and flushed with a FIN when Http3FrameWriter.CompleteAsync is called
+            // in ProcessDataWrites.
+
             lock (_dataWriterLock)
             {
-                if (_completed)
+                if (_streamCompleted)
                 {
                     return;
-                }
-
-                if (appCompleted && !_startedWritingDataFrames && (_stream.ResponseTrailers == null || _stream.ResponseTrailers.Count == 0))
-                {
-                    // TODO figure out something to do here.
                 }
 
                 _frameWriter.WriteResponseHeaders(statusCode, responseHeaders);
@@ -318,12 +384,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             lock (_dataWriterLock)
             {
-                if (_completed)
+                if (_streamCompleted)
                 {
                     return _dataWriteProcessingTask;
                 }
 
-                _completed = true;
+                _streamCompleted = true;
                 _suffixSent = true;
 
                 _pipeWriter.Complete();
@@ -352,7 +418,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         }
 
                         _stream.ResponseTrailers.SetReadOnly();
-                        flushResult = await _frameWriter.WriteResponseTrailers(_stream.ResponseTrailers);
+                        flushResult = await _frameWriter.WriteResponseTrailersAsync(_stream.StreamId, _stream.ResponseTrailers);
                     }
                     else if (readResult.IsCompleted)
                     {
@@ -362,9 +428,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         }
 
                         // Headers have already been written and there is no other content to write
-                        // TODO complete something here.
-                        flushResult = await _frameWriter.FlushAsync(outputAborter: null, cancellationToken: default);
+
+                        // Need to complete framewriter immediately as CompleteAsync could be called
+                        // in the app delegate and we don't want to wait for the app delegate to
+                        // finish before sending response.
                         await _frameWriter.CompleteAsync();
+                        flushResult = default;
                     }
                     else
                     {

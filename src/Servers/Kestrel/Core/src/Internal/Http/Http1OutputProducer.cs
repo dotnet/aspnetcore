@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -49,6 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private readonly ConcurrentPipeWriter _pipeWriter;
         private IMemoryOwner<byte>? _fakeMemoryOwner;
+        private byte[]? _fakeMemory;
 
         // Chunked responses need to be treated uniquely when using GetMemory + Advance.
         // We need to know the size of the data written to the chunk before calling Advance on the
@@ -91,7 +92,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _minResponseDataRateFeature = minResponseDataRateFeature;
             _outputAborter = outputAborter;
 
-            _flusher = new TimingPipeFlusher(_pipeWriter, timeoutControl, log);
+            _flusher = new TimingPipeFlusher(timeoutControl, log);
+            _flusher.Initialize(_pipeWriter);
         }
 
         public Task WriteDataAsync(ReadOnlySpan<byte> buffer, CancellationToken cancellationToken = default)
@@ -413,6 +415,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     _fakeMemoryOwner = null;
                 }
 
+                if (_fakeMemory != null)
+                {
+                    ArrayPool<byte>.Shared.Return(_fakeMemory);
+                    _fakeMemory = null;
+                }
+
                 // Call dispose on any memory that wasn't written.
                 if (_completedSegments != null)
                 {
@@ -523,7 +531,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             Debug.Assert(_currentSegmentOwner == null);
             Debug.Assert(_completedSegments == null || _completedSegments.Count == 0);
-            // Cleared in sequential address ascending order 
+            // Cleared in sequential address ascending order
             _currentMemoryPrefixBytes = 0;
             _autoChunk = false;
             _writeStreamSuffixCalled = false;
@@ -593,13 +601,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // Calculating ChunkWriter.GetBeginChunkByteCount isn't free, so instead, we can add
                 // the max length for the prefix and suffix and add it to the sizeHint.
                 // This still guarantees that the memory passed in will be larger than the sizeHint.
-                sizeHint += MaxBeginChunkLength + EndChunkLength; 
+                sizeHint += MaxBeginChunkLength + EndChunkLength;
                 UpdateCurrentChunkMemory(sizeHint);
             }
             // Check if we need to allocate a new memory.
             else if (_advancedBytesForChunk >= _currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength - sizeHint && _advancedBytesForChunk > 0)
             {
-                sizeHint += MaxBeginChunkLength + EndChunkLength; 
+                sizeHint += MaxBeginChunkLength + EndChunkLength;
                 var writer = new BufferWriter<PipeWriter>(_pipeWriter);
                 WriteCurrentChunkMemoryToPipeWriter(ref writer);
                 writer.Commit();
@@ -625,7 +633,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             _currentChunkMemoryUpdated = true;
         }
-       
+
         private void WriteCurrentChunkMemoryToPipeWriter(ref BufferWriter<PipeWriter> writer)
         {
             Debug.Assert(_advancedBytesForChunk <= _currentChunkMemory.Length);
@@ -649,13 +657,48 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _advancedBytesForChunk = 0;
         }
 
-        private Memory<byte> GetFakeMemory(int sizeHint)
+        internal Memory<byte> GetFakeMemory(int minSize)
         {
-            if (_fakeMemoryOwner == null)
+            // Try to reuse _fakeMemoryOwner
+            if (_fakeMemoryOwner != null)
             {
-                _fakeMemoryOwner = _memoryPool.Rent(sizeHint);
+                if (_fakeMemoryOwner.Memory.Length < minSize)
+                {
+                    _fakeMemoryOwner.Dispose();
+                    _fakeMemoryOwner = null;
+                }
+                else
+                {
+                    return _fakeMemoryOwner.Memory;
+                }
             }
-            return _fakeMemoryOwner.Memory;
+
+            // Try to reuse _fakeMemory
+            if (_fakeMemory != null)
+            {
+                if (_fakeMemory.Length < minSize)
+                {
+                    ArrayPool<byte>.Shared.Return(_fakeMemory);
+                    _fakeMemory = null;
+                }
+                else
+                {
+                    return _fakeMemory;
+                }
+            }
+
+            // Requesting a bigger buffer could throw.
+            if (minSize <= _memoryPool.MaxBufferSize)
+            {
+                // Use the specified pool as it fits.
+                _fakeMemoryOwner = _memoryPool.Rent(minSize);
+                return _fakeMemoryOwner.Memory;
+            }
+            else
+            {
+                // Use the array pool. Its MaxBufferSize is int.MaxValue.
+                return _fakeMemory = ArrayPool<byte>.Shared.Rent(minSize);
+            }
         }
 
         private Memory<byte> LeasedMemory(int sizeHint)
@@ -701,7 +744,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 // Get a new buffer using the minimum segment size, unless the size hint is larger than a single segment.
                 // Also, the size cannot be larger than the MaxBufferSize of the MemoryPool
-                var owner = _memoryPool.Rent(Math.Min(sizeHint, _memoryPool.MaxBufferSize));
+                var owner = _memoryPool.Rent(sizeHint);
                 _currentSegment = owner.Memory;
                 _currentSegmentOwner = owner;
             }

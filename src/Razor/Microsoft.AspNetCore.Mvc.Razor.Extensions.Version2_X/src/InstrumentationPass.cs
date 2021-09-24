@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Globalization;
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
             for (var i = 0; i < walker.Items.Count; i++)
             {
                 var node = walker.Items[i];
-     
+
                 AddInstrumentation(node);
             }
         }
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
                 for (var i = 0; i < node.Children.Count; i++)
                 {
                     var child = node.Children[i];
-                    if (child is TagHelperBodyIntermediateNode || 
+                    if (child is TagHelperBodyIntermediateNode ||
                         child is DefaultTagHelperBodyIntermediateNode)
                     {
                         VisitDefault(child);

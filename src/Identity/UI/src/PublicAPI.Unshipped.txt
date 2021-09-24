@@ -17,3 +17,334 @@ static readonly Microsoft.AspNetCore.Identity.UI.LoggerEventIds.UserLoggedOut ->
 static readonly Microsoft.AspNetCore.Identity.UI.LoggerEventIds.UserLogin -> Microsoft.Extensions.Logging.EventId
 static readonly Microsoft.AspNetCore.Identity.UI.LoggerEventIds.UserLoginWith2FA -> Microsoft.Extensions.Logging.EventId
 static readonly Microsoft.AspNetCore.Identity.UI.LoggerEventIds.UserLoginWithRecoveryCode -> Microsoft.Extensions.Logging.EventId
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.AccessDeniedModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.AccessDeniedModel.AccessDeniedModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.AccessDeniedModel.OnGet() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ConfirmEmailChangeModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ConfirmEmailChangeModel.ConfirmEmailChangeModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ConfirmEmailModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ConfirmEmailModel.ConfirmEmailModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ExternalLoginModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ExternalLoginModel.ExternalLoginModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ExternalLoginModel.InputModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ExternalLoginModel.InputModel.InputModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ForgotPasswordConfirmation
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ForgotPasswordConfirmation.ForgotPasswordConfirmation() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ForgotPasswordConfirmation.OnGet() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ForgotPasswordModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ForgotPasswordModel.ForgotPasswordModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ForgotPasswordModel.InputModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ForgotPasswordModel.InputModel.InputModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LockoutModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LockoutModel.LockoutModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LockoutModel.OnGet() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginModel.InputModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginModel.InputModel.InputModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginModel.InputModel.RememberMe.get -> bool
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginModel.InputModel.RememberMe.set -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginModel.LoginModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWith2faModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWith2faModel.InputModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWith2faModel.InputModel.InputModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWith2faModel.InputModel.RememberMachine.get -> bool
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWith2faModel.InputModel.RememberMachine.set -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWith2faModel.LoginWith2faModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWith2faModel.RememberMe.get -> bool
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWith2faModel.RememberMe.set -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWithRecoveryCodeModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWithRecoveryCodeModel.InputModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWithRecoveryCodeModel.InputModel.InputModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWithRecoveryCodeModel.LoginWithRecoveryCodeModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LogoutModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LogoutModel.LogoutModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LogoutModel.OnGet() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterConfirmationModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterConfirmationModel.DisplayConfirmAccountLink.get -> bool
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterConfirmationModel.DisplayConfirmAccountLink.set -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterConfirmationModel.RegisterConfirmationModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterModel.InputModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterModel.InputModel.InputModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterModel.RegisterModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResendEmailConfirmationModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResendEmailConfirmationModel.InputModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResendEmailConfirmationModel.InputModel.InputModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResendEmailConfirmationModel.ResendEmailConfirmationModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResetPasswordConfirmationModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResetPasswordConfirmationModel.OnGet() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResetPasswordConfirmationModel.ResetPasswordConfirmationModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResetPasswordModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResetPasswordModel.InputModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResetPasswordModel.InputModel.InputModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResetPasswordModel.ResetPasswordModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ChangePasswordModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ChangePasswordModel.ChangePasswordModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ChangePasswordModel.InputModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ChangePasswordModel.InputModel.InputModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.DeletePersonalDataModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.DeletePersonalDataModel.DeletePersonalDataModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.DeletePersonalDataModel.InputModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.DeletePersonalDataModel.InputModel.InputModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.DeletePersonalDataModel.RequirePassword.get -> bool
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.DeletePersonalDataModel.RequirePassword.set -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.Disable2faModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.Disable2faModel.Disable2faModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.DownloadPersonalDataModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.DownloadPersonalDataModel.DownloadPersonalDataModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EmailModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EmailModel.EmailModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EmailModel.InputModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EmailModel.InputModel.InputModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EmailModel.IsEmailConfirmed.get -> bool
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EmailModel.IsEmailConfirmed.set -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EnableAuthenticatorModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EnableAuthenticatorModel.EnableAuthenticatorModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EnableAuthenticatorModel.InputModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EnableAuthenticatorModel.InputModel.InputModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ExternalLoginsModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ExternalLoginsModel.ExternalLoginsModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ExternalLoginsModel.ShowRemoveButton.get -> bool
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ExternalLoginsModel.ShowRemoveButton.set -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.GenerateRecoveryCodesModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.GenerateRecoveryCodesModel.GenerateRecoveryCodesModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.IndexModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.IndexModel.IndexModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.IndexModel.InputModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.IndexModel.InputModel.InputModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.PersonalDataModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.PersonalDataModel.PersonalDataModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ResetAuthenticatorModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ResetAuthenticatorModel.ResetAuthenticatorModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.SetPasswordModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.SetPasswordModel.InputModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.SetPasswordModel.InputModel.InputModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.SetPasswordModel.SetPasswordModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ShowRecoveryCodesModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ShowRecoveryCodesModel.ShowRecoveryCodesModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.TwoFactorAuthenticationModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.TwoFactorAuthenticationModel.HasAuthenticator.get -> bool
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.TwoFactorAuthenticationModel.HasAuthenticator.set -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.TwoFactorAuthenticationModel.Is2faEnabled.get -> bool
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.TwoFactorAuthenticationModel.Is2faEnabled.set -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.TwoFactorAuthenticationModel.IsMachineRemembered.get -> bool
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.TwoFactorAuthenticationModel.IsMachineRemembered.set -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.TwoFactorAuthenticationModel.RecoveryCodesLeft.get -> int
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.TwoFactorAuthenticationModel.RecoveryCodesLeft.set -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.TwoFactorAuthenticationModel.TwoFactorAuthenticationModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Internal.ErrorModel
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Internal.ErrorModel.ErrorModel() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Internal.ErrorModel.OnGet() -> void
+Microsoft.AspNetCore.Identity.UI.V5.Pages.Internal.ErrorModel.ShowRequestId.get -> bool
+virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResendEmailConfirmationModel.OnGet() -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ConfirmEmailChangeModel.StatusMessage.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ConfirmEmailChangeModel.StatusMessage.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ConfirmEmailModel.StatusMessage.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ConfirmEmailModel.StatusMessage.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ExternalLoginModel.ErrorMessage.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ExternalLoginModel.ErrorMessage.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ExternalLoginModel.Input.get -> Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ExternalLoginModel.InputModel
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ExternalLoginModel.Input.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ExternalLoginModel.InputModel.Email.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ExternalLoginModel.InputModel.Email.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ExternalLoginModel.ProviderDisplayName.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ExternalLoginModel.ProviderDisplayName.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ExternalLoginModel.ReturnUrl.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ExternalLoginModel.ReturnUrl.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ForgotPasswordModel.Input.get -> Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ForgotPasswordModel.InputModel
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ForgotPasswordModel.Input.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ForgotPasswordModel.InputModel.Email.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ForgotPasswordModel.InputModel.Email.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginModel.ErrorMessage.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginModel.ErrorMessage.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginModel.ExternalLogins.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Authentication.AuthenticationScheme>
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginModel.ExternalLogins.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginModel.Input.get -> Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginModel.InputModel
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginModel.Input.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginModel.InputModel.Email.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginModel.InputModel.Email.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginModel.InputModel.Password.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginModel.InputModel.Password.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginModel.ReturnUrl.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginModel.ReturnUrl.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWith2faModel.Input.get -> Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWith2faModel.InputModel
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWith2faModel.Input.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWith2faModel.InputModel.TwoFactorCode.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWith2faModel.InputModel.TwoFactorCode.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWith2faModel.ReturnUrl.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWith2faModel.ReturnUrl.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWithRecoveryCodeModel.Input.get -> Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWithRecoveryCodeModel.InputModel
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWithRecoveryCodeModel.Input.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWithRecoveryCodeModel.InputModel.RecoveryCode.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWithRecoveryCodeModel.InputModel.RecoveryCode.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWithRecoveryCodeModel.ReturnUrl.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWithRecoveryCodeModel.ReturnUrl.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterConfirmationModel.Email.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterConfirmationModel.Email.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterConfirmationModel.EmailConfirmationUrl.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterConfirmationModel.EmailConfirmationUrl.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterModel.ExternalLogins.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Authentication.AuthenticationScheme>
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterModel.ExternalLogins.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterModel.Input.get -> Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterModel.InputModel
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterModel.Input.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterModel.InputModel.ConfirmPassword.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterModel.InputModel.ConfirmPassword.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterModel.InputModel.Email.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterModel.InputModel.Email.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterModel.InputModel.Password.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterModel.InputModel.Password.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterModel.ReturnUrl.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterModel.ReturnUrl.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResendEmailConfirmationModel.Input.get -> Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResendEmailConfirmationModel.InputModel
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResendEmailConfirmationModel.Input.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResendEmailConfirmationModel.InputModel.Email.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResendEmailConfirmationModel.InputModel.Email.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResetPasswordModel.Input.get -> Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResetPasswordModel.InputModel
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResetPasswordModel.Input.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResetPasswordModel.InputModel.Code.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResetPasswordModel.InputModel.Code.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResetPasswordModel.InputModel.ConfirmPassword.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResetPasswordModel.InputModel.ConfirmPassword.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResetPasswordModel.InputModel.Email.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResetPasswordModel.InputModel.Email.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResetPasswordModel.InputModel.Password.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResetPasswordModel.InputModel.Password.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ChangePasswordModel.Input.get -> Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ChangePasswordModel.InputModel
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ChangePasswordModel.Input.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ChangePasswordModel.InputModel.ConfirmPassword.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ChangePasswordModel.InputModel.ConfirmPassword.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ChangePasswordModel.InputModel.NewPassword.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ChangePasswordModel.InputModel.NewPassword.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ChangePasswordModel.InputModel.OldPassword.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ChangePasswordModel.InputModel.OldPassword.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ChangePasswordModel.StatusMessage.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ChangePasswordModel.StatusMessage.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.DeletePersonalDataModel.Input.get -> Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.DeletePersonalDataModel.InputModel
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.DeletePersonalDataModel.Input.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.DeletePersonalDataModel.InputModel.Password.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.DeletePersonalDataModel.InputModel.Password.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.Disable2faModel.StatusMessage.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.Disable2faModel.StatusMessage.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EmailModel.Email.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EmailModel.Email.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EmailModel.Input.get -> Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EmailModel.InputModel
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EmailModel.Input.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EmailModel.InputModel.NewEmail.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EmailModel.InputModel.NewEmail.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EmailModel.StatusMessage.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EmailModel.StatusMessage.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EnableAuthenticatorModel.AuthenticatorUri.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EnableAuthenticatorModel.AuthenticatorUri.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EnableAuthenticatorModel.Input.get -> Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EnableAuthenticatorModel.InputModel
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EnableAuthenticatorModel.Input.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EnableAuthenticatorModel.InputModel.Code.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EnableAuthenticatorModel.InputModel.Code.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EnableAuthenticatorModel.RecoveryCodes.get -> string[]
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EnableAuthenticatorModel.RecoveryCodes.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EnableAuthenticatorModel.SharedKey.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EnableAuthenticatorModel.SharedKey.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EnableAuthenticatorModel.StatusMessage.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EnableAuthenticatorModel.StatusMessage.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ExternalLoginsModel.CurrentLogins.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Identity.UserLoginInfo>
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ExternalLoginsModel.CurrentLogins.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ExternalLoginsModel.OtherLogins.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Authentication.AuthenticationScheme>
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ExternalLoginsModel.OtherLogins.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ExternalLoginsModel.StatusMessage.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ExternalLoginsModel.StatusMessage.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.GenerateRecoveryCodesModel.RecoveryCodes.get -> string[]
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.GenerateRecoveryCodesModel.RecoveryCodes.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.GenerateRecoveryCodesModel.StatusMessage.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.GenerateRecoveryCodesModel.StatusMessage.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.IndexModel.Input.get -> Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.IndexModel.InputModel
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.IndexModel.Input.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.IndexModel.InputModel.PhoneNumber.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.IndexModel.InputModel.PhoneNumber.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.IndexModel.StatusMessage.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.IndexModel.StatusMessage.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.IndexModel.Username.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.IndexModel.Username.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ResetAuthenticatorModel.StatusMessage.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ResetAuthenticatorModel.StatusMessage.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.SetPasswordModel.Input.get -> Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.SetPasswordModel.InputModel
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.SetPasswordModel.Input.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.SetPasswordModel.InputModel.ConfirmPassword.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.SetPasswordModel.InputModel.ConfirmPassword.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.SetPasswordModel.InputModel.NewPassword.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.SetPasswordModel.InputModel.NewPassword.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.SetPasswordModel.StatusMessage.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.SetPasswordModel.StatusMessage.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ShowRecoveryCodesModel.OnGet() -> Microsoft.AspNetCore.Mvc.IActionResult
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ShowRecoveryCodesModel.RecoveryCodes.get -> string[]
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ShowRecoveryCodesModel.RecoveryCodes.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ShowRecoveryCodesModel.StatusMessage.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ShowRecoveryCodesModel.StatusMessage.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.TwoFactorAuthenticationModel.StatusMessage.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.TwoFactorAuthenticationModel.StatusMessage.set -> void
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Internal.ErrorModel.RequestId.get -> string
+~Microsoft.AspNetCore.Identity.UI.V5.Pages.Internal.ErrorModel.RequestId.set -> void
+~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.ChangePassword.get -> string
+~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.ChangePasswordNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
+~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.DeletePersonalData.get -> string
+~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.DeletePersonalDataNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
+~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.DownloadPersonalData.get -> string
+~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.DownloadPersonalDataNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
+~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.Email.get -> string
+~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.EmailNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
+~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.ExternalLogins.get -> string
+~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.ExternalLoginsNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
+~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.Index.get -> string
+~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.IndexNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
+~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.PageNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext, string page) -> string
+~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.PersonalData.get -> string
+~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.PersonalDataNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
+~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.TwoFactorAuthentication.get -> string
+~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.TwoFactorAuthenticationNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ConfirmEmailChangeModel.OnGetAsync(string userId, string email, string code) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ConfirmEmailModel.OnGetAsync(string userId, string code) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ExternalLoginModel.OnGet() -> Microsoft.AspNetCore.Mvc.IActionResult
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ExternalLoginModel.OnGetCallbackAsync(string returnUrl = null, string remoteError = null) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ExternalLoginModel.OnPost(string provider, string returnUrl = null) -> Microsoft.AspNetCore.Mvc.IActionResult
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ExternalLoginModel.OnPostConfirmationAsync(string returnUrl = null) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ForgotPasswordModel.OnPostAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginModel.OnGetAsync(string returnUrl = null) -> System.Threading.Tasks.Task
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginModel.OnPostAsync(string returnUrl = null) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWith2faModel.OnGetAsync(bool rememberMe, string returnUrl = null) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWith2faModel.OnPostAsync(bool rememberMe, string returnUrl = null) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWithRecoveryCodeModel.OnGetAsync(string returnUrl = null) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginWithRecoveryCodeModel.OnPostAsync(string returnUrl = null) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LogoutModel.OnPost(string returnUrl = null) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterConfirmationModel.OnGetAsync(string email, string returnUrl = null) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterModel.OnGetAsync(string returnUrl = null) -> System.Threading.Tasks.Task
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.RegisterModel.OnPostAsync(string returnUrl = null) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResendEmailConfirmationModel.OnPostAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResetPasswordModel.OnGet(string code = null) -> Microsoft.AspNetCore.Mvc.IActionResult
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResetPasswordModel.OnPostAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ChangePasswordModel.OnGetAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ChangePasswordModel.OnPostAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.DeletePersonalDataModel.OnGet() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.DeletePersonalDataModel.OnPostAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.Disable2faModel.OnGet() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.Disable2faModel.OnPostAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.DownloadPersonalDataModel.OnGet() -> Microsoft.AspNetCore.Mvc.IActionResult
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.DownloadPersonalDataModel.OnPostAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EmailModel.OnGetAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EmailModel.OnPostChangeEmailAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EmailModel.OnPostSendVerificationEmailAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EnableAuthenticatorModel.OnGetAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.EnableAuthenticatorModel.OnPostAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ExternalLoginsModel.OnGetAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ExternalLoginsModel.OnGetLinkLoginCallbackAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ExternalLoginsModel.OnPostLinkLoginAsync(string provider) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ExternalLoginsModel.OnPostRemoveLoginAsync(string loginProvider, string providerKey) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.GenerateRecoveryCodesModel.OnGetAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.GenerateRecoveryCodesModel.OnPostAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.IndexModel.OnGetAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.IndexModel.OnPostAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.PersonalDataModel.OnGet() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ResetAuthenticatorModel.OnGet() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ResetAuthenticatorModel.OnPostAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.SetPasswordModel.OnGetAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.SetPasswordModel.OnPostAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.TwoFactorAuthenticationModel.OnGetAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
+~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.TwoFactorAuthenticationModel.OnPostAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>

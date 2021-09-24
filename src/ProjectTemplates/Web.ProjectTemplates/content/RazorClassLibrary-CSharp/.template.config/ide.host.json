@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json.schemastore.org/vs-2017.3.host",
+  "order": 700,
+  "icon": "ide/RazorClassLibrary.ico",
+  "symbolInfo": [
+    {
+      "id": "SupportPagesAndViews",
+      "name": {
+        "text": "_Support pages and views"
+      },
+      "isVisible": "true"
+    }
+  ]
+}

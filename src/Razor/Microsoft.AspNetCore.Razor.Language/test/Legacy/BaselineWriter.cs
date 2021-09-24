@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
 using System.IO;
@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public static class BaselineWriter
     {
-        private static object baselineLock = new object();
+        private static readonly object baselineLock = new object();
 
         [Conditional("GENERATE_BASELINES")]
         public static void WriteBaseline(string baselineFile, string output)

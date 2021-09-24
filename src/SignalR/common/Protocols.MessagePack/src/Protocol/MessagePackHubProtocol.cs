@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -94,18 +94,20 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
             private static class Cache<T>
             {
-                public static readonly IMessagePackFormatter<T>? Formatter;
+                public static readonly IMessagePackFormatter<T>? Formatter = ResolveFormatter();
 
-                static Cache()
+                private static IMessagePackFormatter<T>? ResolveFormatter()
                 {
                     foreach (var resolver in Resolvers)
                     {
-                        Formatter = resolver.GetFormatter<T>();
-                        if (Formatter != null)
+                        var formatter = resolver.GetFormatter<T>();
+                        if (formatter != null)
                         {
-                            return;
+                            return formatter;
                         }
                     }
+
+                    return null;
                 }
             }
         }

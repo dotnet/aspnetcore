@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -116,7 +119,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
                 var serverExpectation = _expectations.FirstOrDefault(e => e.Server == serverResult.Server && e.Ssl == serverResult.Ssl);
                 if (serverExpectation == null)
                 {
-                    failures.AppendLine($"Expected no results for server: {serverResult.Name} but found results!");
+                    failures.AppendLine(FormattableString.Invariant($"Expected no results for server: {serverResult.Name} but found results!"));
                 }
                 else
                 {

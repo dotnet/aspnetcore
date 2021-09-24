@@ -1,6 +1,5 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
@@ -722,7 +721,7 @@ public class Program
             {
                 if (_writer != null)
                 {
-                    var sb = new StringBuilder().Append($"[{eventData.EventName}] ");
+                    var sb = new StringBuilder().Append(FormattableString.Invariant($"[{eventData.EventName}] "));
                     for (int i = 0; i < eventData.Payload.Count; i++)
                     {
                         if (i > 0) sb.Append(", ");

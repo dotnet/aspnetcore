@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers.Text;
@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal sealed partial class HttpRequestHeaders : HttpHeaders
     {
+        private EnumeratorCache? _enumeratorCache;
         private long _previousBits;
 
         public bool ReuseHeaderValues { get; set; }
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public HttpRequestHeaders(bool reuseHeaderValues = true, Func<string, Encoding?>? encodingSelector = null)
         {
             ReuseHeaderValues = reuseHeaderValues;
-            EncodingSelector = encodingSelector ?? KestrelServerOptions.DefaultRequestHeaderEncodingSelector;
+            EncodingSelector = encodingSelector ?? KestrelServerOptions.DefaultHeaderEncodingSelector;
         }
 
         public void OnHeadersComplete()
@@ -65,6 +66,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Clear ContentLength and any unknown headers as we will never reuse them
             _contentLength = null;
             MaybeUnknown?.Clear();
+            _enumeratorCache?.Reset();
         }
 
         private static long ParseContentLength(string value)
@@ -89,7 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 parsed < 0 ||
                 consumed != value.Length)
             {
-                KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value.GetRequestHeaderString(HeaderNames.ContentLength, EncodingSelector));
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value.GetRequestHeaderString(HeaderNames.ContentLength, EncodingSelector, checkForNewlineChars : false));
             }
 
             _contentLength = parsed;
@@ -97,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         [SkipLocalsInit]
-        private void AppendContentLengthCustomEncoding(ReadOnlySpan<byte> value, Encoding? customEncoding)
+        private void AppendContentLengthCustomEncoding(ReadOnlySpan<byte> value, Encoding customEncoding)
         {
             if (_contentLength.HasValue)
             {
@@ -106,14 +108,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             // long.MaxValue = 9223372036854775807 (19 chars)
             Span<char> decodedChars = stackalloc char[20];
-            var numChars = customEncoding!.GetChars(value, decodedChars);
+            var numChars = customEncoding.GetChars(value, decodedChars);
             long parsed = -1;
 
             if (numChars > 19 ||
                 !long.TryParse(decodedChars.Slice(0, numChars), NumberStyles.Integer, CultureInfo.InvariantCulture, out parsed) ||
                 parsed < 0)
             {
-                KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value.GetRequestHeaderString(HeaderNames.ContentLength, EncodingSelector));
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value.GetRequestHeaderString(HeaderNames.ContentLength, EncodingSelector, checkForNewlineChars : false));
             }
 
             _contentLength = parsed;
@@ -148,7 +150,73 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override IEnumerator<KeyValuePair<string, StringValues>> GetEnumeratorFast()
         {
-            return GetEnumerator();
+            // Get or create the cache.
+            var cache = _enumeratorCache ??= new();
+
+            EnumeratorBox enumerator;
+            if (cache.CachedEnumerator is not null)
+            {
+                // Previous enumerator, reuse that one.
+                enumerator = cache.InUseEnumerator = cache.CachedEnumerator;
+                // Set previous to null so if there is a second enumerator call
+                // during the same request it doesn't get the same one.
+                cache.CachedEnumerator = null;
+            }
+            else
+            {
+                // Create new enumerator box and store as in use.
+                enumerator = cache.InUseEnumerator = new();
+            }
+
+            // Set the underlying struct enumerator to a new one.
+            enumerator.Enumerator = new Enumerator(this);
+            return enumerator;
+        }
+
+        private class EnumeratorCache
+        {
+            /// <summary>
+            /// Enumerator created from previous request
+            /// </summary>
+            public EnumeratorBox? CachedEnumerator { get; set; }
+            /// <summary>
+            /// Enumerator used on this request
+            /// </summary>
+            public EnumeratorBox? InUseEnumerator { get; set; }
+
+            /// <summary>
+            /// Moves InUseEnumerator to CachedEnumerator
+            /// </summary>
+            public void Reset()
+            {
+                var enumerator = InUseEnumerator;
+                if (enumerator is not null)
+                {
+                    InUseEnumerator = null;
+                    enumerator.Enumerator = default;
+                    CachedEnumerator = enumerator;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Strong box enumerator for the IEnumerator interface to cache and amortizate the
+        /// IEnumerator allocations across requests if the header collection is commonly
+        /// enumerated for forwarding in a reverse-proxy type situation.
+        /// </summary>
+        private class EnumeratorBox : IEnumerator<KeyValuePair<string, StringValues>>
+        {
+            public Enumerator Enumerator;
+
+            public KeyValuePair<string, StringValues> Current => Enumerator.Current;
+
+            public bool MoveNext() => Enumerator.MoveNext();
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose() { }
+
+            public void Reset() => throw new NotSupportedException();
         }
 
         public partial struct Enumerator : IEnumerator<KeyValuePair<string, StringValues>>

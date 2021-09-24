@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -45,16 +45,7 @@ namespace Microsoft.AspNetCore.Testing
                 }
             });
 
-            var retryAttribute = GetRetryAttribute(TestMethod);
-            var time = 0.0M;
-            if (retryAttribute == null)
-            {
-                time = await base.InvokeTestMethodAsync(testClassInstance);
-            }
-            else
-            {
-                time = await RetryAsync(retryAttribute, testClassInstance);
-            }
+            var time = await base.InvokeTestMethodAsync(testClassInstance);
 
             await Aggregator.RunAsync(async () =>
             {
@@ -66,45 +57,6 @@ namespace Microsoft.AspNetCore.Testing
             });
 
             return time;
-        }
-
-        protected async Task<decimal> RetryAsync(RetryAttribute retryAttribute, object testClassInstance)
-        {
-            var attempts = 0;
-            var timeTaken = 0.0M;
-            for (attempts = 0; attempts < retryAttribute.MaxRetries; attempts++)
-            {
-                timeTaken = await base.InvokeTestMethodAsync(testClassInstance);
-                if (!Aggregator.HasExceptions)
-                {
-                    return timeTaken;
-                }
-                else if (attempts < retryAttribute.MaxRetries - 1)
-                {
-                    _testOutputHelper.WriteLine($"Retrying test, attempt {attempts} of {retryAttribute.MaxRetries} failed.");
-                    await Task.Delay(5000);
-                    Aggregator.Clear();
-                }
-            }
-
-            return timeTaken;
-        }
-
-        private RetryAttribute GetRetryAttribute(MethodInfo methodInfo)
-        {
-            var attributeCandidate = methodInfo.GetCustomAttribute<RetryAttribute>();
-            if (attributeCandidate != null)
-            {
-                return attributeCandidate;
-            }
-
-            attributeCandidate = methodInfo.DeclaringType.GetCustomAttribute<RetryAttribute>();
-            if (attributeCandidate != null)
-            {
-                return attributeCandidate;
-            }
-
-            return methodInfo.DeclaringType.Assembly.GetCustomAttribute<RetryAttribute>();
         }
 
         private static IEnumerable<ITestMethodLifecycle> GetLifecycleHooks(object testClassInstance, Type testClass, MethodInfo testMethod)

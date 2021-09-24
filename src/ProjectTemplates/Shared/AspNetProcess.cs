@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -79,7 +79,11 @@ namespace Templates.Test.Helpers
             else
             {
                 process = DotNetMuxer.MuxerPathOrDefault();
-                arguments = "run --no-build";
+
+                // When executing "dotnet run", the launch urls specified in the app's launchSettings.json have higher precedence
+                // than ambient environment variables. We specify the urls using command line arguments instead to allow us
+                // to continue binding to "port 0" and avoid test flakiness due to port conflicts.
+                arguments = $"run --no-build --urls \"{environmentVariables["ASPNETCORE_URLS"]}\"";
             }
 
             logger?.LogInformation($"AspNetProcess - process: {process} arguments: {arguments}");
@@ -135,7 +139,10 @@ namespace Templates.Test.Helpers
             foreach (IHtmlLinkElement styleSheet in html.GetElementsByTagName("link"))
             {
                 Assert.Equal("stylesheet", styleSheet.Relation);
-                await AssertOk(styleSheet.Href.Replace("about://", string.Empty));
+                // Workaround for https://github.com/dotnet/aspnetcore/issues/31030#issuecomment-811334450
+                // Cleans up incorrectly generated filename for scoped CSS files
+                var styleSheetHref = styleSheet.Href.Replace("_", string.Empty).Replace("about://", string.Empty);
+                await AssertOk(styleSheetHref);
             }
             foreach (var script in html.Scripts)
             {
@@ -151,7 +158,7 @@ namespace Templates.Test.Helpers
                 IHtmlAnchorElement anchor = (IHtmlAnchorElement)link;
                 if (string.Equals(anchor.Protocol, "about:"))
                 {
-                    Assert.True(anchor.PathName.EndsWith(expectedLink, StringComparison.Ordinal), $"Expected next link on {page.Url} to be {expectedLink} but it was {anchor.PathName}.");
+                    Assert.True(anchor.PathName.EndsWith(expectedLink, StringComparison.Ordinal), $"Expected next link on {page.Url} to be {expectedLink} but it was {anchor.PathName}: {html.Source.Text}");
                     await AssertOk(anchor.PathName);
                 }
                 else

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
 using Xunit;
@@ -24,7 +24,7 @@ namespace Microsoft.JSInterop.Infrastructure
 
             // Act & Assert
             var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<byte[]>(json, JsonSerializerOptions));
-            Assert.Equal("ByteArraysToBeRevived is empty.", ex.Message);
+            Assert.Equal("JSON serialization is attempting to deserialize an unexpected byte array.", ex.Message);
         }
 
         [Fact]
@@ -64,6 +64,33 @@ namespace Microsoft.JSInterop.Infrastructure
             // Act & Assert
             var ex = Record.Exception(() => JsonSerializer.Deserialize<byte[]>(json, JsonSerializerOptions));
             Assert.IsAssignableFrom<JsonException>(ex);
+        }
+
+        [Fact]
+        public void Read_ReadsBase64EncodedStrings()
+        {
+            // Arrange
+            var expected = new byte[] { 1, 5, 8 };
+            var json = JsonSerializer.Serialize(expected);
+
+            // Act
+            var deserialized = JsonSerializer.Deserialize<byte[]>(json, JsonSerializerOptions)!;
+
+            // Assert
+            Assert.Equal(expected, deserialized);
+        }
+
+        [Fact]
+        public void Read_ThrowsIfTheInputIsNotAValidBase64String()
+        {
+            // Arrange
+            var json = "\"Hello world\"";
+
+            // Act
+            var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<byte[]>(json, JsonSerializerOptions));
+
+            // Assert
+            Assert.Equal("JSON serialization is attempting to deserialize an unexpected byte array.", ex.Message);
         }
 
         [Fact]

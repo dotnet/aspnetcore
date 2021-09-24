@@ -35,7 +35,7 @@
   <ItemGroup>
     <!-- We need the actual templates in the output directory for tests to verify file encodings. -->
     <Content Include="..\Web.ProjectTemplates\**" LinkBase="Assets\Web.ProjectTemplates" />
-    <Content Include="..\Web.Spa.ProjectTemplates\**" LinkBase="Assets\Web.Spa.ProjectTemplates" />
+    <Content Include="$(RepoRoot)src\submodules\spa-templates\src\**" LinkBase="Assets\Web.Spa.ProjectTemplates" />
     <Content Include="..\Web.ItemTemplates\**" LinkBase="Assets\Web.ItemTemplates" />
     <Content Include="..\Web.Client.ItemTemplates\**" LinkBase="Assets\Web.Client.ItemTemplates" />
   </ItemGroup>
@@ -56,7 +56,7 @@
     <ProjectReference Include="../Web.Client.ItemTemplates/Microsoft.DotNet.Web.Client.ItemTemplates.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../Web.ItemTemplates/Microsoft.DotNet.Web.ItemTemplates.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../Web.ProjectTemplates/Microsoft.DotNet.Web.ProjectTemplates.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="../Web.Spa.ProjectTemplates/Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="$(RepoRoot)src\submodules\spa-templates\src\Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <PropertyGroup>

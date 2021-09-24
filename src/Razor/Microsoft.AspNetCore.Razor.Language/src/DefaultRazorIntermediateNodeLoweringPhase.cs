@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -585,7 +585,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 _builder.Add(new LazyIntermediateToken()
                 {
-                    ContentFactory = () => node.Value?.GetContent() ?? string.Empty,
+                    FactoryArgument = node,
+                    ContentFactory = static node => ((MarkupLiteralAttributeValueSyntax)node).Value?.GetContent() ?? string.Empty,
                     Kind = TokenKind.Html,
                     Source = BuildSourceSpanFromNode(node.Value)
                 });
@@ -618,7 +619,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                             sourceRangeStart.Value.AbsoluteIndex,
                             sourceRangeStart.Value.LineIndex,
                             sourceRangeStart.Value.CharacterIndex,
-                            contentLength);
+                            contentLength,
+                            sourceRangeStart.Value.LineCount,
+                            sourceRangeStart.Value.EndCharacterIndex);
                     }
                 }
             }
@@ -661,7 +664,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                             sourceRangeStart.Value.AbsoluteIndex,
                             sourceRangeStart.Value.LineIndex,
                             sourceRangeStart.Value.CharacterIndex,
-                            contentLength);
+                            contentLength,
+                            sourceRangeStart.Value.LineCount,
+                            sourceRangeStart.Value.EndCharacterIndex);
                     }
                 }
             }
@@ -698,7 +703,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                             sourceRangeStart.Value.AbsoluteIndex,
                             sourceRangeStart.Value.LineIndex,
                             sourceRangeStart.Value.CharacterIndex,
-                            contentLength);
+                            contentLength,
+                            sourceRangeStart.Value.LineCount,
+                            sourceRangeStart.Value.EndCharacterIndex);
                     }
                 }
             }
@@ -717,7 +724,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 _builder.Add(new LazyIntermediateToken()
                 {
-                    ContentFactory = () => node.GetContent(),
+                    FactoryArgument = node,
+                    ContentFactory = static node => ((CSharpExpressionLiteralSyntax)node).GetContent(),
                     Kind = TokenKind.CSharp,
                     Source = BuildSourceSpanFromNode(node),
                 });
@@ -743,7 +751,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                     _builder.Add(new LazyIntermediateToken()
                     {
-                        ContentFactory = () => node.GetContent(),
+                        FactoryArgument = node,
+                        ContentFactory = static node => ((CSharpStatementLiteralSyntax)node).GetContent(),
                         Kind = TokenKind.CSharp,
                         Source = BuildSourceSpanFromNode(node),
                     });
@@ -845,7 +854,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 _builder.Add(new LazyIntermediateToken()
                 {
-                    ContentFactory = () => node.GetContent(),
+                    FactoryArgument = node,
+                    ContentFactory = static node => ((SyntaxNode)node).GetContent(),
                     Kind = TokenKind.Html,
                     Source = source,
                 });
@@ -1093,7 +1103,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 node.Children.Add(new LazyIntermediateToken()
                 {
-                    ContentFactory = () => item.GetContent(),
+                    FactoryArgument = item,
+                    ContentFactory = static item => ((SyntaxNode)item).GetContent(),
                     Kind = TokenKind.Html,
                     Source = BuildSourceSpanFromNode(item),
                 });
@@ -1105,7 +1116,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                         node.Source.Value.AbsoluteIndex,
                         node.Source.Value.LineIndex,
                         node.Source.Value.CharacterIndex,
-                        node.Source.Value.Length + item.FullWidth);
+                        node.Source.Value.Length + item.FullWidth,
+                        node.Source.Value.LineCount,
+                        node.Source.Value.EndCharacterIndex);
                 }
             }
 
@@ -1205,7 +1218,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public override void VisitMarkupStartTag(MarkupStartTagSyntax node)
             {
-                // We want to skip over the other misc tokens that make up a start tag, and 
+                // We want to skip over the other misc tokens that make up a start tag, and
                 // just process the attributes.
                 //
                 // Visit the attributes
@@ -1224,7 +1237,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public override void VisitMarkupEndTag(MarkupEndTagSyntax node)
             {
-                // We want to skip over the other misc tokens that make up a start tag, and 
+                // We want to skip over the other misc tokens that make up a start tag, and
                 // just process the attributes.
                 //
                 // Nothing to do here
@@ -1277,7 +1290,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     Source = BuildSourceSpanFromNode(node),
                 });
             }
-            
+
             // Example
             // <input checked="hello-world `@false`"/>
             //  Prefix= (space)
@@ -1330,7 +1343,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 _builder.Add(new LazyIntermediateToken()
                 {
-                    ContentFactory = () => node.Value?.GetContent() ?? string.Empty,
+                    FactoryArgument = node,
+                    ContentFactory = static node => ((MarkupLiteralAttributeValueSyntax)node).Value?.GetContent() ?? string.Empty,
                     Kind = TokenKind.Html,
                     Source = BuildSourceSpanFromNode(node.Value)
                 });
@@ -1342,7 +1356,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 if (_builder.Current is HtmlAttributeIntermediateNode)
                 {
-                    // This can happen inside a data- attribute 
+                    // This can happen inside a data- attribute
                     _builder.Push(new HtmlAttributeValueIntermediateNode()
                     {
                         Prefix = string.Empty,
@@ -1351,7 +1365,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                     _builder.Add(new LazyIntermediateToken()
                     {
-                        ContentFactory = () => node.GetContent() ?? string.Empty,
+                        FactoryArgument = node,
+                        ContentFactory = static node => ((MarkupTextLiteralSyntax)node).GetContent() ?? string.Empty,
                         Kind = TokenKind.Html,
                         Source = BuildSourceSpanFromNode(node),
                     });
@@ -1408,7 +1423,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                     {
                         new LazyIntermediateToken()
                         {
-                            ContentFactory = () => node.GetContent(),
+                            FactoryArgument = node,
+                            ContentFactory = static node => ((MarkupTextLiteralSyntax)node).GetContent(),
                             Kind = TokenKind.Html,
                             Source = source,
                         }
@@ -1446,7 +1462,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                             sourceRangeStart.Value.AbsoluteIndex,
                             sourceRangeStart.Value.LineIndex,
                             sourceRangeStart.Value.CharacterIndex,
-                            contentLength);
+                            contentLength,
+                            sourceRangeStart.Value.LineCount,
+                            sourceRangeStart.Value.EndCharacterIndex);
                     }
                 }
             }
@@ -1505,7 +1523,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                             sourceRangeStart.Value.AbsoluteIndex,
                             sourceRangeStart.Value.LineIndex,
                             sourceRangeStart.Value.CharacterIndex,
-                            contentLength);
+                            contentLength,
+                            sourceRangeStart.Value.LineCount,
+                            sourceRangeStart.Value.EndCharacterIndex);
                     }
                 }
             }
@@ -1558,7 +1578,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                             sourceRangeStart.Value.AbsoluteIndex,
                             sourceRangeStart.Value.LineIndex,
                             sourceRangeStart.Value.CharacterIndex,
-                            contentLength);
+                            contentLength,
+                            sourceRangeStart.Value.LineCount,
+                            sourceRangeStart.Value.EndCharacterIndex);
                     }
                 }
             }
@@ -1577,7 +1599,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 _builder.Add(new LazyIntermediateToken()
                 {
-                    ContentFactory = () => node.GetContent(),
+                    FactoryArgument = node,
+                    ContentFactory = static node => ((CSharpExpressionLiteralSyntax)node).GetContent(),
                     Kind = TokenKind.CSharp,
                     Source = BuildSourceSpanFromNode(node),
                 });
@@ -1603,7 +1626,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                     _builder.Add(new LazyIntermediateToken()
                     {
-                        ContentFactory = () => node.GetContent(),
+                        FactoryArgument = node,
+                        ContentFactory = static node => ((CSharpStatementLiteralSyntax)node).GetContent(),
                         Kind = TokenKind.CSharp,
                         Source = BuildSourceSpanFromNode(node),
                     });
@@ -2045,7 +2069,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 node.Children.Add(new LazyIntermediateToken()
                 {
-                    ContentFactory = () => item.GetContent(),
+                    FactoryArgument = item,
+                    ContentFactory = static item => ((SyntaxNode)item).GetContent(),
                     Kind = TokenKind.Html,
                     Source = BuildSourceSpanFromNode(item),
                 });
@@ -2059,7 +2084,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                         node.Source.Value.AbsoluteIndex,
                         node.Source.Value.LineIndex,
                         node.Source.Value.CharacterIndex,
-                        node.Source.Value.Length + item.FullWidth);
+                        node.Source.Value.Length + item.FullWidth,
+                        node.Source.Value.LineCount,
+                        node.Source.Value.EndCharacterIndex);
                 }
             }
 
@@ -2163,7 +2190,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                             sourceRangeStart.Value.AbsoluteIndex,
                             sourceRangeStart.Value.LineIndex,
                             sourceRangeStart.Value.CharacterIndex,
-                            contentLength);
+                            contentLength,
+                            sourceRangeStart.Value.LineCount,
+                            sourceRangeStart.Value.EndCharacterIndex);
                     }
                 }
 
@@ -2183,7 +2212,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 _builder.Add(new LazyIntermediateToken()
                 {
-                    ContentFactory = () => node.GetContent(),
+                    FactoryArgument = node,
+                    ContentFactory = static node => ((CSharpExpressionLiteralSyntax)node).GetContent(),
                     Kind = TokenKind.CSharp,
                     Source = BuildSourceSpanFromNode(node),
                 });

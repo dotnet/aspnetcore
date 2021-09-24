@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var key = ModelMetadataIdentity.ForType(typeof(object));
             var modelAttributes = new ModelAttributes(new object[0], new object[0], new object[0]);
             var context = new ValidationMetadataProviderContext(key, modelAttributes);
-            
+
             // Initialize this value.
             context.ValidationMetadata.HasValidators = true;
 

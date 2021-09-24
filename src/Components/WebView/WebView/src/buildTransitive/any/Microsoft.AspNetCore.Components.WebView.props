@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <JSModuleManifestRelativePath>_framework/blazor.modules.json</JSModuleManifestRelativePath>    
+  </PropertyGroup>
+</Project>

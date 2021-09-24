@@ -1,9 +1,10 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -338,7 +339,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             };
         }
 
-        private IEnumerable<string?> GetHttpMethods(ControllerActionDescriptor action)
+        private static IEnumerable<string?> GetHttpMethods(ControllerActionDescriptor action)
         {
             if (action.ActionConstraints != null && action.ActionConstraints.Count > 0)
             {
@@ -350,7 +351,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
         }
 
-        private RouteTemplate? ParseTemplate(ControllerActionDescriptor action)
+        private static RouteTemplate? ParseTemplate(ControllerActionDescriptor action)
         {
             if (action.AttributeRouteInfo?.Template != null)
             {
@@ -429,7 +430,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             return results;
         }
 
-        private static MediaTypeCollection GetDeclaredContentTypes(IApiRequestMetadataProvider[]? requestMetadataAttributes)
+        internal static MediaTypeCollection GetDeclaredContentTypes(IReadOnlyList<IApiRequestMetadataProvider>? requestMetadataAttributes)
         {
             // Walk through all 'filter' attributes in order, and allow each one to see or override
             // the results of the previous ones. This is similar to the execution path for content-negotiation.
@@ -445,7 +446,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             return contentTypes;
         }
 
-        private IApiRequestMetadataProvider[]? GetRequestMetadataAttributes(ControllerActionDescriptor action)
+        private static IApiRequestMetadataProvider[]? GetRequestMetadataAttributes(ControllerActionDescriptor action)
         {
             if (action.FilterDescriptors == null)
             {

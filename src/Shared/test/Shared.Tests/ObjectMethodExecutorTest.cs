@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.FSharp.Control;
 using Microsoft.FSharp.Core;
@@ -233,7 +233,7 @@ namespace Microsoft.Extensions.Internal
             Assert.Same(typeof(void), executor.AsyncResultType);
             Assert.Null(result);
         }
-        
+
         [Fact]
         public async Task TargetMethodReturningAwaitableWithICriticalNotifyCompletion_UsesUnsafeOnCompleted()
         {
@@ -263,7 +263,7 @@ namespace Microsoft.Extensions.Internal
             Assert.Same(typeof(string), executor.AsyncResultType);
             Assert.Equal("Used OnCompleted", (string)result);
         }
-        
+
         [Fact]
         public async Task TargetMethodReturningValueTaskOfValueType_CanBeInvokedViaExecute()
         {
@@ -496,7 +496,7 @@ namespace Microsoft.Extensions.Internal
             {
                 return new TestAwaitableWithoutICriticalNotifyCompletion();
             }
-            
+
             public ValueTask<int> ValueTaskOfValueType(int result)
             {
                 return new ValueTask<int>(result);

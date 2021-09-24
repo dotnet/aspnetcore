@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "React.js ile ASP.NET Core",
-    "description": "React.js ile bir ASP.NET Core uygulaması oluşturmaya yönelik bir proje şablonu"
-  }
-}

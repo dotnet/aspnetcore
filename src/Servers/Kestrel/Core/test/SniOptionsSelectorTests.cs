@@ -1,5 +1,5 @@
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class SniOptionsSelectorTests
     {
-        private static X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
+        private static readonly X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
 
         [Fact]
         public void PrefersExactMatchOverWildcardPrefixOverWildcardOnly()
@@ -326,7 +326,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var fallbackOptions = new HttpsConnectionAdapterOptions
             {
-                ServerCertificate = new X509Certificate2(),
+                ServerCertificate = new X509Certificate2(Array.Empty<byte>()),
                 ServerCertificateSelector = (context, serverName) => selectorCertificate
             };
 
@@ -413,7 +413,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var fallbackOptions = new HttpsConnectionAdapterOptions
             {
-                ServerCertificate = new X509Certificate2(),
+                ServerCertificate = new X509Certificate2(Array.Empty<byte>()),
                 ServerCertificateSelector = (context, serverName) => selectorCertificate
             };
 
@@ -697,7 +697,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 // Defaults to null
                 RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true,
                 // Defaults to null
-                ServerCertificate = new X509Certificate2(),
+                ServerCertificate = new X509Certificate2(Array.Empty<byte>()),
                 // Defaults to null
                 ServerCertificateContext = SslStreamCertificateContext.Create(_x509Certificate2, additionalCertificates: null, offline: true),
                 // Defaults to null

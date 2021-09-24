@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.TestHost
             get { return _subProtocol; }
         }
 
-        public async override Task CloseAsync(WebSocketCloseStatus closeStatus, string? statusDescription, CancellationToken cancellationToken)
+        public override async Task CloseAsync(WebSocketCloseStatus closeStatus, string? statusDescription, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.TestHost
             }
         }
 
-        public async override Task CloseOutputAsync(WebSocketCloseStatus closeStatus, string? statusDescription, CancellationToken cancellationToken)
+        public override async Task CloseOutputAsync(WebSocketCloseStatus closeStatus, string? statusDescription, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
             ThrowIfOutputClosed();
@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.TestHost
                 _messageQueue = new Queue<Message>();
             }
 
-            public async virtual Task<Message> ReceiveAsync(CancellationToken cancellationToken)
+            public virtual async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
             {
                 if (_disposed)
                 {

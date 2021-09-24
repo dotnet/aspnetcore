@@ -103,6 +103,12 @@ function parseChangeEvent(event: Event): ChangeEventArgs {
   if (isTimeBasedInput(element)) {
     const normalizedValue = normalizeTimeBasedValue(element);
     return { value: normalizedValue };
+  } else if (isMultipleSelectInput(element)) {
+    const selectElement = element as HTMLSelectElement;
+    const selectedValues = Array.from(selectElement.options)
+      .filter(option => option.selected)
+      .map(option => option.value);
+    return { value: selectedValues };
   } else {
     const targetIsCheckbox = isCheckbox(element);
     const newValue = targetIsCheckbox ? !!element['checked'] : element['value'];
@@ -218,6 +224,8 @@ function parseMouseEvent(event: MouseEvent): MouseEventArgs {
     clientY: event.clientY,
     offsetX: event.offsetX,
     offsetY: event.offsetY,
+    pageX: event.pageX,
+    pageY: event.pageY,
     button: event.button,
     buttons: event.buttons,
     ctrlKey: event.ctrlKey,
@@ -243,14 +251,19 @@ function isTimeBasedInput(element: Element): element is HTMLInputElement {
   return timeBasedInputs.indexOf(element.getAttribute('type')!) !== -1;
 }
 
+function isMultipleSelectInput(element: Element): element is HTMLSelectElement {
+  return element instanceof HTMLSelectElement && element.type === 'select-multiple';
+}
+
 function normalizeTimeBasedValue(element: HTMLInputElement): string {
   const value = element.value;
   const type = element.type;
   switch (type) {
     case 'date':
-    case 'datetime-local':
     case 'month':
       return value;
+    case 'datetime-local':
+      return value.length === 16 ? value + ':00' : value; // Convert yyyy-MM-ddTHH:mm to yyyy-MM-ddTHH:mm:00
     case 'time':
       return value.length === 5 ? value + ':00' : value; // Convert hh:mm to hh:mm:00
     case 'week':
@@ -264,7 +277,7 @@ function normalizeTimeBasedValue(element: HTMLInputElement): string {
 // The following interfaces must be kept in sync with the EventArgs C# classes
 
 interface ChangeEventArgs {
-  value: string | boolean;
+  value: string | boolean | string[];
 }
 
 interface DragEventArgs {
@@ -324,6 +337,8 @@ interface MouseEventArgs {
   clientY: number;
   offsetX: number;
   offsetY: number;
+  pageX: number;
+  pageY: number;
   button: number;
   buttons: number;
   ctrlKey: boolean;

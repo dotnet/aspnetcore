@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="manager">The <see cref="UserManager{TUser}"/> that can be used to retrieve user properties.</param>
         /// <param name="user">The user.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the confirmation operation.</returns>
-        public async virtual Task<bool> IsConfirmedAsync(UserManager<TUser> manager, TUser user)
+        public virtual async Task<bool> IsConfirmedAsync(UserManager<TUser> manager, TUser user)
         {
             return await manager.IsEmailConfirmedAsync(user);
         }

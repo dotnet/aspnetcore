@@ -1,0 +1,19 @@
+Document - 
+    NamespaceDeclaration -  - Test
+        UsingDirective - (3:1,1 [14] ) - System
+        UsingDirective - (18:2,1 [34] ) - System.Collections.Generic
+        UsingDirective - (53:3,1 [19] ) - System.Linq
+        UsingDirective - (73:4,1 [30] ) - System.Threading.Tasks
+        UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
+        ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+            MethodDeclaration -  - protected override - void - BuildRenderTree
+                MarkupBlock -  - <h1>Single line statement</h1>\n\nTime: 
+                CSharpExpression - (41:2,7 [12] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (41:2,7 [12] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - DateTime.Now
+                HtmlContent - (53:2,19 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (53:2,19 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
+                MarkupBlock -  - <h1>Multiline block statement</h1>\n\n
+                CSharpExpression - (96:6,1 [59] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (96:6,1 [59] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - JsonToHtml(@"{\n  'key1': 'value1'\n  'key2': 'value2'\n}")
+            CSharpCode - (166:11,7 [79] x:\dir\subdir\Test\TestComponent.cshtml)
+                LazyIntermediateToken - (166:11,7 [79] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public string JsonToHtml(string foo)\n    {\n        return foo;\n    }\n

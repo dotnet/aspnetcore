@@ -14,15 +14,13 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
             __builder.AddMarkupContent(0, "<h1>Hello</h1>\r\n\r\n");
-            __builder.AddContent(1, 
 #nullable restore
-#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
-  "My value"
+#line (3,3)-(3,13) 24 "x:\dir\subdir\Test\TestComponent.cshtml"
+__builder.AddContent(1, "My value");
 
 #line default
 #line hidden
 #nullable disable
-            );
         }
         #pragma warning restore 1998
     }

@@ -1,12 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Lifetime;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,14 +17,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     internal sealed class CircuitHandleRegistry : ICircuitHandleRegistry
     {
-        public CircuitHandle GetCircuitHandle(IDictionary<object, object?>circuitHandles, object circuitKey)
+        public CircuitHandle GetCircuitHandle(IDictionary<object, object?> circuitHandles, object circuitKey)
         {
             if (circuitHandles.TryGetValue(circuitKey, out var circuitHandle))
             {
-                return (CircuitHandle) circuitHandle;
+                return (CircuitHandle)circuitHandle;
             }
-            
-            return null;;
+
+            return null; ;
         }
 
         public CircuitHost GetCircuit(IDictionary<object, object?> circuitHandles, object circuitKey)
@@ -38,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             return null;
         }
 
-        public void SetCircuit(IDictionary<object, object?>   circuitHandles, object circuitKey, CircuitHost circuitHost)
+        public void SetCircuit(IDictionary<object, object?> circuitHandles, object circuitKey, CircuitHost circuitHost)
         {
             circuitHandles[circuitKey] = circuitHost?.Handle;
         }

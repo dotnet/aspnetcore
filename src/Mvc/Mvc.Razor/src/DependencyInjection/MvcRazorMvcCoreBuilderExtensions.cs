@@ -1,8 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
+using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor;
@@ -78,10 +79,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 partManager.FeatureProviders.Add(new TagHelperFeatureProvider());
             }
 
-            // ViewFeature items have precedence semantics - when two views have the same path \ identifier,
-            // the one that appears earlier in the list wins. Therefore the ordering of
-            // RazorCompiledItemFeatureProvider and ViewsFeatureProvider is pertinent - any view compiled
-            // using the Sdk will be preferred to views compiled using MvcPrecompilation.
             if (!partManager.FeatureProviders.OfType<RazorCompiledItemFeatureProvider>().Any())
             {
                 partManager.FeatureProviders.Add(new RazorCompiledItemFeatureProvider());
@@ -141,6 +138,11 @@ namespace Microsoft.Extensions.DependencyInjection
         // Internal for testing.
         internal static void AddRazorViewEngineServices(IServiceCollection services)
         {
+            if (MetadataUpdater.IsSupported)
+            {
+                services.TryAddSingleton<RazorHotReload>();
+            }
+
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<MvcViewOptions>, MvcRazorMvcViewOptionsSetup>());
 
@@ -148,7 +150,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 ServiceDescriptor.Transient<IConfigureOptions<RazorViewEngineOptions>, RazorViewEngineOptionsSetup>());
 
             services.TryAddSingleton<IRazorViewEngine, RazorViewEngine>();
-            services.TryAddSingleton<IViewCompilerProvider, DefaultViewCompilerProvider>();
+            services.TryAddSingleton<IViewCompilerProvider, DefaultViewCompiler>();
 
             // In the default scenario the following services are singleton by virtue of being initialized as part of
             // creating the singleton RazorViewEngine instance.

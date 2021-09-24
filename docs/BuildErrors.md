@@ -80,6 +80,10 @@ When attempting to restore servicing tags e.g. `v3.1.7`,  the NuGet.config file 
 
 The `darc-int-...` feeds in NuGet.config are used only when building internally and are not needed after the tags are created. Delete all such entries in the file and retry.
 
+## Error: Generated code is not up to date in eng/ProjectReferences.props.
+
+After some project additions or moves, you may need to update the two `DotNetProjects Include` lists in `eng/Build.props`
+
 ## Warning: Requested Microsoft.AspNetCore.App v&hellip; does not exist
 
 You have likely attempted to build projects or execute tests which require the just-build Microsoft.AspNetCore.App
@@ -94,3 +98,9 @@ or
 ```bash
 ./build.sh --projects "$PWD/src/Framework/App.Runtime/src/Microsoft.AspNetCore.App.Runtime.csproj"
 ```
+
+## Errors when restoring older clones
+
+If you have build errors trying to run `restore.cmd` and you cloned the repository some time ago,
+try deleting the `.dotnet` and `.tools` directories in your local repo directory. It may resolve
+the problem if older versions of the .NET SDK are causing an incompatibility with the latest version.

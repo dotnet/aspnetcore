@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -59,8 +59,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await connection.Receive(
                         $"HTTP/1.1 500 Internal Server Error",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
 
@@ -391,8 +391,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -427,8 +427,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "gg");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -519,8 +519,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         $"HTTP/1.1 205 Reset Content",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -608,8 +608,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await connection.Receive(
                         $"HTTP/1.1 205 Reset Content",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -705,8 +705,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         $"HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 11",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "hello,");
 
@@ -743,8 +743,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.ReceiveEnd(
                         $"HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 11",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "hello,");
                 }
@@ -780,9 +780,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.ReceiveEnd(
                         $"HTTP/1.1 500 Internal Server Error",
+                        "Content-Length: 0",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
-                        "Content-Length: 0",
                         "",
                         "");
                 }
@@ -815,9 +815,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.ReceiveEnd(
                         $"HTTP/1.1 500 Internal Server Error",
+                        "Content-Length: 0",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
-                        "Content-Length: 0",
                         "",
                         "");
                 }
@@ -861,8 +861,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     // will be skipped.
                     await connection.Receive(
                         $"HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 13",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "hello, world");
 
@@ -919,8 +919,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     // will be skipped.
                     await connection.Receive(
                         $"HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 13",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "hello, world");
 
@@ -971,8 +971,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         $"HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 12",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "hello,");
                 }
@@ -1013,12 +1013,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 500 Internal Server Error",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "HTTP/1.1 500 Internal Server Error",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -1055,8 +1055,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         $"HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -1090,8 +1090,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         $"HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 13",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "Transfer-Encoding: chunked",
                         "",
                         "hello, world");
@@ -1126,8 +1126,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         $"HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 11",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "Transfer-Encoding: chunked",
                         "",
                         "hello, world");
@@ -1155,8 +1155,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 42",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -1184,8 +1184,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 12",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
 
@@ -1217,8 +1217,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 12",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
 
@@ -1249,8 +1249,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 12",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
 
@@ -1294,8 +1294,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await responseWritten.Task.DefaultTimeout();
                     await connection.ReceiveEnd(
                         "HTTP/1.1 400 Bad Request",
-                        $"Date: {server.Context.DateHeaderValue}",
                         $"Content-Length: {expectedResponse.Length}",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         expectedResponse);
                 }
@@ -1750,8 +1750,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     // the connection.
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -1795,8 +1795,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
 
@@ -1866,9 +1866,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     // bad chunk header above, making this test fail.
                     await connection.ReceiveEnd(
                         "HTTP/1.1 400 Bad Request",
+                        "Content-Length: 0",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
-                        "Content-Length: 0",
                         "",
                         "");
                 }
@@ -1970,13 +1970,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
                         "Connection: keep-alive",
                         $"Date: {testContext.DateHeaderValue}",
-                        "Content-Length: 0",
                         "",
                         "");
                 }
@@ -2003,9 +2003,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
                         "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
-                        "Content-Length: 0",
                         "",
                         "");
                 }
@@ -2018,9 +2018,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
                         "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
-                        "Content-Length: 0",
                         "",
                         "");
                 }
@@ -2091,8 +2091,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         $"Date: {testContext.DateHeaderValue}",
                         "",
                         "HTTP/1.1 200 OK",
-                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -2179,13 +2179,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 500 Internal Server Error",
-                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "HTTP/1.1 500 Internal Server Error",
+                        "Content-Length: 0",
                         "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
-                        "Content-Length: 0",
                         "",
                         "");
                 }
@@ -2236,12 +2236,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 500 Internal Server Error",
-                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "HTTP/1.1 500 Internal Server Error",
-                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -2290,6 +2290,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
+                        "Content-Length: 11",
                         $"Date: {testContext.DateHeaderValue}",
                         "");
 
@@ -2335,6 +2336,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
+                        "Content-Length: 11",
                         $"Date: {testContext.DateHeaderValue}",
                         "");
 
@@ -2379,8 +2381,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 11",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "Hello World");
                 }
@@ -2422,8 +2424,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
-                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 11",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "Hello World");
                 }
@@ -2463,8 +2465,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
-                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 11",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "Hello");
                 }
@@ -2495,9 +2497,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        "Content-Length: 11",
                         "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
-                        "Content-Length: 11",
                         "",
                         "Hello World");
                 }
@@ -2625,12 +2627,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "HTTP/1.1 200 OK",
-                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -2687,8 +2689,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {testContext.DateHeaderValue}",
                         "");
                 }
             }
@@ -2835,8 +2837,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
-                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 11",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -2903,8 +2905,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 11",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "Hello World");
                 }
@@ -2933,8 +2935,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {testContext.DateHeaderValue}",
                         $"Content-Length: {expectedLength}",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         expectedString);
                 }
@@ -2982,8 +2984,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {testContext.DateHeaderValue}",
                         $"Content-Length: {expectedLength}",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         expectedString);
                 }
@@ -3058,8 +3060,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {testContext.DateHeaderValue}",
                         $"Content-Length: {response.Length}",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "hello, world");
 
@@ -3109,8 +3111,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {testContext.DateHeaderValue}",
                         $"Content-Length: {response.Length}",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "hello, world");
 
@@ -3145,8 +3147,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.SendEmptyGet();
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 6",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "Hello1");
                 }
@@ -3171,8 +3173,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.SendEmptyGet();
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 6",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "Hello1");
                 }
@@ -3206,8 +3208,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 6",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "Hello!");
                 }
@@ -3245,8 +3247,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 6",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "Hello!");
                 }
@@ -3274,8 +3276,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 304 Not Modified",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 42",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -3337,8 +3339,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -3407,8 +3409,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 12",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "Hello World!");
                 }
@@ -3446,8 +3448,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 12",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "Hello World!");
                 }
@@ -3472,8 +3474,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 12",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "hello, world");
                 }
@@ -3511,8 +3513,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 54",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "hello, world",
                         "hello, world",
@@ -3540,8 +3542,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -3569,8 +3571,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -3657,8 +3659,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -3766,8 +3768,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                             "");
                         await connection.Receive(
                             "HTTP/1.1 200 OK",
-                            $"Date: {server.Context.DateHeaderValue}",
                             "Content-Length: 1",
+                            $"Date: {server.Context.DateHeaderValue}",
                             "",
                             "a");
                     }
@@ -3800,8 +3802,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
 
@@ -3812,8 +3814,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -3839,8 +3841,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         $"HTTP/1.1 500 Internal Server Error",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
                     Assert.Contains(TestSink.Writes, w => w.EventId.Id == 13 && w.LogLevel == LogLevel.Error
@@ -3902,8 +3904,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -4000,8 +4002,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -4034,8 +4036,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -4056,7 +4058,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Assert.Equal(2, httpContext.Response.Body.Length);
 
                 httpContext.Response.Body = oldBody;
-
             }, new TestServiceContext(LoggerFactory)))
             {
                 using (var connection = server.CreateConnection())
@@ -4068,27 +4069,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                                         "HTTP/1.1 200 OK",
-                                        $"Date: {server.Context.DateHeaderValue}",
                                         "Content-Length: 0",
+                                        $"Date: {server.Context.DateHeaderValue}",
                                         "",
                                         "");
                 }
             }
         }
 
-        [Theory]
-        [InlineData(HttpProtocols.Http1AndHttp2AndHttp3)]
-        [InlineData(HttpProtocols.Http3)]
-        public async Task EnableAltSvc_Http3EndpointConfigured_AltSvcInResponseHeaders(HttpProtocols protocols)
+        [Fact]
+        public async Task AltSvc_HeaderSetInAppCode_AltSvcNotOverwritten()
         {
             await using (var server = new TestServer(
-                context => Task.CompletedTask,
-                new TestServiceContext(),
+                httpContext =>
+                {
+                    httpContext.Response.Headers.AltSvc = "Custom";
+                    return Task.CompletedTask;
+                },
+                new TestServiceContext(LoggerFactory),
                 options =>
                 {
-                    options.EnableAltSvc = true;
-                    options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)));
-                    options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 1)) { Protocols = protocols });
+                    options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+                    {
+                        Protocols = HttpProtocols.Http1AndHttp2AndHttp3
+                    });
                 },
                 services => { }))
             {
@@ -4099,12 +4103,179 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Host:",
                         "",
                         "");
-
                     await connection.Receive(
-                        $"HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
+                        "HTTP/1.1 200 OK",
                         "Content-Length: 0",
-                        @"Alt-Svc: h3-29="":1""; ma=84600",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        @"Alt-Svc: Custom",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task AltSvc_Http1And2And3EndpointConfigured_AltSvcInResponseHeaders()
+        {
+            await using (var server = new TestServer(
+                httpContext => Task.CompletedTask,
+                new TestServiceContext(LoggerFactory),
+                options =>
+                {
+                    options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+                    {
+                        Protocols = HttpProtocols.Http1AndHttp2AndHttp3,
+                        IsTls = true
+                    });
+                },
+                services =>
+                {
+                    services.AddSingleton<IMultiplexedConnectionListenerFactory>(new MockMultiplexedConnectionListenerFactory());
+                }))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        @"Alt-Svc: h3="":0""; ma=86400",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task AltSvc_Http1And2And3EndpointConfigured_NoMultiplexedFactory_NoAltSvcInResponseHeaders()
+        {
+            await using (var server = new TestServer(
+                httpContext => Task.CompletedTask,
+                new TestServiceContext(LoggerFactory),
+                options =>
+                {
+                    options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+                    {
+                        Protocols = HttpProtocols.Http1AndHttp2AndHttp3,
+                        IsTls = true
+                    });
+                },
+                services => {}))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task AltSvc_Http1_NoAltSvcInResponseHeaders()
+        {
+            await using (var server = new TestServer(
+                httpContext => Task.CompletedTask,
+                new TestServiceContext(LoggerFactory),
+                new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)) { Protocols = HttpProtocols.Http1 }))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task AltSvc_Http3ConfiguredDifferentEndpoint_NoAltSvcInResponseHeaders()
+        {
+            await using (var server = new TestServer(
+                httpContext => Task.CompletedTask,
+                new TestServiceContext(LoggerFactory),
+                options =>
+                {
+                    options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+                    {
+                        Protocols = HttpProtocols.Http1
+                    });
+                    options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 1))
+                    {
+                        Protocols = HttpProtocols.Http3,
+                        IsTls = true
+                    });
+                },
+                services =>
+                {
+                    services.AddSingleton<IMultiplexedConnectionListenerFactory>(new MockMultiplexedConnectionListenerFactory());
+                }))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task AltSvc_DisableAltSvcHeaderIsTrue_Http1And2And3EndpointConfigured_NoAltSvcInResponseHeaders()
+        {
+            await using (var server = new TestServer(
+                httpContext => Task.CompletedTask,
+                new TestServiceContext(LoggerFactory),
+                options =>
+                {
+                    options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+                    {
+                        Protocols = HttpProtocols.Http1AndHttp2AndHttp3,
+                        DisableAltSvcHeader = true
+                    });
+                },
+                services => { }))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -4174,8 +4345,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         {
                             await connection.ReceiveEnd(
                                 "HTTP/1.1 200 OK",
-                                $"Date: {server.Context.DateHeaderValue}",
                                 "Content-Length: 0",
+                                $"Date: {server.Context.DateHeaderValue}",
                                 "",
                                 "");
                         }
@@ -4183,9 +4354,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         {
                             await connection.ReceiveEnd(
                                 "HTTP/1.1 400 Bad Request",
+                                "Content-Length: 0",
                                 "Connection: close",
                                 $"Date: {server.Context.DateHeaderValue}",
-                                "Content-Length: 0",
                                 "",
                                 "");
                         }

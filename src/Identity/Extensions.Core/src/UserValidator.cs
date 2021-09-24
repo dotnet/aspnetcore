@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Identity
             else
             {
                 var owner = await manager.FindByNameAsync(userName);
-                if (owner != null && 
+                if (owner != null &&
                     !string.Equals(await manager.GetUserIdAsync(owner), await manager.GetUserIdAsync(user)))
                 {
                     errors.Add(Describer.DuplicateUserName(userName));
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Identity
                 return;
             }
             var owner = await manager.FindByEmailAsync(email);
-            if (owner != null && 
+            if (owner != null &&
                 !string.Equals(await manager.GetUserIdAsync(owner), await manager.GetUserIdAsync(user)))
             {
                 errors.Add(Describer.DuplicateEmail(email));

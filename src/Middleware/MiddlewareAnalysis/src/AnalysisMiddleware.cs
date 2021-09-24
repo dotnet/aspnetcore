@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.MiddlewareAnalysis
         private readonly string _middlewareName;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="AnalysisMiddleware"/>.  
+        /// Initializes a new instance of <see cref="AnalysisMiddleware"/>.
         /// </summary>
         /// <param name="next">The next middleware in the pipeline.</param>
         /// <param name="diagnosticSource">The <see cref="DiagnosticSource"/> to log when other middleware starts, finishes and throws.</param>
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.MiddlewareAnalysis
                 {
                     var currentTimestamp = Stopwatch.GetTimestamp();
                     _diagnostics.Write(
-                        "Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareFinished", 
+                        "Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareFinished",
                         new
                         {
                             name = _middlewareName,
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.MiddlewareAnalysis
                 {
                     var currentTimestamp = Stopwatch.GetTimestamp();
                     _diagnostics.Write(
-                        "Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareException", 
+                        "Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareException",
                         new
                         {
                             name = _middlewareName,

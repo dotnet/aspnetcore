@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Net.Http;
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 default:
                     const string name = ":status";
                     var value = StatusCodes.ToStatusString(statusCode);
-                    return hpackEncoder.EncodeHeader(buffer, H2StaticTable.Status200, HeaderEncodingHint.Index, name, value, out length);
+                    return hpackEncoder.EncodeHeader(buffer, H2StaticTable.Status200, HeaderEncodingHint.Index, name, value, valueEncoding: null, out length);
             }
         }
 
@@ -99,6 +99,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 var staticTableId = headersEnumerator.HPackStaticTableId;
                 var name = headersEnumerator.Current.Key;
                 var value = headersEnumerator.Current.Value;
+                var valueEncoding =
+                    ReferenceEquals(headersEnumerator.EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
+                    ? null : headersEnumerator.EncodingSelector(name);
 
                 var hint = ResolveHeaderEncodingHint(staticTableId, name);
 
@@ -108,6 +111,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     hint,
                     name,
                     value,
+                    valueEncoding,
                     out var headerLength))
                 {
                     // If the header wasn't written, and no headers have been written, then the header is too large.

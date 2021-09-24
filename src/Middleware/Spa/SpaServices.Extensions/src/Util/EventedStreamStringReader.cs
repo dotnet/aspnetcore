@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Text;
@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.NodeServices.Util
     /// </summary>
     internal class EventedStreamStringReader : IDisposable
     {
-        private EventedStreamReader _eventedStreamReader;
+        private readonly EventedStreamReader _eventedStreamReader;
         private bool _isDisposed;
-        private StringBuilder _stringBuilder = new StringBuilder();
+        private readonly StringBuilder _stringBuilder = new StringBuilder();
 
         public EventedStreamStringReader(EventedStreamReader eventedStreamReader)
         {

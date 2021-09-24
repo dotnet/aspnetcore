@@ -45,11 +45,11 @@ override Microsoft.AspNetCore.Mvc.Formatters.NewtonsoftJsonOutputFormatter.Write
 override Microsoft.AspNetCore.Mvc.Formatters.NewtonsoftJsonPatchInputFormatter.CanRead(Microsoft.AspNetCore.Mvc.Formatters.InputFormatterContext! context) -> bool
 override Microsoft.AspNetCore.Mvc.Formatters.NewtonsoftJsonPatchInputFormatter.ReadRequestBodyAsync(Microsoft.AspNetCore.Mvc.Formatters.InputFormatterContext! context, System.Text.Encoding! encoding) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!>!
 override Microsoft.AspNetCore.Mvc.NewtonsoftJson.ProblemDetailsConverter.CanConvert(System.Type! objectType) -> bool
-override Microsoft.AspNetCore.Mvc.NewtonsoftJson.ProblemDetailsConverter.ReadJson(Newtonsoft.Json.JsonReader! reader, System.Type! objectType, object! existingValue, Newtonsoft.Json.JsonSerializer! serializer) -> object?
-override Microsoft.AspNetCore.Mvc.NewtonsoftJson.ProblemDetailsConverter.WriteJson(Newtonsoft.Json.JsonWriter! writer, object! value, Newtonsoft.Json.JsonSerializer! serializer) -> void
+override Microsoft.AspNetCore.Mvc.NewtonsoftJson.ProblemDetailsConverter.ReadJson(Newtonsoft.Json.JsonReader! reader, System.Type! objectType, object? existingValue, Newtonsoft.Json.JsonSerializer! serializer) -> object?
+override Microsoft.AspNetCore.Mvc.NewtonsoftJson.ProblemDetailsConverter.WriteJson(Newtonsoft.Json.JsonWriter! writer, object? value, Newtonsoft.Json.JsonSerializer! serializer) -> void
 override Microsoft.AspNetCore.Mvc.NewtonsoftJson.ValidationProblemDetailsConverter.CanConvert(System.Type! objectType) -> bool
-override Microsoft.AspNetCore.Mvc.NewtonsoftJson.ValidationProblemDetailsConverter.ReadJson(Newtonsoft.Json.JsonReader! reader, System.Type! objectType, object! existingValue, Newtonsoft.Json.JsonSerializer! serializer) -> object?
-override Microsoft.AspNetCore.Mvc.NewtonsoftJson.ValidationProblemDetailsConverter.WriteJson(Newtonsoft.Json.JsonWriter! writer, object! value, Newtonsoft.Json.JsonSerializer! serializer) -> void
+override Microsoft.AspNetCore.Mvc.NewtonsoftJson.ValidationProblemDetailsConverter.ReadJson(Newtonsoft.Json.JsonReader! reader, System.Type! objectType, object? existingValue, Newtonsoft.Json.JsonSerializer! serializer) -> object?
+override Microsoft.AspNetCore.Mvc.NewtonsoftJson.ValidationProblemDetailsConverter.WriteJson(Newtonsoft.Json.JsonWriter! writer, object? value, Newtonsoft.Json.JsonSerializer! serializer) -> void
 ~static Microsoft.AspNetCore.Mvc.JsonPatchExtensions.ApplyTo<T>(this Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<T!>! patchDoc, T! objectToApplyTo, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary! modelState) -> void
 ~static Microsoft.AspNetCore.Mvc.JsonPatchExtensions.ApplyTo<T>(this Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<T!>! patchDoc, T! objectToApplyTo, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary! modelState, string! prefix) -> void
 static Microsoft.AspNetCore.Mvc.NewtonsoftJson.JsonSerializerSettingsProvider.CreateSerializerSettings() -> Newtonsoft.Json.JsonSerializerSettings!

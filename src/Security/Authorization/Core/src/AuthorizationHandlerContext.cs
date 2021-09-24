@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -13,7 +13,8 @@ namespace Microsoft.AspNetCore.Authorization
     /// </summary>
     public class AuthorizationHandlerContext
     {
-        private HashSet<IAuthorizationRequirement> _pendingRequirements;
+        private readonly HashSet<IAuthorizationRequirement> _pendingRequirements;
+        private List<AuthorizationFailureReason>? _failedReasons;
         private bool _failCalled;
         private bool _succeedCalled;
 
@@ -60,7 +61,13 @@ namespace Microsoft.AspNetCore.Authorization
         public virtual IEnumerable<IAuthorizationRequirement> PendingRequirements { get { return _pendingRequirements; } }
 
         /// <summary>
-        /// Flag indicating whether the current authorization processing has failed.
+        /// Gets the reasons why authorization has failed.
+        /// </summary>
+        public virtual IEnumerable<AuthorizationFailureReason> FailureReasons
+            => (IEnumerable<AuthorizationFailureReason>?)_failedReasons ?? Array.Empty<AuthorizationFailureReason>();
+
+        /// <summary>
+        /// Flag indicating whether the current authorization processing has failed due to Fail being called.
         /// </summary>
         public virtual bool HasFailed { get { return _failCalled; } }
 
@@ -82,6 +89,25 @@ namespace Microsoft.AspNetCore.Authorization
         public virtual void Fail()
         {
             _failCalled = true;
+        }
+
+        /// <summary>
+        /// Called to indicate <see cref="AuthorizationHandlerContext.HasSucceeded"/> will
+        /// never return true, even if all requirements are met.
+        /// </summary>
+        /// <param name="reason">Optional <see cref="AuthorizationFailureReason"/> for why authorization failed.</param>
+        public virtual void Fail(AuthorizationFailureReason reason)
+        {
+            Fail();
+            if (reason != null)
+            {
+                if (_failedReasons == null)
+                {
+                    _failedReasons = new List<AuthorizationFailureReason>();
+                }
+
+                _failedReasons.Add(reason);
+            }
         }
 
         /// <summary>

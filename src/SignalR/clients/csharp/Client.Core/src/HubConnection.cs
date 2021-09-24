@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// </summary>
         /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
         /// <returns>A <see cref="Task"/> that represents the asynchronous start.</returns>
-        public async Task StartAsync(CancellationToken cancellationToken = default)
+        public virtual async Task StartAsync(CancellationToken cancellationToken = default)
         {
             CheckDisposed();
             using (_logger.BeginScope(_logScope))
@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// </summary>
         /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
         /// <returns>A <see cref="Task"/> that represents the asynchronous stop.</returns>
-        public async Task StopAsync(CancellationToken cancellationToken = default)
+        public virtual async Task StopAsync(CancellationToken cancellationToken = default)
         {
             CheckDisposed();
             using (_logger.BeginScope(_logScope))
@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// Disposes the <see cref="HubConnection"/>.
         /// </summary>
         /// <returns>A <see cref="ValueTask"/> that represents the asynchronous dispose.</returns>
-        public async ValueTask DisposeAsync()
+        public virtual async ValueTask DisposeAsync()
         {
             if (!_disposed)
             {
@@ -324,7 +324,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <remarks>
         /// This is a low level method for registering a handler. Using an <see cref="HubConnectionExtensions"/> <c>On</c> extension method is recommended.
         /// </remarks>
-        public IDisposable On(string methodName, Type[] parameterTypes, Func<object?[], object, Task> handler, object state)
+        public virtual IDisposable On(string methodName, Type[] parameterTypes, Func<object?[], object, Task> handler, object state)
         {
             Log.RegisteringHandler(_logger, methodName);
 
@@ -349,7 +349,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// Removes all handlers associated with the method with the specified method name.
         /// </summary>
         /// <param name="methodName">The name of the hub method from which handlers are being removed</param>
-        public void Remove(string methodName)
+        public virtual void Remove(string methodName)
         {
             CheckDisposed();
             Log.RemovingHandlers(_logger, methodName);
@@ -370,7 +370,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <remarks>
         /// This is a low level method for invoking a streaming hub method on the server. Using an <see cref="HubConnectionExtensions"/> <c>StreamAsChannelAsync</c> extension method is recommended.
         /// </remarks>
-        public async Task<ChannelReader<object?>> StreamAsChannelCoreAsync(string methodName, Type returnType, object?[] args, CancellationToken cancellationToken = default)
+        public virtual async Task<ChannelReader<object?>> StreamAsChannelCoreAsync(string methodName, Type returnType, object?[] args, CancellationToken cancellationToken = default)
         {
             using (_logger.BeginScope(_logScope))
             {
@@ -392,7 +392,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <remarks>
         /// This is a low level method for invoking a hub method on the server. Using an <see cref="HubConnectionExtensions"/> <c>InvokeAsync</c> extension method is recommended.
         /// </remarks>
-        public async Task<object?> InvokeCoreAsync(string methodName, Type returnType, object?[] args, CancellationToken cancellationToken = default)
+        public virtual async Task<object?> InvokeCoreAsync(string methodName, Type returnType, object?[] args, CancellationToken cancellationToken = default)
         {
             using (_logger.BeginScope(_logScope))
             {
@@ -411,7 +411,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <remarks>
         /// This is a low level method for invoking a hub method on the server. Using an <see cref="HubConnectionExtensions"/> <c>SendAsync</c> extension method is recommended.
         /// </remarks>
-        public async Task SendCoreAsync(string methodName, object?[] args, CancellationToken cancellationToken = default)
+        public virtual async Task SendCoreAsync(string methodName, object?[] args, CancellationToken cancellationToken = default)
         {
             using (_logger.BeginScope(_logScope))
             {
@@ -457,7 +457,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             Log.Started(_logger);
         }
 
-        private ValueTask CloseAsync(ConnectionContext connection)
+        private static ValueTask CloseAsync(ConnectionContext connection)
         {
             return connection.DisposeAsync();
         }
@@ -551,7 +551,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <returns>
         /// A <see cref="IAsyncEnumerable{TResult}"/> that represents the stream.
         /// </returns>
-        public IAsyncEnumerable<TResult> StreamAsyncCore<TResult>(string methodName, object?[] args, CancellationToken cancellationToken = default)
+        public virtual IAsyncEnumerable<TResult> StreamAsyncCore<TResult>(string methodName, object?[] args, CancellationToken cancellationToken = default)
         {
             var cts = cancellationToken.CanBeCanceled ? CancellationTokenSource.CreateLinkedTokenSource(cancellationToken) : new CancellationTokenSource();
             var stream = CastIAsyncEnumerable<TResult>(methodName, args, cts);
@@ -697,6 +697,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 return;
             }
 
+            _state.AssertInConnectionLock();
+            // It's safe to access connectionState.UploadStreamToken as we still have the connection lock
+            var cts = CancellationTokenSource.CreateLinkedTokenSource(connectionState.UploadStreamToken, cancellationToken);
+
             foreach (var kvp in readers)
             {
                 var reader = kvp.Value;
@@ -708,19 +712,19 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 {
                     _ = _sendIAsyncStreamItemsMethod
                         .MakeGenericMethod(reader.GetType().GetInterface("IAsyncEnumerable`1")!.GetGenericArguments())
-                        .Invoke(this, new object[] { connectionState, kvp.Key.ToString(), reader, cancellationToken });
+                        .Invoke(this, new object[] { connectionState, kvp.Key.ToString(), reader, cts });
                     continue;
                 }
                 _ = _sendStreamItemsMethod
                     .MakeGenericMethod(reader.GetType().GetGenericArguments())
-                    .Invoke(this, new object[] { connectionState, kvp.Key.ToString(), reader, cancellationToken });
+                    .Invoke(this, new object[] { connectionState, kvp.Key.ToString(), reader, cts });
             }
         }
 
         // this is called via reflection using the `_sendStreamItems` field
-        private Task SendStreamItems<T>(ConnectionState connectionState, string streamId, ChannelReader<T> reader, CancellationToken token)
+        private Task SendStreamItems<T>(ConnectionState connectionState, string streamId, ChannelReader<T> reader, CancellationTokenSource tokenSource)
         {
-            async Task ReadChannelStream(CancellationTokenSource tokenSource)
+            async Task ReadChannelStream()
             {
                 while (await reader.WaitToReadAsync(tokenSource.Token))
                 {
@@ -732,13 +736,13 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 }
             }
 
-            return CommonStreaming(connectionState, streamId, token, ReadChannelStream);
+            return CommonStreaming(connectionState, streamId, ReadChannelStream);
         }
 
         // this is called via reflection using the `_sendIAsyncStreamItemsMethod` field
-        private Task SendIAsyncEnumerableStreamItems<T>(ConnectionState connectionState, string streamId, IAsyncEnumerable<T> stream, CancellationToken token)
+        private Task SendIAsyncEnumerableStreamItems<T>(ConnectionState connectionState, string streamId, IAsyncEnumerable<T> stream, CancellationTokenSource tokenSource)
         {
-            async Task ReadAsyncEnumerableStream(CancellationTokenSource tokenSource)
+            async Task ReadAsyncEnumerableStream()
             {
                 var streamValues = AsyncEnumerableAdapters.MakeCancelableTypedAsyncEnumerable(stream, tokenSource);
 
@@ -749,25 +753,26 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 }
             }
 
-            return CommonStreaming(connectionState, streamId, token, ReadAsyncEnumerableStream);
+            return CommonStreaming(connectionState, streamId, ReadAsyncEnumerableStream);
         }
 
-        private async Task CommonStreaming(ConnectionState connectionState, string streamId, CancellationToken token, Func<CancellationTokenSource, Task> createAndConsumeStream)
+        private async Task CommonStreaming(ConnectionState connectionState, string streamId, Func<Task> createAndConsumeStream)
         {
-            // It's safe to access connectionState.UploadStreamToken as we still have the connection lock
-            _state.AssertInConnectionLock();
-            var cts = CancellationTokenSource.CreateLinkedTokenSource(connectionState.UploadStreamToken, token);
-
             Log.StartingStream(_logger, streamId);
             string? responseError = null;
             try
             {
-                await createAndConsumeStream(cts);
+                await createAndConsumeStream();
             }
             catch (OperationCanceledException)
             {
                 Log.CancelingStream(_logger, streamId);
-                responseError = $"Stream canceled by client.";
+                responseError = "Stream canceled by client.";
+            }
+            catch (Exception ex)
+            {
+                Log.ErroredStream(_logger, streamId, ex);
+                responseError = $"Stream errored by client: '{ex}'";
             }
 
             Log.CompletingStream(_logger, streamId);
@@ -1349,7 +1354,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             var previousReconnectAttempts = 0;
             var reconnectStartTime = DateTime.UtcNow;
             var retryReason = closeException;
-            var nextRetryDelay = GetNextRetryDelay(previousReconnectAttempts++, TimeSpan.Zero, retryReason);
+            var nextRetryDelay = GetNextRetryDelay(previousReconnectAttempts, TimeSpan.Zero, retryReason);
 
             // We still have the connection lock from the caller, HandleConnectionClose.
             _state.AssertInConnectionLock();
@@ -1379,7 +1384,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             while (nextRetryDelay != null)
             {
-                Log.AwaitingReconnectRetryDelay(_logger, previousReconnectAttempts, nextRetryDelay.Value);
+                Log.AwaitingReconnectRetryDelay(_logger, previousReconnectAttempts + 1, nextRetryDelay.Value);
 
                 try
                 {
@@ -1434,13 +1439,15 @@ namespace Microsoft.AspNetCore.SignalR.Client
                         CompleteClose(GetOperationCanceledException("Connection stopped during reconnect attempt. Done reconnecting.", ex, _state.StopCts.Token));
                         return;
                     }
+
+                    previousReconnectAttempts++;
                 }
                 finally
                 {
                     _state.ReleaseConnectionLock();
                 }
 
-                nextRetryDelay = GetNextRetryDelay(previousReconnectAttempts++, DateTime.UtcNow - reconnectStartTime, retryReason);
+                nextRetryDelay = GetNextRetryDelay(previousReconnectAttempts, DateTime.UtcNow - reconnectStartTime, retryReason);
             }
 
             await _state.WaitConnectionLockAsync(token: default);
@@ -1544,7 +1551,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        private IDisposable? CreateLinkedToken(CancellationToken token1, CancellationToken token2, out CancellationToken linkedToken)
+        private static IDisposable? CreateLinkedToken(CancellationToken token1, CancellationToken token2, out CancellationToken linkedToken)
         {
             if (!token1.CanBeCanceled)
             {

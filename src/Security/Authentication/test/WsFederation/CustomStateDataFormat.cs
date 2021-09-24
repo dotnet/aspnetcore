@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO;
 using System.Runtime.Serialization;
@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         public const string ValidStateData = "ValidStateData";
 
         private string lastSavedAuthenticationProperties;
-        private DataContractSerializer serializer = new DataContractSerializer(typeof(AuthenticationProperties));
+        private readonly DataContractSerializer serializer = new DataContractSerializer(typeof(AuthenticationProperties));
 
         public string Protect(AuthenticationProperties data)
         {

@@ -1,9 +1,10 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Net.Http;
 using System.Net.Http.HPack;
+using System.Net.Http.QPack;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
@@ -191,13 +192,13 @@ namespace Microsoft.AspNetCore.Testing
             _trace2.Http2StreamError(connectionId, ex);
         }
 
-        public void HPackDecodingError(string connectionId, int streamId, HPackDecodingException ex)
+        public void HPackDecodingError(string connectionId, int streamId, Exception ex)
         {
             _trace1.HPackDecodingError(connectionId, streamId, ex);
             _trace2.HPackDecodingError(connectionId, streamId, ex);
         }
 
-        public void HPackEncodingError(string connectionId, int streamId, HPackEncodingException ex)
+        public void HPackEncodingError(string connectionId, int streamId, Exception ex)
         {
             _trace1.HPackEncodingError(connectionId, streamId, ex);
             _trace2.HPackEncodingError(connectionId, streamId, ex);
@@ -257,7 +258,7 @@ namespace Microsoft.AspNetCore.Testing
             _trace2.Http3ConnectionClosing(connectionId);
         }
 
-        public void Http3ConnectionClosed(string connectionId, long highestOpenedStreamId)
+        public void Http3ConnectionClosed(string connectionId, long? highestOpenedStreamId)
         {
             _trace1.Http3ConnectionClosed(connectionId, highestOpenedStreamId);
             _trace2.Http3ConnectionClosed(connectionId, highestOpenedStreamId);
@@ -279,6 +280,30 @@ namespace Microsoft.AspNetCore.Testing
         {
             _trace1.Http3FrameSending(connectionId, streamId, frame);
             _trace2.Http3FrameSending(connectionId, streamId, frame);
+        }
+
+        public void QPackDecodingError(string connectionId, long streamId, Exception ex)
+        {
+            _trace1.QPackDecodingError(connectionId, streamId, ex);
+            _trace2.QPackDecodingError(connectionId, streamId, ex);
+        }
+
+        public void QPackEncodingError(string connectionId, long streamId, Exception ex)
+        {
+            _trace1.QPackEncodingError(connectionId, streamId, ex);
+            _trace2.QPackEncodingError(connectionId, streamId, ex);
+        }
+
+        public void Http3OutboundControlStreamError(string connectionId, Exception ex)
+        {
+            _trace1.Http3OutboundControlStreamError(connectionId, ex);
+            _trace2.Http3OutboundControlStreamError(connectionId, ex);
+        }
+
+        public void Http3GoAwayStreamId(string connectionId, long goAwayStreamId)
+        {
+            _trace1.Http3GoAwayStreamId(connectionId, goAwayStreamId);
+            _trace2.Http3GoAwayStreamId(connectionId, goAwayStreamId);
         }
     }
 }

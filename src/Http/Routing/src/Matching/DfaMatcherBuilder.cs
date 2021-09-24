@@ -1,10 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -43,15 +44,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _parameterPolicyFactory = parameterPolicyFactory;
             _selector = selector;
 
-            if (AppContext.TryGetSwitch("Microsoft.AspNetCore.Routing.UseCorrectCatchAllBehavior", out var enabled))
-            {
-                UseCorrectCatchAllBehavior = enabled;
-            }
-            else
-            {
-                UseCorrectCatchAllBehavior = true; // default to correct behavior
-            }
-
             var (nodeBuilderPolicies, endpointComparerPolicies, endpointSelectorPolicies) = ExtractPolicies(policies.OrderBy(p => p.Order));
             _endpointSelectorPolicies = endpointSelectorPolicies;
             _nodeBuilders = nodeBuilderPolicies;
@@ -67,9 +59,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
         // Used in tests
         internal EndpointComparer Comparer => _comparer;
 
-        // Used in tests
-        internal bool UseCorrectCatchAllBehavior { get; set; }
-
         public override void AddEndpoint(RouteEndpoint endpoint)
         {
             _endpoints.Add(endpoint);
@@ -77,20 +66,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         public DfaNode BuildDfaTree(bool includeLabel = false)
         {
-            if (!UseCorrectCatchAllBehavior)
-            {
-                // In 3.0 we did a global sort of the endpoints up front. This was a bug, because we actually want
-                // do do the sort at each level of the tree based on precedence.
-                //
-                // _useLegacy30Behavior enables opt-out via an AppContext switch.
-                _endpoints.Sort(_comparer);
-            }
-
             // Since we're doing a BFS we will process each 'level' of the tree in stages
             // this list will hold the set of items we need to process at the current
             // stage.
-            var work = new List<(RouteEndpoint endpoint, int precedenceDigit, List<DfaNode> parents)>(_endpoints.Count);
-            List<(RouteEndpoint endpoint, int precedenceDigit, List<DfaNode> parents)> previousWork = null;
+            var work = new List<DfaBuilderWorkerWorkItem>(_endpoints.Count);
 
             var root = new DfaNode() { PathDepth = 0, Label = includeLabel ? "/" : null };
 
@@ -101,12 +80,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
             {
                 var endpoint = _endpoints[i];
                 var precedenceDigit = GetPrecedenceDigitAtDepth(endpoint, depth: 0);
-                work.Add((endpoint, precedenceDigit, new List<DfaNode>() { root, }));
-
+                work.Add(new DfaBuilderWorkerWorkItem(endpoint, precedenceDigit, new List<DfaNode>() { root, }));
                 maxDepth = Math.Max(maxDepth, endpoint.RoutePattern.PathSegments.Count);
             }
-
-            var workCount = work.Count;
 
             // Sort work at each level by *PRECEDENCE OF THE CURRENT SEGMENT*.
             //
@@ -117,39 +93,66 @@ namespace Microsoft.AspNetCore.Routing.Matching
             //
             // We'll sort the matches again later using the *real* comparer once building the
             // precedence part of the DFA is over.
-            var precedenceDigitComparer = Comparer<(RouteEndpoint endpoint, int precedenceDigit, List<DfaNode> parents)>.Create((x, y) =>
+            var precedenceDigitComparer = Comparer<DfaBuilderWorkerWorkItem>.Create((x, y) =>
             {
-                return x.precedenceDigit.CompareTo(y.precedenceDigit);
+                return x.PrecedenceDigit.CompareTo(y.PrecedenceDigit);
             });
+
+            var dfaWorker = new DfaBuilderWorker(work, precedenceDigitComparer, includeLabel, _parameterPolicyFactory);
 
             // Now we process the entries a level at a time.
             for (var depth = 0; depth <= maxDepth; depth++)
             {
+                dfaWorker.ProcessLevel(depth);
+            }
+
+            // Build the trees of policy nodes (like HTTP methods). Post-order traversal
+            // means that we won't have infinite recursion.
+            root.Visit(ApplyPolicies);
+
+            return root;
+        }
+
+        private class DfaBuilderWorker
+        {
+            private List<DfaBuilderWorkerWorkItem> _previousWork;
+            private List<DfaBuilderWorkerWorkItem> _work;
+            private int _workCount;
+            private readonly Comparer<DfaBuilderWorkerWorkItem> _precedenceDigitComparer;
+            private readonly bool _includeLabel;
+            private readonly ParameterPolicyFactory _parameterPolicyFactory;
+
+            public DfaBuilderWorker(
+                List<DfaBuilderWorkerWorkItem> work,
+                Comparer<DfaBuilderWorkerWorkItem> precedenceDigitComparer,
+                bool includeLabel,
+                ParameterPolicyFactory parameterPolicyFactory)
+            {
+                _work = work;
+                _previousWork = new List<DfaBuilderWorkerWorkItem>();
+                _workCount = work.Count;
+                _precedenceDigitComparer = precedenceDigitComparer;
+                _includeLabel = includeLabel;
+                _parameterPolicyFactory = parameterPolicyFactory;
+            }
+
+            // Each time we process a level of the DFA we keep a list of work items consisting on the nodes we need to evaluate
+            // their precendence and their parent nodes. We sort nodes by precedence on each level, which means that nodes are
+            // evaluated in the following order: (literals, constrained parameters/complex segments, parameters, constrainted catch-alls and catch-alls)
+            // When we process a stage we build a list of the next set of workitems we need to evaluate. We also keep around the
+            // list of workitems from the previous level so that we can reuse all the nested lists while we are evaluating the current level.
+            internal void ProcessLevel(int depth)
+            {
                 // As we process items, collect the next set of items.
-                List<(RouteEndpoint endpoint, int precedenceDigit, List<DfaNode> parents)> nextWork;
+                var nextWork = _previousWork;
                 var nextWorkCount = 0;
-                if (previousWork == null)
-                {
-                    nextWork = new List<(RouteEndpoint endpoint, int precedenceDigit, List<DfaNode> parents)>();
-                }
-                else
-                {
-                    // Reuse previous collection for the next collection
-                    // Don't clear the list so nested lists can be reused
-                    nextWork = previousWork;
-                }
 
-                if (UseCorrectCatchAllBehavior)
-                {
-                    // The fix for the 3.0 sorting behavior bug.
+                // See comments on precedenceDigitComparer
+                _work.Sort(0, _workCount, _precedenceDigitComparer);
 
-                    // See comments on precedenceDigitComparer
-                    work.Sort(0, workCount, precedenceDigitComparer);
-                }
-
-                for (var i = 0; i < workCount; i++)
+                for (var i = 0; i < _workCount; i++)
                 {
-                    var (endpoint, _, parents) = work[i];
+                    var (endpoint, _, parents) = _work[i];
 
                     if (!HasAdditionalRequiredSegments(endpoint, depth))
                     {
@@ -164,11 +167,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     List<DfaNode> nextParents;
                     if (nextWorkCount < nextWork.Count)
                     {
-                        nextParents = nextWork[nextWorkCount].parents;
+                        nextParents = nextWork[nextWorkCount].Parents;
                         nextParents.Clear();
 
                         var nextPrecedenceDigit = GetPrecedenceDigitAtDepth(endpoint, depth + 1);
-                        nextWork[nextWorkCount] = (endpoint, nextPrecedenceDigit, nextParents);
+                        nextWork[nextWorkCount] = new DfaBuilderWorkerWorkItem(endpoint, nextPrecedenceDigit, nextParents);
                     }
                     else
                     {
@@ -177,7 +180,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                         // Add to the next set of work now so the list will be reused
                         // even if there are no parents
                         var nextPrecedenceDigit = GetPrecedenceDigitAtDepth(endpoint, depth + 1);
-                        nextWork.Add((endpoint, nextPrecedenceDigit, nextParents));
+                        nextWork.Add(new DfaBuilderWorkerWorkItem(endpoint, nextPrecedenceDigit, nextParents));
                     }
 
                     var segment = GetCurrentSegment(endpoint, depth);
@@ -186,113 +189,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                         continue;
                     }
 
-                    for (var j = 0; j < parents.Count; j++)
-                    {
-                        var parent = parents[j];
-                        var part = segment.Parts[0];
-                        var parameterPart = part as RoutePatternParameterPart;
-                        if (segment.IsSimple && part is RoutePatternLiteralPart literalPart)
-                        {
-                            AddLiteralNode(includeLabel, nextParents, parent, literalPart.Content);
-                        }
-                        else if (segment.IsSimple && parameterPart != null && parameterPart.IsCatchAll)
-                        {
-                            // A catch all should traverse all literal nodes as well as parameter nodes
-                            // we don't need to create the parameter node here because of ordering
-                            // all catchalls will be processed after all parameters.
-                            if (parent.Literals != null)
-                            {
-                                nextParents.AddRange(parent.Literals.Values);
-                            }
-                            if (parent.Parameters != null)
-                            {
-                                nextParents.Add(parent.Parameters);
-                            }
-
-                            // We also create a 'catchall' here. We don't do further traversals
-                            // on the catchall node because only catchalls can end up here. The
-                            // catchall node allows us to capture an unlimited amount of segments
-                            // and also to match a zero-length segment, which a parameter node
-                            // doesn't allow.
-                            if (parent.CatchAll == null)
-                            {
-                                parent.CatchAll = new DfaNode()
-                                {
-                                    PathDepth = parent.PathDepth + 1,
-                                    Label = includeLabel ? parent.Label + "{*...}/" : null,
-                                };
-
-                                // The catchall node just loops.
-                                parent.CatchAll.Parameters = parent.CatchAll;
-                                parent.CatchAll.CatchAll = parent.CatchAll;
-                            }
-
-                            parent.CatchAll.AddMatch(endpoint);
-                        }
-                        else if (segment.IsSimple && parameterPart != null && TryGetRequiredValue(endpoint.RoutePattern, parameterPart, out var requiredValue))
-                        {
-                            // If the parameter has a matching required value, replace the parameter with the required value
-                            // as a literal. This should use the parameter's transformer (if present)
-                            // e.g. Template: Home/{action}, Required values: { action = "Index" }, Result: Home/Index
-
-                            if (endpoint.RoutePattern.ParameterPolicies.TryGetValue(parameterPart.Name, out var parameterPolicyReferences))
-                            {
-                                for (var k = 0; k < parameterPolicyReferences.Count; k++)
-                                {
-                                    var reference = parameterPolicyReferences[k];
-                                    var parameterPolicy = _parameterPolicyFactory.Create(parameterPart, reference);
-                                    if (parameterPolicy is IOutboundParameterTransformer parameterTransformer)
-                                    {
-                                        requiredValue = parameterTransformer.TransformOutbound(requiredValue);
-                                        break;
-                                    }
-                                }
-                            }
-
-                            var literalValue = requiredValue?.ToString() ?? throw new InvalidOperationException($"Required value for literal '{parameterPart.Name}' must evaluate to a non-null string.");
-
-                            AddLiteralNode(includeLabel, nextParents, parent, literalValue);
-                        }
-                        else if (segment.IsSimple && parameterPart != null)
-                        {
-                            if (parent.Parameters == null)
-                            {
-                                parent.Parameters = new DfaNode()
-                                {
-                                    PathDepth = parent.PathDepth + 1,
-                                    Label = includeLabel ? parent.Label + "{...}/" : null,
-                                };
-                            }
-
-                            // A parameter should traverse all literal nodes as well as the parameter node
-                            if (parent.Literals != null)
-                            {
-                                nextParents.AddRange(parent.Literals.Values);
-                            }
-                            nextParents.Add(parent.Parameters);
-                        }
-                        else
-                        {
-                            // Complex segment - we treat these are parameters here and do the
-                            // expensive processing later. We don't want to spend time processing
-                            // complex segments unless they are the best match, and treating them
-                            // like parameters in the DFA allows us to do just that.
-                            if (parent.Parameters == null)
-                            {
-                                parent.Parameters = new DfaNode()
-                                {
-                                    PathDepth = parent.PathDepth + 1,
-                                    Label = includeLabel ? parent.Label + "{...}/" : null,
-                                };
-                            }
-
-                            if (parent.Literals != null)
-                            {
-                                nextParents.AddRange(parent.Literals.Values);
-                            }
-                            nextParents.Add(parent.Parameters);
-                        }
-                    }
+                    ProcessSegment(endpoint, parents, nextParents, segment);
 
                     if (nextParents.Count > 0)
                     {
@@ -300,17 +197,254 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     }
                 }
 
-                // Prepare the process the next stage.
-                previousWork = work;
-                work = nextWork;
-                workCount = nextWorkCount;
+                // Prepare to process the next stage.
+                _previousWork = _work;
+                _work = nextWork;
+                _workCount = nextWorkCount;
             }
 
-            // Build the trees of policy nodes (like HTTP methods). Post-order traversal
-            // means that we won't have infinite recursion.
-            root.Visit(ApplyPolicies);
+            private void ProcessSegment(
+                RouteEndpoint endpoint,
+                List<DfaNode> parents,
+                List<DfaNode> nextParents,
+                RoutePatternPathSegment segment)
+            {
+                for (var i = 0; i < parents.Count; i++)
+                {
+                    var parent = parents[i];
+                    var part = segment.Parts[0];
+                    var parameterPart = part as RoutePatternParameterPart;
+                    if (segment.IsSimple && part is RoutePatternLiteralPart literalPart)
+                    {
+                        AddLiteralNode(_includeLabel, nextParents, parent, literalPart.Content);
+                    }
+                    else if (segment.IsSimple && parameterPart != null && parameterPart.IsCatchAll)
+                    {
+                        // A catch all should traverse all literal nodes as well as parameter nodes
+                        // we don't need to create the parameter node here because of ordering
+                        // all catchalls will be processed after all parameters.
+                        if (parent.Literals != null)
+                        {
+                            nextParents.AddRange(parent.Literals.Values);
+                        }
+                        if (parent.Parameters != null)
+                        {
+                            nextParents.Add(parent.Parameters);
+                        }
 
-            return root;
+                        // We also create a 'catchall' here. We don't do further traversals
+                        // on the catchall node because only catchalls can end up here. The
+                        // catchall node allows us to capture an unlimited amount of segments
+                        // and also to match a zero-length segment, which a parameter node
+                        // doesn't allow.
+                        if (parent.CatchAll == null)
+                        {
+                            parent.CatchAll = new DfaNode()
+                            {
+                                PathDepth = parent.PathDepth + 1,
+                                Label = _includeLabel ? parent.Label + "{*...}/" : null,
+                            };
+
+                            // The catchall node just loops.
+                            parent.CatchAll.Parameters = parent.CatchAll;
+                            parent.CatchAll.CatchAll = parent.CatchAll;
+                        }
+
+                        parent.CatchAll.AddMatch(endpoint);
+                    }
+                    else if (segment.IsSimple && parameterPart != null && TryGetRequiredValue(endpoint.RoutePattern, parameterPart, out var requiredValue))
+                    {
+                        // If the parameter has a matching required value, replace the parameter with the required value
+                        // as a literal. This should use the parameter's transformer (if present)
+                        // e.g. Template: Home/{action}, Required values: { action = "Index" }, Result: Home/Index
+
+                        AddRequiredLiteralValue(endpoint, nextParents, parent, parameterPart, requiredValue);
+                    }
+                    else if (segment.IsSimple && parameterPart != null)
+                    {
+                        if (parent.Parameters == null)
+                        {
+                            parent.Parameters = new DfaNode()
+                            {
+                                PathDepth = parent.PathDepth + 1,
+                                Label = _includeLabel ? parent.Label + "{...}/" : null,
+                            };
+                        }
+
+                        if (parent.Literals != null)
+                        {
+                            // If the parameter contains constraints, we can be smarter about it and evaluate them while we build the tree.
+                            // If the literal doesn't match any of the constraints, we can prune the branch.
+                            // For example, for a parameter in a route {lang:length(2)} and a parent literal "ABC", we can check that "ABC"
+                            // doesn't meet the parameter constraint (length(2)) when building the tree, and avoid the extra nodes.
+                            if (endpoint.RoutePattern.ParameterPolicies.TryGetValue(parameterPart.Name, out var parameterPolicyReferences))
+                            {
+                                // We filter out sibling literals that don't match one of the constraints in the segment to avoid adding nodes to the DFA
+                                // that will never match a route and which will result in a much higher memory usage.
+                                AddParentsWithMatchingLiteralConstraints(nextParents, parent, parameterPart, parameterPolicyReferences);
+                            }
+                            else
+                            {
+                                // This means the current parameter we are evaluating doesn't contain any constraint, so we need to
+                                // traverse all literal nodes as well as the parameter node.
+                                nextParents.AddRange(parent.Literals.Values);
+                            }
+                        }
+
+                        nextParents.Add(parent.Parameters);
+                    }
+                    else
+                    {
+                        // Complex segment - we treat these are parameters here and do the
+                        // expensive processing later. We don't want to spend time processing
+                        // complex segments unless they are the best match, and treating them
+                        // like parameters in the DFA allows us to do just that.
+                        if (parent.Parameters == null)
+                        {
+                            parent.Parameters = new DfaNode()
+                            {
+                                PathDepth = parent.PathDepth + 1,
+                                Label = _includeLabel ? parent.Label + "{...}/" : null,
+                            };
+                        }
+
+                        if (parent.Literals != null)
+                        {
+                            // For a complex segment like this, we can evaluate the literals and avoid adding extra nodes to
+                            // the tree on cases where the literal won't ever be able to match the complex parameter.
+                            // For example, if we have a complex parameter {a}-{b}.{c?} and a literal "Hello" we can guarantee
+                            // that it will never be a match.
+
+                            // We filter out sibling literals that don't match the complex parameter segment to avoid adding nodes to the DFA
+                            // that will never match a route and which will result in a much higher memory usage.
+                            AddParentsMatchingComplexSegment(endpoint, nextParents, segment, parent, parameterPart);
+                        }
+                        nextParents.Add(parent.Parameters);
+                    }
+                }
+            }
+
+            private void AddParentsMatchingComplexSegment(RouteEndpoint endpoint, List<DfaNode> nextParents, RoutePatternPathSegment segment, DfaNode parent, RoutePatternParameterPart parameterPart)
+            {
+                var routeValues = new RouteValueDictionary();
+                foreach (var literal in parent.Literals.Keys)
+                {
+                    if (RoutePatternMatcher.MatchComplexSegment(segment, literal, routeValues))
+                    {
+                        // If we got here (rare) it means that the literal matches the complex segment (for example the literal is something A-B)
+                        // there is another thing we can try here, which is to evaluate the policies for the parts in case they have one (for example {a:length(4)}-{b:regex(\d+)})
+                        // so that even if it maps closely to a complex parameter we have a chance to discard it and avoid adding the extra branches.
+                        var passedAllPolicies = true;
+                        for (var i = 0; i < segment.Parts.Count; i++)
+                        {
+                            var segmentPart = segment.Parts[i];
+                            if (segmentPart is not RoutePatternParameterPart partParameter)
+                            {
+                                // We skip over the literals and the separator since we already checked against them
+                                continue;
+                            }
+
+                            if (!routeValues.TryGetValue(partParameter.Name, out var parameterValue))
+                            {
+                                // We have a pattern like {a}-{b}.{part?} and a literal "a-b". Since we've matched the complex segment it means that the optional
+                                // parameter was not specified, so we skip it.
+                                Debug.Assert(i == segment.Parts.Count - 1 && partParameter.IsOptional);
+                                continue;
+                            }
+
+                            if (endpoint.RoutePattern.ParameterPolicies.TryGetValue(partParameter.Name, out var parameterPolicyReferences))
+                            {
+                                for (var j = 0; j < parameterPolicyReferences.Count; j++)
+                                {
+                                    var reference = parameterPolicyReferences[j];
+                                    var parameterPolicy = _parameterPolicyFactory.Create(parameterPart, reference);
+                                    if (parameterPolicy is IParameterLiteralNodeMatchingPolicy constraint && !constraint.MatchesLiteral(partParameter.Name, (string)parameterValue))
+                                    {
+                                        passedAllPolicies = false;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (passedAllPolicies)
+                        {
+                            nextParents.Add(parent.Literals[literal]);
+                        }
+                    }
+
+                    routeValues.Clear();
+                }
+            }
+
+            private void AddParentsWithMatchingLiteralConstraints(List<DfaNode> nextParents, DfaNode parent, RoutePatternParameterPart parameterPart, IReadOnlyList<RoutePatternParameterPolicyReference> parameterPolicyReferences)
+            {
+                // The list of parameters that fail to meet at least one IParameterLiteralNodeMatchingPolicy.
+                var hasFailingPolicy = parent.Literals.Keys.Count < 32 ?
+                    (stackalloc bool[32]).Slice(0, parent.Literals.Keys.Count) :
+                    new bool[parent.Literals.Keys.Count];
+
+                // Whether or not all parameters have failed to meet at least one constraint.
+                for (var i = 0; i < parameterPolicyReferences.Count; i++)
+                {
+                    var reference = parameterPolicyReferences[i];
+                    var parameterPolicy = _parameterPolicyFactory.Create(parameterPart, reference);
+                    if (parameterPolicy is IParameterLiteralNodeMatchingPolicy constraint)
+                    {
+                        var literalIndex = 0;
+                        var allFailed = true;
+                        foreach (var literal in parent.Literals.Keys)
+                        {
+                            if (!hasFailingPolicy[literalIndex] && !constraint.MatchesLiteral(parameterPart.Name, literal))
+                            {
+                                hasFailingPolicy[literalIndex] = true;
+                            }
+
+                            allFailed &= hasFailingPolicy[literalIndex];
+
+                            literalIndex++;
+                        }
+
+                        if (allFailed)
+                        {
+                            // If we get here it means that all literals have failed at least one policy, which means we can skip checking policies
+                            // and return early. This will be a very common case when your constraints are things like "int,length or a regex".
+                            return;
+                        }
+                    }
+                }
+
+                var k = 0;
+                foreach (var literal in parent.Literals.Values)
+                {
+                    if (!hasFailingPolicy[k])
+                    {
+                        nextParents.Add(literal);
+                    }
+                    k++;
+                }
+            }
+
+            private void AddRequiredLiteralValue(RouteEndpoint endpoint, List<DfaNode> nextParents, DfaNode parent, RoutePatternParameterPart parameterPart, object requiredValue)
+            {
+                if (endpoint.RoutePattern.ParameterPolicies.TryGetValue(parameterPart.Name, out var parameterPolicyReferences))
+                {
+                    for (var k = 0; k < parameterPolicyReferences.Count; k++)
+                    {
+                        var reference = parameterPolicyReferences[k];
+                        var parameterPolicy = _parameterPolicyFactory.Create(parameterPart, reference);
+                        if (parameterPolicy is IOutboundParameterTransformer parameterTransformer)
+                        {
+                            requiredValue = parameterTransformer.TransformOutbound(requiredValue);
+                            break;
+                        }
+                    }
+                }
+
+                var literalValue = requiredValue?.ToString() ?? throw new InvalidOperationException($"Required value for literal '{parameterPart.Name}' must evaluate to a non-null string.");
+
+                AddLiteralNode(_includeLabel, nextParents, parent, literalValue);
+            }
         }
 
         private static void AddLiteralNode(bool includeLabel, List<DfaNode> nextParents, DfaNode parent, string literal)
@@ -808,5 +942,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             return !RouteValueEqualityComparer.Default.Equals(value, string.Empty);
         }
+
+        private record struct DfaBuilderWorkerWorkItem(RouteEndpoint Endpoint, int PrecedenceDigit, List<DfaNode> Parents);
     }
 }

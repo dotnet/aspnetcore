@@ -6,7 +6,6 @@ import { byteArrayBeingTransferred, monoPlatform } from './Platform/Mono/MonoPla
 import { renderBatch, getRendererer, attachRootComponentToElement, attachRootComponentToLogicalElement } from './Rendering/Renderer';
 import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRenderBatch';
 import { shouldAutoStart } from './BootCommon';
-import { setEventDispatcher } from './Rendering/Events/EventDispatcher';
 import { WebAssemblyResourceLoader } from './Platform/WebAssemblyResourceLoader';
 import { WebAssemblyConfigLoader } from './Platform/WebAssemblyConfigLoader';
 import { BootConfigResult } from './Platform/BootConfig';
@@ -14,7 +13,9 @@ import { Pointer, System_Array, System_Boolean, System_Byte, System_Int, System_
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 import { discoverComponents, discoverPersistedState, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
-import { WasmInputFile } from './WasmInputFile';
+import { setDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
+import { AfterBlazorStartedCallback, JSInitializer } from './JSInitializers/JSInitializers';
+import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.WebAssembly';
 
 declare var Module: EmscriptenModule;
 let started = false;
@@ -26,18 +27,16 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   }
   started = true;
 
-  setEventDispatcher((eventDescriptor, eventArgs) => {
+  setDispatchEventMiddleware((browserRendererId, eventHandlerId, continuation) => {
     // It's extremely unusual, but an event can be raised while we're in the middle of synchronously applying a
     // renderbatch. For example, a renderbatch might mutate the DOM in such a way as to cause an <input> to lose
     // focus, in turn triggering a 'change' event. It may also be possible to listen to other DOM mutation events
     // that are themselves triggered by the application of a renderbatch.
-    const renderer = getRendererer(eventDescriptor.browserRendererId);
-    if (renderer.eventDelegator.getHandler(eventDescriptor.eventHandlerId)) {
-      monoPlatform.invokeWhenHeapUnlocked(() => DotNet.invokeMethodAsync('Microsoft.AspNetCore.Components.WebAssembly', 'DispatchEvent', eventDescriptor, JSON.stringify(eventArgs)));
+    const renderer = getRendererer(browserRendererId);
+    if (renderer.eventDelegator.getHandler(eventHandlerId)) {
+      monoPlatform.invokeWhenHeapUnlocked(continuation);
     }
   });
-
-  Blazor._internal.InputFile = WasmInputFile;
 
   Blazor._internal.applyHotReload = (id: string, metadataDelta: string, ilDeta: string) => {
     DotNet.invokeMethod('Microsoft.AspNetCore.Components.WebAssembly', 'ApplyHotReloadDelta', id, metadataDelta, ilDeta);
@@ -83,11 +82,13 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     );
   });
 
-  // Get the custom environment setting if defined
-  const environment = options?.environment;
+  const candidateOptions = options ?? {};
+
+  // Get the custom environment setting and blazorBootJson loader if defined
+  const environment = candidateOptions.environment;
 
   // Fetch the resources and prepare the Mono runtime
-  const bootConfigPromise = BootConfigResult.initAsync(environment);
+  const bootConfigPromise = BootConfigResult.initAsync(candidateOptions.loadBootResource, environment);
 
   // Leverage the time while we are loading boot.config.json from the network to discover any potentially registered component on
   // the document.
@@ -109,13 +110,15 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     if (!element) {
       attachRootComponentToElement(selector, componentId, rendererId);
     } else {
-      attachRootComponentToLogicalElement(rendererId, element, componentId);
+      attachRootComponentToLogicalElement(rendererId, element, componentId, false);
     }
   };
 
-  const bootConfigResult = await bootConfigPromise;
+  const bootConfigResult: BootConfigResult = await bootConfigPromise;
+  const jsInitializer = await fetchAndInvokeInitializers(bootConfigResult.bootConfig, candidateOptions);
+
   const [resourceLoader] = await Promise.all([
-    WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig, options || {}),
+    WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig, candidateOptions || {}),
     WebAssemblyConfigLoader.initAsync(bootConfigResult)]);
 
   try {
@@ -126,6 +129,9 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
 
   // Start up the application
   platform.callEntryPoint(resourceLoader.bootConfig.entryAssembly);
+  // At this point .NET has been initialized (and has yielded), we can't await the promise becasue it will
+  // only end when the app finishes running
+  jsInitializer.invokeAfterStartedCallbacks(Blazor);
 }
 
 function invokeJSFromDotNet(callInfo: Pointer, arg0: any, arg1: any, arg2: any): any {
@@ -153,6 +159,12 @@ function invokeJSFromDotNet(callInfo: Pointer, arg0: any, arg1: any, arg2: any):
         return result;
       case DotNet.JSCallResultType.JSObjectReference:
         return DotNet.createJSObjectReference(result).__jsObjectId;
+      case DotNet.JSCallResultType.JSStreamReference:
+        const streamReference = DotNet.createJSStreamReference(result);
+        const resultJson = JSON.stringify(streamReference);
+        return BINDING.js_string_to_mono_string(resultJson);
+      case DotNet.JSCallResultType.JSVoidResult:
+        return null;
       default:
         throw new Error(`Invalid JS call result type '${resultType}'.`);
     }

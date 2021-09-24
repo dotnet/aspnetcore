@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -100,17 +100,8 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 var req = context.Request;
 
-                if (request.Version == HttpVersion.Version20)
-                {
-                    // https://tools.ietf.org/html/rfc7540
-                    req.Protocol = HttpProtocol.Http2;
-                }
-                else
-                {
-                    req.Protocol = "HTTP/" + request.Version.ToString(fieldCount: 2);
-                }
+                req.Protocol = HttpProtocol.GetHttpProtocol(request.Version);
                 req.Method = request.Method.ToString();
-
                 req.Scheme = request.RequestUri!.Scheme;
 
                 var canHaveBody = false;

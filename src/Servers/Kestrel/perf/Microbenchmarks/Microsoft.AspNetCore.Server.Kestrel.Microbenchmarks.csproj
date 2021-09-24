@@ -10,7 +10,11 @@
 
   <ItemGroup>
     <Compile Include="$(KestrelSharedSourceRoot)test\DummyApplication.cs" />
-    <Compile Include="$(KestrelSharedSourceRoot)test\PipeWriterHttp2FrameExtensions.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\MockSystemClock.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\Http3\Http3InMemory.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)\CompletionPipeReader.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)\CompletionPipeWriter.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\PipeWriterHttp2FrameExtensions.cs" Link="Internal\PipeWriterHttp2FrameExtensions.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Buffers.MemoryPool\*.cs" LinkBase="MemoryPool" />
     <Compile Include="$(KestrelSharedSourceRoot)test\KestrelTestLoggerProvider.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestApplicationErrorLogger.cs" />
@@ -18,6 +22,7 @@
     <Compile Include="$(KestrelSharedSourceRoot)test\TestKestrelTrace.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestContextFactory.cs" />
     <Compile Include="..\..\Transport.Sockets\src\Internal\IOQueue.cs" Link="Internal\IOQueue.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)\ConnectionCompletion.cs" Link="Internal\ConnectionCompletion.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\CorrelationIdGenerator.cs" Link="Internal\CorrelationIdGenerator.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.cs" Link="Internal\TransportConnection.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.Generated.cs" Link="Internal\TransportConnection.Generated.cs" />

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -16,7 +16,7 @@ namespace LargeResponseApp
     {
         private const int _chunkSize = 4096;
         private const int _defaultNumChunks = 16;
-        private static byte[] _chunk = Encoding.UTF8.GetBytes(new string('a', _chunkSize));
+        private static readonly byte[] _chunk = Encoding.UTF8.GetBytes(new string('a', _chunkSize));
 
         public void Configure(IApplicationBuilder app)
         {

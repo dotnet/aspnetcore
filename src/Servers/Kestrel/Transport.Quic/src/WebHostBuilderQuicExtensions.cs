@@ -1,7 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Net.Quic;
+using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,14 +15,21 @@ namespace Microsoft.AspNetCore.Hosting
     /// </summary>
     public static class WebHostBuilderQuicExtensions
     {
+        [RequiresPreviewFeatures]
         public static IWebHostBuilder UseQuic(this IWebHostBuilder hostBuilder)
         {
-            return hostBuilder.ConfigureServices(services =>
+            if (QuicImplementationProviders.Default.IsSupported)
             {
-                services.AddSingleton<IMultiplexedConnectionListenerFactory, QuicTransportFactory>();
-            });
+                return hostBuilder.ConfigureServices(services =>
+                {
+                    services.AddSingleton<IMultiplexedConnectionListenerFactory, QuicTransportFactory>();
+                });
+            }
+
+            return hostBuilder;
         }
 
+        [RequiresPreviewFeatures]
         public static IWebHostBuilder UseQuic(this IWebHostBuilder hostBuilder, Action<QuicTransportOptions> configureOptions)
         {
             return hostBuilder.UseQuic().ConfigureServices(services =>

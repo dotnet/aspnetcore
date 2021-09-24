@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
 using System.Threading;
@@ -8,11 +8,11 @@ using BasicTestApp;
 using BasicTestApp.Reconnection;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit;
-using Microsoft.AspNetCore.Components.Lifetime;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         [Fact]
         public void OnLocationChanged_ReportsErrorForExceptionInUserCode()
         {
-            Browser.MountTestComponent<NavigationFailureComponent>(); 
+            Browser.MountTestComponent<NavigationFailureComponent>();
             var targetButton = Browser.Exists(By.Id("navigate-to-page"));
 
             targetButton.Click();

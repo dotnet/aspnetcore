@@ -32,7 +32,7 @@ If you've already cloned the `aspnetcore` repo without fetching submodule source
 git submodule update --init --recursive
 ```
 
-> :bulb: Some ISPs have been know to use web filtering software that has caused issues with git repository cloning, if you experience issues cloning this repo please review <https://help.github.com/en/github/authenticating-to-github/using-ssh-over-the-https-port>.
+> :bulb: Some ISPs have been known to use web filtering software that has caused issues with git repository cloning, if you experience issues cloning this repo please review <https://help.github.com/en/github/authenticating-to-github/using-ssh-over-the-https-port>.
 
 ### Tracking remote changes
 
@@ -98,7 +98,7 @@ If you're reading this, you probably already have Git installed to support cloni
 
 #### [NodeJS](https://nodejs.org) on Windows
 
-Building the repo requires version 10.17.0 or newer of Node. You can find installation executables for Node at <https://nodejs.org>.
+Building the repo requires version 14.17.6 or newer of Node. You can find installation executables for Node at <https://nodejs.org>.
 
 #### [Yarn](https://yarnpkg.com/) on Windows
 
@@ -107,6 +107,10 @@ NodeJS installs the Node package manager (npm) by default. This repo depends on 
 ```powershell
 npm install -g yarn
 ```
+
+#### [tar](http://gnuwin32.sourceforge.net/packages/gtar.htm) on Windows
+
+Building the repo requires tar to be installed. First, check whether `tar.exe` is already in your path i.e. execute `tar -help` (Win10 comes with tar already installed). Then, assuming you have `git` installed, you might add `C:\Program Files\Git\usr\bin\` to your path to pick up the `tar.exe` that ships with `git`. Finally, you can find installation executables of tar at <http://gnuwin32.sourceforge.net/packages/gtar.htm>; download that and add the installation directory to your PATH variable.
 
 #### Java Development Kit on Windows
 
@@ -160,7 +164,7 @@ If you've made it this far, you've already got `Git` installed. Sit back, relax,
 
 #### [NodeJS](https://nodejs.org)
 
-Building the repo requires version 10.14.2 or newer of Node. You can find installation executables for Node at <https://nodejs.org>.
+Building the repo requires version 14.17.6 or newer of Node. You can find installation executables for Node at <https://nodejs.org>.
 
 #### [Yarn](https://yarnpkg.com/)
 
@@ -355,7 +359,7 @@ Common properties include:
 
 ### Resx files
 
-If you need to make changes to a .resx file, run `dotnet msbuild t:/Resgen <path to csproj>`. This will update the generated C#.
+After making changes to a .resx file, the updated strings and accessor methods will automatically be included in the output assembly when the project is next built.
 
 ## Step 5: Use the result of your build
 

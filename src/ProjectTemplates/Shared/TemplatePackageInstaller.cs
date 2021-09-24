@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -33,12 +33,14 @@ namespace Templates.Test.Helpers
             "Microsoft.DotNet.Web.ProjectTemplates.3.1",
             "Microsoft.DotNet.Web.ProjectTemplates.5.0",
             "Microsoft.DotNet.Web.ProjectTemplates.6.0",
+            "Microsoft.DotNet.Web.ProjectTemplates.7.0",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.2.1",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.2.2",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.3.1",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.5.0",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.6.0",
+            "Microsoft.DotNet.Web.Spa.ProjectTemplates.7.0",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates",
             "Microsoft.AspNetCore.Blazor.Templates",
         };
@@ -109,6 +111,7 @@ namespace Templates.Test.Helpers
 
             await VerifyCannotFindTemplateAsync(output, "web");
             await VerifyCannotFindTemplateAsync(output, "webapp");
+            await VerifyCannotFindTemplateAsync(output, "webapi");
             await VerifyCannotFindTemplateAsync(output, "mvc");
             await VerifyCannotFindTemplateAsync(output, "react");
             await VerifyCannotFindTemplateAsync(output, "reactredux");
@@ -123,13 +126,14 @@ namespace Templates.Test.Helpers
 
             await VerifyCanFindTemplate(output, "webapp");
             await VerifyCanFindTemplate(output, "web");
+            await VerifyCanFindTemplate(output, "webapi");
             await VerifyCanFindTemplate(output, "react");
         }
 
         private static async Task VerifyCanFindTemplate(ITestOutputHelper output, string templateName)
         {
-            var proc = await RunDotNetNew(output, $"");
-            if (!proc.Output.Contains($" {templateName} "))
+            var proc = await RunDotNetNew(output, $"--list");
+            if (!(proc.Output.Contains($" {templateName} ") || proc.Output.Contains($",{templateName}") || proc.Output.Contains($"{templateName},")))
             {
                 throw new InvalidOperationException($"Couldn't find {templateName} as an option in {proc.Output}.");
             }

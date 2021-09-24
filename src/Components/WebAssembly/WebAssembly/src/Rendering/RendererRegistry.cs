@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -13,16 +13,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         // as well as rooting them for GC purposes, since nothing would otherwise be referencing
         // them even though we might still receive incoming events from JS.
 
+        private static readonly Dictionary<int, WebAssemblyRenderer>? _renderers = OperatingSystem.IsBrowser() ? new() : null;
         private static int _nextId;
-        private static Dictionary<int, WebAssemblyRenderer>? _renderers;
-
-        static RendererRegistry()
-        {
-            if (OperatingSystem.IsBrowser())
-            {
-                _renderers = new Dictionary<int, WebAssemblyRenderer>();
-            }
-        }
 
         internal static WebAssemblyRenderer Find(int rendererId)
         {

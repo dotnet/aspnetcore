@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
         private const char CloseBrace = '}';
 
         /// <summary>
-        /// Creates a pattern, which is a template to create a new test string to 
+        /// Creates a pattern, which is a template to create a new test string to
         /// compare to the condition pattern. Can contain server variables, back references, etc.
         /// </summary>
         /// <param name="testString">The test string portion of the RewriteCond
@@ -82,9 +82,9 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
         }
 
         /// <summary>
-        /// Obtains the condition parameter, which could either be a condition variable or a 
+        /// Obtains the condition parameter, which could either be a condition variable or a
         /// server variable. Assumes the current character is immediately after the '%'.
-        /// context, on return will be on the last character of variable captured, such that after 
+        /// context, on return will be on the last character of variable captured, such that after
         /// Next() is called, it will be on the character immediately after the condition parameter.
         /// </summary>
         /// <param name="context">The ParserContext</param>
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
                     }
                     else if (context.Current == Colon)
                     {
-                        // Have a segmented look up Ex: HTTP:xxxx 
+                        // Have a segmented look up Ex: HTTP:xxxx
                         // Most of these we can't handle
                         throw new NotImplementedException("Segmented Lookups no implemented");
                     }

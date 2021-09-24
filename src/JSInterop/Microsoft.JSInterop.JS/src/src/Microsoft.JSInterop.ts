@@ -5,13 +5,20 @@ export module DotNet {
 
   export type JsonReviver = ((key: any, value: any) => any);
   const jsonRevivers: JsonReviver[] = [];
+
   const byteArraysToBeRevived = new Map<number, Uint8Array>();
+  const pendingDotNetToJSStreams = new Map<number, PendingStream>();
+
+  const jsObjectIdKey = "__jsObjectId";
+  const dotNetObjectRefKey = '__dotNetObject';
+  const byteArrayRefKey = '__byte[]';
+  const dotNetStreamRefKey = '__dotNetStream';
+  const jsStreamReferenceLengthKey = "__jsStreamReferenceLength";
 
   class JSObject {
     _cachedFunctions: Map<string, Function>;
 
-    constructor(private _jsObject: any)
-    {
+    constructor(private _jsObject: any) {
       this._cachedFunctions = new Map<string, Function>();
     }
 
@@ -47,8 +54,6 @@ export module DotNet {
       return this._jsObject;
     }
   }
-
-  const jsObjectIdKey = "__jsObjectId";
 
   const pendingAsyncCalls: { [id: number]: PendingAsyncCall<any> } = {};
   const windowJSObjectId = 0;
@@ -136,6 +141,48 @@ export module DotNet {
     } else {
       throw new Error(`Cannot create a JSObjectReference from the value '${jsObject}'.`);
     }
+  }
+
+  /**
+   * Creates a JavaScript data reference that can be passed to .NET via interop calls.
+   *
+   * @param streamReference The ArrayBufferView or Blob used to create the JavaScript stream reference.
+   * @returns The JavaScript data reference (this will be the same instance as the given object).
+   * @throws Error if the given value is not an Object or doesn't have a valid byteLength.
+   */
+  export function createJSStreamReference(streamReference: ArrayBuffer | ArrayBufferView | Blob | any): any {
+    let length = -1;
+
+    // If we're given a raw Array Buffer, we interpret it as a `Uint8Array` as
+    // ArrayBuffers' aren't directly readable.
+    if (streamReference instanceof ArrayBuffer) {
+      streamReference = new Uint8Array(streamReference);
+    }
+
+    if (streamReference instanceof Blob) {
+      length = streamReference.size;
+    } else if (streamReference.buffer instanceof ArrayBuffer) {
+      if (streamReference.byteLength === undefined) {
+        throw new Error(`Cannot create a JSStreamReference from the value '${streamReference}' as it doesn't have a byteLength.`);
+      }
+
+      length = streamReference.byteLength;
+    } else {
+      throw new Error('Supplied value is not a typed array or blob.');
+    }
+
+    const result: any = {
+      [jsStreamReferenceLengthKey]: length,
+    }
+
+    try {
+      const jsObjectReference = createJSObjectReference(streamReference);
+      result[jsObjectIdKey] = jsObjectReference[jsObjectIdKey];
+    } catch {
+      throw new Error(`Cannot create a JSStreamReference from the value '${streamReference}'.`);
+    }
+
+    return result;
   }
 
   /**
@@ -231,7 +278,9 @@ export module DotNet {
    */
   export enum JSCallResultType {
     Default = 0,
-    JSObjectReference = 1
+    JSObjectReference = 1,
+    JSStreamReference = 2,
+    JSVoidResult = 3,
   }
 
   /**
@@ -363,7 +412,27 @@ export module DotNet {
      */
     receiveByteArray: (id: number, data: Uint8Array): void => {
       byteArraysToBeRevived.set(id, data);
-    }
+    },
+
+    /**
+    * Supplies a stream of data being sent from .NET.
+    *
+    * @param streamId The identifier previously passed to JSRuntime's BeginTransmittingStream in .NET code
+    * @param stream The stream data.
+    */
+    supplyDotNetStream: (streamId: number, stream: ReadableStream) => {
+      if (pendingDotNetToJSStreams.has(streamId)) {
+        // The receiver is already waiting, so we can resolve the promise now and stop tracking this
+        const pendingStream = pendingDotNetToJSStreams.get(streamId)!;
+        pendingDotNetToJSStreams.delete(streamId);
+        pendingStream.resolve!(stream);
+      } else {
+        // The receiver hasn't started waiting yet, so track a pre-completed entry it can attach to later
+        const pendingStream = new PendingStream();
+        pendingStream.resolve!(stream);
+        pendingDotNetToJSStreams.set(streamId, pendingStream);
+      }
+    },
   }
 
   function formatError(error: any): string {
@@ -388,7 +457,7 @@ export module DotNet {
     delete cachedJSObjectsById[id];
   }
 
-  class DotNetObject {
+  export class DotNetObject {
     constructor(private _id: number) {
     }
 
@@ -410,12 +479,10 @@ export module DotNet {
     }
   }
 
-  const dotNetObjectRefKey = '__dotNetObject';
-  const byteArrayRefKey = '__byte[]';
   attachReviver(function reviveReference(key: any, value: any) {
     if (value && typeof value === 'object') {
       if (value.hasOwnProperty(dotNetObjectRefKey)) {
-        return new DotNetObject(value.__dotNetObject);
+        return new DotNetObject(value[dotNetObjectRefKey]);
       } else if (value.hasOwnProperty(jsObjectIdKey)) {
         const id = value[jsObjectIdKey];
         const jsObject = cachedJSObjectsById[id];
@@ -431,8 +498,11 @@ export module DotNet {
         if (byteArray === undefined) {
           throw new Error(`Byte array index '${index}' does not exist.`);
         }
+        byteArraysToBeRevived.delete(index);
 
         return byteArray;
+      } else if (value.hasOwnProperty(dotNetStreamRefKey)) {
+        return new DotNetStream(value[dotNetStreamRefKey])
       }
     }
 
@@ -440,12 +510,65 @@ export module DotNet {
     return value;
   });
 
+  class DotNetStream {
+    private _streamPromise: Promise<ReadableStream>;
+
+    constructor(streamId: number) {
+      // This constructor runs when we're JSON-deserializing some value from the .NET side.
+      // At this point we might already have started receiving the stream, or maybe it will come later.
+      // We have to handle both possible orderings, but we can count on it coming eventually because
+      // it's not something the developer gets to control, and it would be an error if it doesn't.
+      if (pendingDotNetToJSStreams.has(streamId)) {
+        // We've already started receiving the stream, so no longer need to track it as pending
+        this._streamPromise = pendingDotNetToJSStreams.get(streamId)?.streamPromise!;
+        pendingDotNetToJSStreams.delete(streamId);
+      } else {
+        // We haven't started receiving it yet, so add an entry to track it as pending
+        const pendingStream = new PendingStream();
+        pendingDotNetToJSStreams.set(streamId, pendingStream);
+        this._streamPromise = pendingStream.streamPromise;
+      }
+    }
+
+    /**
+    * Supplies a readable stream of data being sent from .NET.
+    */
+    stream(): Promise<ReadableStream> {
+      return this._streamPromise;
+    }
+
+    /**
+    * Supplies a array buffer of data being sent from .NET.
+    * Note there is a JavaScript limit on the size of the ArrayBuffer equal to approximately 2GB.
+    */
+    async arrayBuffer(): Promise<ArrayBuffer> {
+      return new Response(await this.stream()).arrayBuffer();
+    }
+  }
+
+  class PendingStream {
+    streamPromise: Promise<ReadableStream>;
+    resolve?: (value: ReadableStream) => void;
+    reject?: (reason: any) => void;
+
+    constructor() {
+      this.streamPromise = new Promise((resolve, reject) => {
+        this.resolve = resolve;
+        this.reject = reject;
+      });
+    }
+  }
+
   function createJSCallResult(returnValue: any, resultType: JSCallResultType) {
     switch (resultType) {
       case JSCallResultType.Default:
         return returnValue;
       case JSCallResultType.JSObjectReference:
         return createJSObjectReference(returnValue);
+      case JSCallResultType.JSStreamReference:
+        return createJSStreamReference(returnValue);
+      case JSCallResultType.JSVoidResult:
+        return null;
       default:
         throw new Error(`Invalid JS call result type '${resultType}'.`);
     }

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -15,13 +15,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     {
         private static readonly IOCompletionCallback IOCallback = new IOCompletionCallback(Callback);
 
-        private SafeNativeOverlapped? _overlapped;
-        private IntPtr _pinnedBuffer;
-        private uint _dataAlreadyRead;
-        private TaskCompletionSource<int> _tcs;
-        private RequestStream _requestStream;
-        private AsyncCallback? _callback;
-        private CancellationTokenRegistration _cancellationRegistration;
+        private readonly SafeNativeOverlapped? _overlapped;
+        private readonly IntPtr _pinnedBuffer;
+        private readonly uint _dataAlreadyRead;
+        private readonly TaskCompletionSource<int> _tcs;
+        private readonly RequestStream _requestStream;
+        private readonly AsyncCallback? _callback;
+        private readonly CancellationTokenRegistration _cancellationRegistration;
 
         internal RequestStreamAsyncResult(RequestStream requestStream, object? userState, AsyncCallback? callback)
         {
@@ -135,6 +135,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal void Fail(Exception ex)
         {
+            // Make sure the Abort state is set before signaling the callback so we can avoid race condtions with user code.
+            Dispose();
+            _requestStream.Abort();
             if (_tcs.TrySetException(ex) && _callback != null)
             {
                 try
@@ -147,8 +150,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     // TODO: Log
                 }
             }
-            Dispose();
-            _requestStream.Abort();
         }
 
         [SuppressMessage("Microsoft.Usage", "CA2216:DisposableTypesShouldDeclareFinalizer", Justification = "The disposable resource referenced does have a finalizer.")]

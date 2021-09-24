@@ -1,9 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -14,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// A <see cref="ProblemDetails"/> for validation errors.
     /// </summary>
     [JsonConverter(typeof(ValidationProblemDetailsJsonConverter))]
-    public class ValidationProblemDetails : ProblemDetails
+    public class ValidationProblemDetails : HttpValidationProblemDetails
     {
         /// <summary>
         /// Initializes a new instance of <see cref="ValidationProblemDetails"/>.
@@ -29,12 +28,18 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="modelState"><see cref="ModelStateDictionary"/> containing the validation errors.</param>
         public ValidationProblemDetails(ModelStateDictionary modelState)
-            : this()
+            : base(CreateErrorDictionary(modelState))
+        {
+        }
+
+        private static IDictionary<string, string[]> CreateErrorDictionary(ModelStateDictionary modelState)
         {
             if (modelState == null)
             {
                 throw new ArgumentNullException(nameof(modelState));
             }
+
+            var errorDictionary = new Dictionary<string, string[]>(StringComparer.Ordinal);
 
             foreach (var keyModelStatePair in modelState)
             {
@@ -45,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc
                     if (errors.Count == 1)
                     {
                         var errorMessage = GetErrorMessage(errors[0]);
-                        Errors.Add(key, new[] { errorMessage });
+                        errorDictionary.Add(key, new[] { errorMessage });
                     }
                     else
                     {
@@ -55,12 +60,14 @@ namespace Microsoft.AspNetCore.Mvc
                             errorMessages[i] = GetErrorMessage(errors[i]);
                         }
 
-                        Errors.Add(key, errorMessages);
+                        errorDictionary.Add(key, errorMessages);
                     }
                 }
             }
 
-            string GetErrorMessage(ModelError error)
+            return errorDictionary;
+
+            static string GetErrorMessage(ModelError error)
             {
                 return string.IsNullOrEmpty(error.ErrorMessage) ?
                     Resources.SerializableError_DefaultError :
@@ -73,20 +80,13 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="errors">The validation errors.</param>
         public ValidationProblemDetails(IDictionary<string, string[]> errors)
-            : this()
+            : base(errors)
         {
-            if (errors == null)
-            {
-                throw new ArgumentNullException(nameof(errors));
-            }
-
-            Errors = new Dictionary<string, string[]>(errors, StringComparer.Ordinal);
         }
 
         /// <summary>
-        /// Gets the validation errors associated with this instance of <see cref="ValidationProblemDetails"/>.
+        /// Gets the validation errors associated with this instance of <see cref="HttpValidationProblemDetails"/>.
         /// </summary>
-        [JsonPropertyName("errors")]
-        public IDictionary<string, string[]> Errors { get; } = new Dictionary<string, string[]>(StringComparer.Ordinal);
+        public new IDictionary<string, string[]> Errors => base.Errors;
     }
 }

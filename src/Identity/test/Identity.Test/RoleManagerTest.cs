@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -17,11 +17,12 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task CreateCallsStore()
         {
             // Setup
+            var normalizer = MockHelpers.MockLookupNormalizer();
             var store = new Mock<IRoleStore<PocoRole>>();
             var role = new PocoRole { Name = "Foo" };
             store.Setup(s => s.CreateAsync(role, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
             store.Setup(s => s.GetRoleNameAsync(role, CancellationToken.None)).Returns(Task.FromResult(role.Name)).Verifiable();
-            store.Setup(s => s.SetNormalizedRoleNameAsync(role, role.Name.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            store.Setup(s => s.SetNormalizedRoleNameAsync(role, normalizer.NormalizeName(role.Name), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
             var roleManager = MockHelpers.TestRoleManager(store.Object);
 
             // Act
@@ -36,11 +37,12 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task UpdateCallsStore()
         {
             // Setup
+            var normalizer = MockHelpers.MockLookupNormalizer();
             var store = new Mock<IRoleStore<PocoRole>>();
             var role = new PocoRole { Name = "Foo" };
             store.Setup(s => s.UpdateAsync(role, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
             store.Setup(s => s.GetRoleNameAsync(role, CancellationToken.None)).Returns(Task.FromResult(role.Name)).Verifiable();
-            store.Setup(s => s.SetNormalizedRoleNameAsync(role, role.Name.ToUpperInvariant(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            store.Setup(s => s.SetNormalizedRoleNameAsync(role, normalizer.NormalizeName(role.Name), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
             var roleManager = MockHelpers.TestRoleManager(store.Object);
 
             // Act
@@ -63,9 +65,10 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task FindByNameCallsStoreWithNormalizedName()
         {
             // Setup
+            var normalizer = MockHelpers.MockLookupNormalizer();
             var store = new Mock<IRoleStore<PocoRole>>();
             var role = new PocoRole { Name = "Foo" };
-            store.Setup(s => s.FindByNameAsync("FOO", CancellationToken.None)).Returns(Task.FromResult(role)).Verifiable();
+            store.Setup(s => s.FindByNameAsync(normalizer.NormalizeName("Foo"), CancellationToken.None)).Returns(Task.FromResult(role)).Verifiable();
             var manager = MockHelpers.TestRoleManager(store.Object);
 
             // Act
@@ -98,9 +101,10 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task RoleExistsCallsStoreWithNormalizedName()
         {
             // Setup
+            var normalizer = MockHelpers.MockLookupNormalizer();
             var store = new Mock<IRoleStore<PocoRole>>();
             var role = new PocoRole { Name = "Foo" };
-            store.Setup(s => s.FindByNameAsync("FOO", CancellationToken.None)).Returns(Task.FromResult(role)).Verifiable();
+            store.Setup(s => s.FindByNameAsync(normalizer.NormalizeName("Foo"), CancellationToken.None)).Returns(Task.FromResult(role)).Verifiable();
             var manager = MockHelpers.TestRoleManager(store.Object);
 
             // Act

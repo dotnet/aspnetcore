@@ -8,11 +8,9 @@
       Clien caching isn't part of our performance measurement, so we'll skip it.
     -->
     <BlazorCacheBootResources>false</BlazorCacheBootResources>
-    <UseRazorSourceGenerator>false</UseRazorSourceGenerator>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
-    <Reference Include="System.Text.Json" />
   </ItemGroup>
 </Project>

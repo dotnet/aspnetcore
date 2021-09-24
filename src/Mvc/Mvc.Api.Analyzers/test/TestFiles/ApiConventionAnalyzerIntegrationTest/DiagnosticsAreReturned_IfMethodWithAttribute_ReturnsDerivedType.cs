@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.AspNetCore.Mvc;
 
 namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 {
@@ -13,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 return NotFound();
             }
 
-            /*MM*/return new DiagnosticsAreReturned_IfMethodWithAttribute_ReturnsDerivedTypeDerived();
+            return /*MM*/new DiagnosticsAreReturned_IfMethodWithAttribute_ReturnsDerivedTypeDerived();
         }
     }
 

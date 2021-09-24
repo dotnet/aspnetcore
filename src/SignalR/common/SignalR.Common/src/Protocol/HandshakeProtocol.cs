@@ -1,9 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -19,23 +18,22 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
     public static class HandshakeProtocol
     {
         private const string ProtocolPropertyName = "protocol";
-        private static JsonEncodedText ProtocolPropertyNameBytes = JsonEncodedText.Encode(ProtocolPropertyName);
+        private static readonly JsonEncodedText ProtocolPropertyNameBytes = JsonEncodedText.Encode(ProtocolPropertyName);
         private const string ProtocolVersionPropertyName = "version";
-        private static JsonEncodedText ProtocolVersionPropertyNameBytes = JsonEncodedText.Encode(ProtocolVersionPropertyName);
+        private static readonly JsonEncodedText ProtocolVersionPropertyNameBytes = JsonEncodedText.Encode(ProtocolVersionPropertyName);
         private const string ErrorPropertyName = "error";
-        private static JsonEncodedText ErrorPropertyNameBytes = JsonEncodedText.Encode(ErrorPropertyName);
+        private static readonly JsonEncodedText ErrorPropertyNameBytes = JsonEncodedText.Encode(ErrorPropertyName);
         private const string TypePropertyName = "type";
-        private static JsonEncodedText TypePropertyNameBytes = JsonEncodedText.Encode(TypePropertyName);
+        private static readonly JsonEncodedText TypePropertyNameBytes = JsonEncodedText.Encode(TypePropertyName);
+        private static readonly ReadOnlyMemory<byte> _successHandshakeData = GetSuccessHandshakeData();
 
-        private static readonly ReadOnlyMemory<byte> _successHandshakeData;
-
-        static HandshakeProtocol()
+        private static ReadOnlyMemory<byte> GetSuccessHandshakeData()
         {
             var memoryBufferWriter = MemoryBufferWriter.Get();
             try
             {
                 WriteResponseMessage(HandshakeResponseMessage.Empty, memoryBufferWriter);
-                _successHandshakeData = memoryBufferWriter.ToArray();
+                return memoryBufferWriter.ToArray();
             }
             finally
             {

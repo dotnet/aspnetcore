@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -129,18 +129,18 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             });
         }
 
-        private string RenderLogs(IList<LogRecord> logs)
+        private static string RenderLogs(IList<LogRecord> logs)
         {
             var builder = new StringBuilder();
             foreach (var log in logs)
             {
-                builder.AppendLine($"{log.Timestamp:O} {log.Write.LoggerName} {log.Write.LogLevel}: {log.Write.Formatter(log.Write.State, log.Write.Exception)}");
+                builder.AppendLine(FormattableString.Invariant($"{log.Timestamp:O} {log.Write.LoggerName} {log.Write.LogLevel}: {log.Write.Formatter(log.Write.State, log.Write.Exception)}"));
                 if (log.Write.Exception != null)
                 {
                     var message = log.Write.Exception.ToString();
                     foreach (var line in message.Split(new[] { Environment.NewLine }, StringSplitOptions.None))
                     {
-                        builder.AppendLine($"| {line}");
+                        builder.AppendLine(FormattableString.Invariant($"| {line}"));
                     }
                 }
             }

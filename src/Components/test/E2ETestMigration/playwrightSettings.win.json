@@ -1,2 +1,8 @@
 {
+  "BrowserOptions": {
+    "Webkit": {
+      "BrowserKind": "Webkit",
+      "IsEnabled": false
+    }
+  }
 }

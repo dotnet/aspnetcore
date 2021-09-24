@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Globalization;
@@ -466,6 +466,101 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     Assert.True(string.Equals("400", responseStatusCode), i.ToString("X2", CultureInfo.InvariantCulture));
                 }
             }
+        }
+
+        [ConditionalFact]
+        public async Task RequestAborted_AfterAccessingProperty_Notified()
+        {
+            var registered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var result = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var server = Utilities.CreateHttpServerReturnRoot("/", out var address, async httpContext =>
+            {
+                var ct = httpContext.RequestAborted;
+
+                if (!ct.CanBeCanceled || ct.IsCancellationRequested)
+                {
+                    result.SetException(new Exception("The CT isn't valid."));
+                    return;
+                }
+
+                ct.Register(() => result.SetResult());
+
+                registered.SetResult();
+
+                // Don't exit until it fires or else it could be disposed.
+                await result.Task.DefaultTimeout();
+            });
+
+            // Send a request and then abort.
+
+            var uri = new Uri(address);
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine("POST / HTTP/1.1");
+            builder.AppendLine("Connection: close");
+            builder.AppendLine("Content-Length: 10");
+            builder.Append("HOST: ");
+            builder.AppendLine(uri.Authority);
+            builder.AppendLine();
+
+            byte[] request = Encoding.ASCII.GetBytes(builder.ToString());
+
+            using var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+
+            await socket.ConnectAsync(uri.Host, uri.Port);
+            socket.Send(request);
+
+            // Wait for the token to be setup before aborting.
+            await registered.Task.DefaultTimeout();
+
+            socket.Close();
+
+            await result.Task.DefaultTimeout();
+        }
+
+        [ConditionalFact]
+        public async Task RequestAbortedDurringRead_BeforeAccessingProperty_TokenAlreadyCanceled()
+        {
+            var requestAborted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var result = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var server = Utilities.CreateHttpServerReturnRoot("/", out var address, async httpContext =>
+            {
+                await requestAborted.Task.DefaultTimeout();
+                try
+                {
+                    await httpContext.Request.Body.ReadAsync(new byte[10]).DefaultTimeout();
+                    result.SetException(new Exception("This should have aborted"));
+                    return;
+                }
+                catch (IOException)
+                {
+                }
+
+                result.SetResult(httpContext.RequestAborted.IsCancellationRequested);
+            });
+
+            // Send a request and then abort.
+
+            var uri = new Uri(address);
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine("POST / HTTP/1.1");
+            builder.AppendLine("Connection: close");
+            builder.AppendLine("Content-Length: 10");
+            builder.Append("HOST: ");
+            builder.AppendLine(uri.Authority);
+            builder.AppendLine();
+
+            byte[] request = Encoding.ASCII.GetBytes(builder.ToString());
+
+            using var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+
+            await socket.ConnectAsync(uri.Host, uri.Port);
+            socket.Send(request);
+            socket.Close();
+
+            requestAborted.SetResult();
+
+            var wasCancelled = await result.Task;
+            Assert.True(wasCancelled);
         }
 
         private IServer CreateServer(out string root, RequestDelegate app)

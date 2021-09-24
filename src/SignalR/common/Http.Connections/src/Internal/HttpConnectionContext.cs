@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
@@ -30,7 +30,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                                          IHttpContextFeature,
                                          IHttpTransportFeature,
                                          IConnectionInherentKeepAliveFeature,
-                                         IConnectionLifetimeFeature
+                                         IConnectionLifetimeFeature,
+                                         IConnectionLifetimeNotificationFeature
     {
         private readonly HttpConnectionDispatcherOptions _options;
 
@@ -42,7 +43,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private PipeWriterStream _applicationStream;
         private IDuplexPipe _application;
         private IDictionary<object, object?>? _items;
-        private CancellationTokenSource _connectionClosedTokenSource;
+        private readonly CancellationTokenSource _connectionClosedTokenSource;
+        private readonly CancellationTokenSource _connectionCloseRequested;
 
         private CancellationTokenSource? _sendCts;
         private bool _activeSend;
@@ -66,7 +68,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             ConnectionId = connectionId;
             ConnectionToken = connectionToken;
-            LastSeenUtc = DateTime.UtcNow;
+            LastSeenTicks = Environment.TickCount64;
             _options = options;
 
             // The default behavior is that both formats are supported.
@@ -87,9 +89,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             Features.Set<IHttpTransportFeature>(this);
             Features.Set<IConnectionInherentKeepAliveFeature>(this);
             Features.Set<IConnectionLifetimeFeature>(this);
+            Features.Set<IConnectionLifetimeNotificationFeature>(this);
 
             _connectionClosedTokenSource = new CancellationTokenSource();
             ConnectionClosed = _connectionClosedTokenSource.Token;
+
+            _connectionCloseRequested = new CancellationTokenSource();
+            ConnectionClosedRequested = _connectionCloseRequested.Token;
+            AuthenticationExpiration = DateTimeOffset.MaxValue;
         }
 
         public CancellationTokenSource? Cancellation { get; set; }
@@ -104,21 +111,25 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         // Used for LongPolling because we need to create a scope that spans the lifetime of multiple requests on the cloned HttpContext
         internal AsyncServiceScope? ServiceScope { get; set; }
 
+        internal DateTimeOffset AuthenticationExpiration { get; set; }
+
+        internal bool IsAuthenticationExpirationEnabled => _options.CloseOnAuthenticationExpiration;
+
         public Task? TransportTask { get; set; }
 
         public Task PreviousPollTask { get; set; } = Task.CompletedTask;
 
         public Task? ApplicationTask { get; set; }
 
-        public DateTime LastSeenUtc { get; set; }
+        public long LastSeenTicks { get; set; }
 
-        public DateTime? LastSeenUtcIfInactive
+        public long? LastSeenTicksIfInactive
         {
             get
             {
                 lock (_stateLock)
                 {
-                    return Status == HttpConnectionStatus.Inactive ? (DateTime?)LastSeenUtc : null;
+                    return Status == HttpConnectionStatus.Inactive ? LastSeenTicks : null;
                 }
             }
         }
@@ -175,6 +186,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         public HttpContext? HttpContext { get; set; }
 
         public override CancellationToken ConnectionClosed { get; set; }
+
+        public CancellationToken ConnectionClosedRequested { get; set; }
 
         public override void Abort()
         {
@@ -530,7 +543,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 if (Status == HttpConnectionStatus.Active)
                 {
                     Status = HttpConnectionStatus.Inactive;
-                    LastSeenUtc = DateTime.UtcNow;
+                    LastSeenTicks = Environment.TickCount64;
                 }
             }
         }
@@ -562,7 +575,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     _sendCts = new CancellationTokenSource();
                     SendingToken = _sendCts.Token;
                 }
-                _startedSendTime = DateTime.UtcNow.Ticks;
+                _startedSendTime = Environment.TickCount64;
                 _activeSend = true;
             }
         }
@@ -599,6 +612,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             {
                 _activeSend = false;
             }
+        }
+
+        public void RequestClose()
+        {
+            ThreadPool.UnsafeQueueUserWorkItem(static cts => ((CancellationTokenSource)cts!).Cancel(), _connectionCloseRequested);
         }
 
         private static class Log

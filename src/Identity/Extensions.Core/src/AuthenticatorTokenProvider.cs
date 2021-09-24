@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Security.Cryptography;
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="manager">The <see cref="UserManager{TUser}"/> to retrieve the <paramref name="user"/> from.</param>
         /// <param name="user">The <typeparamref name="TUser"/> to check for the possibility of generating a two-factor authentication token.</param>
         /// <returns>True if the user has an authenticator key set, otherwise false.</returns>
-        public async virtual Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user)
+        public virtual async Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user)
         {
             var key = await manager.GetAuthenticatorKeyAsync(user);
 
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="purpose"></param>
         /// <param name="token"></param>

@@ -417,12 +417,6 @@
   <data name="HttpErrorConnectionSpecificHeaderField" xml:space="preserve">
     <value>Request headers contain connection-specific header field.</value>
   </data>
-  <data name="AuthenticationFailed" xml:space="preserve">
-    <value>Failed to authenticate HTTPS connection.</value>
-  </data>
-  <data name="AuthenticationTimedOut" xml:space="preserve">
-    <value>Authentication of the HTTPS connection timed out.</value>
-  </data>
   <data name="InvalidServerCertificateEku" xml:space="preserve">
     <value>Certificate {thumbprint} cannot be used as an SSL server certificate. It has an Extended Key Usage extension but the usages do not include Server Authentication (OID 1.3.6.1.5.5.7.3.1).</value>
   </data>
@@ -488,7 +482,7 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http2ConnectionFaulted" xml:space="preserve">
     <value>The HTTP/2 connection faulted.</value>
   </data>
-  <data name="Http2StreamResetByClient" xml:space="preserve">
+  <data name="HttpStreamResetByClient" xml:space="preserve">
     <value>The client reset the request stream.</value>
   </data>
   <data name="Http2StreamAborted" xml:space="preserve">
@@ -593,12 +587,6 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="GreaterThanOrEqualToZeroRequired" xml:space="preserve">
     <value>A value greater than or equal to zero is required.</value>
   </data>
-  <data name="HttpsConnectionEstablished" xml:space="preserve">
-    <value>Connection "{connectionId}" established using the following protocol: {protocol}</value>
-  </data>
-  <data name="Http2DefaultCiphersInsufficient" xml:space="preserve">
-    <value>HTTP/2 over TLS is not supported on Windows versions older than Windows 10 and Windows Server 2016 due to incompatible ciphers or missing ALPN support. Falling back to HTTP/1.1 instead.</value>
-  </data>
   <data name="Http2NoTlsWin81" xml:space="preserve">
     <value>HTTP/2 over TLS is not supported on Windows versions earlier than Windows 10 and Windows Server 2016 due to incompatible ciphers or missing ALPN support.</value>
   </data>
@@ -625,18 +613,6 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   </data>
   <data name="EndpointHasUnusedHttpsConfig" xml:space="preserve">
     <value>The non-HTTPS endpoint {endpointName} includes HTTPS-only configuration for {keyName}.</value>
-  </data>
-  <data name="FoundCertWithPrivateKey" xml:space="preserve">
-    <value>Found certificate with private key and thumbprint {Thumbprint} in certificate store {StoreName}.</value>
-  </data>
-  <data name="LocatingCertWithPrivateKey" xml:space="preserve">
-    <value>Searching for certificate with private key and thumbprint {Thumbprint} in the certificate store.</value>
-  </data>
-  <data name="FailedToLocateCertificateFromStore" xml:space="preserve">
-    <value>Failure to locate certificate from store.</value>
-  </data>
-  <data name="FailedToOpenCertStore" xml:space="preserve">
-    <value>Failed to open certificate store {StoreName}.</value>
   </data>
   <data name="Http3ConnectionFaulted" xml:space="preserve">
     <value>The HTTP/3 connection faulted.</value>
@@ -688,5 +664,8 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   </data>
   <data name="Http3ControlStreamErrorUnsupportedType" xml:space="preserve">
     <value>Stream type {type} is unsupported.</value>
+  </data>
+  <data name="Http3ControlStreamErrorInitializingOutbound" xml:space="preserve">
+    <value>Error initializing outbound control stream.</value>
   </data>
 </root>

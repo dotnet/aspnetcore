@@ -1,8 +1,7 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -24,9 +23,15 @@ namespace Microsoft.JSInterop.Infrastructure
 
         public override byte[]? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
+            // For back-compat reasons, try reading the input as a base-64 encoded string at first.
+            if (reader.TokenType == JsonTokenType.String && reader.TryGetBytesFromBase64(out var bytes))
+            {
+                return bytes;
+            }
+
             if (JSRuntime.ByteArraysToBeRevived.Count == 0)
             {
-                throw new JsonException("ByteArraysToBeRevived is empty.");
+                throw new JsonException("JSON serialization is attempting to deserialize an unexpected byte array.");
             }
 
             int byteArrayRef;

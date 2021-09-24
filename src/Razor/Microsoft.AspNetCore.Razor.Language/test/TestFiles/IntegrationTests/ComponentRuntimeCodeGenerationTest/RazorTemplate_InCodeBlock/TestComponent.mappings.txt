@@ -8,7 +8,7 @@ Generated Location: (586:17,2 [45] )
 Source Location: (71:1,67 [3] x:\dir\subdir\Test\TestComponent.cshtml)
 |;
 |
-Generated Location: (1207:38,67 [3] )
+Generated Location: (1136:36,67 [3] )
 |;
 |
 
@@ -19,7 +19,7 @@ Source Location: (84:3,7 [76] x:\dir\subdir\Test\TestComponent.cshtml)
         public string Name { get; set; }
     }
 |
-Generated Location: (1386:47,7 [76] )
+Generated Location: (1315:45,7 [76] )
 |
     class Person
     {

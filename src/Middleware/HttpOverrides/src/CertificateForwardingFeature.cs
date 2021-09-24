@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Security.Cryptography.X509Certificates;
@@ -13,9 +13,9 @@ namespace Microsoft.AspNetCore.HttpOverrides
 {
     internal class CertificateForwardingFeature : ITlsConnectionFeature
     {
-        private ILogger _logger;
-        private StringValues _header;
-        private CertificateForwardingOptions _options;
+        private readonly ILogger _logger;
+        private readonly StringValues _header;
+        private readonly CertificateForwardingOptions _options;
         private X509Certificate2? _certificate;
 
         public CertificateForwardingFeature(ILogger logger, StringValues header, CertificateForwardingOptions options)
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                 {
                     try
                     {
-                        _certificate = _options.HeaderConverter(_header);
+                        _certificate = _options.HeaderConverter(_header.ToString());
                     }
                     catch (Exception e)
                     {

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Threading;
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             private class CancelableEnumerator<T> : IAsyncEnumerator<T>
             {
-                private IAsyncEnumerator<T> _asyncEnumerator;
+                private readonly IAsyncEnumerator<T> _asyncEnumerator;
                 private readonly CancellationTokenRegistration _cancellationTokenRegistration;
 
                 public T Current => (T)_asyncEnumerator.Current;
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         private class BoxedAsyncEnumerator<T> : IAsyncEnumerator<object?>
         {
-            private IAsyncEnumerator<T> _asyncEnumerator;
+            private readonly IAsyncEnumerator<T> _asyncEnumerator;
 
             public BoxedAsyncEnumerator(IAsyncEnumerator<T> asyncEnumerator)
             {

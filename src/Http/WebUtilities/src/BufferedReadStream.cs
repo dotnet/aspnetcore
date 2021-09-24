@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         /// <inheritdoc/>
-        public async override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
         {
             // Drain buffer
             if (_bufferCount > 0)
@@ -408,7 +408,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             foundCR = b == CR;
         }
 
-        private string DecodeLine(MemoryStream builder, bool foundCRLF)
+        private static string DecodeLine(MemoryStream builder, bool foundCRLF)
         {
             // Drop the final CRLF, if any
             var length = foundCRLF ? builder.Length - 2 : builder.Length;
@@ -423,7 +423,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
-        private void ValidateBuffer(byte[] buffer, int offset, int count)
+        private static void ValidateBuffer(byte[] buffer, int offset, int count)
         {
             // Delegate most of our validation.
             var ignored = new ArraySegment<byte>(buffer, offset, count);

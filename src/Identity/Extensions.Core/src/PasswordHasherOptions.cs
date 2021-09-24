@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Security.Cryptography;
 
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Identity
         /// </value>
         /// <remarks>
         /// This value is only used when the compatibility mode is set to 'V3'.
-        /// The value must be a positive integer. 
+        /// The value must be a positive integer.
         /// </remarks>
         public int IterationCount { get; set; } = 10000;
 

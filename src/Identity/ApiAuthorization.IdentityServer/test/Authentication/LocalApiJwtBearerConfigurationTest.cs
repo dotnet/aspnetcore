@@ -1,11 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using IdentityServer4.Configuration;
-using IdentityServer4.Stores;
+using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Stores;
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
 
             var options = new JwtBearerOptions();
             var args = new MessageReceivedContext(context, new AuthenticationScheme("TestAPI",null, Mock.Of<IAuthenticationHandler>().GetType()), options);
-            
+
             // Act
             await IdentityServerJwtBearerOptionsConfiguration.ResolveAuthorityAndKeysAsync(args);
 

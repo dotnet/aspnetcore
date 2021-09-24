@@ -1,7 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Text;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -242,12 +243,18 @@ namespace Microsoft.CodeAnalysis.Razor
                         return true;
                     }
                 }
+                // Also check for cases like:
+                // [Parameter] public T[] MyProperty { get; set; }
+                else if (type is IArrayTypeSymbol array && HasTypeParameter(array.ElementType))
+                {
+                    return true;
+                }
 
                 return false;
             }
         }
 
-        private void CreateTypeParameterProperty(TagHelperDescriptorBuilder builder, ITypeSymbol typeParameter, bool cascade)
+        private void CreateTypeParameterProperty(TagHelperDescriptorBuilder builder, ITypeParameterSymbol typeParameter, bool cascade)
         {
             builder.BindAttribute(pb =>
             {
@@ -258,6 +265,42 @@ namespace Microsoft.CodeAnalysis.Razor
 
                 pb.Metadata[ComponentMetadata.Component.TypeParameterKey] = bool.TrueString;
                 pb.Metadata[ComponentMetadata.Component.TypeParameterIsCascadingKey] = cascade.ToString();
+
+                // Type constraints (like "Image" or "Foo") are stored indepenently of
+                // things like constructor constraints and not null constraints in the
+                // type parameter so we create a single string representation of all the constraints
+                // here.
+                var constraintString = new StringBuilder();
+                if (typeParameter.ConstraintTypes.Any())
+                {
+                    constraintString.Append(string.Join(", ", typeParameter.ConstraintTypes.Select(t => t.Name)));
+                }
+                if (typeParameter.HasConstructorConstraint)
+                {
+                    constraintString.Append(", new()");
+                }
+                if (typeParameter.HasNotNullConstraint)
+                {
+                    constraintString.Append(", notnull");
+                }
+                if (typeParameter.HasReferenceTypeConstraint)
+                {
+                    constraintString.Append(", class");
+                }
+                if (typeParameter.HasUnmanagedTypeConstraint)
+                {
+                    constraintString.Append(", unmanaged");
+                }
+                if (typeParameter.HasValueTypeConstraint)
+                {
+                    constraintString.Append(", struct");
+                }
+
+                if (constraintString.Length > 0)
+                {
+                    constraintString.Insert(0, "where " + typeParameter.Name + " : ");
+                    pb.Metadata[ComponentMetadata.Component.TypeParameterConstraintsKey] = constraintString.ToString();
+                }
 
                 pb.Documentation = string.Format(CultureInfo.InvariantCulture, ComponentResources.ComponentTypeParameter_Documentation, typeParameter.Name, builder.Name);
             });

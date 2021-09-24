@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
     internal partial class RequestHeaders : IHeaderDictionary
     {
         private IDictionary<string, StringValues>? _extra;
-        private NativeRequestContext _requestMemoryBlob;
+        private readonly NativeRequestContext _requestMemoryBlob;
         private long? _contentLength;
         private StringValues _contentLengthText;
 

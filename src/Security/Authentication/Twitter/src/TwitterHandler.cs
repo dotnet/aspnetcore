@@ -1,20 +1,13 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Threading.Tasks;
-using System.Xml;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -104,7 +97,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
             Response.Cookies.Delete(Options.StateCookie.Name!, cookieOptions);
 
-            var accessToken = await ObtainAccessTokenAsync(requestToken, oauthVerifier);
+            var accessToken = await ObtainAccessTokenAsync(requestToken, oauthVerifier.ToString());
 
             var identity = new ClaimsIdentity(new[]
             {
@@ -280,12 +273,17 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 throw new Exception("Twitter oauth_callback_confirmed is not true.");
             }
 
-            return new RequestToken { Token = Uri.UnescapeDataString(responseParameters["oauth_token"]), TokenSecret = Uri.UnescapeDataString(responseParameters["oauth_token_secret"]), CallbackConfirmed = true, Properties = properties };
+            return new RequestToken {
+                Token = Uri.UnescapeDataString(responseParameters["oauth_token"].ToString()),
+                TokenSecret = Uri.UnescapeDataString(responseParameters["oauth_token_secret"].ToString()),
+                CallbackConfirmed = true,
+                Properties = properties,
+            };
         }
 
         private async Task<AccessToken> ObtainAccessTokenAsync(RequestToken token, string verifier)
         {
-            // https://dev.twitter.com/docs/api/1/post/oauth/access_token
+            // https://developer.twitter.com/en/docs/authentication/api-reference/access_token
 
             Logger.ObtainAccessToken();
 
@@ -303,10 +301,10 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
             return new AccessToken
             {
-                Token = Uri.UnescapeDataString(responseParameters["oauth_token"]),
-                TokenSecret = Uri.UnescapeDataString(responseParameters["oauth_token_secret"]),
-                UserId = Uri.UnescapeDataString(responseParameters["user_id"]),
-                ScreenName = Uri.UnescapeDataString(responseParameters["screen_name"])
+                Token = Uri.UnescapeDataString(responseParameters["oauth_token"].ToString()),
+                TokenSecret = Uri.UnescapeDataString(responseParameters["oauth_token_secret"].ToString()),
+                UserId = Uri.UnescapeDataString(responseParameters["user_id"].ToString()),
+                ScreenName = Uri.UnescapeDataString(responseParameters["screen_name"].ToString()),
             };
         }
 
@@ -337,16 +335,13 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
         private static string ComputeSignature(string consumerSecret, string? tokenSecret, string signatureData)
         {
-            using (var algorithm = new HMACSHA1())
-            {
-                algorithm.Key = Encoding.ASCII.GetBytes(
-                    string.Format(CultureInfo.InvariantCulture,
-                        "{0}&{1}",
-                        Uri.EscapeDataString(consumerSecret),
-                        string.IsNullOrEmpty(tokenSecret) ? string.Empty : Uri.EscapeDataString(tokenSecret)));
-                var hash = algorithm.ComputeHash(Encoding.ASCII.GetBytes(signatureData));
-                return Convert.ToBase64String(hash);
-            }
+            var key = Encoding.ASCII.GetBytes(
+                string.Format(CultureInfo.InvariantCulture,
+                    "{0}&{1}",
+                    Uri.EscapeDataString(consumerSecret),
+                    string.IsNullOrEmpty(tokenSecret) ? string.Empty : Uri.EscapeDataString(tokenSecret)));
+            var hash = HMACSHA1.HashData(key, Encoding.ASCII.GetBytes(signatureData));
+            return Convert.ToBase64String(hash);
         }
 
         // https://developer.twitter.com/en/docs/apps/callback-urls
@@ -388,7 +383,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 foreach (var error in errorResponse.Errors)
                 {
                     errorMessageStringBuilder.Append(Environment.NewLine);
-                    errorMessageStringBuilder.Append($"Code: {error.Code}, Message: '{error.Message}'");
+                    errorMessageStringBuilder.Append(FormattableString.Invariant($"Code: {error.Code}, Message: '{error.Message}'"));
                 }
             }
 

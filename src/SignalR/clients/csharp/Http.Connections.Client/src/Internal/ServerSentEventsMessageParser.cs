@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private ReadOnlySpan<byte> ConvertBufferToSpan(in ReadOnlySequence<byte> buffer)
+        private static ReadOnlySpan<byte> ConvertBufferToSpan(in ReadOnlySequence<byte> buffer)
         {
             if (buffer.IsSingleSegment)
             {
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             _data.Clear();
         }
 
-        private void EnsureStartsWithDataPrefix(ReadOnlySpan<byte> line)
+        private static void EnsureStartsWithDataPrefix(ReadOnlySpan<byte> line)
         {
             if (!line.StartsWith(DataPrefix))
             {
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             }
         }
 
-        private bool IsMessageEnd(ReadOnlySpan<byte> line)
+        private static bool IsMessageEnd(ReadOnlySpan<byte> line)
         {
             return line.Length == SseLineEnding.Length && line.SequenceEqual(SseLineEnding);
         }

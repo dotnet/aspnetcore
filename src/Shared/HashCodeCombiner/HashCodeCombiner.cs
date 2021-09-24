@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -18,30 +18,11 @@ namespace Microsoft.Extensions.Internal
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return _combinedHash64.GetHashCode(); }
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private HashCodeCombiner(long seed)
         {
             _combinedHash64 = seed;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Add(IEnumerable e)
-        {
-            if (e == null)
-            {
-                Add(0);
-            }
-            else
-            {
-                var count = 0;
-                foreach (object? o in e)
-                {
-                    Add(o);
-                    count++;
-                }
-                Add(count);
-            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -57,17 +38,9 @@ namespace Microsoft.Extensions.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Add(string? s)
+        public void Add<T>(T? o)
         {
-            var hashCode = (s != null) ? s.GetHashCode() : 0;
-            Add(hashCode);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Add(object? o)
-        {
-            var hashCode = (o != null) ? o.GetHashCode() : 0;
-            Add(hashCode);
+            Add(o?.GetHashCode() ?? 0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

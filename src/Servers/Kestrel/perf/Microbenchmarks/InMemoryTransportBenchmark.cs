@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -24,10 +24,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
     {
         private const string _plaintextExpectedResponse =
             "HTTP/1.1 200 OK\r\n" +
+            "Content-Length: 13\r\n" +
             "Date: Fri, 02 Mar 2018 18:37:05 GMT\r\n" +
             "Content-Type: text/plain\r\n" +
             "Server: Kestrel\r\n" +
-            "Content-Length: 13\r\n" +
             "\r\n" +
             "Hello, World!";
 

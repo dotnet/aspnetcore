@@ -1,12 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.TestObjects;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Routing
 {
@@ -23,9 +20,8 @@ namespace Microsoft.AspNetCore.Routing
             var addressScheme = CreateAddressScheme(endpoint1, endpoint2);
 
             // Assert
-            Assert.NotNull(addressScheme.State.AllMatches);
-            Assert.Equal(2, addressScheme.State.AllMatches.Count());
-            Assert.NotNull(addressScheme.State.NamedMatches);
+            var allMatches = GetMatchesWithRequiredValuesPlusNamedMatches(addressScheme);
+            Assert.Equal(2, allMatches.Count);
             Assert.True(addressScheme.State.NamedMatches.TryGetValue("named", out var namedMatches));
             var namedMatch = Assert.Single(namedMatches);
             var actual = Assert.IsType<RouteEndpoint>(namedMatch.Match.Entry.Data);
@@ -44,9 +40,8 @@ namespace Microsoft.AspNetCore.Routing
             var addressScheme = CreateAddressScheme(endpoint1, endpoint2, endpoint3);
 
             // Assert
-            Assert.NotNull(addressScheme.State.AllMatches);
-            Assert.Equal(3, addressScheme.State.AllMatches.Count());
-            Assert.NotNull(addressScheme.State.NamedMatches);
+            var allMatches = GetMatchesWithRequiredValuesPlusNamedMatches(addressScheme);
+            Assert.Equal(3, allMatches.Count);
             Assert.True(addressScheme.State.NamedMatches.TryGetValue("named", out var namedMatches));
             Assert.Equal(2, namedMatches.Count);
             Assert.Same(endpoint2, Assert.IsType<RouteEndpoint>(namedMatches[0].Match.Entry.Data));
@@ -65,9 +60,8 @@ namespace Microsoft.AspNetCore.Routing
             var addressScheme = CreateAddressScheme(endpoint1, endpoint2, endpoint3);
 
             // Assert
-            Assert.NotNull(addressScheme.State.AllMatches);
-            Assert.Equal(3, addressScheme.State.AllMatches.Count());
-            Assert.NotNull(addressScheme.State.NamedMatches);
+            var allMatches = GetMatchesWithRequiredValuesPlusNamedMatches(addressScheme);
+            Assert.Equal(3, allMatches.Count);
             Assert.True(addressScheme.State.NamedMatches.TryGetValue("named", out var namedMatches));
             Assert.Equal(2, namedMatches.Count);
             Assert.Same(endpoint2, Assert.IsType<RouteEndpoint>(namedMatches[0].Match.Entry.Data));
@@ -86,8 +80,11 @@ namespace Microsoft.AspNetCore.Routing
 
             // Assert 1
             var state = addressScheme.State;
-            Assert.NotNull(state.AllMatches);
-            var match = Assert.Single(state.AllMatches);
+            var allMatches = GetMatchesWithRequiredValuesPlusNamedMatches(addressScheme);
+
+            Assert.NotEmpty(allMatches);
+
+            var match = Assert.Single(allMatches);
             var actual = Assert.IsType<RouteEndpoint>(match.Entry.Data);
             Assert.Same(endpoint1, actual);
 
@@ -124,9 +121,11 @@ namespace Microsoft.AspNetCore.Routing
             Assert.NotSame(state, addressScheme.State);
             state = addressScheme.State;
 
-            Assert.NotNull(state.AllMatches);
+            allMatches = GetMatchesWithRequiredValuesPlusNamedMatches(addressScheme);
+
+            Assert.NotEmpty(allMatches);
             Assert.Collection(
-                state.AllMatches,
+                allMatches,
                 (m) =>
                 {
                     actual = Assert.IsType<RouteEndpoint>(m.Entry.Data);
@@ -336,18 +335,65 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
+        public void GetOutboundMatches_Includes_SameEndpointInNamedMatchesAndMatchesWithRequiredValues()
+        {
+            // Arrange
+            var endpoint = CreateEndpoint(
+                "api/orders/{id}",
+                defaults: new { controller = "Orders", action = "GetById" },
+                metadataRequiredValues: new { controller = "Orders", action = "GetById" },
+                routeName: "a");
+
+            // Act
+            var addressScheme = CreateAddressScheme(endpoint);
+
+            // Assert
+            var matchWithRequiredValue = Assert.Single(addressScheme.State.MatchesWithRequiredValues);
+            var namedMatches = Assert.Single(addressScheme.State.NamedMatches).Value;
+            var namedMatch = Assert.Single(namedMatches).Match;
+
+            Assert.Same(endpoint, matchWithRequiredValue.Entry.Data);
+            Assert.Same(endpoint, namedMatch.Entry.Data);
+        }
+
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/35592
+        [Fact]
+        public void GetOutboundMatches_DoesNotInclude_EndpointsWithoutRequiredValuesInMatchesWithRequiredValues()
+        {
+            // Arrange
+            var endpoint = CreateEndpoint(
+                "api/orders/{id}",
+                defaults: new { controller = "Orders", action = "GetById" },
+                routeName: "a");
+
+            // Act
+            var addressScheme = CreateAddressScheme(endpoint);
+
+            // Assert
+            Assert.Empty(addressScheme.State.MatchesWithRequiredValues);
+
+            var namedMatches = Assert.Single(addressScheme.State.NamedMatches).Value;
+            var namedMatch = Assert.Single(namedMatches).Match;
+            Assert.Same(endpoint, namedMatch.Entry.Data);
+        }
+
+        [Fact]
         public void GetOutboundMatches_DoesNotInclude_EndpointsWithSuppressLinkGenerationMetadata()
         {
             // Arrange
             var endpoint = CreateEndpoint(
-                "/a",
+                "api/orders/{id}",
+                defaults: new { controller = "Orders", action = "GetById" },
+                metadataRequiredValues: new { controller = "Orders", action = "GetById" },
+                routeName: "a",
                 metadataCollection: new EndpointMetadataCollection(new[] { new SuppressLinkGenerationMetadata() }));
 
             // Act
             var addressScheme = CreateAddressScheme(endpoint);
 
             // Assert
-            Assert.Empty(addressScheme.State.AllMatches);
+            var allMatches = GetMatchesWithRequiredValuesPlusNamedMatches(addressScheme);
+            Assert.Empty(allMatches);
         }
 
         [Fact]
@@ -356,13 +402,14 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint(
                 "/a",
-                metadata: new object[] { new SuppressLinkGenerationMetadata(), new EncourageLinkGenerationMetadata(), new RouteNameMetadata(string.Empty), });
+                metadata: new object[] { new SuppressLinkGenerationMetadata(), new EncourageLinkGenerationMetadata(), new RouteNameMetadata("a"), });
 
             // Act
             var addressScheme = CreateAddressScheme(endpoint);
 
             // Assert
-            Assert.Same(endpoint, Assert.Single(addressScheme.State.AllMatches).Entry.Data);
+            var allMatches = GetMatchesWithRequiredValuesPlusNamedMatches(addressScheme);
+            Assert.Same(endpoint, Assert.Single(allMatches).Entry.Data);
         }
 
         private RouteValuesAddressScheme CreateAddressScheme(params Endpoint[] endpoints)
@@ -399,6 +446,18 @@ namespace Microsoft.AspNetCore.Routing
                 order,
                 metadataCollection,
                 null);
+        }
+
+        private static List<Tree.OutboundMatch> GetMatchesWithRequiredValuesPlusNamedMatches(RouteValuesAddressScheme routeValuesAddressScheme)
+        {
+            var state = routeValuesAddressScheme.State;
+
+            Assert.NotNull(state.MatchesWithRequiredValues);
+            Assert.NotNull(state.NamedMatches);
+
+            var namedMatches = state.NamedMatches.Aggregate(Enumerable.Empty<Tree.OutboundMatch>(),
+                (acc, kvp) => acc.Concat(kvp.Value.Select(matchResult => matchResult.Match)));
+            return state.MatchesWithRequiredValues.Concat(namedMatches).ToList();
         }
 
         private class EncourageLinkGenerationMetadata : ISuppressLinkGenerationMetadata

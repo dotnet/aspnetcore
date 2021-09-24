@@ -528,6 +528,9 @@
 *REMOVED*~virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.Content(string contentPath) -> string
 *REMOVED*~virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.IsLocalUrl(string url) -> bool
 *REMOVED*~virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.Link(string routeName, object values) -> string
+Microsoft.AspNetCore.Mvc.ConsumesAttribute.ConsumesAttribute(System.Type! requestType, string! contentType, params string![]! otherContentTypes) -> void
+Microsoft.AspNetCore.Mvc.ConsumesAttribute.IsOptional.get -> bool
+Microsoft.AspNetCore.Mvc.ConsumesAttribute.IsOptional.set -> void
 Microsoft.AspNetCore.Mvc.JsonOptions.AllowInputFormatterExceptionMessages.get -> bool
 Microsoft.AspNetCore.Mvc.JsonOptions.AllowInputFormatterExceptionMessages.set -> void
 Microsoft.AspNetCore.Mvc.Controllers.ControllerActivatorProvider.CreateAsyncReleaser(Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor! descriptor) -> System.Func<Microsoft.AspNetCore.Mvc.ControllerContext!, object!, System.Threading.Tasks.ValueTask>?
@@ -2028,9 +2031,6 @@ Microsoft.AspNetCore.Mvc.Formatters.MediaType.Encoding.get -> System.Text.Encodi
 Microsoft.AspNetCore.Mvc.Formatters.MediaType.GetParameter(string! parameterName) -> Microsoft.Extensions.Primitives.StringSegment
 Microsoft.AspNetCore.Mvc.Formatters.MediaType.MediaType(string! mediaType) -> void
 Microsoft.AspNetCore.Mvc.Formatters.MediaType.MediaType(string! mediaType, int offset, int? length) -> void
-Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection.Add(Microsoft.Net.Http.Headers.MediaTypeHeaderValue! item) -> void
-Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection.Insert(int index, Microsoft.Net.Http.Headers.MediaTypeHeaderValue! item) -> void
-Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection.Remove(Microsoft.Net.Http.Headers.MediaTypeHeaderValue! item) -> bool
 Microsoft.AspNetCore.Mvc.Formatters.OutputFormatter.SupportedMediaTypes.get -> Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection!
 Microsoft.AspNetCore.Mvc.Formatters.StreamOutputFormatter.CanWriteResult(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterCanWriteContext! context) -> bool
 Microsoft.AspNetCore.Mvc.Formatters.StreamOutputFormatter.WriteAsync(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext! context) -> System.Threading.Tasks.Task!
@@ -2041,6 +2041,9 @@ Microsoft.AspNetCore.Mvc.Formatters.SystemTextJsonOutputFormatter.SystemTextJson
 Microsoft.AspNetCore.Mvc.Formatters.TextInputFormatter.SelectCharacterEncoding(Microsoft.AspNetCore.Mvc.Formatters.InputFormatterContext! context) -> System.Text.Encoding?
 Microsoft.AspNetCore.Mvc.Formatters.TextInputFormatter.SupportedEncodings.get -> System.Collections.Generic.IList<System.Text.Encoding!>!
 Microsoft.AspNetCore.Mvc.Formatters.TextOutputFormatter.SupportedEncodings.get -> System.Collections.Generic.IList<System.Text.Encoding!>!
+Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection.Add(Microsoft.Net.Http.Headers.MediaTypeHeaderValue! item) -> void
+Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection.Insert(int index, Microsoft.Net.Http.Headers.MediaTypeHeaderValue! item) -> void
+Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection.Remove(Microsoft.Net.Http.Headers.MediaTypeHeaderValue! item) -> bool
 Microsoft.AspNetCore.Mvc.FromBodyAttribute.BindingSource.get -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource!
 Microsoft.AspNetCore.Mvc.FromFormAttribute.BindingSource.get -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource!
 Microsoft.AspNetCore.Mvc.FromFormAttribute.Name.get -> string?
@@ -2164,6 +2167,13 @@ Microsoft.AspNetCore.Mvc.ModelBinderAttribute.Name.set -> void
 *REMOVED*~Microsoft.AspNetCore.Mvc.ProblemDetails.Title.set -> void
 *REMOVED*~Microsoft.AspNetCore.Mvc.ProblemDetails.Type.get -> string
 *REMOVED*~Microsoft.AspNetCore.Mvc.ProblemDetails.Type.set -> void
+*REMOVED*Microsoft.AspNetCore.Mvc.ProblemDetails
+*REMOVED*Microsoft.AspNetCore.Mvc.ProblemDetails.ProblemDetails() -> void
+*REMOVED*Microsoft.AspNetCore.Mvc.ProblemDetails.Status.get -> int?
+*REMOVED*Microsoft.AspNetCore.Mvc.ProblemDetails.Status.set -> voidMicrosoft.AspNetCore.Mvc.ProblemDetails
+*REMOVED*Microsoft.AspNetCore.Mvc.ProblemDetails.ProblemDetails() -> void
+*REMOVED*Microsoft.AspNetCore.Mvc.ProblemDetails.Status.get -> int?
+*REMOVED*Microsoft.AspNetCore.Mvc.ProblemDetails.Status.set -> void
 *REMOVED*~Microsoft.AspNetCore.Mvc.ProducesAttribute.ContentTypes.get -> Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection
 *REMOVED*~Microsoft.AspNetCore.Mvc.ProducesAttribute.ContentTypes.set -> void
 *REMOVED*~Microsoft.AspNetCore.Mvc.ProducesAttribute.ProducesAttribute(System.Type type) -> void
@@ -2281,15 +2291,6 @@ Microsoft.AspNetCore.Mvc.PhysicalFileResult.FileName.get -> string!
 Microsoft.AspNetCore.Mvc.PhysicalFileResult.FileName.set -> void
 Microsoft.AspNetCore.Mvc.PhysicalFileResult.PhysicalFileResult(string! fileName, Microsoft.Net.Http.Headers.MediaTypeHeaderValue! contentType) -> void
 Microsoft.AspNetCore.Mvc.PhysicalFileResult.PhysicalFileResult(string! fileName, string! contentType) -> void
-Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.get -> string?
-Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.set -> void
-Microsoft.AspNetCore.Mvc.ProblemDetails.Extensions.get -> System.Collections.Generic.IDictionary<string!, object?>!
-Microsoft.AspNetCore.Mvc.ProblemDetails.Instance.get -> string?
-Microsoft.AspNetCore.Mvc.ProblemDetails.Instance.set -> void
-Microsoft.AspNetCore.Mvc.ProblemDetails.Title.get -> string?
-Microsoft.AspNetCore.Mvc.ProblemDetails.Title.set -> void
-Microsoft.AspNetCore.Mvc.ProblemDetails.Type.get -> string?
-Microsoft.AspNetCore.Mvc.ProblemDetails.Type.set -> void
 Microsoft.AspNetCore.Mvc.ProducesAttribute.ContentTypes.get -> Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection!
 Microsoft.AspNetCore.Mvc.ProducesAttribute.ContentTypes.set -> void
 Microsoft.AspNetCore.Mvc.ProducesAttribute.ProducesAttribute(System.Type! type) -> void
@@ -3221,4 +3222,4 @@ virtual Microsoft.AspNetCore.Mvc.ProducesAttribute.OnResultExecuted(Microsoft.As
 virtual Microsoft.AspNetCore.Mvc.ProducesAttribute.OnResultExecuting(Microsoft.AspNetCore.Mvc.Filters.ResultExecutingContext! context) -> void
 virtual Microsoft.AspNetCore.Mvc.RequireHttpsAttribute.HandleNonHttpsRequest(Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext! filterContext) -> void
 virtual Microsoft.AspNetCore.Mvc.RequireHttpsAttribute.OnAuthorization(Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext! filterContext) -> void
-
+Microsoft.AspNetCore.Mvc.ProducesResponseTypeAttribute.ProducesResponseTypeAttribute(System.Type! type, int statusCode, string! contentType, params string![]! additionalContentTypes) -> void

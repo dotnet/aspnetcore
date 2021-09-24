@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -28,6 +28,30 @@ namespace Microsoft.AspNetCore.Diagnostics
                 {
                     Assert.Empty(context.Request.RouteValues);
                     Assert.Null(context.GetEndpoint());
+                    return Task.CompletedTask;
+                });
+            var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor);
+
+            // Act & Assert
+            await middleware.Invoke(httpContext);
+        }
+
+        [Fact]
+        public async Task Invoke_ExceptionHandlerCaptureRouteValuesAndEndpoint()
+        {
+            // Arrange
+            var httpContext = CreateHttpContext();
+            var endpoint = new Endpoint((_) => Task.CompletedTask, new EndpointMetadataCollection(), "Test");
+            httpContext.SetEndpoint(endpoint);
+            httpContext.Request.RouteValues["John"] = "Doe";
+
+            var optionsAccessor = CreateOptionsAccessor(
+                exceptionHandler: context =>
+                {
+                    var feature = context.Features.Get<IExceptionHandlerPathFeature>();
+                    Assert.Equal(endpoint, feature.Endpoint);
+                    Assert.Equal("Doe", feature.RouteValues["John"]);
+
                     return Task.CompletedTask;
                 });
             var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor);

@@ -25,28 +25,24 @@ namespace Test
             ));
             __builder.AddAttribute(2, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment<string>)((context) => (__builder2) => {
                 __builder2.OpenElement(3, "div");
-                __builder2.AddContent(4, 
 #nullable restore
-#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-                      context.ToLower()
+#line (2,23)-(2,40) 25 "x:\dir\subdir\Test\TestComponent.cshtml"
+__builder2.AddContent(4, context.ToLower());
 
 #line default
 #line hidden
 #nullable disable
-                );
                 __builder2.CloseElement();
             }
             ));
             __builder.AddAttribute(5, "AnotherChildContent", (Microsoft.AspNetCore.Components.RenderFragment<Test.MyComponent<string, int>.Context>)((item) => (__builder2) => {
-                __builder2.AddContent(6, 
 #nullable restore
-#line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
-   System.Math.Max(0, item.Item)
+#line (4,4)-(4,33) 25 "x:\dir\subdir\Test\TestComponent.cshtml"
+__builder2.AddContent(6, System.Math.Max(0, item.Item));
 
 #line default
 #line hidden
 #nullable disable
-                );
                 __builder2.AddMarkupContent(7, ";\r\n");
             }
             ));

@@ -8,12 +8,12 @@ import { RenderQueue } from './Platform/Circuits/RenderQueue';
 import { ConsoleLogger } from './Platform/Logging/Loggers';
 import { LogLevel, Logger } from './Platform/Logging/Logger';
 import { CircuitDescriptor } from './Platform/Circuits/CircuitManager';
-import { setEventDispatcher } from './Rendering/Events/EventDispatcher';
 import { resolveOptions, CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
 import { attachRootComponentToLogicalElement } from './Rendering/Renderer';
 import { discoverComponents, discoverPersistedState, ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
-import { InputFile } from './InputFile';
+import { sendJSDataStream } from './Platform/Circuits/CircuitStreamingInterop';
+import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Server';
 
 let renderingFailed = false;
 let started = false;
@@ -26,26 +26,11 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
 
   // Establish options to be used
   const options = resolveOptions(userOptions);
+  const jsInitializer = await fetchAndInvokeInitializers(options);
+
   const logger = new ConsoleLogger(options.logLevel);
-  Blazor.defaultReconnectionHandler = new DefaultReconnectionHandler(logger);
-  Blazor._internal.InputFile = InputFile;
 
-  options.reconnectionHandler = options.reconnectionHandler || Blazor.defaultReconnectionHandler;
-  logger.log(LogLevel.Information, 'Starting up Blazor server-side application.');
-
-  const components = discoverComponents(document, 'server') as ServerComponentDescriptor[];
-  const appState = discoverPersistedState(document);
-  const circuit = new CircuitDescriptor(components, appState || '');
-
-
-  const initialConnection = await initializeConnection(options, logger, circuit);
-  const circuitStarted = await circuit.startCircuit(initialConnection);
-  if (!circuitStarted) {
-    logger.log(LogLevel.Error, 'Failed to start the circuit.');
-    return;
-  }
-
-  const reconnect = async (existingConnection?: HubConnection): Promise<boolean> => {
+  Blazor.reconnect = async (existingConnection?: HubConnection): Promise<boolean> => {
     if (renderingFailed) {
       // We can't reconnect after a failure, so exit early.
       return false;
@@ -61,6 +46,21 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
 
     return true;
   };
+  Blazor.defaultReconnectionHandler = new DefaultReconnectionHandler(logger);
+
+  options.reconnectionHandler = options.reconnectionHandler || Blazor.defaultReconnectionHandler;
+  logger.log(LogLevel.Information, 'Starting up Blazor server-side application.');
+
+  const components = discoverComponents(document, 'server') as ServerComponentDescriptor[];
+  const appState = discoverPersistedState(document);
+  const circuit = new CircuitDescriptor(components, appState || '');
+
+  const initialConnection = await initializeConnection(options, logger, circuit);
+  const circuitStarted = await circuit.startCircuit(initialConnection);
+  if (!circuitStarted) {
+    logger.log(LogLevel.Error, 'Failed to start the circuit.');
+    return;
+  }
 
   let disconnectSent = false;
   const cleanup = () => {
@@ -76,9 +76,9 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
 
   window.addEventListener('unload', cleanup, { capture: false, once: true });
 
-  Blazor.reconnect = reconnect;
-
   logger.log(LogLevel.Information, 'Blazor server-side application started.');
+
+  jsInitializer.invokeAfterStartedCallbacks(Blazor);
 }
 
 async function initializeConnection(options: CircuitStartOptions, logger: Logger, circuit: CircuitDescriptor): Promise<HubConnection> {
@@ -93,19 +93,29 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
 
   const connection = connectionBuilder.build();
 
-  setEventDispatcher((descriptor, args) => {
-    connection.send('DispatchBrowserEvent', JSON.stringify(descriptor), JSON.stringify(args));
-  });
-
   // Configure navigation via SignalR
   Blazor._internal.navigationManager.listenForNavigationEvents((uri: string, intercepted: boolean): Promise<void> => {
     return connection.send('OnLocationChanged', uri, intercepted);
   });
 
-  connection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(0, circuit.resolveElement(selector), componentId));
+  connection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(0, circuit.resolveElement(selector), componentId, false));
   connection.on('JS.BeginInvokeJS', DotNet.jsCallDispatcher.beginInvokeJSFromDotNet);
   connection.on('JS.EndInvokeDotNet', DotNet.jsCallDispatcher.endInvokeDotNetFromJS);
   connection.on('JS.ReceiveByteArray', DotNet.jsCallDispatcher.receiveByteArray);
+
+  connection.on('JS.BeginTransmitStream', (streamId: number) => {
+    const readableStream = new ReadableStream({
+      start(controller) {
+        connection.stream('SendDotNetStreamToJS', streamId).subscribe({
+          next: (chunk: Uint8Array) => controller.enqueue(chunk),
+          complete: () => controller.close(),
+          error: (err) => controller.error(err),
+        });
+      }
+    });
+
+    DotNet.jsCallDispatcher.supplyDotNetStream(streamId, readableStream);
+  });
 
   const renderQueue = RenderQueue.getOrCreate(logger);
   connection.on('JS.RenderBatch', (batchId: number, batchData: Uint8Array) => {
@@ -122,10 +132,21 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
 
   Blazor._internal.forceCloseConnection = () => connection.stop();
 
+  Blazor._internal.sendJSDataStream = (data: ArrayBufferView | Blob, streamId: number, chunkSize: number) => sendJSDataStream(connection, data, streamId, chunkSize);
+
   try {
     await connection.start();
-  } catch (ex) {
-    unhandledError(connection, ex, logger);
+  } catch (ex: any) {
+    unhandledError(connection, ex as Error, logger);
+
+    if (ex.errorType === 'FailedToNegotiateWithServerError') {
+      // Connection with the server has been interrupted, and we're in the process of reconnecting.
+      // Throw this exception so it can be handled at the reconnection layer, and don't show the
+      // error notification.
+      throw ex;
+    } else {
+      showErrorNotification();
+    }
   }
 
   DotNet.attachDispatcher({

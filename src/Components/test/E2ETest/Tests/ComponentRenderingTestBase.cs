@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -240,6 +240,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34941")]
         public void CanAddAndRemoveChildComponentsDynamically()
         {
             // Initially there are zero child components
@@ -410,6 +411,28 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void CanUseFocusExtensionToFocusSvgElement()
+        {
+            Browser.Manage().Window.Size = new System.Drawing.Size(100, 300);
+            var appElement = Browser.MountTestComponent<SvgFocusComponent>();
+
+            var buttonElement = appElement.FindElement(By.Id("focus-button"));
+
+            // Make sure the circle isn't focused when the test begins; we don't want
+            // the test to pass just because the circle started as the focused element
+            Browser.NotEqual("focus-circle", getFocusedElementId);
+
+            // Click the button whose callback focuses the SVG element
+            buttonElement.Click();
+
+            // Verify that the circle is focused
+            Browser.Equal("focus-circle", getFocusedElementId);
+
+            // A local helper that gets the ID of the focused element.
+            string getFocusedElementId() => Browser.SwitchTo().ActiveElement().GetAttribute("id");
+        }
+
+        [Fact]
         public void CanUseFocusExtensionToFocusElementPreventScroll()
         {
             Browser.Manage().Window.Size = new System.Drawing.Size(100, 300);
@@ -440,7 +463,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             string getFocusedElementId() => Browser.SwitchTo().ActiveElement().GetAttribute("id");
 
             // A local helper that gets window.PageYOffset
-            long getPageYOffset() => (long)((IJavaScriptExecutor)Browser).ExecuteScript("return window.pageYOffset");
+            long getPageYOffset() => (long)((IJavaScriptExecutor)Browser).ExecuteScript("return Math.round(window.pageYOffset)");
         }
 
         [Theory]
@@ -462,7 +485,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("focus-input-onafterrender", () => Browser.SwitchTo().ActiveElement().GetAttribute("id"));
 
             // As well as actually focusing and triggering the onfocusin event, we should not be seeing any errors
-            var log = Browser.Manage().Logs.GetLog(LogType.Browser);
+            var log = Browser.Manage().Logs.GetLog(LogType.Browser).ToArray();
             Assert.DoesNotContain(log, entry => entry.Level == LogLevel.Severe);
         }
 

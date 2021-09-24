@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -119,15 +119,23 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     Server.RequestQueue.Handle,
                     _requestContext.RequestId,
                     // Small perf impact by not using HTTP_RECEIVE_REQUEST_FLAG_COPY_BODY
-                    // if the request sends header+body in a single TCP packet 
+                    // if the request sends header+body in a single TCP packet
                     (uint)HttpApiTypes.HTTP_FLAGS.NONE,
                     _requestContext.NativeRequest,
                     _requestContext.Size,
                     &bytesTransferred,
                     _overlapped);
 
-                if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_INVALID_PARAMETER && _requestContext.RequestId != 0)
+                if ((statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_CONNECTION_INVALID
+                    || statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_INVALID_PARAMETER)
+                    && _requestContext.RequestId != 0)
                 {
+                    // ERROR_CONNECTION_INVALID:
+                    // The client reset the connection between the time we got the MORE_DATA error and when we called HttpReceiveHttpRequest
+                    // with the new buffer. We can clear the request id and move on to the next request.
+                    //
+                    // ERROR_INVALID_PARAMETER: Historical check from HttpListener.
+                    // https://referencesource.microsoft.com/#System/net/System/Net/_ListenerAsyncResult.cs,137
                     // we might get this if somebody stole our RequestId,
                     // set RequestId to 0 and start all over again with the buffer we just allocated
                     // BUGBUG: how can someone steal our request ID?  seems really bad and in need of fix.

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -17,17 +17,18 @@ namespace Microsoft.AspNetCore.Hosting
         private readonly RequestDelegate _application;
         private readonly IHttpContextFactory? _httpContextFactory;
         private readonly DefaultHttpContextFactory? _defaultHttpContextFactory;
-        private HostingApplicationDiagnostics _diagnostics;
+        private readonly HostingApplicationDiagnostics _diagnostics;
 
         public HostingApplication(
             RequestDelegate application,
             ILogger logger,
             DiagnosticListener diagnosticSource,
             ActivitySource activitySource,
+            DistributedContextPropagator propagator,
             IHttpContextFactory httpContextFactory)
         {
             _application = application;
-            _diagnostics = new HostingApplicationDiagnostics(logger, diagnosticSource, activitySource);
+            _diagnostics = new HostingApplicationDiagnostics(logger, diagnosticSource, activitySource, propagator);
             if (httpContextFactory is DefaultHttpContextFactory factory)
             {
                 _defaultHttpContextFactory = factory;
@@ -111,7 +112,7 @@ namespace Microsoft.AspNetCore.Hosting
                 _httpContextFactory!.Dispose(httpContext);
             }
 
-            _diagnostics.ContextDisposed(context);
+            HostingApplicationDiagnostics.ContextDisposed(context);
 
             // Reset the context as it may be pooled
             context.Reset();

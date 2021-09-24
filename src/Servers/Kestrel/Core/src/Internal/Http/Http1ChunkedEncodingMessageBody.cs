@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -474,7 +474,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private int CalculateChunkSize(int extraHexDigit, int currentParsedSize)
+        private static int CalculateChunkSize(int extraHexDigit, int currentParsedSize)
         {
             try
             {
@@ -515,7 +515,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Complete
         };
 
-        private Pipe CreateRequestBodyPipe(Http1Connection context)
+        private static Pipe CreateRequestBodyPipe(Http1Connection context)
             => new Pipe(new PipeOptions
             (
                 pool: context.MemoryPool,

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq.Expressions;
@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public static class EditContextFieldClassExtensions
     {
-        private readonly static object FieldCssClassProviderKey = new object();
+        private static readonly object FieldCssClassProviderKey = new object();
 
         /// <summary>
         /// Gets a string that indicates the status of the specified field as a CSS class. This will include

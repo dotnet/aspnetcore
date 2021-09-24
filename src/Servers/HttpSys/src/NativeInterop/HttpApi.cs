@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private static HTTPAPI_VERSION version;
 
         // This property is used by HttpListener to pass the version structure to the native layer in API
-        // calls. 
+        // calls.
 
         internal static HTTPAPI_VERSION Version
         {
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        // This property is used by HttpListener to get the Api version in use so that it uses appropriate 
+        // This property is used by HttpListener to get the Api version in use so that it uses appropriate
         // Http APIs.
 
         internal static HTTP_API_VERSION ApiVersion
@@ -125,6 +125,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal static bool SupportsTrailers { get; private set; }
         [MemberNotNullWhen(true, nameof(HttpSetRequestProperty))]
         internal static bool SupportsReset { get; private set; }
+        internal static bool SupportsDelegation { get; private set; }
 
         static HttpApi()
         {
@@ -136,7 +137,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             version.HttpApiMajorVersion = majorVersion;
             version.HttpApiMinorVersion = minorVersion;
 
-            var statusCode = HttpInitialize(version, (uint)HTTP_FLAGS.HTTP_INITIALIZE_SERVER, null);
+            var statusCode = HttpInitialize(version, (uint)(HTTP_FLAGS.HTTP_INITIALIZE_SERVER | HTTP_FLAGS.HTTP_INITIALIZE_CONFIG), null);
 
             supported = statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS;
 
@@ -144,10 +145,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 HttpApiModule = SafeLibraryHandle.Open(HTTPAPI);
                 HttpSetRequestProperty = HttpApiModule.GetProcAddress<HttpSetRequestPropertyInvoker>("HttpSetRequestProperty", throwIfNotFound: false);
-
                 SupportsReset = HttpSetRequestProperty != null;
-                // Trailers support was added in the same release as Reset, but there's no method we can export to check it directly.
-                SupportsTrailers = SupportsReset;
+                SupportsTrailers = IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureResponseTrailers);
+                SupportsDelegation = IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureDelegateEx);
             }
         }
 
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        internal static bool IsFeatureSupported(HTTP_FEATURE_ID feature)
+        private static bool IsFeatureSupported(HTTP_FEATURE_ID feature)
         {
             try
             {

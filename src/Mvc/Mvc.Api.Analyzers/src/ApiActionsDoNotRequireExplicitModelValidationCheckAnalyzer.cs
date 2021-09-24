@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
@@ -109,18 +109,16 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                     return;
                 }
 
-                var returnStatementSyntax = (ReturnStatementSyntax)returnOperation.Syntax;
-                var actualMetadata = ActualApiResponseMetadataFactory.InspectReturnStatementSyntax(
-                    symbolCache,
-                    semanticModel,
-                    returnStatementSyntax,
-                    operationAnalysisContext.CancellationToken);
+                var actualMetadata = ActualApiResponseMetadataFactory.InspectReturnOperation(
+                    in symbolCache,
+                   returnOperation);
 
                 if (actualMetadata == null || actualMetadata.Value.StatusCode != 400)
                 {
                     return;
                 }
 
+                var returnStatementSyntax = returnOperation.Syntax;
                 var additionalLocations = new[]
                 {
                     ifStatement.GetLocation(),

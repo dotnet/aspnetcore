@@ -1,26 +1,22 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+using System.Security.Claims;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Server.Circuits;
-using Microsoft.AspNetCore.Components.Web.Rendering;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.Components.Lifetime;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Microsoft.JSInterop;
-using System.Security.Claims;
 using Moq;
 using Xunit;
-using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Components.Server
 {
@@ -68,17 +64,6 @@ namespace Microsoft.AspNetCore.Components.Server
             var (mockClientProxy, hub) = InitializeComponentHub();
 
             await hub.EndInvokeJSFromDotNet(3, true, "[]");
-
-            var errorMessage = "Circuit not initialized.";
-            mockClientProxy.Verify(m => m.SendCoreAsync("JS.Error", new[] { errorMessage }, It.IsAny<CancellationToken>()), Times.Once());
-        }
-
-        [Fact]
-        public async Task CannotDispatchBrowserEventsBeforeInitialization()
-        {
-            var (mockClientProxy, hub) = InitializeComponentHub();
-
-            await hub.DispatchBrowserEvent("", "");
 
             var errorMessage = "Circuit not initialized.";
             mockClientProxy.Verify(m => m.SendCoreAsync("JS.Error", new[] { errorMessage }, It.IsAny<CancellationToken>()), Times.Once());
@@ -147,12 +132,12 @@ namespace Microsoft.AspNetCore.Components.Server
         {
             private bool circuitSet = false;
 
-            public CircuitHandle GetCircuitHandle(IDictionary<object, object>   circuitHandles, object circuitKey)
+            public CircuitHandle GetCircuitHandle(IDictionary<object, object> circuitHandles, object circuitKey)
             {
                 return null;
             }
 
-            public CircuitHost GetCircuit(IDictionary<object, object>   circuitHandles, object circuitKey)
+            public CircuitHost GetCircuit(IDictionary<object, object> circuitHandles, object circuitKey)
             {
                 if (circuitSet)
                 {
@@ -164,7 +149,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 return null;
             }
 
-            public void SetCircuit(IDictionary<object, object>   circuitHandles, object circuitKey, CircuitHost circuitHost)
+            public void SetCircuit(IDictionary<object, object> circuitHandles, object circuitKey, CircuitHost circuitHost)
             {
                 circuitSet = true;
                 return;
@@ -186,7 +171,8 @@ namespace Microsoft.AspNetCore.Components.Server
             IServiceScopeFactory scopeFactory,
             ILoggerFactory loggerFactory,
             CircuitIdFactory circuitIdFactory,
-            IOptions<CircuitOptions> options) { }
+            IOptions<CircuitOptions> options)
+            { }
 
             // Implement a `CreateCircuitHostAsync` that mocks the construction
             // of the CircuitHost.
@@ -196,7 +182,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 string baseUri,
                 string uri,
                 ClaimsPrincipal user,
-                IComponentApplicationStateStore store)
+                IPersistentComponentStateStore store)
             {
                 var serviceScope = new Mock<IServiceScope>();
                 var circuitHost = TestCircuitHost.Create(serviceScope: new AsyncServiceScope(serviceScope.Object));

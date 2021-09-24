@@ -1,9 +1,12 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
@@ -57,7 +60,10 @@ namespace Microsoft.AspNetCore.Testing
                 _testOutputHelper.Initialize(MessageBus, Test);
             }
 
-            var result = await base.InvokeTestAsync(aggregator);
+            var retryAttribute = GetRetryAttribute(TestMethod);
+            var result = retryAttribute is null
+                ? await base.InvokeTestAsync(aggregator)
+                : await RunTestCaseWithRetryAsync(retryAttribute, aggregator);
 
             if (_ownsTestOutputHelper)
             {
@@ -68,6 +74,35 @@ namespace Microsoft.AspNetCore.Testing
             }
 
             return result;
+        }
+
+        private async Task<Tuple<decimal, string>> RunTestCaseWithRetryAsync(RetryAttribute retryAttribute, ExceptionAggregator aggregator)
+        {
+            var totalTimeTaken = 0m;
+            List<string> messages = new();
+            var numAttempts = Math.Max(1, retryAttribute.MaxRetries);
+
+            for (var attempt = 1; attempt <= numAttempts; attempt++)
+            {
+                var result = await base.InvokeTestAsync(aggregator);
+                totalTimeTaken += result.Item1;
+                messages.Add(result.Item2);
+
+                if (!aggregator.HasExceptions)
+                {
+                    break;
+                }
+                else if (attempt < numAttempts)
+                {
+                    // We can't use the ITestOutputHelper here because there's no active test
+                    messages.Add($"[{TestCase.DisplayName}] Attempt {attempt} of {retryAttribute.MaxRetries} failed due to {aggregator.ToException()}");
+
+                    await Task.Delay(5000);
+                    aggregator.Clear();
+                }
+            }
+
+            return new(totalTimeTaken, string.Join(Environment.NewLine, messages));
         }
 
         protected override async Task<decimal> InvokeTestMethodAsync(ExceptionAggregator aggregator)
@@ -115,6 +150,23 @@ namespace Microsoft.AspNetCore.Testing
             }
 
             return methodInfo.DeclaringType.Assembly.GetCustomAttribute<RepeatAttribute>();
+        }
+
+        private RetryAttribute GetRetryAttribute(MethodInfo methodInfo)
+        {
+            var attributeCandidate = methodInfo.GetCustomAttribute<RetryAttribute>();
+            if (attributeCandidate != null)
+            {
+                return attributeCandidate;
+            }
+
+            attributeCandidate = methodInfo.DeclaringType.GetCustomAttribute<RetryAttribute>();
+            if (attributeCandidate != null)
+            {
+                return attributeCandidate;
+            }
+
+            return methodInfo.DeclaringType.Assembly.GetCustomAttribute<RetryAttribute>();
         }
     }
 }

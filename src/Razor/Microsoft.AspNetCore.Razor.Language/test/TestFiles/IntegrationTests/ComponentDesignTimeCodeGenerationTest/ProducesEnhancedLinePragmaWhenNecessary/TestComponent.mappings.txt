@@ -1,0 +1,31 @@
+Source Location: (41:2,7 [12] x:\dir\subdir\Test\TestComponent.cshtml)
+|DateTime.Now|
+Generated Location: (859:24,7 [12] )
+|DateTime.Now|
+
+Source Location: (96:6,1 [59] x:\dir\subdir\Test\TestComponent.cshtml)
+|JsonToHtml(@"{
+  'key1': 'value1'
+  'key2': 'value2'
+}")|
+Generated Location: (1000:31,6 [59] )
+|JsonToHtml(@"{
+  'key1': 'value1'
+  'key2': 'value2'
+}")|
+
+Source Location: (166:11,7 [79] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    public string JsonToHtml(string foo)
+    {
+        return foo;
+    }
+|
+Generated Location: (1239:43,7 [79] )
+|
+    public string JsonToHtml(string foo)
+    {
+        return foo;
+    }
+|
+

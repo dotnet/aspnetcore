@@ -1,13 +1,15 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-// Based on the implementation in https://raw.githubusercontent.com/dotnet/sdk/4eaeb44f850903af2e0da8d74b7796f9df11c29d/src/BuiltInTools/DotNetDeltaApplier/HotReloadAgent.cs
+// Based on the implementation in https://raw.githubusercontent.com/dotnet/sdk/aad0424c0bfaa60c8bd136a92fd131e53d14561a/src/BuiltInTools/DotNetDeltaApplier/HotReloadAgent.cs
 
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
 
 namespace Microsoft.Extensions.HotReload
 {
@@ -179,31 +181,30 @@ namespace Microsoft.Extensions.HotReload
 
         public void ApplyDeltas(IReadOnlyList<UpdateDelta> deltas)
         {
+            for (var i = 0; i < deltas.Count; i++)
+            {
+                var item = deltas[i];
+                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    if (TryGetModuleId(assembly) is Guid moduleId && moduleId == item.ModuleId)
+                    {
+                        MetadataUpdater.ApplyUpdate(assembly, item.MetadataDelta, item.ILDelta, ReadOnlySpan<byte>.Empty);
+                    }
+                }
+
+                // Additionally stash the deltas away so it may be applied to assemblies loaded later.
+                var cachedDeltas = _deltas.GetOrAdd(item.ModuleId, static _ => new());
+                cachedDeltas.Add(item);
+            }
+
             try
             {
-                // Defer discovering the receiving deltas until the first hot reload delta.
+                // Defer discovering metadata updata handlers until after hot reload deltas have been applied.
                 // This should give enough opportunity for AppDomain.GetAssemblies() to be sufficiently populated.
                 _handlerActions ??= GetMetadataUpdateHandlerActions();
                 var handlerActions = _handlerActions;
 
-                // TODO: Get types to pass in
-                Type[]? updatedTypes = null;
-
-                for (var i = 0; i < deltas.Count; i++)
-                {
-                    var item = deltas[i];
-                    foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-                    {
-                        if (TryGetModuleId(assembly) is Guid moduleId && moduleId == item.ModuleId)
-                        {
-                            System.Reflection.Metadata.AssemblyExtensions.ApplyUpdate(assembly, item.MetadataDelta, item.ILDelta, ReadOnlySpan<byte>.Empty);
-                        }
-                    }
-
-                    // Additionally stash the deltas away so it may be applied to assemblies loaded later.
-                    var cachedDeltas = _deltas.GetOrAdd(item.ModuleId, static _ => new());
-                    cachedDeltas.Add(item);
-                }
+                Type[]? updatedTypes = GetMetadataUpdateTypes(deltas);
 
                 handlerActions.ClearCache.ForEach(a => a(updatedTypes));
                 handlerActions.UpdateApplication.ForEach(a => a(updatedTypes));
@@ -216,18 +217,41 @@ namespace Microsoft.Extensions.HotReload
             }
         }
 
+        private Type[] GetMetadataUpdateTypes(IReadOnlyList<UpdateDelta> deltas)
+        {
+            List<Type>? types = null;
+
+            foreach (var delta in deltas)
+            {
+                var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(assembly => TryGetModuleId(assembly) is Guid moduleId && moduleId == delta.ModuleId);
+                if (assembly is null)
+                {
+                    continue;
+                }
+
+                var assemblyTypes = assembly.GetTypes();
+
+                foreach (var updatedType in delta.UpdatedTypes ?? Array.Empty<int>())
+                {
+                    var type = assemblyTypes.FirstOrDefault(t => t.MetadataToken == updatedType);
+                    if (type != null)
+                    {
+                        types ??= new();
+                        types.Add(type);
+                    }
+                }
+            }
+
+            return types?.ToArray() ?? Type.EmptyTypes;
+        }
+
         public void ApplyDeltas(Assembly assembly, IReadOnlyList<UpdateDelta> deltas)
         {
             try
             {
-                // Defer discovering the receiving deltas until the first hot reload delta.
-                // This should give enough opportunity for AppDomain.GetAssemblies() to be sufficiently populated.
-                _handlerActions ??= GetMetadataUpdateHandlerActions();
-                var handlerActions = _handlerActions;
-
                 foreach (var item in deltas)
                 {
-                    System.Reflection.Metadata.AssemblyExtensions.ApplyUpdate(assembly, item.MetadataDelta, item.ILDelta, ReadOnlySpan<byte>.Empty);
+                    MetadataUpdater.ApplyUpdate(assembly, item.MetadataDelta, item.ILDelta, ReadOnlySpan<byte>.Empty);
                 }
 
                 _log("Deltas applied.");

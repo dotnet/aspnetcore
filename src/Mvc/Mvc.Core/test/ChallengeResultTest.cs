@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -62,43 +62,6 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Act
             await result.ExecuteResultAsync(actionContext);
-
-            // Assert
-            auth.Verify(c => c.ChallengeAsync(httpContext.Object, null, null), Times.Exactly(1));
-        }
-
-        [Fact]
-        public async Task ChallengeResult_ExecuteAsync()
-        {
-            // Arrange
-            var result = new ChallengeResult("", null);
-
-            var auth = new Mock<IAuthenticationService>();
-
-            var httpContext = new Mock<HttpContext>();
-            httpContext.SetupGet(c => c.RequestServices)
-                .Returns(CreateServices().AddSingleton(auth.Object).BuildServiceProvider());
-
-            // Act
-            await ((IResult)result).ExecuteAsync(httpContext.Object);
-
-            // Assert
-            auth.Verify(c => c.ChallengeAsync(httpContext.Object, "", null), Times.Exactly(1));
-        }
-
-        [Fact]
-        public async Task ChallengeResult_ExecuteAsync_NoSchemes()
-        {
-            // Arrange
-            var result = new ChallengeResult(new string[] { }, null);
-
-            var auth = new Mock<IAuthenticationService>();
-            var httpContext = new Mock<HttpContext>();
-            httpContext.SetupGet(c => c.RequestServices)
-                .Returns(CreateServices().AddSingleton(auth.Object).BuildServiceProvider());
-
-            // Act
-            await ((IResult)result).ExecuteAsync(httpContext.Object);
 
             // Assert
             auth.Verify(c => c.ChallengeAsync(httpContext.Object, null, null), Times.Exactly(1));

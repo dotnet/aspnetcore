@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -450,7 +450,7 @@ namespace Interop.FunctionalTests
 
         private class StreamingContent : HttpContent
         {
-            private TaskCompletionSource<int> _sendStarted = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            private readonly TaskCompletionSource<int> _sendStarted = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             private Func<string, Task> _sendContent;
             private TaskCompletionSource<int> _sendComplete;
 
@@ -739,7 +739,7 @@ namespace Interop.FunctionalTests
             await serverReset.Task.DefaultTimeout();
             var responseEx = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync().DefaultTimeout());
             Assert.Contains("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8)", responseEx.ToString());
-            await Assert.ThrowsAsync<TaskCanceledException>(() => streamingContent.SendAsync("Hello World").DefaultTimeout());
+            await Assert.ThrowsAsync<IOException>(() => streamingContent.SendAsync("Hello World").DefaultTimeout());
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => clientEcho.Task.DefaultTimeout());
 
             await host.StopAsync().DefaultTimeout();
@@ -798,7 +798,7 @@ namespace Interop.FunctionalTests
             await serverReset.Task.DefaultTimeout();
             var responseEx = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync().DefaultTimeout());
             Assert.Contains("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8)", responseEx.ToString());
-            await Assert.ThrowsAsync<TaskCanceledException>(() => streamingContent.SendAsync("Hello World").DefaultTimeout());
+            await Assert.ThrowsAsync<IOException>(() => streamingContent.SendAsync("Hello World").DefaultTimeout());
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => clientEcho.Task.DefaultTimeout());
 
             await host.StopAsync().DefaultTimeout();
@@ -1244,7 +1244,6 @@ namespace Interop.FunctionalTests
         }
 
         [Theory]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27370")]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_MaxConcurrentStreamsPost_Server(string scheme)
         {
@@ -1594,6 +1593,7 @@ namespace Interop.FunctionalTests
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Not supported yet")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
         public async Task ClientCertificate_Required()
         {
             var hostBuilder = new HostBuilder()
@@ -1638,6 +1638,7 @@ namespace Interop.FunctionalTests
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Not supported yet")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
         public async Task ClientCertificate_DelayedNotSupported()
         {
             var hostBuilder = new HostBuilder()

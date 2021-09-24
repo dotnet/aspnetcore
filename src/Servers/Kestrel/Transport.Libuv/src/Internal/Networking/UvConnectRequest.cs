@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.Extensions.Logging;
@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
     /// </summary>
     internal class UvConnectRequest : UvRequest
     {
-        private readonly static LibuvFunctions.uv_connect_cb _uv_connect_cb = (req, status) => UvConnectCb(req, status);
+        private static readonly LibuvFunctions.uv_connect_cb _uv_connect_cb = (req, status) => UvConnectCb(req, status);
 
         private Action<UvConnectRequest, int, UvException, object> _callback;
         private object _state;
@@ -37,9 +37,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         }
 
         public void Connect(
-            UvPipeHandle pipe, 
-            string name, 
-            Action<UvConnectRequest, int, UvException, object> callback, 
+            UvPipeHandle pipe,
+            string name,
+            Action<UvConnectRequest, int, UvException, object> callback,
             object state)
         {
             _callback = callback;

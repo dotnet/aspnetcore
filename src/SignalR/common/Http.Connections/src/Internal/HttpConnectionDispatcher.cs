@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -10,6 +10,8 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
@@ -63,9 +65,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             HttpConnectionContext? connectionContext = null;
             var connectionToken = GetConnectionToken(context);
-            if (connectionToken != null)
+
+            if (!StringValues.IsNullOrEmpty(connectionToken))
             {
-                _manager.TryGetConnection(connectionToken, out connectionContext);
+                // Use ToString; IsNullOrEmpty doesn't tell the compiler anything about implicit conversion to string.
+                _manager.TryGetConnection(connectionToken.ToString(), out connectionContext);
             }
 
             var logScope = new ConnectionLogScope(connectionContext?.ConnectionId);
@@ -339,7 +343,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             }
         }
 
-        private void WriteNegotiatePayload(IBufferWriter<byte> writer, string? connectionId, string? connectionToken, HttpContext context, HttpConnectionDispatcherOptions options,
+        private static void WriteNegotiatePayload(IBufferWriter<byte> writer, string? connectionId, string? connectionToken, HttpContext context, HttpConnectionDispatcherOptions options,
             int clientProtocolVersion, string? error)
         {
             var response = new NegotiationResponse();
@@ -379,7 +383,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             return features.Get<IHttpWebSocketFeature>() != null;
         }
 
-        private static string GetConnectionToken(HttpContext context) => context.Request.Query["id"];
+        private static StringValues GetConnectionToken(HttpContext context) => context.Request.Query["id"];
 
         private async Task ProcessSend(HttpContext context, HttpConnectionDispatcherOptions options)
         {
@@ -566,11 +570,24 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             // Setup the connection state from the http context
             connection.User = connection.HttpContext?.User;
 
+            UpdateExpiration(connection, context);
+
             // Set the Connection ID on the logging scope so that logs from now on will have the
             // Connection ID metadata set.
             logScope.ConnectionId = connection.ConnectionId;
 
             return true;
+        }
+
+        private static void UpdateExpiration(HttpConnectionContext connection, HttpContext context)
+        {
+            var authenticateResultFeature = context.Features.Get<IAuthenticateResultFeature>();
+
+            if (authenticateResultFeature is not null)
+            {
+                connection.AuthenticationExpiration =
+                    authenticateResultFeature.AuthenticateResult?.Properties?.ExpiresUtc ?? DateTimeOffset.MaxValue;
+            }
         }
 
         private static void CloneUser(HttpContext newContext, HttpContext oldContext)
@@ -685,7 +702,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 return null;
             }
 
-            if (!_manager.TryGetConnection(connectionToken, out var connection))
+            // Use ToString; IsNullOrEmpty doesn't tell the compiler anything about implicit conversion to string.
+            if (!_manager.TryGetConnection(connectionToken.ToString(), out var connection))
             {
                 // No connection with that ID: Not Found
                 context.Response.StatusCode = StatusCodes.Status404NotFound;
@@ -708,7 +726,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             {
                 connection = CreateConnection(options);
             }
-            else if (!_manager.TryGetConnection(connectionToken, out connection))
+            // Use ToString; IsNullOrEmpty doesn't tell the compiler anything about implicit conversion to string.
+            else if (!_manager.TryGetConnection(connectionToken.ToString(), out connection))
             {
                 // No connection with that ID: Not Found
                 context.Response.StatusCode = StatusCodes.Status404NotFound;

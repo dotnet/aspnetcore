@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -22,9 +22,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         private object _state;
         private const int BUFFER_COUNT = 4;
 
-        private LibuvAwaitable<UvWriteReq> _awaitable = new LibuvAwaitable<UvWriteReq>();
-        private List<GCHandle> _pins = new List<GCHandle>(BUFFER_COUNT + 1);
-        private List<MemoryHandle> _handles = new List<MemoryHandle>(BUFFER_COUNT + 1);
+        private readonly LibuvAwaitable<UvWriteReq> _awaitable = new LibuvAwaitable<UvWriteReq>();
+        private readonly List<GCHandle> _pins = new List<GCHandle>(BUFFER_COUNT + 1);
+        private readonly List<MemoryHandle> _handles = new List<MemoryHandle>(BUFFER_COUNT + 1);
 
         public UvWriteReq(ILibuvTrace logger) : base(logger)
         {

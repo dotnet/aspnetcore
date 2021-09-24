@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -134,17 +134,16 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 if (_contentBoundaryType == BoundaryType.None)
                 {
                     // Note Http.Sys adds the Transfer-Encoding: chunked header to HTTP/2 requests with bodies for back compat.
-                    string transferEncoding = Headers[HeaderNames.TransferEncoding];
-                    if (string.Equals("chunked", transferEncoding?.Trim(), StringComparison.OrdinalIgnoreCase))
+                    var transferEncoding = Headers[HeaderNames.TransferEncoding].ToString();
+                    if (string.Equals("chunked", transferEncoding.Trim(), StringComparison.OrdinalIgnoreCase))
                     {
                         _contentBoundaryType = BoundaryType.Chunked;
                     }
                     else
                     {
-                        string length = Headers[HeaderNames.ContentLength];
-                        long value;
-                        if (length != null && long.TryParse(length.Trim(), NumberStyles.None,
-                            CultureInfo.InvariantCulture.NumberFormat, out value))
+                        string? length = Headers[HeaderNames.ContentLength];
+                        if (length != null &&
+                            long.TryParse(length.Trim(), NumberStyles.None, CultureInfo.InvariantCulture.NumberFormat, out var value))
                         {
                             _contentBoundaryType = BoundaryType.ContentLength;
                             _contentLength = value;

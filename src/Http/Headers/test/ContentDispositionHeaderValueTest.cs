@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -598,6 +598,17 @@ namespace Microsoft.Net.Http.Headers
 
             Assert.Equal(expectedName, result.Name);
             Assert.Equal(expectedFileName, result.FileName);
+        }
+
+        [Fact]
+        public void FileNameWithSurrogatePairs_EncodedCorrectly()
+        {
+            var contentDisposition = new ContentDispositionHeaderValue("attachment");
+
+            contentDisposition.SetHttpFileName("File 🤩 name.txt");
+            Assert.Equal("File __ name.txt", contentDisposition.FileName);
+            Assert.Equal(2, contentDisposition.Parameters.Count);
+            Assert.Equal("UTF-8\'\'File%20%F0%9F%A4%A9%20name.txt", contentDisposition.Parameters[1].Value);
         }
 
         public class ContentDispositionValue

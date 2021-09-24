@@ -5,6 +5,7 @@ import { attachRootComponentToElement, renderBatch } from '../../Rendering/Rende
 import { setApplicationIsTerminated, tryDeserializeMessage } from './WebViewIpcCommon';
 import { sendRenderCompleted } from './WebViewIpcSender';
 import { internalFunctions as navigationManagerFunctions } from '../../Services/NavigationManager';
+import { receiveDotNetDataStream } from '../../StreamingInterop';
 
 export function startIpcReceiver() {
   const messageHandlers = {
@@ -19,7 +20,7 @@ export function startIpcReceiver() {
         renderBatch(0, new OutOfProcessRenderBatch(batchData));
         sendRenderCompleted(batchId, null);
       } catch (ex) {
-        sendRenderCompleted(batchId, ex.toString());
+        sendRenderCompleted(batchId, (ex as Error).toString());
       }
     },
 

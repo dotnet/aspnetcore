@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -166,8 +166,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 #pragma warning disable CA1823 // Avoid unused private fields
         private struct IO_STATUS_BLOCK
         {
-            uint status;
-            ulong information;
+            readonly uint status;
+            readonly ulong information;
         }
 #pragma warning restore CA1823
 

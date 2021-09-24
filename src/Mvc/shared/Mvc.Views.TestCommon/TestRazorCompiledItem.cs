@@ -1,9 +1,6 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -49,20 +46,8 @@ namespace Microsoft.AspNetCore.Razor.Hosting
 
         public static string GetChecksum(string content)
         {
-            byte[] bytes;
-            using (var sha = SHA1.Create())
-            {
-                bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(content));
-            }
-
-            var result = new StringBuilder(bytes.Length);
-            for (var i = 0; i < bytes.Length; i++)
-            {
-                // The x2 format means lowercase hex, where each byte is a 2-character string.
-                result.Append(bytes[i].ToString("x2", CultureInfo.InvariantCulture));
-            }
-
-            return result.ToString();
+            var bytes = SHA1.HashData(Encoding.UTF8.GetBytes(content));
+            return Convert.ToHexString(bytes).ToLowerInvariant();
         }
     }
 }

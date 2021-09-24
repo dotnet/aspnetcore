@@ -1,14 +1,16 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.JSInterop.Implementation;
 using Microsoft.JSInterop.Infrastructure;
 using Xunit;
 
@@ -395,6 +397,34 @@ namespace Microsoft.JSInterop
             Assert.Equal("Element id '7' cannot be added to the byte arrays to be revived with length '2'.", ex.Message);
         }
 
+        [Fact]
+        public void BeginTransmittingStream_MultipleStreams()
+        {
+            // Arrange
+            var runtime = new TestJSRuntime();
+            var streamRef = new DotNetStreamReference(new MemoryStream());
+
+            // Act & Assert
+            for (var i = 1; i <= 10; i++)
+            {
+                Assert.Equal(i, runtime.BeginTransmittingStream(streamRef));
+            }
+        }
+
+        [Fact]
+        public async void ReadJSDataAsStreamAsync_ThrowsNotSupportedException()
+        {
+            // Arrange
+            var runtime = new TestJSRuntime();
+            var dataReference = new JSStreamReference(runtime, 10, 10);
+
+            // Act
+            var exception = await Assert.ThrowsAsync<NotSupportedException>(async () => await runtime.ReadJSDataAsStreamAsync(dataReference, 10, CancellationToken.None));
+
+            // Assert
+            Assert.Equal("The current JavaScript runtime does not support reading data streams.", exception.Message);
+        }
+
         private class JSError
         {
             public DotNetInvocationInfo InvocationInfo { get; set; }
@@ -461,6 +491,12 @@ namespace Microsoft.JSInterop
                     Identifier = identifier,
                     ArgsJson = argsJson,
                 });
+            }
+
+            protected internal override Task TransmitStreamAsync(long streamId, DotNetStreamReference dotNetStreamReference)
+            {
+                // No-op
+                return Task.CompletedTask;
             }
         }
     }

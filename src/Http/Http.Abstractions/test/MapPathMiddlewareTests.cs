@@ -1,11 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder.Internal;
 using Microsoft.AspNetCore.Http;
-using Xunit;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Builder.Extensions
 {
@@ -214,12 +212,62 @@ namespace Microsoft.AspNetCore.Builder.Extensions
             Assert.Equal("/route2/subroute2/subsub2", context.Request.Path.Value);
         }
 
+        [Fact]
+        public void ApplicationBuilderMapOverloadPreferredOverEndpointBuilderGivenStringPathAndImplicitLambdaParameterType()
+        {
+            var mockWebApplication = new MockWebApplication();
+
+            mockWebApplication.Map("/foo", app => { });
+
+            Assert.True(mockWebApplication.UseCalled);
+        }
+
+        [Fact]
+        public void ApplicationBuilderMapOverloadPreferredOverEndpointBuilderGivenStringPathAndExplicitLambdaParameterType()
+        {
+            var mockWebApplication = new MockWebApplication();
+
+            mockWebApplication.Map("/foo", (IApplicationBuilder app) => { });
+
+            Assert.True(mockWebApplication.UseCalled);
+        }
+
         private HttpContext CreateRequest(string basePath, string requestPath)
         {
             HttpContext context = new DefaultHttpContext();
             context.Request.PathBase = new PathString(basePath);
             context.Request.Path = new PathString(requestPath);
             return context;
+        }
+
+        private class MockWebApplication : IApplicationBuilder, IEndpointRouteBuilder
+        {
+            public bool UseCalled { get; set; }
+
+            public IServiceProvider ApplicationServices { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+            public IFeatureCollection ServerFeatures => throw new NotImplementedException();
+
+            public IDictionary<string, object?> Properties => throw new NotImplementedException();
+
+            public IServiceProvider ServiceProvider => throw new NotImplementedException();
+
+            public ICollection<EndpointDataSource> DataSources => throw new NotImplementedException();
+
+            public IApplicationBuilder CreateApplicationBuilder() => throw new NotImplementedException();
+
+            public IApplicationBuilder New() => this;
+
+            public IApplicationBuilder Use(Func<RequestDelegate, RequestDelegate> middleware)
+            {
+                UseCalled = true;
+                return this;
+            }
+
+            public RequestDelegate Build()
+            {
+                return context => Task.CompletedTask;
+            }
         }
     }
 }

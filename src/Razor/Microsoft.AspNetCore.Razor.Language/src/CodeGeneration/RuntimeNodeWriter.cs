@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -58,8 +58,11 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             IDisposable linePragmaScope = null;
             if (node.Source != null)
             {
-                linePragmaScope = context.CodeWriter.BuildLinePragma(node.Source.Value, context);
-                context.CodeWriter.WritePadding(WriteCSharpExpressionMethod.Length + 1, node.Source, context);
+                linePragmaScope = context.CodeWriter.BuildEnhancedLinePragma(node.Source.Value, context, WriteCSharpExpressionMethod.Length + 1);
+                if (!context.Options.UseEnhancedLinePragma)
+                {
+                    context.CodeWriter.WritePadding(WriteCSharpExpressionMethod.Length + 1, node.Source, context);
+                }
             }
 
             context.CodeWriter.WriteStartMethodInvocation(WriteCSharpExpressionMethod);
@@ -200,14 +203,27 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public override void WriteCSharpExpressionAttributeValue(CodeRenderingContext context, CSharpExpressionAttributeValueIntermediateNode node)
         {
-            using (context.CodeWriter.BuildLinePragma(node.Source.Value, context))
+            var prefixLocation = node.Source.Value.AbsoluteIndex.ToString(CultureInfo.InvariantCulture);
+            var methodInvocationParenLength = 1;
+            var stringLiteralQuoteLength = 2;
+            var parameterSepLength = 2;
+            // Offset accounts for the length of the method, its arguments, and any
+            // additional characters like open parens and quoted strings
+            var offsetLength = WriteAttributeValueMethod.Length
+                + methodInvocationParenLength
+                + node.Prefix.Length
+                + stringLiteralQuoteLength
+                + parameterSepLength
+                + prefixLocation.Length
+                + parameterSepLength;
+            using (context.CodeWriter.BuildEnhancedLinePragma(node.Source.Value, context,  offsetLength))
             {
-                var prefixLocation = node.Source.Value.AbsoluteIndex;
+
                 context.CodeWriter
                     .WriteStartMethodInvocation(WriteAttributeValueMethod)
                     .WriteStringLiteral(node.Prefix)
                     .WriteParameterSeparator()
-                    .Write(prefixLocation.ToString(CultureInfo.InvariantCulture))
+                    .Write(prefixLocation)
                     .WriteParameterSeparator();
 
                 for (var i = 0; i < node.Children.Count; i++)
@@ -351,13 +367,13 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     if (charactersRemaining > 1)
                     {
                         // Take one less character this iteration. We're attempting to split inbetween a surrogate pair.
-                        // This can happen when something like an emoji sits on the barrier between splits; if we were to 
+                        // This can happen when something like an emoji sits on the barrier between splits; if we were to
                         // split the emoji we'd end up with invalid bytes in our output.
                         charactersToSubstring--;
                     }
                     else
                     {
-                        // The user has an invalid file with a partial surrogate a the splitting point. 
+                        // The user has an invalid file with a partial surrogate a the splitting point.
                         // We'll let the invalid character flow but we'll explode later on.
                     }
                 }

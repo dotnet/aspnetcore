@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -24,6 +24,29 @@ namespace Microsoft.AspNetCore.TestHost
 {
     public class ClientHandlerTests
     {
+        [Fact]
+        public async Task SlashUrlEncodedDoesNotGetDecoded()
+        {
+            var handler = new ClientHandler(new PathString(), new InspectingApplication(features =>
+            {
+                Assert.True(features.Get<IHttpRequestLifetimeFeature>().RequestAborted.CanBeCanceled);
+                Assert.Equal(HttpProtocol.Http11, features.Get<IHttpRequestFeature>().Protocol);
+                Assert.Equal("GET", features.Get<IHttpRequestFeature>().Method);
+                Assert.Equal("https", features.Get<IHttpRequestFeature>().Scheme);
+                Assert.Equal("/api/a%2Fb c", features.Get<IHttpRequestFeature>().Path);
+                Assert.NotNull(features.Get<IHttpRequestFeature>().Body);
+                Assert.NotNull(features.Get<IHttpRequestFeature>().Headers);
+                Assert.NotNull(features.Get<IHttpResponseFeature>().Headers);
+                Assert.NotNull(features.Get<IHttpResponseBodyFeature>().Stream);
+                Assert.Equal(200, features.Get<IHttpResponseFeature>().StatusCode);
+                Assert.Null(features.Get<IHttpResponseFeature>().ReasonPhrase);
+                Assert.Equal("example.com", features.Get<IHttpRequestFeature>().Headers["host"]);
+                Assert.NotNull(features.Get<IHttpRequestLifetimeFeature>());
+            }));
+            var httpClient = new HttpClient(handler);
+            await httpClient.GetAsync("https://example.com/api/a%2Fb%20c");
+        }
+
         [Fact]
         public Task ExpectedKeysAreAvailable()
         {

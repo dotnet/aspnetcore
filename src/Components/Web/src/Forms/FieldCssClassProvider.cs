@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
 
@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public class FieldCssClassProvider
     {
-        internal readonly static FieldCssClassProvider Instance = new FieldCssClassProvider();
+        internal static readonly FieldCssClassProvider Instance = new FieldCssClassProvider();
 
         /// <summary>
         /// Gets a string that indicates the status of the specified field as a CSS class.

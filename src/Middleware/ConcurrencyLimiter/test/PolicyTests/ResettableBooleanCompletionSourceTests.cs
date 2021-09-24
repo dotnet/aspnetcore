@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading;
@@ -11,10 +11,10 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
 {
     public static class ResettableBooleanCompletionSourceTests
      {
-        private static StackPolicy _testQueue = TestUtils.CreateStackPolicy(8);
+        private static readonly StackPolicy _testQueue = TestUtils.CreateStackPolicy(8);
 
         [Fact]
-        public async static void CanBeAwaitedMultipleTimes()
+        public static async Task CanBeAwaitedMultipleTimes()
         {
             var tcs = new ResettableBooleanCompletionSource(_testQueue);
 
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
         }
 
         [Fact]
-        public async static void CanSetResultToTrue()
+        public static async Task CanSetResultToTrue()
         {
             var tcs = new ResettableBooleanCompletionSource(_testQueue);
 
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
         }
 
         [Fact]
-        public async static void CanSetResultToFalse()
+        public static async Task CanSetResultToFalse()
         {
             var tcs = new ResettableBooleanCompletionSource(_testQueue);
 

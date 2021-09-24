@@ -1,7 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Text.Json;
 using System.Threading;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <summary>
         /// Limits the number of concurrent request streams per HTTP/2 connection. Excess streams will be refused.
         /// <para>
-        /// Value must be greater than 0, defaults to 100
+        /// Value must be greater than 0, defaults to 100.
         /// </para>
         /// </summary>
         public int MaxStreamsPerConnection
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <summary>
         /// Limits the size of the header compression tables, in octets, the HPACK encoder and decoder on the server can use.
         /// <para>
-        /// Value must be greater than or equal to 0, defaults to 4096
+        /// Value must be greater than or equal to 0, defaults to 4096.
         /// </para>
         /// </summary>
         public int HeaderTableSize
@@ -65,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <summary>
         /// Indicates the size of the largest frame payload that is allowed to be received, in octets. The size must be between 2^14 and 2^24-1.
         /// <para>
-        /// Value must be between 2^14 and 2^24, defaults to 2^14 (16,384)
+        /// Value must be between 2^14 and 2^24, defaults to 2^14 (16,384).
         /// </para>
         /// </summary>
         public int MaxFrameSize
@@ -85,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <summary>
         /// Indicates the size of the maximum allowed size of a request header field sequence. This limit applies to both name and value sequences in their compressed and uncompressed representations.
         /// <para>
-        /// Value must be greater than 0, defaults to 2^14 (16,384)
+        /// Value must be greater than 0, defaults to 2^14 (16,384).
         /// </para>
         /// </summary>
         public int MaxRequestHeaderFieldSize
@@ -194,6 +195,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                 _keepAlivePingTimeout = value != Timeout.InfiniteTimeSpan ? value : TimeSpan.MaxValue;
             }
+        }
+
+        internal void Serialize(Utf8JsonWriter writer)
+        {
+            writer.WritePropertyName(nameof(MaxStreamsPerConnection));
+            writer.WriteNumberValue(MaxStreamsPerConnection);
+
+            writer.WritePropertyName(nameof(HeaderTableSize));
+            writer.WriteNumberValue(HeaderTableSize);
+            
+            writer.WritePropertyName(nameof(MaxFrameSize));
+            writer.WriteNumberValue(MaxFrameSize);
+
+            writer.WritePropertyName(nameof(MaxRequestHeaderFieldSize));
+            writer.WriteNumberValue(MaxRequestHeaderFieldSize);
+
+            writer.WritePropertyName(nameof(InitialConnectionWindowSize));
+            writer.WriteNumberValue(InitialConnectionWindowSize);
+
+            writer.WritePropertyName(nameof(InitialStreamWindowSize));
+            writer.WriteNumberValue(InitialStreamWindowSize);
+
+            writer.WriteString(nameof(KeepAlivePingDelay), KeepAlivePingDelay.ToString());
+            writer.WriteString(nameof(KeepAlivePingTimeout), KeepAlivePingTimeout.ToString());
         }
     }
 }

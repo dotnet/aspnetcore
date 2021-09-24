@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -72,8 +75,8 @@ namespace GenericHostWebSite.Controllers
 
         public class RedirectUsingStatusCode : ActionResult
         {
-            private string _url;
-            private HttpStatusCode _statusCode;
+            private readonly string _url;
+            private readonly HttpStatusCode _statusCode;
 
             public RedirectUsingStatusCode(string url, HttpStatusCode statusCode)
             {

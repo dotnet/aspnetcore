@@ -1,8 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using Microsoft.Extensions.Primitives;
@@ -19,7 +17,7 @@ namespace Microsoft.Net.Http.Headers
             {
                 return false;
             }
-            bool hasFoundValue = false;
+            var hasFoundValue = false;
 
             for (var i = 0; i < values.Count; i++)
             {
@@ -31,12 +29,9 @@ namespace Microsoft.Net.Http.Headers
                     if (TryParseValue(value, ref index, supportsMultipleValues, out var parsedName, out var parsedValue))
                     {
                         // The entry may not contain an actual value, like " , "
-                        if (parsedName != null && parsedValue != null)
-                        {
-                            var name = enableCookieNameEncoding ? Uri.UnescapeDataString(parsedName.Value.Value) : parsedName.Value.Value;
-                            store[name] = Uri.UnescapeDataString(parsedValue.Value.Value);
-                            hasFoundValue = true;
-                        }
+                        var name = enableCookieNameEncoding ? Uri.UnescapeDataString(parsedName.Value.Value!) : parsedName.Value.Value!;
+                        store[name] = Uri.UnescapeDataString(parsedValue.Value.Value!);
+                        hasFoundValue = true;
                     }
                     else
                     {
@@ -64,7 +59,7 @@ namespace Microsoft.Net.Http.Headers
                 return supportsMultipleValues;
             }
 
-            var current = GetNextNonEmptyOrWhitespaceIndex(value, index, supportsMultipleValues, out bool separatorFound);
+            var current = GetNextNonEmptyOrWhitespaceIndex(value, index, supportsMultipleValues, out var separatorFound);
 
             if (separatorFound && !supportsMultipleValues)
             {
@@ -212,7 +207,7 @@ namespace Microsoft.Net.Http.Headers
                 offset++;
             }
 
-            int length = offset - startIndex;
+            var length = offset - startIndex;
             if (offset > startIndex)
             {
                 return input.Subsegment(startIndex, length);

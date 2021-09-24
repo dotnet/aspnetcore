@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -83,14 +84,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
                 {
                     configureServices(services);
 
-                    // Ensure there is at least one multiplexed connection lister factory if none was added to services.
-                    if (!services.Any(d => d.ServiceType == typeof(IMultiplexedConnectionListenerFactory)))
-                    {
-                        // Mock multiplexed connection listner is added so Kestrel doesn't error
-                        // when a HTTP/3 endpoint is configured.
-                        services.AddSingleton<IMultiplexedConnectionListenerFactory>(new MockMultiplexedConnectionListenerFactory());
-                    }
-
                     services.AddSingleton<IStartup>(this);
                     services.AddSingleton(context.LoggerFactory);
 
@@ -115,11 +108,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
 
         public InMemoryHttpClientSlim HttpClientSlim { get; }
 
-        public InMemoryConnection CreateConnection()
+        public InMemoryConnection CreateConnection(Encoding encoding = null)
         {
             var transportConnection = new InMemoryTransportConnection(_memoryPool, Context.Log, Context.Scheduler);
             _transportFactory.AddConnection(transportConnection);
-            return new InMemoryConnection(transportConnection);
+            return new InMemoryConnection(transportConnection, encoding);
         }
 
         public Task StopAsync(CancellationToken cancellationToken = default)

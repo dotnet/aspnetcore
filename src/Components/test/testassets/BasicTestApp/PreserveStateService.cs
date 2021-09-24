@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
@@ -9,14 +9,15 @@ namespace BasicTestApp
 {
     public class PreserveStateService : IDisposable
     {
-        private readonly ComponentApplicationState _componentApplicationState;
+        private readonly PersistentComponentState _componentApplicationState;
+        private PersistingComponentStateSubscription _persistingSubscription;
 
         private ServiceState _state = new();
 
-        public PreserveStateService(ComponentApplicationState componentApplicationState)
+        public PreserveStateService(PersistentComponentState componentApplicationState)
         {
             _componentApplicationState = componentApplicationState;
-            _componentApplicationState.OnPersisting += PersistState;
+            _persistingSubscription = _componentApplicationState.RegisterOnPersisting(PersistState);
             TryRestoreState();
         }
 
@@ -24,7 +25,7 @@ namespace BasicTestApp
 
         private void TryRestoreState()
         {
-            if (_componentApplicationState.TryTakeAsJson<ServiceState>("Service", out var state))
+            if (_componentApplicationState.TryTakeFromJson<ServiceState>("Service", out var state))
             {
                 _state = state;
             }
@@ -42,10 +43,7 @@ namespace BasicTestApp
             return Task.CompletedTask;
         }
 
-        public void Dispose()
-        {
-            _componentApplicationState.OnPersisting -= PersistState;
-        }
+        public void Dispose() => _persistingSubscription.Dispose();
 
         private class ServiceState
         {

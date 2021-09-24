@@ -1,10 +1,16 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
 using Microsoft.JSInterop.WebAssembly;
 
@@ -88,6 +94,16 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             var data = Instance.InvokeUnmarshalled<byte[]>("Blazor._internal.retrieveByteArray");
 
             DotNetDispatcher.ReceiveByteArray(Instance, id, data);
+        }
+
+        /// <inheritdoc />
+        protected override Task<Stream> ReadJSDataAsStreamAsync(IJSStreamReference jsStreamReference, long totalLength, CancellationToken cancellationToken = default)
+            => Task.FromResult<Stream>(PullFromJSDataStream.CreateJSDataStream(this, jsStreamReference, totalLength, cancellationToken));
+
+        /// <inheritdoc />
+        protected override Task TransmitStreamAsync(long streamId, DotNetStreamReference dotNetStreamReference)
+        {
+            return TransmitDataStreamToJS.TransmitStreamAsync(this, streamId, dotNetStreamReference);
         }
     }
 }

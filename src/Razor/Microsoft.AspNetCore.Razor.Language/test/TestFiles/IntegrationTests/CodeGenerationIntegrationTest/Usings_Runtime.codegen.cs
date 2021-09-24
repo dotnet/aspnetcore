@@ -66,16 +66,16 @@ using static global::System.Text.Encoding;
 #nullable disable
             WriteLiteral("\r\n<p>Path\'s full type name is ");
 #nullable restore
-#line 14 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
-                       Write(typeof(Path).FullName);
+#line (14,30)-(14,51) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
+Write(typeof(Path).FullName);
 
 #line default
 #line hidden
 #nullable disable
             WriteLiteral("</p>\r\n<p>Foo\'s actual full type name is ");
 #nullable restore
-#line 15 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
-                             Write(typeof(Foo).FullName);
+#line (15,36)-(15,56) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
+Write(typeof(Foo).FullName);
 
 #line default
 #line hidden

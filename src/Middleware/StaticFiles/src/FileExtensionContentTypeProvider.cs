@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -177,6 +177,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 { ".mid", "audio/mid" },
                 { ".midi", "audio/mid" },
                 { ".mix", "application/octet-stream" },
+                { ".mjs", "text/javascript" },
                 { ".mmf", "application/x-smaf" },
                 { ".mno", "text/xml" },
                 { ".mny", "application/x-msmoney" },
@@ -337,7 +338,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 { ".vsto", "application/x-ms-vsto" },
                 { ".vsw", "application/vnd.visio" },
                 { ".vsx", "application/vnd.visio" },
-                { ".vtx", "application/vnd.visio" },                
+                { ".vtx", "application/vnd.visio" },
                 { ".wasm", "application/wasm" },
                 { ".wav", "audio/wav" },
                 { ".wax", "audio/x-ms-wax" },

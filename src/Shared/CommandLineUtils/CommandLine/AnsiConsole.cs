@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.CommandLineUtils
         }
 
         private int _boldRecursion;
-        private bool _useConsoleColor;
+        private readonly bool _useConsoleColor;
 
         public static AnsiConsole GetOutput(bool useConsoleColor)
         {
@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.CommandLineUtils
 
         public ConsoleColor OriginalForegroundColor { get; }
 
-        private void SetColor(ConsoleColor color)
+        private static void SetColor(ConsoleColor color)
         {
             Console.ForegroundColor = (ConsoleColor)(((int)Console.ForegroundColor & 0x08) | ((int)color & 0x07));
         }

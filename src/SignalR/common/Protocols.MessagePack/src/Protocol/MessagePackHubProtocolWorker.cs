@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         protected abstract object DeserializeObject(ref MessagePackReader reader, Type type, string field);
 
-        private T ApplyHeaders<T>(IDictionary<string, string>? source, T destination) where T : HubInvocationMessage
+        private static T ApplyHeaders<T>(IDictionary<string, string>? source, T destination) where T : HubInvocationMessage
         {
             if (source != null && source.Count > 0)
             {
@@ -440,7 +440,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         protected abstract void Serialize(ref MessagePackWriter writer, Type type, object value);
 
-        private void WriteStreamIds(string[]? streamIds, ref MessagePackWriter writer)
+        private static void WriteStreamIds(string[]? streamIds, ref MessagePackWriter writer)
         {
             if (streamIds != null)
             {
@@ -487,7 +487,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             writer.Write(message.InvocationId);
         }
 
-        private void WriteCloseMessage(CloseMessage message, ref MessagePackWriter writer)
+        private static void WriteCloseMessage(CloseMessage message, ref MessagePackWriter writer)
         {
             writer.WriteArrayHeader(3);
             writer.Write(HubProtocolConstants.CloseMessageType);
@@ -503,13 +503,13 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             writer.Write(message.AllowReconnect);
         }
 
-        private void WritePingMessage(PingMessage pingMessage, ref MessagePackWriter writer)
+        private static void WritePingMessage(PingMessage pingMessage, ref MessagePackWriter writer)
         {
             writer.WriteArrayHeader(1);
             writer.Write(HubProtocolConstants.PingMessageType);
         }
 
-        private void PackHeaders(IDictionary<string, string>? headers, ref MessagePackWriter writer)
+        private static void PackHeaders(IDictionary<string, string>? headers, ref MessagePackWriter writer)
         {
             if (headers != null)
             {
@@ -532,7 +532,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private string ReadInvocationId(ref MessagePackReader reader) =>
             ReadString(ref reader, "invocationId");
 
-        private bool ReadBoolean(ref MessagePackReader reader, string field)
+        private static bool ReadBoolean(ref MessagePackReader reader, string field)
         {
             try
             {
@@ -544,7 +544,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
         }
 
-        private int ReadInt32(ref MessagePackReader reader, string field)
+        private static int ReadInt32(ref MessagePackReader reader, string field)
         {
             try
             {
@@ -556,7 +556,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
         }
 
-        protected string ReadString(ref MessagePackReader reader, string field)
+        protected static string ReadString(ref MessagePackReader reader, string field)
         {
             try
             {
@@ -568,7 +568,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
         }
 
-        private long ReadMapLength(ref MessagePackReader reader, string field)
+        private static long ReadMapLength(ref MessagePackReader reader, string field)
         {
             try
             {
@@ -581,7 +581,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         }
 
-        private long ReadArrayLength(ref MessagePackReader reader, string field)
+        private static long ReadArrayLength(ref MessagePackReader reader, string field)
         {
             try
             {

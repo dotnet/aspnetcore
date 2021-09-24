@@ -1,11 +1,12 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
 using PhotinoNET;
 
@@ -19,15 +20,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Photino
         // because webview2 won't let you do top-level navigation to such a URL.
         // On Linux/Mac, we must use a custom scheme, because their webviews
         // don't have a way to intercept http:// scheme requests.
-        internal readonly static string BlazorAppScheme = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+        internal static readonly string BlazorAppScheme = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
             ? "http"
             : "app";
 
-        internal readonly static string AppBaseUri
+        internal static readonly string AppBaseUri
             = $"{BlazorAppScheme}://0.0.0.0/";
 
-        public PhotinoWebViewManager(PhotinoWindow window, IServiceProvider provider, Dispatcher dispatcher, Uri appBaseUri, IFileProvider fileProvider, string hostPageRelativePath)
-            : base(provider, dispatcher, appBaseUri, fileProvider, hostPageRelativePath)
+        public PhotinoWebViewManager(PhotinoWindow window, IServiceProvider provider, Dispatcher dispatcher, Uri appBaseUri, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
+            : base(provider, dispatcher, appBaseUri, fileProvider, jsComponents, hostPageRelativePath)
         {
             _window = window ?? throw new ArgumentNullException(nameof(window));
             _window.WebMessageReceived += (sender, message) =>

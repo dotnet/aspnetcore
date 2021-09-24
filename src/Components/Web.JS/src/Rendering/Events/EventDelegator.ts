@@ -1,6 +1,6 @@
 import { EventFieldInfo } from './EventFieldInfo';
-import { dispatchEvent } from './EventDispatcher';
 import { eventNameAliasRegisteredCallbacks, getBrowserEventName, getEventNameAliases, getEventTypeOptions } from './EventTypes';
+import { dispatchEvent } from '../WebRendererInteropMethods';
 
 const nonBubblingEvents = toLookup([
   'abort',
@@ -122,13 +122,18 @@ export class EventDelegator {
     // Note that 'eventName' can be an alias. For example, eventName may be 'click.special'
     // while browserEvent.type may be 'click'.
 
+    // Use the event's 'path' rather than the chain of parent nodes, since the path gives
+    // visibility into shadow roots.
+    const path = browserEvent.composedPath();
+
     // Scan up the element hierarchy, looking for any matching registered event handlers
-    let candidateElement = browserEvent.target as Element | null;
+    let candidateEventTarget = path.shift();
     let eventArgs: any = null; // Populate lazily
     let eventArgsIsPopulated = false;
     const eventIsNonBubbling = nonBubblingEvents.hasOwnProperty(eventName);
     let stopPropagationWasRequested = false;
-    while (candidateElement) {
+    while (candidateEventTarget) {
+      const candidateElement = candidateEventTarget as Element;
       const handlerInfos = this.getEventHandlerInfosForElement(candidateElement, false);
       if (handlerInfos) {
         const handlerInfo = handlerInfos.getHandler(eventName);
@@ -151,8 +156,7 @@ export class EventDelegator {
             browserEvent.preventDefault();
           }
 
-          dispatchEvent({
-            browserRendererId: this.browserRendererId,
+          dispatchEvent(this.browserRendererId, {
             eventHandlerId: handlerInfo.eventHandlerId,
             eventName: eventName,
             eventFieldInfo: EventFieldInfo.fromEvent(handlerInfo.renderingComponentId, browserEvent)
@@ -168,7 +172,7 @@ export class EventDelegator {
         }
       }
 
-      candidateElement = (eventIsNonBubbling || stopPropagationWasRequested) ? null : candidateElement.parentElement;
+      candidateEventTarget = (eventIsNonBubbling || stopPropagationWasRequested) ? undefined : path.shift();
     }
   }
 
@@ -312,6 +316,12 @@ class EventHandlerInfosForElement {
 
     return this.stopPropagationFlags ? this.stopPropagationFlags[eventName] : false;
   }
+}
+
+export interface EventDescriptor {
+  eventHandlerId: number;
+  eventName: string;
+  eventFieldInfo: EventFieldInfo | null;
 }
 
 interface EventHandlerInfo {

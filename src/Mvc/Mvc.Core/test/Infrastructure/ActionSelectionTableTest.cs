@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ using Xunit;
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
     // The ActionSelectionTable has different code paths for ActionDescriptor and
-    // RouteEndpoint for creating a table. We're trying to test both code paths 
+    // RouteEndpoint for creating a table. We're trying to test both code paths
     // for creation, but selection works the same for both cases.
     public class ActionSelectionTableTest
     {
@@ -561,7 +561,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 var metadata = new List<object>(a.EndpointMetadata ?? Array.Empty<object>());
                 metadata.Add(a);
                 return new Endpoint(
-                    requestDelegate: context => Task.CompletedTask, 
+                    requestDelegate: context => Task.CompletedTask,
                     metadata: new EndpointMetadataCollection(metadata),
                     displayName: a.DisplayName);
             });

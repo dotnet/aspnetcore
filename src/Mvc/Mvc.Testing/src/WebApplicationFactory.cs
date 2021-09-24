@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -32,8 +32,8 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         private TestServer? _server;
         private IHost? _host;
         private Action<IWebHostBuilder> _configuration;
-        private List<HttpClient> _clients = new();
-        private List<WebApplicationFactory<TEntryPoint>> _derivedFactories = new();
+        private readonly List<HttpClient> _clients = new();
+        private readonly List<WebApplicationFactory<TEntryPoint>> _derivedFactories = new();
 
         /// <summary>
         /// <para>
@@ -160,6 +160,17 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             if (builder is null)
             {
                 var deferredHostBuilder = new DeferredHostBuilder();
+                deferredHostBuilder.UseEnvironment(Environments.Development);
+                // There's no helper for UseApplicationName, but we need to 
+                // set the application name to the target entry point 
+                // assembly name.
+                deferredHostBuilder.ConfigureHostConfiguration(config =>
+                {
+                    config.AddInMemoryCollection(new Dictionary<string, string>
+                    {
+                        { HostDefaults.ApplicationKey, typeof(TEntryPoint).Assembly.GetName()?.Name ?? string.Empty }
+                    });
+                });
                 // This helper call does the hard work to determine if we can fallback to diagnostic source events to get the host instance
                 var factory = HostFactoryResolver.ResolveHostFactory(
                     typeof(TEntryPoint).Assembly,
@@ -226,14 +237,16 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             }
         }
 
-        private string GetContentRootFromFile(string file)
+        private static string? GetContentRootFromFile(string file)
         {
             var data = JsonSerializer.Deserialize<IDictionary<string, string>>(File.ReadAllBytes(file))!;
             var key = typeof(TEntryPoint).Assembly.GetName().FullName;
 
+            // If the `ContentRoot` is not provided in the app manifest, then return null
+            // and fallback to setting the content root relative to the entrypoint's assembly.
             if (!data.TryGetValue(key, out var contentRoot))
             {
-                throw new KeyNotFoundException($"Could not find content root for project '{key}' in test manifest file '{file}'");
+                return null;
             }
 
             return (contentRoot == "~") ? AppContext.BaseDirectory : contentRoot;
@@ -350,7 +363,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             return Array.Empty<Assembly>();
         }
 
-        private void EnsureDepsFile()
+        private static void EnsureDepsFile()
         {
             if (typeof(TEntryPoint).Assembly.EntryPoint == null)
             {
@@ -413,7 +426,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// <param name="builder">The <see cref="IWebHostBuilder"/> used to
         /// create the server.</param>
         /// <returns>The <see cref="TestServer"/> with the bootstrapped application.</returns>
-        protected virtual TestServer CreateServer(IWebHostBuilder builder) => new TestServer(builder);
+        protected virtual TestServer CreateServer(IWebHostBuilder builder) => new(builder);
 
         /// <summary>
         /// Creates the <see cref="IHost"/> with the bootstrapped application in <paramref name="builder"/>.
@@ -478,7 +491,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                 }
 
                 var serverHandler = _server.CreateHandler();
-                handlers[handlers.Length - 1].InnerHandler = serverHandler;
+                handlers[^1].InnerHandler = serverHandler;
 
                 client = new HttpClient(handlers[0]);
             }
@@ -524,6 +537,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -589,6 +603,8 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             _disposedAsync = true;
 
             Dispose(disposing: true);
+
+            GC.SuppressFinalize(this);
         }
 
         private class DelegatedWebApplicationFactory : WebApplicationFactory<TEntryPoint>

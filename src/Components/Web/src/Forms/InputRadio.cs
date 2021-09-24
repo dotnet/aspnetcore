@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -38,18 +38,6 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         [CascadingParameter] private InputRadioContext? CascadedContext { get; set; }
 
-        private string GetCssClass(string fieldClass)
-        {
-            if (AdditionalAttributes != null &&
-                AdditionalAttributes.TryGetValue("class", out var @class) &&
-                !string.IsNullOrEmpty(Convert.ToString(@class, CultureInfo.InvariantCulture)))
-            {
-                return $"{@class} {fieldClass}";
-            }
-
-            return fieldClass;
-        }
-
         /// <inheritdoc />
         protected override void OnParametersSet()
         {
@@ -69,7 +57,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
             builder.OpenElement(0, "input");
             builder.AddMultipleAttributes(1, AdditionalAttributes);
-            builder.AddAttribute(2, "class", GetCssClass(Context.FieldClass));
+            builder.AddAttributeIfNotNullOrEmpty(2, "class", AttributeUtilities.CombineClassNames(AdditionalAttributes, Context.FieldClass));
             builder.AddAttribute(3, "type", "radio");
             builder.AddAttribute(4, "name", Context.GroupName);
             builder.AddAttribute(5, "value", BindConverter.FormatValue(Value?.ToString()));
