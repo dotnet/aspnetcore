@@ -153,6 +153,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [Theory]
         [MemberData(nameof(ConnectionMiddlewareData))]
+#if LIBUV
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/36931")]
+#endif
         public async Task WriteAfterConnectionCloseNoops(ListenOptions listenOptions)
         {
             var connectionClosed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
