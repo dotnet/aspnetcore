@@ -37,3 +37,4 @@ virtual Microsoft.AspNetCore.Razor.Language.RazorCodeGenerationOptionsBuilder.Su
 virtual Microsoft.AspNetCore.Razor.Language.RazorCodeGenerationOptionsBuilder.SupportLocalizedComponentNames.set -> void
 virtual Microsoft.AspNetCore.Razor.Language.RazorCodeGenerationOptions.SupportLocalizedComponentNames.get -> bool
 virtual Microsoft.AspNetCore.Razor.Language.RazorCodeGenerationOptions.SupportLocalizedComponentNames.set -> void
+~static Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilderExtensions.SetSupportLocalizedComponentNames(this Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder builder) -> Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder
