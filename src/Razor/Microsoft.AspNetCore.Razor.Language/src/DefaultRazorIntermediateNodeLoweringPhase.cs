@@ -1229,7 +1229,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     // Uppercase classification) is behind a `SupportLocalizedComponentNames` feature flag.
                     return category is UnicodeCategory.UppercaseLetter ||
                         (document.Options.SupportLocalizedComponentNames &&
-                            (category is UnicodeCategory.TitlecaseLetter || category is UnicodeCategory.OtherLetter));
+                            (category is UnicodeCategory.TitlecaseLetter or UnicodeCategory.OtherLetter));
                 }
             }
 
