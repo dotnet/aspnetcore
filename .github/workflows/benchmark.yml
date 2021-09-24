@@ -51,7 +51,7 @@ jobs:
 
           core.info(`Verified ${comment_user} is a repo collaborator.`);
 
-          // Verify this action is and PR comment
+          // Verify this action is a PR comment
 
           if (context.eventName !== "issue_comment") throw "Error: This action only works on issue_comment events.";
 
