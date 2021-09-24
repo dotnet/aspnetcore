@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public virtual bool SupportLocalizedComponentNames { get; set; }
 
         /// <summary>
-        /// Gets a value that determines if enhanced line pragmas are to be utilized.
+        /// Gets or sets a value that determines if enhanced line pragmas are to be utilized.
         /// </summary>
         public virtual bool UseEnhancedLinePragma { get; set; }
 
