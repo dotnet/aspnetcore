@@ -7,7 +7,7 @@ jobs:
   benchmark:
     # Comments can be triggered on issues and prs, ensure this is a PR
     if: github.repository == 'dotnet/aspnetcore' && github.event.issue.pull_request != '' && contains(github.event.comment.body, '/benchmark')
-    name: Benchmark Kestrel
+    name: Benchmark PR
     runs-on: ubuntu-latest
     steps:
     - name: Extract benchmark argument
@@ -21,6 +21,7 @@ jobs:
           const availableProfiles = {
             "kestrel": "Runs Plaintext on Kestrel changes.",
             "mvc": "Runs Plaintext on Mvc changes.",
+            "yarp": "Runs Yarp on Kestrel changes.",
           };
 
           // Verify the user is a collaborator
@@ -107,7 +108,42 @@ jobs:
       run: |
         CRANK_PROFILE="aspnet-perf-lin-relay"
         CRANK_CONFIGS="--config https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true "
-        CRANK_ARGUMENTS="--config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/plaintext.benchmarks.yml --scenario plaintext --application.framework net6.0 --application.options.outputFiles ./artifacts/bin/Microsoft.AspNetCore.Server.Kestrel/release/net6.0/"
+        CRANK_ARGUMENTS="--config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/plaintext.benchmarks.yml --scenario plaintext --application.framework net6.0 --application.options.outputFiles ./artifacts/bin/Microsoft.AspNetCore.Server.Kestrel/release/net7.0/"
+
+        git checkout $GITHUB_BASE_REF
+
+        echo "Building Kestrel"
+        ./src/Servers/Kestrel/build.sh -c release
+
+        crank $CRANK_CONFIGS --profile $CRANK_PROFILE --relay AZURE_RELAY --json "$GITHUB_WORKSPACE/base.json" $CRANK_ARGUMENTS
+
+        git fetch origin pull/${{ github.event.issue.number }}/head
+        git config --global user.name "user"
+        git config --global user.email "user@company.com"
+        git merge FETCH_HEAD
+
+        echo "Building Kestrel"
+        ./src/Servers/Kestrel/build.sh -c release
+
+        crank $CRANK_CONFIGS --profile $CRANK_PROFILE --relay AZURE_RELAY --json "$GITHUB_WORKSPACE/head.json" $CRANK_ARGUMENTS
+
+        cd $GITHUB_WORKSPACE
+        echo "Arguments:"$'\n```\n'$"$CRANK_ARGUMENTS"$'\n```\n' >> results.txt
+        echo "Results:"$'\n```\n' >> results.txt
+        crank compare base.json head.json >> results.txt
+        echo $'\n```\n' >> results.txt
+
+        cat results.txt
+
+    - name: Benchmark Yarp
+      working-directory: ./aspnetcore
+      env:
+        AZURE_RELAY: ${{ secrets.AZURE_RELAY }}
+      if: ${{ steps.benchmark-argument.outputs.result == 'yarp' }}
+      run: |
+        CRANK_PROFILE="aspnet-perf-lin-relay"
+        CRANK_CONFIGS="--config https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true "
+        CRANK_ARGUMENTS="--config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/proxy.benchmarks.yml --scenario proxy-yarp --application.framework net6.0 --application.options.outputFiles ./artifacts/bin/Microsoft.AspNetCore.Server.Kestrel/release/net7.0/"
 
         git checkout $GITHUB_BASE_REF
 
@@ -142,7 +178,7 @@ jobs:
       run: |
         CRANK_PROFILE="aspnet-perf-lin-relay"
         CRANK_CONFIGS="--config https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true "
-        CRANK_ARGUMENTS="--config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/plaintext.benchmarks.yml --scenario mvc --application.framework net6.0 --application.options.outputFiles ./artifacts/bin/Microsoft.AspNetCore.Mvc.IntegrationTests/release/net6.0/"
+        CRANK_ARGUMENTS="--config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/plaintext.benchmarks.yml --scenario mvc --application.framework net6.0 --application.options.outputFiles ./artifacts/bin/Microsoft.AspNetCore.Mvc.IntegrationTests/release/net7.0/"
 
         git checkout $GITHUB_BASE_REF
 
