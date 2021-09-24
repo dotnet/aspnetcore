@@ -4,7 +4,7 @@
     <DepsPath>$(BaseIntermediateOutputPath)</DepsPath>
     <InstallersOutputPath>$(OutputPath)$(Cultures)/</InstallersOutputPath>
     <DefineConstants>$(DefineConstants);DepsPath=$(DepsPath)</DefineConstants>
-    <DefineConstants>$(DefineConstants);InstallersOutputPath=$(InstallersOutputPath)</DefineConstants>
+    <DefineConstants>$(DefineConstants);OutputPath=$(OutputPath)</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

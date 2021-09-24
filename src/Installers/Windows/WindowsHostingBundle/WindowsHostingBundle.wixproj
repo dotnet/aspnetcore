@@ -48,12 +48,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <SharedFxInstallers Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxPackageVersion)-win-x64.exe">
+    <SharedFxInstallers Include="$(OutputPath)$(RuntimeInstallerBaseName)-$(SharedFxPackageVersion)-win-x64.exe">
       <TargetPlatform>x64</TargetPlatform>
       <BundleNameProperty>SharedFxRedistInstallerx64</BundleNameProperty>
       <Version>$(SharedFxPackageVersion)</Version>
     </SharedFxInstallers>
-    <SharedFxInstallers Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxPackageVersion)-win-x86.exe">
+    <SharedFxInstallers Include="$(OutputPath)$(RuntimeInstallerBaseName)-$(SharedFxPackageVersion)-win-x86.exe">
       <TargetPlatform>x86</TargetPlatform>
       <BundleNameProperty>SharedFxRedistInstallerx86</BundleNameProperty>
       <Version>$(SharedFxPackageVersion)</Version>
