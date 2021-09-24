@@ -20,7 +20,7 @@ A clear and concise description of what the bug is.
 ### To Reproduce
 <!--
 We ❤ code! Point us to a minimalistic repro project hosted in a GitHub repo.
-For a repro project, create a new ASP.NET Core project using the template of your your choice, apply the minimum required code to result in the issue you're observing.
+For a repro project, create a new ASP.NET Core project using the template of your choice, apply the minimum required code to result in the issue you're observing.
 
 We will close this issue if:
 - the repro project you share with us is complex. We can't investigate custom projects, so don't point us to such, please.
