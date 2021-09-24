@@ -43,7 +43,6 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var diagnostic = Assert.Single(generated.Diagnostics);
             Assert.Equal("RZ9979", diagnostic.Id);
             Assert.NotNull(diagnostic.GetMessage(CultureInfo.CurrentCulture));
-
         }
 
         [Fact]
@@ -147,8 +146,10 @@ namespace Test
                 diagnostic.GetMessage(CultureInfo.CurrentCulture));
         }
 
-        [Fact]
-        public void Element_DoesNotStartWithLowerCase_ReportsWarning()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Component_NotFound_ReportsWarning(bool supportLocalizedComponentNames)
         {
             // Arrange & Act
             var generated = CompileToCSharp(@"
@@ -156,7 +157,7 @@ namespace Test
 
 @functions {
     public string Text { get; set; } = ""text"";
-}");
+}", supportLocalizedComponentNames: supportLocalizedComponentNames);
 
             // Assert
             var diagnostic = Assert.Single(generated.Diagnostics);
@@ -165,6 +166,41 @@ namespace Test
             Assert.Equal(
                 "Found markup element with unexpected name 'PossibleComponent'. If this is intended to be a component, add a @using directive for its namespace.",
                 diagnostic.GetMessage(CultureInfo.CurrentCulture));
+        }
+
+        [Fact]
+        public void Component_NotFound_StartsWithOtherLetter_WhenLocalizedComponentNamesIsAllowed_ReportsWarning()
+        {
+            // Arrange & Act
+            var generated = CompileToCSharp(@"
+<繁体字></繁体字>
+
+@functions {
+    public string Text { get; set; } = ""text"";
+}", supportLocalizedComponentNames: true);
+
+            // Assert
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Equal("RZ10012", diagnostic.Id);
+            Assert.Equal(RazorDiagnosticSeverity.Warning, diagnostic.Severity);
+            Assert.Equal(
+                "Found markup element with unexpected name '繁体字'. If this is intended to be a component, add a @using directive for its namespace.",
+                diagnostic.GetMessage(CultureInfo.CurrentCulture));
+        }
+
+        [Fact]
+        public void Component_NotFound_StartsWithOtherLetter_WhenLocalizedComponentNamesIsDisallowed()
+        {
+            // Arrange & Act
+            var generated = CompileToCSharp(@"
+<繁体字></繁体字>
+
+@functions {
+    public string Text { get; set; } = ""text"";
+}", supportLocalizedComponentNames: false);
+
+            // Assert
+            Assert.Empty(generated.Diagnostics);
         }
 
         [Fact]
