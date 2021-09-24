@@ -5,6 +5,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TestGroupName>Kestrel.Core.Tests</TestGroupName>
     <DefineConstants>$(DefineConstants);KESTREL</DefineConstants>
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
   </PropertyGroup>
 
   <ItemGroup>

@@ -9,6 +9,7 @@
     <TestGroupName>Libuv.FunctionalTests</TestGroupName>
     <!-- https://github.com/dotnet/aspnetcore/issues/22114 -->
     <SkipHelixQueues>Windows.10.Arm64;Windows.10.Arm64.Open;Windows.10.Arm64v8;Windows.10.Arm64v8.Open</SkipHelixQueues>
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
   </PropertyGroup>
 
   <ItemGroup>
