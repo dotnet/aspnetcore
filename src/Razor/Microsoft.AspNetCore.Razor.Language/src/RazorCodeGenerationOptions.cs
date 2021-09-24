@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 suppressPrimaryMethodBody: false,
                 suppressNullabilityEnforcement: false,
                 omitMinimizedComponentAttributeValues: false,
+                supportLocalizedComponentNames: false,
                 useEnhancedLinePragma: true);
         }
 
@@ -34,6 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 suppressPrimaryMethodBody: false,
                 suppressNullabilityEnforcement: false,
                 omitMinimizedComponentAttributeValues: false,
+                supportLocalizedComponentNames: false,
                 useEnhancedLinePragma: true);
         }
 
@@ -133,6 +135,14 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// </summary>
         public virtual bool OmitMinimizedComponentAttributeValues { get; }
 
+        /// <summary>
+        /// Gets a value that determines if localized component names are to be supported.
+        /// </summary>
+        public virtual bool SupportLocalizedComponentNames { get; set; }
+
+        /// <summary>
+        /// Gets a value that determines if enhanced line pragmas are to be utilized.
+        /// </summary>
         public virtual bool UseEnhancedLinePragma { get; }
     }
 }

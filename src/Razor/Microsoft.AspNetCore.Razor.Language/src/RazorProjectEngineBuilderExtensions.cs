@@ -92,6 +92,22 @@ namespace Microsoft.AspNetCore.Razor.Language
             return builder;
         }
 
+        /// <summary>
+        /// Sets the SupportLocalizedComponentNames property to make localized component name diagnostics available.
+        /// </summary>
+        /// <param name="builder">The <see cref="RazorProjectEngineBuilder"/>.</param>
+        /// <returns>The <see cref="RazorProjectEngineBuilder"/>.</returns>
+        public static RazorProjectEngineBuilder SetSupportLocalizedComponentNames(this RazorProjectEngineBuilder builder)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.Features.Add(new SetSupportLocalizedComponentNamesFeature());
+            return builder;
+        }
+
         public static void SetImportFeature(this RazorProjectEngineBuilder builder, IImportProjectFeature feature)
         {
             if (builder == null)
@@ -299,6 +315,21 @@ namespace Microsoft.AspNetCore.Razor.Language
                 public override bool Exists => true;
 
                 public override Stream Read() => new MemoryStream(_importBytes);
+            }
+        }
+
+        private class SetSupportLocalizedComponentNamesFeature : RazorEngineFeatureBase, IConfigureRazorCodeGenerationOptionsFeature
+        {
+            public int Order { get; set; }
+
+            public void Configure(RazorCodeGenerationOptionsBuilder options)
+            {
+                if (options == null)
+                {
+                    throw new ArgumentNullException(nameof(options));
+                }
+
+                options.SupportLocalizedComponentNames = true;
             }
         }
 
