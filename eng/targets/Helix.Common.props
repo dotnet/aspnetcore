@@ -36,7 +36,7 @@
 
     <!-- Containers -->
     <HelixAvailableTargetQueue Include="(Fedora.34.Amd64.Open)ubuntu.1804.amd64.open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-34-helix-20210728124700-4f64125" Platform="Linux" />
-    <HelixAvailableTargetQueue Include="(Alpine.314.Amd64.Open)Ubuntu.1804.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.14-20210910135833-8a6f4f3" Platform="Linux" />
+    <HelixAvailableTargetQueue Include="(Alpine.314.Amd64.Open)Ubuntu.1804.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.14-helix-amd64-20210910135833-1848e19" Platform="Linux" />
     <HelixAvailableTargetQueue Include="(Mariner)Ubuntu.1804.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-1.0-helix-20210528192219-92bf620" Platform="Linux" />    
   </ItemGroup>
 
