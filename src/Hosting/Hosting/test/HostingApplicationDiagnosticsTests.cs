@@ -496,11 +496,12 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         [Fact]
         public void ActivityListenersAreCalled()
         {
-            var hostingApplication = CreateApplication(out var features);
+            var testSource = new ActivitySource(Path.GetRandomFileName());
+            var hostingApplication = CreateApplication(out var features, activitySource: testSource);
             var parentSpanId = "";
             using var listener = new ActivityListener
             {
-                ShouldListenTo = activitySource => true,
+                ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
                 Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
                 ActivityStarted = activity =>
                 {
