@@ -29,13 +29,6 @@ jobs:
           const repo_name = context.payload.repository.name;
           const comment_user = context.payload.comment.user.login;
 
-          core.info(`Loading ${context.payload.issue.pull_request.url}.`);
-
-          const pull_request = (await github.request(context.payload.issue.pull_request.url)).data;
-          const target_branch = pull_request.base.ref;
-          const source_repository = pull_request.head.repo.clone_url;
-          const source_branch = pull_request.head.ref;
-
           try {
             var membership = await github.repos.checkCollaborator({
               owner: repo_owner,
