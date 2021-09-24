@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         internal virtual string WorkingDirectory { get; }
 
         // intentionally private - we don't want individual tests messing with the project engine
-        private RazorProjectEngine CreateProjectEngine(RazorConfiguration configuration, MetadataReference[] references)
+        private RazorProjectEngine CreateProjectEngine(RazorConfiguration configuration, MetadataReference[] references, bool supportLocalizedComponentNames)
         {
             return RazorProjectEngine.Create(configuration, FileSystem, b =>
             {
@@ -120,6 +120,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
                 // Turn off checksums, we're testing code generation.
                 b.Features.Add(new SuppressChecksum());
+
+                if (supportLocalizedComponentNames)
+                {
+                    b.Features.Add(new SupportLocalizedComponentNames());
+                }
 
                 b.Features.Add(new TestImportProjectFeature(ImportItems));
 
@@ -168,12 +173,12 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             };
         }
 
-        protected CompileToCSharpResult CompileToCSharp(string cshtmlContent, bool throwOnFailure=true, string cssScope = null)
+        protected CompileToCSharpResult CompileToCSharp(string cshtmlContent, bool throwOnFailure=true, string cssScope = null, bool supportLocalizedComponentNames = false)
         {
-            return CompileToCSharp(DefaultFileName, cshtmlContent, throwOnFailure, cssScope: cssScope);
+            return CompileToCSharp(DefaultFileName, cshtmlContent, throwOnFailure, cssScope: cssScope, supportLocalizedComponentNames: supportLocalizedComponentNames);
         }
 
-        protected CompileToCSharpResult CompileToCSharp(string cshtmlRelativePath, string cshtmlContent, bool throwOnFailure = true, string fileKind = null, string cssScope = null)
+        protected CompileToCSharpResult CompileToCSharp(string cshtmlRelativePath, string cshtmlContent, bool throwOnFailure = true, string fileKind = null, string cssScope = null, bool supportLocalizedComponentNames = false)
         {
             if (DeclarationOnly && DesignTime)
             {
@@ -189,7 +194,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             {
                 // The first phase won't include any metadata references for component discovery. This mirrors
                 // what the build does.
-                var projectEngine = CreateProjectEngine(Configuration, Array.Empty<MetadataReference>());
+                var projectEngine = CreateProjectEngine(Configuration, Array.Empty<MetadataReference>(), supportLocalizedComponentNames);
 
                 RazorCodeDocument codeDocument;
                 foreach (var item in AdditionalRazorItems)
@@ -218,7 +223,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
                 // Add the 'temp' compilation as a metadata reference
                 var references = BaseCompilation.References.Concat(new[] { tempAssembly.Compilation.ToMetadataReference() }).ToArray();
-                projectEngine = CreateProjectEngine(Configuration, references);
+                projectEngine = CreateProjectEngine(Configuration, references, supportLocalizedComponentNames);
 
                 // Now update the any additional files
                 foreach (var item in AdditionalRazorItems)
@@ -247,7 +252,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             {
                 // For single phase compilation tests just use the base compilation's references.
                 // This will include the built-in components.
-                var projectEngine = CreateProjectEngine(Configuration, BaseCompilation.References.ToArray());
+                var projectEngine = CreateProjectEngine(Configuration, BaseCompilation.References.ToArray(), supportLocalizedComponentNames);
 
                 var projectItem = CreateProjectItem(cshtmlRelativePath, cshtmlContent, fileKind, cssScope);
 
@@ -443,6 +448,18 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             public void Configure(RazorCodeGenerationOptionsBuilder options)
             {
                 options.SuppressChecksum = true;
+            }
+        }
+
+        private class SupportLocalizedComponentNames : IConfigureRazorCodeGenerationOptionsFeature
+        {
+            public int Order => 0;
+
+            public RazorEngine Engine { get; set; }
+
+            public void Configure(RazorCodeGenerationOptionsBuilder options)
+            {
+                options.SupportLocalizedComponentNames = true;
             }
         }
 
