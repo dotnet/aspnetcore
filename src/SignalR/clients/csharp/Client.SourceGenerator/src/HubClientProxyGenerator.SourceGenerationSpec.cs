@@ -6,18 +6,18 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
 {
-    internal partial class CallbackRegistrationGenerator
+    internal partial class HubClientProxyGenerator
     {
         public class SourceGenerationSpec
         {
-            public string? RegisterCallbackProviderNamespace;
-            public string? RegisterCallbackProviderClassName;
-            public string? RegisterCallbackProviderMethodName;
-            public string? RegisterCallbackProviderTypeParameterName;
-            public string? RegisterCallbackProviderConnectionParameterName;
-            public string? RegisterCallbackProviderProviderParameterName;
-            public string? RegisterCallbackProviderMethodAccessibility;
-            public string? RegisterCallbackProviderClassAccessibility;
+            public string? SetterNamespace;
+            public string? SetterClassName;
+            public string? SetterMethodName;
+            public string? SetterTypeParameterName;
+            public string? SetterHubConnectionParameterName;
+            public string? SetterProviderParameterName;
+            public string? SetterMethodAccessibility;
+            public string? SetterClassAccessibility;
             public List<TypeSpec> Types = new();
         }
 

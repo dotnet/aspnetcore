@@ -10,8 +10,12 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
 {
     [Generator]
-    internal partial class HubProxyGenerator : IIncrementalGenerator
+    internal partial class HubServerProxyGenerator : IIncrementalGenerator
     {
+        public HubServerProxyGenerator()
+        {
+          //  if (!Debugger.IsAttached) Debugger.Launch();
+        }
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             var methodDeclaration = context.SyntaxProvider

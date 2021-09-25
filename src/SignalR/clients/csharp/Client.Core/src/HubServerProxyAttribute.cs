@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
     /// Marks a method for use by SignalR source generator for serving strongly-typed hub proxies
     /// </summary>
     [System.AttributeUsage(AttributeTargets.Method)]
-    public class GetProxyAttribute : System.Attribute
+    public class HubServerProxyAttribute : System.Attribute
     {
     }
 }

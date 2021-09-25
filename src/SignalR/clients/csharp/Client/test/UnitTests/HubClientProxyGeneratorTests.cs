@@ -11,17 +11,17 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
     internal static partial class RegisterCallbackProviderExtensions
     {
-        [RegisterCallbackProvider]
-        public static partial IDisposable RegisterCallbackProvider<T>(this HubConnection conn, T provider);
+        [HubClientProxy]
+        public static partial IDisposable SetHubClient<T>(this HubConnection conn, T provider);
     }
 
-    public class CallbackRegistrationGeneratorTests
+    public class HubClientProxyGeneratorTests
     {
         public interface IMyClient
         {
             void NoArg();
             void SingleArg(int a);
-            void ManyArgs(int a, float b);
+            void ManyArgs(int a, float b, int? c);
             Task ReturnTask();
         }
 
@@ -39,10 +39,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 CallsOfSingleArg.Add(a);
             }
 
-            public List<(int, float)> CallsOfManyArgs = new();
-            public void ManyArgs(int a, float b)
+            public List<(int, float, int?)> CallsOfManyArgs = new();
+            public void ManyArgs(int a, float b, int? c)
             {
-                CallsOfManyArgs.Add((a, b));
+                CallsOfManyArgs.Add((a, b, c));
             }
 
             public int CallsOfReturnTask;
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             mockConn
                 .Setup(x => x.On(
                     "ManyArgs",
-                    It.Is<Type[]>(t => t.Length == 2 && t[0] == typeof(int) && t[1] == typeof(float)),
+                    It.Is<Type[]>(t => t.Length == 3 && t[0] == typeof(int) && t[1] == typeof(float) && t[2] == typeof(int?)),
                     It.IsAny<Func<object[], object, Task>>(),
                     It.IsAny<object>()))
                 .Returns(manyArgsReg);
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             var myClient = new MyClient();
 
             // Act
-            var registration = conn.RegisterCallbackProvider<IMyClient>(myClient);
+            var registration = conn.SetHubClient<IMyClient>(myClient);
 
             // Assert
             mockConn.VerifyAll();
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             mockConn
                 .Setup(x => x.On(
                     "ManyArgs",
-                    It.Is<Type[]>(t => t.Length == 2 && t[0] == typeof(int) && t[1] == typeof(float)),
+                    It.Is<Type[]>(t => t.Length == 3 && t[0] == typeof(int) && t[1] == typeof(float) && t[2] == typeof(int?)),
                     It.IsAny<Func<object[], object, Task>>(),
                     It.IsAny<object>()))
                 .Returns(manyArgsReg);
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 .Returns(returnTaskReg);
             var conn = mockConn.Object;
             var myClient = new MyClient();
-            var registration = conn.RegisterCallbackProvider<IMyClient>(myClient);
+            var registration = conn.SetHubClient<IMyClient>(myClient);
 
             // Act
             registration.Dispose();
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             mockConn
                 .Setup(x => x.On(
                     "ManyArgs",
-                    It.Is<Type[]>(t => t.Length == 2 && t[0] == typeof(int) && t[1] == typeof(float)),
+                    It.Is<Type[]>(t => t.Length == 3 && t[0] == typeof(int) && t[1] == typeof(float) && t[2] == typeof(int?)),
                     It.IsAny<Func<object[], object, Task>>(),
                     It.IsAny<object>()))
                 .Callback(
@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 .Returns(returnTaskReg);
             var conn = mockConn.Object;
             var myClient = new MyClient();
-            var registration = conn.RegisterCallbackProvider<IMyClient>(myClient);
+            var registration = conn.SetHubClient<IMyClient>(myClient);
 
             // Act + Assert
             Assert.NotNull(noArgFunc);
@@ -245,9 +245,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             Assert.Equal(10, myClient.CallsOfSingleArg[0]);
 
             Assert.NotNull(manyArgsFunc);
-            await singleArgFunc(new object[]{10, 5.5f}, manyArgsState);
+            await singleArgFunc(new object[]{10, 5.5f, null}, manyArgsState);
             Assert.Single(myClient.CallsOfManyArgs);
-            Assert.Equal((10, 5.5f), myClient.CallsOfManyArgs[0]);
+            Assert.Equal((10, 5.5f, null), myClient.CallsOfManyArgs[0]);
 
             Assert.NotNull(returnTaskFunc);
             await returnTaskFunc(Array.Empty<object>(), returnTaskState);

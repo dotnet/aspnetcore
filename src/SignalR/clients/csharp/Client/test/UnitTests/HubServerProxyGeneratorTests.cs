@@ -12,13 +12,13 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
-    internal static partial class GetProxyExtensions
+    internal static partial class HubServerProxyExtensions
     {
-        [GetProxy]
-        public static partial T GetProxy<T>(this HubConnection conn);
+        [HubServerProxy]
+        public static partial T GetHubServer<T>(this HubConnection conn);
     }
 
-    public class HubProxyGeneratorTests
+    public class HubServerProxyGeneratorTests
     {
         public interface IMyHub
         {
@@ -39,6 +39,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             IAsyncEnumerable<int> StreamBidirectionalViaEnumerableWithToken(IAsyncEnumerable<float> reader, CancellationToken cancellationToken);
             ValueTask ReturnValueTask();
             ValueTask<int> ReturnGenericValueTask();
+            Task<int?> HandleNullables(float? nullable);
         }
 
         [Fact]
@@ -54,7 +55,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     default))
                 .Returns(Task.FromResult(default(object)));
             var conn = mockConn.Object;
-            var myHub = conn.GetProxy<IMyHub>();
+            var myHub = conn.GetHubServer<IMyHub>();
 
             // Act
             await myHub.GetNothing();
@@ -76,7 +77,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     default))
                 .Returns(Task.FromResult((object) 10));
             var conn = mockConn.Object;
-            var myHub = conn.GetProxy<IMyHub>();
+            var myHub = conn.GetHubServer<IMyHub>();
 
             // Act
             var result = await myHub.GetScalar();
@@ -99,7 +100,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     default))
                 .Returns(Task.FromResult((object) new List<int>{ 10 }));
             var conn = mockConn.Object;
-            var myHub = conn.GetProxy<IMyHub>();
+            var myHub = conn.GetHubServer<IMyHub>();
 
             // Act
             var result = await myHub.GetCollection();
@@ -125,7 +126,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     default))
                 .Returns(Task.FromResult((object) 10));
             var conn = mockConn.Object;
-            var myHub = conn.GetProxy<IMyHub>();
+            var myHub = conn.GetHubServer<IMyHub>();
 
             // Act
             var result = await myHub.SetScalar(20);
@@ -149,7 +150,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     default))
                 .Returns(Task.FromResult((object) new List<int>{ 10 }));
             var conn = mockConn.Object;
-            var myHub = conn.GetProxy<IMyHub>();
+            var myHub = conn.GetHubServer<IMyHub>();
 
             // Act
             var result = await myHub.SetCollection(arg);
@@ -191,7 +192,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     token))
                 .Returns(asyncEnumerable);
             var conn = mockConn.Object;
-            var myHub = conn.GetProxy<IMyHub>();
+            var myHub = conn.GetHubServer<IMyHub>();
 
             // Act
             _ = await myHub.StreamToClientViaChannel();
@@ -231,7 +232,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     default))
                 .Returns(Task.FromResult((object) 6));
             var conn = mockConn.Object;
-            var myHub = conn.GetProxy<IMyHub>();
+            var myHub = conn.GetHubServer<IMyHub>();
 
             // Act
             await myHub.StreamFromClientViaChannel(channelReader);
@@ -284,7 +285,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     token))
                 .Returns(retEnumerable);
             var conn = mockConn.Object;
-            var myHub = conn.GetProxy<IMyHub>();
+            var myHub = conn.GetHubServer<IMyHub>();
 
             // Act
             _ = await myHub.StreamBidirectionalViaChannel(argChannel.Reader);
@@ -316,7 +317,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     default))
                 .Returns(Task.FromResult((object) 10));
             var conn = mockConn.Object;
-            var myHub = conn.GetProxy<IMyHub>();
+            var myHub = conn.GetHubServer<IMyHub>();
 
             // Act
             await myHub.ReturnValueTask();

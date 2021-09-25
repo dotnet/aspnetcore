@@ -8,17 +8,17 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
 {
-    internal partial class HubProxyGenerator
+    internal partial class HubServerProxyGenerator
     {
         public class SourceGenerationSpec
         {
-            public string? GetProxyNamespace;
-            public string? GetProxyClassName;
-            public string? GetProxyMethodName;
-            public string? GetProxyTypeParameterName;
-            public string? GetProxyHubConnectionParameterName;
-            public string? GetProxyMethodAccessibility;
-            public string? GetProxyClassAccessibility;
+            public string? GetterNamespace;
+            public string? GetterClassName;
+            public string? GetterMethodName;
+            public string? GetterTypeParameterName;
+            public string? GetterHubConnectionParameterName;
+            public string? GetterMethodAccessibility;
+            public string? GetterClassAccessibility;
             public List<ClassSpec> Classes = new();
         }
 

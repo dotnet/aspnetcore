@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
 {
     [Generator]
-    internal partial class CallbackRegistrationGenerator : IIncrementalGenerator
+    internal partial class HubClientProxyGenerator : IIncrementalGenerator
     {
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
