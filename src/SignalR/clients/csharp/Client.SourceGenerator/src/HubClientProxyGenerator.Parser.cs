@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                 if (!symbol.IsPartialDefinition)
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.RegisterCallbackProviderAttributedMethodIsNotPartial,
+                        DiagnosticDescriptors.HubClientProxyAttributedMethodIsNotPartial,
                         symbol.Locations[0]));
                     return false;
                 }
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                 if (!symbol.IsExtensionMethod)
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.RegisterCallbackProviderAttributedMethodIsNotExtension,
+                        DiagnosticDescriptors.HubClientProxyAttributedMethodIsNotExtension,
                         symbol.Locations[0]));
                     return false;
                 }
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                 if (symbol.Arity != 1)
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.RegisterCallbackProviderAttributedMethodTypeArgCountIsBad,
+                        DiagnosticDescriptors.HubClientProxyAttributedMethodTypeArgCountIsBad,
                         symbol.Locations[0]));
                     return false;
                 }
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                 if (symbol.Parameters.Length != 2)
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.RegisterCallbackProviderAttributedMethodArgCountIsBad,
+                        DiagnosticDescriptors.HubClientProxyAttributedMethodArgCountIsBad,
                         symbol.Locations[0]));
                     return false;
                 }
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                 if (!SymbolEqualityComparer.Default.Equals(symbol.TypeArguments[0], symbol.Parameters[1].Type))
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.RegisterCallbackProviderAttributedMethodTypeArgAndProviderTypeDoesNotMatch,
+                        DiagnosticDescriptors.HubClientProxyAttributedMethodTypeArgAndProviderTypeDoesNotMatch,
                         symbol.Locations[0]));
                     return false;
                 }
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                 if (symbol.ReturnType.ToString() != "System.IDisposable")
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.RegisterCallbackProviderAttributedMethodHasBadReturnType,
+                        DiagnosticDescriptors.HubClientProxyAttributedMethodHasBadReturnType,
                         symbol.Locations[0]));
                     return false;
                 }
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                 if (hubConnectionSymbol.ToString() != "Microsoft.AspNetCore.SignalR.Client.HubConnection")
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.RegisterCallbackProviderAttributedMethodArgIsNotHubConnection,
+                        DiagnosticDescriptors.HubClientProxyAttributedMethodArgIsNotHubConnection,
                         symbol.Locations[0]));
                     return false;
                 }
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                     {
                         _context.ReportDiagnostic(
                             Diagnostic.Create(
-                                DiagnosticDescriptors.TooManyRegisterCallbackProviderAttributedMethods,
+                                DiagnosticDescriptors.TooManyHubClientProxyAttributedMethods,
                                 extraneous.GetLocation()));
                     }
 
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                 if (sourceGenerationSpec.SetterMethodAccessibility is null)
                 {
                     _context.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.RegisterCallbackProviderAttributedMethodBadAccessibility,
+                        DiagnosticDescriptors.HubClientProxyAttributedMethodBadAccessibility,
                         methodDeclarationSyntax.GetLocation()));
                     return sourceGenerationSpec;
                 }
@@ -299,7 +299,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                         if (!(member.ReturnsVoid || member.ReturnType is INamedTypeSymbol { Arity: 0, Name: "Task" }))
                         {
                             _context.ReportDiagnostic(Diagnostic.Create(
-                                DiagnosticDescriptors.CallbackRegistrationUnsupportedReturnType,
+                                DiagnosticDescriptors.HubClientProxyUnsupportedReturnType,
                                 typeSpec.CallSite,
                                 methodSpec.Name, member.ReturnType.Name));
                             methodSpec.Support = SupportClassification.UnsupportedReturnType;

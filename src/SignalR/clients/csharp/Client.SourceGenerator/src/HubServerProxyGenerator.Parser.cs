@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                 if (!symbol.IsPartialDefinition)
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.HubProxyGetProxyAttributedMethodIsNotPartial,
+                        DiagnosticDescriptors.HubServerProxyAttributedMethodIsNotPartial,
                         symbol.Locations[0]));
                     return false;
                 }
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                 if (!symbol.IsExtensionMethod)
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.HubProxyGetProxyAttributedMethodIsNotExtension,
+                        DiagnosticDescriptors.HubServerProxyAttributedMethodIsNotExtension,
                         symbol.Locations[0]));
                     return false;
                 }
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                 if (symbol.Arity != 1)
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.HubProxyGetProxyAttributedMethodTypeArgCountIsBad,
+                        DiagnosticDescriptors.HubServerProxyAttributedMethodTypeArgCountIsBad,
                         symbol.Locations[0]));
                     return false;
                 }
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                 if (!SymbolEqualityComparer.Default.Equals(symbol.TypeArguments[0], symbol.ReturnType))
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.HubProxyGetProxyAttributedMethodTypeArgAndReturnTypeDoesNotMatch,
+                        DiagnosticDescriptors.HubServerProxyAttributedMethodTypeArgAndReturnTypeDoesNotMatch,
                         symbol.Locations[0]));
                     return false;
                 }
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                 if (symbol.Parameters.Length != 1)
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.HubProxyGetProxyAttributedMethodArgCountIsBad,
+                        DiagnosticDescriptors.HubServerProxyAttributedMethodArgCountIsBad,
                         symbol.Locations[0]));
                     return false;
                 }
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                 if (hubConnectionSymbol.ToString() != "Microsoft.AspNetCore.SignalR.Client.HubConnection")
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.HubProxyGetProxyAttributedMethodArgIsNotHubConnection,
+                        DiagnosticDescriptors.HubServerProxyAttributedMethodArgIsNotHubConnection,
                         symbol.Locations[0]));
                     return false;
                 }
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                     foreach (var extraneous in methodDeclarationSyntaxes)
                     {
                         _context.ReportDiagnostic(
-                            Diagnostic.Create(DiagnosticDescriptors.TooManyGetProxyAttributedMethods,
+                            Diagnostic.Create(DiagnosticDescriptors.TooManyHubServerProxyAttributedMethods,
                             extraneous.GetLocation()));
                     }
 
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                 if (sourceGenerationSpec.GetterMethodAccessibility is null)
                 {
                     _context.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.HubProxyGetProxyAttributedMethodBadAccessibility,
+                        DiagnosticDescriptors.HubServerProxyAttributedMethodBadAccessibility,
                         methodDeclarationSyntax.GetLocation()));
                     return sourceGenerationSpec;
                 }
@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                     {
                         // T in GetProxy<T> must be an interface
                         _context.ReportDiagnostic(Diagnostic.Create(
-                            DiagnosticDescriptors.HubProxyNonInterfaceGenericTypeArgument,
+                            DiagnosticDescriptors.HubServerProxyNonInterfaceGenericTypeArgument,
                             memberAccess.GetLocation(),
                             proxyType.ToString()));
                         continue;
@@ -324,7 +324,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                             member.ReturnType is not INamedTypeSymbol { Name: "Task" or "ValueTask" })
                         {
                             _context.ReportDiagnostic(Diagnostic.Create(
-                                    DiagnosticDescriptors.HubProxyUnsupportedReturnType,
+                                    DiagnosticDescriptors.HubServerProxyUnsupportedReturnType,
                                     classSpec.CallSite,
                                     methodSpec.Name, member.ReturnType.Name));
                             methodSpec.Support = SupportClassification.UnsupportedReturnType;
