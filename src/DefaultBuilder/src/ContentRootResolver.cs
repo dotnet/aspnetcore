@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore
 {
-    internal class ContentRootResolver
+    internal static class ContentRootResolver
     {
         public static string ResolvePath(string contentRootPath)
         {
