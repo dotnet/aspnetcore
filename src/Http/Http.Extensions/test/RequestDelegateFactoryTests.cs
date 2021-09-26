@@ -1569,8 +1569,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 invoked = true;
             }
 
-            var invalidDataException = new InvalidDataException();
-
             var httpContext = CreateHttpContext();
             httpContext.Request.Headers["Content-Type"] = "application/json";
             httpContext.Request.Headers["Content-Length"] = "1";
