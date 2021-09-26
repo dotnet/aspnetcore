@@ -327,12 +327,14 @@ namespace Microsoft.AspNetCore.Tests
             }
         }
 
-        [Fact]
-        public void SettingContentRootToRelativePathUsesAppContextBaseDirectoryAsPathBase()
+        [Theory]
+        [InlineData("")]  // Empty behaves differently to null
+        [InlineData(".")]
+        public void SettingContentRootToRelativePathUsesAppContextBaseDirectoryAsPathBase(string path)
         {
             var builder = WebApplication.CreateBuilder(new WebApplicationOptions
             {
-                ContentRootPath = "" // Empty behaves differently to null
+                ContentRootPath = path
             });
 
             builder.Host.UseContentRoot(AppContext.BaseDirectory);

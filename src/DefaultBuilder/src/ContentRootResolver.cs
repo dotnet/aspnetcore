@@ -15,13 +15,13 @@ namespace Microsoft.AspNetCore
         {
             if (string.IsNullOrEmpty(contentRootPath))
             {
-                return basePath;
+                return Path.GetFullPath(basePath);
             }
             if (Path.IsPathRooted(contentRootPath))
             {
-                return contentRootPath;
+                return Path.GetFullPath(contentRootPath);
             }
-            return Path.Combine(Path.GetFullPath(basePath), contentRootPath);
+            return Path.GetFullPath(Path.Combine(Path.GetFullPath(basePath), contentRootPath));
         }
     }
 }
