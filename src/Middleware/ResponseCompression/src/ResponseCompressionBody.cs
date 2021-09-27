@@ -201,6 +201,10 @@ namespace Microsoft.AspNetCore.ResponseCompression
             }
         }
 
+        /// <summary>
+        /// Checks if the response should be compressed and sets the response headers.
+        /// </summary>
+        /// <returns>The compression provider to use if compression is enabled, otherwise null.</returns>
         private ICompressionProvider? InitializeCompressionHeaders()
         {
             if (_provider.ShouldCompressResponse(_context))
