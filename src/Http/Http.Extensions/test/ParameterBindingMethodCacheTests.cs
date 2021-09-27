@@ -78,6 +78,7 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         [InlineData(typeof(TryParseStringRecord))]
         [InlineData(typeof(TryParseStringStruct))]
         [InlineData(typeof(TryParseInheritClassWithFormatProvider))]
+        [InlineData(typeof(TryParseFromInterfaceWithFormatProvider))]
         public void FindTryParseStringMethod_ReturnsTheExpectedTryParseMethodWithInvariantCultureCustomType(Type type)
         {
             var methodFound = new ParameterBindingMethodCache().FindTryParseMethod(@type);
@@ -99,6 +100,10 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         [InlineData(typeof(TryParseNoFormatProviderRecord))]
         [InlineData(typeof(TryParseNoFormatProviderStruct))]
         [InlineData(typeof(TryParseInheritClass))]
+        [InlineData(typeof(TryParseFromInterface))]
+        [InlineData(typeof(TryParseFromGrandparentInterface))]
+        [InlineData(typeof(TryParseDirectlyAndFromInterface))]
+        [InlineData(typeof(TryParseFromClassAndInterface))]
         public void FindTryParseMethod_WithNoFormatProvider(Type type)
         {
             var methodFound = new ParameterBindingMethodCache().FindTryParseMethod(@type);
@@ -276,7 +281,27 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
                     new[]
                     {
                         GetFirstParameter((InheritBindAsyncWithParameterInfo arg) => InheritBindAsyncWithParameterInfoMethod(arg))
-                    }
+                    },
+                    new[]
+                    {
+                        GetFirstParameter((BindAsyncFromInterface arg) => BindAsyncFromInterfaceMethod(arg))
+                    },
+                    new[]
+                    {
+                        GetFirstParameter((BindAsyncFromGrandparentInterface arg) => BindAsyncFromGrandparentInterfaceMethod(arg))
+                    },
+                    new[]
+                    {
+                        GetFirstParameter((BindAsyncDirectlyAndFromInterface arg) => BindAsyncDirectlyAndFromInterfaceMethod(arg))
+                    },
+                    new[]
+                    {
+                        GetFirstParameter((BindAsyncFromClassAndInterface arg) => BindAsyncFromClassAndInterfaceMethod(arg))
+                    },
+                    new[]
+                    {
+                        GetFirstParameter((BindAsyncFromInterfaceWithParameterInfo arg) => BindAsyncFromInterfaceWithParameterInfoMethod(arg))
+                    },
                 };
             }
         }
@@ -313,6 +338,7 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         [InlineData(typeof(InvalidNonStaticTryParseStruct))]
         [InlineData(typeof(InvalidNonStaticTryParseClass))]
         [InlineData(typeof(TryParseWrongTypeInheritClass))]
+        [InlineData(typeof(TryParseWrongTypeFromInterface))]
         public void FindTryParseMethod_ThrowsIfInvalidTryParseOnType(Type type)
         {
             var ex = Assert.Throws<InvalidOperationException>(
@@ -320,6 +346,14 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
             Assert.StartsWith($"TryParse method found on {TypeNameHelper.GetTypeDisplayName(type, fullName: false)} with incorrect format. Must be a static method with format", ex.Message);
             Assert.Contains($"bool TryParse(string, IFormatProvider, out {TypeNameHelper.GetTypeDisplayName(type, fullName: false)})", ex.Message);
             Assert.Contains($"bool TryParse(string, out {TypeNameHelper.GetTypeDisplayName(type, fullName: false)})", ex.Message);
+        }
+
+        [Fact]
+        public void FindTryParseMethod_ThrowsIfMultipleInterfacesMatch()
+        {
+            var ex = Assert.Throws<InvalidOperationException>(
+                () => new ParameterBindingMethodCache().FindTryParseMethod(typeof(TryParseFromMultipleInterfaces)));
+            Assert.Equal("TryParseFromMultipleInterfaces implements multiple interfaces defining a static Boolean TryParse(System.String, TryParseFromMultipleInterfaces ByRef) method causing ambiguity.", ex.Message);
         }
 
         [Theory]
@@ -338,6 +372,7 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         [InlineData(typeof(InvalidWrongParamBindAsyncClass))]
         [InlineData(typeof(BindAsyncWrongTypeInherit))]
         [InlineData(typeof(BindAsyncWithParameterInfoWrongTypeInherit))]
+        [InlineData(typeof(BindAsyncWrongTypeFromInterface))]
         public void FindBindAsyncMethod_ThrowsIfInvalidBindAsyncOnType(Type type)
         {
             var cache = new ParameterBindingMethodCache();
@@ -349,6 +384,15 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
             Assert.Contains($"ValueTask<{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}> BindAsync(HttpContext context)", ex.Message);
             Assert.Contains($"ValueTask<{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}?> BindAsync(HttpContext context, ParameterInfo parameter)", ex.Message);
             Assert.Contains($"ValueTask<{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}?> BindAsync(HttpContext context)", ex.Message);
+        }
+
+        [Fact]
+        public void FindBindAsyncMethod_ThrowsIfMultipleInterfacesMatch()
+        {
+            var cache = new ParameterBindingMethodCache();
+            var parameter = new MockParameterInfo(typeof(BindAsyncFromMultipleInterfaces), "anything");
+            var ex = Assert.Throws<InvalidOperationException>(() => cache.FindBindAsyncMethod(parameter));
+            Assert.Equal("BindAsyncFromMultipleInterfaces implements multiple interfaces defining a static System.Threading.Tasks.ValueTask`1[Microsoft.AspNetCore.Http.Extensions.Tests.ParameterBindingMethodCacheTests+BindAsyncFromMultipleInterfaces] BindAsync(Microsoft.AspNetCore.Http.HttpContext) method causing ambiguity.", ex.Message);
         }
 
         [Theory]
@@ -382,6 +426,11 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         private static void BindAsyncSingleArgStructMethod(BindAsyncSingleArgStruct arg) { }
         private static void InheritBindAsyncMethod(InheritBindAsync arg) { }
         private static void InheritBindAsyncWithParameterInfoMethod(InheritBindAsyncWithParameterInfo args) { }
+        private static void BindAsyncFromInterfaceMethod(BindAsyncFromInterface arg) { }
+        private static void BindAsyncFromGrandparentInterfaceMethod(BindAsyncFromGrandparentInterface arg) { }
+        private static void BindAsyncDirectlyAndFromInterfaceMethod(BindAsyncDirectlyAndFromInterface arg) { }
+        private static void BindAsyncFromClassAndInterfaceMethod(BindAsyncFromClassAndInterface arg) { }
+        private static void BindAsyncFromInterfaceWithParameterInfoMethod(BindAsyncFromInterfaceWithParameterInfo args) { }
 
         private static ParameterInfo GetFirstParameter<T>(Expression<Action<T>> expr)
         {
@@ -631,6 +680,75 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         {
         }
 
+        private interface ITryParse<T>
+        {
+            static bool TryParse(string? value, out T? result)
+            {
+                result = default(T);
+                return false;
+            }
+        }
+
+        private interface ITryParse2<T>
+        {
+            static bool TryParse(string? value, out T? result)
+            {
+                result = default(T);
+                return false;
+            }
+        }
+
+        private interface IImplementITryParse<T> : ITryParse<T>
+        {
+        }
+
+        private class TryParseFromInterface : ITryParse<TryParseFromInterface>
+        {
+        }
+
+        private class TryParseFromGrandparentInterface : IImplementITryParse<TryParseFromGrandparentInterface>
+        {
+        }
+
+        private class TryParseDirectlyAndFromInterface : ITryParse<TryParseDirectlyAndFromInterface>
+        {
+            static bool TryParse(string? value, out TryParseDirectlyAndFromInterface? result)
+            {
+                result = null;
+                return false;
+            }
+        }
+
+        private class TryParseFromClassAndInterface
+            : BaseTryParseClass<TryParseFromClassAndInterface>,
+              ITryParse<TryParseFromClassAndInterface>
+        {
+        }
+
+        private class TryParseFromMultipleInterfaces
+            : ITryParse<TryParseFromMultipleInterfaces>,
+              ITryParse2<TryParseFromMultipleInterfaces>
+        {
+        }
+
+        // using wrong T on purpose
+        private class TryParseWrongTypeFromInterface : ITryParse<TryParseFromInterface>
+        {
+        }
+
+        private interface ITryParseWithFormatProvider<T>
+        {
+            public static bool TryParse(string? value, IFormatProvider formatProvider, out T? result)
+            {
+                result = default(T);
+                return false;
+            }
+        }
+
+        private class TryParseFromInterfaceWithFormatProvider : ITryParseWithFormatProvider<TryParseFromInterfaceWithFormatProvider>
+        {
+        }
+
         private record BindAsyncRecord(int Value)
         {
             public static ValueTask<BindAsyncRecord?> BindAsync(HttpContext context, ParameterInfo parameter)
@@ -768,6 +886,71 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
 
         // Using wrong T on purpose
         private class BindAsyncWithParameterInfoWrongTypeInherit : BaseBindAsyncWithParameterInfo<InheritBindAsync>
+        {
+        }
+
+        private interface IBindAsync<T>
+        {
+            static ValueTask<T?> BindAsync(HttpContext context)
+            {
+                return new(default(T));
+            }
+        }
+
+        private interface IBindAsync2<T>
+        {
+            static ValueTask<T?> BindAsync(HttpContext context)
+            {
+                return new(default(T));
+            }
+        }
+
+        private interface IImeplmentIBindAsync<T> : IBindAsync<T>
+        {
+        }
+
+        private class BindAsyncFromInterface : IBindAsync<BindAsyncFromInterface>
+        {
+        }
+
+        private class BindAsyncFromGrandparentInterface : IImeplmentIBindAsync<BindAsyncFromGrandparentInterface>
+        {
+        }
+
+        private class BindAsyncDirectlyAndFromInterface : IBindAsync<BindAsyncDirectlyAndFromInterface>
+        {
+            static ValueTask<BindAsyncFromInterface?> BindAsync(HttpContext context)
+            {
+                return new(result: null);
+            }
+        }
+
+        private class BindAsyncFromClassAndInterface
+            : BaseBindAsync<BindAsyncFromClassAndInterface>,
+              IBindAsync<BindAsyncFromClassAndInterface>
+        {
+        }
+
+        private class BindAsyncFromMultipleInterfaces
+            : IBindAsync<BindAsyncFromMultipleInterfaces>,
+              IBindAsync2<BindAsyncFromMultipleInterfaces>
+        {
+        }
+
+        // using wrong T on purpose
+        private class BindAsyncWrongTypeFromInterface : IBindAsync<BindAsyncFromInterface>
+        {
+        }
+
+        private interface IBindAsyncWithParameterInfo<T>
+        {
+            static ValueTask<T?> BindAsync(HttpContext context, ParameterInfo parameter)
+            {
+                return new(default(T));
+            }
+        }
+
+        private class BindAsyncFromInterfaceWithParameterInfo : IBindAsync<BindAsyncFromInterfaceWithParameterInfo>
         {
         }
 

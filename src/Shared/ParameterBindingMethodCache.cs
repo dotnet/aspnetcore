@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Http
                     //
                     // `DateTimeOffset`s are always in UTC and don't allow specifying an `Unspecific` kind.
                     // For this, we always assume that the original value is already in UTC to avoid resolving
-                    // the offset incorrectly dependening on the timezone of the machine. We don't bother mapping
+                    // the offset incorrectly depending on the timezone of the machine. We don't bother mapping
                     // it to UTC in this case. In the event that the original timestamp is not in UTC, it's offset
                     // value will be maintained.
                     //
@@ -125,9 +125,9 @@ namespace Microsoft.AspNetCore.Http
                         expression);
                 }
 
-                methodInfo = type.GetMethod("TryParse", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy, new[] { typeof(string), typeof(IFormatProvider), type.MakeByRefType() });
+                methodInfo = GetStaticMethodFromHierarchy(type, "TryParse", new[] { typeof(string), typeof(IFormatProvider), type.MakeByRefType() }, typeof(bool));
 
-                if (methodInfo is not null && methodInfo.ReturnType == typeof(bool))
+                if (methodInfo is not null)
                 {
                     return (expression) => Expression.Call(
                         methodInfo,
@@ -136,14 +136,14 @@ namespace Microsoft.AspNetCore.Http
                         expression);
                 }
 
-                methodInfo = type.GetMethod("TryParse", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy, new[] { typeof(string), type.MakeByRefType() });
+                methodInfo = GetStaticMethodFromHierarchy(type, "TryParse", new[] { typeof(string), type.MakeByRefType() }, typeof(bool));
 
-                if (methodInfo is not null && methodInfo.ReturnType == typeof(bool))
+                if (methodInfo is not null)
                 {
                     return (expression) => Expression.Call(methodInfo, TempSourceStringExpr, expression);
                 }
 
-                if (type.GetMethod("TryParse", BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.FlattenHierarchy) is MethodInfo invalidMethod)
+                if (GetAnyMethodFromHierarchy(type, "TryParse") is MethodInfo invalidMethod)
                 {
                     var stringBuilder = new StringBuilder();
                     stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"TryParse method found on {TypeNameHelper.GetTypeDisplayName(type, fullName: false)} with incorrect format. Must be a static method with format");
@@ -168,11 +168,11 @@ namespace Microsoft.AspNetCore.Http
             {
                 var hasParameterInfo = true;
                 // There should only be one BindAsync method with these parameters since C# does not allow overloading on return type.
-                var methodInfo = nonNullableParameterType.GetMethod("BindAsync", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy, new[] { typeof(HttpContext), typeof(ParameterInfo) });
+                var methodInfo = GetStaticMethodFromHierarchy(nonNullableParameterType, "BindAsync", new[] { typeof(HttpContext), typeof(ParameterInfo) });
                 if (methodInfo is null)
                 {
                     hasParameterInfo = false;
-                    methodInfo = nonNullableParameterType.GetMethod("BindAsync", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy, new[] { typeof(HttpContext) });
+                    methodInfo = GetStaticMethodFromHierarchy(nonNullableParameterType, "BindAsync", new[] { typeof(HttpContext) });
                 }
 
                 // We're looking for a method with the following signatures:
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Http
                     }
                 }
 
-                if (nonNullableParameterType.GetMethod("BindAsync", BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.FlattenHierarchy) is MethodInfo invalidBindMethod)
+                if (GetAnyMethodFromHierarchy(nonNullableParameterType, "BindAsync") is MethodInfo invalidBindMethod)
                 {
                     var stringBuilder = new StringBuilder();
                     stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"BindAsync method found on {TypeNameHelper.GetTypeDisplayName(nonNullableParameterType, fullName: false)} with incorrect format. Must be a static method with format");
@@ -247,6 +247,60 @@ namespace Microsoft.AspNetCore.Http
             var nonNullableParameterType = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
             var (method, paramCount) = _bindAsyncMethodCallCache.GetOrAdd(nonNullableParameterType, Finder);
             return (method?.Invoke(parameter), paramCount);
+        }
+
+        private static MethodInfo? GetStaticMethodFromHierarchy(Type type, string name, Type[] parameterTypes, Type? returnType = null)
+        {
+            bool IsMatch(MethodInfo? method) => method is not null && !method.IsAbstract && (returnType is null || method.ReturnType == returnType);
+
+            var methodInfo = type.GetMethod(name, BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy, parameterTypes);
+
+            if (IsMatch(methodInfo))
+            {
+                return methodInfo;
+            }
+
+            var candidateInterfaceMethodInfo = default(MethodInfo);
+
+            // Check all interfaces for implementations. Fail if there are duplicates.
+            foreach (var implementedInterface in type.GetInterfaces())
+            {
+                var interfaceMethod = implementedInterface.GetMethod(name, BindingFlags.Public | BindingFlags.Static, parameterTypes);
+
+                if (IsMatch(interfaceMethod))
+                {
+                    if (candidateInterfaceMethodInfo is not null)
+                    {
+                        throw new InvalidOperationException($"{TypeNameHelper.GetTypeDisplayName(type, fullName: false)} implements multiple interfaces defining a static {interfaceMethod} method causing ambiguity.");
+                    }
+
+                    candidateInterfaceMethodInfo = interfaceMethod;
+                }
+            }
+
+            return candidateInterfaceMethodInfo;
+        }
+
+        private static MethodInfo? GetAnyMethodFromHierarchy(Type type, string name)
+        {
+            var methodInfo = type.GetMethod(name, BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.FlattenHierarchy);
+
+            if (methodInfo is not null)
+            {
+                return methodInfo;
+            }
+
+            foreach (var implementedInterface in type.GetInterfaces())
+            {
+                var interfaceMethod = implementedInterface.GetMethod(name, BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance);
+
+                if (interfaceMethod is not null)
+                {
+                    return interfaceMethod;
+                }
+            }
+
+            return null;
         }
 
         private static MethodInfo GetEnumTryParseMethod(bool preferNonGenericEnumParseOverload)
