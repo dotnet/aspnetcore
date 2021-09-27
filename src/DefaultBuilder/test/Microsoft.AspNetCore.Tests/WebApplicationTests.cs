@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Tests;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -600,10 +601,12 @@ namespace Microsoft.AspNetCore.Tests
             builder.WebHost.UseSetting("WEBROOT", webRoot);
 
             Assert.Equal(webRoot, builder.WebHost.GetSetting("webroot"));
+            Assert.Equal(webRoot, ((PhysicalFileProvider)builder.Environment.WebRootFileProvider).Root);
 
             var app = builder.Build();
 
             Assert.Equal(webRoot, app.Environment.WebRootPath);
+            Assert.Equal(webRoot, ((PhysicalFileProvider)app.Environment.WebRootFileProvider).Root);
         }
 
         [Fact]
@@ -616,10 +619,12 @@ namespace Microsoft.AspNetCore.Tests
             builder.WebHost.UseSetting("WEBROOT", "wwwroot");
 
             Assert.Equal("wwwroot", builder.WebHost.GetSetting("webroot"));
+            Assert.Equal(Path.Combine(contentRoot, "wwwroot"), ((PhysicalFileProvider)builder.Environment.WebRootFileProvider).Root);
 
             var app = builder.Build();
 
             Assert.Equal(Path.Combine(contentRoot, "wwwroot"), app.Environment.WebRootPath);
+            Assert.Equal(Path.Combine(contentRoot, "wwwroot"), ((PhysicalFileProvider)app.Environment.WebRootFileProvider).Root);
         }
 
         [Fact]
