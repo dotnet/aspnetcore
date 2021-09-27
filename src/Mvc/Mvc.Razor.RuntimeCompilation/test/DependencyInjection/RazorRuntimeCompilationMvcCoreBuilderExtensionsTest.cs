@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             // Arrange
             var services = new ServiceCollection()
-                .AddSingleton<IViewCompilerProvider, DefaultViewCompiler>();
+                .AddSingleton<IViewCompilerProvider, DefaultViewCompilerProvider>();
 
             // Act
             RazorRuntimeCompilationMvcCoreBuilderExtensions.AddServices(services);
