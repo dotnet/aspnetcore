@@ -56,7 +56,7 @@ internal static class DiagnosticDescriptors
     internal static readonly DiagnosticDescriptor CustomBindingBindAsyncMustHaveAValidFormat = new(
         "ASP0008",
         "Custom binding BindAsync method must be of a valid format to be effective",
-        "BindAsync method found on '{0}' with incorrect format. Must be public static wiht format, ValueTask<{0}> BindAsync(HttpContext, ParameterInfo) or ValueTask<{0}> BindAsync(HttpContext).",
+        "BindAsync method found on '{0}' with incorrect format. Must be public static with format, ValueTask<{0}> BindAsync(HttpContext, ParameterInfo) or ValueTask<{0}> BindAsync(HttpContext).",
         "Usage",
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
@@ -65,7 +65,7 @@ internal static class DiagnosticDescriptors
     internal static readonly DiagnosticDescriptor CustomBindingTryParseMustHaveAValidFormat = new(
         "ASP0009",
         "Custom binding TryParse method must be of a valid format to be effective",
-        "TryParse method found on '{0}' with incorrect format. Must be public static wiht format, bool TryParse(string, IFormatProvider, out {0}) or bool TryParse(string, out {0}).",
+        "TryParse method found on '{0}' with incorrect format. Must be public static with format, bool TryParse(string, IFormatProvider, out {0}) or bool TryParse(string, out {0}).",
         "Usage",
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
