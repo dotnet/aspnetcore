@@ -393,4 +393,34 @@ app.MapGet(""/hello/{name?}"", (string name) => $""Hello {name}"");
         Assert.Equal(expectedNames, actualNames);
         Assert.Equal(expectedQualifiers, actualQualifiers);
     }
+
+    [Fact]
+    public async Task CustomBindingTryParseMustBeStatic()
+    {
+        var source = @"
+#nullable enable
+using System;
+using Microsoft.AspNetCore.Builder;
+
+var app = WebApplication.Create();
+app.MapGet(""/map"", ({|#0:Point point|}) => $""Point: { point.X}, { point.Y}"");
+
+public class Point
+{
+    public double X { get; set; }
+    public double Y { get; set; }
+
+    public bool {|#1:TryParse|}(string? value, IFormatProvider? provider, out Point? point)
+    {
+        return false;
+    }
+}";
+
+        var expectedDiagnostics = new[] {
+            new DiagnosticResult(DiagnosticDescriptors.CustomBindingTryParseMustHaveAValidFormat).WithArguments("Point").WithLocation(0),
+            new DiagnosticResult(DiagnosticDescriptors.CustomBindingMethodMustBeStatic).WithArguments("TryParse").WithLocation(1)
+        };
+
+        await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostics);
+    }
 }

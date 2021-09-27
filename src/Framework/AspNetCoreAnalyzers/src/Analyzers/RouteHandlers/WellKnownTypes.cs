@@ -55,6 +55,24 @@ internal sealed class WellKnownTypes
             return false;
         }
 
+        const string HttpContext = "Microsoft.AspNetCore.Http.HttpContext";
+        if (compilation.GetTypeByMetadataName(HttpContext) is not { } httpContext)
+        {
+            return false;
+        }
+
+        const string ParameterInfo = "System.Reflection.ParameterInfo";
+        if (compilation.GetTypeByMetadataName(ParameterInfo) is not { } parameterInfo)
+        {
+            return false;
+        }
+
+        const string IFormatProvider = "System.IFormatProvider";
+        if (compilation.GetTypeByMetadataName(IFormatProvider) is not { } iFormatProvider)
+        {
+            return false;
+        }
+
         wellKnownTypes = new WellKnownTypes
         {
             EndpointRouteBuilderExtensions = endpointRouteBuilderExtensions,
@@ -64,6 +82,9 @@ internal sealed class WellKnownTypes
             IResult = iResult,
             IActionResult = iActionResult,
             IConvertToActionResult = iConvertToActionResult,
+            HttpContext = httpContext,
+            ParameterInfo = parameterInfo,
+            IFormatProvider = iFormatProvider
         };
 
         return true;
@@ -76,4 +97,8 @@ internal sealed class WellKnownTypes
     public INamedTypeSymbol IResult { get; private init; }
     public INamedTypeSymbol IActionResult { get; private init; }
     public INamedTypeSymbol IConvertToActionResult { get; private init; }
+    public INamedTypeSymbol HttpContext { get; private init; }
+    public INamedTypeSymbol ValueTask { get; private init; }
+    public INamedTypeSymbol ParameterInfo { get; private init; }
+    public INamedTypeSymbol IFormatProvider { get; private init; }
 }

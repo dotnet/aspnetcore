@@ -52,4 +52,40 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+    internal static readonly DiagnosticDescriptor CustomBindingBindAsyncMustHaveAValidFormat = new(
+        "ASP0008",
+        "Custom binding BindAsync method must be of a valid format to be effective",
+        "BindAsync method found on '{0}' with incorrect format. Must be public static wiht format, ValueTask<{0}> BindAsync(HttpContext, ParameterInfo) or ValueTask<{0}> BindAsync(HttpContext).",
+        "Usage",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+    internal static readonly DiagnosticDescriptor CustomBindingTryParseMustHaveAValidFormat = new(
+        "ASP0009",
+        "Custom binding TryParse method must be of a valid format to be effective",
+        "TryParse method found on '{0}' with incorrect format. Must be public static wiht format, bool TryParse(string, IFormatProvider, out {0}) or bool TryParse(string, out {0}).",
+        "Usage",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+    internal static readonly DiagnosticDescriptor CustomBindingMethodMustBePublic = new(
+        "ASP0010",
+        "Custom binding method method must be public to be effective",
+        "{0} must be public to be effective as a custom binding",
+        "Usage",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+    internal static readonly DiagnosticDescriptor CustomBindingMethodMustBeStatic = new(
+        "ASP0011",
+        "Custom binding method must be static to be effective",
+        "{0} must be static to be effective as a custom binding",
+        "Usage",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
 }

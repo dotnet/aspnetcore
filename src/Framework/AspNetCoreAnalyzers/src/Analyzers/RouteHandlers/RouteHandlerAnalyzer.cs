@@ -19,7 +19,11 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         DiagnosticDescriptors.DoNotUseModelBindingAttributesOnRouteHandlerParameters,
         DiagnosticDescriptors.DoNotReturnActionResultsFromRouteHandlers,
         DiagnosticDescriptors.DetectMisplacedLambdaAttribute,
-        DiagnosticDescriptors.DetectMismatchedParameterOptionality
+        DiagnosticDescriptors.DetectMismatchedParameterOptionality,
+        DiagnosticDescriptors.CustomBindingBindAsyncMustHaveAValidFormat,
+        DiagnosticDescriptors.CustomBindingTryParseMustHaveAValidFormat,
+        DiagnosticDescriptors.CustomBindingMethodMustBePublic,
+        DiagnosticDescriptors.CustomBindingMethodMustBeStatic
     });
 
     public override void Initialize(AnalysisContext context)
@@ -53,11 +57,13 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 
                 if (delegateCreation.Target.Kind == OperationKind.AnonymousFunction)
                 {
-                    var lambda = ((IAnonymousFunctionOperation)delegateCreation.Target);
+                    var lambda = (IAnonymousFunctionOperation)delegateCreation.Target;
                     DisallowMvcBindArgumentsOnParameters(in operationAnalysisContext, wellKnownTypes, invocation, lambda.Symbol);
                     DisallowReturningActionResultFromMapMethods(in operationAnalysisContext, wellKnownTypes, invocation, lambda);
                     DetectMisplacedLambdaAttribute(operationAnalysisContext, invocation, lambda);
                     DetectMismatchedParameterOptionality(in operationAnalysisContext, invocation, lambda.Symbol);
+                    DetectInvalidCustomBidingFormat(operationAnalysisContext, wellKnownTypes, lambda.Symbol);
+
                 }
                 else if (delegateCreation.Target.Kind == OperationKind.MethodReference)
                 {
