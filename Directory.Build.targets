@@ -169,6 +169,13 @@
     <BuildDependsOn>$(BuildDependsOn);_CopySymbolsToArtifacts</BuildDependsOn>
   </PropertyGroup>
 
+  <!-- Properties for Package Validation -->
+  <PropertyGroup Condition="'$(ExcludeFromSourceBuild)' != 'true'">
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <DisablePackageBaselineValidation Condition="'$(IsServicingBuild)' != 'true'">true</DisablePackageBaselineValidation>
+    <GenerateCompatibilitySuppressionFile>true</GenerateCompatibilitySuppressionFile>
+  </PropertyGroup>
+
   <Target Name="_CopySymbolsToArtifacts">
     <Copy SourceFiles="$([System.IO.Path]::ChangeExtension('$(TargetPath)', 'pdb'))"
         DestinationFolder="$(SymbolsOutputPath)$(TargetFramework)"
