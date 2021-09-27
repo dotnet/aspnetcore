@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             }
         }
 
-        private void InitializeCompressionHeaders()
+        private ICompressionProvider? InitializeCompressionHeaders()
         {
             if (_provider.ShouldCompressResponse(_context))
             {
@@ -235,7 +235,11 @@ namespace Microsoft.AspNetCore.ResponseCompression
                     headers.ContentMD5 = default; // Reset the MD5 because the content changed.
                     headers.ContentLength = default;
                 }
+
+                return compressionProvider;
             }
+
+            return null;
         }
 
         private void OnWrite()
@@ -244,11 +248,11 @@ namespace Microsoft.AspNetCore.ResponseCompression
             {
                 _compressionChecked = true;
 
-                InitializeCompressionHeaders();
+                var compressionProvider = InitializeCompressionHeaders();
 
-                if (_compressionProvider != null)
+                if (compressionProvider != null)
                 {
-                    _compressionStream = _compressionProvider.CreateStream(_innerStream);
+                    _compressionStream = compressionProvider.CreateStream(_innerStream);
                 }
             }
         }
