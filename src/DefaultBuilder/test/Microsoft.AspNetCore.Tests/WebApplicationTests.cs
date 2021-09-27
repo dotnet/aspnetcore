@@ -313,11 +313,11 @@ namespace Microsoft.AspNetCore.Tests
                     ContentRootPath = contentRoot
                 });
 
-                builder.Host.UseContentRoot(contentRoot + "\\");
+                builder.Host.UseContentRoot(contentRoot + Path.DirectorySeparatorChar);
                 builder.Host.UseContentRoot(contentRoot.ToUpperInvariant());
                 builder.Host.UseContentRoot(contentRoot.ToLowerInvariant());
 
-                builder.WebHost.UseContentRoot(contentRoot + "\\");
+                builder.WebHost.UseContentRoot(contentRoot + Path.DirectorySeparatorChar);
                 builder.WebHost.UseContentRoot(contentRoot.ToUpperInvariant());
                 builder.WebHost.UseContentRoot(contentRoot.ToLowerInvariant());
             }
