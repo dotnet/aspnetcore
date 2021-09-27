@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
     /// <summary>
     /// Options for Quic based connections.
     /// </summary>
-    [RequiresPreviewFeatures]
+    [RequiresPreviewFeatures("Kestrel HTTP/3 support for .NET 6 is in preview.", Url = "https://aka.ms/aspnet/kestrel/http3reqs")]
     public class QuicTransportOptions
     {
         /// <summary>

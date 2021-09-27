@@ -16,9 +16,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         Http1 = 0x1,
         Http2 = 0x2,
         Http1AndHttp2 = Http1 | Http2,
-        [RequiresPreviewFeatures]
+        [RequiresPreviewFeatures("Kestrel HTTP/3 support for .NET 6 is in preview.", Url = "https://aka.ms/aspnet/kestrel/http3reqs")]
         Http3 = 0x4,
-        [RequiresPreviewFeatures]
+        [RequiresPreviewFeatures("Kestrel HTTP/3 support for .NET 6 is in preview.", Url = "https://aka.ms/aspnet/kestrel/http3reqs")]
         Http1AndHttp2AndHttp3 = Http1 | Http2 | Http3
     }
 }
