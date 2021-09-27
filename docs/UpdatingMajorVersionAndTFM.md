@@ -1,6 +1,6 @@
 # Updating to a new Major Version & TFM
 
-At the end of each release cycle, we update our Major Version & TFM in preparation for the next major release. This doc describes the process of doing those updates, which can include many subtle gotchas in the aspnetcore repo.
+At the end of each release cycle, we update our Major Version & TFM (Target Framework Moniker) in `main`, in preparation for the next major release. This doc describes the process of doing those updates, which can include many subtle gotchas in the aspnetcore repo.
 
 ## Updating Major Version
 
@@ -14,7 +14,7 @@ Typically, we will update the Major Version before updating the TFM. This is bec
   3. Change `PreReleaseVersionLabel` to `alpha`.
   4. Change `PreReleaseBrandingLabel` to `Alpha $(PreReleaseVersionIteration)`.
 * In [src/Framework/test/TestData.cs](/src/Framework/test/TestData.cs), update `ListedTargetingPackAssemblies` by incrementing the AssemblyVersion of all aspnetcore assemblies by 1 major version. Once dotnet/runtime updates their AssemblyVersions, we also need to update those in this file. They typically make that change at the same time as their TFM update, but we change our AssemblyVersions as soon as we update branding.
-* Add entries to [nuget.config](nuget.config) for the new Major Version's feed. This just means copying the current feeds (e.g. `dotnet7` and `dotnet7-transport`) and adding entries for the new feeds (`dotnet8` and `dotnet8-transport`). Make an effort to remove old feeds here at the same time.
+* Add entries to [nuget.config](/nuget.config) for the new Major Version's feed. This just means copying the current feeds (e.g. `dotnet7` and `dotnet7-transport`) and adding entries for the new feeds (`dotnet8` and `dotnet8-transport`). Make an effort to remove old feeds here at the same time.
 * In [src/ProjectTemplates/Shared/TemplatePackageInstaller.cs](/src/ProjectTemplates/Shared/TemplatePackageInstaller.cs), add entries to `_templatePackages ` for `Microsoft.DotNet.Web.ProjectTemplates` and `Microsoft.DotNet.Web.Spa.ProjectTemplates` matching the new version.
 
 ## Updating TFM
