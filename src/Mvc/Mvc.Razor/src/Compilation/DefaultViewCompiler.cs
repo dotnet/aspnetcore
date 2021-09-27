@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
     /// Caches the result of runtime compilation of Razor files for the duration of the application lifetime.
     /// </summary>
     // This name is hardcoded in RazorRuntimeCompilationMvcCoreBuilderExtensions. Make sure it's updated if this is ever renamed.
-    internal class DefaultViewCompiler : IViewCompilerProvider, IViewCompiler
+    internal class DefaultViewCompiler : IViewCompiler
     {
         private readonly ApplicationPartManager _applicationPartManager;
         private readonly ConcurrentDictionary<string, string> _normalizedPathCache;
@@ -31,8 +31,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
 
             EnsureCompiledViews(logger);
         }
-
-        IViewCompiler IViewCompilerProvider.GetCompiler() => this;
 
         [MemberNotNull(nameof(_compiledViews))]
         private void EnsureCompiledViews(ILogger logger)
