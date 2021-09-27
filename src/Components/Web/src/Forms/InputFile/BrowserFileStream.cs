@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         private readonly long _maxAllowedSize;
         private readonly CancellationTokenSource _openReadStreamCts;
         private readonly Task<Stream> OpenReadStreamTask;
+        private IJSStreamReference? _jsStreamReference;
 
         private bool _isDisposed;
         private CancellationTokenSource? _copyFileDataCts;
@@ -88,13 +89,15 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         private async Task<Stream> OpenReadStreamAsync(CancellationToken cancellationToken)
         {
-            var dataReference = await _jsRuntime.InvokeAsync<IJSStreamReference>(
+            // This method only gets called once, from the constructor, so we're never overwriting an
+            // existing _jsStreamReference value
+            _jsStreamReference = await _jsRuntime.InvokeAsync<IJSStreamReference>(
                 InputFileInterop.ReadFileData,
                 cancellationToken,
                 _inputFileElement,
                 _file.Id);
 
-            return await dataReference.OpenReadStreamAsync(
+            return await _jsStreamReference.OpenReadStreamAsync(
                 _maxAllowedSize,
                 cancellationToken: cancellationToken);
         }
@@ -115,6 +118,17 @@ namespace Microsoft.AspNetCore.Components.Forms
 
             _openReadStreamCts.Cancel();
             _copyFileDataCts?.Cancel();
+
+            // If the browser connection is still live, notify the JS side that it's free to release the Blob
+            // and reclaim the memory. If the browser connection is already gone, there's no way for the
+            // notification to get through, but we don't want to fail the .NET-side disposal process for this.
+            try
+            {
+                _ = _jsStreamReference?.DisposeAsync().Preserve();
+            }
+            catch
+            {
+            }
 
             _isDisposed = true;
 
