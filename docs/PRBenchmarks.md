@@ -1,7 +1,8 @@
 # Pull Request Benchmarks
 
 Pull requests that may impact performance should be benchmarked to ensure no regression is introduced.
-The most common way is to build the PR on your development machine and submit the binaries to an existing [scenario](https://github.com/aspnet/Benchmarks/tree/main/scenarios). To simplify this process this repository can do it automatically using GitHub Actions.
+The most common way is to build the PR on your development machine and submit the binaries to an existing [scenario](https://github.com/aspnet/Benchmarks/tree/main/scenarios). For simplicity, this process can be done automatically via GitHub Actions.
+
 
 ## Submitting a PR for benchmarking
 
