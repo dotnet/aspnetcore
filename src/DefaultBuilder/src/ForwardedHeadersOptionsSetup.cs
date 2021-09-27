@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore
 {
-    internal class ForwardedHeadersOptionsSetup : IConfigureOptions<ForwardedHeadersOptions>
+    internal sealed class ForwardedHeadersOptionsSetup : IConfigureOptions<ForwardedHeadersOptions>
     {
         private readonly IConfiguration _configuration;
 
