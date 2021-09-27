@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -17,9 +19,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
     {
         foreach (var parameter in methodSymbol.Parameters)
         {
-            var typeSymbol = parameter.Type;
-
-            if (!typeSymbol.IsReferenceType)
+            if (!parameter.Type.IsReferenceType)
             {
                 continue;
             }
@@ -28,7 +28,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 context: context,
                 parameterSymbol: parameter,
                 methodName: "BindAsync",
-                returnType: wellKnownTypes.ValueTask,
+                returnType: wellKnownTypes.ValueTaskOfT,
                 parametersValidator: (OperationAnalysisContext context, IMethodSymbol method) => ValidateBindAsyncParameters(method, wellKnownTypes),
                 modifiersValidator: ValidateCustomBindingModifiers,
                 onInvalidMessage: DiagnosticDescriptors.CustomBindingBindAsyncMustHaveAValidFormat);
@@ -37,7 +37,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 context: context,
                 parameterSymbol: parameter,
                 methodName: "TryParse",
-                returnType: wellKnownTypes.ValueTask,
+                returnType: context.Compilation.GetSpecialType(SpecialType.System_Boolean),
                 parametersValidator: (OperationAnalysisContext context, IMethodSymbol method) => ValidateTryParseParameters(method, wellKnownTypes),
                 modifiersValidator: ValidateCustomBindingModifiers,
                 onInvalidMessage: DiagnosticDescriptors.CustomBindingTryParseMustHaveAValidFormat);
@@ -53,7 +53,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 
         var isFirstParameterString = method.Parameters.First().Type.SpecialType == SpecialType.System_String;
         var hasLastParameterOutModifier = method.Parameters.Last().RefKind == RefKind.Out;
-        var isIFormatProviderParameterValidIfExist = method.Parameters.Length != 3 || wellKnownTypes.IFormatProvider.IsAssignableFrom(method.Parameters[1].Type);
+        var isIFormatProviderParameterValidIfExist = method.Parameters.Length < 3 || wellKnownTypes.IFormatProvider.IsAssignableFrom(method.Parameters[1].Type);
 
         if (!isFirstParameterString || !hasLastParameterOutModifier || !isIFormatProviderParameterValidIfExist)
         {
@@ -71,7 +71,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         }
 
         var isFirstParameterHttpContext = wellKnownTypes.HttpContext.IsAssignableFrom(method.Parameters[0].Type);
-        var isSecondParameterParameterInfoIfExists = method.Parameters.Length != 2 && wellKnownTypes.ParameterInfo.IsAssignableFrom(method.Parameters[1].Type);
+        var isSecondParameterParameterInfoIfExists = method.Parameters.Length < 2 || wellKnownTypes.ParameterInfo.IsAssignableFrom(method.Parameters[1].Type);
         if (!isFirstParameterHttpContext || !isSecondParameterParameterInfoIfExists)
         {
             return false;
@@ -112,7 +112,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         Func<OperationAnalysisContext, IMethodSymbol, bool> modifiersValidator,
         DiagnosticDescriptor onInvalidMessage)
     {
-        var bindAsyncMembers = parameterSymbol.Type.GetTypeMembers(methodName);
+        var bindAsyncMembers = GetAllMethods(parameterSymbol, methodName);
 
         if (bindAsyncMembers.Length == 0)
         {
@@ -123,7 +123,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         {
             if (bindAsyncMember is IMethodSymbol method)
             {
-                if (!returnType.IsAssignableFrom(method.ReturnType))
+                if(!ValidReturnType(returnType, method))
                 {
                     continue;
                 }
@@ -144,5 +144,45 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             onInvalidMessage,
             parameterSymbol.Locations[0],
             parameterSymbol.Type.Name));
+    }
+
+    private static bool ValidReturnType(INamedTypeSymbol returnType, IMethodSymbol method)
+    {
+        if (!returnType.IsGenericType)
+        {
+            return returnType.IsAssignableFrom(method.ReturnType);
+        }
+
+        if (method.ReturnType is INamedTypeSymbol namedMethodReturnType)
+        {
+            if (!namedMethodReturnType.IsGenericType)
+            {
+                return false;
+            }
+
+            if (!SymbolEqualityComparer.Default.Equals(
+                returnType.ConstructUnboundGenericType(),
+                namedMethodReturnType.ConstructUnboundGenericType()))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static ImmutableArray<ISymbol> GetAllMethods(IParameterSymbol parameterSymbol, string methodName)
+    {
+        List<ISymbol> symbols = new (parameterSymbol.Type.GetMembers(methodName));
+
+        var baseType = parameterSymbol.Type.BaseType;
+
+        while (baseType != null)
+        {
+            symbols.AddRange(baseType.GetMembers(methodName));
+            baseType = baseType.BaseType;
+        }
+
+        return symbols.ToImmutableArray();
     }
 }

@@ -61,6 +61,12 @@ internal sealed class WellKnownTypes
             return false;
         }
 
+        const string ValueTask = "System.Threading.Tasks.ValueTask`1";
+        if (compilation.GetTypeByMetadataName(ValueTask) is not { } valueTaskOfT)
+        {
+            return false;
+        }
+
         const string ParameterInfo = "System.Reflection.ParameterInfo";
         if (compilation.GetTypeByMetadataName(ParameterInfo) is not { } parameterInfo)
         {
@@ -83,6 +89,7 @@ internal sealed class WellKnownTypes
             IActionResult = iActionResult,
             IConvertToActionResult = iConvertToActionResult,
             HttpContext = httpContext,
+            ValueTaskOfT = valueTaskOfT,
             ParameterInfo = parameterInfo,
             IFormatProvider = iFormatProvider
         };
@@ -98,7 +105,7 @@ internal sealed class WellKnownTypes
     public INamedTypeSymbol IActionResult { get; private init; }
     public INamedTypeSymbol IConvertToActionResult { get; private init; }
     public INamedTypeSymbol HttpContext { get; private init; }
-    public INamedTypeSymbol ValueTask { get; private init; }
+    public INamedTypeSymbol ValueTaskOfT { get; private init; }
     public INamedTypeSymbol ParameterInfo { get; private init; }
     public INamedTypeSymbol IFormatProvider { get; private init; }
 }
