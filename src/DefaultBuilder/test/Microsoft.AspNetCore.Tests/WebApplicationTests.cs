@@ -23,7 +23,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Xunit;
 
 [assembly: HostingStartup(typeof(WebApplicationTests.TestHostingStartup))]
 
@@ -754,7 +753,7 @@ namespace Microsoft.AspNetCore.Tests
             var app = builder.Build();
 
             // These are different
-            Assert.NotSame(app.Configuration, builder.Configuration);
+            Assert.Same(app.Configuration, builder.Configuration);
         }
 
         [Fact]
@@ -771,7 +770,28 @@ namespace Microsoft.AspNetCore.Tests
             var app = builder.Build();
 
             // These are different
-            Assert.NotSame(app.Configuration, builder.Configuration);
+            Assert.Same(app.Configuration, builder.Configuration);
+        }
+
+        [Fact]
+        public void AddingMemoryStreamBackedConfigurationWorks()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            var jsonConfig = @"{ ""foo"": ""bar"" }";
+            using var ms = new MemoryStream();
+            using var sw = new StreamWriter(ms);
+            sw.WriteLine(jsonConfig);
+            sw.Flush();
+
+            ms.Position = 0;
+            builder.Configuration.AddJsonStream(ms);
+
+            Assert.Equal("bar", builder.Configuration["foo"]);
+
+            var app = builder.Build();
+
+            Assert.Equal("bar", app.Configuration["foo"]);
         }
 
         [Fact]
@@ -1544,6 +1564,22 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
+        public void ConfigurationGetDebugViewWorks()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            builder.Configuration.AddInMemoryCollection(new Dictionary<string, string>
+            {
+                ["foo"] = "bar",
+            });
+
+            var app = builder.Build();
+
+            // Make sure we don't lose "MemoryConfigurationProvider" from GetDebugView() when wrapping the provider.
+            Assert.Contains("foo=bar (MemoryConfigurationProvider)", ((IConfigurationRoot)app.Configuration).GetDebugView());
+        }
+
+        [Fact]
         public void ConfigurationCanBeReloaded()
         {
             var builder = WebApplication.CreateBuilder();
@@ -1572,23 +1608,77 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Equal(1, configSource.ProvidersBuilt);
         }
 
+        [Fact]
+        public void ConfigurationProvidersAreLoadedOnceAfterBuild()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            var configSource = new RandomConfigurationSource();
+            ((IConfigurationBuilder)builder.Configuration).Sources.Add(configSource);
+
+            using var app = builder.Build();
+
+            Assert.Equal(1, configSource.ProvidersLoaded);
+        }
+
+        [Fact]
+        public void ConfigurationProvidersAreDisposedWithWebApplication()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            var configSource = new RandomConfigurationSource();
+            ((IConfigurationBuilder)builder.Configuration).Sources.Add(configSource);
+
+            {
+                using var app = builder.Build();
+
+                Assert.Equal(0, configSource.ProvidersDisposed);
+            }
+
+            Assert.Equal(1, configSource.ProvidersDisposed);
+        }
+
+        [Fact]
+        public void ConfigurationProviderTypesArePreserved()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            ((IConfigurationBuilder)builder.Configuration).Sources.Add(new RandomConfigurationSource());
+
+            var app = builder.Build();
+
+            Assert.Single(((IConfigurationRoot)app.Configuration).Providers.OfType<RandomConfigurationProvider>());
+        }
+
         public class RandomConfigurationSource : IConfigurationSource
         {
             public int ProvidersBuilt { get; set; }
+            public int ProvidersLoaded { get; set; }
+            public int ProvidersDisposed { get; set; }
 
             public IConfigurationProvider Build(IConfigurationBuilder builder)
             {
                 ProvidersBuilt++;
-                return new RandomConfigurationProvider();
+                return new RandomConfigurationProvider(this);
             }
         }
 
-        public class RandomConfigurationProvider : ConfigurationProvider
+        public class RandomConfigurationProvider : ConfigurationProvider, IDisposable
         {
+            private readonly RandomConfigurationSource _source;
+
+            public RandomConfigurationProvider(RandomConfigurationSource source)
+            {
+                _source = source;
+            }
+
             public override void Load()
             {
+                _source.ProvidersLoaded++;
                 Data["Random"] = Guid.NewGuid().ToString();
             }
+
+            public void Dispose() => _source.ProvidersDisposed++;
         }
 
         class ThrowingStartupFilter : IStartupFilter
