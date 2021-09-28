@@ -54,6 +54,10 @@ namespace Microsoft.AspNetCore.Builder
                 // We allow changing the web root since it's based off the content root and typically
                 // read after the host is built.
                 _environment.WebRootPath = Path.Combine(_environment.ContentRootPath, value);
+                if (!Directory.Exists(_environment.WebRootPath))
+                {
+                    Directory.CreateDirectory(_environment.WebRootPath);
+                }
                 _environment.WebRootFileProvider = new PhysicalFileProvider(_environment.WebRootPath);
             }
             else if (!string.Equals(previousApplication, _configuration[WebHostDefaults.ApplicationKey], StringComparison.OrdinalIgnoreCase))
@@ -125,6 +129,10 @@ namespace Microsoft.AspNetCore.Builder
                 // We allow changing the web root since it's based off the content root and typically
                 // read after the host is built.
                 _environment.WebRootPath = Path.Combine(_environment.ContentRootPath, value);
+                if (!Directory.Exists(_environment.WebRootPath))
+                {
+                    Directory.CreateDirectory(_environment.WebRootPath);
+                }
                 _environment.WebRootFileProvider = new PhysicalFileProvider(_environment.WebRootPath);
             }
             else if (string.Equals(key, WebHostDefaults.ApplicationKey, StringComparison.OrdinalIgnoreCase) &&

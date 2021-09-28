@@ -619,12 +619,12 @@ namespace Microsoft.AspNetCore.Tests
             builder.WebHost.UseSetting("WEBROOT", "wwwroot");
 
             Assert.Equal("wwwroot", builder.WebHost.GetSetting("webroot"));
-            Assert.Equal(Path.Combine(contentRoot, "wwwroot"), ((PhysicalFileProvider)builder.Environment.WebRootFileProvider).Root);
+            Assert.Equal(Path.Combine(contentRoot, "wwwroot") + Path.DirectorySeparatorChar, ((PhysicalFileProvider)builder.Environment.WebRootFileProvider).Root);
 
             var app = builder.Build();
 
             Assert.Equal(Path.Combine(contentRoot, "wwwroot"), app.Environment.WebRootPath);
-            Assert.Equal(Path.Combine(contentRoot, "wwwroot"), ((PhysicalFileProvider)app.Environment.WebRootFileProvider).Root);
+            Assert.Equal(Path.Combine(contentRoot, "wwwroot") + Path.DirectorySeparatorChar, ((PhysicalFileProvider)app.Environment.WebRootFileProvider).Root);
         }
 
         [Fact]
