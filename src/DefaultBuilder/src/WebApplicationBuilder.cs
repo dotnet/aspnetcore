@@ -154,10 +154,7 @@ namespace Microsoft.AspNetCore.Builder
             // builder.WebHost.UseSettings("WEBROOT", "C");
             if (!string.IsNullOrEmpty(Environment.WebRootPath))
             {
-                if (!Directory.Exists(Environment.WebRootPath))
-                {
-                    Directory.CreateDirectory(Environment.WebRootPath);
-                }
+                Directory.CreateDirectory(Environment.WebRootPath);
                 Environment.WebRootFileProvider = new PhysicalFileProvider(Environment.WebRootPath);
             }
 
