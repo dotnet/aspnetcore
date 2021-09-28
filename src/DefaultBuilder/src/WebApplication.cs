@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -20,10 +19,10 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteBuilder, IAsyncDisposable
     {
+        internal const string GlobalEndpointRouteBuilderKey = "__GlobalEndpointRouteBuilder";
+
         private readonly IHost _host;
         private readonly List<EndpointDataSource> _dataSources = new();
-
-        internal static string GlobalEndpointRouteBuilderKey = "__GlobalEndpointRouteBuilder";
 
         internal WebApplication(IHost host)
         {
