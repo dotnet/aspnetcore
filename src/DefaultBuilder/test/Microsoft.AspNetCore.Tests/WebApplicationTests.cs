@@ -601,7 +601,7 @@ namespace Microsoft.AspNetCore.Tests
             builder.WebHost.UseSetting("WEBROOT", webRoot);
 
             Assert.Equal(webRoot, builder.WebHost.GetSetting("webroot"));
-            Assert.Equal(webRoot, ((PhysicalFileProvider)builder.Environment.WebRootFileProvider).Root);
+            Assert.IsType<NullFileProvider>(builder.Environment.WebRootFileProvider);
 
             var app = builder.Build();
 
@@ -619,7 +619,7 @@ namespace Microsoft.AspNetCore.Tests
             builder.WebHost.UseSetting("WEBROOT", "wwwroot");
 
             Assert.Equal("wwwroot", builder.WebHost.GetSetting("webroot"));
-            Assert.Equal(Path.Combine(contentRoot, "wwwroot") + Path.DirectorySeparatorChar, ((PhysicalFileProvider)builder.Environment.WebRootFileProvider).Root);
+            Assert.IsType<NullFileProvider>(builder.Environment.WebRootFileProvider);
 
             var app = builder.Build();
 
