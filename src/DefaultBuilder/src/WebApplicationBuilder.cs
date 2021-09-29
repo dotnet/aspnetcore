@@ -160,7 +160,10 @@ namespace Microsoft.AspNetCore.Builder
                 // The StaticWebAssets loader wraps the WebRootFileProvider in order to support loading
                 // static assets from a manifest file and from a local directory. Since we modified
                 // the WebRootFileProvider, we call the StaticWebAssetsLoader to update.
-                StaticWebAssetsLoader.UseStaticWebAssets(Environment, Configuration);
+                if (Environment.IsDevelopment())
+                {
+                    StaticWebAssetsLoader.UseStaticWebAssets(Environment, Configuration);
+                }
             }
 
             // Wire up the host configuration here. We don't try to preserve the configuration
