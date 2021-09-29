@@ -107,6 +107,25 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
 
             StartRedis(logger);
 
+            var started = false;
+            var wait = TimeSpan.FromSeconds(30);
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            while (stopWatch.Elapsed < wait)
+            {
+                RunProcessAndWait(_path, $"logs {_dockerContainerName}", "docker logs", logger, TimeSpan.FromSeconds(5), out var logOutput);
+                if (logOutput.Contains("Ready to accept connections"))
+                {
+                    started = true;
+                    break;
+                }
+            }
+
+            if (!started)
+            {
+                throw new Exception("Redis took too long to start.");
+            }
+
             // inspect the redis docker image and extract the IPAddress. Necessary when running tests from inside a docker container, spinning up a new docker container for redis
             // outside the current container requires linking the networks (difficult to automate) or using the IP:Port combo
             RunProcessAndWait(_path, "inspect --format=\"{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}\" " + _dockerContainerName, "docker ipaddress", logger, TimeSpan.FromSeconds(5), out output);
