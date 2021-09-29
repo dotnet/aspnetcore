@@ -150,7 +150,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 ServiceDescriptor.Transient<IConfigureOptions<RazorViewEngineOptions>, RazorViewEngineOptionsSetup>());
 
             services.TryAddSingleton<IRazorViewEngine, RazorViewEngine>();
-            services.TryAddSingleton<IViewCompilerProvider, DefaultViewCompiler>();
+            services.TryAddSingleton<IViewCompilerProvider, DefaultViewCompilerProvider>();
 
             // In the default scenario the following services are singleton by virtue of being initialized as part of
             // creating the singleton RazorViewEngine instance.
