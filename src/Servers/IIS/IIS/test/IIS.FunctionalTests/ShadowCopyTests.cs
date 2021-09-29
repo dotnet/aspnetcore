@@ -173,6 +173,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/37081")]
         public async Task ShadowCopyE2EWorksWithOldFoldersPresent()
         {
             using var directory = TempDirectory.Create();
@@ -251,7 +252,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
             response = await deploymentResult.HttpClient.GetAsync("Wow!");
             Assert.True(response.IsSuccessStatusCode);
- 
+
             // Verify old directories were cleaned up
             Assert.False(Directory.Exists(Path.Combine(directory.DirectoryPath, "1")), "Expected 1 shadow copy directory to be deleted");
             Assert.False(Directory.Exists(Path.Combine(directory.DirectoryPath, "3")), "Expected 3 shadow copy directory to be deleted");
