@@ -38,6 +38,8 @@ Once dotnet/runtime has updated their TFM, we update ours in the dependency upda
   3. Add entries in [eng/Dependencies.props](/eng/Dependencies.props) similar to [these](https://github.com/dotnet/aspnetcore/blob/a47c0a58d7002b9a530c67532366b9db96d73cc6/eng/Dependencies.props#L119-L120).
 * Update AssemblyVersions for dotnet/runtime assemblies in [src/Framework/test/TestData.cs](/src/Framework/test/TestData.cs).
 
+### Validation
+
 * CI must be green.
 * Packages produced by the build should be placing assemblies in a folder named after the new TFM.
 
