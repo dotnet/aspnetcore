@@ -80,7 +80,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             Assert.Contains(Resources.FormatMessage_Project_File_Path(Path.Combine(cwd, "..", "TestProject.csproj")), _console.GetOutput());
         }
 
-        [ConditionalTheory(Skip = "https://github.com/dotnet/aspnetcore/issues/25109")]
+        [Theory]
         [InlineData(true)]
         [InlineData(false)]
         public void SetSecrets(bool fromCurrentDirectory)
