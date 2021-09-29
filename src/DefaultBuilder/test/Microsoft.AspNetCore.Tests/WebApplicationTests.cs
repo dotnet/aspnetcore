@@ -612,19 +612,25 @@ namespace Microsoft.AspNetCore.Tests
         [Fact]
         public void WebApplicationBuilderWebRootIsRelativeToContentRoot()
         {
-            var contentRoot = Path.GetTempPath().ToString();
+            // We use the current test directory since it is guranteed not
+            // to have a wwwroot directory by default which will prevent the default
+            // initialization logic in HostingEnvironmentExtensions.Initialize from
+            // kicking in and setting the WebRootFileProvider to {ContentRoot}/wwwroot
+            var contentRoot = System.IO.Directory.GetCurrentDirectory();
+            var webRoot = "wwwroot2";
 
             var builder = WebApplication.CreateBuilder(new[] { $"--contentRoot={contentRoot}" });
 
-            builder.WebHost.UseSetting("WEBROOT", "wwwroot");
+            builder.WebHost.UseSetting("WEBROOT", webRoot);
 
-            Assert.Equal("wwwroot", builder.WebHost.GetSetting("webroot"));
+            Assert.Equal(webRoot, builder.WebHost.GetSetting("webroot"));
             Assert.IsType<NullFileProvider>(builder.Environment.WebRootFileProvider);
 
             var app = builder.Build();
 
-            Assert.Equal(Path.Combine(contentRoot, "wwwroot"), app.Environment.WebRootPath);
-            Assert.Equal(Path.Combine(contentRoot, "wwwroot") + Path.DirectorySeparatorChar, ((PhysicalFileProvider)app.Environment.WebRootFileProvider).Root);
+            Assert.Equal(Path.Combine(contentRoot, webRoot), app.Environment.WebRootPath);
+            Assert.IsType<PhysicalFileProvider>(app.Environment.WebRootFileProvider);
+            Assert.Equal(Path.Combine(contentRoot, webRoot) + Path.DirectorySeparatorChar, ((PhysicalFileProvider)app.Environment.WebRootFileProvider).Root);
         }
 
         [Fact]
