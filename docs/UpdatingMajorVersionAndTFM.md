@@ -1,6 +1,6 @@
 # Updating to a new Major Version & TFM
 
-At the end of each release cycle, we update our Major Version & TFM (Target Framework Moniker) in `main`, in preparation for the next major release. This doc describes the process of doing those updates, which can include many subtle gotchas in the aspnetcore repo.
+At the end of each release cycle, we update our Major Version (branding version of build assets) & TFM (Target Framework Moniker) in `main`, in preparation for the next major release. This doc describes the process of doing those updates, which can include many subtle gotchas in the aspnetcore repo.
 
 ## Updating Major Version
 
@@ -17,9 +17,15 @@ Typically, we will update the Major Version before updating the TFM. This is bec
 * Add entries to [nuget.config](/nuget.config) for the new Major Version's feed. This just means copying the current feeds (e.g. `dotnet7` and `dotnet7-transport`) and adding entries for the new feeds (`dotnet8` and `dotnet8-transport`). Make an effort to remove old feeds here at the same time.
 * In [src/ProjectTemplates/Shared/TemplatePackageInstaller.cs](/src/ProjectTemplates/Shared/TemplatePackageInstaller.cs), add entries to `_templatePackages ` for `Microsoft.DotNet.Web.ProjectTemplates` and `Microsoft.DotNet.Web.Spa.ProjectTemplates` matching the new version.
 
+### Validation
+
+* CI must be green.
+* Assets produced by the build (packages, installers) should have the new branding version (e.g. if you have just updated `MajorVersion` to `8`, packages should be branded `8.0.0-alpha.1.{BuildNumber}`).
+* Assemblies produced by the build should have the new `AssemblyVersion` (e.g. if you have just updated `MajorVersion` to `8`, Assemblies should have `AssemblyVersion` `8.0.0.0`).
+
 ## Updating TFM
 
-Once dotnet/runtime has updated their TFM, we update ours in the dependency update PR ingesting that change. We won't be able to ingest new dotnet/runtime dependencies in `main` until this is done. For an example, [this](https://github.com/dotnet/aspnetcore/pull/36328) is the PR where we updated our TFM to `net7.0`. This step can be tricky - we have workarounds in [eng/tools/GenerateFiles/Directory.Build.targets.in](/eng/tools/GenerateFiles/Directory.Build.targets.in) to make the build work before we get an SDK containing runtime bits with the new TFM. We copy the `KnownFrameworkReference`, `KnownRuntimePack`, and `KnownAppHostPack` from the previous TFM, give them the incoming runtime dependency versions, and give them the new TFM. This allows us to build against the new TFM before we get an SDK with a reference to it, but there are often problems that arise in this area. The best way to debug build errors related to FrameworkReferences it to get a binlog of a failing project (`dotnet build /bl`) and look at the inputs to the task that failed. Confirm that the `Known___` items look as expected (there is an entry with the current TFM & the current dotnet/runtime dependency version), and look at the source code of the task in [dotnet/sdk](https://github.com/dotnet/sdk) for hints.
+Once dotnet/runtime has updated their TFM, we update ours in the dependency update PR ingesting that change. We won't be able to ingest new dotnet/runtime dependencies in `main` until this is done. For an example, [this](https://github.com/dotnet/aspnetcore/pull/36328) is the PR where we updated our TFM to `net7.0`. This step can be tricky - we have workarounds in [eng/tools/GenerateFiles/Directory.Build.targets.in](/eng/tools/GenerateFiles/Directory.Build.targets.in) to make the build work before we get an SDK containing runtime bits with the new TFM. We copy the `KnownFrameworkReference`, `KnownRuntimePack`, and `KnownAppHostPack` from the previous TFM, give them the incoming runtime dependency versions, and give them the new TFM (these TFMs no-op most of the time - they only apply during this period when we're using an SDK that doesn't know about the new TFM). These workarounds allow us to build against the new TFM before we get an SDK with a reference to it, but there are often problems that arise in this area. The best way to debug build errors related to FrameworkReferences it to get a binlog of a failing project (`dotnet build /bl`) and look at the inputs to the task that failed. Confirm that the `Known___` items look as expected (there is an entry with the current TFM & the current dotnet/runtime dependency version), and look at the source code of the task in [dotnet/sdk](https://github.com/dotnet/sdk) for hints.
 
 ### Required changes
 
@@ -31,6 +37,9 @@ Once dotnet/runtime has updated their TFM, we update ours in the dependency upda
   2. Add entries in [eng/Versions.props](/eng/Versions.props) similar to [these](https://github.com/dotnet/aspnetcore/blob/216c92b78bce31d5e81a70b589707ec2ae5ab21a/eng/Versions.props#L224-L226) - the version should be from the latest released build of .Net.
   3. Add entries in [eng/Dependencies.props](/eng/Dependencies.props) similar to [these](https://github.com/dotnet/aspnetcore/blob/a47c0a58d7002b9a530c67532366b9db96d73cc6/eng/Dependencies.props#L119-L120).
 * Update AssemblyVersions for dotnet/runtime assemblies in [src/Framework/test/TestData.cs](/src/Framework/test/TestData.cs).
+
+* CI must be green.
+* Packages produced by the build should be placing assemblies in a folder named after the new TFM.
 
 ## Ingesting an SDK with the new TFM
 
