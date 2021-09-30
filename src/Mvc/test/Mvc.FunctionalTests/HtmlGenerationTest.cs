@@ -526,7 +526,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/36765")]
         public async Task CacheTagHelper_BubblesExpirationOfNestedTagHelpers()
         {
             // Arrange & Act - 1
