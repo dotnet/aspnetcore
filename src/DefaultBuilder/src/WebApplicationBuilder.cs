@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -193,9 +194,19 @@ namespace Microsoft.AspNetCore.Builder
                 // to the new one. This allows code that has references to the service collection to still function.
                 _services.InnerCollection = services;
 
+                var hostBuilderProviders = ((IConfigurationRoot)context.Configuration).Providers;
+
+                if (!hostBuilderProviders.Contains(chainedConfigSource.BuiltProvider))
+                {
+                    // Something removed the TrackingChainedConfigurationSource pointing back to the ConfigurationManager.
+                    // This is likely a test using WebApplicationFactory<TEntryPoint>.
+                    // We replicate the effect by clearing the ConfingurationManager sources.
+                    ((IConfigurationBuilder)Configuration).Sources.Clear();
+                }
+
                 // Make builder.Configuration match the final configuration. To do that, we add the additional
                 // providers in the inner _hostBuilders's Configuration to the ConfigurationManager.
-                foreach (var provider in ((IConfigurationRoot)context.Configuration).Providers)
+                foreach (var provider in hostBuilderProviders)
                 {
                     if (!ReferenceEquals(provider, chainedConfigSource.BuiltProvider))
                     {
