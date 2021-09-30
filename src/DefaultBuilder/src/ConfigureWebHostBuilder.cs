@@ -6,8 +6,10 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Infrastructure;
+using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.Builder
@@ -53,7 +55,7 @@ namespace Microsoft.AspNetCore.Builder
             {
                 // We allow changing the web root since it's based off the content root and typically
                 // read after the host is built.
-                _environment.WebRootPath = Path.Combine(_environment.ContentRootPath, value);
+                SetWebRootPath(value);
             }
             else if (!string.Equals(previousApplication, _configuration[WebHostDefaults.ApplicationKey], StringComparison.OrdinalIgnoreCase))
             {
@@ -123,7 +125,7 @@ namespace Microsoft.AspNetCore.Builder
             {
                 // We allow changing the web root since it's based off the content root and typically
                 // read after the host is built.
-                _environment.WebRootPath = Path.Combine(_environment.ContentRootPath, value);
+                SetWebRootPath(value);
             }
             else if (string.Equals(key, WebHostDefaults.ApplicationKey, StringComparison.OrdinalIgnoreCase) &&
                     !string.Equals(previousApplication, value, StringComparison.OrdinalIgnoreCase))
@@ -160,6 +162,19 @@ namespace Microsoft.AspNetCore.Builder
             _configuration[key] = value;
 
             return this;
+        }
+
+        private void SetWebRootPath(string value)
+        {
+            _environment.WebRootPath = Path.GetFullPath(Path.Combine(_environment.ContentRootPath, value));
+            _environment.WebRootFileProvider = new PhysicalFileProvider(_environment.WebRootPath);
+            // The StaticWebAssets loader wraps the WebRootFileProvider in order to support loading
+            // static assets from a manifest file and from a local directory. Since we modified
+            // the WebRootFileProvider, we call the StaticWebAssetsLoader to update.
+            if (_environment.IsDevelopment())
+            {
+                StaticWebAssetsLoader.UseStaticWebAssets(_environment, _configuration);
+            }
         }
 
         IWebHostBuilder ISupportsStartup.Configure(Action<IApplicationBuilder> configure)

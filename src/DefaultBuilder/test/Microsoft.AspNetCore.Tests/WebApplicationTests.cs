@@ -592,45 +592,78 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
-        public void WebApplicationBuilderCanModifyWebRootAfterCreateBuilder()
+        public void WebApplicationBuilder_CanSetWebRootPaths()
+        {
+            var contentRoot = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            var webRoot = "wwwroot2";
+            var webRootFullPath = Path.Combine(contentRoot, webRoot);
+            Directory.CreateDirectory(webRootFullPath);
+
+            var builder = WebApplication.CreateBuilder();
+
+            builder.WebHost.UseWebRoot(webRootFullPath);
+            Assert.Equal(webRootFullPath, builder.WebHost.GetSetting("webroot"));
+
+            var app = builder.Build();
+            Assert.Equal(webRootFullPath, app.Environment.WebRootPath);
+        }
+
+        [Fact]
+        public void WebApplicationBuilder_CanChangeSetWebRootPathsViaConfigureAppConfiguration()
+        {
+            var builder = WebApplication.CreateBuilder();
+            var webRootPath = "www";
+            var fullWebRootPath = Path.Combine(Directory.GetCurrentDirectory(), webRootPath);
+            Directory.CreateDirectory(fullWebRootPath);
+
+            builder.WebHost.ConfigureAppConfiguration(builder =>
+            {
+                builder.AddInMemoryCollection(new Dictionary<string, string>
+                {
+                    { WebHostDefaults.WebRootKey , webRootPath }
+                });
+            });
+
+            Assert.Equal(webRootPath, builder.WebHost.GetSetting("webroot"));
+
+            var app = builder.Build();
+            Assert.Equal(fullWebRootPath, app.Environment.WebRootPath);
+            Assert.IsType<PhysicalFileProvider>(app.Environment.WebRootFileProvider);
+            Assert.Equal(fullWebRootPath + Path.DirectorySeparatorChar, ((PhysicalFileProvider)app.Environment.WebRootFileProvider).Root);
+            Directory.Delete(fullWebRootPath);
+        }
+
+        [Fact]
+        public void WebApplicationBuilder_ThrowsForNonExistantWebRoot()
         {
             var builder = WebApplication.CreateBuilder();
 
-            var webRoot = Path.GetTempPath().ToString();
+            var webRoot = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
-            builder.WebHost.UseSetting("WEBROOT", webRoot);
-
-            Assert.Equal(webRoot, builder.WebHost.GetSetting("webroot"));
-            Assert.IsType<NullFileProvider>(builder.Environment.WebRootFileProvider);
-
-            var app = builder.Build();
-
-            Assert.Equal(webRoot, app.Environment.WebRootPath);
-            Assert.Equal(webRoot, ((PhysicalFileProvider)app.Environment.WebRootFileProvider).Root);
+            Assert.Throws<DirectoryNotFoundException>(() => builder.WebHost.UseSetting("WEBROOT", webRoot));
         }
 
         [Fact]
         public void WebApplicationBuilderWebRootIsRelativeToContentRoot()
         {
-            // We use the current test directory since it is guranteed not
-            // to have a wwwroot directory by default which will prevent the default
-            // initialization logic in HostingEnvironmentExtensions.Initialize from
-            // kicking in and setting the WebRootFileProvider to {ContentRoot}/wwwroot
-            var contentRoot = System.IO.Directory.GetCurrentDirectory();
+            var contentRoot = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             var webRoot = "wwwroot2";
+            var webRootFullPath = Path.Combine(contentRoot, webRoot);
+            Directory.CreateDirectory(webRootFullPath);
 
             var builder = WebApplication.CreateBuilder(new[] { $"--contentRoot={contentRoot}" });
 
             builder.WebHost.UseSetting("WEBROOT", webRoot);
 
             Assert.Equal(webRoot, builder.WebHost.GetSetting("webroot"));
-            Assert.IsType<NullFileProvider>(builder.Environment.WebRootFileProvider);
+            Assert.IsType<PhysicalFileProvider>(builder.Environment.WebRootFileProvider);
+            Assert.Equal(webRootFullPath + Path.DirectorySeparatorChar, ((PhysicalFileProvider)builder.Environment.WebRootFileProvider).Root);
 
             var app = builder.Build();
 
             Assert.Equal(Path.Combine(contentRoot, webRoot), app.Environment.WebRootPath);
             Assert.IsType<PhysicalFileProvider>(app.Environment.WebRootFileProvider);
-            Assert.Equal(Path.Combine(contentRoot, webRoot) + Path.DirectorySeparatorChar, ((PhysicalFileProvider)app.Environment.WebRootFileProvider).Root);
+            Assert.Equal(webRootFullPath + Path.DirectorySeparatorChar, ((PhysicalFileProvider)app.Environment.WebRootFileProvider).Root);
         }
 
         [Fact]
@@ -973,41 +1006,6 @@ namespace Microsoft.AspNetCore.Tests
             Assert.DoesNotContain(events, args =>
                 args.EventSource.Name == "Microsoft-Extensions-Logging" &&
                 args.Payload.OfType<string>().Any(p => p.Contains(guid)));
-        }
-
-        [Fact]
-        public void WebApplicationBuilder_CanSetWebRootPaths()
-        {
-            var builder = WebApplication.CreateBuilder();
-            var webRootPath = "www";
-            var fullWebRootPath = Path.Combine(Directory.GetCurrentDirectory(), webRootPath);
-
-            builder.WebHost.UseWebRoot(webRootPath);
-            Assert.Equal(webRootPath, builder.WebHost.GetSetting("webroot"));
-
-            var app = builder.Build();
-            Assert.Equal(fullWebRootPath, app.Environment.WebRootPath);
-        }
-
-        [Fact]
-        public void WebApplicationBuilder_CanChangeSetWebRootPathsViaConfigureAppConfiguration()
-        {
-            var builder = WebApplication.CreateBuilder();
-            var webRootPath = "www";
-            var fullWebRootPath = Path.Combine(Directory.GetCurrentDirectory(), webRootPath);
-
-            builder.WebHost.ConfigureAppConfiguration(builder =>
-            {
-                builder.AddInMemoryCollection(new Dictionary<string, string>
-                {
-                    { WebHostDefaults.WebRootKey , webRootPath }
-                });
-            });
-
-            Assert.Equal(webRootPath, builder.WebHost.GetSetting("webroot"));
-
-            var app = builder.Build();
-            Assert.Equal(fullWebRootPath, app.Environment.WebRootPath);
         }
 
         [Fact]

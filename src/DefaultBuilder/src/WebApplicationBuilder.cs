@@ -3,10 +3,8 @@
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -143,29 +141,6 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>A configured <see cref="WebApplication"/>.</returns>
         public WebApplication Build()
         {
-            // The `WebRoot` is the only host configuration that can be modified after
-            // the `WebApplicationBuilder` is instantiated. When the `WebRoot` is set
-            // we want to create a matching file provider that is used in DI to resolve
-            // the full paths for static assets in the application. We do this in the
-            // `Build` invocation because we want to respect only the last of the
-            // WebRootPaths configured on the application. So, when the following code
-            // is called, a directory and provider will only be created for C.
-            // builder.WebHost.UseSettings("WEBROOT", "A");
-            // builder.WebHost.UseSettings("WEBROOT", "B");
-            // builder.WebHost.UseSettings("WEBROOT", "C");
-            if (!string.IsNullOrEmpty(Environment.WebRootPath))
-            {
-                Directory.CreateDirectory(Environment.WebRootPath);
-                Environment.WebRootFileProvider = new PhysicalFileProvider(Environment.WebRootPath);
-                // The StaticWebAssets loader wraps the WebRootFileProvider in order to support loading
-                // static assets from a manifest file and from a local directory. Since we modified
-                // the WebRootFileProvider, we call the StaticWebAssetsLoader to update.
-                if (Environment.IsDevelopment())
-                {
-                    StaticWebAssetsLoader.UseStaticWebAssets(Environment, Configuration);
-                }
-            }
-
             // Wire up the host configuration here. We don't try to preserve the configuration
             // source itself here since we don't support mutating the host values after creating the builder.
             _hostBuilder.ConfigureHostConfiguration(builder =>
