@@ -198,9 +198,8 @@ namespace Microsoft.AspNetCore.Builder
 
                 if (!hostBuilderProviders.Contains(chainedConfigSource.BuiltProvider))
                 {
-                    // Something removed the TrackingChainedConfigurationSource pointing back to the ConfigurationManager.
-                    // This is likely a test using WebApplicationFactory<TEntryPoint>.
-                    // We replicate the effect by clearing the ConfingurationManager sources.
+                    // Something removed the _hostBuilder's TrackingChainedConfigurationSource pointing back to the ConfigurationManager.
+                    // This is likely a test using WebApplicationFactory. Replicate the effect by clearing the ConfingurationManager sources.
                     ((IConfigurationBuilder)Configuration).Sources.Clear();
                 }
 
@@ -302,39 +301,6 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             public IServiceCollection Services { get; }
-        }
-
-        private sealed class TrackingChainedConfigurationSource : IConfigurationSource
-        {
-            private readonly ChainedConfigurationSource _chainedConfigurationSource = new();
-
-            public TrackingChainedConfigurationSource(ConfigurationManager configManager)
-            {
-                _chainedConfigurationSource.Configuration = configManager;
-            }
-
-            public IConfigurationProvider? BuiltProvider { get; set; }
-
-            public IConfigurationProvider Build(IConfigurationBuilder builder)
-            {
-                BuiltProvider = _chainedConfigurationSource.Build(builder);
-                return BuiltProvider;
-            }
-        }
-
-        private sealed class ConfigurationProviderSource : IConfigurationSource
-        {
-            private readonly IConfigurationProvider _configurationProvider;
-
-            public ConfigurationProviderSource(IConfigurationProvider configurationProvider)
-            {
-                _configurationProvider = configurationProvider;
-            }
-
-            public IConfigurationProvider Build(IConfigurationBuilder builder)
-            {
-                return _configurationProvider;
-            }
         }
     }
 }
