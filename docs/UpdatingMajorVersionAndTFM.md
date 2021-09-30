@@ -2,9 +2,11 @@
 
 At the end of each release cycle, we update our Major Version (branding version of build assets) & TFM (Target Framework Moniker) in `main`, in preparation for the next major release. This doc describes the process of doing those updates, which can include many subtle gotchas in the aspnetcore repo.
 
+In the event that we do a minor release (e.g. 3.1), the guidance in this document still applies (but with all instances of `MajorVersion` replaced by `MinorVersion`).
+
 ## Updating Major Version
 
-Typically, we will update the Major Version before updating the TFM. This is because updating Major Version only requires a logical agreement that `main` is no longer the place for work on the previous major release, while updating the TFM requires waiting for dotnet/runtime to update their TFM so that we can ingest that change. For an example, [this](https://github.com/dotnet/aspnetcore/pull/35402) is the PR where we updated our branding from 6.0.0 to 7.0.0.
+Typically, we will update the Major Version before updating the TFM. This is because updating Major Version only requires a logical agreement that `main` is no longer the place for work on the previous major release, while updating the TFM requires waiting for dotnet/runtime to update their TFM so that we can ingest that change. For an example, [this](https://github.com/dotnet/aspnetcore/pull/35402) is the PR where we updated our branding from 6.0.0 to 7.0.0 (note that branding does *not* have to happen in a dependency update PR - this particular branding exercise needed to include some reaction to runtime changes).
 
 ### Required changes
 
@@ -14,7 +16,7 @@ Typically, we will update the Major Version before updating the TFM. This is bec
   3. Change `PreReleaseVersionLabel` to `alpha`.
   4. Change `PreReleaseBrandingLabel` to `Alpha $(PreReleaseVersionIteration)`.
 * In [src/Framework/test/TestData.cs](/src/Framework/test/TestData.cs), update `ListedTargetingPackAssemblies` by incrementing the AssemblyVersion of all aspnetcore assemblies by 1 major version. Once dotnet/runtime updates their AssemblyVersions, we also need to update those in this file. They typically make that change at the same time as their TFM update, but we change our AssemblyVersions as soon as we update branding.
-* Add entries to [nuget.config](/nuget.config) for the new Major Version's feed. This just means copying the current feeds (e.g. `dotnet7` and `dotnet7-transport`) and adding entries for the new feeds (`dotnet8` and `dotnet8-transport`). Make an effort to remove old feeds here at the same time.
+* Add entries to [NuGet.config](/NuGet.config) for the new Major Version's feed. This just means copying the current feeds (e.g. `dotnet7` and `dotnet7-transport`) and adding entries for the new feeds (`dotnet8` and `dotnet8-transport`). Make an effort to remove old feeds here at the same time.
 * In [src/ProjectTemplates/Shared/TemplatePackageInstaller.cs](/src/ProjectTemplates/Shared/TemplatePackageInstaller.cs), add entries to `_templatePackages ` for `Microsoft.DotNet.Web.ProjectTemplates` and `Microsoft.DotNet.Web.Spa.ProjectTemplates` matching the new version.
 
 ### Validation
@@ -25,7 +27,7 @@ Typically, we will update the Major Version before updating the TFM. This is bec
 
 ## Updating TFM
 
-Once dotnet/runtime has updated their TFM, we update ours in the dependency update PR ingesting that change. We won't be able to ingest new dotnet/runtime dependencies in `main` until this is done. For an example, [this](https://github.com/dotnet/aspnetcore/pull/36328) is the PR where we updated our TFM to `net7.0`. This step can be tricky - we have workarounds in [eng/tools/GenerateFiles/Directory.Build.targets.in](/eng/tools/GenerateFiles/Directory.Build.targets.in) to make the build work before we get an SDK containing runtime bits with the new TFM. We copy the `KnownFrameworkReference`, `KnownRuntimePack`, and `KnownAppHostPack` from the previous TFM, give them the incoming runtime dependency versions, and give them the new TFM (these TFMs no-op most of the time - they only apply during this period when we're using an SDK that doesn't know about the new TFM). These workarounds allow us to build against the new TFM before we get an SDK with a reference to it, but there are often problems that arise in this area. The best way to debug build errors related to FrameworkReferences it to get a binlog of a failing project (`dotnet build /bl`) and look at the inputs to the task that failed. Confirm that the `Known___` items look as expected (there is an entry with the current TFM & the current dotnet/runtime dependency version), and look at the source code of the task in [dotnet/sdk](https://github.com/dotnet/sdk) for hints.
+Once dotnet/runtime has updated their TFM, we update ours in the dependency update PR ingesting that change. We won't be able to ingest new dotnet/runtime dependencies in `main` until this is done. For an example, [this](https://github.com/dotnet/aspnetcore/pull/36328) is the PR where we updated our TFM to `net7.0`. This step can be tricky - we have workarounds in [eng/tools/GenerateFiles/Directory.Build.targets.in](/eng/tools/GenerateFiles/Directory.Build.targets.in) to make the build work before we get an SDK containing runtime references with the new TFM. We copy the `KnownFrameworkReference`, `KnownRuntimePack`, and `KnownAppHostPack` from the previous TFM, give them the incoming runtime dependency versions, and give them the new TFM (these TFMs no-op most of the time - they only apply during this period when we're using an SDK that doesn't know about the new TFM). These workarounds allow us to build against the new TFM before we get an SDK with a reference to it, but there are often problems that arise in this area. The best way to debug build errors related to FrameworkReferences it to get a binlog of a failing project (`dotnet build /bl`) and look at the inputs to the task that failed. Confirm that the `Known___` items look as expected (there is an entry with the current TFM & the current dotnet/runtime dependency version), and look at the source code of the task in [dotnet/sdk](https://github.com/dotnet/sdk) for hints.
 
 ### Required changes
 
@@ -37,6 +39,10 @@ Once dotnet/runtime has updated their TFM, we update ours in the dependency upda
   2. Add entries in [eng/Versions.props](/eng/Versions.props) similar to [these](https://github.com/dotnet/aspnetcore/blob/216c92b78bce31d5e81a70b589707ec2ae5ab21a/eng/Versions.props#L224-L226) - the version should be from the latest released build of .Net.
   3. Add entries in [eng/Dependencies.props](/eng/Dependencies.props) similar to [these](https://github.com/dotnet/aspnetcore/blob/a47c0a58d7002b9a530c67532366b9db96d73cc6/eng/Dependencies.props#L119-L120).
 * Update AssemblyVersions for dotnet/runtime assemblies in [src/Framework/test/TestData.cs](/src/Framework/test/TestData.cs).
+* Update dotnet/spa-templates
+  1. Create a `release/{n}.0` branch in dotnet/spa-template based off of `main`, where `n` is the MajorVersion we are updating from (not the one we are updating to).
+  2. Create a PR like [this one](https://github.com/dotnet/spa-templates/pull/21) updating the branding & TFM in the `main` branch of dotnet/spa-templates.
+  3. Create a PR like [this one](https://github.com/dotnet/aspnetcore/pull/36932) updating the current release branch in `aspnetcore` to reference the new release branch you just created in dotnet/spa-templates.
 
 ### Validation
 
@@ -45,4 +51,4 @@ Once dotnet/runtime has updated their TFM, we update ours in the dependency upda
 
 ## Ingesting an SDK with the new TFM
 
-Typically we update the SDK we use in `main` every Monday. Once we have one that contains a runtime using the new TFM, we can update [eng/tools/RepoTasks/RepoTasks.csproj](/eng/tools/RepoTasks/RepoTasks.csproj), [eng/tools/RepoTasks/RepoTasks.tasks](/eng/tools/RepoTasks/RepoTasks.tasks), and [eng/helix/content/RunTests/RunTests.csproj](/eng/helix/content/RunTests/RunTests.csproj) to use `DefaultNetCoreTargetFramework` again rather than hard-coding the previous TFM.
+Typically we update the SDK we use in `main` every Monday. Once we have one that contains `Microsoft.Netcore.App` entries with the new TFM, we can update [eng/tools/RepoTasks/RepoTasks.csproj](/eng/tools/RepoTasks/RepoTasks.csproj), [eng/tools/RepoTasks/RepoTasks.tasks](/eng/tools/RepoTasks/RepoTasks.tasks), and [eng/helix/content/RunTests/RunTests.csproj](/eng/helix/content/RunTests/RunTests.csproj) to use `DefaultNetCoreTargetFramework` again rather than hard-coding the previous TFM.
