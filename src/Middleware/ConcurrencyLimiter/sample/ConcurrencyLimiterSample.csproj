@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
   </PropertyGroup>
@@ -11,11 +10,8 @@
     <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
   </ItemGroup>
 
+  <!-- Benchmarks server uses shared Fx but needs refs to OOB packages. -->
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">
     <PackageReference Include="Microsoft.AspNetCore.ConcurrencyLimiter" Version="$(MicrosoftAspNetCoreAppVersion)" />
-
-    <FrameworkReference Update="Microsoft.AspNetCore.App" RuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppVersion)" />
-    <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppVersion)" />
   </ItemGroup>
-
 </Project>
