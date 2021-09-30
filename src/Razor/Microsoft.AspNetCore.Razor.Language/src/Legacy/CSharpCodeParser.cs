@@ -1313,6 +1313,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     {
                         if (!At(SyntaxKind.Whitespace) &&
                             !At(SyntaxKind.NewLine) &&
+                            !At(SyntaxKind.Semicolon) &&
                             !EndOfFile)
                         {
                             // This case should never happen in a real scenario. We're just being defensive.
@@ -1487,6 +1488,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     {
                                         while (!At(SyntaxKind.NewLine))
                                         {
+                                            if (At(SyntaxKind.Semicolon))
+                                            {
+                                                // Consume the ending ';'
+                                                EatCurrentToken();
+                                                break;
+                                            }
+
                                             AcceptAndMoveNext();
                                             if (EndOfFile)
                                             {
@@ -1495,6 +1503,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                             }
                                         }
                                     }
+                                }
+                                else if (At(SyntaxKind.Semicolon))
+                                {
+                                    // Consume the ending ';'
+                                    EatCurrentToken();
                                 }
                                 else
                                 {
