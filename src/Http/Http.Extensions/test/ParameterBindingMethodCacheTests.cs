@@ -327,6 +327,22 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
             Assert.True(new ParameterBindingMethodCache().HasBindAsyncMethod(parameterInfo));
         }
 
+        [Fact]
+        public async Task FindBindAsyncMethod_FindsFallbackMethodWhenPreferredMethodsReturnTypeIsWrong()
+        {
+            var parameterInfo = GetFirstParameter((BindAsyncFallsBack? arg) => BindAsyncFallbackMethod(arg));
+            var cache = new ParameterBindingMethodCache();
+            Assert.True(cache.HasBindAsyncMethod(parameterInfo));
+            var methodFound = cache.FindBindAsyncMethod(parameterInfo);
+
+            var parseHttpContext = Expression.Lambda<Func<HttpContext, ValueTask<object>>>(methodFound.Expression!,
+                ParameterBindingMethodCache.HttpContextExpr).Compile();
+
+            var httpContext = new DefaultHttpContext();
+
+            Assert.Null(await parseHttpContext(httpContext));
+        }
+
         [Theory]
         [InlineData(typeof(InvalidVoidReturnTryParseStruct))]
         [InlineData(typeof(InvalidVoidReturnTryParseClass))]
@@ -431,6 +447,7 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
         private static void BindAsyncDirectlyAndFromInterfaceMethod(BindAsyncDirectlyAndFromInterface arg) { }
         private static void BindAsyncFromClassAndInterfaceMethod(BindAsyncFromClassAndInterface arg) { }
         private static void BindAsyncFromInterfaceWithParameterInfoMethod(BindAsyncFromInterfaceWithParameterInfo args) { }
+        private static void BindAsyncFallbackMethod(BindAsyncFallsBack? arg) { }
 
         private static ParameterInfo GetFirstParameter<T>(Expression<Action<T>> expr)
         {
@@ -952,6 +969,17 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
 
         private class BindAsyncFromInterfaceWithParameterInfo : IBindAsync<BindAsyncFromInterfaceWithParameterInfo>
         {
+        }
+
+        private class BindAsyncFallsBack
+        {
+            public static void BindAsync(HttpContext context, ParameterInfo parameter)
+                => throw new NotImplementedException();
+
+            public static ValueTask<BindAsyncFallsBack?> BindAsync(HttpContext context)
+            {
+                return new(result: null);
+            }
         }
 
         private class MockParameterInfo : ParameterInfo

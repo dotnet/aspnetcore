@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Http
                 var hasParameterInfo = true;
                 // There should only be one BindAsync method with these parameters since C# does not allow overloading on return type.
                 var methodInfo = GetStaticMethodFromHierarchy(nonNullableParameterType, "BindAsync", new[] { typeof(HttpContext), typeof(ParameterInfo) });
-                if (methodInfo is null)
+                if (methodInfo is null || !ValidateReturnType(methodInfo))
                 {
                     hasParameterInfo = false;
                     methodInfo = GetStaticMethodFromHierarchy(nonNullableParameterType, "BindAsync", new[] { typeof(HttpContext) });
@@ -179,8 +179,7 @@ namespace Microsoft.AspNetCore.Http
                 // public static ValueTask<{type}> BindAsync(HttpContext context, ParameterInfo parameter)
                 // public static ValueTask<Nullable<{type}>> BindAsync(HttpContext context, ParameterInfo parameter)
                 if (methodInfo is not null &&
-                    methodInfo.ReturnType.IsGenericType &&
-                    methodInfo.ReturnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
+                    ValidateReturnType(methodInfo))
                 {
                     var valueTaskResultType = methodInfo.ReturnType.GetGenericArguments()[0];
 
@@ -247,6 +246,12 @@ namespace Microsoft.AspNetCore.Http
             var nonNullableParameterType = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
             var (method, paramCount) = _bindAsyncMethodCallCache.GetOrAdd(nonNullableParameterType, Finder);
             return (method?.Invoke(parameter), paramCount);
+
+            static bool ValidateReturnType(MethodInfo methodInfo)
+            {
+                return methodInfo.ReturnType.IsGenericType &&
+                    methodInfo.ReturnType.GetGenericTypeDefinition() == typeof(ValueTask<>);
+            }
         }
 
         private static MethodInfo? GetStaticMethodFromHierarchy(Type type, string name, Type[] parameterTypes, Type? returnType = null)
