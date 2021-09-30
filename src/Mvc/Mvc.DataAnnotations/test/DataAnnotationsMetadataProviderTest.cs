@@ -7,6 +7,9 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
+using System.Net.Http;
+using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -1632,6 +1635,59 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             Assert.False(result);
         }
 
+        [Theory]
+        [InlineData(nameof(TypeWithFrameworkProperties.ActionContext))]
+        [InlineData(nameof(TypeWithFrameworkProperties.HttpContext))]
+        [InlineData(nameof(TypeWithFrameworkProperties.StringProperty))]
+        [InlineData(nameof(TypeWithFrameworkProperties.TaskOfT))]
+        [InlineData(nameof(TypeWithFrameworkProperties.Uri))]
+        public void CreateValidationMetadata_AddsImplicitRequired_ForFrameworkTypeProperties(string propertyName)
+        {
+            // Verifies that with nullability enabled, a property, where the property type is a "framework type", has implicit required added if the property is non-nullable.
+
+            // Arrange
+            var type = typeof(TypeWithFrameworkProperties);
+            var property = type.GetProperty(propertyName);
+            var provider = CreateProvider();
+            var context = new ValidationMetadataProviderContext(
+                ModelMetadataIdentity.ForProperty(property, type, type),
+                ModelAttributes.GetAttributesForProperty(type, property));
+
+            // Act
+            provider.CreateValidationMetadata(context);
+
+            // Assert
+            var validatorMetadata = Assert.Single(context.ValidationMetadata.ValidatorMetadata);
+            Assert.IsType<RequiredAttribute>(validatorMetadata);
+        }
+
+        [Theory]
+        [InlineData(nameof(TypeWithFrameworkProperties.ActionContext), nameof(ActionContext.ActionDescriptor))]
+        [InlineData(nameof(TypeWithFrameworkProperties.HttpContext), nameof(HttpContext.Features))]
+        [InlineData(nameof(TypeWithFrameworkProperties.TaskOfT), "Result")]
+        [InlineData(nameof(TypeWithFrameworkProperties.Uri), nameof(Uri.AbsoluteUri))]
+        [InlineData(nameof(TypeWithFrameworkProperties.HttpRequestMessage), nameof(HttpRequestMessage.Headers))]
+        [InlineData(nameof(TypeWithFrameworkProperties.JsonDocument), nameof(JsonDocument.RootElement))]
+        public void CreateValidationMetadata_DoesNotAddImplicitRequired_ForPropertiesOnFrameworkTypes(string propertyName, string subPropertyName)
+        {
+            // Verifies that with nullability enabled, a property, where the property type is a "framework type", has implicit required added if the property is non-nullable.
+
+            // Arrange
+            var type = typeof(TypeWithFrameworkProperties);
+            var property = type.GetProperty(propertyName);
+            var subProperty = property.PropertyType.GetProperty(subPropertyName);
+            var provider = CreateProvider();
+            var context = new ValidationMetadataProviderContext(
+                ModelMetadataIdentity.ForProperty(subProperty, property.PropertyType, type),
+                ModelAttributes.GetAttributesForProperty(property.PropertyType, subProperty));
+
+            // Act
+            provider.CreateValidationMetadata(context);
+
+            // Assert
+            Assert.Empty(context.ValidationMetadata.ValidatorMetadata);
+        }
+
         private IEnumerable<KeyValuePair<EnumGroupAndName, string>> GetLocalizedEnumGroupedDisplayNamesAndValues(
             bool useStringLocalizer)
         {
@@ -1918,6 +1974,23 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
         public class TypeImplementIInterfaceWithNonNullProperty : AbstraceTypehNonNullProperty
         {
             public override string Property { get; set; } = string.Empty;
+        }
+
+        public class TypeWithFrameworkProperties
+        {
+            public string StringProperty { get; set; } = default!;
+
+            public Uri Uri { get; set; } = default!;
+
+            public Task<string> TaskOfT { get; set; } = default!;
+
+            public HttpContext HttpContext { get; set; } = default!;
+
+            public ActionContext ActionContext { get; set; } = default!;
+
+            public HttpRequestMessage HttpRequestMessage { get; set; } = default!;
+
+            public JsonDocument JsonDocument { get; set; } = default!;
         }
 #nullable restore
 

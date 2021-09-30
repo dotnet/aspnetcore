@@ -6,7 +6,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.Localization;
@@ -29,6 +35,22 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
 
         private const string NullableContextAttributeFullName = "System.Runtime.CompilerServices.NullableContextAttribute";
         private const string NullableContextFlagsFieldName = "Flag";
+
+        private static readonly HashSet<Assembly> _wellKnownFrameworkAssemblies = new HashSet<Assembly>
+        {
+            typeof(object).Assembly,
+            typeof(Uri).Assembly,
+            typeof(HttpClient).Assembly,
+            typeof(JsonDocument).Assembly,
+            typeof(HttpContext).Assembly,
+            typeof(ISession).Assembly,
+            typeof(ActionContext).Assembly,
+            typeof(ControllerBase).Assembly,
+            typeof(ClaimsPrincipal).Assembly,
+            typeof(AsymmetricAlgorithm).Assembly,
+            typeof(Oid).Assembly,
+            typeof(X509Certificate2).Assembly,
+        };
 
         private readonly IStringLocalizerFactory? _stringLocalizerFactory;
         private readonly MvcOptions _options;
@@ -377,10 +399,21 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                     }
                     else
                     {
-                        addInferredRequiredAttribute = IsNullableReferenceType(
-                            property.DeclaringType!,
-                            member: null,
-                            context.PropertyAttributes!);
+                        if (property.DeclaringType is Type declaringType && _wellKnownFrameworkAssemblies.Contains(declaringType.Assembly))
+                        {
+                            // We're dealing with a property on a type that is in the BCL or ASP.NET Core. Examples of this would be `Task.Result` or `HttpContext.Request`
+                            // that have nullable annoations. It's highly improbable that the property was bound from the request and requires validating that it was correctly bound to a non-null value.
+                            // It's much more likely that the user's model contains properly constructred instance (e.g. they happen to have a Task as a property or are binding the current HttpContext instance).
+                            // By annotating these types with [Required], we can no longer short-circuit them from being validated.
+                            // Skip these properties for inferrerd [Required]
+                        }
+                        else
+                        {
+                            addInferredRequiredAttribute = IsNullableReferenceType(
+                                property.DeclaringType!,
+                                member: null,
+                                context.PropertyAttributes!);
+                        }
                     }
                 }
                 else if (context.Key.MetadataKind == ModelMetadataKind.Parameter)

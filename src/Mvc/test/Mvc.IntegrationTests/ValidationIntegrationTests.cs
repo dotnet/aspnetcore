@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -2436,6 +2437,77 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         private static void Validation_InifnitelyRecursiveModel_ValidationOnTopLevelParameterMethod([Required] RecursiveModel model) { }
+
+        [Fact]
+        public async Task Validation_ModelWithNonNullableReferenceTypes_DoesNotValidateNonNullablePropertiesOnFrameworkTypes()
+        {
+            // Arrange
+            var parameterInfo = GetType().GetMethod(nameof(Validation_ModelWithNonNullableReferenceTypes_DoesNotValidateNonNullablePropertiesOnFrameworkTypesAction), BindingFlags.NonPublic | BindingFlags.Static)
+                .GetParameters()
+                .First();
+
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var modelMetadata = modelMetadataProvider.GetMetadataForParameter(parameterInfo);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(modelMetadataProvider);
+
+            var parameter = new ParameterDescriptor()
+            {
+                Name = parameterInfo.Name,
+                ParameterType = parameterInfo.ParameterType,
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = new QueryString("?Name=CoolName");
+            });
+            // While there are no validation to be performed on any properties of HttpContext, ValidatorVisitor will visit it's immediate children.
+            // Changing this needs due-diligence. In the meanwhile, we'll initialize properties that will otherwise throw on being accessed.
+            testContext.HttpContext.Session = Mock.Of<ISession>();
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext, modelMetadataProvider, modelMetadata);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<ModelWithNonNullableReferenceTypeProperties>(modelBindingResult.Model);
+            Assert.Equal("CoolName", model.Name);
+
+            Assert.True(modelState.IsValid);
+            Assert.Equal(ModelValidationState.Valid, modelState.ValidationState);
+
+            Assert.Collection(
+                modelState.OrderBy(kvp => kvp.Key),
+                kvp => Assert.Equal("Name", kvp.Key));
+        }
+
+#nullable enable
+        private static void Validation_ModelWithNonNullableReferenceTypes_DoesNotValidateNonNullablePropertiesOnFrameworkTypesAction(ModelWithNonNullableReferenceTypeProperties model) { }
+
+        public class ModelWithNonNullableReferenceTypeProperties
+        {
+            public string Name { get; set; } = default!;
+
+            [ModelBinder(typeof(HttpContextBinder))]
+            public HttpContext Context { get; set; } = default!;
+
+            public Delegate Delegate { get; set; } = typeof(ModelWithNonNullableReferenceTypeProperties).GetMethod(nameof(SomeMethod))!.CreateDelegate<Action>();
+
+            public static void SomeMethod() { }
+        }
+
+        private class HttpContextBinder : IModelBinder
+        {
+            public Task BindModelAsync(ModelBindingContext bindingContext)
+            {
+                bindingContext.Result = ModelBindingResult.Success(bindingContext.ActionContext.HttpContext);
+                return Task.CompletedTask;
+            }
+        }
+#nullable restore
+
 
         private static void AssertRequiredError(string key, ModelError error)
         {
