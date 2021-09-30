@@ -23,37 +23,35 @@
 
   <ItemGroup>
     <!-- Use the same NETCore shared framework as repo built against except when building product code in servicing. -->
-    <KnownFrameworkReference
-        Update="@(KnownFrameworkReference->WithMetadataValue('Identity', 'Microsoft.NETCore.App')->WithMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}'))"
-        LatestRuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimeVersion}">
+    <KnownFrameworkReference Update="Microsoft.NETCore.App">
+      <LatestRuntimeFrameworkVersion
+          Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</LatestRuntimeFrameworkVersion>
+      <TargetingPackVersion
+          Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRefVersion}</TargetingPackVersion>
       <!--
-        Change the default shared framework and targeting pack version only when _not_ servicing. Avoid bumping
-        version used in most projects. When servicing, projects can use $(TargetLatestRuntimePatch) to explicitly
-        control whether assemblies build against default (false) or latest (true). When that property is not set, SDK
-        uses default metadata in most cases but published apps e.g. tool projects (again, property not set) use latest.
-
-        !temporary! Also check $(TargetLatestRuntimePatch) here because these metadata changes otherwise increase the
-        minimum versions, making $(TargetLatestRuntimePatch) irrelevant. This helps to avoid problems with current
-        `[assembly: AssemblyVersion(...)]` changes in dotnet/runtime assemblies and our MSBuild tasks.
+        Change the default shared framework version only when _not_ servicing. Avoid bumping version used in most
+        projects. When servicing, projects (Microsoft.AspNetCore.App.Runtime in particular) can use
+        $(TargetLatestRuntimePatch) to explicitly control whether assemblies build against default (false) or
+        latest (true). When that property is not set, SDK uses default metadata in most cases but published apps
+        e.g. tool projects (again, property not set) use latest.
+        On the other hand, $(TargetLatestDotNetRuntime) is specific to this repo and controls only the update below.
       -->
       <DefaultRuntimeFrameworkVersion Condition=" '$(IsServicingBuild)' != 'true' AND
+          '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' AND
           '$(TargetLatestDotNetRuntime)' != 'false' ">${MicrosoftNETCoreAppRuntimeVersion}</DefaultRuntimeFrameworkVersion>
-      <TargetingPackVersion Condition=" '$(IsServicingBuild)' != 'true' AND
-          '$(TargetLatestDotNetRuntime)' != 'false' ">${MicrosoftNETCoreAppRefVersion}</TargetingPackVersion>
     </KnownFrameworkReference>
 
     <!-- Use the just-built ASP.NET Core shared framework if available except when building product code in servicing. -->
-    <KnownFrameworkReference
-        Update="@(KnownFrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->WithMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}'))"
-        Condition=" $(UpdateAspNetCoreKnownFramework) "
-        LatestRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimeVersion}"
-        RuntimePackRuntimeIdentifiers="${SupportedRuntimeIdentifiers}">
-      <DefaultRuntimeFrameworkVersion
-          Condition=" '$(IsServicingBuild)' != 'true' ">${MicrosoftAspNetCoreAppRuntimeVersion}</DefaultRuntimeFrameworkVersion>
+    <KnownFrameworkReference Update="Microsoft.AspNetCore.App" Condition=" $(UpdateAspNetCoreKnownFramework) ">
+      <LatestRuntimeFrameworkVersion
+          Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftAspNetCoreAppRuntimeVersion}</LatestRuntimeFrameworkVersion>
+      <RuntimePackRuntimeIdentifiers
+          Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${SupportedRuntimeIdentifiers}</RuntimePackRuntimeIdentifiers>
       <TargetingPackVersion
-          Condition=" '$(IsServicingBuild)' != 'true' ">${MicrosoftAspNetCoreAppRefVersion}</TargetingPackVersion>
+          Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftAspNetCoreAppRefVersion}</TargetingPackVersion>
+      <DefaultRuntimeFrameworkVersion Condition=" '$(IsServicingBuild)' != 'true' AND
+          '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftAspNetCoreAppRuntimeVersion}</DefaultRuntimeFrameworkVersion>
     </KnownFrameworkReference>
-
   </ItemGroup>
 
   <!-- Warn if the "just-built" ASP.NET Core shared framework does not exist. -->
