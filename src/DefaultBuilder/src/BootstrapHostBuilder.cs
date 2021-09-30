@@ -111,6 +111,11 @@ namespace Microsoft.AspNetCore.Hosting
             };
 
             hostingEnvironment.ContentRootFileProvider = new PhysicalFileProvider(hostingEnvironment.ContentRootPath);
+            if (hostConfiguration[WebHostDefaults.WebRootKey] is string webRootPath)
+            {
+                hostingEnvironment.WebRootPath = ContentRootResolver.ResolvePath(hostingEnvironment.ContentRootPath, webRootPath);
+                hostingEnvironment.WebRootFileProvider = new PhysicalFileProvider(hostingEnvironment.WebRootPath);
+            }
 
             // Normalize the content root setting for the path in configuration
             hostConfiguration[HostDefaults.ContentRootKey] = hostingEnvironment.ContentRootPath;
@@ -157,7 +162,9 @@ namespace Microsoft.AspNetCore.Hosting
             public string EnvironmentName { get; set; } = default!;
             public string ApplicationName { get; set; } = default!;
             public string ContentRootPath { get; set; } = default!;
+            public string WebRootPath { get; set; } = default!;
             public IFileProvider ContentRootFileProvider { get; set; } = default!;
+            public IFileProvider WebRootFileProvider { get; set; } = default!;
         }
     }
 }

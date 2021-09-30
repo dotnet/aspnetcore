@@ -42,6 +42,8 @@ Microsoft.AspNetCore.Builder.WebApplicationOptions.ContentRootPath.get -> string
 Microsoft.AspNetCore.Builder.WebApplicationOptions.ContentRootPath.init -> void
 Microsoft.AspNetCore.Builder.WebApplicationOptions.EnvironmentName.get -> string?
 Microsoft.AspNetCore.Builder.WebApplicationOptions.EnvironmentName.init -> void
+Microsoft.AspNetCore.Builder.WebApplicationOptions.WebRootPath.get -> string?
+Microsoft.AspNetCore.Builder.WebApplicationOptions.WebRootPath.init -> void
 Microsoft.AspNetCore.Builder.WebApplicationOptions.WebApplicationOptions() -> void
 static Microsoft.AspNetCore.Builder.WebApplication.Create(string![]? args = null) -> Microsoft.AspNetCore.Builder.WebApplication!
 static Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder() -> Microsoft.AspNetCore.Builder.WebApplicationBuilder!
