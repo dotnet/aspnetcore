@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Net;
 using System.Reflection;
+using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
@@ -700,6 +701,75 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
+        public async Task WebApplicationCanObserveSourcesClearedInBuild()
+        {
+            // This mimics what WebApplicationFactory<T> does and runs configure
+            // services callbacks
+            using var listener = new HostingListener(hostBuilder =>
+            {
+                hostBuilder.ConfigureHostConfiguration(config =>
+                {
+                    // Clearing here would not remove the app config added via builder.Configuration.
+                    config.AddInMemoryCollection(new Dictionary<string, string>()
+                    {
+                        { "A", "A" },
+                    });
+                });
+
+                hostBuilder.ConfigureAppConfiguration(config =>
+                {
+                    // This clears both the chained host configuration and chained builder.Configuration.
+                    config.Sources.Clear();
+                    config.AddInMemoryCollection(new Dictionary<string, string>()
+                    {
+                        { "B", "B" },
+                    });
+                });
+            });
+
+            var builder = WebApplication.CreateBuilder();
+
+            builder.Configuration.AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                { "C", "C" },
+            });
+
+            await using var app = builder.Build();
+
+            Assert.True(string.IsNullOrEmpty(app.Configuration["A"]));
+            Assert.True(string.IsNullOrEmpty(app.Configuration["C"]));
+
+            Assert.Equal("B", app.Configuration["B"]);
+
+            Assert.Same(builder.Configuration, app.Configuration);
+        }
+
+        [Fact]
+        public async Task WebApplicationCanHandleStreamBackedConfigurationAddedInBuild()
+        {
+            static Stream CreateStreamFromString(string data) => new MemoryStream(Encoding.UTF8.GetBytes(data));
+
+            using var jsonAStream = CreateStreamFromString(@"{ ""A"": ""A"" }");
+            using var jsonBStream = CreateStreamFromString(@"{ ""B"": ""B"" }");
+
+            // This mimics what WebApplicationFactory<T> does and runs configure
+            // services callbacks
+            using var listener = new HostingListener(hostBuilder =>
+            {
+                hostBuilder.ConfigureHostConfiguration(config => config.AddJsonStream(jsonAStream));
+                hostBuilder.ConfigureAppConfiguration(config => config.AddJsonStream(jsonBStream));
+            });
+
+            var builder = WebApplication.CreateBuilder();
+            await using var app = builder.Build();
+
+            Assert.Equal("A", app.Configuration["A"]);
+            Assert.Equal("B", app.Configuration["B"]);
+
+            Assert.Same(builder.Configuration, app.Configuration);
+        }
+
+        [Fact]
         public void WebApplicationBuilderHostProperties_IsCaseSensitive()
         {
             var builder = WebApplication.CreateBuilder();
@@ -752,7 +822,6 @@ namespace Microsoft.AspNetCore.Tests
 
             var app = builder.Build();
 
-            // These are different
             Assert.Same(app.Configuration, builder.Configuration);
         }
 
@@ -769,7 +838,6 @@ namespace Microsoft.AspNetCore.Tests
 
             var app = builder.Build();
 
-            // These are different
             Assert.Same(app.Configuration, builder.Configuration);
         }
 
