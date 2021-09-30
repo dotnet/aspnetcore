@@ -41,8 +41,9 @@ Once dotnet/runtime has updated their TFM, we update ours in the dependency upda
 * Update AssemblyVersions for dotnet/runtime assemblies in [src/Framework/test/TestData.cs](/src/Framework/test/TestData.cs).
 * Update dotnet/spa-templates
   1. Create a `release/{n}.0` branch in dotnet/spa-template based off of `main`, where `n` is the MajorVersion we are updating from (not the one we are updating to).
-  2. Create a PR like [this one](https://github.com/dotnet/spa-templates/pull/21) updating the branding & TFM in the `main` branch of dotnet/spa-templates.
-  3. Create a PR like [this one](https://github.com/dotnet/aspnetcore/pull/36932) updating the current release branch in `aspnetcore` to reference the new release branch you just created in dotnet/spa-templates.
+  2. Create a PR like [this one](https://github.com/dotnet/aspnetcore/pull/36932) updating the current release branch in `aspnetcore` to reference the new release branch you just created in dotnet/spa-templates.
+  3. Create a PR like [this one](https://github.com/dotnet/spa-templates/pull/21) updating the branding & TFM in the `main` branch of dotnet/spa-templates.
+    * Do not merge this until the PR from the previous step is merged.
 
 ### Validation
 
