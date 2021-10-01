@@ -20,6 +20,7 @@
 
   <PropertyGroup>
     <HelixBuild>private-$(USERNAME)</HelixBuild>
+    <HelixTestConfigurationFilePath>$(RepoRoot)/eng/test-configuration.json</HelixTestConfigurationFilePath>
     <HelixBuild Condition=" '$(USERNAME)' == '' ">private-$(USER)</HelixBuild>
     <IsExternal>true</IsExternal>
     <MaxRetryCount Condition="'$(MaxRetryCount)' == ''">2</MaxRetryCount>
@@ -113,8 +114,12 @@
     <ItemGroup>
       <HelixCorrelationPayload Include="$(OutputPath)\SharedFx.Layout.zip" Destination="$(DotNetCliDestination)" />
     </ItemGroup>
+ 
+    <ItemGroup Condition="Exists('$(HelixTestConfigurationFilePath)')">
+      <HelixCorrelationPayload Include="$(HelixTestConfigurationFilePath)" AsArchive="false" />
+    </ItemGroup>
   </Target>
-
+  
   <Target Name="Gather" BeforeTargets="Build">
     <MSBuild Projects="@(ProjectToBuild)"
               Targets="CreateHelixPayload"
