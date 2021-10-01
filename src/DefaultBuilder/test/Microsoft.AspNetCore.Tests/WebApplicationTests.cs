@@ -805,6 +805,24 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
+        public async Task WebApplicationMakesOriginalConfigurationProvidersAddedInBuildAccessable()
+        {
+            // This mimics what WebApplicationFactory<T> does and runs configure
+            // services callbacks
+            using var listener = new HostingListener(hostBuilder =>
+            {
+                hostBuilder.ConfigureAppConfiguration(config => config.Add(new RandomConfigurationSource()));
+            });
+
+            var builder = WebApplication.CreateBuilder();
+            await using var app = builder.Build();
+
+            var wrappedProviders = ((IConfigurationRoot)app.Configuration).Providers.OfType<IEnumerable<IConfigurationProvider>>();
+            var unwrappedProviders = wrappedProviders.Select(p => Assert.Single(p));
+            Assert.Single(unwrappedProviders.OfType<RandomConfigurationProvider>());
+        }
+
+        [Fact]
         public void WebApplicationBuilderHostProperties_IsCaseSensitive()
         {
             var builder = WebApplication.CreateBuilder();
