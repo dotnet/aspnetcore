@@ -26,7 +26,7 @@ function discoverServerComponents(document: Document): ServerComponentDescriptor
   return discoveredComponents.sort((a, b): number => a.sequence - b.sequence);
 }
 
-const blazorStateCommentRegularExpression = /^\s*Blazor-Component-State:(?<state>[a-zA-Z0-9\+\/=]+)$/;
+const blazorStateCommentRegularExpression = /^\s*Blazor-Component-State:(?<state>[a-zA-Z0-9+/=]+)$/;
 
 export function discoverPersistedState(node: Node): string | null | undefined {
   if (node.nodeType === Node.COMMENT_NODE) {

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable no-prototype-builtins */
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { attachDebuggerHotkey, hasDebuggingEnabled } from './MonoDebugger';
 import { showErrorNotification } from '../../BootErrors';
@@ -47,6 +49,7 @@ export const monoPlatform: Platform = {
 
       // dotnet.js assumes the existence of this
       window['Browser'] = {
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         init: () => { },
       };
 
@@ -262,7 +265,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
   }
 
   let icuDataResource: LoadingResource | undefined;
-  if (resourceLoader.bootConfig.icuDataMode != ICUDataMode.Invariant) {
+  if (resourceLoader.bootConfig.icuDataMode !== ICUDataMode.Invariant) {
     const applicationCulture = resourceLoader.startOptions.applicationCulture || (navigator.languages && navigator.languages[0]);
     const icuDataResourceName = getICUResourceName(resourceLoader.bootConfig, applicationCulture);
     icuDataResource = resourceLoader.loadResource(
@@ -329,7 +332,6 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     Blazor._internal.getSatelliteAssemblies = (culturesToLoadDotNetArray: System_Array<System_String>): System_Object => {
       const culturesToLoad = BINDING.mono_array_to_js_array<System_String, string>(culturesToLoadDotNetArray);
       const satelliteResources = resourceLoader.bootConfig.resources.satelliteResources;
-      const applicationCulture = resourceLoader.startOptions.applicationCulture || (navigator.languages && navigator.languages[0]);
 
       if (satelliteResources) {
         const resourcePromises = Promise.all(culturesToLoad
@@ -369,7 +371,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
 
       const assembliesMarkedAsLazy = assembliesToLoad.filter(assembly => lazyAssemblies.hasOwnProperty(assembly));
 
-      if (assembliesMarkedAsLazy.length != assembliesToLoad.length) {
+      if (assembliesMarkedAsLazy.length !== assembliesToLoad.length) {
         const notMarked = assembliesToLoad.filter(assembly => !assembliesMarkedAsLazy.includes(assembly));
         throw new Error(`${notMarked.join()} must be marked with 'BlazorWebAssemblyLazyLoad' item group in your project file to allow lazy-loading.`);
       }
@@ -443,6 +445,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     let timeZone = 'UTC';
     try {
       timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    // eslint-disable-next-line no-empty
     } catch { }
     MONO.mono_wasm_setenv('TZ', timeZone || 'UTC');
     if (resourceLoader.bootConfig.modifiableAssemblies) {

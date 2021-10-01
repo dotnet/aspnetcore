@@ -1,6 +1,6 @@
 let hasFailed = false;
 
-export async function showErrorNotification() {
+export function showErrorNotification(): void {
   const errorUi = document.querySelector('#blazor-error-ui') as HTMLElement;
   if (errorUi) {
     errorUi.style.display = 'block';

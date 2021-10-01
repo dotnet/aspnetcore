@@ -5,7 +5,9 @@ const networkFetchCacheMode = 'no-cache';
 
 export class WebAssemblyResourceLoader {
   private usedCacheKeys: { [key: string]: boolean } = {};
+
   private networkLoads: { [name: string]: LoadLogEntry } = {};
+
   private cacheLoads: { [name: string]: LoadLogEntry } = {};
 
   static async initAsync(bootConfig: BootJsonData, startOptions: Partial<WebAssemblyStartOptions>): Promise<WebAssemblyResourceLoader> {
@@ -124,7 +126,7 @@ export class WebAssemblyResourceLoader {
     // there's anything they don't like about it.
     return fetch(url, {
       cache: networkFetchCacheMode,
-      integrity: this.bootConfig.cacheBootResources ? contentHash : undefined
+      integrity: this.bootConfig.cacheBootResources ? contentHash : undefined,
     });
   }
 
@@ -146,8 +148,8 @@ export class WebAssemblyResourceLoader {
     const responseToCache = new Response(responseData, {
       headers: {
         'content-type': response.headers.get('content-type') || '',
-        'content-length': (responseBytes || response.headers.get('content-length') || '').toString()
-      }
+        'content-length': (responseBytes || response.headers.get('content-length') || '').toString(),
+      },
     });
 
     try {

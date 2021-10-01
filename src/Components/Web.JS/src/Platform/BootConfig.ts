@@ -1,7 +1,6 @@
 import { WebAssemblyBootResourceType } from './WebAssemblyStartOptions';
 
-type LoadBootResourceCallback = (type: WebAssemblyBootResourceType, name: string, defaultUri: string, integrity: string) =>
-  string | Promise<Response> | null | undefined;
+type LoadBootResourceCallback = (type: WebAssemblyBootResourceType, name: string, defaultUri: string, integrity: string) => string | Promise<Response> | null | undefined;
 
 export class BootConfigResult {
   private constructor(public bootConfig: BootJsonData, public applicationEnvironment: string) {
