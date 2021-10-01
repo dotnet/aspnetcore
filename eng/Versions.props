@@ -226,11 +226,11 @@
     <CastleCoreVersion>4.2.1</CastleCoreVersion>
     <CommandLineParserVersion>2.3.0</CommandLineParserVersion>
     <FSharpCoreVersion>4.2.1</FSharpCoreVersion>
-    <GoogleProtobufVersion>3.13.0</GoogleProtobufVersion>
-    <GrpcAspNetCoreVersion>2.32.0</GrpcAspNetCoreVersion>
-    <GrpcAuthVersion>2.32.0</GrpcAuthVersion>
-    <GrpcNetClientVersion>2.32.0</GrpcNetClientVersion>
-    <GrpcToolsVersion>2.32.0</GrpcToolsVersion>
+    <GoogleProtobufVersion>3.18.0</GoogleProtobufVersion>
+    <GrpcAspNetCoreVersion>2.39.0</GrpcAspNetCoreVersion>
+    <GrpcAuthVersion>2.39.0</GrpcAuthVersion>
+    <GrpcNetClientVersion>2.39.0</GrpcNetClientVersion>
+    <GrpcToolsVersion>2.39.0</GrpcToolsVersion>
     <DuendeIdentityServerAspNetIdentityVersion>5.2.0</DuendeIdentityServerAspNetIdentityVersion>
     <DuendeIdentityServerEntityFrameworkVersion>5.2.0</DuendeIdentityServerEntityFrameworkVersion>
     <DuendeIdentityServerVersion>5.2.0</DuendeIdentityServerVersion>
