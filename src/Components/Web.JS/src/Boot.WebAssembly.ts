@@ -17,7 +17,7 @@ import { setDispatchEventMiddleware } from './Rendering/WebRendererInteropMethod
 import { AfterBlazorStartedCallback, JSInitializer } from './JSInitializers/JSInitializers';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.WebAssembly';
 
-declare var Module: EmscriptenModule;
+declare let Module: EmscriptenModule;
 let started = false;
 
 async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
@@ -119,7 +119,8 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
 
   const [resourceLoader] = await Promise.all([
     WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig, candidateOptions || {}),
-    WebAssemblyConfigLoader.initAsync(bootConfigResult)]);
+    WebAssemblyConfigLoader.initAsync(bootConfigResult),
+  ]);
 
   try {
     await platform.start(resourceLoader);

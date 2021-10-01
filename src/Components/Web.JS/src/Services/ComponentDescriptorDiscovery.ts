@@ -33,7 +33,7 @@ export function discoverPersistedState(node: Node): string | null | undefined {
     const content = node.textContent || '';
     const parsedState = blazorStateCommentRegularExpression.exec(content);
     const value = parsedState && parsedState.groups && parsedState.groups['state'];
-    if(value){
+    if (value){
       node.parentNode?.removeChild(node);
     }
     return value;
@@ -47,7 +47,7 @@ export function discoverPersistedState(node: Node): string | null | undefined {
   for (let index = 0; index < nodes.length; index++) {
     const candidate = nodes[index];
     const result = discoverPersistedState(candidate);
-    if(result){
+    if (result){
       return result;
     }
   }

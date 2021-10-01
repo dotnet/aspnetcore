@@ -34,7 +34,7 @@ export class JSInitializer {
     }
   }
 
-  async invokeAfterStartedCallbacks(blazor: typeof Blazor) {
+  async invokeAfterStartedCallbacks(blazor: typeof Blazor): Promise<void> {
     await Promise.all(this.afterStartedCallbacks.map(callback => callback(blazor)));
   }
 }

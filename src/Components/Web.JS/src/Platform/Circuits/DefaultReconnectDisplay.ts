@@ -9,7 +9,7 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
 
   button: HTMLButtonElement;
 
-  addedToDom: boolean = false;
+  addedToDom = false;
 
   reloadParagraph: HTMLParagraphElement;
 
@@ -152,16 +152,13 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
       'border-radius: 50%',
       'width: 2em',
       'height: 2em',
-      'display: inline-block'
+      'display: inline-block',
     ];
 
     loader.style.cssText = loaderStyles.join(';');
-    loader.animate([
-      { transform: 'rotate(0deg)' },
-      { transform: 'rotate(360deg)' }
-    ], {
+    loader.animate([{ transform: 'rotate(0deg)' }, { transform: 'rotate(360deg)' }], {
       duration: 2000,
-      iterations: Infinity
+      iterations: Infinity,
     });
 
     return loader;

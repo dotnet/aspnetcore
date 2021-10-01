@@ -24,15 +24,14 @@ export class BootConfigResult {
 
     return new BootConfigResult(bootConfig, applicationEnvironment);
 
-    async function defaultLoadBlazorBootJson(url: string) : Promise<Response> {
+    function defaultLoadBlazorBootJson(url: string) : Promise<Response> {
       return fetch(url, {
         method: 'GET',
         credentials: 'include',
-        cache: 'no-cache'
+        cache: 'no-cache',
       });
     }
-  };
-
+  }
 }
 
 // Keep in sync with bootJsonData from the BlazorWebAssemblySDK

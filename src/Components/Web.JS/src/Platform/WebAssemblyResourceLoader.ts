@@ -29,7 +29,7 @@ export class WebAssemblyResourceLoader {
     return { name, url, response };
   }
 
-  logToConsole() {
+  logToConsole(): void {
     const cacheLoadsEntries = Object.values(this.cacheLoads);
     const networkLoadsEntries = Object.values(this.networkLoads);
     const cacheResponseBytes = countTotalBytes(cacheLoadsEntries);
@@ -58,7 +58,7 @@ export class WebAssemblyResourceLoader {
     console.groupEnd();
   }
 
-  async purgeUnusedCacheEntriesAsync() {
+  async purgeUnusedCacheEntriesAsync(): Promise<void> {
     // We want to keep the cache small because, even though the browser will evict entries if it
     // gets too big, we don't want to be considered problematic by the end user viewing storage stats
     const cache = this.cacheIfUsed;
