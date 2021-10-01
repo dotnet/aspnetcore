@@ -770,6 +770,41 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
+        public async Task WebApplicationDisposesConfigurationProvidersAddedInBuild()
+        {
+            var hostConfigSource = new RandomConfigurationSource();
+            var appConfigSource = new RandomConfigurationSource();
+
+            // This mimics what WebApplicationFactory<T> does and runs configure
+            // services callbacks
+            using var listener = new HostingListener(hostBuilder =>
+            {
+                hostBuilder.ConfigureHostConfiguration(config => config.Add(hostConfigSource));
+                hostBuilder.ConfigureAppConfiguration(config => config.Add(appConfigSource));
+            });
+
+            var builder = WebApplication.CreateBuilder();
+
+            {
+                await using var app = builder.Build();
+
+                Assert.Equal(1, hostConfigSource.ProvidersBuilt);
+                Assert.Equal(1, appConfigSource.ProvidersBuilt);
+                Assert.Equal(1, hostConfigSource.ProvidersLoaded);
+                Assert.Equal(1, appConfigSource.ProvidersLoaded);
+                Assert.Equal(0, hostConfigSource.ProvidersDisposed);
+                Assert.Equal(0, appConfigSource.ProvidersDisposed);
+            }
+
+            Assert.Equal(1, hostConfigSource.ProvidersBuilt);
+            Assert.Equal(1, appConfigSource.ProvidersBuilt);
+            Assert.Equal(1, hostConfigSource.ProvidersLoaded);
+            Assert.Equal(1, appConfigSource.ProvidersLoaded);
+            Assert.Equal(1, hostConfigSource.ProvidersDisposed);
+            Assert.Equal(1, appConfigSource.ProvidersDisposed);
+        }
+
+        [Fact]
         public void WebApplicationBuilderHostProperties_IsCaseSensitive()
         {
             var builder = WebApplication.CreateBuilder();

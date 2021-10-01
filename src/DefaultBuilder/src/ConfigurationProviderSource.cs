@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Builder
 
         // These providers have already been loaded, so no need to reload initially.
         // Otherwise, providers that cannot be reloaded like StreamConfigurationProviders will fail.
-        private sealed class IgnoreFirstLoadConfigurationProvider : IConfigurationProvider
+        private sealed class IgnoreFirstLoadConfigurationProvider : IConfigurationProvider, IDisposable
         {
             private readonly IConfigurationProvider _provider;
 
@@ -77,6 +77,11 @@ namespace Microsoft.AspNetCore.Builder
             public override string? ToString()
             {
                 return _provider.ToString();
+            }
+
+            public void Dispose()
+            {
+                (_provider as IDisposable)?.Dispose();
             }
         }
     }
