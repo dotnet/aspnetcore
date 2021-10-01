@@ -101,6 +101,23 @@ namespace Test.AnotherNamespace
         }
 
         [Fact]
+        public void ComponentDiscovery_CanFindComponent_WithTypeParameterAndSemicolon()
+        {
+            // Arrange
+
+            // Act
+            var result = CompileToCSharp("UniqueName.cshtml", @"
+@typeparam TItem;
+@functions {
+    [Parameter] public TItem Item { get; set; }
+}");
+
+            // Assert
+            var bindings = result.CodeDocument.GetTagHelperContext();
+            Assert.Contains(bindings.TagHelpers, t => t.Name == "Test.UniqueName<TItem>");
+        }
+
+        [Fact]
         public void ComponentDiscovery_CanFindComponent_WithMultipleTypeParameters()
         {
             // Arrange
@@ -109,6 +126,25 @@ namespace Test.AnotherNamespace
             var result = CompileToCSharp("UniqueName.cshtml", @"
 @typeparam TItem1
 @typeparam TItem2
+@typeparam TItem3
+@functions {
+    [Parameter] public TItem1 Item { get; set; }
+}");
+
+            // Assert
+            var bindings = result.CodeDocument.GetTagHelperContext();
+            Assert.Contains(bindings.TagHelpers, t => t.Name == "Test.UniqueName<TItem1, TItem2, TItem3>");
+        }
+
+        [Fact]
+        public void ComponentDiscovery_CanFindComponent_WithMultipleTypeParametersAndMixedSemicolons()
+        {
+            // Arrange
+
+            // Act
+            var result = CompileToCSharp("UniqueName.cshtml", @"
+@typeparam TItem1
+@typeparam TItem2;
 @typeparam TItem3
 @functions {
     [Parameter] public TItem1 Item { get; set; }
