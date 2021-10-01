@@ -800,8 +800,8 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Equal(1, appConfigSource.ProvidersBuilt);
             Assert.Equal(1, hostConfigSource.ProvidersLoaded);
             Assert.Equal(1, appConfigSource.ProvidersLoaded);
-            Assert.Equal(1, hostConfigSource.ProvidersDisposed);
-            Assert.Equal(1, appConfigSource.ProvidersDisposed);
+            Assert.True(hostConfigSource.ProvidersDisposed > 0);
+            Assert.True(appConfigSource.ProvidersDisposed > 0);
         }
 
         [Fact]

@@ -222,6 +222,10 @@ namespace Microsoft.AspNetCore.Builder
             // Mark the service collection as read-only to prevent future modifications
             _services.IsReadOnly = true;
 
+            // Resolve both the _hostBuilder's Configuration and builder.Configuration to mark both as resolved within the
+            // service provider ensuring both will be properly disposed with the provider.
+            _ = _builtApplication.Services.GetService<IEnumerable<IConfiguration>>();
+
             return _builtApplication;
         }
 

@@ -66,9 +66,9 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             // Provide access to the original IConfigurationProvider via a single-element IEnumerable to code that goes out of its way to look for it.
-            public IEnumerator<IConfigurationProvider> GetEnumerator() => new List<IConfigurationProvider> { _provider }.GetEnumerator();
+            public IEnumerator<IConfigurationProvider> GetEnumerator() => GetUnwrappedEnumerable().GetEnumerator();
 
-            IEnumerator IEnumerable.GetEnumerator() => new List<IConfigurationProvider> { _provider }.GetEnumerator();
+            IEnumerator IEnumerable.GetEnumerator() => GetUnwrappedEnumerable().GetEnumerator();
 
             public override bool Equals(object? obj)
             {
@@ -88,6 +88,11 @@ namespace Microsoft.AspNetCore.Builder
             public void Dispose()
             {
                 (_provider as IDisposable)?.Dispose();
+            }
+
+            private IEnumerable<IConfigurationProvider> GetUnwrappedEnumerable()
+            {
+                yield return _provider;
             }
         }
     }
