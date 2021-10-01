@@ -10,8 +10,6 @@
     <NoWarn>CA1416;CS1591;CS0436;$(NoWarn)</NoWarn><!-- Conflicts between internal and public Quic APIs; Platform support warnings. -->
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
-    <!-- Turn on preview features so we can use Quic -->
-    <EnablePreviewFeatures>True</EnablePreviewFeatures>
   </PropertyGroup>
 
   <ItemGroup>
