@@ -11,6 +11,6 @@
   "failOnRules": [
   ],
   "quarantineRules": [
-    {"testName": "Microsoft.AspNetCore.Mvc.FunctionalTests.HtmlGenerationTest.CacheTagHelper_BubblesExpiration"},
+    {"testName": "Microsoft.AspNetCore.Mvc.FunctionalTests.HtmlGenerationTest.CacheTagHelper_BubblesExpirationOfNestedTagHelpers"},
   ]
 }
