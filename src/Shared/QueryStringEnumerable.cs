@@ -186,8 +186,8 @@ namespace Microsoft.AspNetCore.Internal
 
                     if (Sse41.IsSupported && n >= Vector128<ushort>.Count)
                     {
-                        var vecPlus = Vector128.Create('+');
-                        var vecSpace = Vector128.Create(' ');
+                        var vecPlus = Vector128.Create((ushort)'+');
+                        var vecSpace = Vector128.Create((ushort)' ');
 
                         do
                         {
