@@ -169,9 +169,9 @@
     <OracleManagedDataAccessPackageVersion>12.2.1100</OracleManagedDataAccessPackageVersion>
     <RemotionLinqPackageVersion>2.2.0</RemotionLinqPackageVersion>
     <SeleniumFirefoxWebDriverPackageVersion>0.27.0</SeleniumFirefoxWebDriverPackageVersion>
-    <SeleniumSupportPackageVersion>3.141.0</SeleniumSupportPackageVersion>
+    <SeleniumSupportPackageVersion>4.0.0-rc1</SeleniumSupportPackageVersion>
     <SeleniumWebDriverMicrosoftDriverPackageVersion>17.17134.0</SeleniumWebDriverMicrosoftDriverPackageVersion>
-    <SeleniumWebDriverPackageVersion>3.141.0</SeleniumWebDriverPackageVersion>
+    <SeleniumWebDriverPackageVersion>4.0.0-rc1</SeleniumWebDriverPackageVersion>
     <SerilogExtensionsLoggingPackageVersion>1.4.0</SerilogExtensionsLoggingPackageVersion>
     <SerilogSinksFilePackageVersion>3.2.0</SerilogSinksFilePackageVersion>
     <SQLitePCLRawBundleGreenPackageVersion>1.1.11</SQLitePCLRawBundleGreenPackageVersion>
