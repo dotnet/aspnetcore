@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore
             return Path.EndsInDirectorySeparator(canonicalPath) ? canonicalPath : canonicalPath + Path.DirectorySeparatorChar;
         }
 
-        public static string ResolvePath(string contentRootPath, string basePath)
+        private static string ResolvePath(string contentRootPath, string basePath)
         {
             if (string.IsNullOrEmpty(contentRootPath))
             {
