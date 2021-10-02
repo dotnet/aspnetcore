@@ -114,7 +114,7 @@
       <HelixCorrelationPayload Include="$(OutputPath)\SharedFx.Layout.zip" Destination="$(DotNetCliDestination)" />
     </ItemGroup>
   </Target>
-  
+
   <Target Name="Gather" BeforeTargets="Build">
     <MSBuild Projects="@(ProjectToBuild)"
               Targets="CreateHelixPayload"
