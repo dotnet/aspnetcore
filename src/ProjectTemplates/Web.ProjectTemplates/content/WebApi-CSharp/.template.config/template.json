@@ -355,7 +355,7 @@
       "type": "parameter",
       "dataType": "bool",
       "defaultValue": "false",
-      "description": "Disable OpenAPI (Swagger) support"
+      "description": "Enable OpenAPI (Swagger) support"
     },
     "EnableOpenAPI": {
       "type": "computed",
