@@ -11,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Authentication.OAuth
 {
@@ -506,7 +507,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         private static HttpResponseMessage ReturnJsonResponse(object content, HttpStatusCode code = HttpStatusCode.OK)
         {
             var res = new HttpResponseMessage(code);
-            var text = Newtonsoft.Json.JsonConvert.SerializeObject(content);
+            var text = JsonSerializer.Serialize(content);
             res.Content = new StringContent(text, Encoding.UTF8, "application/json");
             return res;
         }
