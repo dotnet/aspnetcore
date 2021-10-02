@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language.Syntax
 {
@@ -449,10 +448,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
         public override int GetHashCode()
         {
-            var hash = HashCodeCombiner.Start();
+            var hash = new HashCode();
             hash.Add(Node);
             hash.Add(Index);
-            return hash.CombinedHash;
+            return hash.ToHashCode();
         }
 
         /// <summary>

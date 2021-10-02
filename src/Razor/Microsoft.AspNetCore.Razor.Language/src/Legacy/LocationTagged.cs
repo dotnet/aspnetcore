@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
@@ -45,11 +44,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public override int GetHashCode()
         {
-            var hashCodeCombiner = HashCodeCombiner.Start();
-            hashCodeCombiner.Add(Location);
-            hashCodeCombiner.Add(Value);
+            var hashCode = new HashCode();
+            hashCode.Add(Location);
+            hashCode.Add(Value);
 
-            return hashCodeCombiner.CombinedHash;
+            return hashCode.ToHashCode();
         }
 
         public override string ToString()

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -55,11 +54,11 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            var hash = HashCodeCombiner.Start();
+            var hash = new HashCode();
             hash.Add(descriptor.Name, StringComparer.Ordinal);
             hash.Add(descriptor.Value, StringComparer.Ordinal);
 
-            return hash.CombinedHash;
+            return hash.ToHashCode();
         }
     }
 }

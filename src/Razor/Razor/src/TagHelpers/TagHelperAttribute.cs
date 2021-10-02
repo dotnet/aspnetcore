@@ -233,17 +233,17 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            var hashCodeCombiner = HashCodeCombiner.Start();
-            hashCodeCombiner.Add(Name, StringComparer.Ordinal);
+            var hashCode = new HashCode();
+            hashCode.Add(Name, StringComparer.Ordinal);
 
             if (ValueStyle != HtmlAttributeValueStyle.Minimized)
             {
-                hashCodeCombiner.Add(Value);
+                hashCode.Add(Value);
             }
 
-            hashCodeCombiner.Add(ValueStyle);
+            hashCode.Add(ValueStyle);
 
-            return hashCodeCombiner.CombinedHash;
+            return hashCode.ToHashCode();
         }
 
         private static string GetAttributeValuePrefix(HtmlAttributeValueStyle valueStyle)

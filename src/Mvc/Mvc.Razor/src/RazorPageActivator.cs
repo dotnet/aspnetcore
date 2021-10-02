@@ -127,14 +127,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             public override int GetHashCode()
             {
-                var hashCodeCombiner = new HashCode();
-                hashCodeCombiner.Add(PageType);
+                var hashCode = new HashCode();
+                hashCode.Add(PageType);
                 if (ProvidedModelType != null)
                 {
-                    hashCodeCombiner.Add(ProvidedModelType);
+                    hashCode.Add(ProvidedModelType);
                 }
 
-                return hashCodeCombiner.ToHashCode();
+                return hashCode.ToHashCode();
             }
         }
     }

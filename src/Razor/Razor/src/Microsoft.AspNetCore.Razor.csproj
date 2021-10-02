@@ -21,8 +21,6 @@ Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper</Description>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
-
-    <Compile Include="$(SharedSourceRoot)HashCodeCombiner\*.cs" />
   </ItemGroup>
 
 </Project>
