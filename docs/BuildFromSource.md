@@ -143,7 +143,7 @@ The build should find any JDK 11 or newer installation on the machine as long as
 
 You can temporarily set your environmental variable for the scope of the active powershell session using the command
 
-- $env:JAVA_HOME = "C:/<RepoRoot>/.tools/jdk/win-x64/"
+- $env:JAVA_HOME = "C:/[RepoRoot]/.tools/jdk/win-x64/"
 
 #### Chrome
 
