@@ -141,6 +141,10 @@ The build should find any JDK 11 or newer installation on the machine as long as
 - Set `JAVA_HOME` to `RepoRoot/.tools/jdk/win-x64/` if you used the `InstallJdk.ps1` script.
 - Set `JAVA_HOME` to `C:/Program Files/Java/jdk<version>/` if you installed the JDK globally.
 
+You can temporarily set your environmental variable for the scope of the active powershell session using the command
+
+- $env:JAVA_HOME = "C:/<RepoRoot>/.tools/jdk/win-x64/"
+
 #### Chrome
 
 This repo contains a Selenium-based tests require a version of Chrome to be installed. Download and install it from <https://www.google.com/chrome>.
