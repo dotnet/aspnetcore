@@ -119,10 +119,21 @@ This repo contains some Java source code that depends on an install of the JDK v
 - OpenJDK <https://jdk.java.net/>
 - Oracle's JDK <https://www.oracle.com/technetwork/java/javase/downloads/index.html>
 
-Alternatively, you can run [eng/scripts/InstallJdk.ps1](/eng/scripts/InstallJdk.ps1) to install a version of the JDK that will only be used in this repo.
+Alternatively, you can run [eng/scripts/InstallJdk.ps1](/eng/scripts/InstallJdk.ps1) to install a version of the JDK that will only be used in this repo. 
 
 ```powershell
 ./eng/scripts/InstallJdk.ps1
+```
+NOTE : In order to execute the script you may need to set the right Execution policy. If not you may get an error that the script "cannot be loaded because the execution of scripts is disabled on this system". To get past that you can do the following. As an Administrator, you can set the execution policy by typing this into your PowerShell window:
+
+```powershell
+Set-ExecutionPolicy RemoteSigned
+```
+
+And when you are finished with the script return the execution policy.
+
+```powershell
+Set-ExecutionPolicy Restricted
 ```
 
 The build should find any JDK 11 or newer installation on the machine as long as the `JAVA_HOME` environment variable is set. Typically, your installation will do this automatically. However, if it is not set you can set the environment variable manually:
