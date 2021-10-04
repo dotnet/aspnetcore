@@ -301,6 +301,54 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
+        public void SettingContentRootToSameCanonicalValueWorks()
+        {
+            var contentRoot = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(contentRoot);
+
+            try
+            {
+                var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+                {
+                    ContentRootPath = contentRoot
+                });
+
+                builder.Host.UseContentRoot(contentRoot + Path.DirectorySeparatorChar);
+                builder.Host.UseContentRoot(contentRoot.ToUpperInvariant());
+                builder.Host.UseContentRoot(contentRoot.ToLowerInvariant());
+
+                builder.WebHost.UseContentRoot(contentRoot + Path.DirectorySeparatorChar);
+                builder.WebHost.UseContentRoot(contentRoot.ToUpperInvariant());
+                builder.WebHost.UseContentRoot(contentRoot.ToLowerInvariant());
+            }
+            finally
+            {
+                Directory.Delete(contentRoot);
+            }
+        }
+
+        [Theory]
+        [InlineData("")]  // Empty behaves differently to null
+        [InlineData(".")]
+        public void SettingContentRootToRelativePathUsesAppContextBaseDirectoryAsPathBase(string path)
+        {
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+            {
+                ContentRootPath = path
+            });
+
+            builder.Host.UseContentRoot(AppContext.BaseDirectory);
+            builder.Host.UseContentRoot(Path.TrimEndingDirectorySeparator(AppContext.BaseDirectory));
+            builder.Host.UseContentRoot("");
+
+            builder.WebHost.UseContentRoot(AppContext.BaseDirectory);
+            builder.WebHost.UseContentRoot(Path.TrimEndingDirectorySeparator(AppContext.BaseDirectory));
+            builder.WebHost.UseContentRoot("");
+
+            Assert.Equal(AppContext.BaseDirectory, builder.Environment.ContentRootPath);
+        }
+
+        [Fact]
         public void WebApplicationBuilderSettingInvalidApplicationWillFailAssemblyLoadForUserSecrets()
         {
             var options = new WebApplicationOptions
