@@ -330,6 +330,100 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Theory]
+        [InlineData("wwwroot2")]
+        [InlineData("./wwwroot2")]
+        [InlineData("./bar/../wwwroot2")]
+        [InlineData("foo/../wwwroot2")]
+        [InlineData("wwwroot2/.")]
+        public void WebApplicationBuilder_CanHandleVariousWebRootPaths(string webRoot)
+        {
+            var contentRoot = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(contentRoot);
+            var fullWebRootPath = Path.Combine(contentRoot, "wwwroot2");
+
+            try
+            {
+                var options = new WebApplicationOptions
+                {
+                    ContentRootPath = contentRoot,
+                    WebRootPath = "wwwroot2"
+                };
+
+                var builder = new WebApplicationBuilder(options);
+
+                Assert.Equal(contentRoot + Path.DirectorySeparatorChar, builder.Environment.ContentRootPath);
+                Assert.Equal(fullWebRootPath, builder.Environment.WebRootPath);
+
+                builder.WebHost.UseWebRoot(webRoot);
+            }
+            finally
+            {
+                Directory.Delete(contentRoot, recursive: true);
+            }
+        }
+
+        [Fact]
+        public void WebApplicationBuilder_CanOverrideWithFullWebRootPaths()
+        {
+            var contentRoot = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(contentRoot);
+            var fullWebRootPath = Path.Combine(contentRoot, "wwwroot");
+            Directory.CreateDirectory(fullWebRootPath);
+
+            try
+            {
+                var options = new WebApplicationOptions
+                {
+                    ContentRootPath = contentRoot,
+                };
+
+                var builder = new WebApplicationBuilder(options);
+
+                Assert.Equal(contentRoot + Path.DirectorySeparatorChar, builder.Environment.ContentRootPath);
+                Assert.Equal(fullWebRootPath, builder.Environment.WebRootPath);
+
+                builder.WebHost.UseWebRoot(fullWebRootPath);
+            }
+            finally
+            {
+                Directory.Delete(contentRoot, recursive: true);
+            }
+        }
+
+        [Theory]
+        [InlineData("wwwroot")]
+        [InlineData("./wwwroot")]
+        [InlineData("./bar/../wwwroot")]
+        [InlineData("foo/../wwwroot")]
+        [InlineData("wwwroot/.")]
+        public void WebApplicationBuilder_CanHandleVariousWebRootPaths_OverrideDefaultPath(string webRoot)
+        {
+            var contentRoot = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(contentRoot);
+            var fullWebRootPath = Path.Combine(contentRoot, "wwwroot");
+            Directory.CreateDirectory(fullWebRootPath);
+
+            try
+            {
+                var options = new WebApplicationOptions
+                {
+                    ContentRootPath = contentRoot
+                };
+
+                var builder = new WebApplicationBuilder(options);
+
+                Assert.Equal(contentRoot + Path.DirectorySeparatorChar, builder.Environment.ContentRootPath);
+                Assert.Equal(fullWebRootPath, builder.Environment.WebRootPath);
+
+                builder.WebHost.UseWebRoot(webRoot);
+            }
+            finally
+            {
+                Directory.Delete(contentRoot, recursive: true);
+            }
+        }
+
+        [Theory]
         [InlineData("")]  // Empty behaves differently to null
         [InlineData(".")]
         public void SettingContentRootToRelativePathUsesAppContextBaseDirectoryAsPathBase(string path)

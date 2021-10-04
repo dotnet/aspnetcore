@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 ApplicationName = hostConfiguration[HostDefaults.ApplicationKey],
                 EnvironmentName = hostConfiguration[HostDefaults.EnvironmentKey] ?? Environments.Production,
-                ContentRootPath = ContentRootResolver.ResolvePath(hostConfiguration[HostDefaults.ContentRootKey]),
+                ContentRootPath = HostingPathResolver.ResolvePath(hostConfiguration[HostDefaults.ContentRootKey]),
             };
 
             hostingEnvironment.ContentRootFileProvider = new PhysicalFileProvider(hostingEnvironment.ContentRootPath);
