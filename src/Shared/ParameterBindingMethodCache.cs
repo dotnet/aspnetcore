@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Numerics;
 using System.Reflection;
@@ -125,7 +126,7 @@ namespace Microsoft.AspNetCore.Http
                         expression);
                 }
 
-                methodInfo = GetStaticMethodFromHierarchy(type, "TryParse", new[] { typeof(string), typeof(IFormatProvider), type.MakeByRefType() }, typeof(bool));
+                methodInfo = GetStaticMethodFromHierarchy(type, "TryParse", new[] { typeof(string), typeof(IFormatProvider), type.MakeByRefType() }, ValidateReturnType);
 
                 if (methodInfo is not null)
                 {
@@ -136,7 +137,7 @@ namespace Microsoft.AspNetCore.Http
                         expression);
                 }
 
-                methodInfo = GetStaticMethodFromHierarchy(type, "TryParse", new[] { typeof(string), type.MakeByRefType() }, typeof(bool));
+                methodInfo = GetStaticMethodFromHierarchy(type, "TryParse", new[] { typeof(string), type.MakeByRefType() }, ValidateReturnType);
 
                 if (methodInfo is not null)
                 {
@@ -157,6 +158,11 @@ namespace Microsoft.AspNetCore.Http
                 }
 
                 return null;
+
+                static bool ValidateReturnType(MethodInfo methodInfo)
+                {
+                    return methodInfo.ReturnType.Equals(typeof(bool));
+                }
             }
 
             return _stringMethodCallCache.GetOrAdd(type, Finder);
@@ -168,19 +174,17 @@ namespace Microsoft.AspNetCore.Http
             {
                 var hasParameterInfo = true;
                 // There should only be one BindAsync method with these parameters since C# does not allow overloading on return type.
-                var methodInfo = GetStaticMethodFromHierarchy(nonNullableParameterType, "BindAsync", new[] { typeof(HttpContext), typeof(ParameterInfo) });
+                var methodInfo = GetStaticMethodFromHierarchy(nonNullableParameterType, "BindAsync", new[] { typeof(HttpContext), typeof(ParameterInfo) }, ValidateReturnType);
                 if (methodInfo is null)
                 {
                     hasParameterInfo = false;
-                    methodInfo = GetStaticMethodFromHierarchy(nonNullableParameterType, "BindAsync", new[] { typeof(HttpContext) });
+                    methodInfo = GetStaticMethodFromHierarchy(nonNullableParameterType, "BindAsync", new[] { typeof(HttpContext) }, ValidateReturnType);
                 }
 
                 // We're looking for a method with the following signatures:
                 // public static ValueTask<{type}> BindAsync(HttpContext context, ParameterInfo parameter)
                 // public static ValueTask<Nullable<{type}>> BindAsync(HttpContext context, ParameterInfo parameter)
-                if (methodInfo is not null &&
-                    methodInfo.ReturnType.IsGenericType &&
-                    methodInfo.ReturnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
+                if (methodInfo is not null)
                 {
                     var valueTaskResultType = methodInfo.ReturnType.GetGenericArguments()[0];
 
@@ -247,11 +251,17 @@ namespace Microsoft.AspNetCore.Http
             var nonNullableParameterType = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
             var (method, paramCount) = _bindAsyncMethodCallCache.GetOrAdd(nonNullableParameterType, Finder);
             return (method?.Invoke(parameter), paramCount);
+
+            static bool ValidateReturnType(MethodInfo methodInfo)
+            {
+                return methodInfo.ReturnType.IsGenericType &&
+                    methodInfo.ReturnType.GetGenericTypeDefinition() == typeof(ValueTask<>);
+            }
         }
 
-        private static MethodInfo? GetStaticMethodFromHierarchy(Type type, string name, Type[] parameterTypes, Type? returnType = null)
+        private static MethodInfo? GetStaticMethodFromHierarchy(Type type, string name, Type[] parameterTypes, Func<MethodInfo, bool> validateReturnType)
         {
-            bool IsMatch(MethodInfo? method) => method is not null && !method.IsAbstract && (returnType is null || method.ReturnType == returnType);
+            bool IsMatch(MethodInfo? method) => method is not null && !method.IsAbstract && validateReturnType(method);
 
             var methodInfo = type.GetMethod(name, BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy, parameterTypes);
 
@@ -283,7 +293,9 @@ namespace Microsoft.AspNetCore.Http
 
         private static MethodInfo? GetAnyMethodFromHierarchy(Type type, string name)
         {
-            var methodInfo = type.GetMethod(name, BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.FlattenHierarchy);
+            // Find first incorrectly formatted method
+            var methodInfo = type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
+                .FirstOrDefault(methodInfo => methodInfo.Name == name);
 
             if (methodInfo is not null)
             {
