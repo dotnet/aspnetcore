@@ -880,7 +880,7 @@ namespace Microsoft.AspNetCore.Http
                 factoryContext.ParamCheckExpressions.Add(checkRequiredBodyBlock);
             }
 
-            // (ParamterType)boundValues[i]
+            // (ParameterType)boundValues[i]
             return Expression.Convert(boundValueExpr, parameter.ParameterType);
         }
 
