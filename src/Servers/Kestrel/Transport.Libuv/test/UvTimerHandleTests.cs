@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 {
     public class UvTimerHandleTests
     {
-        private readonly ILibuvTrace _trace = new LibuvTrace(new TestApplicationErrorLogger());
+        private readonly LibuvTrace _trace = new LibuvTrace(new TestApplicationErrorLogger());
 
         [Fact]
         public void TestTimeout()

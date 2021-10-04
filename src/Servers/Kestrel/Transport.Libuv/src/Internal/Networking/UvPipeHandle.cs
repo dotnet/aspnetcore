@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
 {
     internal class UvPipeHandle : UvStreamHandle
     {
-        public UvPipeHandle(ILibuvTrace logger) : base(logger)
+        public UvPipeHandle(LibuvTrace logger) : base(logger)
         {
         }
 

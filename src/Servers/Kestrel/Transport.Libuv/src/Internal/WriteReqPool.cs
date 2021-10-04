@@ -13,10 +13,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         private readonly LibuvThread _thread;
         private readonly Queue<UvWriteReq> _pool = new Queue<UvWriteReq>(_maxPooledWriteReqs);
-        private readonly ILibuvTrace _log;
+        private readonly LibuvTrace _log;
         private bool _disposed;
 
-        public WriteReqPool(LibuvThread thread, ILibuvTrace log)
+        public WriteReqPool(LibuvThread thread, LibuvTrace log)
         {
             _thread = thread;
             _log = log;

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
 {
     internal class UvRequest : UvMemory
     {
-        protected UvRequest(ILibuvTrace logger) : base(logger, GCHandleType.Normal)
+        protected UvRequest(LibuvTrace logger) : base(logger, GCHandleType.Normal)
         {
         }
 

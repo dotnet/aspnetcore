@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
-    internal partial class QuicTrace : IQuicTrace
+    internal sealed partial class QuicTrace : ILogger
     {
         private readonly ILogger _logger;
 

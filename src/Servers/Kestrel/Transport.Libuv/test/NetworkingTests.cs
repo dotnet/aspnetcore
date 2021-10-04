@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
     public class NetworkingTests
     {
         private readonly LibuvFunctions _uv = new LibuvFunctions();
-        private readonly ILibuvTrace _logger = new LibuvTrace(new TestApplicationErrorLogger());
+        private readonly LibuvTrace _logger = new LibuvTrace(new TestApplicationErrorLogger());
 
         [Fact]
         public void LoopCanBeInitAndClose()

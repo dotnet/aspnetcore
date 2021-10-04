@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         private object _readState;
         private GCHandle _readVitality;
 
-        protected UvStreamHandle(ILibuvTrace logger) : base(logger)
+        protected UvStreamHandle(LibuvTrace logger) : base(logger)
         {
         }
 

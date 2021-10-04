@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
-    internal partial class LibuvTrace : ILibuvTrace
+    internal sealed partial class LibuvTrace : ILogger
     {
         private readonly ILogger _logger;
 

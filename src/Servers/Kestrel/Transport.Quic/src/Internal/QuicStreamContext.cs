@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         private readonly IDuplexPipe _originalApplication;
         private readonly CompletionPipeReader _transportPipeReader;
         private readonly CompletionPipeWriter _transportPipeWriter;
-        private readonly IQuicTrace _log;
+        private readonly QuicTrace _log;
         private CancellationTokenSource _streamClosedTokenSource = default!;
         private string? _connectionId;
         private const int MinAllocBufferSize = 4096;

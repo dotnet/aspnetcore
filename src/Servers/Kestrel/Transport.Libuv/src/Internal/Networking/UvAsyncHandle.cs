@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         private Action _callback;
         private Action<Action<IntPtr>, IntPtr> _queueCloseHandle;
 
-        public UvAsyncHandle(ILibuvTrace logger) : base(logger)
+        public UvAsyncHandle(LibuvTrace logger) : base(logger)
         {
         }
 

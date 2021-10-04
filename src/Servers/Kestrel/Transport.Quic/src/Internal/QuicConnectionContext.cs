@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         private readonly object _shutdownLock = new object();
         private readonly QuicConnection _connection;
         private readonly QuicTransportContext _context;
-        private readonly IQuicTrace _log;
+        private readonly QuicTrace _log;
         private readonly CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
 
         private Task? _closeTask;

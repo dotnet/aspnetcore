@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
     internal sealed class SocketConnectionListener : IConnectionListener
     {
         private readonly SocketConnectionContextFactory _factory;
-        private readonly ISocketsTrace _trace;
+        private readonly SocketsTrace _trace;
         private Socket? _listenSocket;
         private readonly SocketTransportOptions _options;
 

@@ -19,12 +19,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
     /// </summary>
     internal class QuicConnectionListener : IMultiplexedConnectionListener, IAsyncDisposable
     {
-        private readonly IQuicTrace _log;
+        private readonly QuicTrace _log;
         private bool _disposed;
         private readonly QuicTransportContext _context;
         private readonly QuicListener _listener;
 
-        public QuicConnectionListener(QuicTransportOptions options, IQuicTrace log, EndPoint endpoint, SslServerAuthenticationOptions sslServerAuthenticationOptions)
+        public QuicConnectionListener(QuicTransportOptions options, QuicTrace log, EndPoint endpoint, SslServerAuthenticationOptions sslServerAuthenticationOptions)
         {
             if (!QuicImplementationProviders.Default.IsSupported)
             {

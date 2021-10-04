@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         UvPipeHandle DispatchPipe { get; set; }
 
-        public ILibuvTrace Log => TransportContext.Log;
+        public LibuvTrace Log => TransportContext.Log;
 
         public Task StartAsync(
             string pipeName,

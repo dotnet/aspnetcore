@@ -16,10 +16,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
     {
         protected LibuvFunctions _uv;
         protected int _threadId;
-        protected readonly ILibuvTrace _log;
+        protected readonly LibuvTrace _log;
         private readonly GCHandleType _handleType;
 
-        protected UvMemory(ILibuvTrace logger, GCHandleType handleType = GCHandleType.Weak) : base(IntPtr.Zero, true)
+        protected UvMemory(LibuvTrace logger, GCHandleType handleType = GCHandleType.Weak) : base(IntPtr.Zero, true)
         {
             _log = logger;
             _handleType = handleType;

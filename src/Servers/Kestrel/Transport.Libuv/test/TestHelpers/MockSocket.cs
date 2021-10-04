@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
 {
     class MockSocket : UvStreamHandle
     {
-        public MockSocket(LibuvFunctions uv, int threadId, ILibuvTrace logger) : base(logger)
+        public MockSocket(LibuvFunctions uv, int threadId, LibuvTrace logger) : base(logger)
         {
             CreateMemory(uv, threadId, IntPtr.Size);
         }

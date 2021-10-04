@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private bool _connectionClosed;
 
         public LibuvConnection(UvStreamHandle socket,
-                               ILibuvTrace log,
+                               LibuvTrace log,
                                LibuvThread thread,
                                IPEndPoint remoteEndPoint,
                                IPEndPoint localEndPoint,
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public PipeReader Output => Application.Input;
 
         public LibuvOutputConsumer OutputConsumer { get; set; }
-        private ILibuvTrace Log { get; }
+        private LibuvTrace Log { get; }
         private LibuvThread Thread { get; }
         public override MemoryPool<byte> MemoryPool => Thread.MemoryPool;
 

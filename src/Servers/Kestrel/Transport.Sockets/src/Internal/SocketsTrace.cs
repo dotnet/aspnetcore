@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    internal partial class SocketsTrace : ISocketsTrace
+    internal sealed partial class SocketsTrace : ILogger
     {
         private readonly ILogger _logger;
 

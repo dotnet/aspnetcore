@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         protected UvStreamHandle ListenSocket { get; private set; }
 
-        public ILibuvTrace Log => TransportContext.Log;
+        public LibuvTrace Log => TransportContext.Log;
 
         public Task StartAsync(
             EndPoint endPoint,

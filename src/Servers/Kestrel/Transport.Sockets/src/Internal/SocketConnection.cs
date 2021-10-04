@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private static readonly int MinAllocBufferSize = PinnedBlockMemoryPool.BlockSize / 2;
 
         private readonly Socket _socket;
-        private readonly ISocketsTrace _trace;
+        private readonly SocketsTrace _trace;
         private readonly SocketReceiver _receiver;
         private SocketSender? _sender;
         private readonly SocketSenderPool _socketSenderPool;
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         internal SocketConnection(Socket socket,
                                   MemoryPool<byte> memoryPool,
                                   PipeScheduler transportScheduler,
-                                  ISocketsTrace trace,
+                                  SocketsTrace trace,
                                   SocketSenderPool socketSenderPool,
                                   PipeOptions inputOptions,
                                   PipeOptions outputOptions,
