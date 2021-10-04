@@ -6,11 +6,11 @@
     {"testName": {"contains": "AppOfflineDroppedWhileSiteStarting_SiteShutsDown_InProcess()"}},
     {"testName": {"wildcard": "Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests.StartupTests.*" }},
     {"testAssembly": "BlazorTemplates.Tests"},
-    {"failureMessage": "network disconnected" },
+    {"failureMessage": "network disconnected" }
   ],
   "failOnRules": [
   ],
   "quarantineRules": [
-    {"testName": "Microsoft.AspNetCore.Mvc.FunctionalTests.HtmlGenerationTest.CacheTagHelper_BubblesExpirationOfNestedTagHelpers"},
+    {"testName": "Microsoft.AspNetCore.Mvc.FunctionalTests.HtmlGenerationTest.CacheTagHelper_BubblesExpirationOfNestedTagHelpers"}
   ]
 }
