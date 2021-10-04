@@ -295,7 +295,7 @@ namespace Microsoft.AspNetCore.Http
         {
             // Find first incorrectly formatted method
             var methodInfo = type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
-                .Where(methodInfo => methodInfo.Name == name).FirstOrDefault();
+                .FirstOrDefault(methodInfo => methodInfo.Name == name);
 
             if (methodInfo is not null)
             {
