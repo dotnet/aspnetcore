@@ -582,7 +582,63 @@ namespace Microsoft.AspNetCore.Builder
         {
             var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
             var ex = Assert.Throws<InvalidOperationException>(() => builder.MapGet("/", ([FromRoute] int id) => { }));
-            Assert.Equal("id is not a route paramter.", ex.Message);
+            Assert.Equal("'id' is not a route parameter.", ex.Message);
+        }
+
+        [Fact]
+        public async Task MapGetWithNamedFromRouteParameter_UsesFromRouteName()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+            _ = builder.MapGet("/{value}", ([FromRoute(Name = "value")] int id, HttpContext httpContext) =>
+            {
+                httpContext.Items["value"] = id;
+            });
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            // Assert that we don't fallback to the query string
+            var httpContext = new DefaultHttpContext();
+
+            httpContext.Request.RouteValues["value"] = "42";
+
+            await endpoint.RequestDelegate!(httpContext);
+
+            Assert.Equal(42, httpContext.Items["value"]);
+        }
+
+        [Fact]
+        public async Task MapGetWithNamedFromRouteParameter_FailsForParameterName()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+            _ = builder.MapGet("/{value}", ([FromRoute(Name = "value")] int id, HttpContext httpContext) =>
+            {
+                httpContext.Items["value"] = id;
+            });
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            // Assert that we don't fallback to the query string
+            var httpContext = new DefaultHttpContext();
+            httpContext.RequestServices = new ServiceCollection().AddLogging().BuildServiceProvider();
+
+            httpContext.Request.RouteValues["id"] = "42";
+
+            await endpoint.RequestDelegate!(httpContext);
+
+            Assert.Null(httpContext.Items["value"]);
+            Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
+        }
+
+        [Fact]
+        public void MapGetWithNamedFromRouteParameter_ThrowsForMismatchedPattern()
+        {
+            var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+            var ex = Assert.Throws<InvalidOperationException>(() =>builder.MapGet("/{id}", ([FromRoute(Name = "value")] int id, HttpContext httpContext) => { }));
+            Assert.Equal("'value' is not a route parameter.", ex.Message);
         }
 
         [Fact]
