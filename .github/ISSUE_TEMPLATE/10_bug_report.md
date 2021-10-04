@@ -40,9 +40,10 @@ Include the exception you get when facing this issue
 - Include the output of `dotnet --info`:
 
 <details>
+  <summary>dotnet --info Output</summary>
 
 ```
-$ dotnet --info
+
 ```
 
 </details>
