@@ -308,6 +308,14 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
 
         private void UpdateItemDistribution(int itemsBefore, int visibleItemCapacity)
         {
+            // If the itemcount just changed to a lower number, and we're already scrolled past the end of the new
+            // reduced set of items, clamp the scroll position to the new maximum
+            if (itemsBefore + visibleItemCapacity > _itemCount)
+            {
+                itemsBefore = Math.Max(0, _itemCount - visibleItemCapacity);
+            }
+
+            // If anything about the offset changed, re-render
             if (itemsBefore != _itemsBefore || visibleItemCapacity != _visibleItemCapacity)
             {
                 _itemsBefore = itemsBefore;
