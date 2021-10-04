@@ -71,13 +71,17 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     continue;
                 }
 
+                // ApiDescriptionActionData is only added to the ControllerActionDescriptor if
+                // the action is marked as `IsVisible` to the ApiExplorer. This null-check is
+                // effectively asserting if the endpoint should be generated into the final
+                // OpenAPI metadata.
                 var extensionData = action.GetProperty<ApiDescriptionActionData>();
                 if (extensionData != null)
                 {
                     var httpMethods = GetHttpMethods(action);
                     foreach (var httpMethod in httpMethods)
                     {
-                        context.Results.Add(CreateApiDescription(action, httpMethod, extensionData.GroupName));
+                        context.Results.Add(CreateApiDescription(action, httpMethod, GetGroupName(action)));
                     }
                 }
             }
@@ -461,6 +465,20 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 .Select(fd => fd.Filter)
                 .OfType<IApiRequestMetadataProvider>()
                 .ToArray();
+        }
+
+        private static string? GetGroupName(ControllerActionDescriptor action)
+        {
+            // The `GroupName` set in the `ApiDescriptionActionData` is either the
+            // group name set via [ApiExplorerSettings(GroupName = "foo")] on the
+            // action or controller. So, this lookup favors the following sequence:
+            // - EndpointGroupName on the action, if it is set
+            // - EndpointGroupName on the controller, if it is set
+            // - ApiExplorerSettings.GroupName on the action, if it is set
+            // - ApiExplorerSettings.GroupName on the controller, if it is set
+            var extensionData = action.GetProperty<ApiDescriptionActionData>();
+            var endpointGroupName = action.EndpointMetadata.LastOrDefault(em => em is IEndpointGroupNameMetadata) as IEndpointGroupNameMetadata;
+            return endpointGroupName?.EndpointGroupName ?? extensionData?.GroupName;
         }
 
         private class ApiParameterDescriptionContext

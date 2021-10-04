@@ -121,6 +121,34 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task ApiExplorer_GroupName_SetByEndpointMetadataOnController()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/ApiExplorerApiController/ActionWithIdParameter");
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            Assert.Equal("GroupNameOnController", description.GroupName);
+        }
+
+        [Fact]
+        public async Task ApiExplorer_GroupName_SetByEndpointMetadataOnAction()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/ApiExplorerApiController/ActionWithSomeParameters");
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            Assert.Equal("GroupNameOnAction", description.GroupName);
+        }
+
+        [Fact]
         public async Task ApiExplorer_RouteTemplate_DisplaysFixedRoute()
         {
             // Arrange & Act
