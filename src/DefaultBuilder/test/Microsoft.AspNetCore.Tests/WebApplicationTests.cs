@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.Tests
         {
             var builder = WebApplication.CreateBuilder();
 
-            var contentRoot = Path.GetTempPath();
+            var contentRoot = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             var webRoot = Path.Combine(contentRoot, "wwwroot");
             var envName = $"{nameof(WebApplicationTests)}_ENV";
 
@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.Tests
         {
             var builder = WebApplication.CreateBuilder();
 
-            var contentRoot = Path.GetTempPath();
+            var contentRoot = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             var webRoot = Path.Combine(contentRoot, "wwwroot");
             var envName = $"{nameof(WebApplicationTests)}_ENV";
 
@@ -315,25 +315,18 @@ namespace Microsoft.AspNetCore.Tests
             var contentRoot = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(contentRoot);
 
-            try
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions
             {
-                var builder = WebApplication.CreateBuilder(new WebApplicationOptions
-                {
-                    ContentRootPath = contentRoot
-                });
+                ContentRootPath = contentRoot
+            });
 
-                builder.Host.UseContentRoot(contentRoot + Path.DirectorySeparatorChar);
-                builder.Host.UseContentRoot(contentRoot.ToUpperInvariant());
-                builder.Host.UseContentRoot(contentRoot.ToLowerInvariant());
+            builder.Host.UseContentRoot(contentRoot + Path.DirectorySeparatorChar);
+            builder.Host.UseContentRoot(contentRoot.ToUpperInvariant());
+            builder.Host.UseContentRoot(contentRoot.ToLowerInvariant());
 
-                builder.WebHost.UseContentRoot(contentRoot + Path.DirectorySeparatorChar);
-                builder.WebHost.UseContentRoot(contentRoot.ToUpperInvariant());
-                builder.WebHost.UseContentRoot(contentRoot.ToLowerInvariant());
-            }
-            finally
-            {
-                Directory.Delete(contentRoot);
-            }
+            builder.WebHost.UseContentRoot(contentRoot + Path.DirectorySeparatorChar);
+            builder.WebHost.UseContentRoot(contentRoot.ToUpperInvariant());
+            builder.WebHost.UseContentRoot(contentRoot.ToLowerInvariant());
         }
 
         [Theory]
@@ -373,10 +366,10 @@ namespace Microsoft.AspNetCore.Tests
         [Fact]
         public void WebApplicationBuilderCanConfigureHostSettingsUsingWebApplicationOptions()
         {
-            var contentRoot = Path.GetTempPath();
-            var webRoot = "wwwroot";
+            var contentRoot = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(contentRoot);
+            var webRoot = "wwwroot2";
             var fullWebRootPath = Path.Combine(contentRoot, webRoot);
-            Directory.CreateDirectory(fullWebRootPath);
             var envName = $"{nameof(WebApplicationTests)}_ENV";
 
             try
@@ -397,28 +390,28 @@ namespace Microsoft.AspNetCore.Tests
                         {
                             Assert.Equal(nameof(WebApplicationTests), context.HostingEnvironment.ApplicationName);
                             Assert.Equal(envName, context.HostingEnvironment.EnvironmentName);
-                            Assert.Equal(contentRoot, context.HostingEnvironment.ContentRootPath);
+                            Assert.Equal(contentRoot + Path.DirectorySeparatorChar, context.HostingEnvironment.ContentRootPath);
                         });
                     });
 
                 Assert.Equal(nameof(WebApplicationTests), builder.Environment.ApplicationName);
                 Assert.Equal(envName, builder.Environment.EnvironmentName);
-                Assert.Equal(contentRoot, builder.Environment.ContentRootPath);
+                Assert.Equal(contentRoot + Path.DirectorySeparatorChar, builder.Environment.ContentRootPath);
                 Assert.Equal(fullWebRootPath, builder.Environment.WebRootPath);
             }
             finally
             {
-                Directory.Delete(fullWebRootPath);
+                Directory.Delete(contentRoot, recursive: true);
             }
         }
 
         [Fact]
         public void WebApplicationBuilderWebApplicationOptionsPropertiesOverridesArgs()
         {
-            var contentRoot = Path.GetTempPath();
+            var contentRoot = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(contentRoot);
             var webRoot = "wwwroot2";
             var fullWebRootPath = Path.Combine(contentRoot, webRoot);
-            Directory.CreateDirectory(fullWebRootPath);
             var envName = $"{nameof(WebApplicationTests)}_ENV";
 
             try
@@ -426,11 +419,11 @@ namespace Microsoft.AspNetCore.Tests
                 var options = new WebApplicationOptions
                 {
                     Args = new[] {
-                    $"--{WebHostDefaults.ApplicationKey}=testhost",
-                    $"--{WebHostDefaults.ContentRootKey}={contentRoot}",
-                    $"--{WebHostDefaults.WebRootKey}=wwwroot2",
-                    $"--{WebHostDefaults.EnvironmentKey}=Test"
-                },
+                        $"--{WebHostDefaults.ApplicationKey}=testhost",
+                        $"--{WebHostDefaults.ContentRootKey}={contentRoot}",
+                        $"--{WebHostDefaults.WebRootKey}=wwwroot2",
+                        $"--{WebHostDefaults.EnvironmentKey}=Test"
+                    },
                     ApplicationName = nameof(WebApplicationTests),
                     ContentRootPath = contentRoot,
                     EnvironmentName = envName,
@@ -445,40 +438,41 @@ namespace Microsoft.AspNetCore.Tests
                         {
                             Assert.Equal(nameof(WebApplicationTests), context.HostingEnvironment.ApplicationName);
                             Assert.Equal(envName, context.HostingEnvironment.EnvironmentName);
-                            Assert.Equal(contentRoot, context.HostingEnvironment.ContentRootPath);
+                            Assert.Equal(contentRoot + Path.DirectorySeparatorChar, context.HostingEnvironment.ContentRootPath);
                         });
                     });
 
                 Assert.Equal(nameof(WebApplicationTests), builder.Environment.ApplicationName);
                 Assert.Equal(envName, builder.Environment.EnvironmentName);
-                Assert.Equal(contentRoot, builder.Environment.ContentRootPath);
+                Assert.Equal(contentRoot + Path.DirectorySeparatorChar, builder.Environment.ContentRootPath);
                 Assert.Equal(fullWebRootPath, builder.Environment.WebRootPath);
             }
             finally
             {
-                Directory.Delete(fullWebRootPath);
+                Directory.Delete(contentRoot, recursive: true);
             }
         }
 
         [Fact]
         public void WebApplicationBuilderCanConfigureHostSettingsUsingWebApplicationOptionsArgs()
         {
-            var contentRoot = Path.GetTempPath();
+            var contentRoot = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(contentRoot);
             var webRoot = "wwwroot";
             var fullWebRootPath = Path.Combine(contentRoot, webRoot);
-            Directory.CreateDirectory(fullWebRootPath);
             var envName = $"{nameof(WebApplicationTests)}_ENV";
 
             try
             {
+
                 var options = new WebApplicationOptions
                 {
                     Args = new[] {
-                    $"--{WebHostDefaults.ApplicationKey}={nameof(WebApplicationTests)}",
-                    $"--{WebHostDefaults.ContentRootKey}={contentRoot}",
-                    $"--{WebHostDefaults.EnvironmentKey}={envName}",
-                    $"--{WebHostDefaults.WebRootKey}={webRoot}",
-                }
+                        $"--{WebHostDefaults.ApplicationKey}={nameof(WebApplicationTests)}",
+                        $"--{WebHostDefaults.ContentRootKey}={contentRoot}",
+                        $"--{WebHostDefaults.EnvironmentKey}={envName}",
+                        $"--{WebHostDefaults.WebRootKey}={webRoot}",
+                    }
                 };
 
                 var builder = new WebApplicationBuilder(
@@ -489,18 +483,18 @@ namespace Microsoft.AspNetCore.Tests
                         {
                             Assert.Equal(nameof(WebApplicationTests), context.HostingEnvironment.ApplicationName);
                             Assert.Equal(envName, context.HostingEnvironment.EnvironmentName);
-                            Assert.Equal(contentRoot, context.HostingEnvironment.ContentRootPath);
+                            Assert.Equal(contentRoot + Path.DirectorySeparatorChar, context.HostingEnvironment.ContentRootPath);
                         });
                     });
 
                 Assert.Equal(nameof(WebApplicationTests), builder.Environment.ApplicationName);
                 Assert.Equal(envName, builder.Environment.EnvironmentName);
-                Assert.Equal(contentRoot, builder.Environment.ContentRootPath);
+                Assert.Equal(contentRoot + Path.DirectorySeparatorChar, builder.Environment.ContentRootPath);
                 Assert.Equal(fullWebRootPath, builder.Environment.WebRootPath);
             }
             finally
             {
-                Directory.Delete(fullWebRootPath);
+                Directory.Delete(contentRoot, recursive: true);
             }
         }
 
@@ -1435,8 +1429,7 @@ namespace Microsoft.AspNetCore.Tests
         {
             var builder = WebApplication.CreateBuilder();
 
-            var contentRoot = Path.GetTempPath();
-            var webRoot = Path.Combine(contentRoot, "wwwroot");
+            var contentRoot = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             var envName = $"{nameof(WebApplicationTests)}_ENV";
 
             builder.Configuration[WebHostDefaults.ApplicationKey] = nameof(WebApplicationTests);
