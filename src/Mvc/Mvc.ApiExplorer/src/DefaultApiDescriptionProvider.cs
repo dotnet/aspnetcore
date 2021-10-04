@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     var httpMethods = GetHttpMethods(action);
                     foreach (var httpMethod in httpMethods)
                     {
-                        context.Results.Add(CreateApiDescription(action, httpMethod, GetGroupName(action)));
+                        context.Results.Add(CreateApiDescription(action, httpMethod, GetGroupName(action, extensionData)));
                     }
                 }
             }
@@ -467,7 +467,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 .ToArray();
         }
 
-        private static string? GetGroupName(ControllerActionDescriptor action)
+        private static string? GetGroupName(ControllerActionDescriptor action, ApiDescriptionActionData extensionData)
         {
             // The `GroupName` set in the `ApiDescriptionActionData` is either the
             // group name set via [ApiExplorerSettings(GroupName = "foo")] on the
@@ -476,8 +476,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             // - EndpointGroupName on the controller, if it is set
             // - ApiExplorerSettings.GroupName on the action, if it is set
             // - ApiExplorerSettings.GroupName on the controller, if it is set
-            var extensionData = action.GetProperty<ApiDescriptionActionData>();
-            var endpointGroupName = action.EndpointMetadata.LastOrDefault(em => em is IEndpointGroupNameMetadata) as IEndpointGroupNameMetadata;
+            var endpointGroupName = action.EndpointMetadata.OfType<IEndpointGroupNameMetadata>().LastOrDefault();
             return endpointGroupName?.EndpointGroupName ?? extensionData?.GroupName;
         }
 

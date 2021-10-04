@@ -104,6 +104,22 @@ namespace Microsoft.AspNetCore.Mvc.Description
         }
 
         [Fact]
+        public void GetApiDescription_PopulatesGroupName_FromMetadataOrExtensionData()
+        {
+            // Arrange
+            var action = CreateActionDescriptor();
+            action.EndpointMetadata = new List<object>() { new EndpointGroupNameAttribute("Customers") };
+            action.GetProperty<ApiDescriptionActionData>().GroupName = "NotUsedCustomers";
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+            Assert.Equal("Customers", description.GroupName);
+        }
+
+        [Fact]
         public void GetApiDescription_HttpMethodIsNullWithoutConstraint()
         {
             // Arrange
