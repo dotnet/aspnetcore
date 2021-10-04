@@ -215,13 +215,14 @@ namespace Microsoft.AspNetCore.Http
 
             if (parameterCustomAttributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
             {
-                factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.RouteAttribue);
-                if (factoryContext.RouteParameters is { } routeParams && !routeParams.Contains(parameter.Name, StringComparer.OrdinalIgnoreCase))
+                var routeName = routeAttribute.Name ?? parameter.Name;
+                factoryContext.TrackedParameters.Add(routeName, RequestDelegateFactoryConstants.RouteAttribute);
+                if (factoryContext.RouteParameters is { } routeParams && !routeParams.Contains(routeName, StringComparer.OrdinalIgnoreCase))
                 {
-                    throw new InvalidOperationException($"{parameter.Name} is not a route paramter.");
+                    throw new InvalidOperationException($"'{routeName}' is not a route parameter.");
                 }
 
-                return BindParameterFromProperty(parameter, RouteValuesExpr, routeAttribute.Name ?? parameter.Name, factoryContext, "route");
+                return BindParameterFromProperty(parameter, RouteValuesExpr, routeName, factoryContext, "route");
             }
             else if (parameterCustomAttributes.OfType<IFromQueryMetadata>().FirstOrDefault() is { } queryAttribute)
             {
