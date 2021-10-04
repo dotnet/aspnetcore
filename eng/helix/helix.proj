@@ -24,6 +24,7 @@
     <IsExternal>true</IsExternal>
     <MaxRetryCount Condition="'$(MaxRetryCount)' == ''">2</MaxRetryCount>
     <HelixAccessToken Condition="'$(_UseHelixOpenQueues)' != 'true'">$(HelixApiAccessToken)</HelixAccessToken>
+    <HelixTestConfigurationFilePath>$(RepoRoot)/test-configuration.json</HelixTestConfigurationFilePath>
     <IncludeDotNetCli>true</IncludeDotNetCli>
     <DotNetCliPackageType>sdk</DotNetCliPackageType>
     <DotNetCliVersion>$(NETCoreSdkVersion)</DotNetCliVersion>
@@ -74,6 +75,10 @@
     <HelixProperties Condition="'$(RunQuarantinedTests)' != 'true'" Include="runType" Value="unquarantined" />
   </ItemGroup>
 
+  <ItemGroup Condition="Exists('$(HelixTestConfigurationFilePath)')">
+    <HelixCorrelationPayload Include="$(HelixTestConfigurationFilePath)" AsArchive="false" />
+  </ItemGroup>
+  
   <Target Name="IncludeAspNetRuntime" BeforeTargets="Gather"
     Condition="'$(DoNotRequireSharedFxHelix)' != 'true' OR
     EXISTS('$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.$(TargetRuntimeIdentifier).$(SharedFxVersion).nupkg')">
