@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <!-- Keep this project at net6.0 until there is an SDK with net7.0 runtimes -->
-    <TargetFrameworks>net6.0</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);net472</TargetFrameworks>
     <DefineConstants Condition="'$(TargetFramework)' == 'net472'">$(DefineConstants);BUILD_MSI_TASKS</DefineConstants>
     <Optimize>false</Optimize>
