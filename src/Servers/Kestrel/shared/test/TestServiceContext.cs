@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Testing
 {
@@ -16,10 +17,7 @@ namespace Microsoft.AspNetCore.Testing
     {
         public TestServiceContext()
         {
-            var logger = new TestApplicationErrorLogger();
-            var kestrelTrace = new TestKestrelTrace(logger);
-
-            Initialize(kestrelTrace.LoggerFactory, kestrelTrace);
+            Initialize(NullLoggerFactory.Instance, CreateLoggingTrace(NullLoggerFactory.Instance));
         }
 
         public TestServiceContext(ILoggerFactory loggerFactory)

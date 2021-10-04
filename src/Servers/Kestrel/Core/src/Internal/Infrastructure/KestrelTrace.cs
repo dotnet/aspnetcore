@@ -10,13 +10,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    internal partial class KestrelTrace : ILogger
+    internal sealed partial class KestrelTrace : ILogger
     {
-        protected readonly ILogger _generalLogger;
-        protected readonly ILogger _badRequestsLogger;
-        protected readonly ILogger _connectionsLogger;
-        protected readonly ILogger _http2Logger;
-        protected readonly ILogger _http3Logger;
+        private readonly ILogger _generalLogger;
+        private readonly ILogger _badRequestsLogger;
+        private readonly ILogger _connectionsLogger;
+        private readonly ILogger _http2Logger;
+        private readonly ILogger _http3Logger;
 
         public KestrelTrace(ILoggerFactory loggerFactory)
         {

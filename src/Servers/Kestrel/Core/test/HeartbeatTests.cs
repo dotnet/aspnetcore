@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var systemClock = new MockSystemClock();
             var heartbeatHandler = new Mock<IHeartbeatHandler>();
-            var kestrelTrace = new TestKestrelTrace();
+            var kestrelTrace = new KestrelTrace(LoggerFactory);
             var ex = new Exception();
 
             heartbeatHandler.Setup(h => h.OnHeartbeat(systemClock.UtcNow)).Throws(ex);
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 heartbeat.OnHeartbeat();
             }
 
-            Assert.Equal(ex, kestrelTrace.Logger.Messages.Single(message => message.LogLevel == LogLevel.Error).Exception);
+            Assert.Equal(ex, TestSink.Writes.Single(message => message.LogLevel == LogLevel.Error).Exception);
         }
     }
 }
