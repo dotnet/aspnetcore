@@ -105,10 +105,13 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 ApplicationName = hostConfiguration[HostDefaults.ApplicationKey],
                 EnvironmentName = hostConfiguration[HostDefaults.EnvironmentKey] ?? Environments.Production,
-                ContentRootPath = HostingEnvironment.ResolveContentRootPath(hostConfiguration[HostDefaults.ContentRootKey], AppContext.BaseDirectory),
+                ContentRootPath = ContentRootResolver.ResolvePath(hostConfiguration[HostDefaults.ContentRootKey]),
             };
 
             hostingEnvironment.ContentRootFileProvider = new PhysicalFileProvider(hostingEnvironment.ContentRootPath);
+
+            // Normalize the content root setting for the path in configuration
+            hostConfiguration[HostDefaults.ContentRootKey] = hostingEnvironment.ContentRootPath;
 
             var hostContext = new HostBuilderContext(Properties)
             {
@@ -153,19 +156,6 @@ namespace Microsoft.AspNetCore.Hosting
             public string ApplicationName { get; set; } = default!;
             public string ContentRootPath { get; set; } = default!;
             public IFileProvider ContentRootFileProvider { get; set; } = default!;
-
-            public static string ResolveContentRootPath(string contentRootPath, string basePath)
-            {
-                if (string.IsNullOrEmpty(contentRootPath))
-                {
-                    return basePath;
-                }
-                if (Path.IsPathRooted(contentRootPath))
-                {
-                    return contentRootPath;
-                }
-                return Path.Combine(Path.GetFullPath(basePath), contentRootPath);
-            }
         }
     }
 }

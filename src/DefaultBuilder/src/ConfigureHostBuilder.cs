@@ -60,7 +60,8 @@ namespace Microsoft.AspNetCore.Builder
         public IHostBuilder ConfigureHostConfiguration(Action<IConfigurationBuilder> configureDelegate)
         {
             var previousApplicationName = _configuration[HostDefaults.ApplicationKey];
-            var previousContentRoot = _configuration[HostDefaults.ContentRootKey];
+            // Use the real content root so we can compare paths
+            var previousContentRoot = _context.HostingEnvironment.ContentRootPath;
             var previousEnvironment = _configuration[HostDefaults.EnvironmentKey];
 
             // Run these immediately so that they are observable by the imperative code
@@ -70,17 +71,17 @@ namespace Microsoft.AspNetCore.Builder
             // and done other things based on environment name, application name or content root.
             if (!string.Equals(previousApplicationName, _configuration[HostDefaults.ApplicationKey], StringComparison.OrdinalIgnoreCase))
             {
-                throw new NotSupportedException("The application name changed. Changing the host configuration is not supported");
+                throw new NotSupportedException($"The application name changed from \"{previousApplicationName}\" to \"{_configuration[HostDefaults.ApplicationKey]}\". Changing the host configuration using WebApplicationBuilder.Host is not supported. Use WebApplication.CreateBuilder(WebApplicationOptions) instead.");
             }
 
-            if (!string.Equals(previousContentRoot, _configuration[HostDefaults.ContentRootKey], StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(previousContentRoot, ContentRootResolver.ResolvePath(_configuration[HostDefaults.ContentRootKey]), StringComparison.OrdinalIgnoreCase))
             {
-                throw new NotSupportedException("The content root changed. Changing the host configuration is not supported");
+                throw new NotSupportedException($"The content root changed from \"{previousContentRoot}\" to \"{ContentRootResolver.ResolvePath(_configuration[HostDefaults.ContentRootKey])}\". Changing the host configuration using WebApplicationBuilder.Host is not supported. Use WebApplication.CreateBuilder(WebApplicationOptions) instead.");
             }
 
             if (!string.Equals(previousEnvironment, _configuration[HostDefaults.EnvironmentKey], StringComparison.OrdinalIgnoreCase))
             {
-                throw new NotSupportedException("The environment changed. Changing the host configuration is not supported");
+                throw new NotSupportedException($"The environment changed from \"{previousEnvironment}\" to \"{_configuration[HostDefaults.EnvironmentKey]}\". Changing the host configuration using WebApplicationBuilder.Host is not supported. Use WebApplication.CreateBuilder(WebApplicationOptions) instead.");
             }
 
             return this;

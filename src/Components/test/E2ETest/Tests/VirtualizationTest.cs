@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.Extensions;
+using OpenQA.Selenium.Support.UI;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -366,10 +367,69 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 name => Assert.Equal("Person 3", name));
         }
 
+        [Fact]
+        public void CanExpandDataSetAndRetainScrollPosition()
+        {
+            Browser.MountTestComponent<VirtualizationDataChanges>();
+            var dataSetLengthSelector = new SelectElement(Browser.Exists(By.Id("large-dataset-length")));
+            var dataSetLengthLastRendered = () => int.Parse(Browser.FindElement(By.Id("large-dataset-length-lastrendered")).Text, CultureInfo.InvariantCulture);
+            var container = Browser.Exists(By.Id("removing-many"));
+
+            // Scroll to the end of a medium list
+            dataSetLengthSelector.SelectByText("1000");
+            Browser.Equal(1000, dataSetLengthLastRendered);
+            Browser.True(() =>
+            {
+                ScrollToEnd(Browser, container);
+                return GetPeopleNames(container).Contains("Person 1000");
+            });
+
+            // Expand the data set
+            dataSetLengthSelector.SelectByText("100000");
+            Browser.Equal(100000, dataSetLengthLastRendered);
+
+            // See that the old data is still visible, because the scroll position is preserved as a pixel count,
+            // not a scroll percentage
+            Browser.True(() => GetPeopleNames(container).Contains("Person 1000"));
+        }
+
+        [Fact]
+        public void CanHandleDataSetShrinkingWithExistingOffsetAlreadyBeyondNewListEnd()
+        {
+            // Represents https://github.com/dotnet/aspnetcore/issues/37245
+            Browser.MountTestComponent<VirtualizationDataChanges>();
+            var dataSetLengthSelector = new SelectElement(Browser.Exists(By.Id("large-dataset-length")));
+            var dataSetLengthLastRendered = () => int.Parse(Browser.FindElement(By.Id("large-dataset-length-lastrendered")).Text, CultureInfo.InvariantCulture);
+            var container = Browser.Exists(By.Id("removing-many"));
+
+            // Scroll to the end of a very long list
+            dataSetLengthSelector.SelectByText("100000");
+            Browser.Equal(100000, dataSetLengthLastRendered);
+            Browser.True(() =>
+            {
+                ScrollToEnd(Browser, container);
+                return GetPeopleNames(container).Contains("Person 100000");
+            });
+
+            // Now make the dataset much shorter
+            // We should automatically have the scroll position reduced to the new maximum
+            // Because the new data set is *so much* shorter than the previous one, if bug #37245 were still here,
+            // this would take over 30 minutes so the test would fail
+            dataSetLengthSelector.SelectByText("25");
+            Browser.Equal(25, dataSetLengthLastRendered);
+            Browser.True(() => GetPeopleNames(container).Contains("Person 25"));
+        }
+
         private string[] GetPeopleNames(IWebElement container)
         {
             var peopleElements = container.FindElements(By.CssSelector(".person span"));
             return peopleElements.Select(element => element.Text).ToArray();
+        }
+
+        private static void ScrollToEnd(IWebDriver browser, IWebElement elem)
+        {
+            var js = (IJavaScriptExecutor)browser;
+            js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight", elem);
         }
     }
 }
