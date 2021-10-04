@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         private InputFileJsCallbacksRelay? _jsCallbacksRelay;
 
         [Inject]
-        private IJSRuntime JSRuntime { get; set; } = default!;
+        internal IJSRuntime JSRuntime { get; set; } = default!; // Internal for testing
 
         /// <summary>
         /// Gets or sets the event callback that will be invoked when the collection of selected files changes.
