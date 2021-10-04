@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Http
                 var hasParameterInfo = true;
                 // There should only be one BindAsync method with these parameters since C# does not allow overloading on return type.
                 var methodInfo = GetStaticMethodFromHierarchy(nonNullableParameterType, "BindAsync", new[] { typeof(HttpContext), typeof(ParameterInfo) }, ValidateReturnType);
-                if (methodInfo is null || !ValidateReturnType(methodInfo))
+                if (methodInfo is null)
                 {
                     hasParameterInfo = false;
                     methodInfo = GetStaticMethodFromHierarchy(nonNullableParameterType, "BindAsync", new[] { typeof(HttpContext) }, ValidateReturnType);
