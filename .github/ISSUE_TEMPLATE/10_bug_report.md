@@ -36,12 +36,13 @@ Include the exception you get when facing this issue
 
 ### Further technical details
 - ASP.NET Core version:
+- The IDE (VS / VS Code/ VS4Mac) you're running on, and its version:
 - Include the output of `dotnet --info`:
 
 <details>
-```
 
 ```
+$ dotnet --info
+```
+
 </details>
-
-- The IDE (VS / VS Code/ VS4Mac) you're running on, and its version:
