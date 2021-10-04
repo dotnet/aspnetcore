@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    internal partial class KestrelTrace : IKestrelTrace
+    internal partial class KestrelTrace : ILogger
     {
         protected readonly ILogger _generalLogger;
         protected readonly ILogger _badRequestsLogger;

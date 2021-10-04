@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Moq;
@@ -825,12 +826,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             try
             {
-                var mockTrace = new Mock<IKestrelTrace>();
-                mockTrace
-                    .Setup(trace => trace.IsEnabled(LogLevel.Information))
-                    .Returns(false);
-
-                _serviceContext.Log = mockTrace.Object;
+                _serviceContext.Log = new KestrelTrace(NullLoggerFactory.Instance);
 
                 await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"GET /%00 HTTP/1.1\r\n"));
                 var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;

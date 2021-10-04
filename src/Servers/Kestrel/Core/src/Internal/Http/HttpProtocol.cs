@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public IFeatureCollection ConnectionFeatures => _context.ConnectionFeatures;
         public IHttpOutputProducer Output { get; protected set; } = default!;
 
-        protected IKestrelTrace Log => ServiceContext.Log;
+        protected KestrelTrace Log => ServiceContext.Log;
         private DateHeaderValueManager DateHeaderValueManager => ServiceContext.DateHeaderValueManager;
         // Hold direct reference to ServerOptions since this is used very often in the request processing path
         protected KestrelServerOptions ServerOptions { get; set; } = default!;

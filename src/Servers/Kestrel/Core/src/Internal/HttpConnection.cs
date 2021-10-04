@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _context.TimeoutControl ??= _timeoutControl;
         }
 
-        private IKestrelTrace Log => _context.ServiceContext.Log;
+        private KestrelTrace Log => _context.ServiceContext.Log;
 
         public async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> httpApplication) where TContext : notnull
         {

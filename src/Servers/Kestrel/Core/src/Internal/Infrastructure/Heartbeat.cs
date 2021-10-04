@@ -14,12 +14,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private readonly IHeartbeatHandler[] _callbacks;
         private readonly ISystemClock _systemClock;
         private readonly IDebugger _debugger;
-        private readonly IKestrelTrace _trace;
+        private readonly KestrelTrace _trace;
         private readonly TimeSpan _interval;
         private readonly Thread _timerThread;
         private volatile bool _stopped;
 
-        public Heartbeat(IHeartbeatHandler[] callbacks, ISystemClock systemClock, IDebugger debugger, IKestrelTrace trace)
+        public Heartbeat(IHeartbeatHandler[] callbacks, ISystemClock systemClock, IDebugger debugger, KestrelTrace trace)
         {
             _callbacks = callbacks;
             _systemClock = systemClock;

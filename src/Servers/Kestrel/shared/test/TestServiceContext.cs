@@ -27,9 +27,9 @@ namespace Microsoft.AspNetCore.Testing
             Initialize(loggerFactory, CreateLoggingTrace(loggerFactory));
         }
 
-        public TestServiceContext(ILoggerFactory loggerFactory, IKestrelTrace kestrelTrace)
+        public TestServiceContext(ILoggerFactory loggerFactory, KestrelTrace kestrelTrace)
         {
-            Initialize(loggerFactory, new CompositeKestrelTrace(kestrelTrace, CreateLoggingTrace(loggerFactory)));
+            Initialize(loggerFactory, kestrelTrace);
         }
 
         private static KestrelTrace CreateLoggingTrace(ILoggerFactory loggerFactory)
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Testing
             SystemClock = heartbeatManager;
         }
 
-        private void Initialize(ILoggerFactory loggerFactory, IKestrelTrace kestrelTrace)
+        private void Initialize(ILoggerFactory loggerFactory, KestrelTrace kestrelTrace)
         {
             LoggerFactory = loggerFactory;
             Log = kestrelTrace;

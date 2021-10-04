@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private readonly string _connectionId;
         private readonly BaseConnectionContext _connectionContext;
         private readonly MemoryPool<byte> _memoryPool;
-        private readonly IKestrelTrace _log;
+        private readonly KestrelTrace _log;
         private readonly IHttpMinResponseDataRateFeature _minResponseDataRateFeature;
         private readonly IHttpOutputAborter _outputAborter;
         private readonly TimingPipeFlusher _flusher;
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             string connectionId,
             BaseConnectionContext connectionContext,
             MemoryPool<byte> memoryPool,
-            IKestrelTrace log,
+            KestrelTrace log,
             ITimeoutControl timeoutControl,
             IHttpMinResponseDataRateFeature minResponseDataRateFeature,
             IHttpOutputAborter outputAborter)

@@ -12,15 +12,17 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
-    public class HttpParserTests
+    public class HttpParserTests : LoggedTest
     {
-        private static readonly IKestrelTrace _nullTrace = Mock.Of<IKestrelTrace>();
+        private static readonly KestrelTrace _nullTrace = new KestrelTrace(NullLoggerFactory.Instance);
+        private KestrelTrace CreateEnabledTrace() => new KestrelTrace(LoggerFactory);
 
         [Theory]
         [MemberData(nameof(RequestLineValidData))]
@@ -81,12 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(RequestLineInvalidData))]
         public void ParseRequestLineThrowsOnInvalidRequestLine(string requestLine)
         {
-            var mockTrace = new Mock<IKestrelTrace>();
-            mockTrace
-                .Setup(trace => trace.IsEnabled(LogLevel.Information))
-                .Returns(true);
-
-            var parser = CreateParser(mockTrace.Object);
+            var parser = CreateParser(CreateEnabledTrace());
             var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(requestLine));
             var requestHandler = new RequestHandler();
 
@@ -105,12 +102,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var requestLine = $"{method} / HTTP/1.1\r\n";
 
-            var mockTrace = new Mock<IKestrelTrace>();
-            mockTrace
-                .Setup(trace => trace.IsEnabled(LogLevel.Information))
-                .Returns(true);
-
-            var parser = CreateParser(mockTrace.Object);
+            var parser = CreateParser(CreateEnabledTrace());
             var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(requestLine));
             var requestHandler = new RequestHandler();
 
@@ -129,12 +121,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var requestLine = $"GET / {httpVersion}\r\n";
 
-            var mockTrace = new Mock<IKestrelTrace>();
-            mockTrace
-                .Setup(trace => trace.IsEnabled(LogLevel.Information))
-                .Returns(true);
-
-            var parser = CreateParser(mockTrace.Object);
+            var parser = CreateParser(CreateEnabledTrace());
             var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(requestLine));
             var requestHandler = new RequestHandler();
 
@@ -325,12 +312,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(RequestHeaderInvalidData))]
         public void ParseHeadersThrowsOnInvalidRequestHeaders(string rawHeaders, string expectedExceptionMessage)
         {
-            var mockTrace = new Mock<IKestrelTrace>();
-            mockTrace
-                .Setup(trace => trace.IsEnabled(LogLevel.Information))
-                .Returns(true);
-
-            var parser = CreateParser(mockTrace.Object);
+            var parser = CreateParser(CreateEnabledTrace());
             var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(rawHeaders));
             var requestHandler = new RequestHandler();
 
@@ -349,12 +331,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void ExceptionDetailNotIncludedWhenLogLevelInformationNotEnabled()
         {
-            var mockTrace = new Mock<IKestrelTrace>();
-            mockTrace
-                .Setup(trace => trace.IsEnabled(LogLevel.Information))
-                .Returns(false);
-
-            var parser = CreateParser(mockTrace.Object);
+            var parser = CreateParser(_nullTrace);
 
             // Invalid request line
             var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("GET % HTTP/1.1\r\n"));
@@ -433,12 +410,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(RequestHeaderInvalidData))]
         public void ParseHeadersThrowsOnInvalidRequestHeadersWithGratuitouslySplitBuffers(string rawHeaders, string expectedExceptionMessage)
         {
-            var mockTrace = new Mock<IKestrelTrace>();
-            mockTrace
-                .Setup(trace => trace.IsEnabled(LogLevel.Information))
-                .Returns(true);
-
-            var parser = CreateParser(mockTrace.Object);
+            var parser = CreateParser(CreateEnabledTrace());
             var buffer = BytePerSegmentTestSequenceFactory.Instance.CreateWithContent(rawHeaders);
             var requestHandler = new RequestHandler();
 
@@ -536,7 +508,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(buffer.Slice(reader.Position).IsEmpty);
         }
 
-        private IHttpParser<RequestHandler> CreateParser(IKestrelTrace log) => new HttpParser<RequestHandler>(log.IsEnabled(LogLevel.Information));
+        private IHttpParser<RequestHandler> CreateParser(KestrelTrace log) => new HttpParser<RequestHandler>(log.IsEnabled(LogLevel.Information));
 
         public static IEnumerable<object[]> RequestLineValidData => HttpParsingData.RequestLineValidData;
 

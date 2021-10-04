@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public PipeReader Input => _input.Reader;
 
-        public IKestrelTrace Log => _context.ServiceContext.Log;
+        public KestrelTrace Log => _context.ServiceContext.Log;
         public IFeatureCollection ConnectionFeatures => _context.ConnectionFeatures;
         public ISystemClock SystemClock => _context.ServiceContext.SystemClock;
         public ITimeoutControl TimeoutControl => _context.TimeoutControl;

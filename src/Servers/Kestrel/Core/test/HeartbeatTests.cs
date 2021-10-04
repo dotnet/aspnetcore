@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
-    public class HeartbeatTests
+    public class HeartbeatTests : LoggedTest
     {
         [Fact]
         public void HeartbeatIntervalIsOneSecond()
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var systemClock = new MockSystemClock();
             var heartbeatHandler = new Mock<IHeartbeatHandler>();
             var debugger = new Mock<IDebugger>();
-            var kestrelTrace = new TestKestrelTrace();
+            var kestrelTrace = new KestrelTrace(LoggerFactory);
             var handlerMre = new ManualResetEventSlim();
             var handlerStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var now = systemClock.UtcNow;
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             heartbeatHandler.Verify(h => h.OnHeartbeat(now), Times.Once());
 
-            var warningMessage = kestrelTrace.Logger.Messages.Single(message => message.LogLevel == LogLevel.Warning).Message;
+            var warningMessage = TestSink.Writes.Single(message => message.LogLevel == LogLevel.Warning).Message;
             Assert.Equal($"As of \"{now.ToString(CultureInfo.InvariantCulture)}\", the heartbeat has been running for "
                 + $"\"{heartbeatDuration.ToString("c", CultureInfo.InvariantCulture)}\" which is longer than "
                 + $"\"{Heartbeat.Interval.ToString("c", CultureInfo.InvariantCulture)}\". "
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var systemClock = new MockSystemClock();
             var heartbeatHandler = new Mock<IHeartbeatHandler>();
             var debugger = new Mock<IDebugger>();
-            var kestrelTrace = new Mock<IKestrelTrace>();
+            var kestrelTrace = new KestrelTrace(LoggerFactory);
             var handlerMre = new ManualResetEventSlim();
             var handlerStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var now = systemClock.UtcNow;
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Task blockedHeartbeatTask;
 
-            using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, debugger.Object, kestrelTrace.Object))
+            using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, debugger.Object, kestrelTrace))
             {
                 blockedHeartbeatTask = Task.Run(() => heartbeat.OnHeartbeat());
 
@@ -102,7 +102,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await blockedHeartbeatTask.DefaultTimeout();
 
             heartbeatHandler.Verify(h => h.OnHeartbeat(now), Times.Once());
-            kestrelTrace.Verify(t => t.HeartbeatSlow(TimeSpan.FromSeconds(2), Heartbeat.Interval, now), Times.Never());
+
+            Assert.Empty(TestSink.Writes.Where(w => w.EventId.Name == "HeartbeatSlow"));
         }
 
         [Fact]

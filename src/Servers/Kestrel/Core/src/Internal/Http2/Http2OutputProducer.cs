@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private int StreamId => _stream.StreamId;
         private readonly Http2FrameWriter _frameWriter;
         private readonly TimingPipeFlusher _flusher;
-        private readonly IKestrelTrace _log;
+        private readonly KestrelTrace _log;
 
         // This should only be accessed via the FrameWriter. The connection-level output flow control is protected by the
         // FrameWriter's connection-level write lock.

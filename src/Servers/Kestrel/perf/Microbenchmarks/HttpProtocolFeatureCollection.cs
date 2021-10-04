@@ -233,8 +233,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
             var serviceContext = TestContextFactory.CreateServiceContext(
                 serverOptions: new KestrelServerOptions(),
                 httpParser: new HttpParser<Http1ParsingHandler>(),
-                dateHeaderValueManager: new DateHeaderValueManager(),
-                log: new MockTrace());
+                dateHeaderValueManager: new DateHeaderValueManager());
 
             var connectionContext = TestContextFactory.CreateHttpConnectionContext(
                 serviceContext: serviceContext,

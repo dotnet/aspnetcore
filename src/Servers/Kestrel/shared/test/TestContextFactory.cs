@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Testing
 {
@@ -26,7 +27,6 @@ namespace Microsoft.AspNetCore.Testing
         public static ServiceContext CreateServiceContext(
             KestrelServerOptions serverOptions,
             IHttpParser<Http1ParsingHandler> httpParser = null,
-            IKestrelTrace log = null,
             PipeScheduler scheduler = null,
             ISystemClock systemClock = null,
             DateHeaderValueManager dateHeaderValueManager = null,
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Testing
         {
             var context = new ServiceContext
             {
-                Log = log,
+                Log = new KestrelTrace(NullLoggerFactory.Instance),
                 Scheduler = scheduler,
                 HttpParser = httpParser,
                 SystemClock = systemClock,

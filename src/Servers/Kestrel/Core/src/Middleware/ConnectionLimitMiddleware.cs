@@ -13,15 +13,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     {
         private readonly Func<T, Task> _next;
         private readonly ResourceCounter _concurrentConnectionCounter;
-        private readonly IKestrelTrace _trace;
+        private readonly KestrelTrace _trace;
 
-        public ConnectionLimitMiddleware(Func<T, Task> next, long connectionLimit, IKestrelTrace trace)
+        public ConnectionLimitMiddleware(Func<T, Task> next, long connectionLimit, KestrelTrace trace)
             : this(next, ResourceCounter.Quota(connectionLimit), trace)
         {
         }
 
         // For Testing
-        internal ConnectionLimitMiddleware(Func<T, Task> next, ResourceCounter concurrentConnectionCounter, IKestrelTrace trace)
+        internal ConnectionLimitMiddleware(Func<T, Task> next, ResourceCounter concurrentConnectionCounter, KestrelTrace trace)
         {
             _next = next;
             _concurrentConnectionCounter = concurrentConnectionCounter;
