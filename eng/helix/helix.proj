@@ -24,7 +24,7 @@
     <IsExternal>true</IsExternal>
     <MaxRetryCount Condition="'$(MaxRetryCount)' == ''">2</MaxRetryCount>
     <HelixAccessToken Condition="'$(_UseHelixOpenQueues)' != 'true'">$(HelixApiAccessToken)</HelixAccessToken>
-    <HelixTestConfigurationFilePath>$(RepoRoot)/test-configuration.json</HelixTestConfigurationFilePath>
+    <HelixTestConfigurationFilePath>$(RepoRoot)eng/test-configuration.json</HelixTestConfigurationFilePath>
     <IncludeDotNetCli>true</IncludeDotNetCli>
     <DotNetCliPackageType>sdk</DotNetCliPackageType>
     <DotNetCliVersion>$(NETCoreSdkVersion)</DotNetCliVersion>
