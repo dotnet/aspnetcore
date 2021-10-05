@@ -192,6 +192,27 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task WebRoot_Can_Be_Overriden()
+        {
+            var webRoot = "foo";
+            var expectedWebRoot = "";
+            // Arrange
+            var fixture = _fixture.WithWebHostBuilder(builder =>
+            {
+                expectedWebRoot = Path.GetFullPath(Path.Combine(builder.GetSetting(WebHostDefaults.ContentRootKey), webRoot));
+                builder.UseSetting(WebHostDefaults.WebRootKey, webRoot);
+            });
+
+            using var client = fixture.CreateDefaultClient();
+
+            // Act
+            var content = await client.GetStringAsync("http://localhost/webroot");
+
+            // Assert
+            Assert.Equal(expectedWebRoot, content);
+        }
+
+        [Fact]
         public async Task Accepts_Json_WhenBindingAComplexType()
         {
             // Act

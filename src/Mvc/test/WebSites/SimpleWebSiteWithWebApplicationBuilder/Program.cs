@@ -34,6 +34,7 @@ app.MapGet("/many-results", (int id) =>
 app.MapGet("/problem", () => Results.Problem("Some problem"));
 
 app.MapGet("/environment", (IHostEnvironment environment) => environment.EnvironmentName);
+app.MapGet("/webroot", (IWebHostEnvironment environment) => environment.WebRootPath);
 
 app.MapGet("/greeting", (IConfiguration config) => config["Greeting"]);
 
