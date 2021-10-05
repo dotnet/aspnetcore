@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             StringValues values;
             if (_accumulator.TryGetValue(key, out values))
             {
-                if (StringValues.IsNullOrEmpty(values))
+                if (values.Count == 0)
                 {
                     // Marker entry for this key to indicate entry already in expanding list dictionary
                     _expandingAccumulator[key].Add(value);
