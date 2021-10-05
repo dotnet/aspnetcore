@@ -18,10 +18,10 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
         
         [ConditionalFact]
-        public void FailHalfTime()
+        public void FailsAlot()
         {
-            if (new Random().Next(0,100) <= 50) {
-                throw new Exception("Rolled a miss (< 51)");
+            if (new Random().Next(0,100) <= 80) {
+                throw new Exception("Rolled a miss (< 81)");
             }
         }
 
