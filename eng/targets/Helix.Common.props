@@ -22,8 +22,7 @@
   <ItemGroup Condition="'$(IsRequiredCheck)' == 'true' AND '$(TargetArchitecture)' == 'x64'">
     <HelixAvailableTargetQueue Include="Ubuntu.1804.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Windows.10.Amd64.Open" Platform="Windows" />
-    <!-- Re-enable once https://github.com/dotnet/core-eng/issues/14346 is resolved -->
-    <!-- <HelixAvailableTargetQueue Include="OSX.1014.Amd64.Open" Platform="OSX" /> -->
+    <HelixAvailableTargetQueue Include="OSX.1014.Amd64.Open" Platform="OSX" />
   </ItemGroup>
 
   <!-- queues for helix-matrix.yml pipeline -->
