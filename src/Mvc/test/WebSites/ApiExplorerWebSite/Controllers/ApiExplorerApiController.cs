@@ -4,15 +4,18 @@
 using System.IO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 
 namespace ApiExplorerWebSite
 {
     [Route("ApiExplorerApiController/[action]")]
     [ApiController]
+    [EndpointGroupName("GroupNameOnController")]
     public class ApiExplorerApiController : Controller
     {
         public IActionResult ActionWithoutParameters() => Ok();
 
+        [EndpointGroupName("GroupNameOnAction")]
         public void ActionWithSomeParameters(object input)
         {
         }
