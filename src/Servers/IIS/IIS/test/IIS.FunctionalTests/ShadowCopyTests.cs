@@ -16,6 +16,14 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         public ShadowCopyTests(PublishedSitesFixture fixture) : base(fixture)
         {
         }
+        
+        [ConditionalFact]
+        public void FailHalfTime()
+        {
+            if (new Random().Next(0,100) <= 50) {
+                throw new Exception("Rolled a miss (< 51)");
+            }
+        }
 
         [ConditionalFact]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
