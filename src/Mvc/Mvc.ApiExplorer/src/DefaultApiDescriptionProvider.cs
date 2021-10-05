@@ -477,7 +477,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             // - ApiExplorerSettings.GroupName on the action, if it is set
             // - ApiExplorerSettings.GroupName on the controller, if it is set
             var endpointGroupName = action.EndpointMetadata.OfType<IEndpointGroupNameMetadata>().LastOrDefault();
-            return endpointGroupName?.EndpointGroupName ?? extensionData?.GroupName;
+            return endpointGroupName?.EndpointGroupName ?? extensionData.GroupName;
         }
 
         private class ApiParameterDescriptionContext
