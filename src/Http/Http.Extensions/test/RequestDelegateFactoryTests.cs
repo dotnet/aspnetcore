@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var ex = Assert.Throws<InvalidOperationException>(() =>
                 RequestDelegateFactory.Create(([FromRoute] int id) => { }, new() { RouteParameterNames = Array.Empty<string>() }));
 
-            Assert.Equal("id is not a route paramter.", ex.Message);
+            Assert.Equal("'id' is not a route parameter.", ex.Message);
         }
 
         [Fact]
