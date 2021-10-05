@@ -1,7 +1,6 @@
 import { WebAssemblyBootResourceType } from './WebAssemblyStartOptions';
 
-type LoadBootResourceCallback = (type: WebAssemblyBootResourceType, name: string, defaultUri: string, integrity: string) =>
-  string | Promise<Response> | null | undefined;
+type LoadBootResourceCallback = (type: WebAssemblyBootResourceType, name: string, defaultUri: string, integrity: string) => string | Promise<Response> | null | undefined;
 
 export class BootConfigResult {
   private constructor(public bootConfig: BootJsonData, public applicationEnvironment: string) {
@@ -24,15 +23,14 @@ export class BootConfigResult {
 
     return new BootConfigResult(bootConfig, applicationEnvironment);
 
-    async function defaultLoadBlazorBootJson(url: string) : Promise<Response> {
+    function defaultLoadBlazorBootJson(url: string) : Promise<Response> {
       return fetch(url, {
         method: 'GET',
         credentials: 'include',
-        cache: 'no-cache'
+        cache: 'no-cache',
       });
     }
-  };
-
+  }
 }
 
 // Keep in sync with bootJsonData from the BlazorWebAssemblySDK

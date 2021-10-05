@@ -14,10 +14,9 @@ import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 import { discoverComponents, discoverPersistedState, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { setDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
-import { AfterBlazorStartedCallback, JSInitializer } from './JSInitializers/JSInitializers';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.WebAssembly';
 
-declare var Module: EmscriptenModule;
+declare let Module: EmscriptenModule;
 let started = false;
 
 async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
@@ -119,7 +118,8 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
 
   const [resourceLoader] = await Promise.all([
     WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig, candidateOptions || {}),
-    WebAssemblyConfigLoader.initAsync(bootConfigResult)]);
+    WebAssemblyConfigLoader.initAsync(bootConfigResult),
+  ]);
 
   try {
     await platform.start(resourceLoader);
@@ -159,10 +159,11 @@ function invokeJSFromDotNet(callInfo: Pointer, arg0: any, arg1: any, arg2: any):
         return result;
       case DotNet.JSCallResultType.JSObjectReference:
         return DotNet.createJSObjectReference(result).__jsObjectId;
-      case DotNet.JSCallResultType.JSStreamReference:
+      case DotNet.JSCallResultType.JSStreamReference: {
         const streamReference = DotNet.createJSStreamReference(result);
         const resultJson = JSON.stringify(streamReference);
         return BINDING.js_string_to_mono_string(resultJson);
+      }
       case DotNet.JSCallResultType.JSVoidResult:
         return null;
       default:

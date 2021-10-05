@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable no-prototype-builtins */
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { attachDebuggerHotkey, hasDebuggingEnabled } from './MonoDebugger';
 import { showErrorNotification } from '../../BootErrors';
@@ -7,7 +9,7 @@ import { WebAssemblyBootResourceType } from '../WebAssemblyStartOptions';
 import { BootJsonData, ICUDataMode } from '../BootConfig';
 import { Blazor } from '../../GlobalExports';
 
-declare var Module: EmscriptenModule;
+declare let Module: EmscriptenModule;
 
 let mono_wasm_add_assembly: (name: string, heapAddress: number, length: number) => void;
 const appBinDirName = 'appBinDir';
@@ -19,9 +21,15 @@ let currentHeapLock: MonoHeapLock | null = null;
 // Memory access helpers
 // The implementations are exactly equivalent to what the global getValue(addr, type) function does,
 // except without having to parse the 'type' parameter, and with less risk of mistakes at the call site
-function getValueI16(ptr: number) { return Module.HEAP16[ptr >> 1]; }
-function getValueI32(ptr: number) { return Module.HEAP32[ptr >> 2]; }
-function getValueFloat(ptr: number) { return Module.HEAPF32[ptr >> 2]; }
+function getValueI16(ptr: number) {
+  return Module.HEAP16[ptr >> 1];
+}
+function getValueI32(ptr: number) {
+  return Module.HEAP32[ptr >> 2];
+}
+function getValueFloat(ptr: number) {
+  return Module.HEAPF32[ptr >> 2];
+}
 function getValueU64(ptr: number) {
   // There is no Module.HEAPU64, and Module.getValue(..., 'i64') doesn't work because the implementation
   // treats 'i64' as being the same as 'i32'. Also we must take care to read both halves as unsigned.
@@ -41,6 +49,7 @@ export const monoPlatform: Platform = {
 
       // dotnet.js assumes the existence of this
       window['Browser'] = {
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         init: () => { },
       };
 
@@ -55,10 +64,10 @@ export const monoPlatform: Platform = {
   },
 
   callEntryPoint: async function callEntryPoint(assemblyName: string) : Promise<any> {
-    const emptyArray = [ [ ] ];
+    const emptyArray = [[]];
 
     try {
-      await BINDING.call_assembly_entry_point(assemblyName, emptyArray, "m")
+      await BINDING.call_assembly_entry_point(assemblyName, emptyArray, 'm');
     } catch (error) {
       console.error(error);
       showErrorNotification();
@@ -142,20 +151,20 @@ export const monoPlatform: Platform = {
     return ((baseAddress as any as number) + (fieldOffset || 0)) as any as T;
   },
 
-  beginHeapLock: function () {
+  beginHeapLock: function() {
     assertHeapIsNotLocked();
     currentHeapLock = new MonoHeapLock();
     return currentHeapLock;
   },
 
-  invokeWhenHeapUnlocked: function (callback) {
+  invokeWhenHeapUnlocked: function(callback) {
     // This is somewhat like a sync context. If we're not locked, just pass through the call directly.
     if (!currentHeapLock) {
       callback();
     } else {
       currentHeapLock.enqueuePostReleaseAction(callback);
     }
-  }
+  },
 };
 
 function addScriptTagsToDocument(resourceLoader: WebAssemblyResourceLoader) {
@@ -185,8 +194,7 @@ function addScriptTagsToDocument(resourceLoader: WebAssemblyResourceLoader) {
   // Allow overriding the URI from which the dotnet.*.js file is loaded
   if (resourceLoader.startOptions.loadBootResource) {
     const resourceType: WebAssemblyBootResourceType = 'dotnetjs';
-    const customSrc = resourceLoader.startOptions.loadBootResource(
-      resourceType, dotnetJsResourceName, scriptElem.src, dotnetJsContentHash);
+    const customSrc = resourceLoader.startOptions.loadBootResource(resourceType, dotnetJsResourceName, scriptElem.src, dotnetJsContentHash);
     if (typeof (customSrc) === 'string') {
       scriptElem.src = customSrc;
     } else if (customSrc) {
@@ -240,9 +248,10 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
   const pdbsBeingLoaded = resourceLoader.loadResources(resources.pdb || {}, filename => `_framework/${filename}`, 'pdb');
   const wasmBeingLoaded = resourceLoader.loadResource(
     /* name */ dotnetWasmResourceName,
-    /* url */  `_framework/${dotnetWasmResourceName}`,
+    /* url */ `_framework/${dotnetWasmResourceName}`,
     /* hash */ resourceLoader.bootConfig.resources.runtime[dotnetWasmResourceName],
-    /* type */ 'dotnetwasm');
+    /* type */ 'dotnetwasm'
+  );
 
   const dotnetTimeZoneResourceName = 'dotnet.timezones.blat';
   let timeZoneResource: LoadingResource | undefined;
@@ -251,18 +260,20 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
       dotnetTimeZoneResourceName,
       `_framework/${dotnetTimeZoneResourceName}`,
       resourceLoader.bootConfig.resources.runtime[dotnetTimeZoneResourceName],
-      'globalization');
+      'globalization'
+    );
   }
 
   let icuDataResource: LoadingResource | undefined;
-  if (resourceLoader.bootConfig.icuDataMode != ICUDataMode.Invariant) {
+  if (resourceLoader.bootConfig.icuDataMode !== ICUDataMode.Invariant) {
     const applicationCulture = resourceLoader.startOptions.applicationCulture || (navigator.languages && navigator.languages[0]);
     const icuDataResourceName = getICUResourceName(resourceLoader.bootConfig, applicationCulture);
     icuDataResource = resourceLoader.loadResource(
       icuDataResourceName,
       `_framework/${icuDataResourceName}`,
       resourceLoader.bootConfig.resources.runtime[icuDataResourceName],
-      'globalization');
+      'globalization'
+    );
   }
 
   // Override the mechanism for fetching the main wasm file so we can connect it to our cache
@@ -291,7 +302,11 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
 
   module.preRun.push(() => {
     // By now, emscripten should be initialised enough that we can capture these methods for later use
-    mono_wasm_add_assembly = cwrap('mono_wasm_add_assembly', null, ['string', 'number', 'number']);
+    mono_wasm_add_assembly = cwrap('mono_wasm_add_assembly', null, [
+      'string',
+      'number',
+      'number',
+    ]);
     MONO.loaded_files = [];
 
     if (timeZoneResource) {
@@ -317,7 +332,6 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     Blazor._internal.getSatelliteAssemblies = (culturesToLoadDotNetArray: System_Array<System_String>): System_Object => {
       const culturesToLoad = BINDING.mono_array_to_js_array<System_String, string>(culturesToLoadDotNetArray);
       const satelliteResources = resourceLoader.bootConfig.resources.satelliteResources;
-      const applicationCulture = resourceLoader.startOptions.applicationCulture || (navigator.languages && navigator.languages[0]);
 
       if (satelliteResources) {
         const resourcePromises = Promise.all(culturesToLoad
@@ -326,23 +340,22 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
           .reduce((previous, next) => previous.concat(next), new Array<LoadingResource>())
           .map(async resource => (await resource.response).arrayBuffer()));
 
-        return BINDING.js_to_mono_obj(
-          resourcePromises.then(resourcesToLoad => {
-            if (resourcesToLoad.length) {
-              Blazor._internal.readSatelliteAssemblies = () => {
-                const array = BINDING.mono_obj_array_new(resourcesToLoad.length);
-                for (var i = 0; i < resourcesToLoad.length; i++) {
-                  BINDING.mono_obj_array_set(array, i, BINDING.js_typed_array_to_array(new Uint8Array(resourcesToLoad[i])));
-                }
-                return array;
-              };
-            }
+        return BINDING.js_to_mono_obj(resourcePromises.then(resourcesToLoad => {
+          if (resourcesToLoad.length) {
+            Blazor._internal.readSatelliteAssemblies = () => {
+              const array = BINDING.mono_obj_array_new(resourcesToLoad.length);
+              for (let i = 0; i < resourcesToLoad.length; i++) {
+                BINDING.mono_obj_array_set(array, i, BINDING.js_typed_array_to_array(new Uint8Array(resourcesToLoad[i])));
+              }
+              return array;
+            };
+          }
 
-            return resourcesToLoad.length;
-          }));
+          return resourcesToLoad.length;
+        }));
       }
       return BINDING.js_to_mono_obj(Promise.resolve(0));
-    }
+    };
 
     const lazyResources: {
       assemblies?: (ArrayBuffer | null)[],
@@ -356,17 +369,17 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
         throw new Error("No assemblies have been marked as lazy-loadable. Use the 'BlazorWebAssemblyLazyLoad' item group in your project file to enable lazy loading an assembly.");
       }
 
-      var assembliesMarkedAsLazy = assembliesToLoad.filter(assembly => lazyAssemblies.hasOwnProperty(assembly));
+      const assembliesMarkedAsLazy = assembliesToLoad.filter(assembly => lazyAssemblies.hasOwnProperty(assembly));
 
-      if (assembliesMarkedAsLazy.length != assembliesToLoad.length) {
-        var notMarked = assembliesToLoad.filter(assembly => !assembliesMarkedAsLazy.includes(assembly));
+      if (assembliesMarkedAsLazy.length !== assembliesToLoad.length) {
+        const notMarked = assembliesToLoad.filter(assembly => !assembliesMarkedAsLazy.includes(assembly));
         throw new Error(`${notMarked.join()} must be marked with 'BlazorWebAssemblyLazyLoad' item group in your project file to allow lazy-loading.`);
       }
 
       let pdbPromises: Promise<(ArrayBuffer | null)[]> | undefined;
       if (hasDebuggingEnabled()) {
         const pdbs = resourceLoader.bootConfig.resources.pdb;
-        const pdbsToLoad = assembliesMarkedAsLazy.map(a => changeExtension(a, '.pdb'))
+        const pdbsToLoad = assembliesMarkedAsLazy.map(a => changeExtension(a, '.pdb'));
         if (pdbs) {
           pdbPromises = Promise.all(pdbsToLoad
             .map(pdb => lazyAssemblies.hasOwnProperty(pdb) ? resourceLoader.loadResource(pdb, `_framework/${pdb}`, lazyAssemblies[pdb], 'pdb') : null)
@@ -379,41 +392,40 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
         .map(async resource => (await resource.response).arrayBuffer()));
 
 
-      return BINDING.js_to_mono_obj(
-        Promise.all([resourcePromises, pdbPromises]).then(values => {
-          lazyResources["assemblies"] = values[0];
-          lazyResources["pdbs"] = values[1];
-          if (lazyResources["assemblies"].length) {
-            Blazor._internal.readLazyAssemblies = () => {
-              const { assemblies } = lazyResources;
-              if (!assemblies) {
-                return BINDING.mono_obj_array_new(0);
-              }
-              const assemblyBytes = BINDING.mono_obj_array_new(assemblies.length);
-              for (let i = 0; i < assemblies.length; i++) {
-                const assembly = assemblies[i] as ArrayBuffer;
-                BINDING.mono_obj_array_set(assemblyBytes, i, BINDING.js_typed_array_to_array(new Uint8Array(assembly)));
-              }
-              return assemblyBytes;
-            };
+      return BINDING.js_to_mono_obj(Promise.all([resourcePromises, pdbPromises]).then(values => {
+        lazyResources['assemblies'] = values[0];
+        lazyResources['pdbs'] = values[1];
+        if (lazyResources['assemblies'].length) {
+          Blazor._internal.readLazyAssemblies = () => {
+            const { assemblies } = lazyResources;
+            if (!assemblies) {
+              return BINDING.mono_obj_array_new(0);
+            }
+            const assemblyBytes = BINDING.mono_obj_array_new(assemblies.length);
+            for (let i = 0; i < assemblies.length; i++) {
+              const assembly = assemblies[i] as ArrayBuffer;
+              BINDING.mono_obj_array_set(assemblyBytes, i, BINDING.js_typed_array_to_array(new Uint8Array(assembly)));
+            }
+            return assemblyBytes;
+          };
 
-            Blazor._internal.readLazyPdbs = () => {
-              const { assemblies, pdbs } = lazyResources;
-              if (!assemblies) {
-                return BINDING.mono_obj_array_new(0);
-              }
-              const pdbBytes = BINDING.mono_obj_array_new(assemblies.length);
-              for (let i = 0; i < assemblies.length; i++) {
-                const pdb = pdbs && pdbs[i] ? new Uint8Array(pdbs[i] as ArrayBufferLike) : new Uint8Array();
-                BINDING.mono_obj_array_set(pdbBytes, i, BINDING.js_typed_array_to_array(pdb));
-              }
-              return pdbBytes;
-            };
-          }
+          Blazor._internal.readLazyPdbs = () => {
+            const { assemblies, pdbs } = lazyResources;
+            if (!assemblies) {
+              return BINDING.mono_obj_array_new(0);
+            }
+            const pdbBytes = BINDING.mono_obj_array_new(assemblies.length);
+            for (let i = 0; i < assemblies.length; i++) {
+              const pdb = pdbs && pdbs[i] ? new Uint8Array(pdbs[i] as ArrayBufferLike) : new Uint8Array();
+              BINDING.mono_obj_array_set(pdbBytes, i, BINDING.js_typed_array_to_array(pdb));
+            }
+            return pdbBytes;
+          };
+        }
 
-          return lazyResources["assemblies"].length;
-        }));
-    }
+        return lazyResources['assemblies'].length;
+      }));
+    };
   });
 
   module.postRun.push(() => {
@@ -423,18 +435,19 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     resourceLoader.purgeUnusedCacheEntriesAsync(); // Don't await - it's fine to run in background
 
     if (resourceLoader.bootConfig.icuDataMode === ICUDataMode.Sharded) {
-      MONO.mono_wasm_setenv('__BLAZOR_SHARDED_ICU',  '1');
+      MONO.mono_wasm_setenv('__BLAZOR_SHARDED_ICU', '1');
 
       if (resourceLoader.startOptions.applicationCulture) {
         // If a culture is specified via start options use that to initialize the Emscripten \  .NET culture.
-        MONO.mono_wasm_setenv('LANG',  `${resourceLoader.startOptions.applicationCulture}.UTF-8`);
+        MONO.mono_wasm_setenv('LANG', `${resourceLoader.startOptions.applicationCulture}.UTF-8`);
       }
     }
-    let timeZone = "UTC";
+    let timeZone = 'UTC';
     try {
       timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    // eslint-disable-next-line no-empty
     } catch { }
-    MONO.mono_wasm_setenv("TZ", timeZone || 'UTC');
+    MONO.mono_wasm_setenv('TZ', timeZone || 'UTC');
     if (resourceLoader.bootConfig.modifiableAssemblies) {
       // Configure the app to enable hot reload in Development.
       MONO.mono_wasm_setenv('DOTNET_MODIFIABLE_ASSEMBLIES', resourceLoader.bootConfig.modifiableAssemblies);
@@ -536,7 +549,7 @@ function attachInteropInvoker(): void {
 }
 
 async function loadTimezone(timeZoneResource: LoadingResource): Promise<void> {
-  const runDependencyId = `blazor:timezonedata`;
+  const runDependencyId = 'blazor:timezonedata';
   addRunDependency(runDependencyId);
 
   const request = await timeZoneResource.response;
@@ -557,9 +570,19 @@ function getICUResourceName(bootConfig: BootJsonData, culture: string | undefine
   }
 
   const prefix = culture.split('-')[0];
-  if (['en', 'fr', 'it', 'de', 'es'].includes(prefix)) {
+  if ([
+    'en',
+    'fr',
+    'it',
+    'de',
+    'es',
+  ].includes(prefix)) {
     return 'icudt_EFIGS.dat';
-  } else if (['zh', 'ko', 'ja'].includes(prefix)) {
+  } else if ([
+    'zh',
+    'ko',
+    'ja',
+  ].includes(prefix)) {
     return 'icudt_CJK.dat';
   } else {
     return 'icudt_no_CJK.dat';
@@ -567,7 +590,7 @@ function getICUResourceName(bootConfig: BootJsonData, culture: string | undefine
 }
 
 async function loadICUData(icuDataResource: LoadingResource): Promise<void> {
-  const runDependencyId = `blazor:icudata`;
+  const runDependencyId = 'blazor:icudata';
   addRunDependency(runDependencyId);
 
   const request = await icuDataResource.response;
@@ -575,7 +598,7 @@ async function loadICUData(icuDataResource: LoadingResource): Promise<void> {
 
   const offset = MONO.mono_wasm_load_bytes_into_heap(array);
   if (!MONO.mono_wasm_load_icu_data(offset)) {
-    throw new Error("Error loading ICU asset.");
+    throw new Error('Error loading ICU asset.');
   }
   removeRunDependency(runDependencyId);
 }
@@ -589,8 +612,7 @@ async function compileWasmModule(wasmResource: LoadingResource, imports: any): P
     try {
       const streamingResult = await WebAssembly['instantiateStreaming'](wasmResource.response, imports);
       return streamingResult.instance;
-    }
-    catch (ex) {
+    } catch (ex) {
       console.info('Streaming compilation failed. Falling back to ArrayBuffer instantiation. ', ex);
     }
   }

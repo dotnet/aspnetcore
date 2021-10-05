@@ -17,7 +17,7 @@ export const internalFunctions = {
   getLocationHref: () => location.href,
 };
 
-function listenForNavigationEvents(callback: (uri: string, intercepted: boolean) => Promise<void>) {
+function listenForNavigationEvents(callback: (uri: string, intercepted: boolean) => Promise<void>): void {
   notifyLocationChangedCallback = callback;
 
   if (hasRegisteredNavigationEventListeners) {
@@ -28,11 +28,11 @@ function listenForNavigationEvents(callback: (uri: string, intercepted: boolean)
   window.addEventListener('popstate', () => notifyLocationChanged(false));
 }
 
-function enableNavigationInterception() {
+function enableNavigationInterception(): void {
   hasEnabledNavigationInterception = true;
 }
 
-export function attachToEventDelegator(eventDelegator: EventDelegator) {
+export function attachToEventDelegator(eventDelegator: EventDelegator): void {
   // We need to respond to clicks on <a> elements *after* the EventDelegator has finished
   // running its simulated bubbling process so that we can respect any preventDefault requests.
   // So instead of registering our own native event, register using the EventDelegator.
@@ -70,7 +70,7 @@ export function attachToEventDelegator(eventDelegator: EventDelegator) {
 export function navigateTo(uri: string, options: NavigationOptions): void;
 export function navigateTo(uri: string, forceLoad: boolean): void;
 export function navigateTo(uri: string, forceLoad: boolean, replace: boolean): void;
-export function navigateTo(uri: string, forceLoadOrOptions: NavigationOptions | boolean, replaceIfUsingOldOverload: boolean = false) {
+export function navigateTo(uri: string, forceLoadOrOptions: NavigationOptions | boolean, replaceIfUsingOldOverload = false): void {
   const absoluteUri = toAbsoluteUri(uri);
 
   // Normalize the parameters to the newer overload (i.e., using NavigationOptions)
@@ -128,7 +128,7 @@ async function notifyLocationChanged(interceptedLink: boolean) {
 }
 
 let testAnchor: HTMLAnchorElement;
-export function toAbsoluteUri(relativeUri: string) {
+export function toAbsoluteUri(relativeUri: string): string {
   testAnchor = testAnchor || document.createElement('a');
   testAnchor.href = relativeUri;
   return testAnchor.href;
