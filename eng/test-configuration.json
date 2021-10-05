@@ -11,6 +11,8 @@
   "failOnRules": [
   ],
   "quarantineRules": [
-    {"testName": "Microsoft.AspNetCore.Mvc.FunctionalTests.HtmlGenerationTest.CacheTagHelper_BubblesExpirationOfNestedTagHelpers"}
+    {"testName": "Microsoft.AspNetCore.Mvc.FunctionalTests.HtmlGenerationTest.CacheTagHelper_BubblesExpirationOfNestedTagHelpers"},
+    {"testName": "Microsoft.AspNetCore.Server.IIS.FunctionalTests.ShadowCopyTests.ShadowCopyE2EWorksWithOldFoldersPresent"},
+    {"testName": "Microsoft.AspNetCore.Server.IIS.FunctionalTests.ShadowCopyTests.ShadowCopyCleansUpOlderFolders"}
   ]
 }
