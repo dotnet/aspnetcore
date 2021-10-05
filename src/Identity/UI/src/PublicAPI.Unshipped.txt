@@ -283,22 +283,40 @@ virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ResendEmailCo
 ~Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.TwoFactorAuthenticationModel.StatusMessage.set -> void
 ~Microsoft.AspNetCore.Identity.UI.V5.Pages.Internal.ErrorModel.RequestId.get -> string
 ~Microsoft.AspNetCore.Identity.UI.V5.Pages.Internal.ErrorModel.RequestId.set -> void
+~static Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal.ManageNavPages.AriaCurrent(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext, string page) -> string
+~static Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal.ManageNavPages.ChangePasswordAriaCurrent(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
+~static Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal.ManageNavPages.DeletePersonalDataAriaCurrent(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
+~static Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal.ManageNavPages.DownloadPersonalDataAriaCurrent(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
+~static Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal.ManageNavPages.EmailAriaCurrent(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
+~static Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal.ManageNavPages.ExternalLoginsAriaCurrent(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
+~static Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal.ManageNavPages.IndexAriaCurrent(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
+~static Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal.ManageNavPages.PersonalDataAriaCurrent(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
+~static Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal.ManageNavPages.TwoFactorAuthenticationAriaCurrent(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
+~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.AriaCurrent(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext, string page) -> string
 ~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.ChangePassword.get -> string
+~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.ChangePasswordAriaCurrent(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
 ~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.ChangePasswordNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
 ~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.DeletePersonalData.get -> string
+~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.DeletePersonalDataAriaCurrent(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
 ~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.DeletePersonalDataNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
 ~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.DownloadPersonalData.get -> string
+~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.DownloadPersonalDataAriaCurrent(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
 ~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.DownloadPersonalDataNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
 ~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.Email.get -> string
+~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.EmailAriaCurrent(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
 ~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.EmailNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
 ~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.ExternalLogins.get -> string
+~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.ExternalLoginsAriaCurrent(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
 ~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.ExternalLoginsNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
 ~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.Index.get -> string
+~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.IndexAriaCurrent(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
 ~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.IndexNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
 ~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.PageNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext, string page) -> string
 ~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.PersonalData.get -> string
+~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.PersonalDataAriaCurrent(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
 ~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.PersonalDataNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
 ~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.TwoFactorAuthentication.get -> string
+~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.TwoFactorAuthenticationAriaCurrent(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
 ~static Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal.ManageNavPages.TwoFactorAuthenticationNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> string
 ~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ConfirmEmailChangeModel.OnGetAsync(string userId, string email, string code) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
 ~virtual Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.ConfirmEmailModel.OnGetAsync(string userId, string code) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult>
