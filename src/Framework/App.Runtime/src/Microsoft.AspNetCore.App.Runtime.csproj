@@ -313,18 +313,11 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <CoreCLRJitPath>$(CrossgenToolDir)$(LibPrefix)clrjit$(LibExtension)</CoreCLRJitPath>
   </PropertyGroup>
 
-  <ItemGroup>
-    <CreateDirectory Include="$(CrossgenToolDir)" />
-    <CreateDirectory Include="$(CrossgenPlatformAssembliesDir)" />
-    <CreateDirectory Include="$(SharedFxLayoutTargetDir)" />
-    <CreateDirectory Include="$(RedistLayoutTargetDir)" />
-    <CreateDirectory Include="$(LocalInstallationOutputPath)" />
-  </ItemGroup>
-
   <Target Name="Crossgen" DependsOnTargets="$(CrossgenDependsOn)" />
 
   <Target Name="PrepareForCrossGen" Condition="'$(CrossgenOutput)' == 'true'">
     <!-- The output directories of assemblies built in this repo contain a mix of ref and impl assemblies. Copy impl assemblies to a separate directory. -->
+    <RemoveDir Directories="$(CrossgenPlatformAssembliesDir)" />
     <Copy SourceFiles="@(ReferenceCopyLocalPaths)" DestinationFolder="$(CrossgenPlatformAssembliesDir)" Condition="'%(ReferenceCopyLocalPaths.ProjectPath)' != ''"/>
 
     <!-- Resolve list of assemblies to crossgen -->
@@ -350,6 +343,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <CrossgenPlatformAssemblyPaths Condition="HasTrailingSlash($(CrossgenPlatformAssemblyPaths)) AND '$(OS)' == 'Windows_NT'">$(CrossgenPlatformAssemblyPaths)\</CrossgenPlatformAssemblyPaths>
     </PropertyGroup>
 
+    <RemoveDir Directories="$(CrossgenToolDir)" />
     <WriteLinesToFile
         Lines="-platform_assemblies_paths &quot;$(CrossgenPlatformAssemblyPaths)&quot;"
         File="$(CrossgenToolDir)PlatformAssembliesPaths.rsp"
@@ -393,6 +387,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       PrivateUri="$(DotNetRuntimePrivateDownloadUrl)"
       PrivateUriSuffix="$(DotNetAssetRootAccessTokenSuffix)"
       DestinationPath="$(DotNetRuntimeArchive)" />
+    <RemoveDir Directories="$(RedistSharedFrameworkLayoutRoot)" />
+    <MakeDir Directories="$(RedistSharedFrameworkLayoutRoot)" />
 
     <!-- Extract the dotnet-runtime archive -->
     <Exec Condition="'$(ArchiveExtension)' == '.tar.gz'"
@@ -419,7 +415,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           DependsOnTargets="_ResolveSharedFrameworkContent"
           Inputs="@(SharedFxContent)"
           Outputs="@(SharedFxContent->'$(SharedFxLayoutTargetDir)%(FileName)%(Extension)')">
-
+    <RemoveDir Directories="$(SharedFrameworkLayoutRoot)" />
     <Copy SourceFiles="@(SharedFxContent)"
           DestinationFiles="@(SharedFxContent->'$(SharedFxLayoutTargetDir)%(FileName)%(Extension)')"
           UseHardlinksIfPossible="true" />
@@ -431,7 +427,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           DependsOnTargets="_ResolveSharedFrameworkContent"
           Inputs="@(SharedFxContent)"
           Outputs="@(SharedFxContent->'$(RedistLayoutTargetDir)%(FileName)%(Extension)')">
-
+    <RemoveDir Directories="$(RedistLayoutTargetDir)" />
     <Copy SourceFiles="@(SharedFxContent)"
           DestinationFiles="@(SharedFxContent->'$(RedistLayoutTargetDir)%(FileName)%(Extension)')"
           UseHardlinksIfPossible="true" />
@@ -444,7 +440,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           Name="_InstallFrameworkIntoLocalDotNet"
           Inputs="@(SharedFxContent)"
           Outputs="@(SharedFxContent->'$(LocalInstallationOutputPath)%(FileName)%(Extension)')">
-
+    <RemoveDir Directories="$(LocalInstallationOutputPath)" />
     <Copy SourceFiles="@(SharedFxContent)"
           DestinationFiles="@(SharedFxContent->'$(LocalInstallationOutputPath)%(FileName)%(Extension)')"
           UseHardlinksIfPossible="true" />
