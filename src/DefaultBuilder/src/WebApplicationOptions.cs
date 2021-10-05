@@ -38,6 +38,11 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         public string? ContentRootPath { get; init; }
 
+        /// <summary>
+        /// The web root path.
+        /// </summary>
+        public string? WebRootPath { get; init; }
+
         internal void ApplyHostConfiguration(IConfigurationBuilder builder)
         {
             Dictionary<string, string>? config = null;
@@ -58,6 +63,12 @@ namespace Microsoft.AspNetCore.Builder
             {
                 config ??= new();
                 config[HostDefaults.ContentRootKey] = ContentRootPath;
+            }
+
+            if (WebRootPath is not null)
+            {
+                config ??= new();
+                config[WebHostDefaults.WebRootKey] = WebRootPath;
             }
 
             if (config is not null)

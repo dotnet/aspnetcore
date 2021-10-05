@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Builder
         public IWebHostBuilder ConfigureAppConfiguration(Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate)
         {
             var previousContentRoot = _context.HostingEnvironment.ContentRootPath;
-            var previousWebRoot = _configuration[WebHostDefaults.ContentRootKey];
+            var previousWebRoot = _context.HostingEnvironment.WebRootPath;
             var previousApplication = _configuration[WebHostDefaults.ApplicationKey];
             var previousEnvironment = _configuration[WebHostDefaults.EnvironmentKey];
             var previousHostingStartupAssemblies = _configuration[WebHostDefaults.HostingStartupAssembliesKey];
@@ -48,21 +48,20 @@ namespace Microsoft.AspNetCore.Builder
             // Run these immediately so that they are observable by the imperative code
             configureDelegate(_context, _configuration);
 
-            if (_configuration[WebHostDefaults.WebRootKey] is string value && !string.Equals(previousWebRoot, value, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(HostingPathResolver.ResolvePath(previousWebRoot, previousContentRoot), HostingPathResolver.ResolvePath(_configuration[WebHostDefaults.WebRootKey], previousContentRoot), StringComparison.OrdinalIgnoreCase))
             {
-                // We allow changing the web root since it's based off the content root and typically
-                // read after the host is built.
-                _environment.WebRootPath = Path.Combine(_environment.ContentRootPath, value);
+                // Diasllow changing the web root for consistency with other types.
+                throw new NotSupportedException($"The web root changed from \"{HostingPathResolver.ResolvePath(previousWebRoot, previousContentRoot)}\" to \"{HostingPathResolver.ResolvePath(_configuration[WebHostDefaults.WebRootKey], previousContentRoot)}\". Changing the host configuration using WebApplicationBuilder.WebHost is not supported. Use WebApplication.CreateBuilder(WebApplicationOptions) instead.");
             }
             else if (!string.Equals(previousApplication, _configuration[WebHostDefaults.ApplicationKey], StringComparison.OrdinalIgnoreCase))
             {
                 // Disallow changing any host configuration
                 throw new NotSupportedException($"The application name changed from \"{previousApplication}\" to \"{_configuration[WebHostDefaults.ApplicationKey]}\". Changing the host configuration using WebApplicationBuilder.WebHost is not supported. Use WebApplication.CreateBuilder(WebApplicationOptions) instead.");
             }
-            else if (!string.Equals(previousContentRoot, ContentRootResolver.ResolvePath(_configuration[WebHostDefaults.ContentRootKey]), StringComparison.OrdinalIgnoreCase))
+            else if (!string.Equals(previousContentRoot, HostingPathResolver.ResolvePath(_configuration[WebHostDefaults.ContentRootKey]), StringComparison.OrdinalIgnoreCase))
             {
                 // Disallow changing any host configuration
-                throw new NotSupportedException($"The content root changed from \"{previousContentRoot}\" to \"{ContentRootResolver.ResolvePath(_configuration[WebHostDefaults.ContentRootKey])}\". Changing the host configuration using WebApplicationBuilder.WebHost is not supported. Use WebApplication.CreateBuilder(WebApplicationOptions) instead.");
+                throw new NotSupportedException($"The content root changed from \"{previousContentRoot}\" to \"{HostingPathResolver.ResolvePath(_configuration[WebHostDefaults.ContentRootKey])}\". Changing the host configuration using WebApplicationBuilder.WebHost is not supported. Use WebApplication.CreateBuilder(WebApplicationOptions) instead.");
             }
             else if (!string.Equals(previousEnvironment, _configuration[WebHostDefaults.EnvironmentKey], StringComparison.OrdinalIgnoreCase))
             {
@@ -113,16 +112,18 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             var previousContentRoot = _context.HostingEnvironment.ContentRootPath;
+            var previousWebRoot = _context.HostingEnvironment.WebRootPath;
             var previousApplication = _configuration[WebHostDefaults.ApplicationKey];
             var previousEnvironment = _configuration[WebHostDefaults.EnvironmentKey];
             var previousHostingStartupAssemblies = _configuration[WebHostDefaults.HostingStartupAssembliesKey];
             var previousHostingStartupAssembliesExclude = _configuration[WebHostDefaults.HostingStartupExcludeAssembliesKey];
 
-            if (string.Equals(key, WebHostDefaults.WebRootKey, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(key, WebHostDefaults.WebRootKey, StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(HostingPathResolver.ResolvePath(previousWebRoot, previousContentRoot), HostingPathResolver.ResolvePath(value, previousContentRoot), StringComparison.OrdinalIgnoreCase))
             {
-                // We allow changing the web root since it's based off the content root and typically
-                // read after the host is built.
-                _environment.WebRootPath = Path.Combine(_environment.ContentRootPath, value);
+                // Disallow changing any host configuration
+                throw new NotSupportedException($"The web root changed from \"{HostingPathResolver.ResolvePath(previousWebRoot, previousContentRoot)}\" to \"{HostingPathResolver.ResolvePath(value, previousContentRoot)}\". Changing the host configuration using WebApplicationBuilder.WebHost is not supported. Use WebApplication.CreateBuilder(WebApplicationOptions) instead.");
+
             }
             else if (string.Equals(key, WebHostDefaults.ApplicationKey, StringComparison.OrdinalIgnoreCase) &&
                     !string.Equals(previousApplication, value, StringComparison.OrdinalIgnoreCase))
@@ -131,10 +132,10 @@ namespace Microsoft.AspNetCore.Builder
                 throw new NotSupportedException($"The application name changed from \"{previousApplication}\" to \"{value}\". Changing the host configuration using WebApplicationBuilder.WebHost is not supported. Use WebApplication.CreateBuilder(WebApplicationOptions) instead.");
             }
             else if (string.Equals(key, WebHostDefaults.ContentRootKey, StringComparison.OrdinalIgnoreCase) &&
-                    !string.Equals(previousContentRoot, ContentRootResolver.ResolvePath(value), StringComparison.OrdinalIgnoreCase))
+                    !string.Equals(previousContentRoot, HostingPathResolver.ResolvePath(value), StringComparison.OrdinalIgnoreCase))
             {
                 // Disallow changing any host configuration
-                throw new NotSupportedException($"The content root changed from \"{previousContentRoot}\" to \"{ContentRootResolver.ResolvePath(value)}\". Changing the host configuration using WebApplicationBuilder.WebHost is not supported. Use WebApplication.CreateBuilder(WebApplicationOptions) instead.");
+                throw new NotSupportedException($"The content root changed from \"{previousContentRoot}\" to \"{HostingPathResolver.ResolvePath(value)}\". Changing the host configuration using WebApplicationBuilder.WebHost is not supported. Use WebApplication.CreateBuilder(WebApplicationOptions) instead.");
             }
             else if (string.Equals(key, WebHostDefaults.EnvironmentKey, StringComparison.OrdinalIgnoreCase) &&
                     !string.Equals(previousEnvironment, value, StringComparison.OrdinalIgnoreCase))
