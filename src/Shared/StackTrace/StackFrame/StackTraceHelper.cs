@@ -234,7 +234,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
             IList<CustomAttributeData> attributes;
             try
             {
-                // Accessing MembmerInfo.GetCustomAttributesData throws for some types (such as types in dynamically generated assemblies).
+                // Accessing MemberInfo.GetCustomAttributesData throws for some types (such as types in dynamically generated assemblies).
                 // We'll skip looking up StackTraceHiddenAttributes on such types.
                 attributes = memberInfo.GetCustomAttributesData();
             }
