@@ -148,10 +148,10 @@ namespace Microsoft.AspNetCore.Builder
                 builder.AddInMemoryCollection(_hostConfigurationValues);
             });
 
+            // Wire up the _hostBuilder's application configuration with a ChainedConfigurationSource to the ConfigurationManager.
+            // We use a "tracking" source to avoid creating a circular reference when copying providers in ConfigureServices.
             var chainedConfigSource = new TrackingChainedConfigurationSource(Configuration);
 
-            // Wire up the application configuration by copying the already built configuration providers over to final configuration builder.
-            // We wrap the existing provider in a configuration source to avoid re-bulding the already added configuration sources.
             _hostBuilder.ConfigureAppConfiguration(builder =>
             {
                 builder.Add(chainedConfigSource);
@@ -203,10 +203,12 @@ namespace Microsoft.AspNetCore.Builder
                     ((IConfigurationBuilder)Configuration).Sources.Clear();
                 }
 
-                // Make builder.Configuration match the final configuration. To do that, we add the additional
-                // providers in the inner _hostBuilders's Configuration to the ConfigurationManager.
+                // Make the ConfigurationManager match the final _hostBuilder's configuration. To do that, we add the additional providers
+                // to the inner _hostBuilders's configuration to the ConfigurationManager. We wrap the existing provider in a
+                // configuration source to avoid rebulding or reloading the already added configuration sources.
                 foreach (var provider in hostBuilderProviders)
                 {
+                    // Avoid creating a circular reference to the ConfigurationManager via the chained configuration source.
                     if (!ReferenceEquals(provider, chainedConfigSource.BuiltProvider))
                     {
                         ((IConfigurationBuilder)Configuration).Add(new ConfigurationProviderSource(provider));
