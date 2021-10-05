@@ -241,7 +241,7 @@ namespace Microsoft.Net.Http.Headers
 
             for (var i = 0; i < headerValues.Count; i++)
             {
-                var segment = headerValues[i]!;
+                var segment = headerValues[i] ?? string.Empty;
 
                 // Trim leading white space
                 var current = HttpRuleParser.GetWhitespaceLength(segment, 0);
@@ -297,7 +297,7 @@ namespace Microsoft.Net.Http.Headers
 
             for (var i = 0; i < cacheControlDirectives.Count; i++)
             {
-                var segment = cacheControlDirectives[i]!;
+                var segment = cacheControlDirectives[i] ?? string.Empty;
 
                 // Trim leading white space
                 var current = HttpRuleParser.GetWhitespaceLength(segment, 0);
