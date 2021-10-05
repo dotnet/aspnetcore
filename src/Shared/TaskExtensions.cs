@@ -25,9 +25,9 @@ namespace System.Threading.Tasks.Extensions
 #if DEBUG
         // Shorter duration when running tests with debug.
         // Less time waiting for hang unit tests to fail in aspnetcore solution.
-        private const int DefaultTimeoutDuration = 5 * 1000;
+        public const int DefaultTimeoutDuration = 5 * 1000;
 #else
-        private const int DefaultTimeoutDuration = 30 * 1000;
+        public const int DefaultTimeoutDuration = 30 * 1000;
 #endif
 
         public static TimeSpan DefaultTimeoutTimeSpan { get; } = TimeSpan.FromMilliseconds(DefaultTimeoutDuration);

@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Net;
 using System.Reflection;
+using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
@@ -23,7 +24,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Xunit;
 
 [assembly: HostingStartup(typeof(WebApplicationTests.TestHostingStartup))]
 
@@ -701,6 +701,128 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
+        public async Task WebApplicationCanObserveSourcesClearedInBuild()
+        {
+            // This mimics what WebApplicationFactory<T> does and runs configure
+            // services callbacks
+            using var listener = new HostingListener(hostBuilder =>
+            {
+                hostBuilder.ConfigureHostConfiguration(config =>
+                {
+                    // Clearing here would not remove the app config added via builder.Configuration.
+                    config.AddInMemoryCollection(new Dictionary<string, string>()
+                    {
+                        { "A", "A" },
+                    });
+                });
+
+                hostBuilder.ConfigureAppConfiguration(config =>
+                {
+                    // This clears both the chained host configuration and chained builder.Configuration.
+                    config.Sources.Clear();
+                    config.AddInMemoryCollection(new Dictionary<string, string>()
+                    {
+                        { "B", "B" },
+                    });
+                });
+            });
+
+            var builder = WebApplication.CreateBuilder();
+
+            builder.Configuration.AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                { "C", "C" },
+            });
+
+            await using var app = builder.Build();
+
+            Assert.True(string.IsNullOrEmpty(app.Configuration["A"]));
+            Assert.True(string.IsNullOrEmpty(app.Configuration["C"]));
+
+            Assert.Equal("B", app.Configuration["B"]);
+
+            Assert.Same(builder.Configuration, app.Configuration);
+        }
+
+        [Fact]
+        public async Task WebApplicationCanHandleStreamBackedConfigurationAddedInBuild()
+        {
+            static Stream CreateStreamFromString(string data) => new MemoryStream(Encoding.UTF8.GetBytes(data));
+
+            using var jsonAStream = CreateStreamFromString(@"{ ""A"": ""A"" }");
+            using var jsonBStream = CreateStreamFromString(@"{ ""B"": ""B"" }");
+
+            // This mimics what WebApplicationFactory<T> does and runs configure
+            // services callbacks
+            using var listener = new HostingListener(hostBuilder =>
+            {
+                hostBuilder.ConfigureHostConfiguration(config => config.AddJsonStream(jsonAStream));
+                hostBuilder.ConfigureAppConfiguration(config => config.AddJsonStream(jsonBStream));
+            });
+
+            var builder = WebApplication.CreateBuilder();
+            await using var app = builder.Build();
+
+            Assert.Equal("A", app.Configuration["A"]);
+            Assert.Equal("B", app.Configuration["B"]);
+
+            Assert.Same(builder.Configuration, app.Configuration);
+        }
+
+        [Fact]
+        public async Task WebApplicationDisposesConfigurationProvidersAddedInBuild()
+        {
+            var hostConfigSource = new RandomConfigurationSource();
+            var appConfigSource = new RandomConfigurationSource();
+
+            // This mimics what WebApplicationFactory<T> does and runs configure
+            // services callbacks
+            using var listener = new HostingListener(hostBuilder =>
+            {
+                hostBuilder.ConfigureHostConfiguration(config => config.Add(hostConfigSource));
+                hostBuilder.ConfigureAppConfiguration(config => config.Add(appConfigSource));
+            });
+
+            var builder = WebApplication.CreateBuilder();
+
+            {
+                await using var app = builder.Build();
+
+                Assert.Equal(1, hostConfigSource.ProvidersBuilt);
+                Assert.Equal(1, appConfigSource.ProvidersBuilt);
+                Assert.Equal(1, hostConfigSource.ProvidersLoaded);
+                Assert.Equal(1, appConfigSource.ProvidersLoaded);
+                Assert.Equal(0, hostConfigSource.ProvidersDisposed);
+                Assert.Equal(0, appConfigSource.ProvidersDisposed);
+            }
+
+            Assert.Equal(1, hostConfigSource.ProvidersBuilt);
+            Assert.Equal(1, appConfigSource.ProvidersBuilt);
+            Assert.Equal(1, hostConfigSource.ProvidersLoaded);
+            Assert.Equal(1, appConfigSource.ProvidersLoaded);
+            Assert.True(hostConfigSource.ProvidersDisposed > 0);
+            Assert.True(appConfigSource.ProvidersDisposed > 0);
+        }
+
+        [Fact]
+        public async Task WebApplicationMakesOriginalConfigurationProvidersAddedInBuildAccessable()
+        {
+            // This mimics what WebApplicationFactory<T> does and runs configure
+            // services callbacks
+            using var listener = new HostingListener(hostBuilder =>
+            {
+                hostBuilder.ConfigureAppConfiguration(config => config.Add(new RandomConfigurationSource()));
+            });
+
+            var builder = WebApplication.CreateBuilder();
+            await using var app = builder.Build();
+
+            var wrappedProviders = ((IConfigurationRoot)app.Configuration).Providers.OfType<IEnumerable<IConfigurationProvider>>();
+            var unwrappedProviders = wrappedProviders.Select(p => Assert.Single(p));
+            Assert.Single(unwrappedProviders.OfType<RandomConfigurationProvider>());
+        }
+
+        [Fact]
         public void WebApplicationBuilderHostProperties_IsCaseSensitive()
         {
             var builder = WebApplication.CreateBuilder();
@@ -753,8 +875,7 @@ namespace Microsoft.AspNetCore.Tests
 
             var app = builder.Build();
 
-            // These are different
-            Assert.NotSame(app.Configuration, builder.Configuration);
+            Assert.Same(app.Configuration, builder.Configuration);
         }
 
         [Fact]
@@ -770,8 +891,28 @@ namespace Microsoft.AspNetCore.Tests
 
             var app = builder.Build();
 
-            // These are different
-            Assert.NotSame(app.Configuration, builder.Configuration);
+            Assert.Same(app.Configuration, builder.Configuration);
+        }
+
+        [Fact]
+        public void AddingMemoryStreamBackedConfigurationWorks()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            var jsonConfig = @"{ ""foo"": ""bar"" }";
+            using var ms = new MemoryStream();
+            using var sw = new StreamWriter(ms);
+            sw.WriteLine(jsonConfig);
+            sw.Flush();
+
+            ms.Position = 0;
+            builder.Configuration.AddJsonStream(ms);
+
+            Assert.Equal("bar", builder.Configuration["foo"]);
+
+            var app = builder.Build();
+
+            Assert.Equal("bar", app.Configuration["foo"]);
         }
 
         [Fact]
@@ -1544,6 +1685,22 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
+        public void ConfigurationGetDebugViewWorks()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            builder.Configuration.AddInMemoryCollection(new Dictionary<string, string>
+            {
+                ["foo"] = "bar",
+            });
+
+            var app = builder.Build();
+
+            // Make sure we don't lose "MemoryConfigurationProvider" from GetDebugView() when wrapping the provider.
+            Assert.Contains("foo=bar (MemoryConfigurationProvider)", ((IConfigurationRoot)app.Configuration).GetDebugView());
+        }
+
+        [Fact]
         public void ConfigurationCanBeReloaded()
         {
             var builder = WebApplication.CreateBuilder();
@@ -1572,23 +1729,77 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Equal(1, configSource.ProvidersBuilt);
         }
 
+        [Fact]
+        public void ConfigurationProvidersAreLoadedOnceAfterBuild()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            var configSource = new RandomConfigurationSource();
+            ((IConfigurationBuilder)builder.Configuration).Sources.Add(configSource);
+
+            using var app = builder.Build();
+
+            Assert.Equal(1, configSource.ProvidersLoaded);
+        }
+
+        [Fact]
+        public void ConfigurationProvidersAreDisposedWithWebApplication()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            var configSource = new RandomConfigurationSource();
+            ((IConfigurationBuilder)builder.Configuration).Sources.Add(configSource);
+
+            {
+                using var app = builder.Build();
+
+                Assert.Equal(0, configSource.ProvidersDisposed);
+            }
+
+            Assert.Equal(1, configSource.ProvidersDisposed);
+        }
+
+        [Fact]
+        public void ConfigurationProviderTypesArePreserved()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            ((IConfigurationBuilder)builder.Configuration).Sources.Add(new RandomConfigurationSource());
+
+            var app = builder.Build();
+
+            Assert.Single(((IConfigurationRoot)app.Configuration).Providers.OfType<RandomConfigurationProvider>());
+        }
+
         public class RandomConfigurationSource : IConfigurationSource
         {
             public int ProvidersBuilt { get; set; }
+            public int ProvidersLoaded { get; set; }
+            public int ProvidersDisposed { get; set; }
 
             public IConfigurationProvider Build(IConfigurationBuilder builder)
             {
                 ProvidersBuilt++;
-                return new RandomConfigurationProvider();
+                return new RandomConfigurationProvider(this);
             }
         }
 
-        public class RandomConfigurationProvider : ConfigurationProvider
+        public class RandomConfigurationProvider : ConfigurationProvider, IDisposable
         {
+            private readonly RandomConfigurationSource _source;
+
+            public RandomConfigurationProvider(RandomConfigurationSource source)
+            {
+                _source = source;
+            }
+
             public override void Load()
             {
+                _source.ProvidersLoaded++;
                 Data["Random"] = Guid.NewGuid().ToString();
             }
+
+            public void Dispose() => _source.ProvidersDisposed++;
         }
 
         class ThrowingStartupFilter : IStartupFilter
