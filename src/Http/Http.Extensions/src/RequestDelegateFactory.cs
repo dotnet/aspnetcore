@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Http
             if (parameterCustomAttributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
             {
                 var routeName = routeAttribute.Name ?? parameter.Name;
-                factoryContext.TrackedParameters.Add(routeName, RequestDelegateFactoryConstants.RouteAttribute);
+                factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.RouteAttribue);
                 if (factoryContext.RouteParameters is { } routeParams && !routeParams.Contains(routeName, StringComparer.OrdinalIgnoreCase))
                 {
                     throw new InvalidOperationException($"'{routeName}' is not a route parameter.");
