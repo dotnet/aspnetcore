@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private static readonly int MinAllocBufferSize = PinnedBlockMemoryPool.BlockSize / 2;
 
         private readonly Socket _socket;
-        private readonly SocketsTrace _trace;
+        private readonly ILogger _logger;
         private readonly SocketReceiver _receiver;
         private SocketSender? _sender;
         private readonly SocketSenderPool _socketSenderPool;
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         internal SocketConnection(Socket socket,
                                   MemoryPool<byte> memoryPool,
                                   PipeScheduler transportScheduler,
-                                  SocketsTrace trace,
+                                  ILogger logger,
                                   SocketSenderPool socketSenderPool,
                                   PipeOptions inputOptions,
                                   PipeOptions outputOptions,
@@ -42,11 +42,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         {
             Debug.Assert(socket != null);
             Debug.Assert(memoryPool != null);
-            Debug.Assert(trace != null);
+            Debug.Assert(logger != null);
 
             _socket = socket;
             MemoryPool = memoryPool;
-            _trace = trace;
+            _logger = logger;
             _waitForData = waitForData;
             _socketSenderPool = socketSenderPool;
 
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             }
             catch (Exception ex)
             {
-                _trace.LogError(0, ex, $"Unexpected exception in {nameof(SocketConnection)}.{nameof(Start)}.");
+                _logger.LogError(0, ex, $"Unexpected exception in {nameof(SocketConnection)}.{nameof(Start)}.");
             }
         }
 
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             }
             catch (Exception ex)
             {
-                _trace.LogError(0, ex, $"Unexpected exception in {nameof(SocketConnection)}.{nameof(Start)}.");
+                _logger.LogError(0, ex, $"Unexpected exception in {nameof(SocketConnection)}.{nameof(Start)}.");
             }
             finally
             {
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                     if (bytesReceived == 0)
                     {
                         // FIN
-                        _trace.ConnectionReadFin(this);
+                        SocketsLog.ConnectionReadFin(_logger, this);
                         break;
                     }
 
@@ -167,14 +167,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
                     if (paused)
                     {
-                        _trace.ConnectionPause(this);
+                        SocketsLog.ConnectionPause(_logger, this);
                     }
 
                     var result = await flushTask;
 
                     if (paused)
                     {
-                        _trace.ConnectionResume(this);
+                        SocketsLog.ConnectionResume(_logger, this);
                     }
 
                     if (result.IsCompleted || result.IsCanceled)
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 // Both logs will have the same ConnectionId. I don't think it's worthwhile to lock just to avoid this.
                 if (!_socketDisposed)
                 {
-                    _trace.ConnectionReset(this);
+                    SocketsLog.ConnectionReset(_logger, this);
                 }
             }
             catch (Exception ex)
@@ -206,14 +206,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 if (!_socketDisposed)
                 {
                     // This is unexpected if the socket hasn't been disposed yet.
-                    _trace.ConnectionError(this, error);
+                    SocketsLog.ConnectionError(_logger, this, error);
                 }
             }
             catch (Exception ex)
             {
                 // This is unexpected.
                 error = ex;
-                _trace.ConnectionError(this, error);
+                SocketsLog.ConnectionError(_logger, this, error);
             }
             finally
             {
@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             catch (SocketException ex) when (IsConnectionResetError(ex.SocketErrorCode))
             {
                 shutdownReason = new ConnectionResetException(ex.Message, ex);
-                _trace.ConnectionReset(this);
+                SocketsLog.ConnectionReset(_logger, this);
             }
             catch (Exception ex)
                 when ((ex is SocketException socketEx && IsConnectionAbortError(socketEx.SocketErrorCode)) ||
@@ -277,7 +277,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             {
                 shutdownReason = ex;
                 unexpectedError = ex;
-                _trace.ConnectionError(this, unexpectedError);
+                SocketsLog.ConnectionError(_logger, this, unexpectedError);
             }
             finally
             {
@@ -329,7 +329,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 // ever observe the nondescript ConnectionAbortedException except for connection middleware attempting
                 // to half close the connection which is currently unsupported.
                 _shutdownReason = shutdownReason ?? new ConnectionAbortedException("The Socket transport's send loop completed gracefully.");
-                _trace.ConnectionWriteFin(this, _shutdownReason.Message);
+                SocketsLog.ConnectionWriteFin(_logger, this, _shutdownReason.Message);
 
                 try
                 {
@@ -353,7 +353,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             }
             catch (Exception ex)
             {
-                _trace.LogError(0, ex, $"Unexpected exception in {nameof(SocketConnection)}.{nameof(CancelConnectionClosedToken)}.");
+                _logger.LogError(0, ex, $"Unexpected exception in {nameof(SocketConnection)}.{nameof(CancelConnectionClosedToken)}.");
             }
         }
 

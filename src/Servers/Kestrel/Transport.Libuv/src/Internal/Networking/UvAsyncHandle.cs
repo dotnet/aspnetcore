@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
 {
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         private Action _callback;
         private Action<Action<IntPtr>, IntPtr> _queueCloseHandle;
 
-        public UvAsyncHandle(LibuvTrace logger) : base(logger)
+        public UvAsyncHandle(ILogger logger) : base(logger)
         {
         }
 

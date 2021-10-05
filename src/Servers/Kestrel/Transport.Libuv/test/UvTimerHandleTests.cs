@@ -4,21 +4,22 @@
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 {
     public class UvTimerHandleTests
     {
-        private readonly LibuvTrace _trace = new LibuvTrace(new TestApplicationErrorLogger());
+        private readonly ILogger _logger = new TestApplicationErrorLogger();
 
         [Fact]
         public void TestTimeout()
         {
-            var loop = new UvLoopHandle(_trace);
+            var loop = new UvLoopHandle(_logger);
             loop.Init(new LibuvFunctions());
 
-            var timer = new UvTimerHandle(_trace);
+            var timer = new UvTimerHandle(_logger);
             timer.Init(loop, (a, b) => { });
 
             var callbackInvoked = false;
@@ -39,10 +40,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         [Fact]
         public void TestRepeat()
         {
-            var loop = new UvLoopHandle(_trace);
+            var loop = new UvLoopHandle(_logger);
             loop.Init(new LibuvFunctions());
 
-            var timer = new UvTimerHandle(_trace);
+            var timer = new UvTimerHandle(_logger);
             timer.Init(loop, (callback, handle) => { });
 
             var callbackCount = 0;

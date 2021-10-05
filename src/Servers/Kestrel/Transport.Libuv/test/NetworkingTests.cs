@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
     public class NetworkingTests
     {
         private readonly LibuvFunctions _uv = new LibuvFunctions();
-        private readonly LibuvTrace _logger = new LibuvTrace(new TestApplicationErrorLogger());
+        private readonly ILogger _logger = new TestApplicationErrorLogger();
 
         [Fact]
         public void LoopCanBeInitAndClose()

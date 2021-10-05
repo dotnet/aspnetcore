@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
@@ -13,6 +14,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public IHostApplicationLifetime AppLifetime { get; set; }
 
-        public LibuvTrace Log { get; set; }
+        public ILogger Log { get; set; }
     }
 }

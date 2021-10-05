@@ -3,12 +3,13 @@
 
 using System;
 using System.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
 {
     internal class UvLoopHandle : UvMemory
     {
-        public UvLoopHandle(LibuvTrace logger) : base(logger)
+        public UvLoopHandle(ILogger logger) : base(logger)
         {
         }
 

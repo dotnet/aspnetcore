@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         [Fact]
         public void ReadStopIsIdempotent()
         {
-            var libuvTrace = new LibuvTrace(new TestApplicationErrorLogger());
+            var libuvTrace = new TestApplicationErrorLogger();
 
             using (var uvLoopHandle = new UvLoopHandle(libuvTrace))
             using (var uvTcpHandle = new UvTcpHandle(libuvTrace))

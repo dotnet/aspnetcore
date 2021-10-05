@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
@@ -13,10 +14,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         private readonly LibuvThread _thread;
         private readonly Queue<UvWriteReq> _pool = new Queue<UvWriteReq>(_maxPooledWriteReqs);
-        private readonly LibuvTrace _log;
+        private readonly ILogger _log;
         private bool _disposed;
 
-        public WriteReqPool(LibuvThread thread, LibuvTrace log)
+        public WriteReqPool(LibuvThread thread, ILogger log)
         {
             _thread = thread;
             _log = log;

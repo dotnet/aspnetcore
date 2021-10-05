@@ -4,12 +4,13 @@
 using System;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
 {
     class MockSocket : UvStreamHandle
     {
-        public MockSocket(LibuvFunctions uv, int threadId, LibuvTrace logger) : base(logger)
+        public MockSocket(LibuvFunctions uv, int threadId, ILogger logger) : base(logger)
         {
             CreateMemory(uv, threadId, IntPtr.Size);
         }

@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
     {
         private readonly MemoryPool<byte> _memoryPool;
         private readonly SocketConnectionFactoryOptions _options;
-        private readonly SocketsTrace _trace;
+        private readonly ILogger _logger;
         private readonly int _settingsCount;
         private readonly QueueSettings[] _settings;
 
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             }
 
             _options = options;
-            _trace = new SocketsTrace(logger);
+            _logger = logger;
             _memoryPool = _options.MemoryPoolFactory();
             _settingsCount = _options.IOQueueCount;
 
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             var connection = new SocketConnection(socket,
                 _memoryPool,
                 setting.Scheduler,
-                _trace,
+                _logger,
                 setting.SocketSenderPool,
                 setting.InputOptions,
                 setting.OutputOptions,

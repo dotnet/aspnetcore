@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         private readonly IDuplexPipe _originalApplication;
         private readonly CompletionPipeReader _transportPipeReader;
         private readonly CompletionPipeWriter _transportPipeWriter;
-        private readonly QuicTrace _log;
+        private readonly ILogger _log;
         private CancellationTokenSource _streamClosedTokenSource = default!;
         private string? _connectionId;
         private const int MinAllocBufferSize = 4096;
@@ -247,14 +247,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
                     if (paused)
                     {
-                        _log.StreamPause(this);
+                        QuicLog.StreamPause(_log, this);
                     }
 
                     var result = await flushTask;
 
                     if (paused)
                     {
-                        _log.StreamResume(this);
+                        QuicLog.StreamResume(_log, this);
                     }
 
                     if (result.IsCompleted || result.IsCanceled)
@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             {
                 // Abort from peer.
                 _error = ex.ErrorCode;
-                _log.StreamAbortedRead(this, ex.ErrorCode);
+                QuicLog.StreamAbortedRead(_log, this, ex.ErrorCode);
 
                 // This could be ignored if _shutdownReason is already set.
                 error = new ConnectionResetException(ex.Message, ex);
@@ -279,7 +279,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             {
                 // Abort from peer.
                 _error = ex.ErrorCode;
-                _log.StreamAbortedRead(this, ex.ErrorCode);
+                QuicLog.StreamAbortedRead(_log, this, ex.ErrorCode);
 
                 // This could be ignored if _shutdownReason is already set.
                 error = new ConnectionResetException(ex.Message, ex);
@@ -295,7 +295,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             {
                 // This is unexpected.
                 error = ex;
-                _log.StreamError(this, error);
+                QuicLog.StreamError(_log, this, error);
             }
             finally
             {
@@ -400,7 +400,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             {
                 // Abort from peer.
                 _error = ex.ErrorCode;
-                _log.StreamAbortedWrite(this, ex.ErrorCode);
+                QuicLog.StreamAbortedWrite(_log, this, ex.ErrorCode);
 
                 // This could be ignored if _shutdownReason is already set.
                 shutdownReason = new ConnectionResetException(ex.Message, ex);
@@ -411,7 +411,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             {
                 // Abort from peer.
                 _error = ex.ErrorCode;
-                _log.StreamAbortedWrite(this, ex.ErrorCode);
+                QuicLog.StreamAbortedWrite(_log, this, ex.ErrorCode);
 
                 // This could be ignored if _shutdownReason is already set.
                 shutdownReason = new ConnectionResetException(ex.Message, ex);
@@ -429,7 +429,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             {
                 shutdownReason = ex;
                 unexpectedError = ex;
-                _log.StreamError(this, unexpectedError);
+                QuicLog.StreamError(_log, this, unexpectedError);
             }
             finally
             {
@@ -457,7 +457,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             _shutdownReason = abortReason;
 
             var resolvedErrorCode = _error ?? 0;
-            _log.StreamAbort(this, resolvedErrorCode, abortReason.Message);
+            QuicLog.StreamAbort(_log, this, resolvedErrorCode, abortReason.Message);
 
             lock (_shutdownLock)
             {
@@ -488,7 +488,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 {
                     // TODO: Exception is always allocated. Consider only allocating if receive hasn't completed.
                     _shutdownReason = shutdownReason ?? new ConnectionAbortedException("The QUIC transport's send loop completed gracefully.");
-                    _log.StreamShutdownWrite(this, _shutdownReason.Message);
+                    QuicLog.StreamShutdownWrite(_log, this, _shutdownReason.Message);
 
                     _stream.Shutdown();
                 }

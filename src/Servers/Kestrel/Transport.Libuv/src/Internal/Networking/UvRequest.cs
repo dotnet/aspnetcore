@@ -3,12 +3,13 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
 {
     internal class UvRequest : UvMemory
     {
-        protected UvRequest(LibuvTrace logger) : base(logger, GCHandleType.Normal)
+        protected UvRequest(ILogger logger) : base(logger, GCHandleType.Normal)
         {
         }
 

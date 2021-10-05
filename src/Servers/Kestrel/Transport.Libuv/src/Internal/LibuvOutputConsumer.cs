@@ -5,6 +5,7 @@ using System;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private readonly LibuvThread _thread;
         private readonly UvStreamHandle _socket;
         private readonly string _connectionId;
-        private readonly LibuvTrace _log;
+        private readonly ILogger _log;
         private readonly PipeReader _pipe;
 
         public LibuvOutputConsumer(
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             LibuvThread thread,
             UvStreamHandle socket,
             string connectionId,
-            LibuvTrace log)
+            ILogger log)
         {
             _pipe = pipe;
             _thread = thread;
@@ -97,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         {
             if (error == null)
             {
-                _log.ConnectionWriteCallback(_connectionId, status);
+                LibuvTrace.ConnectionWriteCallback(_log, _connectionId, status);
             }
             else
             {
@@ -108,11 +109,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 }
                 else if (LibuvConstants.IsConnectionReset(status))
                 {
-                    _log.ConnectionReset(_connectionId);
+                    LibuvTrace.ConnectionReset(_log, _connectionId);
                 }
                 else
                 {
-                    _log.ConnectionError(_connectionId, error);
+                    LibuvTrace.ConnectionError(_log, _connectionId, error);
                 }
             }
         }

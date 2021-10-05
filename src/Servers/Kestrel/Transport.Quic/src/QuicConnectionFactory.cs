@@ -29,9 +29,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
             }
 
             var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Client");
-            var trace = new QuicTrace(logger);
 
-            _transportContext = new QuicTransportContext(trace, options.Value);
+            _transportContext = new QuicTransportContext(logger, options.Value);
         }
 
         public async ValueTask<MultiplexedConnectionContext> ConnectAsync(EndPoint endPoint, IFeatureCollection? features = null, CancellationToken cancellationToken = default)

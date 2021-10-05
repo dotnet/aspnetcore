@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
 {
@@ -16,10 +17,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
     {
         protected LibuvFunctions _uv;
         protected int _threadId;
-        protected readonly LibuvTrace _log;
+        protected readonly ILogger _log;
         private readonly GCHandleType _handleType;
 
-        protected UvMemory(LibuvTrace logger, GCHandleType handleType = GCHandleType.Weak) : base(IntPtr.Zero, true)
+        protected UvMemory(ILogger logger, GCHandleType handleType = GCHandleType.Weak) : base(IntPtr.Zero, true)
         {
             _log = logger;
             _handleType = handleType;

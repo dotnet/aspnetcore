@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         private readonly object _shutdownLock = new object();
         private readonly QuicConnection _connection;
         private readonly QuicTransportContext _context;
-        private readonly QuicTrace _log;
+        private readonly ILogger _log;
         private readonly CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
 
         private Task? _closeTask;
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
                 var resolvedErrorCode = _error ?? 0;
                 _abortReason = ExceptionDispatchInfo.Capture(abortReason);
-                _log.ConnectionAbort(this, resolvedErrorCode, abortReason.Message);
+                QuicLog.ConnectionAbort(_log, this, resolvedErrorCode, abortReason.Message);
                 _closeTask = _connection.CloseAsync(errorCode: resolvedErrorCode).AsTask();
             }
         }
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 context.Initialize(stream);
                 context.Start();
 
-                _log.AcceptedStream(context);
+                QuicLog.AcceptedStream(_log, context);
 
                 return context;
             }
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             {
                 // Shutdown initiated by peer, abortive.
                 _error = ex.ErrorCode;
-                _log.ConnectionAborted(this, ex.ErrorCode, ex);
+                QuicLog.ConnectionAborted(_log, this, ex.ErrorCode, ex);
 
                 ThreadPool.UnsafeQueueUserWorkItem(state =>
                 {
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             context.Initialize(quicStream);
             context.Start();
 
-            _log.ConnectedStream(context);
+            QuicLog.ConnectedStream(_log, context);
 
             return new ValueTask<ConnectionContext>(context);
         }

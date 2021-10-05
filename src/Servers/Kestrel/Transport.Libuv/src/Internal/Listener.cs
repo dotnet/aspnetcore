@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         protected UvStreamHandle ListenSocket { get; private set; }
 
-        public LibuvTrace Log => TransportContext.Log;
+        public ILogger Log => TransportContext.Log;
 
         public Task StartAsync(
             EndPoint endPoint,
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
             catch (UvException ex) when (LibuvConstants.IsConnectionReset(ex.StatusCode))
             {
-                Log.ConnectionReset("(null)");
+                LibuvTrace.ConnectionReset(Log, "(null)");
                 acceptSocket?.Dispose();
             }
             catch (UvException ex)

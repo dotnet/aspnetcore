@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
     internal sealed class SocketConnectionListener : IConnectionListener
     {
         private readonly SocketConnectionContextFactory _factory;
-        private readonly SocketsTrace _trace;
+        private readonly ILogger _logger;
         private Socket? _listenSocket;
         private readonly SocketTransportOptions _options;
 
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             EndPoint = endpoint;
             _options = options;
             var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets");
-            _trace = new SocketsTrace(logger);
+            _logger = logger;
             _factory = new SocketConnectionContextFactory(new SocketConnectionFactoryOptions(options), logger);
         }
 
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 catch (SocketException)
                 {
                     // The connection got reset while it was in the backlog, so we try again.
-                    _trace.ConnectionReset(connectionId: "(null)");
+                    SocketsLog.ConnectionReset(_logger, connectionId: "(null)");
                 }
             }
         }

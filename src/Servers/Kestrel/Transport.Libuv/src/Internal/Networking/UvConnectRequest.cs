@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         private Action<UvConnectRequest, int, UvException, object> _callback;
         private object _state;
 
-        public UvConnectRequest(LibuvTrace logger) : base (logger)
+        public UvConnectRequest(ILogger logger) : base (logger)
         {
         }
 

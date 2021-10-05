@@ -38,14 +38,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private bool _stopImmediate;
         private bool _initCompleted;
         private Exception _closeError;
-        private readonly LibuvTrace _log;
+        private readonly ILogger _log;
 
         public LibuvThread(LibuvFunctions libuv, LibuvTransportContext libuvTransportContext, int maxLoops = 8)
             : this(libuv, libuvTransportContext.AppLifetime, libuvTransportContext.Options.MemoryPoolFactory(), libuvTransportContext.Log, maxLoops)
         {
         }
 
-        public LibuvThread(LibuvFunctions libuv, IHostApplicationLifetime appLifetime, MemoryPool<byte> pool, LibuvTrace log, int maxLoops = 8)
+        public LibuvThread(LibuvFunctions libuv, IHostApplicationLifetime appLifetime, MemoryPool<byte> pool, ILogger log, int maxLoops = 8)
         {
             _libuv = libuv;
             _appLifetime = appLifetime;

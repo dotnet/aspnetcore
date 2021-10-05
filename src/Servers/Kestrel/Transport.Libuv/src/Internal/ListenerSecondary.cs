@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         UvPipeHandle DispatchPipe { get; set; }
 
-        public LibuvTrace Log => TransportContext.Log;
+        public ILogger Log => TransportContext.Log;
 
         public Task StartAsync(
             string pipeName,
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
             catch (UvException ex) when (LibuvConstants.IsConnectionReset(ex.StatusCode))
             {
-                Log.ConnectionReset("(null)");
+                LibuvTrace.ConnectionReset(Log, "(null)");
                 acceptSocket.Dispose();
             }
             catch (UvException ex)

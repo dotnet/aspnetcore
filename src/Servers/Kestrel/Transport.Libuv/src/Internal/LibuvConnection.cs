@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private bool _connectionClosed;
 
         public LibuvConnection(UvStreamHandle socket,
-                               LibuvTrace log,
+                               ILogger log,
                                LibuvThread thread,
                                IPEndPoint remoteEndPoint,
                                IPEndPoint localEndPoint,
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public PipeReader Output => Application.Input;
 
         public LibuvOutputConsumer OutputConsumer { get; set; }
-        private LibuvTrace Log { get; }
+        private ILogger Log { get; }
         private LibuvThread Thread { get; }
         public override MemoryPool<byte> MemoryPool => Thread.MemoryPool;
 
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     else
                     {
                         // This is unexpected.
-                        Log.ConnectionError(ConnectionId, ex);
+                        LibuvTrace.ConnectionError(Log, ConnectionId, ex);
 
                         inputError = ex;
                         outputError = ex;
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     Input.CancelPendingFlush();
 
                     // Send a FIN
-                    Log.ConnectionWriteFin(ConnectionId, inputError.Message);
+                    LibuvTrace.ConnectionWriteFin(Log, ConnectionId, inputError.Message);
 
                     // We're done with the socket now
                     _socket.Dispose();
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
             else if (status > 0)
             {
-                Log.ConnectionRead(ConnectionId, status);
+                LibuvTrace.ConnectionRead(Log, ConnectionId, status);
 
                 Input.Advance(status);
                 var flushTask = Input.FlushAsync();
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
                 if (status == LibuvConstants.EOF)
                 {
-                    Log.ConnectionReadFin(ConnectionId);
+                    LibuvTrace.ConnectionReadFin(Log, ConnectionId);
                 }
                 else
                 {
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         private async Task ApplyBackpressureAsync(ValueTask<FlushResult> flushTask)
         {
-            Log.ConnectionPause(ConnectionId);
+            LibuvTrace.ConnectionPause(Log, ConnectionId);
             _socket.ReadStop();
 
             var result = await flushTask;
@@ -270,7 +270,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             // If the reader isn't complete or cancelled then resume reading
             if (!result.IsCompleted && !result.IsCanceled)
             {
-                Log.ConnectionResume(ConnectionId);
+                LibuvTrace.ConnectionResume(Log, ConnectionId);
                 StartReading();
             }
         }
@@ -299,13 +299,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             else if (LibuvConstants.IsConnectionReset(uvError.StatusCode))
             {
                 // Log connection resets at a lower (Debug) level.
-                Log.ConnectionReset(ConnectionId);
+                LibuvTrace.ConnectionReset(Log, ConnectionId);
                 return new ConnectionResetException(uvError.Message, uvError);
             }
             else
             {
                 // This is unexpected.
-                Log.ConnectionError(ConnectionId, uvError);
+                LibuvTrace.ConnectionError(Log, ConnectionId, uvError);
                 return new IOException(uvError.Message, uvError);
             }
         }

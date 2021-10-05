@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public List<LibuvThread> Threads { get; } = new List<LibuvThread>();
 
         public IHostApplicationLifetime AppLifetime => TransportContext.AppLifetime;
-        public LibuvTrace Log => TransportContext.Log;
+        public ILogger Log => TransportContext.Log;
 
 #pragma warning disable CS0618
         public LibuvTransportOptions TransportOptions => TransportContext.Options;

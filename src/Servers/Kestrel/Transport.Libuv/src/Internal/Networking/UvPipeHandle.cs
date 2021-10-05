@@ -2,12 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
 {
     internal class UvPipeHandle : UvStreamHandle
     {
-        public UvPipeHandle(LibuvTrace logger) : base(logger)
+        public UvPipeHandle(ILogger logger) : base(logger)
         {
         }
 

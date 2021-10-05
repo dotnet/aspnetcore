@@ -4,12 +4,13 @@
 using System;
 using System.Net;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
 {
     internal class UvTcpHandle : UvStreamHandle
     {
-        public UvTcpHandle(LibuvTrace logger) : base(logger)
+        public UvTcpHandle(ILogger logger) : base(logger)
         {
         }
 

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
 
         private Action<UvTimerHandle> _callback;
 
-        public UvTimerHandle(LibuvTrace logger) : base(logger)
+        public UvTimerHandle(ILogger logger) : base(logger)
         {
         }
 
