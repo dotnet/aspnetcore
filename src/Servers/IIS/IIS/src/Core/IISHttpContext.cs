@@ -431,7 +431,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 var knownHeaderIndex = HttpApiTypes.HTTP_RESPONSE_HEADER_ID.IndexOfKnownHeader(headerPair.Key);
                 for (var i = 0; i < headerValues.Count; i++)
                 {
-                    var headerValue = headerValues[i] ?? string.Empty;
+                    var headerValue = headerValues[i];
 
                     if (string.IsNullOrEmpty(headerValue))
                     {
