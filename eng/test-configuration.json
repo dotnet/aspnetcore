@@ -1,8 +1,9 @@
 {
   "version" : 1,
   "defaultOnFailure": "fail",
-  "localRerunCount" : 2,
+  "localRerunCount" : 20,
   "retryOnRules": [
+    {"testName": {"contains": "FailsAlot"}},
     {"testName": {"contains": "AppOfflineDroppedWhileSiteStarting_SiteShutsDown_InProcess()"}},
     {"testName": {"wildcard": "Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests.StartupTests.*" }},
     {"testAssembly": "BlazorTemplates.Tests"},
