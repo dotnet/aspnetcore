@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
     {
         private readonly Http3FrameWriter _frameWriter;
         private readonly TimingPipeFlusher _flusher;
-        private readonly IKestrelTrace _log;
+        private readonly KestrelTrace _log;
         private readonly MemoryPool<byte> _memoryPool;
         private readonly Http3Stream _stream;
         private readonly Pipe _pipe;
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
              Http3FrameWriter frameWriter,
              MemoryPool<byte> pool,
              Http3Stream stream,
-             IKestrelTrace log)
+             KestrelTrace log)
         {
             _frameWriter = frameWriter;
             _memoryPool = pool;

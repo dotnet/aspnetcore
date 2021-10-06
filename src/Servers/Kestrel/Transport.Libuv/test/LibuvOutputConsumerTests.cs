@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -732,13 +733,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         {
             var pair = DuplexPipe.CreateConnectionPair(pipeOptions, pipeOptions);
 
-            var logger = new TestApplicationErrorLogger();
             var serviceContext = new TestServiceContext
             {
-                Log = new TestKestrelTrace(logger),
+                Log = new KestrelTrace(NullLoggerFactory.Instance),
                 Scheduler = PipeScheduler.Inline
             };
-            var transportContext = new TestLibuvTransportContext { Log = new LibuvTrace(logger) };
+            var transportContext = new TestLibuvTransportContext { Log = new LibuvTrace(NullLogger.Instance) };
 
             var socket = new MockSocket(_mockLibuv, _libuvThread.Loop.ThreadId, transportContext.Log);
             var consumer = new LibuvOutputConsumer(pair.Application.Input, _libuvThread, socket, "0", transportContext.Log);

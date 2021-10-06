@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly Http2Connection _http2Connection;
         private readonly OutputFlowControl _connectionOutputFlowControl;
         private readonly string _connectionId;
-        private readonly IKestrelTrace _log;
+        private readonly KestrelTrace _log;
         private readonly ITimeoutControl _timeoutControl;
         private readonly MinDataRate? _minResponseDataRate;
         private readonly TimingPipeFlusher _flusher;

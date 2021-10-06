@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public virtual bool IsEmpty => false;
 
-        protected IKestrelTrace Log => _context.ServiceContext.Log;
+        protected KestrelTrace Log => _context.ServiceContext.Log;
 
         public abstract ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default);
 

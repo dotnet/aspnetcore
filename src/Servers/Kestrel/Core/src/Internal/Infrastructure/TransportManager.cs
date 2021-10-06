@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         private ConnectionManager ConnectionManager => _serviceContext.ConnectionManager;
-        private IKestrelTrace Trace => _serviceContext.Log;
+        private KestrelTrace Trace => _serviceContext.Log;
 
         public async Task<EndPoint> BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig? endpointConfig, CancellationToken cancellationToken)
         {

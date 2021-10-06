@@ -646,16 +646,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             const string response = "hello, world";
 
             var logTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            var mockKestrelTrace = new Mock<IKestrelTrace>();
-            mockKestrelTrace
-                .Setup(trace => trace.ConnectionHeadResponseBodyWrite(It.IsAny<string>(), response.Length))
-                .Callback<string, long>((connectionId, count) => logTcs.SetResult());
+
+            TestSink.MessageLogged += context =>
+            {
+                if (context.EventId.Name == "ConnectionHeadResponseBodyWrite")
+                {
+                    logTcs.SetResult();
+                }
+            };
 
             await using (var server = new TestServer(async httpContext =>
             {
                 await httpContext.Response.WriteAsync(response);
                 await httpContext.Response.BodyWriter.FlushAsync();
-            }, new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)))
+            }, new TestServiceContext(LoggerFactory)))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -677,8 +681,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
-            mockKestrelTrace.Verify(kestrelTrace =>
-                kestrelTrace.ConnectionHeadResponseBodyWrite(It.IsAny<string>(), response.Length), Times.Once);
+            var logMessage = Assert.Single(LogMessages, message => message.EventId.Name == "ConnectionHeadResponseBodyWrite");
+
+            Assert.Contains(
+                @"write of ""12"" body bytes to non-body HEAD response.",
+                logMessage.Message);
         }
 
         [Fact]
@@ -719,7 +726,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Equal(
                 $"Response Content-Length mismatch: too many bytes written (12 of 11).",
                 logMessage.Exception.Message);
-
         }
 
         [Fact]
@@ -833,19 +839,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task WhenAppWritesLessThanContentLengthErrorLogged()
         {
             var logTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            var mockTrace = new Mock<IKestrelTrace>();
-            mockTrace
-                .Setup(trace => trace.ApplicationError(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<InvalidOperationException>()))
-                .Callback<string, string, Exception>((connectionId, requestId, ex) =>
+
+            TestSink.MessageLogged += context =>
+            {
+                if (context.EventId.Name == "ApplicationError")
                 {
                     logTcs.SetResult();
-                });
+                }
+            };
 
             await using (var server = new TestServer(async httpContext =>
             {
                 httpContext.Response.ContentLength = 13;
                 await httpContext.Response.WriteAsync("hello, world");
-            }, new TestServiceContext(LoggerFactory, mockTrace.Object)))
+            }, new TestServiceContext(LoggerFactory)))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -874,12 +881,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
-            mockTrace.Verify(trace =>
-                trace.ApplicationError(
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.Is<InvalidOperationException>(ex =>
-                        ex.Message.Equals(CoreStrings.FormatTooFewBytesWritten(12, 13), StringComparison.Ordinal))));
+            Assert.Contains(TestSink.Writes,
+               m => m.EventId.Name == "ApplicationError" &&
+                   m.Exception is InvalidOperationException ex &&
+                   ex.Message.Equals(CoreStrings.FormatTooFewBytesWritten(12, 13), StringComparison.Ordinal));
         }
 
         [Fact]
@@ -888,13 +893,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             InvalidOperationException completeEx = null;
 
             var logTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            var mockTrace = new Mock<IKestrelTrace>();
-            mockTrace
-                .Setup(trace => trace.ApplicationError(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<InvalidOperationException>()))
-                .Callback<string, string, Exception>((connectionId, requestId, ex) =>
+
+            TestSink.MessageLogged += context =>
+            {
+                if (context.EventId.Name == "ApplicationError")
                 {
                     logTcs.SetResult();
-                });
+                }
+            };
 
             await using (var server = new TestServer(async httpContext =>
             {
@@ -903,7 +909,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 completeEx = Assert.Throws<InvalidOperationException>(() => httpContext.Response.BodyWriter.Complete());
 
-            }, new TestServiceContext(LoggerFactory, mockTrace.Object)))
+            }, new TestServiceContext(LoggerFactory)))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -932,12 +938,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
-            mockTrace.Verify(trace =>
-                trace.ApplicationError(
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.Is<InvalidOperationException>(ex =>
-                        ex.Message.Equals(CoreStrings.FormatTooFewBytesWritten(12, 13), StringComparison.Ordinal))));
+            Assert.Contains(TestSink.Writes,
+                m => m.EventId.Name == "ApplicationError" &&
+                    m.Exception is InvalidOperationException ex &&
+                    ex.Message.Equals(CoreStrings.FormatTooFewBytesWritten(12, 13), StringComparison.Ordinal));
 
             Assert.NotNull(completeEx);
         }
@@ -946,7 +950,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task WhenAppWritesLessThanContentLengthButRequestIsAbortedErrorNotLogged()
         {
             var requestAborted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            var mockTrace = new Mock<IKestrelTrace>();
 
             await using (var server = new TestServer(async httpContext =>
             {
@@ -960,7 +963,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 // Wait until the request is aborted so we know HttpProtocol will skip the response content length check.
                 await requestAborted.Task.DefaultTimeout();
-            }, new TestServiceContext(LoggerFactory, mockTrace.Object)))
+            }, new TestServiceContext(LoggerFactory)))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -987,7 +990,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
 
             // With the server disposed we know all connections were drained and all messages were logged.
-            mockTrace.Verify(trace => trace.ApplicationError(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<InvalidOperationException>()), Times.Never);
+            Assert.Empty(TestSink.Writes.Where(c => c.EventId.Name == "ApplicationError"));
         }
 
         [Fact]

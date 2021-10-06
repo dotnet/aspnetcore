@@ -127,7 +127,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private readonly byte[] _headerEncodingBuffer = new byte[Http2PeerSettings.MinAllowedMaxFrameSize];
 
         internal readonly TimeoutControl _timeoutControl;
-        internal readonly Mock<IKestrelTrace> _mockKestrelTrace = new Mock<IKestrelTrace>();
         protected readonly Mock<ConnectionContext> _mockConnectionContext = new Mock<ConnectionContext>();
         internal readonly Mock<ITimeoutHandler> _mockTimeoutHandler = new Mock<ITimeoutHandler>();
         internal readonly Mock<MockTimeoutControlBase> _mockTimeoutControl;
@@ -174,13 +173,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _timeoutControl = new TimeoutControl(_mockTimeoutHandler.Object);
             _mockTimeoutControl = new Mock<MockTimeoutControlBase>(_timeoutControl) { CallBase = true };
             _timeoutControl.Debugger = Mock.Of<IDebugger>();
-
-            _mockKestrelTrace
-                .Setup(m => m.Http2ConnectionClosing(It.IsAny<string>()))
-                .Callback(() => _closingStateReached.SetResult());
-            _mockKestrelTrace
-                .Setup(m => m.Http2ConnectionClosed(It.IsAny<string>(), It.IsAny<int>()))
-                .Callback(() => _closedStateReached.SetResult());
 
             _mockConnectionContext.Setup(c => c.Abort(It.IsAny<ConnectionAbortedException>())).Callback<ConnectionAbortedException>(ex =>
             {
@@ -401,9 +393,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
 
-            _serviceContext = new TestServiceContext(LoggerFactory, _mockKestrelTrace.Object)
+            _serviceContext = new TestServiceContext(LoggerFactory)
             {
                 Scheduler = PipeScheduler.Inline,
+            };
+
+            TestSink.MessageLogged += context =>
+            {
+                if (context.EventId.Name == "Http2ConnectionClosing")
+                {
+                    _closingStateReached.SetResult();
+                }
+                if (context.EventId.Name == "Http2ConnectionClosed")
+                {
+                    _closedStateReached.SetResult();
+                }
             };
         }
 

@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         }
 
         public PipeReader Input => _context.Transport.Input;
-        public IKestrelTrace Log => _context.ServiceContext.Log;
+        public KestrelTrace Log => _context.ServiceContext.Log;
 
         public long StreamTimeoutTicks { get; set; }
         public bool IsReceivingHeader => _headerType == -1;

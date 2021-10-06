@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -19,8 +20,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
     public class StartLineTests : IDisposable
     {
-        private static readonly IKestrelTrace _trace = Mock.Of<IKestrelTrace>();
-
         private IDuplexPipe Transport { get; }
         private MemoryPool<byte> MemoryPool { get; }
         private Http1Connection Http1Connection { get; }
@@ -525,8 +524,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             var serviceContext = TestContextFactory.CreateServiceContext(
                 serverOptions: new KestrelServerOptions(),
-                httpParser: new HttpParser<Http1ParsingHandler>(),
-                log: _trace);
+                httpParser: new HttpParser<Http1ParsingHandler>());
 
             var connectionContext = TestContextFactory.CreateHttpConnectionContext(
                 serviceContext: serviceContext,
