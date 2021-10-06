@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore
 {
-    internal static class ContentRootResolver
+    internal static class HostingPathResolver
     {
         public static string ResolvePath(string contentRootPath)
         {
@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore
             return Path.EndsInDirectorySeparator(canonicalPath) ? canonicalPath : canonicalPath + Path.DirectorySeparatorChar;
         }
 
-        private static string ResolvePath(string contentRootPath, string basePath)
+        public static string ResolvePath(string contentRootPath, string basePath)
         {
             if (string.IsNullOrEmpty(contentRootPath))
             {
