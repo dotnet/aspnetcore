@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
     /// </summary>
     internal class QuicTransportFactory : IMultiplexedConnectionListenerFactory
     {
-        private readonly QuicTrace _log;
+        private readonly ILogger _log;
         private readonly QuicTransportOptions _options;
 
         public QuicTransportFactory(ILoggerFactory loggerFactory, IOptions<QuicTransportOptions> options)
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
             }
 
             var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Quic");
-            _log = new QuicTrace(logger);
+            _log = logger;
             _options = options.Value;
         }
 

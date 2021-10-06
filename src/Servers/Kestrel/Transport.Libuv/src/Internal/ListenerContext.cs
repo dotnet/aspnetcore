@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     }
                     catch (UvException ex) when (LibuvConstants.IsConnectionReset(ex.StatusCode))
                     {
-                        TransportContext.Log.ConnectionReset("(null)");
+                        LibuvTrace.ConnectionReset(TransportContext.Log, "(null)");
                         socket.Dispose();
                         return;
                     }

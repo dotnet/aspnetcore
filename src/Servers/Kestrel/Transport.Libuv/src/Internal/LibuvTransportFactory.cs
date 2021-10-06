@@ -37,7 +37,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
 
             var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv");
-            var trace = new LibuvTrace(logger);
 
 #pragma warning disable CS0618
             var threadCount = options.Value.ThreadCount;
@@ -52,19 +51,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
             if (!LibuvConstants.ECONNRESET.HasValue)
             {
-                trace.LogWarning("Unable to determine ECONNRESET value on this platform.");
+                logger.LogWarning("Unable to determine ECONNRESET value on this platform.");
             }
 
             if (!LibuvConstants.EADDRINUSE.HasValue)
             {
-                trace.LogWarning("Unable to determine EADDRINUSE value on this platform.");
+                logger.LogWarning("Unable to determine EADDRINUSE value on this platform.");
             }
 
             _baseTransportContext = new LibuvTransportContext
             {
                 Options = options.Value,
                 AppLifetime = applicationLifetime,
-                Log = trace,
+                Log = logger,
             };
         }
 

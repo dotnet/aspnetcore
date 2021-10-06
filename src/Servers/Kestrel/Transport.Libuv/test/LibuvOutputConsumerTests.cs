@@ -738,7 +738,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 Log = new KestrelTrace(NullLoggerFactory.Instance),
                 Scheduler = PipeScheduler.Inline
             };
-            var transportContext = new TestLibuvTransportContext { Log = new LibuvTrace(NullLogger.Instance) };
+            var transportContext = new TestLibuvTransportContext { Log = NullLogger.Instance };
 
             var socket = new MockSocket(_mockLibuv, _libuvThread.Loop.ThreadId, transportContext.Log);
             var consumer = new LibuvOutputConsumer(pair.Application.Input, _libuvThread, socket, "0", transportContext.Log);
