@@ -21,6 +21,7 @@
     <!-- Identify when installing in emulation as when WIX_NATIVE_MACHINE does not match the installer
          native machine (where supported).  Also detect running under WOW on x86 using VersionNT64,
          since WIX_NATIVE_MACHINE cannot be retrieved on older Windows builds. -->
+    <PropertyRef Id="WIX_NATIVE_MACHINE" />
     <SetProperty Action="Set_NON_NATIVE_ARCHITECTURE" Id="NON_NATIVE_ARCHITECTURE" Value="true" Before="CostFinalize">
      <?if $(var.Platform)~=x86?>
       VersionNT64 OR
