@@ -1,423 +1,136 @@
-# Build ASP.NET Core from Source
+# Build the ASP.NET Core Repo
 
-This document outlines how to build the source in the `aspnetcore` repo locally for development purposes.
+If you're reading these instructions, you're probably a contributor looking to understand how to build this repo locally on your machine so that you can build, debug, and test changes.
 
-For more info on issues related to build infrastructure and ongoing work, see <https://github.com/dotnet/aspnetcore/labels/area-infrastructure>.
+To get started, you'll need to have a fork of the repo cloned locally. This workflow assumes that you have [git installed on your development machine](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
 
-## Step 0: Getting started
+1. Create your own fork, click the **Fork** button from our GitHub repo as a signed-in user and your own fork will be created. For more information on managing forks, you can review the [GitHub docs on working with forks](https://docs.github.com/en/github/collaborating-with-pull-requests/working-with-forks).
+2. Clone the repo locally using the `git clone` command. Since this repo contains submodules, you'll need to pass the `--recursive` flag to pull the sources for the submodules locally.
 
-This tutorial assumes that you are familiar with:
-
-- Git
-- The basics of [forking and contributing to GitHub projects](https://guides.github.com/activities/forking/)
-- Command line fundamentals in your operating system of choice
-
-## Step 1: Getting the source code
-
-Development is done in your own repo, not directly against the official `dotnet/aspnetcore` repo. To create your own fork, click the __Fork__ button from our GitHub repo as a signed-in user and your own fork will be created.
-
-> :bulb: All other steps below will be against your fork of the aspnetcore repo (e.g. `YOUR_USERNAME/aspnetcore`), not the official `dotnet/aspnetcore` repo.
-
-### Cloning your repo locally
-
-ASP.NET Core uses git submodules to include the source from a few other projects. In order to pull the sources of the these submodules when cloning the repo, be sure to pass the `--recursive` flag to the `git clone` command.
-
-```powershell
+```
 git clone --recursive https://github.com/YOUR_USERNAME/aspnetcore
 ```
 
-If you've already cloned the `aspnetcore` repo without fetching submodule sources, you can fetch them after cloning by running the following command.
+3. If you've already cloned the repo without passing the `--recursive` flag, you can fetch submodule sources at any time using:
 
-```powershell
+```
 git submodule update --init --recursive
 ```
 
-> :bulb: Some ISPs have been known to use web filtering software that has caused issues with git repository cloning, if you experience issues cloning this repo please review <https://help.github.com/en/github/authenticating-to-github/using-ssh-over-the-https-port>.
+The experience for building the repo is slightly different based on what environment you are looking to develop in. Select one of the links below to navigate to the instructions for your environment of choice.
 
-### Tracking remote changes
+* [Visual Studio on Windows](#visual-studio-in-windows)
+* [Visual Studio Code on Windows, Linux, Mac](visual-studio-code-on-windows-linux-mac)
+* [Codespaces on GitHub](codespaces-on-github)
 
-The first time you clone your repo locally, you'll want to set an additional Git remote back to the official repo so that you can periodically refresh your repo with the latest official changes.
+## Visual Studio on Windows
 
-```powershell
-git remote add upstream https://github.com/dotnet/aspnetcore.git
-```
-
-You can verify the `upstream` remote has been set correctly.
+1. Setting up the repo on Windows will require executing some scripts in PowerShell. You'll need to update the execution policy on your machine to support this. For more information on execution policies, review [the execution policy docs](https://docs.microsoft.com/powershell/module/microsoft.powershell.security/set-executionpolicy).
 
 ```powershell
-git remote -v
-> origin    https://github.com/YOUR_USERNAME/aspnetcore (fetch)
-> origin    https://github.com/YOUR_USERNAME/aspnetcore (push)
-> upstream  https://github.com/dotnet/aspnetcore.git (fetch)
-> upstream  https://github.com/dotnet/aspnetcore.git (push)
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
-Once configured, the easiest way to keep your repository current with the upstream repository is using GitHub's feature to [fetch upstream changes](https://github.blog/changelog/2021-05-06-sync-an-out-of-date-branch-of-a-fork-from-the-web/).
-
-### Branching
-
-If you ultimately want to be able to submit a PR back to the project or be able to periodically refresh your `main` branch with the latest code changes, you'll want to do all your work on a new branch.
+2. In order to install Visual Studio on your machine, you can use the official installer script in the repo. Even if you have the appropriate Visual Studio installed on your machine, we recommend running this installation script so that the correct components are installed.
 
 ```powershell
-git checkout -b NEW_BRANCH
+./eng/scripts/InstallVisualStudio.ps1
 ```
 
-## Step 2: Install pre-requisites
-
-Developing in the `aspnetcore` repo requires some additional tools to build the source code and run integration tests.
-
-### On Windows
-
-Building ASP.NET Core on Windows (10, version 1803 or newer) requires that you have the following tooling installed.
-
-> :bulb: Be sure you have least 10 GB of disk space and a good Internet connection. The build scripts will download several tools and dependencies onto your machine.
-
-#### [Visual Studio 2019](https://visualstudio.com)
-
-Visual Studio 2019 (16.10 Preview 3) is required to build the repo locally. If you don't have visual studio installed you can run [eng/scripts/InstallVisualStudio.ps1](/eng/scripts/InstallVisualStudio.ps1) to install the exact required dependencies.
-
-> :bulb: By default, the script will install Visual Studio Enterprise Edition, however you can use a different edition by passing the `-Edition` flag.
-> :bulb: To install Visual Studio from the preview channel, you can use the `-Channel` flag to set the channel (`-Channel Preview`).
-> :bulb: Even if you have installed Visual Studio, we still recommend using this script to install again to avoid errors due to missing components.
+3. Before opening the project in Visual Studio, run the `restore` script locally to install the required dependencies and setup the repo. The `restore` script is located in the root of the repo.
 
 ```powershell
-./eng/scripts/InstallVisualStudio.ps1  [-Edition {Enterprise|Community|Professional}] [-Channel {Release|Preview}]
+.\restore.ps1
 ```
 
-> :bulb: To execute the setup script or other PowerShell scripts in the repo, you may need to update the execution policy on your machine.
-> You can do so by running the `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` command
-> in PowerShell. For more information on execution policies, you can read the [execution policy docs](https://docs.microsoft.com/powershell/module/microsoft.powershell.security/set-executionpolicy).
-
-The [global.json](/global.json) file specifies the minimum requirements needed to build using `msbuild`. The [eng/scripts/vs.json](/eng/scripts/vs.json) file provides a description of the components needed to build within VS. If you plan on developing in Visual Studio, you will need to have these components installed.
-
-> :bulb: The `InstallVisualStudio.ps1` script mentioned above reads from the `vs.json` file to determine what components to install.
-
-#### [Git](https://git-scm.org) on Windows
-
-If you're reading this, you probably already have Git installed to support cloning the repo as outlined in Step 1.
-
-#### [NodeJS](https://nodejs.org) on Windows
-
-Building the repo requires version 16.11.0 or newer of Node. You can find installation executables for Node at <https://nodejs.org>.
-
-#### [Yarn](https://yarnpkg.com/) on Windows
-
-NodeJS installs the Node package manager (npm) by default. This repo depends on Yarn, an alternate package manager for the Node ecosystem. You can install Yarn from the command line using the following command.
-
-```powershell
-npm install -g yarn
-```
-
-#### [tar](http://gnuwin32.sourceforge.net/packages/gtar.htm) on Windows
-
-Building the repo requires tar to be installed. First, check whether `tar.exe` is already in your path i.e. execute `tar -help` (Win10 comes with tar already installed). Then, assuming you have `git` installed, you might add `C:\Program Files\Git\usr\bin\` to your path to pick up the `tar.exe` that ships with `git`. Finally, you can find installation executables of tar at <http://gnuwin32.sourceforge.net/packages/gtar.htm>; download that and add the installation directory to your PATH variable.
-
-#### Java Development Kit on Windows
-
-This repo contains some Java source code that depends on an install of the JDK v11 or newer. The JDK can be installed from either:
-
-- OpenJDK <https://jdk.java.net/>
-- Oracle's JDK <https://www.oracle.com/technetwork/java/javase/downloads/index.html>
-
-Alternatively, you can run [eng/scripts/InstallJdk.ps1](/eng/scripts/InstallJdk.ps1) to install a version of the JDK that will only be used in this repo.
-
-```powershell
-./eng/scripts/InstallJdk.ps1
-```
-NOTE : In order to execute the script you may need to set the right Execution policy. If not you may get an error that the script "cannot be loaded because the execution of scripts is disabled on this system". To get past that you can do the following. As an Administrator, you can set the execution policy by typing this into your PowerShell window:
-
-```powershell
-Set-ExecutionPolicy RemoteSigned
-```
-
-And when you are finished with the script return the execution policy.
-
-```powershell
-Set-ExecutionPolicy Restricted
-```
-
-The build should find any JDK 11 or newer installation on the machine as long as the `JAVA_HOME` environment variable is set. Typically, your installation will do this automatically. However, if it is not set you can set the environment variable manually:
-
-- Set `JAVA_HOME` to `RepoRoot/.tools/jdk/win-x64/` if you used the `InstallJdk.ps1` script.
-- Set `JAVA_HOME` to `C:/Program Files/Java/jdk<version>/` if you installed the JDK globally.
-
-You can temporarily set your environmental variable for the scope of the active powershell session using the command
-
-- $env:JAVA_HOME = "C:/[RepoRoot]/.tools/jdk/win-x64/"
-
-#### Chrome
-
-This repo contains a Selenium-based tests require a version of Chrome to be installed. Download and install it from <https://www.google.com/chrome>.
-
-#### Visual Studio Code Extension
-
-The following extensions are recommended when developing in the ASP.NET Core repository with Visual Studio Code.
-
-- [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp)
-
-- [EditorConfig](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig)
-
-#### WiX (Optional)
-
-If you plan on working with the Windows installers defined in [src/Installers/Windows](../src/Installers/Windows), you will need to install the WiX toolkit from <https://wixtoolset.org/releases/>.
-
-### On macOS/Linux
-
-You can also build ASP.NET Core on macOS or Linux. macOS Sierra or newer is required if you're building on macOS. If you're building on Linux, your machine will need to meet the [.NET Core Linux prerequisites](https://docs.microsoft.com/dotnet/core/linux-prerequisites).
-
-> :bulb: Be sure you have least 10 GB of disk space and a good Internet connection. The build scripts will download several tools and dependencies onto your machine.
-
-#### curl/wget
-
-`curl` and `wget` are command line tools that can be used to download files from an HTTP server. Either utility will need to be installed in order to complete the setup. Typically, these will be included on your machine by default.
-
-If neither utility is installed, you can install curl (<https://curl.haxx.se>) or wget (<https://www.gnu.org/software/wget>).
-
-#### Git
-
-If you've made it this far, you've already got `Git` installed. Sit back, relax, and move on to the next requirement.
-
-#### [NodeJS](https://nodejs.org)
-
-Building the repo requires version 14.17.6 or newer of Node. You can find installation executables for Node at <https://nodejs.org>.
-
-#### [Yarn](https://yarnpkg.com/)
-
-NodeJS installs the Node package manager (npm) by default. This repo depends on Yarn, an alternate package manager for the Node ecosystem. You can install Yarn from the command line using the following command.
-
-```bash
-npm install -g yarn
-```
-
-#### Java Development Kit
-
-This repo contains some Java source code that depends on an install of the JDK v11 or newer. The JDK can be installed from either:
-
-- OpenJDK <https://jdk.java.net/>
-- Oracle's JDK <https://www.oracle.com/technetwork/java/javase/downloads/index.html>
-
-Similar to [the instructions above for Windows](#java-development-kit-in-windows), be sure that the the `JAVA_HOME` environment variable is set to the location of your Java installation.
-
-## Step 3: Build the repo
-
-Before opening our .sln/.slnf files in Visual Studio or VS Code, you will need to at least restore the repo locally.
-
-### In Visual Studio
-
-To set up your project for development on Visual Studio, you'll need to execute the following command. Building
-subsets of the repo e.g. Java projects may (depending on your scenario) be necessary before building within Visual
-Studio because those projects are not listed in AspNetCore.sln.
-
-```powershell
-.\restore.cmd
-```
-
-> :bulb: If you happen to be working on macOS or Linux, you can use the `restore.sh` command.
-
-This will download the required tools and restore all projects inside the repository. At that point, you should be able
-to open the .sln file or one of the project specific .slnf files to work on the projects you care about.
-
-
-> :bulb: Pro tip: you will also want to run this command after pulling large sets of changes. On the main
-> branch, we regularly update the versions of .NET Core SDK required to build the repo.
-> You will need to restart Visual Studio every time we update the .NET Core SDK.
-
-
-> :bulb: Rerunning the above command or, perhaps, the quicker `.\build.cmd -noBuildNative -noBuildManaged` may be
-> necessary after switching branches, especially if the `$(DefaultNetCoreTargetFramework)` value changes.
-
-Typically, you want to focus on a single project within this large repo. For example,
-if you want to work on Blazor WebAssembly, you'll need to launch the solution file for that project by changing into the `src/Components`
-directory and executing `startvs.cmd` in that directory like so:
+4. Typically, you'll want to focus on a single project within the repo. You can leverage the `startvs.cmd` command to launch Visual Studio within a particular project area. For example, to launch Visual Studio in the `Components` project.
 
 ```powershell
 cd src\Components
 .\startvs.cmd
 ```
 
-After opening the solution in Visual Studio, you can build/rebuild using the controls in Visual Studio.
+<details>
+ <summary>A brief interlude on Solution Files</summary>
+We have a single .sln file for all of ASP.NET Core, but most people don't work with it directly because Visual Studio doesn't currently handle projects of this scale very well. Instead, we have many Solution Filter (.slnf) files which include a sub-set of projects. For more information on solution files, you can review the [official Visual Studio doc](https://docs.microsoft.com/visualstudio/ide/filtered-solutions).These principles guide how we create and manage .slnf files:
+Solution files are not used by CI or command line build scripts. They are meant for use by developers only.
+Solution files group together projects which are frequently edited at the same time.
+Can't find a solution that has the projects you care about? Feel free to make a PR to add a new .slnf file.
+</details>
 
-#### A brief interlude on solution files
+5. You can now build, debug, and test using Visual Studio. For more information on using Visual Studio to build and run projects, you can review the [official Visual Studio docs](https://docs.microsoft.com/en-us/visualstudio/get-started/csharp/run-program).
 
-We have a single .sln file for all of ASP.NET Core, but most people don't work with it directly because Visual Studio
-doesn't currently handle projects of this scale very well.
+## Visual Studio Code on Windows, Linux, Mac
 
-Instead, we have many Solution Filter (.slnf) files which include a sub-set of projects. See the Visual Studio
-documentation [here](https://docs.microsoft.com/visualstudio/ide/filtered-solutions) for more
-information about Solution Filters.
+1. In order to use Visual Studio Code for development on this repo, you'll need to have [VS Code](https://code.visualstudio.com/) installed and [the `code` command installed](https://code.visualstudio.com/docs/setup/mac#_launching-from-the-command-line) on your machine.
+2. The repo constains some JavaScript dependencies, so you will need to install [Node](https://nodejs.org/en/) and [yarn](https://yarnpkg.com/) on your machine.
+3. Prior to opening the code in Visual Studio code, you'll need to run the `restore` script locally to install the required dotnet dependencies and setup the repo. The `restore` script is located in the root of the repo.
 
-These principles guide how we create and manage .slnf files:
-
-1. Solution files are not used by CI or command line build scripts. They are meant for use by developers only.
-2. Solution files group together projects which are frequently edited at the same time.
-3. Can't find a solution that has the projects you care about? Feel free to make a PR to add a new .slnf file.
-
-### In Visual Studio Code
-
-Before opening the project in Visual Studio Code, you will need to make sure that you have built the project.
-You can find more info on this in the "Building on command-line" section below.
-
-To open specific folder inside Visual studio code, you have to open it with `startvscode.cmd` file. Ths will setup neccessary environment variables and will open given directory in Visual Studio Code.
-
-Using Visual Studio Code with this repo requires setting environment variables on command line first.
-Use these command to launch VS Code with the right settings.
-
-> :bulb: Note that you'll need to launch Visual Studio Code from the command line in order to ensure that it picks up the environment variables. To learn more about the Visual Studio Code CLI, you can check out [the docs page](https://code.visualstudio.com/docs/editor/command-line).
-
-On Windows (requires PowerShell):
-
-```powershell
-# The extra dot at the beginning is required to 'dot source' this file into the right scope.
-. .\activate.ps1
-code .
+```bash
+./restore.sh
 ```
 
-On macOS/Linux:
+```
+./restore.ps1
+```
+
+2. After the restore script has finished executing, activate the locally installed .NET by running the following command.
 
 ```bash
 source activate.sh
+```
+
+```
+. ./activate.ps1
+```
+
+3. After activating the locally installed .NET, you can open your project of choice by running the `code` command in the directory of choice. For example, if you want to modify code in the `src/Http` project, you can use the following:
+
+```bash
+cd src/Http
 code .
 ```
 
-> :bulb: Note that if you are using the "Remote-WSL" extension in VSCode, the environment is not supplied
-> to the process in WSL. You can workaround this by explicitly setting the environment variables
-> in `~/.vscode-server/server-env-setup`.
-> See <https://code.visualstudio.com/docs/remote/wsl#_advanced-environment-setup-script> for details.
-
-### Building on command-line
-
-When developing in VS Code, you'll need to use the `build.cmd` or `build.sh` scripts in order to build the project. You can learn more about the command line options available, check out [the section below](#using-dotnet-on-command-line-in-this-repo).
-
-> :warning: Most of the time, you will want to build a particular project instead of the entire repository. It's faster and will allow you to focus on a particular area of concern. If you need to build all code in the repo for any reason, you can use the top-level build script located under `eng\build.cmd` or `eng\build.sh`.
-
-The source code in this repo is divided into directories for each project area. Each directory will typically contain a `src` directory that contains the source files for a project and a `test` directory that contains the test projects and assets within a project.
-
-Some projects, like the `Components` project or the `Razor` project, might contain additional subdirectories.
-
-To build a code change associated with a modification, run the build script in the directory closest to the modified file. For example, if you've modified `src/Components/WebAssembly/Server/src/WebAssemblyNetDebugProxyAppBuilderExtensions.cs` then run the build script located in `src/Components`.
-
-On Windows, you can run the command script:
-
-```powershell
-.\build.cmd
-```
-
-On macOS/Linux, you can run the shell script:
+4. Once you've opened the project in VS Code, you can build and test changes by running the `./build.sh` command in the terminal.
 
 ```bash
 ./build.sh
+./build.sh -test
 ```
 
-> :bulb: Before using the `build.cmd` or `build.sh` at the top-level or in a subfolder, you will need to make sure that [the dependencies documented above](#step-2-install-pre-requisites) have been installed.
+5. Alternatively, you can use the `dotnet test` and `dotnet build` commands directly once you've activated the locally installed .NET SDK.
 
-By default, all of the C# projects are built. Some C# projects require NodeJS to be installed to compile JavaScript assets which are then checked in as source. If NodeJS is detected on the path, the NodeJS projects will be compiled as part of building C# projects. If NodeJS is not detected on the path, the JavaScript assets checked in previously will be used instead. To disable building NodeJS projects, specify `-noBuildNodeJS` or `--no-build-nodejs` on the command line.
-
-## Step 4: Make your code changes
-
-At this point, you will have all the dependencies installed and a code editor to up and running to make changes in. Once you've made changes, you will need to rebuild the project locally to pick up your changes. You'll also need to run tests locally to verify that your changes worked.
-
-The section below provides some helpful guides for using the `dotnet` CLI in the ASP.NET Core repo.
-
-### Using `dotnet` on command line in this repo
-
-Because we are using pre-release versions of .NET Core, you have to set a handful of environment variables
-to make the .NET Core command line tool work well. You can set these environment variables like this:
-
-On Windows (requires PowerShell):
-
-```powershell
-# The extra dot at the beginning is required to 'dot source' this file into the right scope.
-. .\activate.ps1
+```
+source activate.sh
+dotnet build
+dotnet test --filter "MySpecificUnitTest"
 ```
 
-On macOS/Linux:
+## Codespaces on GitHub
 
-```bash
-source ./activate.sh
-```
+If you have [Codespaces enabled on your GitHub user account](https://github.com/codespaces), you can use Codespaces to make code changes in the repo using a cloud based editor environment.
 
-> :bulb: Be sure to set the environment variables using the "activate" script above before executing the `dotnet` command inside the repo.
+1. Navigate to the fork and branch you would like to make code changes in. Note: if you have not created a new branch yet, do so using the GitHub UI or locally checking out and pushing a new branch.
+2. Open a Codespace for your branch by navigating to the "Code" button > selecting the "Codespaces" tab > clicking the "New codespace" button.
 
-### Running tests on command-line
+![Screen Shot 2021-10-05 at 9 05 39 AM](https://user-images.githubusercontent.com/1857993/136060792-6b4c6158-0a2c-4dd6-8639-08d83da6d2d1.png)
 
-Tests are not run by default. When invoking a `build.cmd`/`build.sh` script, use the `-test` option to run tests in addition to building.
+3. The Codespace will spend a few minutes building and initializating. Once this is done, you'll be able to navigate the Codespace in a web-based VS Code environment. You can use the `dotnet build` and `dotnet test` commands to build and test the repo. Note: you do not need to activate the locally installed .NET SDK or run the restore script. This is done as part of the initialization process.
 
-On Windows:
+------
 
-```powershell
-.\build.cmd -test
-```
+### Troubleshooting
 
-On macOS/Linux:
+See [BuildErrors](https://github.com/dotnet/aspnetcore/blob/main/docs/BuildErrors.md) for a description of common issues you might run into while building the repo.
 
-```bash
-./build.sh --test
-```
+### A Guide to the Build Script
 
-> :bulb: If you're working on changes for a particular subset of the project, you might not want to execute the entire test suite. Instead, only run the tests within the subdirectory where changes were made. This can be accomplished by passing the `projects` property like so: `.\build.cmd -test -projects .\src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj`.
+The `build.cmd` and `build.sh` scripts contain multiple flags that can be used control the behavior of the build script. See [BuildScript](./BuildScript.md) for information about the flags available on the script and helpful invocation patterns.
 
-### Build properties
+### Using the results of a local build
 
-Additional properties can be added as an argument in the form `/property:$name=$value`, or `/p:$name=$value` for short. For example:
+There are some scenarios where you might want to use the contents of the build to validate changes end-to-end. See [UsingBuildResults](UsingBuildResults.md) for information on patterns for validating changes in E2E scenarios.
 
-```powershell
-.\build.cmd -Configuration Release
-```
+### A Complete List of Repo Dependencies
 
-Common properties include:
-
-| Property           | Description                                                             |
-| ------------------ | ----------------------------------------------------------------------- |
-| Configuration      | `Debug` or `Release`. Default = `Debug`.                                |
-| TargetArchitecture | The CPU architecture to build for (x64, x86, arm, arm64).               |
-| TargetOsName       | The base runtime identifier to build for (win, linux, osx, linux-musl). |
-
-### Resx files
-
-After making changes to a .resx file, the updated strings and accessor methods will automatically be included in the output assembly when the project is next built.
-
-## Step 5: Use the result of your build
-
-After building ASP.NET Core from source, you will need to install and use your local version of ASP.NET Core.
-See ["Artifacts"](./Artifacts.md) for more explanation of the different folders produced by a build.
-
-Building installers does not run as part of `build.cmd` run without parameters, so you should opt-in for building them:
-
-```powershell
-.\build.cmd -all -pack -arch x64
-.\build.cmd -all -pack -arch x86 -noBuildJava
-.\build.cmd -buildInstallers
-```
-
-_Note_: Additional build steps listed above aren't necessary on Linux or macOS.
-
-- Run the installers produced in `artifacts/installers/{Debug, Release}/` for your platform.
-- Add a NuGet.Config to your project directory with the following content:
-
-  ```xml
-  <?xml version="1.0" encoding="utf-8"?>
-  <configuration>
-      <packageSources>
-          <clear />
-          <add key="MyBuildOfAspNetCore" value="C:\src\aspnet\AspNetCore\artifacts\packages\Debug\Shipping\" />
-          <add key="NuGet.org" value="https://api.nuget.org/v3/index.json" />
-      </packageSources>
-  </configuration>
-  ```
-
-  _NOTE: This NuGet.Config should be with your application unless you want nightly packages to potentially start being restored for other apps on the machine._
-
-- Update the versions on `PackageReference` items in your .csproj project file to point to the version from your local build.
-
-  ```xml
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.SpaServices" Version="3.0.0-dev" />
-  </ItemGroup>
-  ```
-
-Some features, such as new target frameworks, may require prerelease tooling builds for Visual Studio.
-These are available in the [Visual Studio Preview](https://www.visualstudio.com/vs/preview/).
-
-## Troubleshooting
-
-See [BuildErrors](./BuildErrors.md) for a description of common issues you might run into while building the repo.
+Depending on what project area you want to work in, you may need to install additional dependencies to support building different projects in the repo. A complete list of dependencies is document in the [RepoDependencies](RepoDependencies.md) doc.
