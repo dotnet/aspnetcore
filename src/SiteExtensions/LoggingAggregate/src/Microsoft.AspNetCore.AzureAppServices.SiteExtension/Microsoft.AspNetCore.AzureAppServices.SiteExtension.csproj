@@ -69,8 +69,7 @@
       Condition=" '$(IsShipping)' == 'true' ">
     <!-- This target is defined in eng/targets/Packaging.targets and included in every C# and F# project. -->
     <MSBuild Projects="$(RepoRoot)src\SiteExtensions\LoggingBranch\LB.csproj"
-        Targets="_GetPackageVersionInfo"
-        SkipNonexistentProjects="false">
+        Targets="_GetPackageVersionInfo">
       <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />
     </MSBuild>
 
