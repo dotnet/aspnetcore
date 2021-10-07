@@ -17,10 +17,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj">
+    <ProjectReference Include="..\..\..\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
       Private="false"
       ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true" /
+      SkipGetTargetFrameworkProperties="true" />
 
     <InstallerOwnedDirectory Include="$(RpmPackageInstallRoot)packs/$(TargetingPackName)/" />
     <RpmDependency Include="dotnet-targeting-pack-$(MicrosoftNETCoreAppRefMajorMinorVersion)" Version="$(MicrosoftNETCoreAppRefVersion.Split('-')[0])" />
