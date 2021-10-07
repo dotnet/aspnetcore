@@ -27,17 +27,20 @@
       Include="..\..\JSInterop\Microsoft.JSInterop.JS\src\Microsoft.JSInterop.JS.npmproj"
       Private="false"
       ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true" />
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework" />
     <ProjectReference
       Include="..\..\SignalR\clients\ts\signalr\signalr.npmproj"
       Private="false"
       ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true" />
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework" />
     <ProjectReference
       Include="..\..\SignalR\clients\ts\signalr-protocol-msgpack\signalr-protocol-msgpack.npmproj"
       Private="false"
       ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true" />
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework" />
   </ItemGroup>
 
   <!-- Workaround strange issues with something calling these targets. -->

@@ -48,7 +48,8 @@
       Condition="'$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'"
       Private="false"
       ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true" />
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework" />
   </ItemGroup>
 
     <!-- This workaround is required when referencing FileProviders.Embedded as a project -->

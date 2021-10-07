@@ -22,7 +22,8 @@
       Condition="'$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'"
       Private="false"
       ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true" />
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework" />
   </ItemGroup>
 
   <ItemGroup>
