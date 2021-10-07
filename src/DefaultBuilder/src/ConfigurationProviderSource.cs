@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Builder
                 _provider = provider;
             }
 
-            public IEnumerable<string> GetChildKeys(IEnumerable<string> earlierKeys, string parentPath)
+            public IEnumerable<string> GetChildKeys(IEnumerable<string> earlierKeys, string? parentPath)
             {
                 return _provider.GetChildKeys(earlierKeys, parentPath);
             }
@@ -55,12 +55,12 @@ namespace Microsoft.AspNetCore.Builder
                 _provider.Load();
             }
 
-            public void Set(string key, string value)
+            public void Set(string key, string? value)
             {
                 _provider.Set(key, value);
             }
 
-            public bool TryGet(string key, out string value)
+            public bool TryGet(string key, out string? value)
             {
                 return _provider.TryGet(key, out value);
             }

@@ -10,7 +10,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    internal class ConfigSectionClone
+    internal sealed class ConfigSectionClone
     {
         public ConfigSectionClone(IConfigurationSection configSection)
         {
@@ -21,7 +21,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             Children = children.ToDictionary(child => child.Key, child => new ConfigSectionClone(child));
         }
 
-        public string Value { get; }
+        public string? Value { get; }
+
         public Dictionary<string, ConfigSectionClone> Children { get; }
 
         public override bool Equals(object? obj)

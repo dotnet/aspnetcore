@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Builder
         private readonly HostBuilder _hostBuilder = new();
         private readonly BootstrapHostBuilder _bootstrapHostBuilder;
         private readonly WebApplicationServiceCollection _services = new();
-        private readonly List<KeyValuePair<string, string>> _hostConfigurationValues;
+        private readonly List<KeyValuePair<string, string?>> _hostConfigurationValues;
 
         private WebApplication? _builtApplication;
 

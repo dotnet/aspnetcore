@@ -22,3 +22,5 @@ static Microsoft.Extensions.Hosting.GenericHostWebHostBuilderExtensions.Configur
 static Microsoft.Extensions.Hosting.GenericHostWebHostBuilderExtensions.ConfigureWebHost(this Microsoft.Extensions.Hosting.IHostBuilder! builder, System.Action<Microsoft.AspNetCore.Hosting.IWebHostBuilder!>! configure, System.Action<Microsoft.Extensions.Hosting.WebHostBuilderOptions!>! configureWebHostBuilder) -> Microsoft.Extensions.Hosting.IHostBuilder!
 virtual Microsoft.AspNetCore.Hosting.StartupBase.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> void
 virtual Microsoft.AspNetCore.Hosting.StartupBase.CreateServiceProvider(Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> System.IServiceProvider!
+*REMOVED*Microsoft.AspNetCore.Hosting.WebHostBuilder.GetSetting(string! key) -> string!
+Microsoft.AspNetCore.Hosting.WebHostBuilder.GetSetting(string! key) -> string?
