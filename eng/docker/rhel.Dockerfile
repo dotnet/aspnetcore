@@ -24,6 +24,7 @@ USER $USER_ID
 ENV DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 
 # Workaround per https://github.com/dotnet/aspnetcore/pull/37192#issuecomment-936589233
+RUN yum --enablerepo=centos-sclo-rh -y install rh-ruby25
 RUN echo -e "#!/bin/bash\n\
 source /opt/rh/rh-ruby25/enable\n\
 export X_SCLS=\"`scl enable rh-ruby25 'echo $X_SCLS'`\"\n" >> /etc/profile.d/rh-ruby25.sh
