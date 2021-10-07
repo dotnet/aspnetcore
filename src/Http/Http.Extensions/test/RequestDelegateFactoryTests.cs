@@ -2003,6 +2003,10 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 static Task<object> StaticTaskOfIResultAsObject() => Task.FromResult<object>(new CustomResult("Still not enough tests!"));
                 static ValueTask<object> StaticValueTaskOfIResultAsObject() => ValueTask.FromResult<object>(new CustomResult("Still not enough tests!"));
 
+                StructResult TestStructAction() => new StructResult(resultString);
+                Task<StructResult> TaskTestStructAction() => Task.FromResult(new StructResult(resultString));
+                ValueTask<StructResult> ValueTaskTestStructAction() => ValueTask.FromResult(new StructResult(resultString));
+
                 return new List<object[]>
                 {
                     new object[] { (Func<CustomResult>)TestAction },
@@ -2021,6 +2025,10 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
                     new object[] { (Func<Task<object>>)StaticTaskOfIResultAsObject},
                     new object[] { (Func<ValueTask<object>>)StaticValueTaskOfIResultAsObject},
+
+                    new object[] { (Func<StructResult>)TestStructAction },
+                    new object[] { (Func<Task<StructResult>>)TaskTestStructAction },
+                    new object[] { (Func<ValueTask<StructResult>>)ValueTaskTestStructAction },
                 };
             }
         }
@@ -3237,6 +3245,21 @@ namespace Microsoft.AspNetCore.Routing.Internal
             private readonly string _resultString;
 
             public CustomResult(string resultString)
+            {
+                _resultString = resultString;
+            }
+
+            public Task ExecuteAsync(HttpContext httpContext)
+            {
+                return httpContext.Response.WriteAsync(_resultString);
+            }
+        }
+
+        private struct StructResult : IResult
+        {
+            private readonly string _resultString;
+
+            public StructResult(string resultString)
             {
                 _resultString = resultString;
             }
