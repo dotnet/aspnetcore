@@ -1,5 +1,5 @@
 # Dockerfile that creates a container suitable to build dotnet-cli
-FROM mcr.microsoft.com/dotnet-buildtools/prereqs:centos-8-rpmpkg-20210714125410-daa5116
+FROM mcr.microsoft.com/dotnet-buildtools/prereqs:centos-7-rpmpkg-20210714125435-9b5bbc2
 
 # Setup User to match Host User, and give superuser permissions
 ARG USER
@@ -22,3 +22,6 @@ USER $USER_ID
 
 # Skip package initilization
 ENV DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+
+# Workaround per https://github.com/dotnet/aspnetcore/pull/37192#issuecomment-936589233
+RUN scl enable rh-ruby25
