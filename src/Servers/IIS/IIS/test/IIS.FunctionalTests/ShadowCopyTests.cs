@@ -26,6 +26,30 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        public void FailsAlot2()
+        {
+            if (new Random().Next(0,100) <= 80) {
+                throw new Exception("Rolled a miss (< 81)");
+            }
+        }
+
+        [ConditionalFact]
+        public void FailsAlot3()
+        {
+            if (new Random().Next(0,100) <= 80) {
+                throw new Exception("Rolled a miss (< 81)");
+            }
+        }
+
+        [ConditionalFact]
+        public void FailsAlot4()
+        {
+            if (new Random().Next(0,100) <= 80) {
+                throw new Exception("Rolled a miss (< 81)");
+            }
+        }
+
+        [ConditionalFact]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task ShadowCopyDoesNotLockFiles()
         {
