@@ -487,6 +487,11 @@ namespace Microsoft.AspNetCore.Http
             }
             else if (typeof(IResult).IsAssignableFrom(returnType))
             {
+                if (returnType.IsValueType)
+                {
+                    var box = Expression.TypeAs(methodCall, typeof(IResult));
+                    return Expression.Call(ResultWriteResponseAsyncMethod, box, HttpContextExpr);
+                }
                 return Expression.Call(ResultWriteResponseAsyncMethod, methodCall, HttpContextExpr);
             }
             else if (returnType == typeof(string))
