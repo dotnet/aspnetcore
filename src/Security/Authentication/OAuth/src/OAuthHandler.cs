@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
 
             if (exception is null)
             {
-                var errorMessage = $"OAuth token endpoint failure: Status: {response.StatusCode}, Headers: {response.Headers}, Body: {body}";
+                var errorMessage = $"OAuth token endpoint failure: Status: {response.StatusCode};Headers: {response.Headers};Body: {body};";
                 return OAuthTokenResponse.Failed(new Exception(errorMessage));
             }
 
