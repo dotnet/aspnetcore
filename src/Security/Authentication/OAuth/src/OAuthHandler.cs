@@ -226,12 +226,8 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
 
             if (exception is null)
             {
-                var output = new StringBuilder();
-                output.Append("Status: " + response.StatusCode + ";");
-                output.Append("Headers: " + response.Headers.ToString() + ";");
-                output.Append("Body: " + body + ";");
-
-                return OAuthTokenResponse.Failed(new Exception($"OAuth token endpoint failure: {output}"));
+                var errorMessage = $"OAuth token endpoint failure: Status: {response.StatusCode}, Headers: {response.Headers}, Body: {body}";
+                return OAuthTokenResponse.Failed(new Exception(errorMessage));
             }
 
             return OAuthTokenResponse.Failed(exception);

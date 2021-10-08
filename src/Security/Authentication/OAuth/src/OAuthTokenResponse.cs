@@ -101,7 +101,8 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                 return null;
             }
 
-            var result = new StringBuilder(error);
+            var result = new StringBuilder("OAuth token endpoint failure: ");
+            result.Append(error);
 
             if (root.TryGetProperty("error_description", out var errorDescription))
             {
