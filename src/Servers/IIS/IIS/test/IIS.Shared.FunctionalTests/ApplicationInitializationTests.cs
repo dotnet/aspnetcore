@@ -58,6 +58,33 @@ public class ApplicationInitializationTests : IISFunctionalTestBase
 
     [ConditionalTheory]
     [RequiresIIS(IISCapability.ApplicationInitialization)]
+    [InlineData(HostingModel.InProcess)]
+    public async Task ApplicationPreloadStartStopsHostedServices(HostingModel hostingModel)
+    {
+        // This test often hits a memory leak in warmup.dll module, it has been reported to IIS team
+        using (AppVerifier.Disable(DeployerSelector.ServerType, 0x900))
+        {
+            var baseDeploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel);
+            baseDeploymentParameters.EnableLogging(LogFolderPath);
+            baseDeploymentParameters.TransformArguments(
+                (args, contentRoot) => $"{args} PreloadHostedService");
+            EnablePreload(baseDeploymentParameters);
+
+            var result = await DeployAsync(baseDeploymentParameters);
+
+            StopServer();
+            EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result), Logger);
+
+            var contents = Helpers.ReadAllTextFromFile(Helpers.GetExpectedLogName(result, LogFolderPath), Logger);
+
+            Assert.Contains("Started preload hosted service", contents);
+            Assert.Contains("Stopped preload hosted service", contents);
+        }
+    }
+
+
+    [ConditionalTheory]
+    [RequiresIIS(IISCapability.ApplicationInitialization)]
     [RequiresNewHandler]
     [InlineData(HostingModel.InProcess)]
     [InlineData(HostingModel.OutOfProcess)]

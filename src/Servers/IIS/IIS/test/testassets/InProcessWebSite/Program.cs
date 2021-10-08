@@ -181,11 +181,45 @@ public static class Program
                     return 0;
                 }
 #endif
+            case "PreloadHostedService":
+                {
+                    var host = new HostBuilder().ConfigureWebHost((c) =>
+                    {
+                        c.ConfigureServices(services =>
+                        {
+                            services.AddSingleton<IHostedService, PreloadHostedService>();
+                        })
+                        .UseIIS()
+                        .UseStartup<Startup>();
+                    });
+                    host.Build().Run();
+                    return 0;
+                }
+
             default:
                 return StartServer();
 
         }
         return 12;
+    }
+
+    private class PreloadHostedService : IHostedService
+    {
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            File.WriteAllText("Preload_Started.txt", "");
+            Console.Error.WriteLine("Started preload hosted service...");
+            Console.Error.Flush();
+            return Task.CompletedTask;
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            File.WriteAllText("Preload_Stopped.txt", "");
+            Console.Error.WriteLine("Stopped preload hosted service...");
+            Console.Error.Flush();
+            return Task.CompletedTask;
+        }
     }
 
     private static int StartServer()
