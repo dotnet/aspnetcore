@@ -8,11 +8,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Threading.Tasks;
-using Xunit;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Authentication.OAuth
 {
@@ -396,6 +395,93 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             Assert.Null(transaction.Response.Headers.Location);
         }
 
+        [Theory]
+        [InlineData(HttpStatusCode.OK)]
+        [InlineData(HttpStatusCode.BadRequest)]
+        public async Task ExchangeCodeAsync_ChecksForErrorInformation(HttpStatusCode httpStatusCode)
+        {
+            using var host = await CreateHost(
+                s => s.AddAuthentication().AddOAuth(
+                    "Weblie",
+                    opt =>
+                    {
+                        ConfigureDefaults(opt);
+                        opt.StateDataFormat = new TestStateDataFormat();
+                        opt.BackchannelHttpHandler = new TestHttpMessageHandler
+                        {
+                            Sender = req =>
+                            {
+                                if (req.RequestUri.AbsoluteUri == "https://example.com/provider/token")
+                                {
+                                    return ReturnJsonResponse(new
+                                    {
+                                        error = "incorrect_client_credentials",
+                                        error_description = "The client_id and/or client_secret passed are incorrect.",
+                                        error_uri = "https://example.com/troubleshooting-oauth-app-access-token-request-errors/#incorrect-client-credentials",
+                                    }, httpStatusCode);
+                                }
+
+                                return null;
+                            }
+                        };
+                        opt.Events = new OAuthEvents()
+                        {
+                            OnRemoteFailure = context =>
+                            {
+                                Assert.Equal("incorrect_client_credentials", context.Failure.Data["error"]);
+                                Assert.Equal("The client_id and/or client_secret passed are incorrect.", context.Failure.Data["error_description"]);
+                                Assert.Equal("https://example.com/troubleshooting-oauth-app-access-token-request-errors/#incorrect-client-credentials", context.Failure.Data["error_uri"]);
+                                return Task.CompletedTask;
+                            }
+                        };
+                    }));
+
+            using var server = host.GetTestServer();
+            var exception = await Assert.ThrowsAsync<Exception>(
+                () => server.SendAsync("https://www.example.com/oauth-callback?code=random_code&state=protected_state", ".AspNetCore.Correlation.correlationId=N"));
+        }
+
+        [Fact]
+        public async Task ExchangeCodeAsync_FallbackToBasicErrorReporting_WhenErrorInformationIsNotPresent()
+        {
+            using var host = await CreateHost(
+                s => s.AddAuthentication().AddOAuth(
+                    "Weblie",
+                    opt =>
+                    {
+                        ConfigureDefaults(opt);
+                        opt.StateDataFormat = new TestStateDataFormat();
+                        opt.BackchannelHttpHandler = new TestHttpMessageHandler
+                        {
+                            Sender = req =>
+                            {
+                                if (req.RequestUri.AbsoluteUri == "https://example.com/provider/token")
+                                {
+                                    return ReturnJsonResponse(new
+                                    {
+                                        ErrorCode = "ThisIsCustomErrorCode",
+                                        ErrorDescription = "ThisIsCustomErrorDescription"
+                                    }, HttpStatusCode.BadRequest);
+                                }
+
+                                return null;
+                            }
+                        };
+                        opt.Events = new OAuthEvents()
+                        {
+                            OnRemoteFailure = context =>
+                            {
+                                Assert.StartsWith("OAuth token endpoint failure:", context.Failure.Message);
+                                return Task.CompletedTask;
+                            }
+                        };
+                    }));
+
+            using var server = host.GetTestServer();
+            var exception = await Assert.ThrowsAsync<Exception>(
+                () => server.SendAsync("https://www.example.com/oauth-callback?code=random_code&state=protected_state", ".AspNetCore.Correlation.correlationId=N"));
+        }
+
         private static async Task<IHost> CreateHost(Action<IServiceCollection> configureServices, Func<HttpContext, Task<bool>> handler = null)
         {
             var host = new HostBuilder()
@@ -416,6 +502,14 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                     .Build();
             await host.StartAsync();
             return host;
+        }
+
+        private static HttpResponseMessage ReturnJsonResponse(object content, HttpStatusCode code = HttpStatusCode.OK)
+        {
+            var res = new HttpResponseMessage(code);
+            var text = JsonSerializer.Serialize(content);
+            res.Content = new StringContent(text, Encoding.UTF8, "application/json");
+            return res;
         }
 
         private class TestStateDataFormat : ISecureDataFormat<AuthenticationProperties>
