@@ -18,7 +18,7 @@
     <ProjectReference Include="$(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"
       Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' and '$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'"
       Private="false"
-      ReferenceOutputAssemblies="false"
+      ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true"
       UndefineProperties="TargetFramework" />
   </ItemGroup>
