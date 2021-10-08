@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Hosting
     /// </summary>
     public static class WebHostBuilderQuicExtensions
     {
-        [RequiresPreviewFeatures("Kestrel HTTP/3 support for .NET 6 is in preview.", Url = "https://aka.ms/aspnet/kestrel/http3reqs")]
         public static IWebHostBuilder UseQuic(this IWebHostBuilder hostBuilder)
         {
             if (QuicImplementationProviders.Default.IsSupported)
@@ -29,7 +28,6 @@ namespace Microsoft.AspNetCore.Hosting
             return hostBuilder;
         }
 
-        [RequiresPreviewFeatures("Kestrel HTTP/3 support for .NET 6 is in preview.", Url = "https://aka.ms/aspnet/kestrel/http3reqs")]
         public static IWebHostBuilder UseQuic(this IWebHostBuilder hostBuilder, Action<QuicTransportOptions> configureOptions)
         {
             return hostBuilder.UseQuic().ConfigureServices(services =>

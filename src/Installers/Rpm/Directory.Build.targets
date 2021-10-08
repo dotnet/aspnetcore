@@ -77,7 +77,7 @@
       <FpmArgs Include="&quot;$(PackageContentRoot)=$(RpmPackageInstallRoot)&quot;" />
     </ItemGroup>
 
-    <Exec Command="fpm @(FpmArgs,' ')" />
+    <Exec Command="scl enable rh-ruby25 'fpm @(FpmArgs,' ')'" />
 
     <Copy SourceFiles="$(TargetPath)"
           DestinationFiles="$(CblMarinerTargetPath)"
