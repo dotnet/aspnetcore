@@ -105,6 +105,8 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.linux-musl-x64" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.linux-x64" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.win-x64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.win-x86" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.win-arm" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.win-arm64" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.freebsd-x64" />
   </ItemGroup>
