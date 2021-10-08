@@ -4,6 +4,7 @@
 *                                                                                 @Pilchie
 /global.json                                                                      @dotnet/aspnet-build
 /.azure/                                                                          @dotnet/aspnet-build
+/.azuredevops/                                                                    @dotnet/aspnet-build
 /.config/                                                                         @dotnet/aspnet-build
 /.devcontainer/                                                                   @captainsafia
 /.github/                                                                         @dotnet/aspnet-build
