@@ -179,7 +179,7 @@
     <MicrosoftBuildVersion>16.9.0</MicrosoftBuildVersion>
     <MicrosoftAzureSignalRVersion>1.2.0</MicrosoftAzureSignalRVersion>
     <MicrosoftBuildFrameworkVersion>16.9.0</MicrosoftBuildFrameworkVersion>
-    <MicrosoftBuildTaskCoreVersion>16.9.0</MicrosoftBuildTaskCoreVersion>
+    <MicrosoftBuildTasksCoreVersion>16.9.0</MicrosoftBuildTasksCoreVersion>
     <MicrosoftBuildUtilitiesCoreVersion>16.9.0</MicrosoftBuildUtilitiesCoreVersion>
     <MicrosoftBuildLocatorVersion>1.2.6</MicrosoftBuildLocatorVersion>
     <MicrosoftBuildUtilitiesCoreVersion>16.9.0</MicrosoftBuildUtilitiesCoreVersion>
