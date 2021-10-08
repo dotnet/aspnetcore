@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -184,16 +185,23 @@ public static class Program
 #endif
             case "PreloadHostedService":
                 {
-                    var host = new HostBuilder().ConfigureWebHost((c) =>
-                    {
-                        c.ConfigureServices(services =>
+                    var host = new WebHostBuilder()
+                        .ConfigureServices(services =>
                         {
                             services.AddSingleton<IHostedService, PreloadHostedService>();
                         })
+                        .ConfigureLogging((_, factory) =>
+                        {
+                            factory.AddConsole();
+                            factory.AddFilter("Console", level => level >= LogLevel.Information);
+                        })
+                        .UseKestrel()
                         .UseIIS()
-                        .UseStartup<Startup>();
-                    });
-                    host.Build().Run();
+                        .UseIISIntegration()
+                        .UseStartup<Startup>()
+                        .Build();
+
+                    host.Run();
                     return 0;
                 }
 
