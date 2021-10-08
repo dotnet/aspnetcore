@@ -10,7 +10,13 @@ ARG WORKDIR
 WORKDIR ${WORKDIR}
 
 # Workaround per https://github.com/dotnet/aspnetcore/pull/37192#issuecomment-936589233
+RUN gem uninstall fpm
+RUN yum remove -y rubygems
+RUN yum remove -y ruby-devel
 RUN yum --enablerepo=centos-sclo-rh -y install rh-ruby25
+RUN yum --enablerepo=centos-sclo-rh -y install rh-ruby25-ruby-devel
+RUN yum --enablerepo=centos-sclo-rh -y install rh-ruby25-rubygems
+RUN scl enable rh-ruby25 'gem install --no-document fpm'
 RUN echo -e "#!/bin/bash\n\
 source /opt/rh/rh-ruby25/enable\n\
 export X_SCLS=\"`scl enable rh-ruby25 'echo $X_SCLS'`\"\n" >> /etc/profile.d/rh-ruby25.sh
