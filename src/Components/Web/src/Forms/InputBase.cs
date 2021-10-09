@@ -245,6 +245,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
                 // To make the `Input` components accessible by default
                 // we will automatically render the `aria-invalid` attribute when the validation fails
+                // value must be "true" see https://www.w3.org/TR/wai-aria-1.1/#aria-invalid
                 additionalAttributes["aria-invalid"] = "true";
             }
             else if (hasAriaInvalidAttribute)
