@@ -439,6 +439,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [InlineData("localhost", "", "")]
         [InlineData("localhost:22", "", "")] // handles mismatched ports
         [InlineData("differenthost", "", "")] // handles mismatched hostname
+        [InlineData("different-host", "", "")]
         [InlineData("127.0.0.1", "", "")]
         [InlineData("[::1]", "", "")]
         [InlineData("[::1]:8080", "", "")]
