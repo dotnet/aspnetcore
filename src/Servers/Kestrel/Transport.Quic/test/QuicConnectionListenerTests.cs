@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             using var clientConnection = new QuicConnection(options);
 
             var qex = await Assert.ThrowsAsync<QuicException>(async () => await clientConnection.ConnectAsync().DefaultTimeout());
-            Assert.Equal("Connection has been shutdown by transport. Error Code: 0x80410100", qex.Message);
+            Assert.StartsWith("Connection has been shutdown by transport.", qex.Message);
         }
     }
 }
