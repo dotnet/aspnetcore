@@ -226,7 +226,7 @@ namespace Interop.FunctionalTests.Http3
 
             // https://github.com/dotnet/runtime/issues/57308, optional client certs aren't supported.
             var ex = await Assert.ThrowsAsync<HttpRequestException>(() => client.SendAsync(request, CancellationToken.None).DefaultTimeout());
-            Assert.StartsWith("Connection has been shutdown by transport. Error Code: 0x80410100", ex.Message);
+            Assert.StartsWith("Connection has been shutdown by transport.", ex.Message);
 
             await host.StopAsync().DefaultTimeout();
         }
