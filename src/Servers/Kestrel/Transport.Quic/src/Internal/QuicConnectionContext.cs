@@ -141,19 +141,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 // Throw error so consumer sees the connection is aborted by peer.
                 throw new ConnectionResetException(ex.Message, ex);
             }
-            catch (QuicOperationAbortedException)
+            catch (QuicOperationAbortedException ex)
             {
-                // Shutdown initiated by us.
-
                 lock (_shutdownLock)
                 {
-                    // Connection has been aborted. Throw reason exception.
-                    _abortReason?.Throw();
+                    // This error should only happen when shutdown has been initiated by the server.
+                    // If there is no abort reason and we have this error then the connection is in an
+                    // unexpected state. Abort connection and throw reason error.
+                    if (_abortReason == null)
+                    {
+                        Abort(new ConnectionAbortedException("Unexpected error when accepting stream.", ex));
+                    }
+
+                    _abortReason!.Throw();
                 }
             }
             catch (OperationCanceledException)
             {
-                // Shutdown initiated by us.
+                Debug.Assert(cancellationToken.IsCancellationRequested, "Error requires cancellation is requested.");
 
                 lock (_shutdownLock)
                 {
