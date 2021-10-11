@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Hosting
             SuppressStatusMessages = WebHostUtilities.ParseBool(configuration, WebHostDefaults.SuppressStatusMessagesKey);
 
             // Search the primary assembly and configured assemblies.
-            HostingStartupAssemblies = Split($"{ApplicationName};{configuration[WebHostDefaults.HostingStartupAssembliesKey]}");
+            HostingStartupAssemblies = Split(ApplicationName, configuration[WebHostDefaults.HostingStartupAssembliesKey]);
             HostingStartupExcludeAssemblies = Split(configuration[WebHostDefaults.HostingStartupExcludeAssembliesKey]);
 
             var timeout = configuration[WebHostDefaults.ShutdownTimeoutKey];
@@ -54,13 +54,13 @@ namespace Microsoft.AspNetCore.Hosting
 
         public bool CaptureStartupErrors { get; set; }
 
-        public string Environment { get; set; }
+        public string? Environment { get; set; }
 
-        public string StartupAssembly { get; set; }
+        public string? StartupAssembly { get; set; }
 
-        public string WebRoot { get; set; }
+        public string? WebRoot { get; set; }
 
-        public string ContentRootPath { get; set; }
+        public string? ContentRootPath { get; set; }
 
         public TimeSpan ShutdownTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
@@ -69,10 +69,20 @@ namespace Microsoft.AspNetCore.Hosting
             return HostingStartupAssemblies.Except(HostingStartupExcludeAssemblies, StringComparer.OrdinalIgnoreCase);
         }
 
-        private static IReadOnlyList<string> Split(string value)
+        private static IReadOnlyList<string> Split(string? value)
         {
             return value?.Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
                 ?? Array.Empty<string>();
+        }
+
+        private static IReadOnlyList<string> Split(string applicationName, string? environment)
+        {
+            if (string.IsNullOrEmpty(environment))
+            {
+                return new[] { applicationName };
+            }
+
+            return Split($"{applicationName};{environment}");
         }
     }
 }

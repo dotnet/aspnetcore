@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -24,9 +25,20 @@ namespace Templates.Test.Helpers
     {
         private const string _urls = "http://127.0.0.1:0;https://127.0.0.1:0";
 
-        public static string ArtifactsLogDir => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT")))
-            ? GetAssemblyMetadata("ArtifactsLogDir")
-            : Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
+        public static string ArtifactsLogDir
+        {
+            get
+            {
+                var testLogFolder = typeof(Project).Assembly.GetCustomAttribute<TestFrameworkFileLoggerAttribute>()?.BaseDirectory;
+                if (!string.IsNullOrEmpty(testLogFolder))
+                {
+                    return testLogFolder;
+                }
+
+                var helixWorkItemUploadRoot = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
+                return string.IsNullOrEmpty(helixWorkItemUploadRoot) ? GetAssemblyMetadata("ArtifactsLogDir") : helixWorkItemUploadRoot;
+            }
+        }
 
         public static string DotNetEfFullPath => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
             ? typeof(ProjectFactoryFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
