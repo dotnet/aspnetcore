@@ -26,6 +26,11 @@ function init(dotNetHelper: any, spacerBefore: HTMLElement, spacerAfter: HTMLEle
   const scrollContainer = findClosestScrollContainer(spacerBefore);
   (scrollContainer || document.documentElement).style.overflowAnchor = 'none';
 
+  if (isValidTableElement(spacerAfter.parentElement)) {
+    spacerBefore.style.display = 'table-row';
+    spacerAfter.style.display = 'table-row';
+  }
+
   const intersectionObserver = new IntersectionObserver(intersectionCallback, {
     root: scrollContainer,
     rootMargin: `${rootMargin}px`,
@@ -47,7 +52,13 @@ function init(dotNetHelper: any, spacerBefore: HTMLElement, spacerAfter: HTMLEle
     // Without the use of thresholds, IntersectionObserver only detects binary changes in visibility,
     // so if a spacer gets resized but remains visible, no additional callbacks will occur. By unobserving
     // and reobserving spacers when they get resized, the intersection callback will re-run if they remain visible.
-    const mutationObserver = new MutationObserver((): void => {
+    const mutationObserver = new MutationObserver((mutations: MutationRecord[], observer: MutationObserver): void => {
+      if (isValidTableElement(spacer.parentElement)) {
+        observer.disconnect();
+        spacer.style.display = 'table-row';
+        observer.observe(spacer, { attributes: true });
+      }
+
       intersectionObserver.unobserve(spacer);
       intersectionObserver.observe(spacer);
     });
@@ -77,6 +88,15 @@ function init(dotNetHelper: any, spacerBefore: HTMLElement, spacerAfter: HTMLEle
         dotNetHelper.invokeMethodAsync('OnSpacerAfterVisible', entry.boundingClientRect.bottom - entry.intersectionRect.bottom, spacerSeparation, containerSize);
       }
     });
+  }
+
+  function isValidTableElement(element: HTMLElement | null): boolean {
+    if (element === null) {
+      return false;
+    }
+
+    return ((element instanceof HTMLTableElement && element.style.display === '') || element.style.display === 'table') 
+      || ((element instanceof HTMLTableSectionElement && element.style.display === '') || element.style.display === 'table-row-group')
   }
 }
 
