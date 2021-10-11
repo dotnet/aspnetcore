@@ -367,20 +367,44 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 name => Assert.Equal("Person 3", name));
         }
 
-        [Fact]
-        public void CanExpandDataSetAndRetainScrollPosition()
+        [Theory]
+        [InlineData("simple-scroll-horizontal")]
+        [InlineData("complex-scroll-horizontal")]
+        public void CanLoadNewDataWithHorizontalScrollToRight(string containerId)
         {
             Browser.MountTestComponent<VirtualizationDataChanges>();
             var dataSetLengthSelector = new SelectElement(Browser.Exists(By.Id("large-dataset-length")));
             var dataSetLengthLastRendered = () => int.Parse(Browser.FindElement(By.Id("large-dataset-length-lastrendered")).Text, CultureInfo.InvariantCulture);
-            var container = Browser.Exists(By.Id("removing-many"));
+            var container = Browser.Exists(By.Id(containerId));
 
             // Scroll to the end of a medium list
             dataSetLengthSelector.SelectByText("1000");
             Browser.Equal(1000, dataSetLengthLastRendered);
             Browser.True(() =>
             {
-                ScrollToEnd(Browser, container);
+                ScrollLeftToEnd(Browser, container);
+                ScrollTopToEnd(Browser, container);
+                return GetPeopleNames(container).Contains("Person 1000");
+            });
+        }
+
+        [Theory]
+        [InlineData("simple-scroll-horizontal")]
+        [InlineData("complex-scroll-horizontal")]
+        [InlineData("removing-many")]
+        public void CanExpandDataSetAndRetainScrollPosition(string containerId)
+        {
+            Browser.MountTestComponent<VirtualizationDataChanges>();
+            var dataSetLengthSelector = new SelectElement(Browser.Exists(By.Id("large-dataset-length")));
+            var dataSetLengthLastRendered = () => int.Parse(Browser.FindElement(By.Id("large-dataset-length-lastrendered")).Text, CultureInfo.InvariantCulture);
+            var container = Browser.Exists(By.Id(containerId));
+
+            // Scroll to the end of a medium list
+            dataSetLengthSelector.SelectByText("1000");
+            Browser.Equal(1000, dataSetLengthLastRendered);
+            Browser.True(() =>
+            {
+                ScrollTopToEnd(Browser, container);
                 return GetPeopleNames(container).Contains("Person 1000");
             });
 
@@ -393,21 +417,24 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.True(() => GetPeopleNames(container).Contains("Person 1000"));
         }
 
-        [Fact]
-        public void CanHandleDataSetShrinkingWithExistingOffsetAlreadyBeyondNewListEnd()
+        [Theory]
+        [InlineData("simple-scroll-horizontal")]
+        [InlineData("complex-scroll-horizontal")]
+        [InlineData("removing-many")]
+        public void CanHandleDataSetShrinkingWithExistingOffsetAlreadyBeyondNewListEnd(string containerId)
         {
             // Represents https://github.com/dotnet/aspnetcore/issues/37245
             Browser.MountTestComponent<VirtualizationDataChanges>();
             var dataSetLengthSelector = new SelectElement(Browser.Exists(By.Id("large-dataset-length")));
             var dataSetLengthLastRendered = () => int.Parse(Browser.FindElement(By.Id("large-dataset-length-lastrendered")).Text, CultureInfo.InvariantCulture);
-            var container = Browser.Exists(By.Id("removing-many"));
+            var container = Browser.Exists(By.Id(containerId));
 
             // Scroll to the end of a very long list
             dataSetLengthSelector.SelectByText("100000");
             Browser.Equal(100000, dataSetLengthLastRendered);
             Browser.True(() =>
             {
-                ScrollToEnd(Browser, container);
+                ScrollTopToEnd(Browser, container);
                 return GetPeopleNames(container).Contains("Person 100000");
             });
 
@@ -426,10 +453,16 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             return peopleElements.Select(element => element.Text).ToArray();
         }
 
-        private static void ScrollToEnd(IWebDriver browser, IWebElement elem)
+        private static void ScrollTopToEnd(IWebDriver browser, IWebElement elem)
         {
             var js = (IJavaScriptExecutor)browser;
             js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight", elem);
+        }
+
+        private static void ScrollLeftToEnd(IWebDriver Browser, IWebElement elem)
+        {
+            var js = (IJavaScriptExecutor)Browser;
+            js.ExecuteScript("arguments[0].scrollLeft = arguments[0].scrollWidth", elem);
         }
     }
 }

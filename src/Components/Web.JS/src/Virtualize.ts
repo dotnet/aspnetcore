@@ -3,6 +3,10 @@ export const Virtualize = {
   dispose,
 };
 
+enum ContainerKind {
+  HTMLTable
+}
+
 const observersByDotNetId = {};
 
 function findClosestScrollContainer(element: HTMLElement | null): HTMLElement | null {
@@ -25,6 +29,12 @@ function init(dotNetHelper: any, spacerBefore: HTMLElement, spacerAfter: HTMLEle
   // trying to resize it.
   const scrollContainer = findClosestScrollContainer(spacerBefore);
   (scrollContainer || document.documentElement).style.overflowAnchor = 'none';
+
+  if (isContainerTableRalatedElement(scrollContainer)) {
+    spacerBefore.style.display = 'table-row';
+    spacerAfter.style.display = 'table-row';
+    dotNetHelper.invokeMethodAsync('NotifySpecialScenario', ContainerKind.HTMLTable);
+  }
 
   const intersectionObserver = new IntersectionObserver(intersectionCallback, {
     root: scrollContainer,
@@ -77,6 +87,10 @@ function init(dotNetHelper: any, spacerBefore: HTMLElement, spacerAfter: HTMLEle
         dotNetHelper.invokeMethodAsync('OnSpacerAfterVisible', entry.boundingClientRect.bottom - entry.intersectionRect.bottom, spacerSeparation, containerSize);
       }
     });
+  }
+
+  function isContainerTableRalatedElement(container: HTMLElement | null): boolean {
+    return container !== null && (scrollContainer instanceof HTMLTableElement || scrollContainer instanceof HTMLTableSectionElement);
   }
 }
 

@@ -44,6 +44,12 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
             _owner.OnAfterSpacerVisible(spacerSize, spacerSeparation, containerSize);
         }
 
+        [JSInvokable]
+        public void NotifySpecialScenario(ContainerKind containerKind)
+        {
+            _owner.NotifySpecialScenario(containerKind);
+        }
+
         public async ValueTask DisposeAsync()
         {
             if (_selfReference != null)

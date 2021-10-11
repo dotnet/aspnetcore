@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
 
@@ -50,6 +46,8 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
         private RenderFragment<TItem>? _itemTemplate;
 
         private RenderFragment<PlaceholderContext>? _placeholder;
+
+        private SpecialScenarioHandler? _specialScenarioHandler;
 
         [Inject]
         private IJSRuntime JSRuntime { get; set; } = default!;
@@ -247,7 +245,7 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
         }
 
         private string GetSpacerStyle(int itemsInSpacer)
-            => $"height: {(itemsInSpacer * _itemSize).ToString(CultureInfo.InvariantCulture)}px;";
+            => $"height: {(itemsInSpacer * _itemSize).ToString(CultureInfo.InvariantCulture)}px;{_specialScenarioHandler?.GetAdditionalCssStyleProperties()}";
 
         void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
         {
@@ -281,6 +279,11 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
             }
 
             UpdateItemDistribution(itemsBefore, visibleItemCapacity);
+        }
+
+        void IVirtualizeJsCallbacks.NotifySpecialScenario(ContainerKind containerKind)
+        {
+            _specialScenarioHandler = new SpecialScenarioHandler(containerKind);
         }
 
         private void CalcualteItemDistribution(
