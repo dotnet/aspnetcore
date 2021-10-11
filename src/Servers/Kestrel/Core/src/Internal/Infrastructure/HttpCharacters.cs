@@ -55,6 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             Array.Copy(_alphaNumeric, authority, _tableSize);
             authority[':'] = true;
             authority['.'] = true;
+            authority['-'] = true;
             authority['['] = true;
             authority[']'] = true;
             authority['@'] = true;
