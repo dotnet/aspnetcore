@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -859,6 +860,75 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
 #nullable restore
+
+        [Fact]
+        public void ProducesRouteInfoOnlyForRouteParameters()
+        {
+            var builder = CreateBuilder();
+            string GetName(int fromQuery, string name = "default") => $"Hello {name}!";
+            builder.MapGet("/api/todos/{name}", GetName);
+            var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+            var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+            var hostEnvironment = new HostEnvironment
+            {
+                ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+            };
+            var provider = new EndpointMetadataApiDescriptionProvider(
+                endpointDataSource,
+                hostEnvironment,
+                new ServiceProviderIsService(),
+                new DefaultParameterPolicyFactory(Options.Create(new RouteOptions()), new TestServiceProvider()));
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var apiDescription = Assert.Single(context.Results);
+            Assert.Collection(apiDescription.ParameterDescriptions,
+                parameter => {
+                    Assert.Equal("fromQuery", parameter.Name);
+                    Assert.Null(parameter.RouteInfo);
+                },
+                parameter => {
+                    Assert.Equal("name", parameter.Name);
+                    Assert.NotNull(parameter.RouteInfo);
+                    Assert.Empty(parameter.RouteInfo!.Constraints);
+                    Assert.True(parameter.RouteInfo!.IsOptional);
+                    Assert.Equal("default", parameter.RouteInfo!.DefaultValue);
+                });
+        }
+
+        [Fact]
+        public void HandlesEndpointWithRouteConstraints()
+        {
+            var builder = CreateBuilder();
+            builder.MapGet("/api/todos/{name:minlength(8):guid:maxlength(20)}", (string name) => "");
+            var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+            var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+            var hostEnvironment = new HostEnvironment
+            {
+                ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+            };
+            var provider = new EndpointMetadataApiDescriptionProvider(
+                endpointDataSource,
+                hostEnvironment,
+                new ServiceProviderIsService(),
+                new DefaultParameterPolicyFactory(Options.Create(new RouteOptions()), new TestServiceProvider()));
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var apiDescription = Assert.Single(context.Results);
+            var parameter = Assert.Single(apiDescription.ParameterDescriptions);
+            Assert.NotNull(parameter.RouteInfo);
+            Assert.Collection(parameter.RouteInfo!.Constraints,
+                constraint => Assert.IsType<MinLengthRouteConstraint>(constraint),
+                constraint => Assert.IsType<GuidRouteConstraint>(constraint),
+                constraint => Assert.IsType<MaxLengthRouteConstraint>(constraint));
+        }
 
         private static IEnumerable<string> GetSortedMediaTypes(ApiResponseType apiResponseType)
         {
