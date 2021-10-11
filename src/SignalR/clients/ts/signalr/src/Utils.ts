@@ -1,12 +1,12 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 import { HttpClient } from "./HttpClient";
-import { MessageHeaders } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
 import { NullLogger } from "./Loggers";
 import { IStreamSubscriber, ISubscription } from "./Stream";
 import { Subject } from "./Subject";
+import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
 
 // Version token that will be replaced by the prepack command
 /** The version of the SignalR client. */
@@ -91,8 +91,8 @@ export function isArrayBuffer(val: any): val is ArrayBuffer {
 
 /** @private */
 export async function sendMessage(logger: ILogger, transportName: string, httpClient: HttpClient, url: string, accessTokenFactory: (() => string | Promise<string>) | undefined,
-                                  content: string | ArrayBuffer, logMessageContent: boolean, withCredentials: boolean, defaultHeaders: MessageHeaders): Promise<void> {
-    let headers = {};
+                                  content: string | ArrayBuffer, options: IHttpConnectionOptions): Promise<void> {
+    let headers: {[k: string]: string} = {};
     if (accessTokenFactory) {
         const token = await accessTokenFactory();
         if (token) {
@@ -105,14 +105,15 @@ export async function sendMessage(logger: ILogger, transportName: string, httpCl
     const [name, value] = getUserAgentHeader();
     headers[name] = value;
 
-    logger.log(LogLevel.Trace, `(${transportName} transport) sending data. ${getDataDetail(content, logMessageContent)}.`);
+    logger.log(LogLevel.Trace, `(${transportName} transport) sending data. ${getDataDetail(content, options.logMessageContent!)}.`);
 
     const responseType = isArrayBuffer(content) ? "arraybuffer" : "text";
     const response = await httpClient.post(url, {
         content,
-        headers: { ...headers, ...defaultHeaders},
+        headers: { ...headers, ...options.headers},
         responseType,
-        withCredentials,
+        timeout: options.timeout,
+        withCredentials: options.withCredentials,
     });
 
     logger.log(LogLevel.Trace, `(${transportName} transport) request complete. Response status: ${response.statusCode}.`);
@@ -265,4 +266,32 @@ function getRuntime(): string {
     } else {
         return "Browser";
     }
+}
+
+/** @private */
+export function getErrorString(e: any): string {
+    if (e.stack) {
+        return e.stack;
+    } else if (e.message) {
+        return e.message;
+    }
+    return `${e}`;
+}
+
+/** @private */
+export function getGlobalThis() {
+    // globalThis is semi-new and not available in Node until v12
+    if (typeof globalThis !== "undefined") {
+        return globalThis;
+    }
+    if (typeof self !== "undefined") {
+        return self;
+    }
+    if (typeof window !== "undefined") {
+        return window;
+    }
+    if (typeof global !== "undefined") {
+        return global;
+    }
+    throw new Error("could not find global");
 }

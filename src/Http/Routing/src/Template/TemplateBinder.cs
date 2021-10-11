@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         /// <param name="defaults">The default values for <paramref name="pattern"/>. Optional.</param>
         /// <param name="requiredKeys">Keys used to determine if the ambient values apply. Optional.</param>
         /// <param name="parameterPolicies">
-        /// A list of (<see cref="string"/>, <see cref="IParameterPolicy"/>) pairs to evalute when producing a URI.
+        /// A list of (<see cref="string"/>, <see cref="IParameterPolicy"/>) pairs to evaluate when producing a URI.
         /// </param>
         internal TemplateBinder(
             UrlEncoder urlEncoder,

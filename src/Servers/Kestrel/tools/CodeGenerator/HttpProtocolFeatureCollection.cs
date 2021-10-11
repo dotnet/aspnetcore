@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
 
@@ -16,7 +16,8 @@ namespace CodeGenerator
                 "IHttpResponseBodyFeature",
                 "IRouteValuesFeature",
                 "IEndpointFeature",
-                "IServiceProvidersFeature"
+                "IServiceProvidersFeature",
+                "IHttpActivityFeature"
             };
 
             var commonFeatures = new[]
@@ -38,7 +39,8 @@ namespace CodeGenerator
                 "IHttpResponseTrailersFeature",
                 "ITlsConnectionFeature",
                 "IHttpUpgradeFeature",
-                "IHttpWebSocketFeature"
+                "IHttpWebSocketFeature",
+                "IBadRequestExceptionFeature"
             };
             var maybeFeatures = new[]
             {
@@ -49,7 +51,8 @@ namespace CodeGenerator
                 "IHttpMinResponseDataRateFeature",
                 "IHttpBodyControlFeature",
                 "IHttpRequestBodyDetectionFeature",
-                "IHttpResetFeature"
+                "IHttpResetFeature",
+                "IPersistentStateFeature"
             };
 
             var allFeatures = alwaysFeatures
@@ -76,9 +79,11 @@ namespace CodeGenerator
                 "IHttpBodyControlFeature",
                 "IHttpMaxRequestBodySizeFeature",
                 "IHttpRequestBodyDetectionFeature",
+                "IBadRequestExceptionFeature"
             };
 
             var usings = $@"
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;";

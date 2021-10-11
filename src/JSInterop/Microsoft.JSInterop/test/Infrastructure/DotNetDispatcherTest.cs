@@ -1,11 +1,10 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 using System;
 using System.Linq;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -13,7 +12,7 @@ namespace Microsoft.JSInterop.Infrastructure
 {
     public class DotNetDispatcherTest
     {
-        private readonly static string thisAssemblyName = typeof(DotNetDispatcherTest).Assembly.GetName().Name;
+        private static readonly string thisAssemblyName = typeof(DotNetDispatcherTest).Assembly.GetName().Name;
 
         [Fact]
         public void CannotInvokeWithEmptyAssemblyName()
@@ -23,8 +22,8 @@ namespace Microsoft.JSInterop.Infrastructure
                 DotNetDispatcher.Invoke(new TestJSRuntime(), new DotNetInvocationInfo(" ", "SomeMethod", default, default), "[]");
             });
 
-            Assert.StartsWith("Cannot be null, empty, or whitespace.", ex.Message);
-            Assert.Equal("AssemblyName", ex.ParamName);
+            Assert.StartsWith("Property 'AssemblyName' cannot be null, empty, or whitespace.", ex.Message);
+            Assert.Equal("assemblyKey", ex.ParamName);
         }
 
         [Fact]
@@ -711,6 +710,21 @@ namespace Microsoft.JSInterop.Infrastructure
 
             Assert.True(task.IsCompletedSuccessfully);
             Assert.Null(task.Result);
+        }
+
+        [Fact]
+        public void ReceiveByteArray_Works()
+        {
+            // Arrange
+            var jsRuntime = new TestJSRuntime();
+            var byteArray = new byte[] { 1, 5, 7 };
+
+            // Act
+            DotNetDispatcher.ReceiveByteArray(jsRuntime, 0, byteArray);
+
+            // Assert
+            Assert.Equal(1, jsRuntime.ByteArraysToBeRevived.Count);
+            Assert.Equal(byteArray, jsRuntime.ByteArraysToBeRevived.Buffer[0]);
         }
 
         internal class SomeInteralType

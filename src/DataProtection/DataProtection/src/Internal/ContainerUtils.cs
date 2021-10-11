@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.DataProtection.Internal
 {
     internal static class ContainerUtils
     {
-        private static Lazy<bool> _isContainer = new Lazy<bool>(IsProcessRunningInContainer);
+        private static readonly Lazy<bool> _isContainer = new Lazy<bool>(IsProcessRunningInContainer);
         private const string RunningInContainerVariableName = "DOTNET_RUNNING_IN_CONTAINER";
         private const string DeprecatedRunningInContainerVariableName = "DOTNET_RUNNING_IN_CONTAINERS";
 
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.DataProtection.Internal
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                // we currently don't have a good way to detect mounted file systems within Windows ctonainers
+                // we currently don't have a good way to detect mounted file systems within Windows containers
                 return false;
             }
 

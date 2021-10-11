@@ -4,7 +4,7 @@
     <Description>Identity sample MVC application on ASP.NET Core using the default UI</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <UserSecretsId>aspnetcore-2ff9bc27-5e8c-4484-90ca-e3aace89b72a</UserSecretsId>
-    <IdentityUIFrameworkVersion>Bootstrap4</IdentityUIFrameworkVersion>
+    <IdentityUIFrameworkVersion>Bootstrap5</IdentityUIFrameworkVersion>
   </PropertyGroup>
 
   <ItemGroup>

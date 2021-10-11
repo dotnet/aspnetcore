@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Reflection;
@@ -797,6 +797,26 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             // Assert
             Assert.Null(result);
         }
+
+        [Fact]
+        public void GetBoundConstructor_ReturnsPrimaryConstructor_ForRecordTypeInherited()
+        {
+            // Arrange
+            var type = typeof(Model);
+
+            // Act
+            var result = DefaultBindingMetadataProvider.GetBoundConstructor(type);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Collection(
+                result.GetParameters(),
+                p => Assert.Equal("Name", p.Name),
+                p => Assert.Equal("Value", p.Name));
+        }
+
+        public record BaseModel(int Value);
+        public record Model(string Name, int Value) : BaseModel(Value);
 
         private record RecordTypeWithConformingSynthesizedConstructor
         {

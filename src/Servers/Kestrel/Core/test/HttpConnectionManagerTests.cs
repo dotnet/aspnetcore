@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Runtime.CompilerServices;
@@ -13,14 +13,14 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
-    public class HttpConnectionManagerTests
+    public class HttpConnectionManagerTests : LoggedTest
     {
         [Fact]
         public void UnrootedConnectionsGetRemovedFromHeartbeat()
         {
+            var trace = new KestrelTrace(LoggerFactory);
             var connectionId = "0";
-            var trace = new Mock<IKestrelTrace>();
-            var httpConnectionManager = new ConnectionManager(trace.Object, ResourceCounter.Unlimited);
+            var httpConnectionManager = new ConnectionManager(trace, ResourceCounter.Unlimited);
 
             // Create HttpConnection in inner scope so it doesn't get rooted by the current frame.
             UnrootedConnectionsGetRemovedFromHeartbeatInnerScope(connectionId, httpConnectionManager, trace);
@@ -32,27 +32,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             httpConnectionManager.Walk(_ => connectionCount++);
 
             Assert.Equal(0, connectionCount);
-            trace.Verify(t => t.ApplicationNeverCompleted(connectionId), Times.Once());
+
+            Assert.Single(TestSink.Writes.Where(c => c.EventId.Name == "ApplicationNeverCompleted"));
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void UnrootedConnectionsGetRemovedFromHeartbeatInnerScope(
             string connectionId,
             ConnectionManager httpConnectionManager,
-            Mock<IKestrelTrace> trace)
+            KestrelTrace trace)
         {
             var serviceContext = new TestServiceContext();
             var mock = new Mock<DefaultConnectionContext>() { CallBase = true };
             mock.Setup(m => m.ConnectionId).Returns(connectionId);
             var transportConnectionManager = new TransportConnectionManager(httpConnectionManager);
-            var httpConnection = new KestrelConnection<ConnectionContext>(0, serviceContext, transportConnectionManager, _ => Task.CompletedTask, mock.Object, Mock.Of<IKestrelTrace>());
+            var httpConnection = new KestrelConnection<ConnectionContext>(0, serviceContext, transportConnectionManager, _ => Task.CompletedTask, mock.Object, trace);
             transportConnectionManager.AddConnection(0, httpConnection);
 
             var connectionCount = 0;
             httpConnectionManager.Walk(_ => connectionCount++);
 
             Assert.Equal(1, connectionCount);
-            trace.Verify(t => t.ApplicationNeverCompleted(connectionId), Times.Never());
+            Assert.Empty(TestSink.Writes.Where(c => c.EventId.Name == "ApplicationNeverCompleted"));
 
             // Ensure httpConnection doesn't get GC'd before this point.
             GC.KeepAlive(httpConnection);

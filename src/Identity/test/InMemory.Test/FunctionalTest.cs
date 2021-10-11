@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -332,7 +332,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory
                             }
                             else if (req.Path.StartsWithSegments(new PathString("/pwdLogin"), out remainder))
                             {
-                                var isPersistent = bool.Parse(remainder.Value.Substring(1));
+                                var isPersistent = bool.Parse(remainder.Value.AsSpan(1));
                                 var result = await signInManager.PasswordSignInAsync("hao", TestPassword, isPersistent, false);
                                 res.StatusCode = result.Succeeded ? 200 : 500;
                             }

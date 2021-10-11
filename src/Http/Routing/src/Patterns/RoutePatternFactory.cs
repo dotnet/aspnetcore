@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -373,7 +373,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             // Each Required Value either needs to either:
             // 1. be null-ish
             // 2. have a corresponding parameter
-            // 3. have a corrsponding default that matches both key and value
+            // 3. have a corresponding default that matches both key and value
             if (requiredValues != null)
             {
                 foreach (var kvp in requiredValues)
@@ -394,7 +394,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                         }
                     }
 
-                    // 3. have a corrsponding default that matches both key and value
+                    // 3. have a corresponding default that matches both key and value
                     if (!found &&
                         updatedDefaults != null &&
                         updatedDefaults.TryGetValue(kvp.Key, out var defaultValue) &&
@@ -682,7 +682,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             if (@default != null && parameterKind == RoutePatternParameterKind.Optional)
             {
-                throw new ArgumentNullException(Resources.TemplateRoute_OptionalCannotHaveDefaultValue, nameof(parameterKind));
+                throw new ArgumentNullException(nameof(parameterKind), Resources.TemplateRoute_OptionalCannotHaveDefaultValue);
             }
 
             return ParameterPartCore(
@@ -719,7 +719,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             if (@default != null && parameterKind == RoutePatternParameterKind.Optional)
             {
-                throw new ArgumentNullException(Resources.TemplateRoute_OptionalCannotHaveDefaultValue, nameof(parameterKind));
+                throw new ArgumentNullException(nameof(parameterKind), Resources.TemplateRoute_OptionalCannotHaveDefaultValue);
             }
 
             if (parameterPolicies == null)
@@ -761,7 +761,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             if (@default != null && parameterKind == RoutePatternParameterKind.Optional)
             {
-                throw new ArgumentNullException(Resources.TemplateRoute_OptionalCannotHaveDefaultValue, nameof(parameterKind));
+                throw new ArgumentNullException(nameof(parameterKind), Resources.TemplateRoute_OptionalCannotHaveDefaultValue);
             }
 
             if (parameterPolicies == null)
@@ -806,7 +806,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         /// <param name="constraint">
         /// The constraint object, which must be of type <see cref="IRouteConstraint"/>
         /// or <see cref="string"/>. If the constraint object is a <see cref="string"/>
-        /// then it will be tranformed into an instance of <see cref="RegexRouteConstraint"/>.
+        /// then it will be transformed into an instance of <see cref="RegexRouteConstraint"/>.
         /// </param>
         /// <returns>The <see cref="RoutePatternParameterPolicyReference"/>.</returns>
         public static RoutePatternParameterPolicyReference Constraint(object constraint)

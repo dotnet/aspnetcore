@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.ResponseCompression
@@ -180,12 +181,15 @@ namespace Microsoft.AspNetCore.ResponseCompression
             => TaskToApm.End(asyncResult);
 
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            => await WriteAsync(buffer.AsMemory(offset, count), cancellationToken);
+
+        public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
         {
             OnWrite();
 
             if (_compressionStream != null)
             {
-                await _compressionStream.WriteAsync(buffer, offset, count, cancellationToken);
+                await _compressionStream.WriteAsync(buffer, cancellationToken);
                 if (_autoFlush)
                 {
                     await _compressionStream.FlushAsync(cancellationToken);
@@ -193,16 +197,21 @@ namespace Microsoft.AspNetCore.ResponseCompression
             }
             else
             {
-                await _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
+                await _innerStream.WriteAsync(buffer, cancellationToken);
             }
         }
 
-        private void InitializeCompressionHeaders()
+        /// <summary>
+        /// Checks if the response should be compressed and sets the response headers.
+        /// </summary>
+        /// <returns>The compression provider to use if compression is enabled, otherwise null.</returns>
+        private ICompressionProvider? InitializeCompressionHeaders()
         {
             if (_provider.ShouldCompressResponse(_context))
             {
+                var headers = _context.Response.Headers;
                 // If the MIME type indicates that the response could be compressed, caches will need to vary by the Accept-Encoding header
-                var varyValues = _context.Response.Headers.GetCommaSeparatedValues(HeaderNames.Vary);
+                var varyValues = headers.GetCommaSeparatedValues(HeaderNames.Vary);
                 var varyByAcceptEncoding = false;
 
                 for (var i = 0; i < varyValues.Length; i++)
@@ -216,17 +225,25 @@ namespace Microsoft.AspNetCore.ResponseCompression
 
                 if (!varyByAcceptEncoding)
                 {
-                    _context.Response.Headers.Append(HeaderNames.Vary, HeaderNames.AcceptEncoding);
+                    // Can't use += as StringValues does not override operator+
+                    // and the implict conversions will cause an incorrect string concat https://github.com/dotnet/runtime/issues/52507
+                    headers.Vary = StringValues.Concat(headers.Vary, HeaderNames.AcceptEncoding);
                 }
 
                 var compressionProvider = ResolveCompressionProvider();
                 if (compressionProvider != null)
                 {
-                    _context.Response.Headers.Append(HeaderNames.ContentEncoding, compressionProvider.EncodingName);
-                    _context.Response.Headers.Remove(HeaderNames.ContentMD5); // Reset the MD5 because the content changed.
-                    _context.Response.Headers.Remove(HeaderNames.ContentLength);
+                    // Can't use += as StringValues does not override operator+
+                    // and the implict conversions will cause an incorrect string concat https://github.com/dotnet/runtime/issues/52507
+                    headers.ContentEncoding = StringValues.Concat(headers.ContentEncoding, compressionProvider.EncodingName);
+                    headers.ContentMD5 = default; // Reset the MD5 because the content changed.
+                    headers.ContentLength = default;
                 }
+
+                return compressionProvider;
             }
+
+            return null;
         }
 
         private void OnWrite()
@@ -235,11 +252,11 @@ namespace Microsoft.AspNetCore.ResponseCompression
             {
                 _compressionChecked = true;
 
-                InitializeCompressionHeaders();
+                var compressionProvider = InitializeCompressionHeaders();
 
-                if (_compressionProvider != null)
+                if (compressionProvider != null)
                 {
-                    _compressionStream = _compressionProvider.CreateStream(_innerStream);
+                    _compressionStream = compressionProvider.CreateStream(_innerStream);
                 }
             }
         }

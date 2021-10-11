@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -269,7 +269,7 @@ namespace RunTests
             if (File.Exists("TestResults/TestResults.xml"))
             {
                 Console.WriteLine("Copying TestResults/TestResults.xml to ./testResults.xml");
-                File.Copy("TestResults/TestResults.xml", "testResults.xml");
+                File.Copy("TestResults/TestResults.xml", "testResults.xml", overwrite: true);
             }
             else
             {

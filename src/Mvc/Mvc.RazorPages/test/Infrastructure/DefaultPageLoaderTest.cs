@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
@@ -294,7 +294,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 },
             };
 
-
             var transformer = new Mock<RoutePatternTransformer>();
             transformer
                 .Setup(t => t.SubstituteRequiredValues(It.IsAny<RoutePattern>(), It.IsAny<object>()))
@@ -333,6 +332,29 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             // Assert
             Assert.NotSame(result1, result2);
+        }
+
+        [Fact]
+        public async Task LoadAsync_CompiledPageActionDescriptor_ReturnsSelf()
+        {
+            // Arrange
+            var mvcOptions = Options.Create(new MvcOptions());
+            var endpointFactory = new ActionEndpointFactory(Mock.Of<RoutePatternTransformer>(), Enumerable.Empty<IRequestDelegateFactory>());
+            var loader = new DefaultPageLoader(
+                new[] { Mock.Of<IPageApplicationModelProvider>() },
+                Mock.Of<IViewCompilerProvider>(),
+                endpointFactory,
+                RazorPagesOptions,
+                mvcOptions);
+            var pageDescriptor = new CompiledPageActionDescriptor();
+
+            // Act
+            var result1 = await loader.LoadAsync(pageDescriptor, new EndpointMetadataCollection());
+            var result2 = await loader.LoadAsync(pageDescriptor, new EndpointMetadataCollection());
+
+            // Assert
+            Assert.Same(pageDescriptor, result1);
+            Assert.Same(pageDescriptor, result2);
         }
 
         private static IViewCompilerProvider GetCompilerProvider()

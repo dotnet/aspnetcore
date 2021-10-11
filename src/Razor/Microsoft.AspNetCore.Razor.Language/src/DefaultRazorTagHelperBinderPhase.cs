@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -228,7 +228,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal sealed class ComponentDirectiveVisitor : DirectiveVisitor
         {
             private readonly List<TagHelperDescriptor> _notFullyQualifiedComponents;
-            private string _filePath;
+            private readonly string _filePath;
             private RazorSourceDocument _source;
 
             public ComponentDirectiveVisitor(string filePath, IReadOnlyList<TagHelperDescriptor> tagHelpers, string currentNamespace)

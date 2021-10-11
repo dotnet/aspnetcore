@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
@@ -115,8 +115,10 @@ Some Content
                 diagnostic.GetMessage(CultureInfo.CurrentCulture));
         }
 
-        [Fact]
-        public void ChildContent_ExplicitChildContent_UnrecogizedElement_ProducesDiagnostic()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void ChildContent_ExplicitChildContent_UnrecogizedElement_ProducesDiagnostic(bool supportLocalizedComponentNames)
         {
             // Arrange
             AdditionalSyntaxTrees.Add(RenderChildContentComponent);
@@ -127,12 +129,53 @@ Some Content
 <ChildContent>
 </ChildContent>
 <UnrecognizedChildContent></UnrecognizedChildContent>
-</RenderChildContent>");
+</RenderChildContent>", supportLocalizedComponentNames: supportLocalizedComponentNames);
 
             // Assert
             Assert.Collection(
                 generated.Diagnostics,
                 d => Assert.Equal("RZ10012", d.Id),
+                d => Assert.Equal("RZ9996", d.Id));
+        }
+
+        [Fact]
+        public void ChildContent_ExplicitChildContent_StartsWithCharThatIsOtherLetterCategory_WhenLocalizedComponentNamesIsAllowed()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(RenderChildContentComponent);
+
+            // Act
+            var generated = CompileToCSharp(@$"
+<RenderChildContent>
+<ChildContent>
+</ChildContent>
+<繁体字></繁体字>
+</RenderChildContent>", supportLocalizedComponentNames: true);
+
+            // Assert
+            Assert.Collection(
+                generated.Diagnostics,
+                d => Assert.Equal("RZ10012", d.Id),
+                d => Assert.Equal("RZ9996", d.Id));
+        }
+
+        [Fact]
+        public void ChildContent_ExplicitChildContent_StartsWithCharThatIsOtherLetterCategory_WhenLocalizedComponentNamesIsDisallowed()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(RenderChildContentComponent);
+
+            // Act
+            var generated = CompileToCSharp(@$"
+<RenderChildContent>
+<ChildContent>
+</ChildContent>
+<繁体字></繁体字>
+</RenderChildContent>", supportLocalizedComponentNames: false);
+
+            // Assert
+            Assert.Collection(
+                generated.Diagnostics,
                 d => Assert.Equal("RZ9996", d.Id));
         }
 

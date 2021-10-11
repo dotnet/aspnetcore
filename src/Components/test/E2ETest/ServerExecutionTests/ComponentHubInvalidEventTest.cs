@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Text.Json;
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
         }
 
-        protected async override Task InitializeAsync()
+        protected override async Task InitializeAsync()
         {
             var rootUri = ServerFixture.RootUri;
             await ConnectAutomaticallyAndWait(new Uri(rootUri, "/subdir"));
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.Equal(2, Batches.Count);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task DispatchingAnInvalidEventArgument_DoesNotProduceWarnings()
         {
             // Arrange
@@ -42,7 +42,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
             var eventDescriptor = Serialize(new WebEventDescriptor()
             {
-                BrowserRendererId = 0,
                 EventHandlerId = 3,
                 EventName = "click",
             });
@@ -51,7 +50,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await Client.ExpectCircuitError(() => Client.HubConnection.SendAsync(
                 "DispatchBrowserEvent",
                 eventDescriptor,
-                "{sadfadsf]"));
+                default(JsonElement)));
 
             // Assert
             var actualError = Assert.Single(Errors);
@@ -60,7 +59,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.Contains(Logs, l => (l.LogLevel, l.Exception?.Message) == (LogLevel.Debug, "There was an error parsing the event arguments. EventId: '3'."));
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task DispatchingAnInvalidEvent_DoesNotTriggerWarnings()
         {
             // Arrange
@@ -69,7 +68,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
             var eventDescriptor = Serialize(new WebEventDescriptor()
             {
-                BrowserRendererId = 0,
                 EventHandlerId = 1990,
                 EventName = "click",
             });
@@ -100,7 +98,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 "There is no event handler associated with this event. EventId: '1990'. (Parameter 'eventHandlerId')"));
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task DispatchingAnInvalidRenderAcknowledgement_DoesNotTriggerWarnings()
         {
             // Arrange
@@ -128,7 +126,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.Equal("Received an acknowledgement for batch with id '1846' when the last batch produced was '4'.", entry.Exception.Message);
         }
 
-        private string Serialize<T>(T browserEventDescriptor) =>
-            JsonSerializer.Serialize(browserEventDescriptor, TestJsonSerializerOptionsProvider.Options);
+        private JsonElement Serialize<T>(T browserEventDescriptor)
+        {
+            var jsonBytes = JsonSerializer.SerializeToUtf8Bytes(browserEventDescriptor, TestJsonSerializerOptionsProvider.Options);
+            var jsonDocument = JsonDocument.Parse(jsonBytes);
+
+            return jsonDocument.RootElement;
+        }
     }
 }

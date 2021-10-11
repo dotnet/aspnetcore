@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
                 {
                     if (annotation == null)
                     {
-                        throw new ArgumentException(nameof(annotations), "Annotation cannot be null");
+                        throw new ArgumentException("Annotation cannot be null", nameof(annotations));
                     }
                 }
 
@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
             var stack = new Stack<StackEntry>();
             stack.Push(new StackEntry(this, leading, trailing));
 
-            // Separated out stack processing logic so that it does not unintentionally refer to 
+            // Separated out stack processing logic so that it does not unintentionally refer to
             // "this", "leading" or "trailing.
             ProcessStack(writer, stack);
         }
@@ -297,7 +297,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         }
         #endregion
 
-        #region Tokens 
+        #region Tokens
 
         public virtual object GetValue()
         {
@@ -384,7 +384,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         }
         #endregion
 
-        #region Equivalence 
+        #region Equivalence
         public virtual bool IsEquivalentTo(GreenNode other)
         {
             if (this == other)

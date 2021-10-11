@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             try
             {
-                var type = GetSerializableType(context.ModelType);                
+                var type = GetSerializableType(context.ModelType);
                 using var xmlReader = CreateXmlReader(readStream, encoding, type);
 
                 var serializer = GetCachedSerializer(type);
@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// Called during deserialization to get the <see cref="XmlSerializer"/>.
         /// </summary>
         /// <returns>The <see cref="XmlSerializer"/> used during deserialization.</returns>
-        protected virtual XmlSerializer CreateSerializer(Type type)
+        protected virtual XmlSerializer? CreateSerializer(Type type)
         {
             try
             {
@@ -278,7 +278,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 }
             }
 
-            return (XmlSerializer)serializer;
+            return (XmlSerializer)serializer!;
         }
     }
 }

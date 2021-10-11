@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
 using System.IO;
@@ -40,28 +40,6 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Act
             await contentResult.ExecuteResultAsync(actionContext);
-
-            // Assert
-            MediaTypeAssert.Equal("text/plain; charset=utf-16", httpContext.Response.ContentType);
-        }
-
-        [Fact]
-        public async Task ContentResult_ExecuteAsync_Response_NullContent_SetsContentTypeAndEncoding()
-        {
-            // Arrange
-            var contentResult = new ContentResult
-            {
-                Content = null,
-                ContentType = new MediaTypeHeaderValue("text/plain")
-                {
-                    Encoding = Encoding.Unicode
-                }.ToString()
-            };
-            var httpContext = GetHttpContext();
-            var actionContext = GetActionContext(httpContext);
-
-            // Act
-            await ((IResult)contentResult).ExecuteAsync(httpContext);
 
             // Assert
             MediaTypeAssert.Equal("text/plain; charset=utf-16", httpContext.Response.ContentType);
@@ -165,36 +143,6 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(expectedContentData.Length, httpContext.Response.ContentLength);
         }
 
-        [Theory]
-        [MemberData(nameof(ContentResultContentTypeData))]
-        public async Task ContentResult_ExecuteAsync_SetContentTypeAndEncoding_OnResponse(
-           MediaTypeHeaderValue contentType,
-           string content,
-           string responseContentType,
-           string expectedContentType,
-           byte[] expectedContentData)
-        {
-            // Arrange
-            var contentResult = new ContentResult
-            {
-                Content = content,
-                ContentType = contentType?.ToString()
-            };
-            var httpContext = GetHttpContext();
-            var memoryStream = new MemoryStream();
-            httpContext.Response.Body = memoryStream;
-            httpContext.Response.ContentType = responseContentType;
-
-            // Act
-            await ((IResult)contentResult).ExecuteAsync(httpContext);
-
-            // Assert
-            var finalResponseContentType = httpContext.Response.ContentType;
-            Assert.Equal(expectedContentType, finalResponseContentType);
-            Assert.Equal(expectedContentData, memoryStream.ToArray());
-            Assert.Equal(expectedContentData.Length, httpContext.Response.ContentLength);
-        }
-
         public static TheoryData<string, string> ContentResult_WritesDataCorrectly_ForDifferentContentSizesData
         {
             get
@@ -290,31 +238,6 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Act
             await contentResult.ExecuteResultAsync(actionContext);
-
-            // Assert
-            memoryStream.Seek(0, SeekOrigin.Begin);
-            var streamReader = new StreamReader(memoryStream, encoding);
-            var actualContent = await streamReader.ReadToEndAsync();
-            Assert.Equal(content, actualContent);
-        }
-
-        [Theory]
-        [MemberData(nameof(ContentResult_WritesDataCorrectly_ForDifferentContentSizesData))]
-        public async Task ContentResult_ExecuteAsync_WritesDataCorrectly_ForDifferentContentSizes(string content, string contentType)
-        {
-            // Arrange
-            var contentResult = new ContentResult
-            {
-                Content = content,
-                ContentType = contentType
-            };
-            var httpContext = GetHttpContext();
-            var memoryStream = new MemoryStream();
-            httpContext.Response.Body = memoryStream;
-            var encoding = MediaTypeHeaderValue.Parse(contentType).Encoding;
-
-            // Act
-            await ((IResult)contentResult).ExecuteAsync(httpContext);
 
             // Assert
             memoryStream.Seek(0, SeekOrigin.Begin);

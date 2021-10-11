@@ -15,15 +15,13 @@ namespace Test
         {
             __builder.OpenElement(0, "parent");
             __builder.OpenElement(1, "child");
-            __builder.AddContent(2, 
 #nullable restore
-#line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
-             DateTime.Now
+#line (4,14)-(4,26) 24 "x:\dir\subdir\Test\TestComponent.cshtml"
+__builder.AddContent(2, DateTime.Now);
 
 #line default
 #line hidden
 #nullable disable
-            );
             __builder.CloseElement();
             __builder.CloseElement();
         }

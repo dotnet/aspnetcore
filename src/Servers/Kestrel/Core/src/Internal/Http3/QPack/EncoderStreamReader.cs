@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
         private int _stringIndex;
         private readonly DynamicTable _dynamicTable = new DynamicTable(1000); // TODO figure out architecture.
 
-        private readonly IntegerDecoder _integerDecoder = new IntegerDecoder();
+        private IntegerDecoder _integerDecoder;
         private State _state = State.Ready;
         private bool _huffman;
 

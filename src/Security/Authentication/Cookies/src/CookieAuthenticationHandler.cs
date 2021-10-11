@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             }
         }
 
-        private AuthenticationTicket CloneTicket(AuthenticationTicket ticket, ClaimsPrincipal? replacedPrincipal)
+        private static AuthenticationTicket CloneTicket(AuthenticationTicket ticket, ClaimsPrincipal? replacedPrincipal)
         {
             var principal = replacedPrincipal ?? ticket.Principal;
             var newPrincipal = new ClaimsPrincipal();
@@ -276,7 +276,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         }
 
         /// <inheritdoc />
-        protected async override Task HandleSignInAsync(ClaimsPrincipal user, AuthenticationProperties? properties)
+        protected override async Task HandleSignInAsync(ClaimsPrincipal user, AuthenticationProperties? properties)
         {
             if (user == null)
             {
@@ -369,7 +369,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         }
 
         /// <inheritdoc />
-        protected async override Task HandleSignOutAsync(AuthenticationProperties? properties)
+        protected override async Task HandleSignOutAsync(AuthenticationProperties? properties)
         {
             properties = properties ?? new AuthenticationProperties();
 

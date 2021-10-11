@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using OpenQA.Selenium;
@@ -11,15 +14,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest
         public static void Navigate(this IWebDriver browser, Uri baseUri, string relativeUrl, bool noReload)
         {
             var absoluteUrl = new Uri(baseUri, relativeUrl);
-
-            if (noReload)
-            {
-                var existingUrl = browser.Url;
-                if (string.Equals(existingUrl, absoluteUrl.AbsoluteUri, StringComparison.Ordinal))
-                {
-                    return;
-                }
-            }
 
             browser.Navigate().GoToUrl("about:blank");
             browser.Navigate().GoToUrl(absoluteUrl);

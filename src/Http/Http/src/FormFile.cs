@@ -1,11 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Net.Http.Headers;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -42,7 +36,7 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         public string ContentDisposition
         {
-            get { return Headers.ContentDisposition; }
+            get { return Headers.ContentDisposition.ToString(); }
             set { Headers.ContentDisposition = value; }
         }
 
@@ -51,7 +45,7 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         public string ContentType
         {
-            get { return Headers.ContentType; }
+            get { return Headers.ContentType.ToString(); }
             set { Headers.ContentType = value; }
         }
 

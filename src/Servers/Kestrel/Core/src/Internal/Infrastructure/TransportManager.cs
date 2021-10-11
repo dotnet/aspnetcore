@@ -1,17 +1,13 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Security;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
@@ -34,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         private ConnectionManager ConnectionManager => _serviceContext.ConnectionManager;
-        private IKestrelTrace Trace => _serviceContext.Log;
+        private KestrelTrace Trace => _serviceContext.Log;
 
         public async Task<EndPoint> BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig? endpointConfig, CancellationToken cancellationToken)
         {
@@ -57,15 +53,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
             var features = new FeatureCollection();
 
+            // This should always be set in production, but it's not set for InMemory tests.
+            // The transport will check if the feature is missing.
             if (listenOptions.HttpsOptions != null)
             {
-                // TODO Set other relevant values on options
-                var sslServerAuthenticationOptions = new SslServerAuthenticationOptions
-                {
-                    ServerCertificate = listenOptions.HttpsOptions.ServerCertificate
-                };
-
-                features.Set(sslServerAuthenticationOptions);
+                features.Set(HttpsConnectionMiddleware.CreateHttp3Options(listenOptions.HttpsOptions));
             }
 
             var transport = await _multiplexedTransportFactory.BindAsync(endPoint, features, cancellationToken).ConfigureAwait(false);
@@ -180,7 +172,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                  => _connectionListener.AcceptAsync(cancellationToken);
 
             public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
-                => _connectionListener.UnbindAsync();
+                => _connectionListener.UnbindAsync(cancellationToken);
 
             public ValueTask DisposeAsync()
                 => _connectionListener.DisposeAsync();
@@ -201,7 +193,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                  => _multiplexedConnectionListener.AcceptAsync(features: null, cancellationToken);
 
             public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
-                => _multiplexedConnectionListener.UnbindAsync();
+                => _multiplexedConnectionListener.UnbindAsync(cancellationToken);
 
             public ValueTask DisposeAsync()
                 => _multiplexedConnectionListener.DisposeAsync();

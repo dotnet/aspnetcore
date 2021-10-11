@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
@@ -424,6 +424,55 @@ namespace Test
             Assert.False(attribute.IsBooleanProperty);
             Assert.True(attribute.IsEnum);
             Assert.False(attribute.IsStringProperty);
+        }
+
+        [Fact] // editor-required parameters
+        public void Execute_EditorRequiredProperty_CreatesDescriptor()
+        {
+            // Arrange
+
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : ComponentBase
+    {
+        [Parameter]
+        [EditorRequired]
+        public string MyProperty { get; set; }
+    }
+}
+
+"));
+
+            Assert.Empty(compilation.GetDiagnostics());
+
+            var context = TagHelperDescriptorProviderContext.Create();
+            context.SetCompilation(compilation);
+
+            var provider = new ComponentTagHelperDescriptorProvider();
+
+            // Act
+            provider.Execute(context);
+
+            // Assert
+            var components = ExcludeBuiltInComponents(context);
+            components = AssertAndExcludeFullyQualifiedNameMatchComponents(components, expectedCount: 1);
+            var component = Assert.Single(components);
+
+            Assert.Equal("TestAssembly", component.AssemblyName);
+            Assert.Equal("Test.MyComponent", component.Name);
+
+            var attribute = Assert.Single(component.BoundAttributes);
+            Assert.Equal("MyProperty", attribute.Name);
+            Assert.Equal("System.String", attribute.TypeName);
+
+            Assert.False(attribute.HasIndexer);
+            Assert.False(attribute.IsBooleanProperty);
+            Assert.False(attribute.IsEnum);
+            Assert.True(attribute.IsStringProperty);
+            Assert.True(attribute.IsEditorRequired);
         }
 
         [Fact]

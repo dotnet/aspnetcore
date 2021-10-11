@@ -1,10 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.WebUtilities;
@@ -100,7 +101,8 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
                 result.ContentType,
                 response.ContentType,
-                DefaultContentType,
+                (DefaultContentType, Encoding.UTF8),
+                MediaType.GetEncoding,
                 out var resolvedContentType,
                 out var resolvedContentTypeEncoding);
 
@@ -123,6 +125,21 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
             try
             {
+                var value = result.Value;
+                if (value != null && _asyncEnumerableReaderFactory.TryGetReader(value.GetType(), out var reader))
+                {
+                    Log.BufferingAsyncEnumerable(_logger, value);
+                    try
+                    {
+                        value = await reader(value, context.HttpContext.RequestAborted);
+                    }
+                    catch (OperationCanceledException) { }
+                    if (context.HttpContext.RequestAborted.IsCancellationRequested)
+                    {
+                        return;
+                    }
+                }
+
                 await using (var writer = _writerFactory.CreateWriter(responseStream, resolvedContentTypeEncoding))
                 {
                     using var jsonWriter = new JsonTextWriter(writer);
@@ -131,12 +148,6 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
                     jsonWriter.AutoCompleteOnClose = false;
 
                     var jsonSerializer = JsonSerializer.Create(jsonSerializerSettings);
-                    var value = result.Value;
-                    if (value != null && _asyncEnumerableReaderFactory.TryGetReader(value.GetType(), out var reader))
-                    {
-                        Log.BufferingAsyncEnumerable(_logger, value);
-                        value = await reader(value);
-                    }
 
                     jsonSerializer.Serialize(jsonWriter, value);
                 }
@@ -178,17 +189,19 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
         private static class Log
         {
+            private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
+
             private static readonly Action<ILogger, string?, Exception?> _jsonResultExecuting = LoggerMessage.Define<string?>(
                 LogLevel.Information,
                 new EventId(1, "JsonResultExecuting"),
                 "Executing JsonResult, writing value of type '{Type}'.",
-                skipEnabledCheck: true);
+                SkipEnabledCheckLogOptions);
 
             private static readonly Action<ILogger, string?, Exception?> _bufferingAsyncEnumerable = LoggerMessage.Define<string?>(
                 LogLevel.Debug,
                 new EventId(1, "BufferingAsyncEnumerable"),
                 "Buffering IAsyncEnumerable instance of type '{Type}'.",
-                skipEnabledCheck: true);
+                SkipEnabledCheckLogOptions);
 
             public static void JsonResultExecuting(ILogger logger, object? value)
             {

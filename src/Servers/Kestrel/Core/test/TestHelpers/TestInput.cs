@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -13,15 +13,16 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     class TestInput : IDisposable
     {
-        private MemoryPool<byte> _memoryPool;
+        private readonly MemoryPool<byte> _memoryPool;
 
-        public TestInput(IKestrelTrace log = null, ITimeoutControl timeoutControl = null)
+        public TestInput(KestrelTrace log = null, ITimeoutControl timeoutControl = null)
         {
             _memoryPool = PinnedBlockMemoryPoolFactory.Create();
             var options = new PipeOptions(pool: _memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Http1ConnectionContext = TestContextFactory.CreateHttpConnectionContext(
                 serviceContext: new TestServiceContext
                 {
-                    Log = log ?? Mock.Of<IKestrelTrace>()
+                    Log = log ?? new KestrelTrace(NullLoggerFactory.Instance)
                 },
                 connectionContext: Mock.Of<ConnectionContext>(),
                 transport: Transport,

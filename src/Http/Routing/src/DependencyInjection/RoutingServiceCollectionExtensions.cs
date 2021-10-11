@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.ObjectModel;
@@ -75,7 +75,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddTransient<DataSourceDependentMatcher.Lifetime>();
             services.TryAddSingleton<EndpointMetadataComparer>(services =>
             {
-                // This has no public constructor. 
+                // This has no public constructor.
                 return new EndpointMetadataComparer(services);
             });
 
@@ -91,12 +91,17 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<EndpointSelector, DefaultEndpointSelector>();
             services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, HttpMethodMatcherPolicy>());
             services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, HostMatcherPolicy>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, AcceptsMatcherPolicy>());
 
             //
             // Misc infrastructure
             //
             services.TryAddSingleton<TemplateBinderFactory, DefaultTemplateBinderFactory>();
             services.TryAddSingleton<RoutePatternTransformer, DefaultRoutePatternTransformer>();
+
+            // Set RouteHandlerOptions.ThrowOnBadRequest in development
+            services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<RouteHandlerOptions>, ConfigureRouteHandlerOptions>());
+
             return services;
         }
 

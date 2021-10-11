@@ -1,10 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Logging;
@@ -17,21 +18,15 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
     /// Provides mechanisms for rendering <see cref="IComponent"/> instances in a
     /// web browser, dispatching events to them, and refreshing the UI as required.
     /// </summary>
-    internal class WebAssemblyRenderer : Renderer
+    internal class WebAssemblyRenderer : WebRenderer
     {
         private readonly ILogger _logger;
-        private readonly int _webAssemblyRendererId;
 
-        /// <summary>
-        /// Constructs an instance of <see cref="WebAssemblyRenderer"/>.
-        /// </summary>
-        /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to use when initializing components.</param>
-        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        public WebAssemblyRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
-            : base(serviceProvider, loggerFactory)
+        public WebAssemblyRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
+            : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)
         {
             // The WebAssembly renderer registers and unregisters itself with the static registry
-            _webAssemblyRendererId = RendererRegistry.Add(this);
+            RendererId = RendererRegistry.Add(this);
             _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
 
             ElementReferenceContext = DefaultWebAssemblyJSRuntime.Instance.ElementReferenceContext;
@@ -39,58 +34,26 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
 
         public override Dispatcher Dispatcher => NullDispatcher.Instance;
 
-        /// <summary>
-        /// Attaches a new root component to the renderer,
-        /// causing it to be displayed in the specified DOM element.
-        /// </summary>
-        /// <typeparam name="TComponent">The type of the component.</typeparam>
-        /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
-        /// <param name="parameters">The parameters for the component.</param>
-        /// <returns>A <see cref="Task"/> that represents the asynchronous rendering of the added component.</returns>
-        /// <remarks>
-        /// Callers of this method may choose to ignore the returned <see cref="Task"/> if they do not
-        /// want to await the rendering of the added component.
-        /// </remarks>
-        public Task AddComponentAsync<[DynamicallyAccessedMembers(Component)] TComponent>(string domElementSelector, ParameterView parameters) where TComponent : IComponent
-            => AddComponentAsync(typeof(TComponent), domElementSelector, parameters);
-
-        /// <summary>
-        /// Associates the <see cref="IComponent"/> with the <see cref="WebAssemblyRenderer"/>,
-        /// causing it to be displayed in the specified DOM element.
-        /// </summary>
-        /// <param name="componentType">The type of the component.</param>
-        /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
-        /// <param name="parameters">The list of root component parameters.</param>
-        /// <returns>A <see cref="Task"/> that represents the asynchronous rendering of the added component.</returns>
-        /// <remarks>
-        /// Callers of this method may choose to ignore the returned <see cref="Task"/> if they do not
-        /// want to await the rendering of the added component.
-        /// </remarks>
-        public Task AddComponentAsync([DynamicallyAccessedMembers(Component)] Type componentType, string domElementSelector, ParameterView parameters)
+        public Task AddComponentAsync([DynamicallyAccessedMembers(Component)] Type componentType, ParameterView parameters, string domElementSelector)
         {
-            var component = InstantiateComponent(componentType);
-            var componentId = AssignRootComponentId(component);
+            var componentId = AddRootComponent(componentType, domElementSelector);
+            return RenderRootComponentAsync(componentId, parameters);
+        }
 
-            // The only reason we're calling this synchronously is so that, if it throws,
-            // we get the exception back *before* attempting the first UpdateDisplayAsync
-            // (otherwise the logged exception will come from UpdateDisplayAsync instead of here)
-            // When implementing support for out-of-process runtimes, we'll need to call this
-            // asynchronously and ensure we surface any exceptions correctly.
-
+        protected override void AttachRootComponentToBrowser(int componentId, string domElementSelector)
+        {
             DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(
                 "Blazor._internal.attachRootComponentToElement",
                 domElementSelector,
                 componentId,
-                _webAssemblyRendererId);
-
-            return RenderRootComponentAsync(componentId, parameters);
+                RendererId);
         }
 
         /// <inheritdoc />
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            RendererRegistry.TryRemove(_webAssemblyRendererId);
+            RendererRegistry.TryRemove(RendererId);
         }
 
         /// <inheritdoc />
@@ -124,7 +87,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         {
             DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<int, RenderBatch, object>(
                 "Blazor._internal.renderBatch",
-                _webAssemblyRendererId,
+                RendererId,
                 batch);
 
             if (WebAssemblyCallQueue.HasUnstartedWork)
@@ -163,19 +126,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
 
         private static class Log
         {
-            private static readonly Action<ILogger, string, Exception> _unhandledExceptionRenderingComponent;
+            private static readonly Action<ILogger, string, Exception> _unhandledExceptionRenderingComponent = LoggerMessage.Define<string>(
+                LogLevel.Critical,
+                EventIds.UnhandledExceptionRenderingComponent,
+                "Unhandled exception rendering component: {Message}");
 
             private static class EventIds
             {
                 public static readonly EventId UnhandledExceptionRenderingComponent = new EventId(100, "ExceptionRenderingComponent");
-            }
-
-            static Log()
-            {
-                _unhandledExceptionRenderingComponent = LoggerMessage.Define<string>(
-                    LogLevel.Critical,
-                    EventIds.UnhandledExceptionRenderingComponent,
-                    "Unhandled exception rendering component: {Message}");
             }
 
             public static void UnhandledExceptionRenderingComponent(ILogger logger, Exception exception)

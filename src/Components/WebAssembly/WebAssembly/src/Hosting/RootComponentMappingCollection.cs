@@ -1,10 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Web;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
@@ -12,8 +13,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
     /// <summary>
     /// Defines a collection of <see cref="RootComponentMapping"/> items.
     /// </summary>
-    public class RootComponentMappingCollection : Collection<RootComponentMapping>
+    public class RootComponentMappingCollection : Collection<RootComponentMapping>, IJSComponentConfiguration
     {
+        /// <inheritdoc />
+        public JSComponentConfigurationStore JSComponents { get; } = new JSComponentConfigurationStore();
+
         /// <summary>
         /// Adds a component mapping to the collection.
         /// </summary>

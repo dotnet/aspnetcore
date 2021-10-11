@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 throw new ArgumentNullException(nameof(source));
             }
 
-            // Ads this source and its associated provider to the source
+            // Adds this source and its associated provider to the source
             // and provider references in this class. We make sure to load
             // the data from the provider so that values are properly initialized.
             _sources.Add(source);

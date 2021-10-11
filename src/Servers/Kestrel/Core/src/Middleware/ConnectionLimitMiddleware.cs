@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
@@ -13,15 +13,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     {
         private readonly Func<T, Task> _next;
         private readonly ResourceCounter _concurrentConnectionCounter;
-        private readonly IKestrelTrace _trace;
+        private readonly KestrelTrace _trace;
 
-        public ConnectionLimitMiddleware(Func<T, Task> next, long connectionLimit, IKestrelTrace trace)
+        public ConnectionLimitMiddleware(Func<T, Task> next, long connectionLimit, KestrelTrace trace)
             : this(next, ResourceCounter.Quota(connectionLimit), trace)
         {
         }
 
         // For Testing
-        internal ConnectionLimitMiddleware(Func<T, Task> next, ResourceCounter concurrentConnectionCounter, IKestrelTrace trace)
+        internal ConnectionLimitMiddleware(Func<T, Task> next, ResourceCounter concurrentConnectionCounter, KestrelTrace trace)
         {
             _next = next;
             _concurrentConnectionCounter = concurrentConnectionCounter;

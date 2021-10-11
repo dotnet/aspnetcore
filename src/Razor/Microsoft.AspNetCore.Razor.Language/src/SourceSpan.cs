@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Globalization;
@@ -17,17 +17,24 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         public SourceSpan(SourceLocation location, int contentLength)
-            : this(location.FilePath, location.AbsoluteIndex, location.LineIndex, location.CharacterIndex, contentLength)
+            : this(location.FilePath, location.AbsoluteIndex, location.LineIndex, location.CharacterIndex, contentLength, lineCount: 1, endCharacterIndex: 0)
         {
         }
 
         public SourceSpan(string filePath, int absoluteIndex, int lineIndex, int characterIndex, int length)
+            : this(filePath: filePath, absoluteIndex: absoluteIndex, lineIndex: lineIndex, characterIndex: characterIndex, length: length, lineCount: 0, endCharacterIndex: 0)
+        {
+        }
+
+        public SourceSpan(string filePath, int absoluteIndex, int lineIndex, int characterIndex, int length, int lineCount, int endCharacterIndex)
         {
             AbsoluteIndex = absoluteIndex;
             LineIndex = lineIndex;
             CharacterIndex = characterIndex;
             Length = length;
             FilePath = filePath;
+            LineCount = lineCount;
+            EndCharacterIndex = endCharacterIndex;
         }
 
         public SourceSpan(int absoluteIndex, int lineIndex, int characterIndex, int length)
@@ -42,6 +49,10 @@ namespace Microsoft.AspNetCore.Razor.Language
         public int LineIndex { get; }
 
         public int CharacterIndex { get; }
+
+        public int LineCount { get; }
+
+        public int EndCharacterIndex { get; }
 
         public string FilePath { get; }
 

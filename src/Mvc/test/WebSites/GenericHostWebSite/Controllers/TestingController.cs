@@ -1,9 +1,13 @@
-﻿using System;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace GenericHostWebSite.Controllers
 {
@@ -60,6 +64,30 @@ namespace GenericHostWebSite.Controllers
             else
             {
                 return Content("false");
+            }
+        }
+
+        [HttpGet("Testing/RedirectHandler/Redirect303")]
+        public IActionResult RedirectHandlerStatusCode303()
+        {
+            return new RedirectUsingStatusCode("Testing/Builder", HttpStatusCode.SeeOther);
+        }
+
+        public class RedirectUsingStatusCode : ActionResult
+        {
+            private readonly string _url;
+            private readonly HttpStatusCode _statusCode;
+
+            public RedirectUsingStatusCode(string url, HttpStatusCode statusCode)
+            {
+                _url = url;
+                _statusCode = statusCode;
+            }
+
+            public override void ExecuteResult(ActionContext context)
+            {
+                context.HttpContext.Response.Redirect(_url);
+                context.HttpContext.Response.StatusCode = (int)_statusCode;
             }
         }
 

@@ -1,4 +1,3 @@
-﻿
 [assembly: Microsoft.AspNetCore.Mvc.ApiConventionType(typeof(Microsoft.AspNetCore.Mvc.DefaultApiConventions))]
 
 namespace TestApp._INPUT_

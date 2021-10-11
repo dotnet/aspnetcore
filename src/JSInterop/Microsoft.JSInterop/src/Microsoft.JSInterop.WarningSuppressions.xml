@@ -39,12 +39,6 @@
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
-      <argument>IL2062</argument>
-      <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.JSInterop.Infrastructure.DotNetDispatcher.ParseArguments(Microsoft.JSInterop.JSRuntime,System.String,System.String,System.Type[])</property>
-    </attribute>
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
       <argument>IL2065</argument>
       <property name="Scope">member</property>
       <property name="Target">M:Microsoft.JSInterop.Infrastructure.DotNetDispatcher.ScanAssemblyForCallableMethods(Microsoft.JSInterop.Infrastructure.DotNetDispatcher.AssemblyKey)</property>
@@ -59,7 +53,7 @@
       <argument>ILLink</argument>
       <argument>IL2091</argument>
       <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.JSInterop.JSRuntime.&lt;InvokeAsync&gt;d__15`1.MoveNext</property>
+      <property name="Target">M:Microsoft.JSInterop.JSRuntime.&lt;InvokeAsync&gt;d__16`1.MoveNext</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>

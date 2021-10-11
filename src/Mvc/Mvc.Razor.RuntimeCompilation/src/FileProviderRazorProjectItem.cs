@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
     /// </summary>
     public class FileProviderRazorProjectItem : RazorProjectItem
     {
-        private string _root;
+        private readonly string _root;
         private string? _relativePhysicalPath;
         private bool _isRelativePhysicalPathSet;
 
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         public override bool Exists => FileInfo.Exists;
 
         /// <inheritdoc/>
-        public override string PhysicalPath => FileInfo.PhysicalPath;
+        public override string PhysicalPath => FileInfo.PhysicalPath ?? string.Empty;
 
         /// <inheritdoc/>
         public override string? RelativePhysicalPath

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         private readonly ILogger _logger;
         private readonly TimeSpan _closeTimeout;
         private volatile bool _aborted;
-        private HttpConnectionOptions _httpConnectionOptions;
+        private readonly HttpConnectionOptions _httpConnectionOptions;
 
         private IDuplexPipe? _transport;
 
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             {
                 // Full Framework will throw when trying to set the User-Agent header
                 // So avoid setting it in netstandard2.0 and only set it in netstandard2.1 and higher
-#if !NETSTANDARD2_0 && !NET461
+#if !NETSTANDARD2_0 && !NETFRAMEWORK
                 webSocket.Options.SetRequestHeader("User-Agent", Constants.UserAgentHeader.ToString());
 #else
                 // Set an alternative user agent header on Full framework
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             }
 
             try
-            { 
+            {
                 await webSocket.ConnectAsync(url, cancellationToken);
             }
             catch
@@ -181,8 +181,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             Log.StartedTransport(_logger);
 
             // Create the pipe pair (Application's writer is connected to Transport's reader, and vice versa)
-            var options = ClientPipeOptions.DefaultOptions;
-            var pair = DuplexPipe.CreateConnectionPair(options, options);
+            var pair = DuplexPipe.CreateConnectionPair(_httpConnectionOptions.TransportPipeOptions, _httpConnectionOptions.AppPipeOptions);
 
             _transport = pair.Transport;
             _application = pair.Application;
@@ -277,7 +276,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 #if NETSTANDARD2_1 || NETCOREAPP
                     // Because we checked the CloseStatus from the 0 byte read above, we don't need to check again after reading
                     var receiveResult = await socket.ReceiveAsync(memory, CancellationToken.None);
-#elif NETSTANDARD2_0 || NET461
+#elif NETSTANDARD2_0 || NETFRAMEWORK
                     var isArray = MemoryMarshal.TryGetArray<byte>(memory, out var arraySegment);
                     Debug.Assert(isArray);
 

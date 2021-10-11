@@ -10,7 +10,7 @@ export function hasDebuggingEnabled() {
   return (hasReferencedPdbs || debugBuild) && currentBrowserIsChrome;
 }
 
-export function attachDebuggerHotkey(resourceLoader: WebAssemblyResourceLoader) {
+export function attachDebuggerHotkey(resourceLoader: WebAssemblyResourceLoader): void {
   hasReferencedPdbs = !!resourceLoader.bootConfig.resources.pdb;
   debugBuild = resourceLoader.bootConfig.debugBuild;
   // Use the combination shift+alt+D because it isn't used by the major browsers

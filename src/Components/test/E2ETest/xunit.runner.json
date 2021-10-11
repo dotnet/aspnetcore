@@ -1,7 +1,6 @@
 {
-  // This is set to -1 to allow the usage of an
-  // unlimited ammount of threads.
-  "maxParallelThreads": -1,
   "diagnosticMessages": true,
-  "longRunningTestSeconds": 30
+  "longRunningTestSeconds": 30,
+  "parallelizeAssembly": false,
+  "parallelizeTestCollections": false
 }

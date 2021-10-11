@@ -33,15 +33,15 @@ task generatePOM {
             name groupId + ':' + artifactId
             licenses {
                 license {
-                    name 'The Apache Software License, Version 2.0'
-                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    name 'MIT License'
+                    url 'https://opensource.org/licenses/MIT'
                     distribution 'repo'
                 }
             }
             scm {
-                connection 'scm:git:git://github.com/dotnet/aspnetcore.git'
-                developerConnection 'scm:git:git://github.com/dotnet/aspnetcore.git'
-                url 'http://github.com/dotnet/aspnetcore/tree/main'
+                connection 'scm:git:https://github.com/dotnet/aspnetcore.git'
+                developerConnection 'scm:git:https://github.com/dotnet/aspnetcore.git'
+                url 'https://github.com/dotnet/aspnetcore/tree/main'
             }
             developers {
                 developer {

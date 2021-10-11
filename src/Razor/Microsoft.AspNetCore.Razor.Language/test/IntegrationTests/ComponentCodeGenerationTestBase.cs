@@ -1,9 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Components;
-using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
@@ -232,16 +231,15 @@ namespace Test
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/32193")]
-        public void ComponentWithConstrainedTypeParameters()
+        public void ComponentWithTypeParameters_WithSemicolon()
         {
             // Arrange
 
             // Act
             var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components;
-@typeparam TItem1 where TItem1 : class
-@typeparam TItem2 where TItem2 : struct
+@typeparam TItem1;
+@typeparam TItem2;
 
 <h1>Item1</h1>
 @foreach (var item2 in Items2)
@@ -260,6 +258,219 @@ namespace Test
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
             AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
             CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void ComponentWithTypeParameterArray()
+        {
+            // Arrange
+            var classes = @"
+public class Tag
+{
+    public string description { get; set; }
+}
+";
+
+            AdditionalSyntaxTrees.Add(Parse(classes));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components;
+@typeparam TItem
+
+<h1>Item</h1>
+
+<p>@ChildContent(Items1)</p>
+
+@foreach (var item in Items2)
+{
+    <p>@ChildContent(item)</p>
+}
+
+<p>@ChildContent(Items3())</p>
+
+@code {
+    [Parameter] public TItem[] Items1 { get; set; }
+    [Parameter] public List<TItem[]> Items2 { get; set; }
+    [Parameter] public Func<TItem[]> Items3 { get; set; }
+    [Parameter] public RenderFragment<TItem[]> ChildContent { get; set; }
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+
+            AdditionalSyntaxTrees.Add(Parse(generated.CodeDocument.GetCSharpDocument().GeneratedCode));
+            var useGenerated = CompileToCSharp("UseTestComponent.cshtml", @"
+@using Test
+<TestComponent Items1=items1 Items2=items2 Items3=items3>
+    <p>@context[0].description</p>
+</TestComponent>
+
+@code {
+    static Tag tag = new Tag() { description = ""A description.""};
+    Tag[] items1 = new [] { tag };
+    List<Tag[]> items2 = new List<Tag[]>() { new [] { tag } };
+    Tag[] items3() => new [] { tag };
+}");
+            AssertDocumentNodeMatchesBaseline(useGenerated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(useGenerated.CodeDocument);
+            CompileToAssembly(useGenerated);
+        }
+
+        [Fact]
+        public void ComponentWithConstrainedTypeParameters()
+        {
+            // Arrange
+            var classes = @"
+public class Image
+{
+    public string url { get; set; }
+    public int id { get; set; }
+
+    public Image()
+    {
+        url = ""https://example.com/default.png"";
+        id = 1;
+    }
+}
+
+public interface ITag
+{
+    string description { get; set; }
+}
+
+public class Tag : ITag
+{
+    public string description { get; set; }
+}
+";
+
+            AdditionalSyntaxTrees.Add(Parse(classes));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components;
+@typeparam TItem1 where TItem1 : Image
+@typeparam TItem2 where TItem2 : ITag
+@typeparam TItem3 where TItem3 : Image, new()
+
+<h1>Item1</h1>
+@foreach (var item2 in Items2)
+{
+    <p>
+    @ChildContent(item2);
+    </p>
+}
+
+<p>Item3</p>
+
+@code {
+    [Parameter] public TItem1 Item1 { get; set; }
+    [Parameter] public List<TItem2> Items2 { get; set; }
+    [Parameter] public TItem3 Item3 { get; set; }
+    [Parameter] public RenderFragment<TItem2> ChildContent { get; set; }
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+
+            AdditionalSyntaxTrees.Add(Parse(generated.CodeDocument.GetCSharpDocument().GeneratedCode));
+            var useGenerated = CompileToCSharp("UseTestComponent.cshtml", @"
+@using Test
+<TestComponent Item1=@item1 Items2=@items Item3=@item1>
+    <p>@context</p>
+</TestComponent>
+
+@code {
+    Image item1 = new Image() { id = 1, url=""https://example.com""};
+    static Tag tag1 = new Tag() { description = ""A description.""};
+    static Tag tag2 = new Tag() { description = ""Another description.""};
+    List<Tag> items = new List<Tag>() { tag1, tag2 };
+}");
+            AssertDocumentNodeMatchesBaseline(useGenerated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(useGenerated.CodeDocument);
+            CompileToAssembly(useGenerated);
+        }
+
+        [Fact]
+        public void ComponentWithConstrainedTypeParameters_WithSemicolon()
+        {
+            // Arrange
+            var classes = @"
+public class Image
+{
+    public string url { get; set; }
+    public int id { get; set; }
+
+    public Image()
+    {
+        url = ""https://example.com/default.png"";
+        id = 1;
+    }
+}
+
+public interface ITag
+{
+    string description { get; set; }
+}
+
+public class Tag : ITag
+{
+    public string description { get; set; }
+}
+";
+
+            AdditionalSyntaxTrees.Add(Parse(classes));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components;
+@typeparam TItem1 where TItem1 : Image;
+@typeparam TItem2 where TItem2 : ITag;
+@typeparam TItem3 where TItem3 : Image, new();
+
+<h1>Item1</h1>
+@foreach (var item2 in Items2)
+{
+    <p>
+    @ChildContent(item2);
+    </p>
+}
+
+<p>Item3</p>
+
+@code {
+    [Parameter] public TItem1 Item1 { get; set; }
+    [Parameter] public List<TItem2> Items2 { get; set; }
+    [Parameter] public TItem3 Item3 { get; set; }
+    [Parameter] public RenderFragment<TItem2> ChildContent { get; set; }
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+
+            AdditionalSyntaxTrees.Add(Parse(generated.CodeDocument.GetCSharpDocument().GeneratedCode));
+            var useGenerated = CompileToCSharp("UseTestComponent.cshtml", @"
+@using Test
+<TestComponent Item1=@item1 Items2=@items Item3=@item1>
+    <p>@context</p>
+</TestComponent>
+
+@code {
+    Image item1 = new Image() { id = 1, url=""https://example.com""};
+    static Tag tag1 = new Tag() { description = ""A description.""};
+    static Tag tag2 = new Tag() { description = ""Another description.""};
+    List<Tag> items = new List<Tag>() { tag1, tag2 };
+}");
+            AssertDocumentNodeMatchesBaseline(useGenerated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(useGenerated.CodeDocument);
+            CompileToAssembly(useGenerated);
         }
 
         [Fact]
@@ -517,6 +728,265 @@ namespace Test
             CompileToAssembly(generated);
         }
 
+        [Fact]
+        public void Component_WithEditorRequiredParameter_NoValueSpecified()
+        {
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+namespace Test
+{
+    public class ComponentWithEditorRequiredParameters : ComponentBase
+    {
+        [Parameter]
+        [EditorRequired]
+        public string Property1 { get; set; }
+    }
+}
+"));
+            var generated = CompileToCSharp(@"
+<ComponentWithEditorRequiredParameters />
+");
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated, throwOnFailure: false);
+
+            var diagnostics = Assert.Single(generated.Diagnostics);
+            Assert.Equal(RazorDiagnosticSeverity.Warning, diagnostics.Severity);
+            Assert.Equal("RZ2012", diagnostics.Id);
+        }
+
+        [Fact]
+        public void Component_WithEditorRequiredParameter_ValueSpecified()
+        {
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+namespace Test
+{
+    public class ComponentWithEditorRequiredParameters : ComponentBase
+    {
+        [Parameter]
+        [EditorRequired]
+        public string Property1 { get; set; }
+    }
+}
+"));
+            var generated = CompileToCSharp(@"
+<ComponentWithEditorRequiredParameters Property1=""Some Value"" />
+");
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+
+            Assert.Empty(generated.Diagnostics);
+        }
+
+        [Fact]
+        public void Component_WithEditorRequiredParameter_ValuesSpecifiedUsingSplatting()
+        {
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+namespace Test
+{
+    public class ComponentWithEditorRequiredParameters : ComponentBase
+    {
+        [Parameter]
+        [EditorRequired]
+        public string Property1 { get; set; }
+    }
+}
+"));
+            var generated = CompileToCSharp(@"
+<ComponentWithEditorRequiredParameters @attributes=""@(new Dictionary<string, object>())"" />
+");
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+
+            Assert.Empty(generated.Diagnostics);
+        }
+
+        [Fact]
+        public void Component_WithEditorRequiredChildContent_NoValueSpecified()
+        {
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+namespace Test
+{
+    public class ComponentWithEditorRequiredChildContent : ComponentBase
+    {
+        [Parameter]
+        [EditorRequired]
+        public RenderFragment ChildContent { get; set; }
+    }
+}
+"));
+            var generated = CompileToCSharp(@"
+<ComponentWithEditorRequiredChildContent />
+");
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated, throwOnFailure: false);
+
+            var diagnostics = Assert.Single(generated.Diagnostics);
+            Assert.Equal(RazorDiagnosticSeverity.Warning, diagnostics.Severity);
+            Assert.Equal("RZ2012", diagnostics.Id);
+        }
+
+        [Fact]
+        public void Component_WithEditorRequiredChildContent_ValueSpecified_WithoutName()
+        {
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+namespace Test
+{
+    public class ComponentWithEditorRequiredChildContent : ComponentBase
+    {
+        [Parameter]
+        [EditorRequired]
+        public RenderFragment ChildContent { get; set; }
+    }
+}
+"));
+            var generated = CompileToCSharp(@"
+<ComponentWithEditorRequiredChildContent>
+    <h1>Hello World</h1>
+</ComponentWithEditorRequiredChildContent>
+
+");
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+
+            Assert.Empty(generated.Diagnostics);
+        }
+
+        [Fact]
+        public void Component_WithEditorRequiredChildContent_ValueSpecifiedAsText_WithoutName()
+        {
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+namespace Test
+{
+    public class ComponentWithEditorRequiredChildContent : ComponentBase
+    {
+        [Parameter]
+        [EditorRequired]
+        public RenderFragment ChildContent { get; set; }
+    }
+}
+"));
+            var generated = CompileToCSharp(@"
+<ComponentWithEditorRequiredChildContent>This is some text</ComponentWithEditorRequiredChildContent>
+
+");
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+
+            Assert.Empty(generated.Diagnostics);
+        }
+
+        [Fact]
+        public void Component_WithEditorRequiredChildContent_ValueSpecified()
+        {
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+namespace Test
+{
+    public class ComponentWithEditorRequiredChildContent : ComponentBase
+    {
+        [Parameter]
+        [EditorRequired]
+        public RenderFragment ChildContent { get; set; }
+    }
+}
+"));
+            var generated = CompileToCSharp(@"
+<ComponentWithEditorRequiredChildContent>
+    <ChildContent>
+        <h1>Hello World</h1>
+    </ChildContent>
+</ComponentWithEditorRequiredChildContent>
+
+");
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+
+            Assert.Empty(generated.Diagnostics);
+        }
+
+        [Fact]
+        public void Component_WithEditorRequiredNamedChildContent_NoValueSpecified()
+        {
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+namespace Test
+{
+    public class ComponentWithEditorRequiredChildContent : ComponentBase
+    {
+        [Parameter]
+        [EditorRequired]
+        public RenderFragment Found { get; set; }
+
+        [Parameter]
+        public RenderFragment NotFound { get; set; }
+    }
+}
+"));
+            var generated = CompileToCSharp(@"
+<ComponentWithEditorRequiredChildContent>
+</ComponentWithEditorRequiredChildContent>
+
+");
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated, throwOnFailure: false);
+
+            var diagnostics = Assert.Single(generated.Diagnostics);
+            Assert.Equal(RazorDiagnosticSeverity.Warning, diagnostics.Severity);
+            Assert.Equal("RZ2012", diagnostics.Id);
+        }
+
+        [Fact]
+        public void Component_WithEditorRequiredNamedChildContent_ValueSpecified()
+        {
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+namespace Test
+{
+    public class ComponentWithEditorRequiredChildContent : ComponentBase
+    {
+        [Parameter]
+        [EditorRequired]
+        public RenderFragment Found { get; set; }
+
+        [Parameter]
+        public RenderFragment NotFound { get; set; }
+    }
+}
+"));
+            var generated = CompileToCSharp(@"
+<ComponentWithEditorRequiredChildContent>
+    <Found><h1>Here's Johnny!</h1></Found>
+</ComponentWithEditorRequiredChildContent>
+
+");
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+
+            Assert.Empty(generated.Diagnostics);
+        }
         #endregion
 
         #region Bind
@@ -6415,6 +6885,9 @@ Welcome to your new app.
             // Act
             var generated = CompileToCSharp(@"
 <input onfocus='alert(""Test"");' />
+<input onfocus=""alert(""Test"");"" />
+<input onfocus=""alert('Test');"" />
+<p data-options='{direction: ""fromtop"", animation_duration: 25, direction: ""reverse""}'></p>
 ");
 
             // Assert
@@ -6527,6 +7000,97 @@ namespace Test
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
             AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
             CompileToAssembly(generated);
+        }
+
+        #endregion
+
+        #region LinePragmas
+
+        [Fact]
+        public void ProducesEnhancedLinePragmaWhenNecessary()
+        {
+            var generated = CompileToCSharp(@"
+<h1>Single line statement</h1>
+
+Time: @DateTime.Now
+
+<h1>Multiline block statement</h1>
+
+@JsonToHtml(@""{
+  'key1': 'value1'
+  'key2': 'value2'
+}"")
+
+@code {
+    public string JsonToHtml(string foo)
+    {
+        return foo;
+    }
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void ProducesStandardLinePragmaForCSharpCode()
+        {
+            var generated = CompileToCSharp(@"
+<h1>Conditional statement</h1>
+@for (var i = 0; i < 10; i++)
+{
+    <p>@i</p>
+}
+
+<h1>Statements inside code block</h1>
+@{System.Console.WriteLine(1);System.Console.WriteLine(2);}
+
+<h1>Full-on code block</h1>
+@code {
+    [Parameter]
+    public int IncrementAmount { get; set; }
+}
+", throwOnFailure: false);
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated, throwOnFailure: false);
+        }
+
+        [Fact]
+        public void CanProduceLinePragmasForComponentWithRenderFragment()
+        {
+            var generated = CompileToCSharp(@"
+<div class=""row"">
+  <a href=""#"" @onclick=Toggle class=""col-12"">@ActionText</a>
+  @if (!Collapsed)
+  {
+    <div class=""col-12 card card-body"">
+      @ChildContent
+    </div>
+  }
+</div>
+@code
+{
+  [Parameter]
+  public RenderFragment ChildContent { get; set; } = (context) => <p>@context</p>
+  [Parameter]
+  public bool Collapsed { get; set; }
+  string ActionText { get => Collapsed ? ""Expand"" : ""Collapse""; }
+  void Toggle()
+  {
+    Collapsed = !Collapsed;
+  }
+}", throwOnFailure: false);
+
+// Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated, throwOnFailure: false);
         }
 
         #endregion

@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 using System.Linq;
 using System.Net;
@@ -28,6 +31,14 @@ namespace CustomAuthorizationFailureResponse.Authorization
             // if the authorization was forbidden, let's use custom logic to handle that.
             if (policyAuthorizationResult.Forbidden && policyAuthorizationResult.AuthorizationFailure != null)
             {
+                if (policyAuthorizationResult.AuthorizationFailure.FailureReasons.Any())
+                {
+                    await httpContext.Response.WriteAsync(policyAuthorizationResult.AuthorizationFailure.FailureReasons.First().Message);
+
+                    // return right away as the default implementation would overwrite the status code
+                    return;
+                }
+
                 // as an example, let's return 404 if specific requirement has failed
                 if (policyAuthorizationResult.AuthorizationFailure.FailedRequirements.Any(requirement => requirement is SampleRequirement))
                 {

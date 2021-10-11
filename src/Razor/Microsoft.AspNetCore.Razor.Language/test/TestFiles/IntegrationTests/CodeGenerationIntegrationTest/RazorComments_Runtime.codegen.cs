@@ -41,15 +41,15 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 #nullable disable
             WriteLiteral("<p>But this should show the comment syntax: ");
 #nullable restore
-#line 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorComments.cshtml"
-                                       Write(bar);
+#line (13,46)-(13,49) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorComments.cshtml"
+Write(bar);
 
 #line default
 #line hidden
 #nullable disable
             WriteLiteral("</p>\r\n\r\n");
 #nullable restore
-#line 15 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorComments.cshtml"
+#line (15,3)-(15,4) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorComments.cshtml"
 Write(ab);
 
 #line default

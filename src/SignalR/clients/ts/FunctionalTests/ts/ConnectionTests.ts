@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 import { HttpTransportType, IHttpConnectionOptions, TransferFormat } from "@microsoft/signalr";
 import { DEFAULT_TIMEOUT_INTERVAL, eachHttpClient, eachTransport, ECHOENDPOINT_URL, ENDPOINT_BASE_URL, HTTPS_ECHOENDPOINT_URL, shouldRunHttpsTests } from "./Common";

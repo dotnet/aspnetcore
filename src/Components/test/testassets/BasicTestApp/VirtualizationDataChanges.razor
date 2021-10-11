@@ -38,10 +38,33 @@
     </Virtualize>
 </div>
 
+<h4>Large data set with size changes</h4>
+<p>
+    Data set length:
+    <select id="large-dataset-length" value="@largeDataSetLength" @onchange="@(e => SetLargeDataSetLengthAsync(int.Parse((string)e.Value)))">
+        <option>25</option>
+        <option>1000</option>
+        <option>100000</option>
+    </select>
+    Last rendered:
+    <span id="large-dataset-length-lastrendered">@largeDataSetLengthLastRendered</span>
+</p>
+<div id="removing-many" style="overflow-y: auto; height: 200px; border: 1px dashed gray;">
+    <Virtualize @ref="removeManyVirtualize" ItemsProvider="GetLargeDataSetAsync">
+        <div @key="@context.Name" class="person" style="border-bottom: 1px solid silver; padding: 4px;">
+            <span>@context.Name</span>
+        </div>
+    </Virtualize>
+</div>
+
 @code {
     Virtualize<Person> asyncVirtualize;
+    Virtualize<Person> removeManyVirtualize;
     List<Person> fixedPeople = Enumerable.Range(1, 3).Select(GeneratePerson).ToList();
     int numPeopleInItemsProvider = 3;
+
+    int largeDataSetLength = 25;
+    int? largeDataSetLengthLastRendered;
 
     void AddPersonToFixedList()
     {
@@ -67,6 +90,27 @@
         return new ItemsProviderResult<Person>(
             Enumerable.Range(1 + request.StartIndex, lastIndexExcl - request.StartIndex).Select(GeneratePerson).ToList(),
             numPeopleInItemsProvider);
+    }
+
+    async Task SetLargeDataSetLengthAsync(int length)
+    {
+        largeDataSetLength = length;
+        await removeManyVirtualize.RefreshDataAsync();
+    }
+
+    async ValueTask<ItemsProviderResult<Person>> GetLargeDataSetAsync(ItemsProviderRequest request)
+    {
+        await Task.Delay(500);
+        largeDataSetLengthLastRendered = largeDataSetLength;
+
+        // Behave like a .Skip(startIndex).Take(count), so that if you ask for data beyond the end of the
+        // set, you get back nothing
+        var lastIndexExcl = Math.Min(request.StartIndex + request.Count, largeDataSetLength);
+        var effectiveCount = lastIndexExcl - request.StartIndex;
+        var resultItems = effectiveCount <= 0
+            ? Enumerable.Empty<Person>()
+            : Enumerable.Range(1 + request.StartIndex, effectiveCount).Select(GeneratePerson).ToList();
+        return new ItemsProviderResult<Person>(resultItems, largeDataSetLength);
     }
 
     class Person

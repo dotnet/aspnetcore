@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Net.Http;
@@ -14,9 +14,9 @@ namespace Wasm.Performance.Driver
     class Selenium
     {
         const int SeleniumPort = 4444;
-        static bool RunHeadlessBrowser = true;
+        const bool RunHeadlessBrowser = true;
 
-        static bool PoolForBrowserLogs = true;
+        const bool PoolForBrowserLogs = true;
 
         private static async ValueTask<Uri> WaitForServerAsync(int port, CancellationToken cancellationToken)
         {
@@ -49,7 +49,7 @@ namespace Wasm.Performance.Driver
                     }
                 }
 
-                await Task.Delay(1000);
+                await Task.Delay(1000, cancellationToken);
             }
 
             throw new Exception($"Unable to connect to selenium-server at {uri}");
@@ -71,7 +71,7 @@ namespace Wasm.Performance.Driver
                 options.AddArgument("--enable-precise-memory-info");
             }
 
-            options.SetLoggingPreference(LogType.Browser, LogLevel.All);
+            options.SetLoggingPreference(LogType.Browser, OpenQA.Selenium.LogLevel.All);
 
             var attempt = 0;
             const int MaxAttempts = 3;
@@ -93,7 +93,7 @@ namespace Wasm.Performance.Driver
                     if (PoolForBrowserLogs)
                     {
                         // Run in background.
-                        var logs = new RemoteLogs(driver);
+                        var logs = driver.Manage().Logs;
                         _ = Task.Run(async () =>
                         {
                             while (!cancellationToken.IsCancellationRequested)

@@ -21,7 +21,7 @@ namespace System.Net.Http.HPack
                 400 => 12,
                 404 => 13,
                 500 => 14,
-                _ => throw new ArgumentOutOfRangeException()
+                _ => throw new ArgumentOutOfRangeException(nameof(status))
             };
 
         private static readonly HeaderField[] s_staticDecoderTable = new HeaderField[]

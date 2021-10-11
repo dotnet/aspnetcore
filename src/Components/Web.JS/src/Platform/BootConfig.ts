@@ -1,13 +1,19 @@
+import { WebAssemblyBootResourceType } from './WebAssemblyStartOptions';
+
+type LoadBootResourceCallback = (type: WebAssemblyBootResourceType, name: string, defaultUri: string, integrity: string) => string | Promise<Response> | null | undefined;
+
 export class BootConfigResult {
   private constructor(public bootConfig: BootJsonData, public applicationEnvironment: string) {
   }
 
-  static async initAsync(environment?: string): Promise<BootConfigResult> {
-    const bootConfigResponse = await fetch('_framework/blazor.boot.json', {
-      method: 'GET',
-      credentials: 'include',
-      cache: 'no-cache'
-    });
+  static async initAsync(loadBootResource?: LoadBootResourceCallback, environment?: string): Promise<BootConfigResult> {
+    const loaderResponse = loadBootResource !== undefined ?
+      loadBootResource('manifest', 'blazor.boot.json', '_framework/blazor.boot.json', '') :
+      defaultLoadBlazorBootJson('_framework/blazor.boot.json');
+
+    const bootConfigResponse = loaderResponse instanceof Promise ?
+      await loaderResponse :
+      await defaultLoadBlazorBootJson(loaderResponse ?? '_framework/blazor.boot.json');
 
     // While we can expect an ASP.NET Core hosted application to include the environment, other
     // hosts may not. Assume 'Production' in the absence of any specified value.
@@ -16,7 +22,15 @@ export class BootConfigResult {
     bootConfig.modifiableAssemblies = bootConfigResponse.headers.get('DOTNET-MODIFIABLE-ASSEMBLIES');
 
     return new BootConfigResult(bootConfig, applicationEnvironment);
-  };
+
+    function defaultLoadBlazorBootJson(url: string) : Promise<Response> {
+      return fetch(url, {
+        method: 'GET',
+        credentials: 'include',
+        cache: 'no-cache',
+      });
+    }
+  }
 }
 
 // Keep in sync with bootJsonData from the BlazorWebAssemblySDK
@@ -34,12 +48,16 @@ export interface BootJsonData {
   modifiableAssemblies: string | null;
 }
 
+export type BootJsonDataExtension = { [extensionName: string]: ResourceList };
+
 export interface ResourceGroups {
   readonly assembly: ResourceList;
   readonly lazyAssembly: ResourceList;
   readonly pdb?: ResourceList;
   readonly runtime: ResourceList;
-  readonly satelliteResources?: { [cultureName: string] : ResourceList };
+  readonly satelliteResources?: { [cultureName: string]: ResourceList };
+  readonly libraryInitializers?: ResourceList,
+  readonly extensions?: BootJsonDataExtension
 }
 
 export type ResourceList = { [name: string]: string };

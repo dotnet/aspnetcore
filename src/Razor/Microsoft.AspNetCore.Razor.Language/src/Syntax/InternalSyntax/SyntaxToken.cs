@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
             }
         }
 
-        public override sealed GreenNode GetLeadingTrivia()
+        public sealed override GreenNode GetLeadingTrivia()
         {
             return _leadingTrivia;
         }
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
             return _leadingTrivia == null ? 0 : _leadingTrivia.FullWidth;
         }
 
-        public override sealed GreenNode GetTrailingTrivia()
+        public sealed override GreenNode GetTrailingTrivia()
         {
             return _trailingTrivia;
         }
@@ -131,12 +131,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
             return new SyntaxToken(Kind, Content, _leadingTrivia, _trailingTrivia, GetDiagnostics(), annotations);
         }
 
-        protected override sealed int GetSlotCount()
+        protected sealed override int GetSlotCount()
         {
             return 0;
         }
 
-        internal override sealed GreenNode GetSlot(int index)
+        internal sealed override GreenNode GetSlot(int index)
         {
             throw new InvalidOperationException("Tokens don't have slots.");
         }

@@ -1,19 +1,18 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
-using System.Threading.Tasks;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.WebView.Services
 {
-    internal class WebViewRenderer : Renderer
+    internal class WebViewRenderer : WebRenderer
     {
         private readonly Queue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new();
-        private readonly Dictionary<string, int> _componentIdBySelector = new();
         private readonly Dispatcher _dispatcher;
         private readonly IpcSender _ipcSender;
         private long nextRenderBatchId = 1;
@@ -23,12 +22,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
             Dispatcher dispatcher,
             IpcSender ipcSender,
             ILoggerFactory loggerFactory,
-            ElementReferenceContext elementReferenceContext) :
-            base(serviceProvider, loggerFactory)
+            WebViewJSRuntime jsRuntime,
+            JSComponentInterop jsComponentInterop) :
+            base(serviceProvider, loggerFactory, jsRuntime.ReadJsonSerializerOptions(), jsComponentInterop)
         {
             _dispatcher = dispatcher;
             _ipcSender = ipcSender;
-            ElementReferenceContext = elementReferenceContext;
+
+            ElementReferenceContext = jsRuntime.ElementReferenceContext;
         }
 
         public override Dispatcher Dispatcher => _dispatcher;
@@ -56,34 +57,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
             return tcs.Task;
         }
 
-        public async Task AddRootComponentAsync(Type componentType, string selector, ParameterView parameters)
+        protected override void AttachRootComponentToBrowser(int componentId, string domElementSelector)
         {
-            if (_componentIdBySelector.ContainsKey(selector))
-            {
-                throw new InvalidOperationException("A component is already associated with the given selector.");
-            }
-
-            var component = InstantiateComponent(componentType);
-            var componentId = AssignRootComponentId(component);
-
-            _componentIdBySelector.Add(selector, componentId);
-            _ipcSender.AttachToDocument(componentId, selector);
-
-            await RenderRootComponentAsync(componentId, parameters);
+            _ipcSender.AttachToDocument(componentId, domElementSelector);
         }
 
-        public async Task RemoveRootComponentAsync(string selector)
-        {
-            if (!_componentIdBySelector.TryGetValue(selector, out var componentId))
-            {
-                throw new InvalidOperationException("Could not find a component Id associated with the given selector.");
-            }
+        public new int AddRootComponent(Type componentType, string domElementSelector)
+           => base.AddRootComponent(componentType, domElementSelector);
 
-            // TODO: The renderer needs an API to do trigger the disposal of the component tree.
-            await Task.CompletedTask;
+        public new Task RenderRootComponentAsync(int componentId, ParameterView parameters)
+           => base.RenderRootComponentAsync(componentId, parameters);
 
-            _ipcSender.DetachFromDocument(componentId);
-        }
+        public new void RemoveRootComponent(int componentId)
+           => base.RemoveRootComponent(componentId);
 
         public void NotifyRenderCompleted(long batchId)
         {

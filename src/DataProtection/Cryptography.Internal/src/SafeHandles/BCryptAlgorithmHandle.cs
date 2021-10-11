@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
     /// <summary>
     /// Represents a handle to a BCrypt algorithm provider from which keys and hashes can be created.
     /// </summary>
-    internal unsafe sealed class BCryptAlgorithmHandle : BCryptHandle
+    internal sealed unsafe class BCryptAlgorithmHandle : BCryptHandle
     {
         // Called by P/Invoke when returning SafeHandles
         private BCryptAlgorithmHandle() { }

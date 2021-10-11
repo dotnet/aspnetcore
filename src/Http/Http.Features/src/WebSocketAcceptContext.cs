@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Net.WebSockets;
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Http
 
         /// <summary>
         /// Disables server context takeover when using compression.
-        /// This setting reduces the memory overhead of compression at the cost of a potentially worse compresson ratio.
+        /// This setting reduces the memory overhead of compression at the cost of a potentially worse compression ratio.
         /// </summary>
         /// <remarks>
         /// This property does nothing when <see cref="DangerousEnableCompression"/> is false,
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Http
 
         /// <summary>
         /// Sets the maximum base-2 logarithm of the LZ77 sliding window size that can be used for compression.
-        /// This setting reduces the memory overhead of compression at the cost of a potentially worse compresson ratio.
+        /// This setting reduces the memory overhead of compression at the cost of a potentially worse compression ratio.
         /// </summary>
         /// <remarks>
         /// This property does nothing when <see cref="DangerousEnableCompression"/> is false,

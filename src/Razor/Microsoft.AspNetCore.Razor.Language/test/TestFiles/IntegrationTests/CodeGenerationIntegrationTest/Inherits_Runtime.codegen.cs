@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         {
             WriteLiteral("\r\n");
 #nullable restore
-#line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inherits.cshtml"
+#line (3,2)-(3,7) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inherits.cshtml"
 Write(foo());
 
 #line default

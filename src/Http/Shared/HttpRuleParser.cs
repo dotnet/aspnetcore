@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics.Contracts;
@@ -52,7 +52,7 @@ namespace Microsoft.Net.Http.Headers
 
             var tokenChars = new bool[128]; // everything is false
 
-            for (int i = 33; i < 127; i++) // skip Space (32) & DEL (127)
+            for (var i = 33; i < 127; i++) // skip Space (32) & DEL (127)
             {
                 tokenChars[i] = true;
             }
@@ -140,7 +140,7 @@ namespace Microsoft.Net.Http.Headers
                     // If we have a #13 char, it must be followed by #10 and then at least one SP or HT.
                     if ((current + 2 < input.Length) && (input[current + 1] == LF))
                     {
-                        char spaceOrTab = input[current + 2];
+                        var spaceOrTab = input[current + 2];
                         if ((spaceOrTab == SP) || (spaceOrTab == Tab))
                         {
                             current += 3;
@@ -300,7 +300,7 @@ namespace Microsoft.Net.Http.Headers
                         }
 
                         var nestedLength = 0;
-                        HttpParseResult nestedResult = GetExpressionLength(input, current, openChar, closeChar,
+                        var nestedResult = GetExpressionLength(input, current, openChar, closeChar,
                             supportsNesting, ref nestedCount, out nestedLength);
 
                         switch (nestedResult)

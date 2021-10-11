@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 import { HeaderNames } from "./HeaderNames";
 import { HttpClient } from "./HttpClient";
@@ -41,11 +41,9 @@ export class WebSocketTransport implements ITransport {
         Arg.isIn(transferFormat, TransferFormat, "transferFormat");
         this._logger.log(LogLevel.Trace, "(WebSockets transport) Connecting.");
 
+        let token: string;
         if (this._accessTokenFactory) {
-            const token = await this._accessTokenFactory();
-            if (token) {
-                url += (url.indexOf("?") < 0 ? "?" : "&") + `access_token=${encodeURIComponent(token)}`;
-            }
+            token = await this._accessTokenFactory();
         }
 
         return new Promise<void>((resolve, reject) => {
@@ -55,18 +53,27 @@ export class WebSocketTransport implements ITransport {
             let opened = false;
 
             if (Platform.isNode) {
-                const headers = {};
+                const headers: {[k: string]: string} = {};
                 const [name, value] = getUserAgentHeader();
                 headers[name] = value;
+                if (token) {
+                    headers[HeaderNames.Authorization] = `Bearer ${token}`;
+                }
 
                 if (cookies) {
-                    headers[HeaderNames.Cookie] = `${cookies}`;
+                    headers[HeaderNames.Cookie] = cookies;
                 }
 
                 // Only pass headers when in non-browser environments
                 webSocket = new this._webSocketConstructor(url, undefined, {
                     headers: { ...headers, ...this._headers },
                 });
+            }
+            else
+            {
+                if (token) {
+                    url += (url.indexOf("?") < 0 ? "?" : "&") + `access_token=${encodeURIComponent(token)}`;
+                }
             }
 
             if (!webSocket) {

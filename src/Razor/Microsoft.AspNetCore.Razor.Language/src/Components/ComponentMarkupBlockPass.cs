@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -327,12 +327,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     return;
                 }
 
-                Builder.Append("=\"");
+                // We examine the node.Prefix (e.g. " onfocus='" or " on focus=\"")
+                // to preserve the quote type that is used in the original markup.
+                var quoteType = node.Prefix.EndsWith("'", StringComparison.Ordinal) ? "'" : "\"";
+
+                Builder.Append('=');
+                Builder.Append(quoteType);
 
                 // Visit Children
                 base.VisitDefault(node);
 
-                Builder.Append('"');
+                Builder.Append(quoteType);
             }
 
             public override void VisitHtmlAttributeValue(HtmlAttributeValueIntermediateNode node)

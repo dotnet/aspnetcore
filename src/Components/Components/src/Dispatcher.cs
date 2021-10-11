@@ -1,10 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Sections;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -13,6 +14,8 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     public abstract class Dispatcher
     {
+        private SectionRegistry? _sectionRegistry;
+
         /// <summary>
         /// Creates a default instance of <see cref="Dispatcher"/>.
         /// </summary>
@@ -23,6 +26,11 @@ namespace Microsoft.AspNetCore.Components
         /// Provides notifications of unhandled exceptions that occur within the dispatcher.
         /// </summary>
         internal event UnhandledExceptionEventHandler? UnhandledException;
+
+        /// <summary>
+        /// Gets the <see cref="Sections.SectionRegistry"/> associated with the dispatcher.
+        /// </summary>
+        internal SectionRegistry SectionRegistry => _sectionRegistry ??= new();
 
         /// <summary>
         /// Validates that the currently executing code is running inside the dispatcher.

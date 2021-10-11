@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
@@ -175,6 +175,22 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             actions.Perform();
             // drop doesn't seem to trigger in Selenium. But it's sufficient to determine "any" drag event works
             Browser.Equal("ondragstart,", () => output.Text);
+        }
+
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32373")]
+        public void TouchEvent_CanTrigger()
+        {
+            Browser.MountTestComponent<TouchEventComponent>();
+
+            var input = Browser.Exists(By.Id("touch_input"));
+
+            var output = Browser.Exists(By.Id("output"));
+            Assert.Equal(string.Empty, output.Text);
+
+            var actions = new TouchActions(Browser).SingleTap(input);
+
+            actions.Perform();
+            Browser.Equal("touchstarttouchend,", () => output.Text);
         }
 
         [Fact]

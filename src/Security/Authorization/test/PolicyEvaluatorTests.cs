@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -49,6 +49,26 @@ namespace Microsoft.AspNetCore.Authorization.Policy.Test
             // Assert
             Assert.True(result.Succeeded);
             Assert.Equal(3, result.Principal.Identities.Count());
+        }
+
+        [Fact]
+        public async Task AuthenticateMergeSchemesPreservesSingleScheme()
+        {
+            // Arrange
+            var evaluator = BuildEvaluator();
+            var context = new DefaultHttpContext();
+            var auth = new EchoAuthentication();
+            var services = new ServiceCollection().AddSingleton<IAuthenticationService>(auth);
+            context.RequestServices = services.BuildServiceProvider();
+            var policy = new AuthorizationPolicyBuilder().AddAuthenticationSchemes("A").RequireAssertion(_ => true).Build();
+
+            // Act
+            var result = await evaluator.AuthenticateAsync(policy, context);
+
+            // Assert
+            Assert.True(result.Succeeded);
+            Assert.Single(result.Principal.Identities);
+            Assert.Equal(auth.Principal, result.Principal);
         }
 
 
@@ -174,57 +194,42 @@ namespace Microsoft.AspNetCore.Authorization.Policy.Test
         public class SadAuthentication : IAuthenticationService
         {
             public Task<AuthenticateResult> AuthenticateAsync(HttpContext context, string scheme)
-            {
-                return Task.FromResult(AuthenticateResult.Fail("Sad."));
-            }
+                => Task.FromResult(AuthenticateResult.Fail("Sad."));
 
             public Task ChallengeAsync(HttpContext context, string scheme, AuthenticationProperties properties)
-            {
-                throw new System.NotImplementedException();
-            }
+                => throw new NotImplementedException();
 
             public Task ForbidAsync(HttpContext context, string scheme, AuthenticationProperties properties)
-            {
-                throw new System.NotImplementedException();
-            }
+                => throw new NotImplementedException();
 
             public Task SignInAsync(HttpContext context, string scheme, ClaimsPrincipal principal, AuthenticationProperties properties)
-            {
-                throw new System.NotImplementedException();
-            }
+                    => throw new NotImplementedException();
 
             public Task SignOutAsync(HttpContext context, string scheme, AuthenticationProperties properties)
-            {
-                throw new System.NotImplementedException();
-            }
+                    => throw new NotImplementedException();
         }
 
         public class EchoAuthentication : IAuthenticationService
         {
+            public ClaimsPrincipal Principal;
+
             public Task<AuthenticateResult> AuthenticateAsync(HttpContext context, string scheme)
             {
-                return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(new ClaimsIdentity(scheme)), scheme)));
+                Principal = new ClaimsPrincipal(new ClaimsIdentity(scheme));
+                return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(Principal, scheme)));
             }
 
             public Task ChallengeAsync(HttpContext context, string scheme, AuthenticationProperties properties)
-            {
-                throw new System.NotImplementedException();
-            }
+                => throw new NotImplementedException();
 
             public Task ForbidAsync(HttpContext context, string scheme, AuthenticationProperties properties)
-            {
-                throw new System.NotImplementedException();
-            }
+                => throw new NotImplementedException();
 
             public Task SignInAsync(HttpContext context, string scheme, ClaimsPrincipal principal, AuthenticationProperties properties)
-            {
-                throw new System.NotImplementedException();
-            }
+                => throw new NotImplementedException();
 
             public Task SignOutAsync(HttpContext context, string scheme, AuthenticationProperties properties)
-            {
-                throw new System.NotImplementedException();
-            }
+                => throw new NotImplementedException();
         }
 
         private class DummyRequirement : IAuthorizationRequirement {}

@@ -1,6 +1,5 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 using System;
 
@@ -24,7 +23,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             {
                 if (string.IsNullOrEmpty(value))
                 {
-                    throw new ArgumentException(nameof(value), $"{nameof(BlobName)} must be non-empty string.");
+                    throw new ArgumentException($"{nameof(BlobName)} must be non-empty string.", nameof(value));
                 }
                 _blobName = value;
             }
@@ -39,7 +38,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             var timestamp = context.Timestamp;
             return $"{context.AppName}/{timestamp.Year}/{timestamp.Month:00}/{timestamp.Day:00}/{timestamp.Hour:00}/{context.Identifier}";
         };
-       
+
         internal string ContainerUrl { get; set; }
 
         internal string ApplicationName { get; set; }

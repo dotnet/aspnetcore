@@ -1,12 +1,13 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Diagnostics.Tracing;
 using System.Net.Security;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
+using System.Text.Json;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
@@ -36,6 +37,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private long _failedTlsHandshakes;
         private long _httpRequestQueueLength;
         private long _currentUpgradedHttpRequests;
+
+        private readonly List<WeakReference<KestrelServerOptions>> _options = new();
 
         private KestrelEventSource()
         {
@@ -215,6 +218,61 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [Event(11, Level = EventLevel.LogAlways)]
+        public void Configuration(int instanceId, string configuration)
+        {
+            // If the event source is already enabled, dump configuration
+            WriteEvent(11, instanceId, configuration);
+        }
+
+        [NonEvent]
+        public void Configuration(KestrelServerOptions options)
+        {
+            // If the event source is already enabled, dump configuration
+            if (IsEnabled())
+            {
+                var bufferWriter = new ArrayBufferWriter<byte>();
+                var writer = new Utf8JsonWriter(bufferWriter);
+
+                writer.WriteStartObject();
+                options.Serialize(writer);
+                writer.WriteEndObject();
+                writer.Flush();
+
+                var serializedConfig = Encoding.UTF8.GetString(bufferWriter.WrittenSpan);
+
+                Configuration(options.GetHashCode(), serializedConfig);
+            }
+        }
+
+        [NonEvent]
+        public void AddServerOptions(KestrelServerOptions options)
+        {
+            lock (_options)
+            {
+                _options.Add(new(options));
+            }
+
+            Configuration(options);
+        }
+
+        [NonEvent]
+        public void RemoveServerOptions(KestrelServerOptions options)
+        {
+            lock (_options)
+            {
+                for (var i = _options.Count - 1; i >= 0; i--)
+                {
+                    var weakReference = _options[i];
+                    if (!weakReference.TryGetTarget(out var target) || ReferenceEquals(target, options))
+                    {
+                        _options.RemoveAt(i);
+                    }
+                }
+            }
+        }
+
         [NonEvent]
         public void RequestQueuedStart(HttpProtocol httpProtocol, string httpVersion)
         {
@@ -297,6 +355,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 {
                     DisplayName = "Current Upgraded Requests (WebSockets)"
                 };
+
+                // Log the options here
+                lock (_options)
+                {
+                    for (var i = _options.Count - 1; i >= 0; i--)
+                    {
+                        var weakReference = _options[i];
+                        if (!weakReference.TryGetTarget(out var target))
+                        {
+                            // Remove any options that have been collected
+                            _options.RemoveAt(i);
+                        }
+                        else
+                        {
+                            Configuration(target);
+                        }
+                    }
+                }
             }
         }
 

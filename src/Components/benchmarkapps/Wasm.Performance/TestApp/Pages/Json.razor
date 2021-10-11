@@ -8,6 +8,7 @@
 
 <button id="serialize-small" @onclick=SerializeSmall>Serialize (small)</button>
 <button id="serialize-large" @onclick=SerializeLarge>Serialize (large)</button>
+<button id="serialize-large-sourcegen" @onclick=SerializeLargeSourceGen>Serialize (large with sourcegen)</button>
 
 <p><pre style="border: 1px solid black; overflow: scroll;">@serializedValue</pre></p>
 @if (serializedValue != null)
@@ -17,6 +18,7 @@
 
 <button id="deserialize-small" @onclick=DeserializeSmall>Deserialize (small)</button>
 <button id="deserialize-large" @onclick=DeserializeLarge>Deserialize (large)</button>
+<button id="deserialize-large-sourcegen" @onclick=DeserializeLargeSourceGen>Deserialize (large with sourcegen)</button>
 
 @if (numPeopleDeserialized > 0)
 {
@@ -26,6 +28,7 @@
 @code {
     Person smallOrgChart = Person.GenerateOrgChart(1, 4);
     Person largeOrgChart = Person.GenerateOrgChart(5, 4);
+    PersonJsonContext personJsonContext = new(new(JsonSerializerDefaults.Web));
     string smallOrgChartJson;
     string largeOrgChartJson;
     int numPeopleDeserialized;
@@ -55,11 +58,17 @@
     void SerializeLarge()
         => serializedValue = JsonSerializer.Serialize(largeOrgChart);
 
+    void SerializeLargeSourceGen()
+        => serializedValue = JsonSerializer.Serialize(largeOrgChart, personJsonContext.Person);
+
     void DeserializeSmall()
         => numPeopleDeserialized = Deserialize(smallOrgChartJson);
 
     void DeserializeLarge()
         => numPeopleDeserialized = Deserialize(largeOrgChartJson);
+
+    void DeserializeLargeSourceGen()
+        => numPeopleDeserialized = CountPeople(JsonSerializer.Deserialize<Person>(largeOrgChartJson, personJsonContext.Person));
 
     static int Deserialize(string json)
     {

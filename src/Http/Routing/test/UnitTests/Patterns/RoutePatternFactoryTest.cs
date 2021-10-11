@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -618,10 +618,10 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             Assert.Equal(
                 "No corresponding parameter or default value could be found for the required value " +
                 "'area=Admin'. A non-null required value must correspond to a route parameter or the " +
-                "route pattern must have a matching default value.", 
+                "route pattern must have a matching default value.",
                 exception.Message);
         }
-        
+
         [Fact]
         public void ParameterPart_ParameterNameAndDefaultAndParameterKindAndArrayOfParameterPolicies_ShouldMakeCopyOfParameterPolicies()
         {

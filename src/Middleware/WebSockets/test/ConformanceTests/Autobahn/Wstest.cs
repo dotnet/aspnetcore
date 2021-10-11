@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 using System.IO;
 
@@ -8,7 +11,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
     /// </summary>
     public class Wstest : Executable
     {
-        private static Lazy<Wstest> _instance = new Lazy<Wstest>(Create);
+        private static readonly Lazy<Wstest> _instance = new Lazy<Wstest>(Create);
 
         public static readonly string DefaultLocation = LocateWstest();
 

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -13,11 +13,11 @@ namespace Microsoft.AspNetCore.Http
     internal sealed class DefaultWebSocketManager : WebSocketManager
     {
         // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
-        private readonly static Func<IFeatureCollection, IHttpRequestFeature?> _nullRequestFeature = f => null;
-        private readonly static Func<IFeatureCollection, IHttpWebSocketFeature?> _nullWebSocketFeature = f => null;
+        private static readonly Func<IFeatureCollection, IHttpRequestFeature?> _nullRequestFeature = f => null;
+        private static readonly Func<IFeatureCollection, IHttpWebSocketFeature?> _nullWebSocketFeature = f => null;
 
         private FeatureReferences<FeatureInterfaces> _features;
-        private readonly static WebSocketAcceptContext _defaultWebSocketAcceptContext = new WebSocketAcceptContext();
+        private static readonly WebSocketAcceptContext _defaultWebSocketAcceptContext = new WebSocketAcceptContext();
 
         public DefaultWebSocketManager(IFeatureCollection features)
         {

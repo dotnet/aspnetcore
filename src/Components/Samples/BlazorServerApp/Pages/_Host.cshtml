@@ -2,27 +2,8 @@
 @namespace BlazorServerApp.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BlazorServerApp</title>
-    <base href="~/" />
-    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
-    <link href="css/site.css" rel="stylesheet" />
-</head>
-<body>
-    <app><component type="typeof(App)" render-mode="ServerPrerendered" /></app>
+@{
+    Layout = "_Layout";
+}
 
-    <script src="_framework/blazor.server.js" autostart="false"></script>
-    <script>
-        (function start() {
-            Blazor.start({
-                logLevel: 1, // LogLevel.Debug
-                configureSignalR: builder => builder.configureLogging("debug") // LogLevel.Debug
-            });
-        })()
-    </script>
-</body>
-</html>
+<app><component type="typeof(App)" render-mode="ServerPrerendered"/></app>

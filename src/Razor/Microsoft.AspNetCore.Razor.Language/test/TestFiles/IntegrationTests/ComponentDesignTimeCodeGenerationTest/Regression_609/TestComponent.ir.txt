@@ -20,13 +20,13 @@ Document -
                             LazyIntermediateToken - (19:0,19 [8] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - UserName
                     ComponentAttribute - (18:0,18 [9] x:\dir\subdir\Test\TestComponent.cshtml) - NameChanged -  - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => UserName = __value, UserName)
+                            IntermediateToken -  - CSharp - global::Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => UserName = __value, UserName)
                     ComponentAttribute - (45:0,45 [13] x:\dir\subdir\Test\TestComponent.cshtml) - IsActive -  - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             LazyIntermediateToken - (46:0,46 [12] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - UserIsActive
                     ComponentAttribute - (45:0,45 [13] x:\dir\subdir\Test\TestComponent.cshtml) - IsActiveChanged -  - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => UserIsActive = __value, UserIsActive)
+                            IntermediateToken -  - CSharp - global::Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => UserIsActive = __value, UserIsActive)
                 HtmlContent - (62:0,62 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                     LazyIntermediateToken - (62:0,62 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
                 HtmlContent - (162:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)

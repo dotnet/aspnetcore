@@ -1,4 +1,13 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
 
@@ -36,6 +45,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
                 ? invocationResult.ResultJson
                 : invocationResult.Exception.ToString();
             _ipcSender.EndInvokeDotNet(invocationInfo.CallId, invocationResult.Success, resultJsonOrErrorMessage);
+        }
+
+        protected override void SendByteArray(int id, byte[] data)
+        {
+           _ipcSender.SendByteArray(id, data);
+        }
+
+        protected override Task<Stream> ReadJSDataAsStreamAsync(IJSStreamReference jsStreamReference, long totalLength, CancellationToken cancellationToken = default)
+            => Task.FromResult<Stream>(PullFromJSDataStream.CreateJSDataStream(this, jsStreamReference, totalLength, cancellationToken));
+
+        protected override Task TransmitStreamAsync(long streamId, DotNetStreamReference dotNetStreamReference)
+        {
+            return TransmitDataStreamToJS.TransmitStreamAsync(this, streamId, dotNetStreamReference);
         }
     }
 }

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 });
         }
 
-        protected private ActionEndpointDataSourceBase CreateDataSource(IActionDescriptorCollectionProvider actions = null)
+        private protected ActionEndpointDataSourceBase CreateDataSource(IActionDescriptorCollectionProvider actions = null)
         {
             if (actions == null)
             {
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return CreateDataSource(actions, endpointFactory);
         }
 
-        protected private abstract ActionEndpointDataSourceBase CreateDataSource(IActionDescriptorCollectionProvider actions, ActionEndpointFactory endpointFactory);
+        private protected abstract ActionEndpointDataSourceBase CreateDataSource(IActionDescriptorCollectionProvider actions, ActionEndpointFactory endpointFactory);
 
         private class UpperCaseParameterTransform : IOutboundParameterTransformer
         {

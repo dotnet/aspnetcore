@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
 
+    <!-- IdentityServer packages are not strong named. -->
+    <NoWarn>CS8002</NoWarn>
     <!-- This project references the shared framework transitively. Prevent restore errors by setting this flag. -->
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
   </PropertyGroup>
@@ -15,11 +17,11 @@
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
     <Reference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
-    <Reference Include="Microsoft.EntityFrameworkCore.Design" />
     <Reference Include="Microsoft.AspNetCore.Identity.UI" />
     <Reference Include="Microsoft.EntityFrameworkCore.Relational" />
     <Reference Include="Microsoft.EntityFrameworkCore.SQLite" />
     <Reference Include="Microsoft.Extensions.Hosting" />
+    <Reference Include="Microsoft.EntityFrameworkCore.Tools"  />
   </ItemGroup>
 
   <ItemGroup>

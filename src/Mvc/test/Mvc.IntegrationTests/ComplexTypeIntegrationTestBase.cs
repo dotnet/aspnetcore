@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -3243,7 +3243,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         private class NumberModelBinder : IModelBinder
         {
             private readonly NumberStyles _supportedStyles = NumberStyles.Float | NumberStyles.AllowThousands;
-            private DecimalModelBinder _innerBinder;
+            private readonly DecimalModelBinder _innerBinder;
 
             public NumberModelBinder(ILoggerFactory loggerFactory)
             {
@@ -3545,9 +3545,9 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var expectedMessage = $"Model binding system exceeded " +
                 $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingRecursionDepth)} (32). Reduce the " +
                 $"potential nesting of '{typeof(LoopyModel)}'. For example, this type may have a property with a " +
-                $"model binder that always succeeds. See the " +
+                "model binder that always succeeds. See the " +
                 $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingRecursionDepth)} documentation for more " +
-                $"information.";
+                "information.";
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -3768,7 +3768,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         protected virtual ModelBindingTestContext GetTestContext(
             Action<HttpRequest> updateRequest = null,
             Action<MvcOptions> updateOptions = null,
-            IModelMetadataProvider metadataProvider = null) 
+            IModelMetadataProvider metadataProvider = null)
             => ModelBindingTestHelper.GetTestContext(updateRequest, updateOptions, actionDescriptor: null, metadataProvider);
     }
 }

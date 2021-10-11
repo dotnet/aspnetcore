@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
@@ -265,7 +265,49 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     endpoint =>
                     {
                         Assert.Equal("/path/negotiate", endpoint.DisplayName);
-                        Assert.NotNull(endpoint.Metadata.GetMetadata<NegotiateMetadata>());
+                        var metaData = endpoint.Metadata.GetMetadata<NegotiateMetadata>();
+                        Assert.NotNull(metaData);
+                        var optionsMetaData = endpoint.Metadata.GetMetadata<HttpConnectionDispatcherOptions>();
+                        Assert.NotNull(optionsMetaData);
+                    },
+                    endpoint =>
+                    {
+                        Assert.Equal("/path", endpoint.DisplayName);
+                        Assert.Null(endpoint.Metadata.GetMetadata<NegotiateMetadata>());
+                    });
+            }
+        }
+
+        [Fact]
+        public void MapConnectionHandlerNegotiateMetadataContainsOptions()
+        {
+            void ConfigureRoutes(IEndpointRouteBuilder endpoints)
+            {
+                endpoints.MapConnectionHandler<AuthConnectionHandler>("/path", options =>
+                {
+                    options.Transports = HttpTransportType.ServerSentEvents;
+                    options.ApplicationMaxBufferSize = 2;
+                    options.CloseOnAuthenticationExpiration = true;
+                });
+            }
+
+            using (var host = BuildWebHost(ConfigureRoutes))
+            {
+                host.Start();
+
+                var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+                // We register 2 endpoints (/negotiate and /)
+                Assert.Collection(dataSource.Endpoints,
+                    endpoint =>
+                    {
+                        Assert.Equal("/path/negotiate", endpoint.DisplayName);
+                        var metaData = endpoint.Metadata.GetMetadata<NegotiateMetadata>();
+                        Assert.NotNull(metaData);
+                        var optionsMetaData = endpoint.Metadata.GetMetadata<HttpConnectionDispatcherOptions>();
+                        Assert.NotNull(optionsMetaData);
+                        Assert.Equal(HttpTransportType.ServerSentEvents, optionsMetaData.Transports);
+                        Assert.Equal(2, optionsMetaData.ApplicationMaxBufferSize);
+                        Assert.True(optionsMetaData.CloseOnAuthenticationExpiration);
                     },
                     endpoint =>
                     {

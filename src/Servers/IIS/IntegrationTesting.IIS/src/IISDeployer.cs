@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
         private static readonly TimeSpan _timeout = TimeSpan.FromSeconds(60);
         private static readonly TimeSpan _retryDelay = TimeSpan.FromMilliseconds(100);
 
-        private CancellationTokenSource _hostShutdownToken = new CancellationTokenSource();
+        private readonly CancellationTokenSource _hostShutdownToken = new CancellationTokenSource();
 
         private string _configPath;
         private string _debugLogFile;

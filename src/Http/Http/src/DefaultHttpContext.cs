@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -15,7 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
-    /// Represents an implementation of the HTTP Context class. 
+    /// Represents an implementation of the HTTP Context class.
     /// </summary>
     public sealed class DefaultHttpContext : HttpContext
     {
@@ -24,13 +24,13 @@ namespace Microsoft.AspNetCore.Http
         private const int DefaultFeatureCollectionSize = 10;
 
         // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
-        private readonly static Func<IFeatureCollection, IItemsFeature> _newItemsFeature = f => new ItemsFeature();
-        private readonly static Func<DefaultHttpContext, IServiceProvidersFeature> _newServiceProvidersFeature = context => new RequestServicesFeature(context, context.ServiceScopeFactory);
-        private readonly static Func<IFeatureCollection, IHttpAuthenticationFeature> _newHttpAuthenticationFeature = f => new HttpAuthenticationFeature();
-        private readonly static Func<IFeatureCollection, IHttpRequestLifetimeFeature> _newHttpRequestLifetimeFeature = f => new HttpRequestLifetimeFeature();
-        private readonly static Func<IFeatureCollection, ISessionFeature> _newSessionFeature = f => new DefaultSessionFeature();
-        private readonly static Func<IFeatureCollection, ISessionFeature?> _nullSessionFeature = f => null;
-        private readonly static Func<IFeatureCollection, IHttpRequestIdentifierFeature> _newHttpRequestIdentifierFeature = f => new HttpRequestIdentifierFeature();
+        private static readonly Func<IFeatureCollection, IItemsFeature> _newItemsFeature = f => new ItemsFeature();
+        private static readonly Func<DefaultHttpContext, IServiceProvidersFeature> _newServiceProvidersFeature = context => new RequestServicesFeature(context, context.ServiceScopeFactory);
+        private static readonly Func<IFeatureCollection, IHttpAuthenticationFeature> _newHttpAuthenticationFeature = f => new HttpAuthenticationFeature();
+        private static readonly Func<IFeatureCollection, IHttpRequestLifetimeFeature> _newHttpRequestLifetimeFeature = f => new HttpRequestLifetimeFeature();
+        private static readonly Func<IFeatureCollection, ISessionFeature> _newSessionFeature = f => new DefaultSessionFeature();
+        private static readonly Func<IFeatureCollection, ISessionFeature?> _nullSessionFeature = f => null;
+        private static readonly Func<IFeatureCollection, IHttpRequestIdentifierFeature> _newHttpRequestIdentifierFeature = f => new HttpRequestIdentifierFeature();
 
         private FeatureReferences<FeatureInterfaces> _features;
 
@@ -101,15 +101,15 @@ namespace Microsoft.AspNetCore.Http
         /// Gets or set the <see cref="FormOptions" /> for this instance.
         /// </summary>
         /// <returns>
-        /// <see cref="FormOptions"/>        
+        /// <see cref="FormOptions"/>
         /// </returns>
         public FormOptions FormOptions { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the <see cref="IServiceScopeFactory" /> for this instance.
         /// </summary>
-        /// <returns>   
-        /// <see cref="IServiceScopeFactory"/>      
+        /// <returns>
+        /// <see cref="IServiceScopeFactory"/>
         /// </returns>
         public IServiceScopeFactory ServiceScopeFactory { get; set; } = default!;
 

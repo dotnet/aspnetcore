@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// </summary>
         /// <param name="type">The type of object for which the serializer should be created.</param>
         /// <returns>The <see cref="DataContractSerializer"/> used during deserialization.</returns>
-        protected virtual DataContractSerializer CreateSerializer(Type type)
+        protected virtual DataContractSerializer? CreateSerializer(Type type)
         {
             if (type == null)
             {
@@ -279,7 +279,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 }
             }
 
-            return (DataContractSerializer)serializer;
+            return (DataContractSerializer)serializer!;
         }
     }
 }

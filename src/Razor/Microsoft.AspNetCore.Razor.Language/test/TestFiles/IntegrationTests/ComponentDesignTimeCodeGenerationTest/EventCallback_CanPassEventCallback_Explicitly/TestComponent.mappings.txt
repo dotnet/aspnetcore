@@ -1,6 +1,6 @@
 Source Location: (24:0,24 [45] x:\dir\subdir\Test\TestComponent.cshtml)
 |EventCallback.Factory.Create(this, Increment)|
-Generated Location: (1084:25,24 [45] )
+Generated Location: (1092:25,24 [45] )
 |EventCallback.Factory.Create(this, Increment)|
 
 Source Location: (84:2,7 [87] x:\dir\subdir\Test\TestComponent.cshtml)
@@ -10,7 +10,7 @@ Source Location: (84:2,7 [87] x:\dir\subdir\Test\TestComponent.cshtml)
         counter++;
     }
 |
-Generated Location: (1627:45,7 [87] )
+Generated Location: (1635:45,7 [87] )
 |
     private int counter;
     private void Increment() {

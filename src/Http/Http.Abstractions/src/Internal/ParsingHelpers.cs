@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         // Quote items that contain commas and are not already quoted.
-        private static string QuoteIfNeeded(string value)
+        private static string? QuoteIfNeeded(string? value)
         {
             if (!string.IsNullOrEmpty(value) &&
                 value.Contains(',') &&
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Http
             return value;
         }
 
-        private static string DeQuote(string value)
+        private static string? DeQuote(string? value)
         {
             if (!string.IsNullOrEmpty(value) &&
                 (value.Length > 1 && value[0] == '"' && value[value.Length - 1] == '"'))
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Http
                 return;
             }
 
-            string existing = GetHeader(headers, key);
+            string? existing = GetHeader(headers, key);
             if (existing == null)
             {
                 SetHeaderJoined(headers, key, values);

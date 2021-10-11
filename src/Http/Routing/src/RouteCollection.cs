@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -15,11 +15,11 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.Routing
 {
     /// <summary>
-    /// Supports managing a collection fo multiple routes.
+    /// Supports managing a collection for multiple routes.
     /// </summary>
     public class RouteCollection : IRouteCollection
     {
-        private readonly static char[] UrlQueryDelimiters = new char[] { '?', '#' };
+        private static readonly char[] UrlQueryDelimiters = new char[] { '?', '#' };
         private readonly List<IRouter> _routes = new List<IRouter>();
         private readonly List<IRouter> _unnamedRoutes = new List<IRouter>();
         private readonly Dictionary<string, INamedRouter> _namedRoutes =
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <inheritdoc />
-        public async virtual Task RouteAsync(RouteContext context)
+        public virtual async Task RouteAsync(RouteContext context)
         {
             // Perf: We want to avoid allocating a new RouteData for each route we need to process.
             // We can do this by snapshotting the state at the beginning and then restoring it
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
-        private VirtualPathData? GetVirtualPath(VirtualPathContext context, List<IRouter> routes)
+        private static VirtualPathData? GetVirtualPath(VirtualPathContext context, List<IRouter> routes)
         {
             for (var i = 0; i < routes.Count; i++)
             {

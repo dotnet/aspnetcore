@@ -51,10 +51,16 @@
       "longName": "no-restore",
       "shortName": ""
     },
-    "HttpPort": {
+    "kestrelHttpPort": {
       "isHidden": true
     },
-    "HttpsPort": {
+    "kestrelHttpsPort": {
+      "isHidden": true
+    },
+    "iisHttpPort": {
+      "isHidden": true
+    },
+    "iisHttpsPort": {
       "isHidden": true
     },
     "ExcludeLaunchSettings": {

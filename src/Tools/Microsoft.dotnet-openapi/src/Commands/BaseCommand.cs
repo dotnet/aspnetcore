@@ -1,18 +1,13 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Openapi.Tools;
 using Microsoft.DotNet.Openapi.Tools.Internal;
@@ -46,9 +41,9 @@ namespace Microsoft.DotNet.OpenApi.Commands
 
             ProjectFileOption = Option("-p|--updateProject", "The project file update.", CommandOptionType.SingleValue);
 
-            if (Parent is Application)
+            if (Parent is Application application)
             {
-                WorkingDirectory = ((Application)Parent).WorkingDirectory;
+                WorkingDirectory = application.WorkingDirectory;
             }
             else
             {
@@ -89,10 +84,11 @@ namespace Microsoft.DotNet.OpenApi.Commands
         private Application GetApplication()
         {
             var parent = Parent;
-            while(!(parent is Application))
+            while(parent is not Application)
             {
                 parent = parent.Parent;
             }
+
             return (Application)parent;
         }
 
@@ -126,7 +122,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
             return new FileInfo(project);
         }
 
-        protected Project LoadProject(FileInfo projectFile)
+        protected static Project LoadProject(FileInfo projectFile)
         {
             var project = ProjectCollection.GlobalProjectCollection.LoadProject(
                 projectFile.FullName,
@@ -136,12 +132,12 @@ namespace Microsoft.DotNet.OpenApi.Commands
             return project;
         }
 
-        internal bool IsProjectFile(string file)
+        internal static bool IsProjectFile(string file)
         {
             return File.Exists(Path.GetFullPath(file)) && file.EndsWith(".csproj", StringComparison.Ordinal);
         }
 
-        internal bool IsUrl(string file)
+        internal static bool IsUrl(string file)
         {
             return Uri.TryCreate(file, UriKind.Absolute, out var _) && file.StartsWith("http", StringComparison.Ordinal);
         }
@@ -167,7 +163,8 @@ namespace Microsoft.DotNet.OpenApi.Commands
 
             if (sourceUrl != null)
             {
-                if (items.Any(i => string.Equals(i.GetMetadataValue(SourceUrlAttrName), sourceUrl)))
+                if (items.Any(
+                    i => string.Equals(i.GetMetadataValue(SourceUrlAttrName), sourceUrl, StringComparison.Ordinal)))
                 {
                     Warning.Write($"A reference to '{sourceUrl}' already exists in '{project.FullPath}'.");
                     return;
@@ -218,7 +215,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
             var muxer = DotNetMuxer.MuxerPathOrDefault();
             if (string.IsNullOrEmpty(muxer))
             {
-                throw new ArgumentException($"dotnet was not found on the path.");
+                throw new ArgumentException("dotnet was not found on the path.");
             }
 
             var startInfo = new ProcessStartInfo
@@ -299,8 +296,8 @@ namespace Microsoft.DotNet.OpenApi.Commands
         /// <param name="retryCount"></param>
         private static async Task<IHttpResponseMessageWrapper> RetryRequest(
             Func<Task<IHttpResponseMessageWrapper>> retryBlock,
-            CancellationToken cancellationToken = default,
-            int retryCount = 60)
+            int retryCount = 60,
+            CancellationToken cancellationToken = default)
         {
             for (var retry = 0; retry < retryCount; retry++)
             {
@@ -331,7 +328,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
                     {
                         if (exception is HttpRequestException || exception is WebException)
                         {
-                            await Task.Delay(1 * 1000); //Wait for a while before retry.
+                            await Task.Delay(1 * 1000, cancellationToken); // Wait for a while before retry.
                         }
                     }
                 }
@@ -340,7 +337,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
             throw new OperationCanceledException("Failed to connect, retry limit exceeded.");
         }
 
-        private string GetUniqueFileName(string directory, string fileName, string extension)
+        private static string GetUniqueFileName(string directory, string fileName, string extension)
         {
             var uniqueName = fileName;
 
@@ -366,7 +363,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
             return uniqueName + extension;
         }
 
-        private string GetFileNameFromResponse(IHttpResponseMessageWrapper response, string url)
+        private static string GetFileNameFromResponse(IHttpResponseMessageWrapper response, string url)
         {
             var contentDisposition = response.ContentDisposition();
             string result;
@@ -396,22 +393,12 @@ namespace Microsoft.DotNet.OpenApi.Commands
                 else
                 {
                     var parts = uri.Host.Split('.');
-
-                    // There's no segment, use the domain name.
-                    string domain;
-                    switch (parts.Length)
+                    var domain = parts.Length switch
                     {
-                        case 1:
-                        case 2:
-                            // It's localhost if 1, no www if 2
-                            domain = parts.First();
-                            break;
-                        case 3:
-                            domain = parts[1];
-                            break;
-                        default:
-                            throw new NotImplementedException("We don't handle the case that the Host has more than three segments");
-                    }
+                        1 or 2 => parts.First(), // It's localhost or somewhere in an Intranet if 1; no www if 2.
+                        3 => parts[1],           // Grab XYZ in www.XYZ.domain.com or similar.
+                        _ => throw new NotImplementedException("We don't handle the case that the Host has more than three segments"),
+                    };
 
                     result = domain + DefaultExtension;
                 }
@@ -420,7 +407,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
             return result;
         }
 
-        internal CodeGenerator? GetCodeGenerator(CommandOption codeGeneratorOption)
+        internal static CodeGenerator? GetCodeGenerator(CommandOption codeGeneratorOption)
         {
             CodeGenerator? codeGenerator;
             if (codeGeneratorOption.HasValue())
@@ -435,7 +422,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
             return codeGenerator;
         }
 
-        internal void ValidateCodeGenerator(CommandOption codeGeneratorOption)
+        internal static void ValidateCodeGenerator(CommandOption codeGeneratorOption)
         {
             if (codeGeneratorOption.HasValue())
             {
@@ -494,7 +481,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
 
         private static IDictionary<string, string> GetServicePackages(CodeGenerator? type)
         {
-            CodeGenerator generator = type ?? CodeGenerator.NSwagCSharp;
+            var generator = type ?? CodeGenerator.NSwagCSharp;
             var name = Enum.GetName(typeof(CodeGenerator), generator);
             var attributes = typeof(Program).Assembly.GetCustomAttributes<OpenApiDependencyAttribute>();
 
@@ -513,10 +500,8 @@ namespace Microsoft.DotNet.OpenApi.Commands
 
         private static byte[] GetHash(Stream stream)
         {
-            using (var algorithm = SHA256.Create())
-            {
-                return algorithm.ComputeHash(stream);
-            }
+            using var algorithm = SHA256.Create();
+            return algorithm.ComputeHash(stream);
         }
 
         private async Task WriteToFileAsync(Stream content, string destinationPath, bool overwrite)
@@ -572,17 +557,18 @@ namespace Microsoft.DotNet.OpenApi.Commands
 
                 // Create or overwrite the destination file.
                 reachedCopy = true;
-                using var fileStream = new FileStream(destinationPath, FileMode.OpenOrCreate, FileAccess.Write);
+                using var fileStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write);
                 fileStream.Seek(0, SeekOrigin.Begin);
                 if (content.CanSeek)
                 {
                     content.Seek(0, SeekOrigin.Begin);
                 }
+
                 await content.CopyToAsync(fileStream);
             }
             catch (Exception ex)
             {
-                await Error.WriteLineAsync($"Downloading failed.");
+                await Error.WriteLineAsync("Downloading failed.");
                 await Error.WriteLineAsync(ex.ToString());
                 if (reachedCopy)
                 {

@@ -1,7 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
@@ -10,8 +11,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     /// </summary>
     public class Http3Limits
     {
+        internal const int DefaultMaxRequestHeaderFieldSize = 16 * 1024;
+
         private int _headerTableSize;
-        private int _maxRequestHeaderFieldSize = 8192;
+        private int _maxRequestHeaderFieldSize = DefaultMaxRequestHeaderFieldSize;
 
         /// <summary>
         /// Limits the size of the header compression table, in octets, the QPACK decoder on the server can use.
@@ -37,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <summary>
         /// Indicates the size of the maximum allowed size of a request header field sequence. This limit applies to both name and value sequences in their compressed and uncompressed representations.
         /// <para>
-        /// Value must be greater than 0, defaults to 8192
+        /// Value must be greater than 0, defaults to 2^14 (16,384).
         /// </para>
         /// </summary>
         public int MaxRequestHeaderFieldSize
@@ -52,6 +55,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                 _maxRequestHeaderFieldSize = value;
             }
+        }
+
+        internal void Serialize(Utf8JsonWriter writer)
+        {
+            writer.WritePropertyName(nameof(HeaderTableSize));
+            writer.WriteNumberValue(HeaderTableSize);
+
+            writer.WritePropertyName(nameof(MaxRequestHeaderFieldSize));
+            writer.WriteNumberValue(MaxRequestHeaderFieldSize);
         }
     }
 }

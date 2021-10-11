@@ -1,11 +1,12 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Formatters
+namespace Microsoft.AspNetCore.Internal
 {
     public class ResponseContentTypeHelperTest
     {
@@ -108,7 +109,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
                 contentType?.ToString(),
                 responseContentType,
-                defaultContentType,
+                (defaultContentType, Encoding.UTF8),
+                MediaType.GetEncoding,
                 out var resolvedContentType,
                 out var resolvedContentTypeEncoding);
 
@@ -127,7 +129,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
                 null,
                 expectedContentType,
-                defaultContentType,
+                (defaultContentType, Encoding.UTF8),
+                MediaType.GetEncoding,
                 out var resolvedContentType,
                 out var resolvedContentTypeEncoding);
 

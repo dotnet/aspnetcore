@@ -29,7 +29,7 @@ namespace Test
 #line hidden
 #nullable disable
             ;
-            __o = Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => UserName = __value, UserName);
+            __o = global::Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => UserName = __value, UserName);
             __o = 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
@@ -39,7 +39,7 @@ namespace Test
 #line hidden
 #nullable disable
             ;
-            __o = Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => UserIsActive = __value, UserIsActive);
+            __o = global::Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => UserIsActive = __value, UserIsActive);
             __builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((__builder2) => {
             }
             ));

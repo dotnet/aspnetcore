@@ -55,7 +55,7 @@ Source Location: (933:26,0 [164] x:\dir\subdir\Test\TestComponent.cshtml)
         System.GC.KeepAlive(myVariable);
     }
 |
-Generated Location: (5112:159,0 [164] )
+Generated Location: (5067:157,0 [164] )
 |        }
 
         System.GC.KeepAlive(myElementReference);

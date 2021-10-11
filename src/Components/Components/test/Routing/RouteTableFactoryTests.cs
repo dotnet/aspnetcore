@@ -1,10 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Routing
@@ -12,6 +13,7 @@ namespace Microsoft.AspNetCore.Components.Routing
     public class RouteTableFactoryTests
     {
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/36888")]
         public void CanCacheRouteTable()
         {
             // Arrange
@@ -1013,8 +1015,8 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private class TestRouteTableBuilder
         {
-            IList<(string Template, Type Handler)> _routeTemplates = new List<(string, Type)>();
-            Type _handler = typeof(object);
+            readonly IList<(string Template, Type Handler)> _routeTemplates = new List<(string, Type)>();
+            readonly Type _handler = typeof(object);
 
             public TestRouteTableBuilder AddRoute(string template, Type handler = null)
             {

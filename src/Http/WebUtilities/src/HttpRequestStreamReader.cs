@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.WebUtilities
     {
         private const int DefaultBufferSize = 1024;
 
-        private Stream _stream;
+        private readonly Stream _stream;
         private readonly Encoding _encoding;
         private readonly Decoder _decoder;
 
@@ -27,8 +27,8 @@ namespace Microsoft.AspNetCore.WebUtilities
         private readonly ArrayPool<char> _charPool;
 
         private readonly int _byteBufferSize;
-        private byte[] _byteBuffer;
-        private char[] _charBuffer;
+        private readonly byte[] _byteBuffer;
+        private readonly char[] _charBuffer;
 
         private int _charBufferIndex;
         private int _charsRead;
@@ -294,10 +294,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                     do
                     {
                         Debug.Assert(charsRemaining == 0);
-                        _bytesRead = await _stream.ReadAsync(
-                            _byteBuffer,
-                            0,
-                            _byteBufferSize);
+                        _bytesRead = await _stream.ReadAsync(_byteBuffer.AsMemory(0, _byteBufferSize), cancellationToken);
                         if (_bytesRead == 0)  // EOF
                         {
                             _isBlocked = true;
@@ -534,10 +531,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             do
             {
-                _bytesRead = await _stream.ReadAsync(
-                    _byteBuffer,
-                    0,
-                    _byteBufferSize).ConfigureAwait(false);
+                _bytesRead = await _stream.ReadAsync(_byteBuffer.AsMemory(0, _byteBufferSize)).ConfigureAwait(false);
                 if (_bytesRead == 0)
                 {
                     // We're at EOF
@@ -560,7 +554,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         /// <inheritdoc />
-        public async override Task<string> ReadToEndAsync()
+        public override async Task<string> ReadToEndAsync()
         {
             StringBuilder sb = new StringBuilder(_charsRead - _charBufferIndex);
             do

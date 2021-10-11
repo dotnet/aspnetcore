@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -9,9 +9,11 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Hosting;
@@ -23,14 +25,15 @@ namespace Microsoft.AspNetCore.Mvc.Testing
     /// </summary>
     /// <typeparam name="TEntryPoint">A type in the entry point assembly of the application.
     /// Typically the Startup or Program classes can be used.</typeparam>
-    public class WebApplicationFactory<TEntryPoint> : IDisposable where TEntryPoint : class
+    public class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposable where TEntryPoint : class
     {
         private bool _disposed;
+        private bool _disposedAsync;
         private TestServer? _server;
         private IHost? _host;
         private Action<IWebHostBuilder> _configuration;
-        private List<HttpClient> _clients = new();
-        private List<WebApplicationFactory<TEntryPoint>> _derivedFactories = new();
+        private readonly List<HttpClient> _clients = new();
+        private readonly List<WebApplicationFactory<TEntryPoint>> _derivedFactories = new();
 
         /// <summary>
         /// <para>
@@ -147,23 +150,71 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             EnsureDepsFile();
 
             var hostBuilder = CreateHostBuilder();
-            if (hostBuilder != null)
+            if (hostBuilder is not null)
             {
-                hostBuilder.ConfigureWebHost(webHostBuilder =>
-                {
-                    SetContentRoot(webHostBuilder);
-                    _configuration(webHostBuilder);
-                    webHostBuilder.UseTestServer();
-                });
-                _host = CreateHost(hostBuilder);
-                _server = (TestServer)_host.Services.GetRequiredService<IServer>();
+                ConfigureHostBuilder(hostBuilder);
                 return;
             }
 
             var builder = CreateWebHostBuilder();
-            SetContentRoot(builder);
-            _configuration(builder);
-            _server = CreateServer(builder);
+            if (builder is null)
+            {
+                var deferredHostBuilder = new DeferredHostBuilder();
+                deferredHostBuilder.UseEnvironment(Environments.Development);
+                // There's no helper for UseApplicationName, but we need to 
+                // set the application name to the target entry point 
+                // assembly name.
+                deferredHostBuilder.ConfigureHostConfiguration(config =>
+                {
+                    config.AddInMemoryCollection(new Dictionary<string, string>
+                    {
+                        { HostDefaults.ApplicationKey, typeof(TEntryPoint).Assembly.GetName()?.Name ?? string.Empty }
+                    });
+                });
+                // This helper call does the hard work to determine if we can fallback to diagnostic source events to get the host instance
+                var factory = HostFactoryResolver.ResolveHostFactory(
+                    typeof(TEntryPoint).Assembly,
+                    stopApplication: false,
+                    configureHostBuilder: deferredHostBuilder.ConfigureHostBuilder,
+                    entrypointCompleted: deferredHostBuilder.EntryPointCompleted);
+
+                if (factory is not null)
+                {
+                    // If we have a valid factory it means the specified entry point's assembly can potentially resolve the IHost
+                    // so we set the factory on the DeferredHostBuilder so we can invoke it on the call to IHostBuilder.Build.
+                    deferredHostBuilder.SetHostFactory(factory);
+
+                    ConfigureHostBuilder(deferredHostBuilder);
+                    return;
+                }
+
+                throw new InvalidOperationException(Resources.FormatMissingBuilderMethod(
+                    nameof(IHostBuilder),
+                    nameof(IWebHostBuilder),
+                    typeof(TEntryPoint).Assembly.EntryPoint!.DeclaringType!.FullName,
+                    typeof(WebApplicationFactory<TEntryPoint>).Name,
+                    nameof(CreateHostBuilder),
+                    nameof(CreateWebHostBuilder)));
+            }
+            else
+            {
+                SetContentRoot(builder);
+                _configuration(builder);
+                _server = CreateServer(builder);
+            }
+        }
+
+        [MemberNotNull(nameof(_server))]
+        private void ConfigureHostBuilder(IHostBuilder hostBuilder)
+        {
+            hostBuilder.ConfigureWebHost(webHostBuilder =>
+            {
+                SetContentRoot(webHostBuilder);
+                _configuration(webHostBuilder);
+                webHostBuilder.UseTestServer();
+            });
+            _host = CreateHost(hostBuilder);
+            _server = (TestServer)_host.Services.GetRequiredService<IServer>();
         }
 
         private void SetContentRoot(IWebHostBuilder builder)
@@ -186,14 +237,16 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             }
         }
 
-        private string GetContentRootFromFile(string file)
+        private static string? GetContentRootFromFile(string file)
         {
             var data = JsonSerializer.Deserialize<IDictionary<string, string>>(File.ReadAllBytes(file))!;
             var key = typeof(TEntryPoint).Assembly.GetName().FullName;
 
+            // If the `ContentRoot` is not provided in the app manifest, then return null
+            // and fallback to setting the content root relative to the entrypoint's assembly.
             if (!data.TryGetValue(key, out var contentRoot))
             {
-                throw new KeyNotFoundException($"Could not find content root for project '{key}' in test manifest file '{file}'");
+                return null;
             }
 
             return (contentRoot == "~") ? AppContext.BaseDirectory : contentRoot;
@@ -310,7 +363,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             return Array.Empty<Assembly>();
         }
 
-        private void EnsureDepsFile()
+        private static void EnsureDepsFile()
         {
             if (typeof(TEntryPoint).Assembly.EntryPoint == null)
             {
@@ -339,10 +392,8 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         protected virtual IHostBuilder? CreateHostBuilder()
         {
             var hostBuilder = HostFactoryResolver.ResolveHostBuilderFactory<IHostBuilder>(typeof(TEntryPoint).Assembly)?.Invoke(Array.Empty<string>());
-            if (hostBuilder != null)
-            {
-                hostBuilder.UseEnvironment(Environments.Development);
-            }
+
+            hostBuilder?.UseEnvironment(Environments.Development);
             return hostBuilder;
         }
 
@@ -355,23 +406,16 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// array as arguments.
         /// </remarks>
         /// <returns>A <see cref="IWebHostBuilder"/> instance.</returns>
-        protected virtual IWebHostBuilder CreateWebHostBuilder()
+        protected virtual IWebHostBuilder? CreateWebHostBuilder()
         {
             var builder = WebHostBuilderFactory.CreateFromTypesAssemblyEntryPoint<TEntryPoint>(Array.Empty<string>());
-            if (builder == null)
-            {
-                throw new InvalidOperationException(Resources.FormatMissingBuilderMethod(
-                    nameof(IHostBuilder),
-                    nameof(IWebHostBuilder),
-                    typeof(TEntryPoint).Assembly.EntryPoint!.DeclaringType!.FullName,
-                    typeof(WebApplicationFactory<TEntryPoint>).Name,
-                    nameof(CreateHostBuilder),
-                    nameof(CreateWebHostBuilder)));
-            }
-            else
+
+            if (builder is not null)
             {
                 return builder.UseEnvironment(Environments.Development);
             }
+
+            return null;
         }
 
         /// <summary>
@@ -382,7 +426,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// <param name="builder">The <see cref="IWebHostBuilder"/> used to
         /// create the server.</param>
         /// <returns>The <see cref="TestServer"/> with the bootstrapped application.</returns>
-        protected virtual TestServer CreateServer(IWebHostBuilder builder) => new TestServer(builder);
+        protected virtual TestServer CreateServer(IWebHostBuilder builder) => new(builder);
 
         /// <summary>
         /// Creates the <see cref="IHost"/> with the bootstrapped application in <paramref name="builder"/>.
@@ -447,7 +491,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                 }
 
                 var serverHandler = _server.CreateHandler();
-                handlers[handlers.Length - 1].InnerHandler = serverHandler;
+                handlers[^1].InnerHandler = serverHandler;
 
                 client = new HttpClient(handlers[0]);
             }
@@ -512,29 +556,62 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
             if (disposing)
             {
-                foreach (var client in _clients)
+                if (!_disposedAsync)
                 {
-                    client.Dispose();
+                    DisposeAsync()
+                        .AsTask()
+                        .ConfigureAwait(false)
+                        .GetAwaiter()
+                        .GetResult();
                 }
-
-                foreach (var factory in _derivedFactories)
-                {
-                    factory.Dispose();
-                }
-
-                _server?.Dispose();
-                _host?.StopAsync().Wait();
-                _host?.Dispose();
             }
 
             _disposed = true;
+        }
+
+        /// <inheritdoc />
+        public virtual async ValueTask DisposeAsync()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (_disposedAsync)
+            {
+                return;
+            }
+
+            foreach (var client in _clients)
+            {
+                client.Dispose();
+            }
+
+            foreach (var factory in _derivedFactories)
+            {
+                await ((IAsyncDisposable)factory).DisposeAsync().ConfigureAwait(false);
+            }
+
+            _server?.Dispose();
+
+            if (_host != null)
+            {
+                await _host.StopAsync().ConfigureAwait(false);
+                _host?.Dispose();
+            }
+
+            _disposedAsync = true;
+
+            Dispose(disposing: true);
+
+            GC.SuppressFinalize(this);
         }
 
         private class DelegatedWebApplicationFactory : WebApplicationFactory<TEntryPoint>
         {
             private readonly Func<IWebHostBuilder, TestServer> _createServer;
             private readonly Func<IHostBuilder, IHost> _createHost;
-            private readonly Func<IWebHostBuilder> _createWebHostBuilder;
+            private readonly Func<IWebHostBuilder?> _createWebHostBuilder;
             private readonly Func<IHostBuilder?> _createHostBuilder;
             private readonly Func<IEnumerable<Assembly>> _getTestAssemblies;
             private readonly Action<HttpClient> _configureClient;
@@ -543,7 +620,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                 WebApplicationFactoryClientOptions options,
                 Func<IWebHostBuilder, TestServer> createServer,
                 Func<IHostBuilder, IHost> createHost,
-                Func<IWebHostBuilder> createWebHostBuilder,
+                Func<IWebHostBuilder?> createWebHostBuilder,
                 Func<IHostBuilder?> createHostBuilder,
                 Func<IEnumerable<Assembly>> getTestAssemblies,
                 Action<HttpClient> configureClient,
@@ -563,7 +640,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
             protected override IHost CreateHost(IHostBuilder builder) => _createHost(builder);
 
-            protected override IWebHostBuilder CreateWebHostBuilder() => _createWebHostBuilder();
+            protected override IWebHostBuilder? CreateWebHostBuilder() => _createWebHostBuilder();
 
             protected override IHostBuilder? CreateHostBuilder() => _createHostBuilder();
 

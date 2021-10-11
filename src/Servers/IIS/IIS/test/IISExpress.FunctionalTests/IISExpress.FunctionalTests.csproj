@@ -5,6 +5,7 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
+    <DefineConstants>IISEXPRESS_FUNCTIONALS</DefineConstants>
     <TestGroupName>IISExpress.FunctionalTests</TestGroupName>
     <SkipTests Condition=" '$(SkipIISExpressTests)' == 'true' ">true</SkipTests>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>

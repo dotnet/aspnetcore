@@ -1,9 +1,10 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.Net.WebSockets;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
@@ -33,10 +34,10 @@ namespace Microsoft.AspNetCore.Owin
     /// </summary>
     public class OwinWebSocketAcceptAdapter
     {
-        private WebSocketAccept _owinWebSocketAccept;
-        private TaskCompletionSource<int> _requestTcs = new TaskCompletionSource<int>();
-        private TaskCompletionSource<WebSocket> _acceptTcs = new TaskCompletionSource<WebSocket>();
-        private TaskCompletionSource<int> _upstreamWentAsync = new TaskCompletionSource<int>();
+        private readonly WebSocketAccept _owinWebSocketAccept;
+        private readonly TaskCompletionSource<int> _requestTcs = new TaskCompletionSource<int>();
+        private readonly TaskCompletionSource<WebSocket> _acceptTcs = new TaskCompletionSource<WebSocket>();
+        private readonly TaskCompletionSource<int> _upstreamWentAsync = new TaskCompletionSource<int>();
         private string _subProtocol;
 
         private OwinWebSocketAcceptAdapter(WebSocketAccept owinWebSocketAccept)
@@ -129,7 +130,7 @@ namespace Microsoft.AspNetCore.Owin
                     {
                         adapter.UpstreamTask = next(environment);
                         adapter.UpstreamWentAsyncTcs.TrySetResult(0);
-                        adapter.UpstreamTask.ContinueWith(adapter.EnsureCompleted, TaskContinuationOptions.ExecuteSynchronously);
+                        adapter.UpstreamTask.ContinueWith(adapter.EnsureCompleted, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
                     }
                     catch (Exception ex)
                     {

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 package com.microsoft.signalr;
 
@@ -168,8 +168,8 @@ public class HubConnection implements AutoCloseable {
 
         return httpClient.post(Negotiate.resolveNegotiateUrl(url, this.negotiateVersion), request).map((response) -> {
             if (response.getStatusCode() != 200) {
-                throw new RuntimeException(String.format("Unexpected status code returned from negotiate: %d %s.",
-                        response.getStatusCode(), response.getStatusText()));
+                throw new HttpRequestException(String.format("Unexpected status code returned from negotiate: %d %s.",
+                        response.getStatusCode(), response.getStatusText()), response.getStatusCode());
             }
             JsonReader reader = new JsonReader(new StringReader(new String(response.getContent().array(), StandardCharsets.UTF_8)));
             NegotiateResponse negotiateResponse = new NegotiateResponse(reader);
@@ -411,28 +411,37 @@ public class HubConnection implements AutoCloseable {
      * @return A Completable that completes when the connection has been stopped.
      */
     private Completable stop(String errorMessage) {
-        Transport transport;
+        ConnectionState connectionState;
+        Completable startTask;
         this.state.lock();
         try {
             if (this.state.getHubConnectionState() == HubConnectionState.DISCONNECTED) {
                 return Completable.complete();
             }
 
+            connectionState = this.state.getConnectionStateUnsynchronized(false);
+
             if (errorMessage != null) {
-                this.state.getConnectionStateUnsynchronized(false).stopError = errorMessage;
+                connectionState.stopError = errorMessage;
                 logger.error("HubConnection disconnected with an error: {}.", errorMessage);
             } else {
                 logger.debug("Stopping HubConnection.");
             }
 
-            transport = this.state.getConnectionStateUnsynchronized(false).transport;
+            startTask = connectionState.startTask;
         } finally {
             this.state.unlock();
         }
 
-        Completable stop = transport.stop();
-        stop.onErrorComplete().subscribe();
-        return stop;
+        Completable stopTask = startTask.onErrorComplete().andThen(Completable.defer(() ->
+        {
+            Completable stop = connectionState.transport.stop();
+            stop.onErrorComplete().subscribe();
+            return stop;
+        }));
+        stopTask.onErrorComplete().subscribe();
+
+        return stopTask;
     }
 
     private void ReceiveLoop(ByteBuffer payload)
@@ -1396,7 +1405,7 @@ public class HubConnection implements AutoCloseable {
             if (!handshakeReceived) {
                 List<Byte> handshakeByteList = new ArrayList<Byte>();
                 byte curr = payload.get();
-                                // Add the handshake to handshakeBytes, but not the record separator
+                // Add the handshake to handshakeBytes, but not the record separator
                 while (curr != RECORD_SEPARATOR) {
                     handshakeByteList.add(curr);
                     curr = payload.get();

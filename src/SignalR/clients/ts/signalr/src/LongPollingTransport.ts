@@ -1,14 +1,14 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 import { AbortController } from "./AbortController";
 import { HttpError, TimeoutError } from "./Errors";
 import { HeaderNames } from "./HeaderNames";
 import { HttpClient, HttpRequest } from "./HttpClient";
-import { MessageHeaders } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
 import { ITransport, TransferFormat } from "./ITransport";
 import { Arg, getDataDetail, getUserAgentHeader, sendMessage } from "./Utils";
+import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
 
 // Not exported from 'index', this type is internal.
 /** @private */
@@ -16,10 +16,8 @@ export class LongPollingTransport implements ITransport {
     private readonly _httpClient: HttpClient;
     private readonly _accessTokenFactory: (() => string | Promise<string>) | undefined;
     private readonly _logger: ILogger;
-    private readonly _logMessageContent: boolean;
-    private readonly _withCredentials: boolean;
+    private readonly _options: IHttpConnectionOptions;
     private readonly _pollAbort: AbortController;
-    private readonly _headers: MessageHeaders;
 
     private _url?: string;
     private _running: boolean;
@@ -34,14 +32,12 @@ export class LongPollingTransport implements ITransport {
         return this._pollAbort.aborted;
     }
 
-    constructor(httpClient: HttpClient, accessTokenFactory: (() => string | Promise<string>) | undefined, logger: ILogger, logMessageContent: boolean, withCredentials: boolean, headers: MessageHeaders) {
+    constructor(httpClient: HttpClient, accessTokenFactory: (() => string | Promise<string>) | undefined, logger: ILogger, options: IHttpConnectionOptions) {
         this._httpClient = httpClient;
         this._accessTokenFactory = accessTokenFactory;
         this._logger = logger;
         this._pollAbort = new AbortController();
-        this._logMessageContent = logMessageContent;
-        this._withCredentials = withCredentials;
-        this._headers = headers;
+        this._options = options;
 
         this._running = false;
 
@@ -65,13 +61,13 @@ export class LongPollingTransport implements ITransport {
         }
 
         const [name, value] = getUserAgentHeader();
-        const headers = { [name]: value, ...this._headers };
+        const headers = { [name]: value, ...this._options.headers };
 
         const pollOptions: HttpRequest = {
             abortSignal: this._pollAbort.signal,
             headers,
             timeout: 100000,
-            withCredentials: this._withCredentials,
+            withCredentials: this._options.withCredentials,
         };
 
         if (transferFormat === TransferFormat.Binary) {
@@ -145,7 +141,7 @@ export class LongPollingTransport implements ITransport {
                     } else {
                         // Process the response
                         if (response.content) {
-                            this._logger.log(LogLevel.Trace, `(LongPolling transport) data received. ${getDataDetail(response.content, this._logMessageContent)}.`);
+                            this._logger.log(LogLevel.Trace, `(LongPolling transport) data received. ${getDataDetail(response.content, this._options.logMessageContent!)}.`);
                             if (this.onreceive) {
                                 this.onreceive(response.content);
                             }
@@ -185,7 +181,7 @@ export class LongPollingTransport implements ITransport {
         if (!this._running) {
             return Promise.reject(new Error("Cannot send until the transport is connected"));
         }
-        return sendMessage(this._logger, "LongPolling", this._httpClient, this._url!, this._accessTokenFactory, data, this._logMessageContent, this._withCredentials, this._headers);
+        return sendMessage(this._logger, "LongPolling", this._httpClient, this._url!, this._accessTokenFactory, data, this._options);
     }
 
     public async stop(): Promise<void> {
@@ -201,13 +197,14 @@ export class LongPollingTransport implements ITransport {
             // Send DELETE to clean up long polling on the server
             this._logger.log(LogLevel.Trace, `(LongPolling transport) sending DELETE request to ${this._url}.`);
 
-            const headers = {};
+            const headers: {[k: string]: string} = {};
             const [name, value] = getUserAgentHeader();
             headers[name] = value;
 
             const deleteOptions: HttpRequest = {
-                headers: { ...headers, ...this._headers },
-                withCredentials: this._withCredentials,
+                headers: { ...headers, ...this._options.headers },
+                timeout: this._options.timeout,
+                withCredentials: this._options.withCredentials,
             };
             const token = await this._getAccessToken();
             this._updateHeaderToken(deleteOptions, token);

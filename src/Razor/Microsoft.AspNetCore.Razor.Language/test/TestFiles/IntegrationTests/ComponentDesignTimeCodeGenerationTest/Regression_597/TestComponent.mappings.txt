@@ -7,7 +7,7 @@ Source Location: (32:1,7 [24] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     string y = null;
 |
-Generated Location: (1528:46,7 [24] )
+Generated Location: (1536:46,7 [24] )
 |
     string y = null;
 |

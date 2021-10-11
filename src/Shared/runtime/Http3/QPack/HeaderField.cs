@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+using System.Text;
+
 namespace System.Net.Http.QPack
 {
     internal readonly struct HeaderField
@@ -11,6 +14,8 @@ namespace System.Net.Http.QPack
 
         public HeaderField(byte[] name, byte[] value)
         {
+            Debug.Assert(name.Length > 0);
+
             Name = name;
             Value = value;
         }
@@ -19,6 +24,20 @@ namespace System.Net.Http.QPack
 
         public byte[] Value { get; }
 
-        public int Length => Name.Length + Value.Length;
+        public int Length => GetLength(Name.Length, Value.Length);
+
+        public static int GetLength(int nameLength, int valueLength) => nameLength + valueLength + RfcOverhead;
+
+        public override string ToString()
+        {
+            if (Name != null)
+            {
+                return Encoding.ASCII.GetString(Name) + ": " + Encoding.ASCII.GetString(Value);
+            }
+            else
+            {
+                return "<empty>";
+            }
+        }
     }
 }

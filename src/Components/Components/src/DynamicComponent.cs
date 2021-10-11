@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components
     public class DynamicComponent : IComponent
     {
         private RenderHandle _renderHandle;
-        private RenderFragment _cachedRenderFragment;
+        private readonly RenderFragment _cachedRenderFragment;
 
         /// <summary>
         /// Constructs an instance of <see cref="DynamicComponent"/>.
@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         [Parameter]
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+        [EditorRequired]
         public Type Type { get; set; } = default!;
 
         /// <summary>
@@ -48,6 +49,11 @@ namespace Microsoft.AspNetCore.Components
         //     component. This could lead to application bugs.
         [Parameter]
         public IDictionary<string, object>? Parameters { get; set; }
+
+        /// <summary>
+        /// Gets rendered component instance.
+        /// </summary>
+        public object? Instance { get; private set; }
 
         /// <inheritdoc />
         public void Attach(RenderHandle renderHandle)
@@ -97,6 +103,8 @@ namespace Microsoft.AspNetCore.Components
                     builder.AddAttribute(1, entry.Key, entry.Value);
                 }
             }
+
+            builder.AddComponentReferenceCapture(2, component => Instance = component);
 
             builder.CloseComponent();
         }

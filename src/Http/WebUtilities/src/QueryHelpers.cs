@@ -1,11 +1,12 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.WebUtilities
@@ -172,56 +173,11 @@ namespace Microsoft.AspNetCore.WebUtilities
         public static Dictionary<string, StringValues>? ParseNullableQuery(string? queryString)
         {
             var accumulator = new KeyValueAccumulator();
+            var enumerable = new QueryStringEnumerable(queryString);
 
-            if (string.IsNullOrEmpty(queryString) || queryString == "?")
+            foreach (var pair in enumerable)
             {
-                return null;
-            }
-
-            int scanIndex = 0;
-            if (queryString[0] == '?')
-            {
-                scanIndex = 1;
-            }
-
-            int textLength = queryString.Length;
-            int equalIndex = queryString.IndexOf('=');
-            if (equalIndex == -1)
-            {
-                equalIndex = textLength;
-            }
-            while (scanIndex < textLength)
-            {
-                int delimiterIndex = queryString.IndexOf('&', scanIndex);
-                if (delimiterIndex == -1)
-                {
-                    delimiterIndex = textLength;
-                }
-                if (equalIndex < delimiterIndex)
-                {
-                    while (scanIndex != equalIndex && char.IsWhiteSpace(queryString[scanIndex]))
-                    {
-                        ++scanIndex;
-                    }
-                    string name = queryString.Substring(scanIndex, equalIndex - scanIndex);
-                    string value = queryString.Substring(equalIndex + 1, delimiterIndex - equalIndex - 1);
-                    accumulator.Append(
-                        Uri.UnescapeDataString(name.Replace('+', ' ')),
-                        Uri.UnescapeDataString(value.Replace('+', ' ')));
-                    equalIndex = queryString.IndexOf('=', delimiterIndex);
-                    if (equalIndex == -1)
-                    {
-                        equalIndex = textLength;
-                    }
-                }
-                else
-                {
-                    if (delimiterIndex > scanIndex)
-                    {
-                        accumulator.Append(queryString.Substring(scanIndex, delimiterIndex - scanIndex), string.Empty);
-                    }
-                }
-                scanIndex = delimiterIndex + 1;
+                accumulator.Append(pair.DecodeName().ToString(), pair.DecodeValue().ToString());
             }
 
             if (!accumulator.HasValues)

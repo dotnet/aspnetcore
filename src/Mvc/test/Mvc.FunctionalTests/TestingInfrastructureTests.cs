@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
@@ -112,6 +112,20 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var modifiedHeaderWasSent = await response.Content.ReadAsStringAsync();
 
             Assert.Equal("false", modifiedHeaderWasSent);
+        }
+
+        [Fact]
+        public async Task TestingInfrastructure_RedirectHandlerFollowsStatusCode303()
+        {
+            // Act
+            var request = new HttpRequestMessage(HttpMethod.Get, "Testing/RedirectHandler/Redirect303");
+            var client = Factory.CreateDefaultClient(
+                new RedirectHandler());
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("Test", await response.Content.ReadAsStringAsync());
         }
 
         [Fact]

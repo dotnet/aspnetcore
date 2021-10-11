@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     internal class ActionSelectionTable<TItem>
     {
         private ActionSelectionTable(
-            int version, 
+            int version,
             string[] routeKeys,
             Dictionary<string[], List<TItem>> ordinalEntries,
             Dictionary<string[], List<TItem>> ordinalIgnoreCaseEntries)
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             OrdinalEntries = ordinalEntries;
             OrdinalIgnoreCaseEntries = ordinalIgnoreCaseEntries;
         }
-        
+
         public int Version { get; }
 
         private string[] RouteKeys { get; }
@@ -80,11 +80,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         public static ActionSelectionTable<Endpoint> Create(IEnumerable<Endpoint> endpoints)
         {
             return CreateCore<Endpoint>(
-                
-                // we don't use version for endpoints
-                version: 0, 
 
-                // Exclude RouteEndpoints - we only process inert endpoints here. 
+                // we don't use version for endpoints
+                version: 0,
+
+                // Exclude RouteEndpoints - we only process inert endpoints here.
                 items: endpoints.Where(e =>
                 {
                     return e.GetType() == typeof(Endpoint);
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             IEnumerable<T> items,
             Func<T, IEnumerable<string>?> getRouteKeys,
             Func<T, string, string> getRouteValue)
-        {       
+        {
             // We need to build two maps for all of the route values.
             var ordinalEntries = new Dictionary<string[], List<T>>(StringArrayComparer.Ordinal);
             var ordinalIgnoreCaseEntries = new Dictionary<string[], List<T>>(StringArrayComparer.OrdinalIgnoreCase);

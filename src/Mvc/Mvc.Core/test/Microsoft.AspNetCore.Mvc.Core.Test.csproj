@@ -15,5 +15,6 @@
     <ProjectReference Include="..\..\shared\Mvc.TestDiagnosticListener\Microsoft.AspNetCore.Mvc.TestDiagnosticListener.csproj" />
 
     <Reference Include="Microsoft.AspNetCore.ResponseCaching" />
+    <Compile Include="$(SharedSourceRoot)ResultsTests\*.cs" LinkBase="Shared" />
   </ItemGroup>
 </Project>

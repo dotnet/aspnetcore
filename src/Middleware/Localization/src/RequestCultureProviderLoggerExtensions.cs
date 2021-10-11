@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -8,31 +8,13 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Localization
 {
-    internal static class RequestCultureProviderLoggerExtensions
+    internal static partial class RequestCultureProviderLoggerExtensions
     {
-        private static readonly Action<ILogger, string, IList<StringSegment>, Exception?> _unsupportedCulture;
-        private static readonly Action<ILogger, string, IList<StringSegment>, Exception?> _unsupportedUICulture;
 
-        static RequestCultureProviderLoggerExtensions()
-        {
-            _unsupportedCulture = LoggerMessage.Define<string, IList<StringSegment>>(
-                LogLevel.Debug,
-                 new EventId (1, "UnsupportedCulture"),
-                "{requestCultureProvider} returned the following unsupported cultures '{cultures}'.");
-            _unsupportedUICulture = LoggerMessage.Define<string, IList<StringSegment>>(
-                LogLevel.Debug,
-                 new EventId(2, "UnsupportedUICulture"),
-                "{requestCultureProvider} returned the following unsupported UI Cultures '{uiCultures}'.");
-        }
+        [LoggerMessage(1, LogLevel.Debug, "{requestCultureProvider} returned the following unsupported cultures '{cultures}'.", EventName = "UnsupportedCulture")]
+        public static partial void UnsupportedCultures(this ILogger logger, string requestCultureProvider, IList<StringSegment> cultures);
 
-        public static void UnsupportedCultures(this ILogger logger, string requestCultureProvider, IList<StringSegment> cultures)
-        {
-            _unsupportedCulture(logger, requestCultureProvider, cultures, null);
-        }
-
-        public static void UnsupportedUICultures(this ILogger logger, string requestCultureProvider, IList<StringSegment> uiCultures)
-        {
-            _unsupportedUICulture(logger, requestCultureProvider, uiCultures, null);
-        }
+        [LoggerMessage(2, LogLevel.Debug, "{requestCultureProvider} returned the following unsupported UI Cultures '{uiCultures}'.", EventName = "UnsupportedUICulture")]
+        public static partial void UnsupportedUICultures(this ILogger logger, string requestCultureProvider, IList<StringSegment> uiCultures);
     }
 }

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.Cryptography;
@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
     // An encryptor which does Encrypt(CBC) + HMAC using the Windows CNG (BCrypt*) APIs.
     // The payloads produced by this encryptor should be compatible with the payloads
     // produced by the managed Encrypt(CBC) + HMAC encryptor.
-    internal unsafe sealed class CbcAuthenticatedEncryptor : CngAuthenticatedEncryptorBase
+    internal sealed unsafe class CbcAuthenticatedEncryptor : CngAuthenticatedEncryptorBase
     {
         // Even when IVs are chosen randomly, CBC is susceptible to IV collisions within a single
         // key. For a 64-bit block cipher (like 3DES), we'd expect a collision after 2^32 block

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -16,6 +16,7 @@ using Xunit.Abstractions;
 
 namespace Templates.Test
 {
+    [Retry]
     public class BlazorServerTemplateTest : BlazorTemplateTest
     {
         public BlazorServerTemplateTest(ProjectFactoryFixture projectFactory)
@@ -147,9 +148,9 @@ namespace Templates.Test
             await socket.WaitForEventAsync(WebSocketEvent.FrameReceived);
             await socket.WaitForEventAsync(WebSocketEvent.FrameSent);
 
-            await page.WaitForSelectorAsync("ul");
+            await page.WaitForSelectorAsync("nav");
             // <title> element gets project ID injected into it during template execution
-            Assert.Equal(project.ProjectName.Trim(), (await page.GetTitleAsync()).Trim());
+            Assert.Equal("Index", (await page.GetTitleAsync()).Trim());
 
             // Initially displays the home page
             await page.WaitForSelectorAsync("h1 >> text=Hello, world!");

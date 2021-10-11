@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Runtime.CompilerServices;
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Identity
             _rng = options.Rng;
         }
 
-#if NETSTANDARD2_0 || NET461
+#if NETSTANDARD2_0 || NETFRAMEWORK
         // Compares two byte arrays for equality. The method is specifically written so that the loop is not optimized.
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         private static bool ByteArraysEqual(byte[] a, byte[] b)
@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Identity
 
             // Hash the incoming password and verify it
             byte[] actualSubkey = KeyDerivation.Pbkdf2(password, salt, Pbkdf2Prf, Pbkdf2IterCount, Pbkdf2SubkeyLength);
-#if NETSTANDARD2_0 || NET461
+#if NETSTANDARD2_0 || NETFRAMEWORK
             return ByteArraysEqual(actualSubkey, expectedSubkey);
 #elif NETCOREAPP
             return CryptographicOperations.FixedTimeEquals(actualSubkey, expectedSubkey);
@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.Identity
 
                 // Hash the incoming password and verify it
                 byte[] actualSubkey = KeyDerivation.Pbkdf2(password, salt, prf, iterCount, subkeyLength);
-#if NETSTANDARD2_0 || NET461
+#if NETSTANDARD2_0 || NETFRAMEWORK
                 return ByteArraysEqual(actualSubkey, expectedSubkey);
 #elif NETCOREAPP
                 return CryptographicOperations.FixedTimeEquals(actualSubkey, expectedSubkey);

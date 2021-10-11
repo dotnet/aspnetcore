@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -28,7 +28,12 @@ namespace Microsoft.AspNetCore.Connections
         internal protected IConnectionLifetimeFeature? _currentIConnectionLifetimeFeature;
 
         // Other reserved feature slots
+        internal protected IPersistentStateFeature? _currentIPersistentStateFeature;
         internal protected IConnectionSocketFeature? _currentIConnectionSocketFeature;
+        internal protected IProtocolErrorCodeFeature? _currentIProtocolErrorCodeFeature;
+        internal protected IStreamDirectionFeature? _currentIStreamDirectionFeature;
+        internal protected IStreamIdFeature? _currentIStreamIdFeature;
+        internal protected IStreamAbortFeature? _currentIStreamAbortFeature;
 
         private int _featureRevision;
 
@@ -42,7 +47,12 @@ namespace Microsoft.AspNetCore.Connections
             _currentIMemoryPoolFeature = this;
             _currentIConnectionLifetimeFeature = this;
 
+            _currentIPersistentStateFeature = null;
             _currentIConnectionSocketFeature = null;
+            _currentIProtocolErrorCodeFeature = null;
+            _currentIStreamDirectionFeature = null;
+            _currentIStreamIdFeature = null;
+            _currentIStreamAbortFeature = null;
         }
 
         // Internal for testing
@@ -126,6 +136,10 @@ namespace Microsoft.AspNetCore.Connections
                 {
                     feature = _currentIConnectionItemsFeature;
                 }
+                else if (key == typeof(IPersistentStateFeature))
+                {
+                    feature = _currentIPersistentStateFeature;
+                }
                 else if (key == typeof(IMemoryPoolFeature))
                 {
                     feature = _currentIMemoryPoolFeature;
@@ -138,12 +152,28 @@ namespace Microsoft.AspNetCore.Connections
                 {
                     feature = _currentIConnectionSocketFeature;
                 }
+                else if (key == typeof(IProtocolErrorCodeFeature))
+                {
+                    feature = _currentIProtocolErrorCodeFeature;
+                }
+                else if (key == typeof(IStreamDirectionFeature))
+                {
+                    feature = _currentIStreamDirectionFeature;
+                }
+                else if (key == typeof(IStreamIdFeature))
+                {
+                    feature = _currentIStreamIdFeature;
+                }
+                else if (key == typeof(IStreamAbortFeature))
+                {
+                    feature = _currentIStreamAbortFeature;
+                }
                 else if (MaybeExtra != null)
                 {
                     feature = ExtraFeatureGet(key);
                 }
 
-                return feature;
+                return feature ?? MultiplexedConnectionFeatures?[key];
             }
 
             set
@@ -162,6 +192,10 @@ namespace Microsoft.AspNetCore.Connections
                 {
                     _currentIConnectionItemsFeature = (IConnectionItemsFeature?)value;
                 }
+                else if (key == typeof(IPersistentStateFeature))
+                {
+                    _currentIPersistentStateFeature = (IPersistentStateFeature?)value;
+                }
                 else if (key == typeof(IMemoryPoolFeature))
                 {
                     _currentIMemoryPoolFeature = (IMemoryPoolFeature?)value;
@@ -173,6 +207,22 @@ namespace Microsoft.AspNetCore.Connections
                 else if (key == typeof(IConnectionSocketFeature))
                 {
                     _currentIConnectionSocketFeature = (IConnectionSocketFeature?)value;
+                }
+                else if (key == typeof(IProtocolErrorCodeFeature))
+                {
+                    _currentIProtocolErrorCodeFeature = (IProtocolErrorCodeFeature?)value;
+                }
+                else if (key == typeof(IStreamDirectionFeature))
+                {
+                    _currentIStreamDirectionFeature = (IStreamDirectionFeature?)value;
+                }
+                else if (key == typeof(IStreamIdFeature))
+                {
+                    _currentIStreamIdFeature = (IStreamIdFeature?)value;
+                }
+                else if (key == typeof(IStreamAbortFeature))
+                {
+                    _currentIStreamAbortFeature = (IStreamAbortFeature?)value;
                 }
                 else
                 {
@@ -200,6 +250,10 @@ namespace Microsoft.AspNetCore.Connections
             {
                 feature = Unsafe.As<IConnectionItemsFeature?, TFeature?>(ref _currentIConnectionItemsFeature);
             }
+            else if (typeof(TFeature) == typeof(IPersistentStateFeature))
+            {
+                feature = Unsafe.As<IPersistentStateFeature?, TFeature?>(ref _currentIPersistentStateFeature);
+            }
             else if (typeof(TFeature) == typeof(IMemoryPoolFeature))
             {
                 feature = Unsafe.As<IMemoryPoolFeature?, TFeature?>(ref _currentIMemoryPoolFeature);
@@ -212,9 +266,30 @@ namespace Microsoft.AspNetCore.Connections
             {
                 feature = Unsafe.As<IConnectionSocketFeature?, TFeature?>(ref _currentIConnectionSocketFeature);
             }
+            else if (typeof(TFeature) == typeof(IProtocolErrorCodeFeature))
+            {
+                feature = Unsafe.As<IProtocolErrorCodeFeature?, TFeature?>(ref _currentIProtocolErrorCodeFeature);
+            }
+            else if (typeof(TFeature) == typeof(IStreamDirectionFeature))
+            {
+                feature = Unsafe.As<IStreamDirectionFeature?, TFeature?>(ref _currentIStreamDirectionFeature);
+            }
+            else if (typeof(TFeature) == typeof(IStreamIdFeature))
+            {
+                feature = Unsafe.As<IStreamIdFeature?, TFeature?>(ref _currentIStreamIdFeature);
+            }
+            else if (typeof(TFeature) == typeof(IStreamAbortFeature))
+            {
+                feature = Unsafe.As<IStreamAbortFeature?, TFeature?>(ref _currentIStreamAbortFeature);
+            }
             else if (MaybeExtra != null)
             {
                 feature = (TFeature?)(ExtraFeatureGet(typeof(TFeature)));
+            }
+
+            if (feature == null && MultiplexedConnectionFeatures != null)
+            {
+                feature = MultiplexedConnectionFeatures.Get<TFeature>();
             }
 
             return feature;
@@ -239,6 +314,10 @@ namespace Microsoft.AspNetCore.Connections
             {
                 _currentIConnectionItemsFeature = Unsafe.As<TFeature?, IConnectionItemsFeature?>(ref feature);
             }
+            else if (typeof(TFeature) == typeof(IPersistentStateFeature))
+            {
+                _currentIPersistentStateFeature = Unsafe.As<TFeature?, IPersistentStateFeature?>(ref feature);
+            }
             else if (typeof(TFeature) == typeof(IMemoryPoolFeature))
             {
                 _currentIMemoryPoolFeature = Unsafe.As<TFeature?, IMemoryPoolFeature?>(ref feature);
@@ -250,6 +329,22 @@ namespace Microsoft.AspNetCore.Connections
             else if (typeof(TFeature) == typeof(IConnectionSocketFeature))
             {
                 _currentIConnectionSocketFeature = Unsafe.As<TFeature?, IConnectionSocketFeature?>(ref feature);
+            }
+            else if (typeof(TFeature) == typeof(IProtocolErrorCodeFeature))
+            {
+                _currentIProtocolErrorCodeFeature = Unsafe.As<TFeature?, IProtocolErrorCodeFeature?>(ref feature);
+            }
+            else if (typeof(TFeature) == typeof(IStreamDirectionFeature))
+            {
+                _currentIStreamDirectionFeature = Unsafe.As<TFeature?, IStreamDirectionFeature?>(ref feature);
+            }
+            else if (typeof(TFeature) == typeof(IStreamIdFeature))
+            {
+                _currentIStreamIdFeature = Unsafe.As<TFeature?, IStreamIdFeature?>(ref feature);
+            }
+            else if (typeof(TFeature) == typeof(IStreamAbortFeature))
+            {
+                _currentIStreamAbortFeature = Unsafe.As<TFeature?, IStreamAbortFeature?>(ref feature);
             }
             else
             {
@@ -271,6 +366,10 @@ namespace Microsoft.AspNetCore.Connections
             {
                 yield return new KeyValuePair<Type, object>(typeof(IConnectionItemsFeature), _currentIConnectionItemsFeature);
             }
+            if (_currentIPersistentStateFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IPersistentStateFeature), _currentIPersistentStateFeature);
+            }
             if (_currentIMemoryPoolFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(typeof(IMemoryPoolFeature), _currentIMemoryPoolFeature);
@@ -282,6 +381,22 @@ namespace Microsoft.AspNetCore.Connections
             if (_currentIConnectionSocketFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(typeof(IConnectionSocketFeature), _currentIConnectionSocketFeature);
+            }
+            if (_currentIProtocolErrorCodeFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IProtocolErrorCodeFeature), _currentIProtocolErrorCodeFeature);
+            }
+            if (_currentIStreamDirectionFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IStreamDirectionFeature), _currentIStreamDirectionFeature);
+            }
+            if (_currentIStreamIdFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IStreamIdFeature), _currentIStreamIdFeature);
+            }
+            if (_currentIStreamAbortFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IStreamAbortFeature), _currentIStreamAbortFeature);
             }
 
             if (MaybeExtra != null)

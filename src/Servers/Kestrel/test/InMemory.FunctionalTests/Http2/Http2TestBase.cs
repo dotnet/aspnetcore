@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             new KeyValuePair<string, string>(HeaderNames.Path, "/"),
             new KeyValuePair<string, string>(HeaderNames.Authority, "127.0.0.1"),
             new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>("expect", "100-continue"),
+            new KeyValuePair<string, string>(HeaderNames.Expect, "100-continue"),
         };
 
         protected static readonly IEnumerable<KeyValuePair<string, string>> _requestTrailers = new[]
@@ -127,7 +127,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private readonly byte[] _headerEncodingBuffer = new byte[Http2PeerSettings.MinAllowedMaxFrameSize];
 
         internal readonly TimeoutControl _timeoutControl;
-        internal readonly Mock<IKestrelTrace> _mockKestrelTrace = new Mock<IKestrelTrace>();
         protected readonly Mock<ConnectionContext> _mockConnectionContext = new Mock<ConnectionContext>();
         internal readonly Mock<ITimeoutHandler> _mockTimeoutHandler = new Mock<ITimeoutHandler>();
         internal readonly Mock<MockTimeoutControlBase> _mockTimeoutControl;
@@ -136,6 +135,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected readonly Dictionary<string, string> _receivedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         protected readonly Dictionary<string, string> _receivedTrailers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         protected readonly Dictionary<string, string> _decodedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        protected readonly RequestFields _receivedRequestFields = new RequestFields();
         protected readonly HashSet<int> _abortedStreamIds = new HashSet<int>();
         protected readonly object _abortedStreamIdsLock = new object();
         protected readonly TaskCompletionSource _closingStateReached = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -174,13 +174,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _mockTimeoutControl = new Mock<MockTimeoutControlBase>(_timeoutControl) { CallBase = true };
             _timeoutControl.Debugger = Mock.Of<IDebugger>();
 
-            _mockKestrelTrace
-                .Setup(m => m.Http2ConnectionClosing(It.IsAny<string>()))
-                .Callback(() => _closingStateReached.SetResult());
-            _mockKestrelTrace
-                .Setup(m => m.Http2ConnectionClosed(It.IsAny<string>(), It.IsAny<int>()))
-                .Callback(() => _closedStateReached.SetResult());
-
             _mockConnectionContext.Setup(c => c.Abort(It.IsAny<ConnectionAbortedException>())).Callback<ConnectionAbortedException>(ex =>
             {
                 // Emulate transport abort so the _connectionTask completes.
@@ -195,6 +188,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _readHeadersApplication = context =>
             {
+                _receivedRequestFields.Method = context.Request.Method;
+                _receivedRequestFields.Scheme = context.Request.Scheme;
+                _receivedRequestFields.Path = context.Request.Path.Value;
+                _receivedRequestFields.RawTarget = context.Features.Get<IHttpRequestFeature>().RawTarget;
                 foreach (var header in context.Request.Headers)
                 {
                     _receivedHeaders[header.Key] = header.Value.ToString();
@@ -217,6 +214,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Assert.True(context.Request.SupportsTrailers(), "SupportsTrailers");
                 Assert.True(context.Request.CheckTrailersAvailable(), "SupportsTrailers");
 
+                _receivedRequestFields.Method = context.Request.Method;
+                _receivedRequestFields.Scheme = context.Request.Scheme;
+                _receivedRequestFields.Path = context.Request.Path.Value;
+                _receivedRequestFields.RawTarget = context.Features.Get<IHttpRequestFeature>().RawTarget;
                 foreach (var header in context.Request.Headers)
                 {
                     _receivedHeaders[header.Key] = header.Value.ToString();
@@ -350,6 +351,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _echoMethodNoBody = context =>
             {
                 Assert.False(context.Request.CanHaveBody());
+                Assert.False(context.Request.Headers.ContainsKey(HeaderNames.Method));
                 context.Response.Headers["Method"] = context.Request.Method;
 
                 return Task.CompletedTask;
@@ -357,6 +359,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _echoHost = context =>
             {
+                Assert.False(context.Request.Headers.ContainsKey(HeaderNames.Authority));
                 context.Response.Headers.Host = context.Request.Headers.Host;
 
                 return Task.CompletedTask;
@@ -364,6 +367,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _echoPath = context =>
             {
+                Assert.False(context.Request.Headers.ContainsKey(HeaderNames.Path));
                 context.Response.Headers["path"] = context.Request.Path.ToString();
                 context.Response.Headers["rawtarget"] = context.Features.Get<IHttpRequestFeature>().RawTarget;
 
@@ -389,9 +393,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
 
-            _serviceContext = new TestServiceContext(LoggerFactory, _mockKestrelTrace.Object)
+            _serviceContext = new TestServiceContext(LoggerFactory)
             {
                 Scheduler = PipeScheduler.Inline,
+            };
+
+            TestSink.MessageLogged += context =>
+            {
+                if (context.EventId.Name == "Http2ConnectionClosing")
+                {
+                    _closingStateReached.SetResult();
+                }
+                if (context.EventId.Name == "Http2ConnectionClosed")
+                {
+                    _closedStateReached.SetResult();
+                }
             };
         }
 
@@ -410,7 +426,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         void IHttpHeadersHandler.OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
             var nameStr = name.GetHeaderName();
-            _decodedHeaders[nameStr] = value.GetRequestHeaderString(nameStr, _serviceContext.ServerOptions.RequestHeaderEncodingSelector);
+            _decodedHeaders[nameStr] = value.GetRequestHeaderString(nameStr, _serviceContext.ServerOptions.RequestHeaderEncodingSelector, checkForNewlineChars : true);
         }
 
         public void OnStaticIndexedHeader(int index)
@@ -1240,8 +1256,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             foreach (var header in expectedHeaders)
             {
-                Assert.True(_receivedHeaders.TryGetValue(header.Key, out var value), header.Key);
-                Assert.Equal(header.Value, value, ignoreCase: true);
+                if (header.Key == HeaderNames.Method)
+                {
+                    Assert.Equal(header.Value, _receivedRequestFields.Method);
+                }
+                else if (header.Key == HeaderNames.Authority)
+                {
+                    Assert.True(_receivedHeaders.TryGetValue(HeaderNames.Host, out var host), header.Key);
+                    Assert.Equal(header.Value, host);
+                }
+                else if (header.Key == HeaderNames.Scheme)
+                {
+                    Assert.Equal(header.Value, _receivedRequestFields.Scheme);
+                }
+                else if (header.Key == HeaderNames.Path)
+                {
+                    Assert.Equal(header.Value, _receivedRequestFields.RawTarget);
+                }
+                else
+                {
+                    Assert.True(_receivedHeaders.TryGetValue(header.Key, out var value), header.Key);
+                    Assert.Equal(header.Value, value, ignoreCase: true);
+                }
             }
         }
 
@@ -1384,6 +1420,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 _realTimeoutControl.Tick(now);
             }
+
+            public long GetResponseDrainDeadline(long ticks, MinDataRate minRate)
+            {
+                return _realTimeoutControl.GetResponseDrainDeadline(ticks, minRate);
+            }
+        }
+
+        public class RequestFields
+        {
+            public string Method { get; set; }
+            public string Scheme { get; set; }
+            public string Path { get; set; }
+            public string RawTarget { get; set; }
         }
     }
 }

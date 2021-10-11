@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Net;
@@ -7,14 +7,16 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Connections.Features;
 
 namespace Microsoft.AspNetCore.Http
 {
     internal sealed class DefaultConnectionInfo : ConnectionInfo
     {
         // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
-        private readonly static Func<IFeatureCollection, IHttpConnectionFeature> _newHttpConnectionFeature = f => new HttpConnectionFeature();
-        private readonly static Func<IFeatureCollection, ITlsConnectionFeature> _newTlsConnectionFeature = f => new TlsConnectionFeature();
+        private static readonly Func<IFeatureCollection, IHttpConnectionFeature> _newHttpConnectionFeature = f => new HttpConnectionFeature();
+        private static readonly Func<IFeatureCollection, ITlsConnectionFeature> _newTlsConnectionFeature = f => new TlsConnectionFeature();
+        private static readonly Func<IFeatureCollection, IConnectionLifetimeNotificationFeature> _newConnectionLifetime = f => new DefaultConnectionLifetimeNotificationFeature(f.Get<IHttpResponseFeature>());
 
         private FeatureReferences<FeatureInterfaces> _features;
 
@@ -23,7 +25,7 @@ namespace Microsoft.AspNetCore.Http
             Initialize(features);
         }
 
-        public void Initialize( IFeatureCollection features)
+        public void Initialize(IFeatureCollection features)
         {
             _features.Initalize(features);
         }
@@ -43,6 +45,9 @@ namespace Microsoft.AspNetCore.Http
 
         private ITlsConnectionFeature TlsConnectionFeature=>
             _features.Fetch(ref _features.Cache.TlsConnection, _newTlsConnectionFeature)!;
+
+        private IConnectionLifetimeNotificationFeature ConnectionLifetime =>
+            _features.Fetch(ref _features.Cache.ConnectionLifetime, _newConnectionLifetime)!;
 
         /// <inheritdoc />
         public override string Id
@@ -86,10 +91,16 @@ namespace Microsoft.AspNetCore.Http
             return TlsConnectionFeature.GetClientCertificateAsync(cancellationToken);
         }
 
+        public override void RequestClose()
+        {
+            ConnectionLifetime.RequestClose();
+        }
+
         struct FeatureInterfaces
         {
             public IHttpConnectionFeature? Connection;
             public ITlsConnectionFeature? TlsConnection;
+            public IConnectionLifetimeNotificationFeature? ConnectionLifetime;
         }
     }
 }

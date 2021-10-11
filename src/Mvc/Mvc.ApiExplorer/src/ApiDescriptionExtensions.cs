@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 
@@ -17,15 +17,14 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// <typeparam name="T">The type of the property.</typeparam>
         /// <param name="apiDescription">The <see cref="ApiDescription"/>.</param>
         /// <returns>The property or the default value of <typeparamref name="T"/>.</returns>
-        public static T GetProperty<T>(this ApiDescription apiDescription)
+        public static T? GetProperty<T>(this ApiDescription apiDescription)
         {
             if (apiDescription == null)
             {
                 throw new ArgumentNullException(nameof(apiDescription));
             }
 
-            object value;
-            if (apiDescription.Properties.TryGetValue(typeof(T), out value))
+            if (apiDescription.Properties.TryGetValue(typeof(T), out var value))
             {
                 return (T)value;
             }

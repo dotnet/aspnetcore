@@ -1,9 +1,10 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Matching;
 
 namespace Microsoft.AspNetCore.Routing.Constraints
 {
@@ -35,53 +36,53 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     /// an actual file on disk.
     /// </para>
     /// <para>
-    /// <list type="bullet">  
-    ///     <listheader>  
-    ///         <term>Examples of route values that will be matched as file names</term>  
-    ///         <description>description</description>  
-    ///     </listheader>  
-    ///     <item>  
-    ///         <term><c>/a/b/c.txt</c></term>  
-    ///         <description>Final segment contains a <c>.</c> followed by other characters.</description>  
+    /// <list type="bullet">
+    ///     <listheader>
+    ///         <term>Examples of route values that will be matched as file names</term>
+    ///         <description>description</description>
+    ///     </listheader>
+    ///     <item>
+    ///         <term><c>/a/b/c.txt</c></term>
+    ///         <description>Final segment contains a <c>.</c> followed by other characters.</description>
     ///     </item>
-    ///     <item>  
-    ///         <term><c>/hello.world.txt</c></term>  
-    ///         <description>Final segment contains a <c>.</c> followed by other characters.</description>  
+    ///     <item>
+    ///         <term><c>/hello.world.txt</c></term>
+    ///         <description>Final segment contains a <c>.</c> followed by other characters.</description>
     ///     </item>
-    ///     <item>  
-    ///         <term><c>hello.world.txt</c></term>  
-    ///         <description>Final segment contains a <c>.</c> followed by other characters.</description>  
+    ///     <item>
+    ///         <term><c>hello.world.txt</c></term>
+    ///         <description>Final segment contains a <c>.</c> followed by other characters.</description>
     ///     </item>
-    ///     <item>  
-    ///         <term><c>.gitignore</c></term>  
-    ///         <description>Final segment contains a <c>.</c> followed by other characters.</description>  
-    ///     </item> 
+    ///     <item>
+    ///         <term><c>.gitignore</c></term>
+    ///         <description>Final segment contains a <c>.</c> followed by other characters.</description>
+    ///     </item>
     /// </list>
-    /// <list type="bullet">  
-    ///     <listheader>  
-    ///         <term>Examples of route values that will be rejected as non-file-names</term>  
-    ///         <description>description</description>  
-    ///     </listheader>  
-    ///     <item>  
-    ///         <term><c>/a/b/c</c></term>  
-    ///         <description>Final segment does not contain a <c>.</c>.</description>  
+    /// <list type="bullet">
+    ///     <listheader>
+    ///         <term>Examples of route values that will be rejected as non-file-names</term>
+    ///         <description>description</description>
+    ///     </listheader>
+    ///     <item>
+    ///         <term><c>/a/b/c</c></term>
+    ///         <description>Final segment does not contain a <c>.</c>.</description>
     ///     </item>
-    ///     <item>  
-    ///         <term><c>/a/b.d/c</c></term>  
-    ///         <description>Final segment does not contain a <c>.</c>.</description>  
+    ///     <item>
+    ///         <term><c>/a/b.d/c</c></term>
+    ///         <description>Final segment does not contain a <c>.</c>.</description>
     ///     </item>
-    ///     <item>  
-    ///         <term><c>/a/b.d/c/</c></term>  
-    ///         <description>Final segment is empty.</description>  
+    ///     <item>
+    ///         <term><c>/a/b.d/c/</c></term>
+    ///         <description>Final segment is empty.</description>
     ///     </item>
-    ///     <item>  
-    ///         <term><c></c></term>  
-    ///         <description>Value is empty</description>  
+    ///     <item>
+    ///         <term><c></c></term>
+    ///         <description>Value is empty</description>
     ///     </item>
-    /// </list>  
+    /// </list>
     /// </para>
     /// </remarks>
-    public class FileNameRouteConstraint : IRouteConstraint
+    public class FileNameRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
     {
         /// <inheritdoc />
         public bool Match(
@@ -143,6 +144,11 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             }
 
             return false;
+        }
+
+        bool IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string parameterName, string literal)
+        {
+            return IsFileName(literal);
         }
     }
 }

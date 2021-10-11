@@ -37,8 +37,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
             WriteLiteral("div class=\"randomNonTagHelperAttribute\">\r\n    <");
             WriteLiteral("p class=\"Hello World\" ");
 #nullable restore
-#line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EscapedTagHelpers.cshtml"
-                       Write(DateTime.Now);
+#line (4,30)-(4,42) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EscapedTagHelpers.cshtml"
+Write(DateTime.Now);
 
 #line default
 #line hidden
@@ -56,8 +56,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper2);
             BeginWriteTagHelperAttribute();
 #nullable restore
-#line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EscapedTagHelpers.cshtml"
-                                      WriteLiteral(DateTime.Now);
+#line (6,52)-(6,64) 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EscapedTagHelpers.cshtml"
+WriteLiteral(DateTime.Now);
 
 #line default
 #line hidden

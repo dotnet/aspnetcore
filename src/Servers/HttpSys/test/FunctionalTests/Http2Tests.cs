@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -359,11 +359,50 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 
         [ConditionalFact]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_19H2, SkipReason = "GoAway support was added in Win10_19H2.")]
-        public async Task ConnectionClose_OSSupport_SendsGoAway()
+        public async Task ConnectionHeaderClose_OSSupport_SendsGoAway()
         {
             using var server = Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
             {
                 httpContext.Response.Headers.Connection = "close";
+                return Task.FromResult(0);
+            });
+
+            await new HostBuilder()
+                .UseHttp2Cat(address, async h2Connection =>
+                {
+                    await h2Connection.InitializeConnectionAsync();
+
+                    h2Connection.Logger.LogInformation("Initialized http2 connection. Starting stream 1.");
+
+                    await h2Connection.StartStreamAsync(1, Http2Utilities.BrowserRequestHeaders, endStream: true);
+
+                    var goAwayFrame = await h2Connection.ReceiveFrameAsync();
+                    h2Connection.VerifyGoAway(goAwayFrame, int.MaxValue, Http2ErrorCode.NO_ERROR);
+
+                    await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
+                    {
+                        // HTTP/2 filters out the connection header
+                        Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
+                        Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    });
+
+                    var dataFrame = await h2Connection.ReceiveFrameAsync();
+                    Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: true, length: 0);
+
+                    // Http.Sys doesn't send a final GoAway unless we ignore the first one and send 200 additional streams.
+
+                    h2Connection.Logger.LogInformation("Connection stopped.");
+                })
+                .Build().RunAsync();
+        }
+
+        [ConditionalFact]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_19H2, SkipReason = "GoAway support was added in Win10_19H2.")]
+        public async Task ConnectionRequestClose_OSSupport_SendsGoAway()
+        {
+            using var server = Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
+            {
+                httpContext.Connection.RequestClose();
                 return Task.FromResult(0);
             });
 

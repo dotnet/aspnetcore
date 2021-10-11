@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -103,7 +103,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         public static SourceSpan GetSourceSpan(this SyntaxNode node, RazorSourceDocument source)
         {
             var location = node.GetSourceLocation(source);
-            return new SourceSpan(location, node.FullWidth);
+            var endLocation = source.Lines.GetLocation(node.EndPosition);
+            var lineCount = endLocation.LineIndex - location.LineIndex;
+            return new SourceSpan(location.FilePath, location.AbsoluteIndex, location.LineIndex, location.CharacterIndex, node.FullWidth, lineCount, endLocation.CharacterIndex);
         }
 
         /// <summary>

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -11,6 +11,7 @@ using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -26,6 +27,8 @@ namespace SampleApp
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
             var logger = loggerFactory.CreateLogger("Default");
+
+            app.UseClientCertBuffering();
 
             // Add an exception handler that prevents throwing due to large request body size
             app.Use(async (context, next) =>
@@ -43,12 +46,16 @@ namespace SampleApp
             app.Run(async context =>
             {
                 // Drain the request body
-                await context.Request.Body.CopyToAsync(Stream.Null);
+                // await context.Request.Body.CopyToAsync(Stream.Null);
+
+                var cert = await context.Connection.GetClientCertificateAsync();
 
                 var connectionFeature = context.Connection;
                 logger.LogDebug($"Peer: {connectionFeature.RemoteIpAddress?.ToString()}:{connectionFeature.RemotePort}"
                     + $"{Environment.NewLine}"
-                    + $"Sock: {connectionFeature.LocalIpAddress?.ToString()}:{connectionFeature.LocalPort}");
+                    + $"Sock: {connectionFeature.LocalIpAddress?.ToString()}:{connectionFeature.LocalPort}"
+                    + $"{Environment.NewLine}"
+                    + cert);
 
                 var response = $"hello, world{Environment.NewLine}";
                 context.Response.ContentLength = response.Length;
@@ -80,6 +87,7 @@ namespace SampleApp
                             options.ConfigureHttpsDefaults(httpsOptions =>
                             {
                                 httpsOptions.SslProtocols = SslProtocols.Tls12;
+                                httpsOptions.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
                             });
 
                             options.Listen(IPAddress.Loopback, basePort, listenOptions =>
@@ -92,6 +100,7 @@ namespace SampleApp
 
                             options.Listen(IPAddress.Loopback, basePort + 1, listenOptions =>
                             {
+                                listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1;
                                 listenOptions.UseHttps();
                                 listenOptions.UseConnectionLogging();
                             });
@@ -155,7 +164,7 @@ namespace SampleApp
                         .UseContentRoot(Directory.GetCurrentDirectory())
                         .UseStartup<Startup>();
 
-                    if (string.Equals(Process.GetCurrentProcess().Id.ToString(CultureInfo.InvariantCulture), Environment.GetEnvironmentVariable("LISTEN_PID")))
+                    if (string.Equals(Environment.ProcessId.ToString(CultureInfo.InvariantCulture), Environment.GetEnvironmentVariable("LISTEN_PID")))
                     {
                         // Use libuv if activated by systemd, since that's currently the only transport that supports being passed a socket handle.
 #pragma warning disable CS0618

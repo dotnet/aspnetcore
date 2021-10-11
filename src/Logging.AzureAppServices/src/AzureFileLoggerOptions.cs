@@ -1,6 +1,5 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 using System;
 
@@ -62,7 +61,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             {
                 if (string.IsNullOrEmpty(value))
                 {
-                    throw new ArgumentException(nameof(value));
+                    throw new ArgumentNullException(nameof(value));
                 }
                 _fileName = value;
             }

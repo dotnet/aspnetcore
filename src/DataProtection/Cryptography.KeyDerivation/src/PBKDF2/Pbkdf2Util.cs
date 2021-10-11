@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Cryptography.Cng;
 
@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Cryptography.KeyDerivation.PBKDF2
 
         private static IPbkdf2Provider GetPbkdf2Provider()
         {
-#if NETSTANDARD2_0 || NET461
+#if NETSTANDARD2_0 || NETFRAMEWORK
             // In priority order, our three implementations are Win8, Win7, and "other".
             if (OSVersionUtil.IsWindows8OrLater())
             {

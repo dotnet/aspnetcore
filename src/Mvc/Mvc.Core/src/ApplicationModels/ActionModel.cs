@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public IList<ParameterModel> Parameters { get; }
 
         /// <summary>
-        /// Gets or sets an <see cref="IOutboundParameterTransformer"/> that will be used to transform 
+        /// Gets or sets an <see cref="IOutboundParameterTransformer"/> that will be used to transform
         /// built-in route parameters such as <c>action</c>, <c>controller</c>, and <c>area</c> as well as
         /// additional parameters specified by <see cref="RouteValues"/> into static segments in the route template.
         /// </summary>
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public IOutboundParameterTransformer? RouteParameterTransformer { get; set; }
 
         /// <summary>
-        /// Gets a collection of route values that must be present in the 
+        /// Gets a collection of route values that must be present in the
         /// <see cref="RouteData.Values"/> for the corresponding action to be selected.
         /// </summary>
         /// <remarks>

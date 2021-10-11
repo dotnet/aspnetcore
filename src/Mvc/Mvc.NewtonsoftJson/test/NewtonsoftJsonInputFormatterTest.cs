@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -432,6 +432,59 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.NotNull(registerForDispose);
             Assert.IsType<FileBufferingReadStream>(registerForDispose);
             httpContext.Verify();
+        }
+
+        [Theory]
+        [InlineData("2019-05-15", "")]
+        [InlineData("2019-05-15", "en-CA")]
+        [InlineData("15/05/2019", "en-GB")]
+        [InlineData("5/15/2019", "en-US")]
+        [InlineData("15/05/2019", "es-ES")]
+        [InlineData("15/5/2019", "es-MX")]
+        [InlineData("2019-05-15", "fr-CA")]
+        [InlineData("15/05/2019", "fr-FR")]
+        [InlineData("15.05.2019", "ru-RU")]
+        [InlineData("2019/5/15", "zh-CN")]
+        public async Task ReadAsync_WithReadJsonWithRequestCulture_DeserializesUsingRequestCulture(
+            string dateString,
+            string culture)
+        {
+            // Arrange
+            var formatter = new NewtonsoftJsonInputFormatter(
+                GetLogger(),
+                _serializerSettings,
+                ArrayPool<char>.Shared,
+                _objectPoolProvider,
+                new MvcOptions(),
+                new MvcNewtonsoftJsonOptions() { ReadJsonWithRequestCulture = true });
+
+            var originalCulture = CultureInfo.CurrentCulture;
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(culture);
+
+            try
+            {
+                var content = $"{{'DateValue': '{dateString}'}}";
+                var contentBytes = Encoding.UTF8.GetBytes(content);
+                var httpContext = new DefaultHttpContext();
+                httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
+                httpContext.Request.Body = new NonSeekableReadStream(contentBytes, allowSyncReads: false);
+                httpContext.Request.ContentType = "application/json";
+
+                var formatterContext = CreateInputFormatterContext(typeof(TypeWithPrimitives), httpContext);
+
+                // Act
+                var result = await formatter.ReadAsync(formatterContext);
+
+                // Assert
+                Assert.False(result.HasError);
+
+                var userModel = Assert.IsType<TypeWithPrimitives>(result.Model);
+                Assert.Equal(new DateTime(2019, 05, 15, 00, 00, 00, DateTimeKind.Unspecified), userModel.DateValue);
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = originalCulture;
+            }
         }
 
         private class TestableJsonInputFormatter : NewtonsoftJsonInputFormatter

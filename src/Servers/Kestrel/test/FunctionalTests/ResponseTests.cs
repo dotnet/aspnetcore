@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Tests;
@@ -30,7 +31,13 @@ using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 
+#if LIBUV
+namespace Microsoft.AspNetCore.Server.Kestrel.Libuv.FunctionalTests
+#elif SOCKETS
+namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests
+#else
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
+#endif
 {
     public class ResponseTests : TestApplicationErrorLoggerLoggedTest
     {
@@ -146,6 +153,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [Theory]
         [MemberData(nameof(ConnectionMiddlewareData))]
+#if LIBUV
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/36931")]
+#endif
         public async Task WriteAfterConnectionCloseNoops(ListenOptions listenOptions)
         {
             var connectionClosed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -252,6 +262,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [Theory]
         [MemberData(nameof(ConnectionMiddlewareData))]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/33455")]
         public async Task WritingToConnectionAfterUnobservedCloseTriggersRequestAbortedToken(ListenOptions listenOptions)
         {
             const int connectionPausedEventId = 4;
@@ -276,9 +287,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             };
 
-            var mockKestrelTrace = new Mock<IKestrelTrace>();
-
-            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)
+            var testContext = new TestServiceContext(LoggerFactory)
             {
                 ServerOptions =
                 {
@@ -340,7 +349,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => writeTcs.Task).DefaultTimeout();
             }
 
-            mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
+            Assert.Equal(1, TestSink.Writes.Count(w => w.EventId.Name == "ConnectionStop"));
             Assert.True(requestAborted.Task.IsCompleted);
         }
 
@@ -468,15 +477,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var requestAborted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var appFuncCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var mockKestrelTrace = new Mock<IKestrelTrace>();
-            mockKestrelTrace
-                .Setup(trace => trace.ResponseMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()))
-                .Callback(() => responseRateTimeoutMessageLogged.SetResult());
-            mockKestrelTrace
-                .Setup(trace => trace.ConnectionStop(It.IsAny<string>()))
-                .Callback(() => connectionStopMessageLogged.SetResult());
+            TestSink.MessageLogged += context =>
+            {
+                if (context.EventId.Name == "ResponseMinimumDataRateNotSatisfied")
+                {
+                    responseRateTimeoutMessageLogged.SetResult();
+                }
+                if (context.EventId.Name == "ConnectionStop")
+                {
+                    connectionStopMessageLogged.SetResult();
+                }
+            };
 
-            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)
+            var testContext = new TestServiceContext(LoggerFactory)
             {
                 ServerOptions =
                 {
@@ -541,7 +554,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     var sw = Stopwatch.StartNew();
                     logger.LogInformation("Waiting for connection to abort.");
 
-                    await requestAborted.Task.DefaultTimeout();
+                    // Don't use the 5 second timeout for debug builds. This can actually take a while.
+                    await requestAborted.Task.DefaultTimeout(TimeSpan.FromSeconds(30));
                     await responseRateTimeoutMessageLogged.Task.DefaultTimeout();
                     await connectionStopMessageLogged.Task.DefaultTimeout();
                     await appFuncCompleted.Task.DefaultTimeout();
@@ -567,15 +581,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var aborted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var appFuncCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var mockKestrelTrace = new Mock<IKestrelTrace>();
-            mockKestrelTrace
-                .Setup(trace => trace.ResponseMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()))
-                .Callback(() => responseRateTimeoutMessageLogged.SetResult());
-            mockKestrelTrace
-                .Setup(trace => trace.ConnectionStop(It.IsAny<string>()))
-                .Callback(() => connectionStopMessageLogged.SetResult());
+            TestSink.MessageLogged += context =>
+            {
+                if (context.EventId.Name == "ResponseMinimumDataRateNotSatisfied")
+                {
+                    responseRateTimeoutMessageLogged.SetResult();
+                }
+                if (context.EventId.Name == "ConnectionStop")
+                {
+                    connectionStopMessageLogged.SetResult();
+                }
+            };
 
-            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)
+            var testContext = new TestServiceContext(LoggerFactory)
             {
                 ServerOptions =
                 {
@@ -629,7 +647,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         var request = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n");
                         await sslStream.WriteAsync(request, 0, request.Length);
 
-                        await aborted.Task.DefaultTimeout();
+                        // Don't use the 5 second timeout for debug builds. This can actually take a while.
+                        await aborted.Task.DefaultTimeout(TimeSpan.FromSeconds(30));
                         await responseRateTimeoutMessageLogged.Task.DefaultTimeout();
                         await connectionStopMessageLogged.Task.DefaultTimeout();
                         await appFuncCompleted.Task.DefaultTimeout();
@@ -653,15 +672,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var requestAborted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var copyToAsyncCts = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var mockKestrelTrace = new Mock<IKestrelTrace>();
-            mockKestrelTrace
-                .Setup(trace => trace.ResponseMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()))
-                .Callback(() => responseRateTimeoutMessageLogged.SetResult());
-            mockKestrelTrace
-                .Setup(trace => trace.ConnectionStop(It.IsAny<string>()))
-                .Callback(() => connectionStopMessageLogged.SetResult());
+            TestSink.MessageLogged += context =>
+            {
+                if (context.EventId.Name == "ResponseMinimumDataRateNotSatisfied")
+                {
+                    responseRateTimeoutMessageLogged.SetResult();
+                }
+                if (context.EventId.Name == "ConnectionStop")
+                {
+                    connectionStopMessageLogged.SetResult();
+                }
+            };
 
-            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)
+            var testContext = new TestServiceContext(LoggerFactory)
             {
                 ServerOptions =
                 {
@@ -722,7 +745,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         }
                     });
 
-                    await requestAborted.Task.DefaultTimeout();
+                    // Don't use the 5 second timeout for debug builds. This can actually take a while.
+                    await requestAborted.Task.DefaultTimeout(TimeSpan.FromSeconds(30));
                     await responseRateTimeoutMessageLogged.Task.DefaultTimeout();
                     await connectionStopMessageLogged.Task.DefaultTimeout();
 
@@ -742,9 +766,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var requestAborted = false;
             var appFuncCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            var mockKestrelTrace = new Mock<IKestrelTrace>();
 
-            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)
+            var testContext = new TestServiceContext(LoggerFactory)
             {
                 ServerOptions =
                 {
@@ -805,8 +828,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             }
 
-            mockKestrelTrace.Verify(t => t.ResponseMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
-            mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
+            Assert.Equal(0, TestSink.Writes.Count(w => w.EventId.Name == "ResponseMinimumDataRateNotSatisfied"));
+            Assert.Equal(1, TestSink.Writes.Count(w => w.EventId.Name == "ConnectionStop"));
             Assert.False(requestAborted);
         }
 
@@ -822,9 +845,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var headerStringValues = new StringValues(Enumerable.Repeat(headerValue, headerCount).ToArray());
 
             var requestAborted = false;
-            var mockKestrelTrace = new Mock<IKestrelTrace>();
 
-            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)
+            var testContext = new TestServiceContext(LoggerFactory)
             {
                 ServerOptions =
                 {
@@ -876,6 +898,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
                         $"Date: {dateHeaderValueManager.GetDateHeaderValues().String}");
 
                     var minResponseSize = headerSize * headerCount;
@@ -892,8 +915,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             }
 
-            mockKestrelTrace.Verify(t => t.ResponseMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
-            mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
+            Assert.Equal(0, TestSink.Writes.Count(w => w.EventId.Name == "ResponseMinimumDataRateNotSatisfied"));
+            Assert.Equal(1, TestSink.Writes.Count(w => w.EventId.Name == "ConnectionStop"));
             Assert.False(requestAborted);
         }
 
@@ -906,9 +929,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var requestAborted = false;
             var appFuncCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            var mockKestrelTrace = new Mock<IKestrelTrace>();
 
-            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)
+            var testContext = new TestServiceContext(LoggerFactory)
             {
                 ServerOptions =
                 {
@@ -968,8 +990,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             }
 
-            mockKestrelTrace.Verify(t => t.ResponseMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
-            mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
+            Assert.Equal(0, TestSink.Writes.Count(w => w.EventId.Name == "ResponseMinimumDataRateNotSatisfied"));
+            Assert.Equal(1, TestSink.Writes.Count(w => w.EventId.Name == "ConnectionStop"));
             Assert.False(requestAborted);
         }
 

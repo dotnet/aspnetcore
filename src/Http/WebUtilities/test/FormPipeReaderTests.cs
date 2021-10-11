@@ -1,15 +1,10 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
-using System.IO;
 using System.IO.Pipelines;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Primitives;
-using Xunit;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
@@ -565,6 +560,16 @@ namespace Microsoft.AspNetCore.WebUtilities
             Assert.Equal("bar", values["fo"]);
             Assert.Contains("b", values);
             Assert.Equal("", values["b"]);
+        }
+
+        [Fact]
+        public async Task ReadFormAsync_AccumulatesEmptyKeys()
+        {
+            var bodyPipe = await MakePipeReader("&&&");
+
+            var formCollection = await ReadFormAsync(new FormPipeReader(bodyPipe));
+
+            Assert.Single(formCollection);
         }
 
         public static TheoryData<ReadOnlySequence<byte>> IncompleteFormKeys =>

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Http
 
         /// <summary>
         /// Copies the specified file segment to the given response stream.
-        /// This calls StartAsync if it has not previoulsy been called.
+        /// This calls StartAsync if it has not previously been called.
         /// </summary>
         /// <param name="path">The full disk path to the file.</param>
         /// <param name="offset">The offset in the file to start at.</param>

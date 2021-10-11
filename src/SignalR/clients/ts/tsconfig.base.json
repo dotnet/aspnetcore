@@ -12,7 +12,7 @@
         "noImplicitAny": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-        "suppressImplicitAnyIndexErrors": true,
+        "suppressImplicitAnyIndexErrors": false,
         "noEmitOnError": true,
         "skipLibCheck": true,
         "stripInternal": true,

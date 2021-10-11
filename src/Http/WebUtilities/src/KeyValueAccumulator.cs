@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 else if (values.Count == 1)
                 {
                     // Second value for this key
-                    _accumulator[key] = new string[] { values[0], value };
+                    _accumulator[key] = new string[] { values[0]!, value };
                 }
                 else
                 {
@@ -55,8 +55,8 @@ namespace Microsoft.AspNetCore.WebUtilities
                     var list = new List<string>(8);
                     var array = values.ToArray();
 
-                    list.Add(array[0]);
-                    list.Add(array[1]);
+                    list.Add(array[0]!);
+                    list.Add(array[1]!);
                     list.Add(value);
 
                     _expandingAccumulator[key] = list;

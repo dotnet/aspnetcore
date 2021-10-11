@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.DataProtection.Test.Shared;
@@ -94,14 +94,14 @@ namespace Microsoft.AspNetCore.DataProtection.Cng.Internal
 
             public abstract byte[] DecryptHook(IntPtr pbCiphertext, uint cbCiphertext, IntPtr pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData);
 
-            protected override sealed unsafe byte[] DecryptImpl(byte* pbCiphertext, uint cbCiphertext, byte* pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData)
+            protected sealed override unsafe byte[] DecryptImpl(byte* pbCiphertext, uint cbCiphertext, byte* pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData)
             {
                 return DecryptHook((IntPtr)pbCiphertext, cbCiphertext, (IntPtr)pbAdditionalAuthenticatedData, cbAdditionalAuthenticatedData);
             }
 
             public abstract byte[] EncryptHook(IntPtr pbPlaintext, uint cbPlaintext, IntPtr pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData, uint cbPreBuffer, uint cbPostBuffer);
 
-            protected override sealed unsafe byte[] EncryptImpl(byte* pbPlaintext, uint cbPlaintext, byte* pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData, uint cbPreBuffer, uint cbPostBuffer)
+            protected sealed override unsafe byte[] EncryptImpl(byte* pbPlaintext, uint cbPlaintext, byte* pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData, uint cbPreBuffer, uint cbPostBuffer)
             {
                 return EncryptHook((IntPtr)pbPlaintext, cbPlaintext, (IntPtr)pbAdditionalAuthenticatedData, cbAdditionalAuthenticatedData, cbPreBuffer, cbPostBuffer);
             }

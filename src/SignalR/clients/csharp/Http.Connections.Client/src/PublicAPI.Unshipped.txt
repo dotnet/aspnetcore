@@ -35,6 +35,10 @@
 *REMOVED*~Microsoft.AspNetCore.Http.Connections.Client.NoTransportSupportedException.NoTransportSupportedException(string message) -> void
 *REMOVED*~Microsoft.AspNetCore.Http.Connections.Client.TransportFailedException.TransportFailedException(string transportType, string message, System.Exception innerException = null) -> void
 *REMOVED*~Microsoft.AspNetCore.Http.Connections.Client.TransportFailedException.TransportType.get -> string
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.ApplicationMaxBufferSize.get -> long
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.ApplicationMaxBufferSize.set -> void
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.TransportMaxBufferSize.get -> long
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.TransportMaxBufferSize.set -> void
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.WebSocketFactory.get -> System.Func<Microsoft.AspNetCore.Http.Connections.Client.WebSocketConnectionContext!, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<System.Net.WebSockets.WebSocket!>>?
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.WebSocketFactory.set -> void
 Microsoft.AspNetCore.Http.Connections.Client.WebSocketConnectionContext

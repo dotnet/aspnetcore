@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Net;
@@ -19,8 +19,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
     /// </summary>
     internal class QuicTransportFactory : IMultiplexedConnectionListenerFactory
     {
-        private QuicTrace _log;
-        private QuicTransportOptions _options;
+        private readonly ILogger _log;
+        private readonly QuicTransportOptions _options;
 
         public QuicTransportFactory(ILoggerFactory loggerFactory, IOptions<QuicTransportOptions> options)
         {
@@ -34,8 +34,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic");
-            _log = new QuicTrace(logger);
+            var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Quic");
+            _log = logger;
             _options = options.Value;
         }
 
@@ -48,15 +48,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
         /// <returns>A </returns>
         public ValueTask<IMultiplexedConnectionListener> BindAsync(EndPoint endpoint, IFeatureCollection? features = null, CancellationToken cancellationToken = default)
         {
+            if (endpoint == null)
+            {
+                throw new ArgumentNullException(nameof(endpoint));
+            }
+
             var sslServerAuthenticationOptions = features?.Get<SslServerAuthenticationOptions>();
 
             if (sslServerAuthenticationOptions == null)
             {
                 throw new InvalidOperationException("Couldn't find HTTPS configuration for QUIC transport.");
             }
-            if (sslServerAuthenticationOptions.ServerCertificate == null)
+            if (sslServerAuthenticationOptions.ServerCertificate == null
+                && sslServerAuthenticationOptions.ServerCertificateContext == null
+                && sslServerAuthenticationOptions.ServerCertificateSelectionCallback == null)
             {
-                throw new InvalidOperationException("SslServerAuthenticationOptions.ServerCertificate must be configured with a value.");
+                var message = $"{nameof(SslServerAuthenticationOptions)} must provide a server certificate using {nameof(SslServerAuthenticationOptions.ServerCertificate)},"
+                    + $" {nameof(SslServerAuthenticationOptions.ServerCertificateContext)}, or {nameof(SslServerAuthenticationOptions.ServerCertificateSelectionCallback)}.";
+                throw new InvalidOperationException(message);
             }
 
             var transport = new QuicConnectionListener(_options, _log, endpoint, sslServerAuthenticationOptions);

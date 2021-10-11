@@ -1,0 +1,1 @@
+x:\dir\subdir\Test\TestComponent.cshtml(1,1): Warning RZ2012: Component 'ComponentWithEditorRequiredParameters' expects a value for the parameter 'Property1', but a value may not have been provided.

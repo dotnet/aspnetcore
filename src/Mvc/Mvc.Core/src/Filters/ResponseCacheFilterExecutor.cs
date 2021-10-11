@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.Http;
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
 
             if (!string.IsNullOrEmpty(VaryByHeader))
             {
-                headers[HeaderNames.Vary] = VaryByHeader;
+                headers.Vary = VaryByHeader;
             }
 
             if (VaryByQueryKeys != null)
@@ -95,13 +95,13 @@ namespace Microsoft.AspNetCore.Mvc.Filters
 
             if (NoStore)
             {
-                headers[HeaderNames.CacheControl] = "no-store";
+                headers.CacheControl = "no-store";
 
                 // Cache-control: no-store, no-cache is valid.
                 if (Location == ResponseCacheLocation.None)
                 {
                     headers.AppendCommaSeparatedValues(HeaderNames.CacheControl, "no-cache");
-                    headers[HeaderNames.Pragma] = "no-cache";
+                    headers.Pragma = "no-cache";
                 }
             }
             else
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
                         break;
                     case ResponseCacheLocation.None:
                         cacheControlValue = "no-cache,";
-                        headers[HeaderNames.Pragma] = "no-cache";
+                        headers.Pragma = "no-cache";
                         break;
                     default:
                         cacheControlValue = null;
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
                 }
 
                 cacheControlValue = $"{cacheControlValue}max-age={Duration}";
-                headers[HeaderNames.CacheControl] = cacheControlValue;
+                headers.CacheControl = cacheControlValue;
             }
         }
     }

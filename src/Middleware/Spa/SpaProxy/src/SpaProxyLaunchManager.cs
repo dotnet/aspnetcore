@@ -1,14 +1,12 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System;
-using System.Diagnostics;
-using System.IO;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.SpaProxy
 {
@@ -24,21 +22,16 @@ namespace Microsoft.AspNetCore.SpaProxy
 
         public SpaProxyLaunchManager(
             ILogger<SpaProxyLaunchManager> logger,
+            IHostApplicationLifetime appLifetime,
             IOptions<SpaDevelopmentServerOptions> options)
         {
             _options = options.Value;
             _logger = logger;
+            appLifetime.ApplicationStopping.Register(() => Dispose(true));
         }
 
         public void StartInBackground(CancellationToken cancellationToken)
         {
-            var httpClient = new HttpClient(new HttpClientHandler()
-            {
-                // It's ok for us to do this here since this service is only plugged in during development.
-                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-            });
-            _logger.LogInformation($"No SPA development server running at {_options.ServerUrl} found.");
-
             // We are not waiting for the SPA proxy to launch, instead we are going to rely on a piece of
             // middleware to display an HTML document while the SPA proxy is not ready, refresh every three
             // seconds and redirect to the SPA proxy url once it is ready.
@@ -49,7 +42,8 @@ namespace Microsoft.AspNetCore.SpaProxy
             {
                 if (_launchTask == null)
                 {
-                    _launchTask = UpdateStatus(StartSpaProcessAndProbeForLiveness(httpClient, cancellationToken));
+                    _logger.LogInformation($"No SPA development server running at {_options.ServerUrl} found.");
+                    _launchTask = UpdateStatus(StartSpaProcessAndProbeForLiveness(cancellationToken));
                 }
             }
 
@@ -75,11 +69,7 @@ namespace Microsoft.AspNetCore.SpaProxy
 
         public async Task<bool> IsSpaProxyRunning(CancellationToken cancellationToken)
         {
-            var httpClient = new HttpClient(new HttpClientHandler()
-            {
-                // It's ok for us to do this here since this service is only plugged in during development.
-                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-            });
+            var httpClient = CreateHttpClient();
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
             using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, cancellationToken);
@@ -96,6 +86,18 @@ namespace Microsoft.AspNetCore.SpaProxy
                 _logger.LogDebug(exception, "Failed to connect to the SPA Development proxy.");
                 return false;
             }
+        }
+
+        private static HttpClient CreateHttpClient()
+        {
+            var httpClient = new HttpClient(new HttpClientHandler()
+            {
+                // It's ok for us to do this here since this service is only plugged in during development.
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            });
+            // We don't care about the returned content type as long as the server is able to answer with 2XX
+            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*", 0.1));
+            return httpClient;
         }
 
         private async Task<bool> ProbeSpaDevelopmentServerUrl(HttpClient httpClient, CancellationToken cancellationToken)
@@ -117,12 +119,13 @@ namespace Microsoft.AspNetCore.SpaProxy
             }
         }
 
-        private async Task StartSpaProcessAndProbeForLiveness(HttpClient httpClient, CancellationToken cancellationToken)
+        private async Task StartSpaProcessAndProbeForLiveness(CancellationToken cancellationToken)
         {
             LaunchDevelopmentProxy();
             var sw = Stopwatch.StartNew();
             var livenessProbeSucceeded = false;
             var maxTimeoutReached = false;
+            var httpClient = CreateHttpClient();
             while (_spaProcess != null && !_spaProcess.HasExited && !maxTimeoutReached)
             {
                 livenessProbeSucceeded = await ProbeSpaDevelopmentServerUrl(httpClient, cancellationToken);
@@ -185,6 +188,17 @@ namespace Microsoft.AspNetCore.SpaProxy
                     WorkingDirectory = Path.Combine(AppContext.BaseDirectory, _options.WorkingDirectory)
                 };
                 _spaProcess = Process.Start(info);
+                if (_spaProcess != null && !_spaProcess.HasExited)
+                {
+                    if (OperatingSystem.IsWindows())
+                    {
+                        LaunchStopScriptWindows(_spaProcess.Id);
+                    }
+                    else if (OperatingSystem.IsMacOS())
+                    {
+                        LaunchStopScriptMacOS(_spaProcess.Id);
+                    }
+                }
             }
             catch (Exception exception)
             {
@@ -192,9 +206,102 @@ namespace Microsoft.AspNetCore.SpaProxy
             }
         }
 
+        private void LaunchStopScriptWindows(int spaProcessId)
+        {
+            var stopScript = $@"do{{
+  try
+  {{
+    $processId = Get-Process -PID {Environment.ProcessId} -ErrorAction Stop;
+  }}catch
+  {{
+    $processId = $null;
+  }}
+  Start-Sleep -Seconds 1;
+}}while($processId -ne $null);
+
+try
+{{
+  taskkill /T /F /PID {spaProcessId};
+}}
+catch
+{{
+}}";
+            var stopScriptInfo = new ProcessStartInfo(
+                "powershell.exe",
+                string.Join(" ", "-NoProfile", "-C", stopScript))
+            {
+                CreateNoWindow = true,
+                WorkingDirectory = Path.Combine(AppContext.BaseDirectory, _options.WorkingDirectory)
+            };
+
+            var stopProcess = Process.Start(stopScriptInfo);
+            if (stopProcess == null || stopProcess.HasExited)
+            {
+                _logger.LogWarning($"The SPA process shutdown script '{stopProcess?.Id}' failed to start. The SPA proxy might" +
+                    $" remain open if the dotnet process is terminated ungracefully. Use the operating system commands to kill" +
+                    $" the process tree for {spaProcessId}");
+            }
+            else
+            {
+                _logger.LogDebug($"Watch process '{stopProcess}' started.");
+            }
+        }
+
+        private void LaunchStopScriptMacOS(int spaProcessId)
+        {
+            var fileName = Guid.NewGuid().ToString("N") + ".sh";
+            var scriptPath = Path.Combine(AppContext.BaseDirectory, fileName);
+            var stopScript = @$"function list_child_processes(){{
+    local ppid=$1;
+    local current_children=$(pgrep -P $ppid);
+    local local_child;
+    if [ $? -eq 0 ];
+    then
+        for current_child in $current_children
+        do
+          local_child=$current_child;
+          list_child_processes $local_child;
+          echo $local_child;
+        done;
+    else
+      return 0;
+    fi;
+}}
+
+ps {Environment.ProcessId};
+while [ $? -eq 0 ];
+do
+  sleep 1;
+  ps {Environment.ProcessId} > /dev/null;
+done;
+
+for child in $(list_child_processes {spaProcessId});
+do
+  echo killing $child;
+  kill -s KILL $child;
+done;
+rm {scriptPath};
+";
+            File.WriteAllText(scriptPath, stopScript);
+
+            var stopScriptInfo = new ProcessStartInfo("/bin/bash", scriptPath)
+            {
+                CreateNoWindow = true,
+                WorkingDirectory = Path.Combine(AppContext.BaseDirectory, _options.WorkingDirectory)
+            };
+
+            var stopProcess = Process.Start(stopScriptInfo);
+            if (stopProcess == null || stopProcess.HasExited)
+            {
+                _logger.LogWarning($"The SPA process shutdown script '{stopProcess?.Id}' failed to start. The SPA proxy might" +
+                    $" remain open if the dotnet process is terminated ungracefully. Use the operating system commands to kill" +
+                    $" the process tree for {spaProcessId}");
+            }
+        }
+
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            // We don't need to do anything here since Dispose will take care of cleaning up the process if necessary.
+            Dispose(true);
             return Task.CompletedTask;
         }
 

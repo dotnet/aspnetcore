@@ -91,14 +91,6 @@ REQUEST_NOTIFICATION_STATUS IN_PROCESS_HANDLER::ServerShutdownMessage() const
 VOID
 IN_PROCESS_HANDLER::NotifyDisconnect()
 {
-    ::RaiseEvent<ANCMEvents::ANCM_INPROC_REQUEST_DISCONNECT>(m_pW3Context, nullptr);
-
-    if (m_pApplication->QueryBlockCallbacksIntoManaged() ||
-        m_fManagedRequestComplete)
-    {
-        return;
-    }
-
     // NotifyDisconnect can be called before the m_pManagedHttpContext is set,
     // so save that in a bool.
     // Don't lock when calling m_pDisconnect to avoid the potential deadlock between this
@@ -106,6 +98,15 @@ IN_PROCESS_HANDLER::NotifyDisconnect()
     void* pManagedHttpContext = nullptr;
     {
         SRWExclusiveLock lock(m_srwDisconnectLock);
+
+        if (m_pApplication->QueryBlockCallbacksIntoManaged() ||
+        m_fManagedRequestComplete)
+        {
+            return;
+        }
+
+        ::RaiseEvent<ANCMEvents::ANCM_INPROC_REQUEST_DISCONNECT>(m_pW3Context, nullptr);
+
         pManagedHttpContext = m_pManagedHttpContext;
         m_disconnectFired = true;
     }
@@ -121,8 +122,11 @@ IN_PROCESS_HANDLER::IndicateManagedRequestComplete(
     VOID
 )
 {
-    m_fManagedRequestComplete = TRUE;
-    m_pManagedHttpContext = nullptr;
+    {
+        SRWExclusiveLock lock(m_srwDisconnectLock);
+        m_fManagedRequestComplete = TRUE;
+        m_pManagedHttpContext = nullptr;
+    }
     ::RaiseEvent<ANCMEvents::ANCM_INPROC_MANAGED_REQUEST_COMPLETION>(m_pW3Context, nullptr);
 }
 

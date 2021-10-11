@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO.Pipelines;
@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
 {
@@ -32,7 +31,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
             _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Connections.Internal.Transports.ServerSentEventsTransport");
         }
 
-        public async Task ProcessRequestAsync(HttpContext context, CancellationToken token)
+        public async Task ProcessRequestAsync(HttpContext context, CancellationToken cancellationToken)
         {
             context.Response.ContentType = "text/event-stream";
             context.Response.Headers.CacheControl = "no-cache,no-store";
@@ -44,16 +43,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
 
             context.Response.Headers.ContentEncoding = "identity";
 
-            // Workaround for a Firefox bug where EventSource won't fire the open event
-            // until it receives some data
-            await context.Response.WriteAsync(":\r\n");
-            await context.Response.Body.FlushAsync();
-
             try
             {
+                // Workaround for a Firefox bug where EventSource won't fire the open event
+                // until it receives some data
+                await context.Response.WriteAsync(":\r\n", cancellationToken);
+                await context.Response.Body.FlushAsync(cancellationToken);
                 while (true)
                 {
-                    var result = await _application.ReadAsync(token);
+                    var result = await _application.ReadAsync(cancellationToken);
                     var buffer = result.Buffer;
 
                     try

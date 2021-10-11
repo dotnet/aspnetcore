@@ -1,15 +1,16 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
 {
     class MockSocket : UvStreamHandle
     {
-        public MockSocket(LibuvFunctions uv, int threadId, ILibuvTrace logger) : base(logger)
+        public MockSocket(LibuvFunctions uv, int threadId, ILogger logger) : base(logger)
         {
             CreateMemory(uv, threadId, IntPtr.Size);
         }

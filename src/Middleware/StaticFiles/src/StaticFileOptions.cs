@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.Http.Features;
@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public class StaticFileOptions : SharedOptionsBase
     {
+        internal static readonly Action<StaticFileResponseContext> _defaultOnPrepareResponse = _ => { };
+
         /// <summary>
         /// Defaults to all request paths
         /// </summary>
@@ -26,7 +28,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="sharedOptions"></param>
         public StaticFileOptions(SharedOptions sharedOptions) : base(sharedOptions)
         {
-            OnPrepareResponse = _ => { };
+            OnPrepareResponse = _defaultOnPrepareResponse;
         }
 
         /// <summary>

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -19,8 +20,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
     public class StartLineTests : IDisposable
     {
-        private readonly static IKestrelTrace _trace = Mock.Of<IKestrelTrace>();
-
         private IDuplexPipe Transport { get; }
         private MemoryPool<byte> MemoryPool { get; }
         private Http1Connection Http1Connection { get; }
@@ -525,8 +524,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             var serviceContext = TestContextFactory.CreateServiceContext(
                 serverOptions: new KestrelServerOptions(),
-                httpParser: new HttpParser<Http1ParsingHandler>(),
-                log: _trace);
+                httpParser: new HttpParser<Http1ParsingHandler>());
 
             var connectionContext = TestContextFactory.CreateHttpConnectionContext(
                 serviceContext: serviceContext,

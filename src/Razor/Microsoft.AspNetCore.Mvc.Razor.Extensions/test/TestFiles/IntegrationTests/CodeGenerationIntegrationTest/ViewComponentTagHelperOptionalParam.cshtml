@@ -1,0 +1,13 @@
+﻿@addTagHelper "*, AppCode"
+
+<vc:optional-test></vc:optional-test>
+<vc:optional-test show-secret="@true"></vc:optional-test>
+
+<vc:optional-test-with-param secret="mysecret"></vc:optional-test-with-param>
+<vc:optional-test-with-param secret="mysecret" show-secret="@true"></vc:optional-test-with-param>
+
+<vc:optional-with-multiple-types></vc:optional-with-multiple-types>
+<vc:optional-with-multiple-types age="12" favorite-decimal="10.8" favorite-letter="'a'"></vc:optional-with-multiple-types>
+<vc:optional-with-multiple-types age="12" favorite-decimal="10.8"></vc:optional-with-multiple-types>
+<vc:optional-with-multiple-types age="12" favorite-decimal="10.8" birth-date="DateTime.Now"></vc:optional-with-multiple-types>
+<vc:optional-with-multiple-types age="12" favorite-decimal="10.8" birth-date="DateTime.Now"></vc:optional-with-multiple-types>

@@ -73,5 +73,17 @@
       <property name="Scope">member</property>
       <property name="Target">M:Microsoft.AspNetCore.Components.Reflection.MemberAssignment.&lt;GetPropertiesIncludingInherited&gt;d__0.MoveNext</property>
     </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2110</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.RouteView.Render(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2111</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.RouteView.Render(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder)</property>
+    </attribute>
   </assembly>
 </linker>

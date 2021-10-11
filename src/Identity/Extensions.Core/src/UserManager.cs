@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -42,10 +42,10 @@ namespace Microsoft.AspNetCore.Identity
             new Dictionary<string, IUserTwoFactorTokenProvider<TUser>>();
 
         private bool _disposed;
-#if NETSTANDARD2_0 || NET461
+#if NETSTANDARD2_0 || NETFRAMEWORK
         private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
 #endif
-        private IServiceProvider _services;
+        private readonly IServiceProvider _services;
 
         /// <summary>
         /// The cancellation token used to cancel operations.
@@ -2429,7 +2429,7 @@ namespace Microsoft.AspNetCore.Identity
         private static string NewSecurityStamp()
         {
             byte[] bytes = new byte[20];
-#if NETSTANDARD2_0 || NET461
+#if NETSTANDARD2_0 || NETFRAMEWORK
             _rng.GetBytes(bytes);
 #else
             RandomNumberGenerator.Fill(bytes);

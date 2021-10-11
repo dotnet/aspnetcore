@@ -15,6 +15,9 @@ parameters:
   # nonPortable: false
   #   Enables non-portable mode. This means a more specific RID (e.g. fedora.32-x64 rather than
   #   linux-x64), and compiling against distro-provided packages rather than portable ones.
+  # skipPublishValidation: false
+  #   Disables publishing validation.  By default, a check is performed to ensure no packages are
+  #   published by source-build.
   # container: ''
   #   A container to use. Runs in docker.
   # pool: {}

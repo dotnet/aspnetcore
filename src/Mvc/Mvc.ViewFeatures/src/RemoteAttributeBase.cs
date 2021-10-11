@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc
                     .ToArray();
             }
         }
-        
+
         /// <summary>
         /// Formats <paramref name="property"/> and <see cref="AdditionalFields"/> for use in generated HTML.
         /// </summary>
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="context">The <see cref="ClientModelValidationContext"/> used to generate the URL.</param>
         /// <returns>The URL where the client should send a validation request.</returns>
         protected abstract string GetUrl(ClientModelValidationContext context);
-        
+
         /// <inheritdoc />
         public override string FormatErrorMessage(string name)
         {

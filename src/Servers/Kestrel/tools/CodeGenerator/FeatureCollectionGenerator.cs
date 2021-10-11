@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -19,8 +19,8 @@ namespace CodeGenerator
                 Index = index
             });
 
-            return $@"// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+            var s = $@"// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -130,7 +130,7 @@ namespace {namespaceName}
                     feature = ExtraFeatureGet(key);
                 }}
 
-                return feature{(string.IsNullOrEmpty(fallbackFeatures) ? "" : $" ?? {fallbackFeatures}[key]")};
+                return feature{(string.IsNullOrEmpty(fallbackFeatures) ? "" : $" ?? {fallbackFeatures}?[key]")};
             }}
 
             set
@@ -164,7 +164,7 @@ namespace {namespaceName}
                 feature = (TFeature?)(ExtraFeatureGet(typeof(TFeature)));
             }}{(string.IsNullOrEmpty(fallbackFeatures) ? "" : $@"
 
-            if (feature == null)
+            if (feature == null && {fallbackFeatures} != null)
             {{
                 feature = {fallbackFeatures}.Get<TFeature>();
             }}")}
@@ -211,6 +211,8 @@ namespace {namespaceName}
     }}
 }}
 ";
+
+            return s;
         }
 
         static string Each<T>(IEnumerable<T> values, Func<T, string> formatter)

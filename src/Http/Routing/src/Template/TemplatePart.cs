@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         }
 
         /// <summary>
-        /// Creates a <see cref="TemplatePart"/> representing a paramter part.
+        /// Creates a <see cref="TemplatePart"/> representing a parameter part.
         /// </summary>
         /// <param name="name">The name of the parameter.</param>
         /// <param name="isCatchAll"><see langword="true"/> if the parameter is a catch-all parameter.</param>
@@ -128,15 +128,15 @@ namespace Microsoft.AspNetCore.Routing.Template
         /// </summary>
         public string? Name { get; private set; }
         /// <summary>
-        /// The textual representation of the route paramter. Can be null. Used to represent route seperators and literal parts.
+        /// The textual representation of the route parameter. Can be null. Used to represent route seperators and literal parts.
         /// </summary>
         public string? Text { get; private set; }
         /// <summary>
-        /// The default value for route paramters. Can be null.
+        /// The default value for route parameters. Can be null.
         /// </summary>
         public object? DefaultValue { get; private set; }
         /// <summary>
-        /// The constraints associates with a route paramter.
+        /// The constraints associates with a route parameter.
         /// </summary>
         public IEnumerable<InlineConstraint> InlineConstraints { get; private set; } = Enumerable.Empty<InlineConstraint>();
 

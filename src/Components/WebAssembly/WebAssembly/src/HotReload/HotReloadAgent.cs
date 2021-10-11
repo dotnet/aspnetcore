@@ -1,13 +1,15 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-// Based on the implementation in https://raw.githubusercontent.com/dotnet/sdk/0304792ef1f53d64182bcfed2ea490e40983a5c5/src/BuiltInTools/DotNetDeltaApplier/HotReloadAgent.cs
+// Based on the implementation in https://raw.githubusercontent.com/dotnet/sdk/aad0424c0bfaa60c8bd136a92fd131e53d14561a/src/BuiltInTools/DotNetDeltaApplier/HotReloadAgent.cs
 
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
 
 namespace Microsoft.Extensions.HotReload
 {
@@ -30,7 +32,7 @@ namespace Microsoft.Extensions.HotReload
         {
             _handlerActions = null;
             var loadedAssembly = eventArgs.LoadedAssembly;
-            var moduleId = loadedAssembly.Modules.FirstOrDefault()?.ModuleVersionId;
+            var moduleId = TryGetModuleId(loadedAssembly);
             if (moduleId is null)
             {
                 return;
@@ -39,7 +41,7 @@ namespace Microsoft.Extensions.HotReload
             if (_deltas.TryGetValue(moduleId.Value, out var updateDeltas) && _appliedAssemblies.TryAdd(loadedAssembly, loadedAssembly))
             {
                 // A delta for this specific Module exists and we haven't called ApplyUpdate on this instance of Assembly as yet.
-                ApplyDeltas(updateDeltas);
+                ApplyDeltas(loadedAssembly, updateDeltas);
             }
         }
 
@@ -179,29 +181,30 @@ namespace Microsoft.Extensions.HotReload
 
         public void ApplyDeltas(IReadOnlyList<UpdateDelta> deltas)
         {
+            for (var i = 0; i < deltas.Count; i++)
+            {
+                var item = deltas[i];
+                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    if (TryGetModuleId(assembly) is Guid moduleId && moduleId == item.ModuleId)
+                    {
+                        MetadataUpdater.ApplyUpdate(assembly, item.MetadataDelta, item.ILDelta, ReadOnlySpan<byte>.Empty);
+                    }
+                }
+
+                // Additionally stash the deltas away so it may be applied to assemblies loaded later.
+                var cachedDeltas = _deltas.GetOrAdd(item.ModuleId, static _ => new());
+                cachedDeltas.Add(item);
+            }
+
             try
             {
-                // Defer discovering the receiving deltas until the first hot reload delta.
+                // Defer discovering metadata updata handlers until after hot reload deltas have been applied.
                 // This should give enough opportunity for AppDomain.GetAssemblies() to be sufficiently populated.
                 _handlerActions ??= GetMetadataUpdateHandlerActions();
                 var handlerActions = _handlerActions;
 
-                // TODO: Get types to pass in
-                Type[]? updatedTypes = null;
-
-                for (var i = 0; i < deltas.Count; i++)
-                {
-                    var item = deltas[i];
-                    var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.Modules.FirstOrDefault() is Module m && m.ModuleVersionId == item.ModuleId);
-                    if (assembly is not null)
-                    {
-                        System.Reflection.Metadata.AssemblyExtensions.ApplyUpdate(assembly, item.MetadataDelta, item.ILDelta, ReadOnlySpan<byte>.Empty);
-                    }
-
-                    // Additionally stash the deltas away so it may be applied to assemblies loaded later.
-                    var cachedDeltas = _deltas.GetOrAdd(item.ModuleId, static _ => new());
-                    cachedDeltas.Add(item);
-                }
+                Type[]? updatedTypes = GetMetadataUpdateTypes(deltas);
 
                 handlerActions.ClearCache.ForEach(a => a(updatedTypes));
                 handlerActions.UpdateApplication.ForEach(a => a(updatedTypes));
@@ -214,9 +217,68 @@ namespace Microsoft.Extensions.HotReload
             }
         }
 
+        private Type[] GetMetadataUpdateTypes(IReadOnlyList<UpdateDelta> deltas)
+        {
+            List<Type>? types = null;
+
+            foreach (var delta in deltas)
+            {
+                var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(assembly => TryGetModuleId(assembly) is Guid moduleId && moduleId == delta.ModuleId);
+                if (assembly is null)
+                {
+                    continue;
+                }
+
+                var assemblyTypes = assembly.GetTypes();
+
+                foreach (var updatedType in delta.UpdatedTypes ?? Array.Empty<int>())
+                {
+                    var type = assemblyTypes.FirstOrDefault(t => t.MetadataToken == updatedType);
+                    if (type != null)
+                    {
+                        types ??= new();
+                        types.Add(type);
+                    }
+                }
+            }
+
+            return types?.ToArray() ?? Type.EmptyTypes;
+        }
+
+        public void ApplyDeltas(Assembly assembly, IReadOnlyList<UpdateDelta> deltas)
+        {
+            try
+            {
+                foreach (var item in deltas)
+                {
+                    MetadataUpdater.ApplyUpdate(assembly, item.MetadataDelta, item.ILDelta, ReadOnlySpan<byte>.Empty);
+                }
+
+                _log("Deltas applied.");
+            }
+            catch (Exception ex)
+            {
+                _log(ex.ToString());
+            }
+        }
+
         public void Dispose()
         {
             AppDomain.CurrentDomain.AssemblyLoad -= _assemblyLoad;
+        }
+
+        private static Guid? TryGetModuleId(Assembly loadedAssembly)
+        {
+            try
+            {
+                return loadedAssembly.Modules.FirstOrDefault()?.ModuleVersionId;
+            }
+            catch
+            {
+                // Assembly.Modules might throw. See https://github.com/dotnet/aspnetcore/issues/33152
+            }
+
+            return default;
         }
     }
 }

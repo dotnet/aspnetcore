@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         {
             get
             {
-                return Headers.GetList<MediaTypeHeaderValue>(HeaderNames.Accept);
+                return Headers.Accept.GetList<MediaTypeHeaderValue>();
             }
             set
             {
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         {
             get
             {
-                return Headers.GetList<StringWithQualityHeaderValue>(HeaderNames.AcceptCharset);
+                return Headers.AcceptCharset.GetList<StringWithQualityHeaderValue>();
             }
             set
             {
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         {
             get
             {
-                return Headers.GetList<StringWithQualityHeaderValue>(HeaderNames.AcceptEncoding);
+                return Headers.AcceptEncoding.GetList<StringWithQualityHeaderValue>();
             }
             set
             {
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         {
             get
             {
-                return Headers.GetList<StringWithQualityHeaderValue>(HeaderNames.AcceptLanguage);
+                return Headers.AcceptLanguage.GetList<StringWithQualityHeaderValue>();
             }
             set
             {
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         {
             get
             {
-                return Headers.GetList<CookieHeaderValue>(HeaderNames.Cookie);
+                return Headers.Cookie.GetList<CookieHeaderValue>();
             }
             set
             {
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         {
             get
             {
-                return HostString.FromUriComponent(Headers.Host);
+                return HostString.FromUriComponent(Headers.Host.ToString());
             }
             set
             {
@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         {
             get
             {
-                return Headers.GetList<EntityTagHeaderValue>(HeaderNames.IfMatch);
+                return Headers.IfMatch.GetList<EntityTagHeaderValue>();
             }
             set
             {
@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         {
             get
             {
-                return Headers.GetList<EntityTagHeaderValue>(HeaderNames.IfNoneMatch);
+                return Headers.IfNoneMatch.GetList<EntityTagHeaderValue>();
             }
             set
             {

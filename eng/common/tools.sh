@@ -54,7 +54,7 @@ warn_as_error=${warn_as_error:-true}
 use_installed_dotnet_cli=${use_installed_dotnet_cli:-true}
 
 # Enable repos to use a particular version of the on-line dotnet-install scripts.
-#    default URL: https://dot.net/v1/dotnet-install.sh
+#    default URL: https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.sh
 dotnetInstallScriptVersion=${dotnetInstallScriptVersion:-'v1'}
 
 # True to use global NuGet cache instead of restoring packages to repository-local directory.
@@ -262,7 +262,7 @@ function with_retries {
 function GetDotNetInstallScript {
   local root=$1
   local install_script="$root/dotnet-install.sh"
-  local install_script_url="https://dot.net/$dotnetInstallScriptVersion/dotnet-install.sh"
+  local install_script_url="https://dotnet.microsoft.com/download/dotnet/scripts/$dotnetInstallScriptVersion/dotnet-install.sh"
 
   if [[ ! -a "$install_script" ]]; then
     mkdir -p "$root"
@@ -399,6 +399,13 @@ function StopProcesses {
   return 0
 }
 
+function TryLogClientIpAddress () {
+  echo 'Attempting to log this client''s IP for Azure Package feed telemetry purposes'
+  if command -v curl > /dev/null; then
+    curl -s 'http://co1.msedge.net/fdv2/diagnostics.aspx' | grep ' IP: ' || true
+  fi
+}
+
 function MSBuild {
   local args=$@
   if [[ "$pipelines_log" == true ]]; then
@@ -410,6 +417,13 @@ function MSBuild {
       export NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS=20
       Write-PipelineSetVariable -name "NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS" -value "20"
       Write-PipelineSetVariable -name "NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS" -value "20"
+
+      export NUGET_ENABLE_EXPERIMENTAL_HTTP_RETRY=true
+      export NUGET_EXPERIMENTAL_MAX_NETWORK_TRY_COUNT=6
+      export NUGET_EXPERIMENTAL_NETWORK_RETRY_DELAY_MILLISECONDS=1000
+      Write-PipelineSetVariable -name "NUGET_ENABLE_EXPERIMENTAL_HTTP_RETRY" -value "true"
+      Write-PipelineSetVariable -name "NUGET_EXPERIMENTAL_MAX_NETWORK_TRY_COUNT" -value "6"
+      Write-PipelineSetVariable -name "NUGET_EXPERIMENTAL_NETWORK_RETRY_DELAY_MILLISECONDS" -value "1000"
     fi
 
     local toolset_dir="${_InitializeToolset%/*}"
@@ -420,6 +434,8 @@ function MSBuild {
     possiblePaths+=( "$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.Arcade.Sdk.dll" )
     possiblePaths+=( "$toolset_dir/netcoreapp2.1/Microsoft.DotNet.ArcadeLogging.dll" )
     possiblePaths+=( "$toolset_dir/netcoreapp2.1/Microsoft.DotNet.Arcade.Sdk.dll" )
+    possiblePaths+=( "$toolset_dir/netcoreapp3.1/Microsoft.DotNet.ArcadeLogging.dll" )
+    possiblePaths+=( "$toolset_dir/netcoreapp3.1/Microsoft.DotNet.Arcade.Sdk.dll" )
     for path in "${possiblePaths[@]}"; do
       if [[ -f $path ]]; then
         selectedPath=$path
@@ -485,13 +501,14 @@ _script_dir=`dirname "$_ResolvePath"`
 
 eng_root=`cd -P "$_script_dir/.." && pwd`
 repo_root=`cd -P "$_script_dir/../.." && pwd`
-artifacts_dir="$repo_root/artifacts"
+repo_root="${repo_root}/"
+artifacts_dir="${repo_root}artifacts"
 toolset_dir="$artifacts_dir/toolset"
-tools_dir="$repo_root/.tools"
+tools_dir="${repo_root}.tools"
 log_dir="$artifacts_dir/log/$configuration"
 temp_dir="$artifacts_dir/tmp/$configuration"
 
-global_json_file="$repo_root/global.json"
+global_json_file="${repo_root}global.json"
 # determine if global.json contains a "runtimes" entry
 global_json_has_runtimes=false
 if command -v jq &> /dev/null; then
@@ -504,7 +521,7 @@ fi
 
 # HOME may not be defined in some scenarios, but it is required by NuGet
 if [[ -z $HOME ]]; then
-  export HOME="$repo_root/artifacts/.home/"
+  export HOME="${repo_root}artifacts/.home/"
   mkdir -p "$HOME"
 fi
 

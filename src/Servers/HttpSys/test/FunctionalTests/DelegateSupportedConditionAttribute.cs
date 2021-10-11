@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using Microsoft.AspNetCore.Testing;
-using static Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes;
 
 namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 {
@@ -14,14 +11,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         private readonly bool _isSupported;
         public DelegateSupportedConditionAttribute(bool isSupported) => _isSupported = isSupported;
 
-        private readonly Lazy<bool> _isDelegateSupported = new Lazy<bool>(CanDelegate);
-        public bool IsMet => (_isDelegateSupported.Value == _isSupported);
+        public bool IsMet => HttpApi.SupportsDelegation == _isSupported;
 
         public string SkipReason => $"Http.Sys does {(_isSupported ? "not" : "")} support delegating requests";
-
-        private static bool CanDelegate()
-        {
-            return HttpApi.IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureDelegateEx);
-        }
     }
 }

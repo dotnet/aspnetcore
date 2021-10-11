@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -308,6 +308,14 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
 
         private void UpdateItemDistribution(int itemsBefore, int visibleItemCapacity)
         {
+            // If the itemcount just changed to a lower number, and we're already scrolled past the end of the new
+            // reduced set of items, clamp the scroll position to the new maximum
+            if (itemsBefore + visibleItemCapacity > _itemCount)
+            {
+                itemsBefore = Math.Max(0, _itemCount - visibleItemCapacity);
+            }
+
+            // If anything about the offset changed, re-render
             if (itemsBefore != _itemsBefore || visibleItemCapacity != _visibleItemCapacity)
             {
                 _itemsBefore = itemsBefore;

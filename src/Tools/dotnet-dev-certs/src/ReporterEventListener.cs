@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 using System.Diagnostics.Tracing;
 using System.Globalization;
@@ -25,7 +28,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                 EventLevel.Warning => _reporter.Warn,
                 EventLevel.Informational => _reporter.Output,
                 EventLevel.Verbose => _reporter.Verbose,
-                _ => throw new ArgumentOutOfRangeException(nameof(eventData.Level), eventData.Level, $"The value of argument '{nameof(eventData.Level)}' ({eventData.Level}) is invalid for Enum type '{nameof(EventLevel)}'.")
+                _ => throw new ArgumentOutOfRangeException(nameof(eventData), eventData.Level, $"The value of argument '{nameof(eventData.Level)}' ({eventData.Level}) is invalid for Enum type '{nameof(EventLevel)}'.")
             };
             var message = string.Format(CultureInfo.InvariantCulture, eventData.Message ?? "", eventData.Payload?.ToArray() ?? Array.Empty<object>());
             report($"[{eventData.EventId}] " + message);

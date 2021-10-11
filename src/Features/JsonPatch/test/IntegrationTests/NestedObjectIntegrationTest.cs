@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Dynamic;
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.JsonPatch.IntegrationTests
 
             // Assert
             Assert.Null(targetObject.SimpleObject.StringProperty);
-        }     
+        }
 
         [Fact]
         public void CopyStringProperty_ToAnotherStringProperty()
@@ -344,7 +344,7 @@ namespace Microsoft.AspNetCore.JsonPatch.IntegrationTests
                 {
                     if (value == null)
                     {
-                        throw new ArgumentNullException();
+                        throw new ArgumentNullException(nameof(value));
                     }
 
                     stringProperty = value;

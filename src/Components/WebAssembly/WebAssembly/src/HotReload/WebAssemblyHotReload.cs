@@ -1,10 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Threading.Tasks;
+using System.Reflection;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.HotReload;
 using Microsoft.JSInterop;
@@ -19,24 +18,18 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload
     public static class WebAssemblyHotReload
     {
         private static HotReloadAgent? _hotReloadAgent;
-        private static UpdateDelta[] _updateDeltas = new[]
+        private static readonly UpdateDelta[] _updateDeltas = new[]
         {
             new UpdateDelta(),
         };
 
         internal static async Task InitializeAsync()
         {
-            // Determine if we're running under a hot reload environment (e.g. dotnet-watch).
-            // It's insufficient to know it the app can be hot reloaded (HotReloadFeature.IsSupported),
-            // since the hot-reload agent might be unavailable.
-            if (Environment.GetEnvironmentVariable("DOTNET_MODIFIABLE_ASSEMBLIES") != "debug")
-            {
-                return;
-            }
-
             _hotReloadAgent = new HotReloadAgent(m => Debug.WriteLine(m));
 
-            var jsObjectReference = (IJSUnmarshalledObjectReference)(await DefaultWebAssemblyJSRuntime.Instance.InvokeAsync<IJSObjectReference>("import", "./_framework/blazor-hotreload.js"));
+            // Attempt to read previously applied hot reload deltas. dotnet-watch and VS will serve the script that can provide results from local-storage and
+            // the injected middleware if present.
+            var jsObjectReference = (IJSUnmarshalledObjectReference)(await DefaultWebAssemblyJSRuntime.Instance.InvokeAsync<IJSObjectReference>("import", "/_framework/blazor-hotreload.js"));
             await jsObjectReference.InvokeUnmarshalled<Task<int>>("receiveHotReload");
         }
 
@@ -53,6 +46,20 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload
             _updateDeltas[0].ILDelta = ilDeta;
 
             _hotReloadAgent!.ApplyDeltas(_updateDeltas);
+        }
+
+        /// <summary>
+        /// For framework use only.
+        /// </summary>
+        [JSInvokable(nameof(GetApplyUpdateCapabilities))]
+        public static string GetApplyUpdateCapabilities()
+        {
+            var method = typeof(System.Reflection.Metadata.MetadataUpdater).GetMethod("GetCapabilities", BindingFlags.NonPublic | BindingFlags.Static, Type.EmptyTypes);
+            if (method is null)
+            {
+                return string.Empty;
+            }
+            return (string)method.Invoke(obj: null, parameters: null)!;
         }
     }
 }

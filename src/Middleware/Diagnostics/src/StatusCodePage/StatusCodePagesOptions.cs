@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Globalization;
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Builder
             };
         }
 
-        private string BuildResponseBody(int httpStatusCode)
+        private static string BuildResponseBody(int httpStatusCode)
         {
             // Note the 500 spaces are to work around an IE 'feature'
             var internetExplorerWorkaround = new string(' ', 500);

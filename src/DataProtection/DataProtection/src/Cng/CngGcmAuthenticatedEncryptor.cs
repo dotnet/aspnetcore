@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.Cryptography.Cng;
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
     // going to the IV. This means that we'll only hit the 2^-32 probability limit after 2^96 encryption
     // operations, which will realistically never happen. (At the absurd rate of one encryption operation
     // per nanosecond, it would still take 180 times the age of the universe to hit 2^96 operations.)
-    internal unsafe sealed class CngGcmAuthenticatedEncryptor : CngAuthenticatedEncryptorBase
+    internal sealed unsafe class CngGcmAuthenticatedEncryptor : CngAuthenticatedEncryptorBase
     {
         // Having a key modifier ensures with overwhelming probability that no two encryption operations
         // will ever derive the same (encryption subkey, MAC subkey) pair. This limits an attacker's

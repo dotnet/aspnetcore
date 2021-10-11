@@ -14,6 +14,8 @@
 *REMOVED*~static Microsoft.Extensions.Configuration.KeyPerFileConfigurationBuilderExtensions.AddKeyPerFile(this Microsoft.Extensions.Configuration.IConfigurationBuilder builder, string directoryPath, bool optional, bool reloadOnChange) -> Microsoft.Extensions.Configuration.IConfigurationBuilder
 Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationProvider.KeyPerFileConfigurationProvider(Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource! source) -> void
 Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.Build(Microsoft.Extensions.Configuration.IConfigurationBuilder! builder) -> Microsoft.Extensions.Configuration.IConfigurationProvider!
+Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.SectionDelimiter.get -> string!
+Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.SectionDelimiter.set -> void
 Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.FileProvider.get -> Microsoft.Extensions.FileProviders.IFileProvider?
 Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.FileProvider.set -> void
 Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.IgnoreCondition.get -> System.Func<string!, bool>!

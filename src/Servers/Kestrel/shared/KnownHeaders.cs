@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -15,10 +15,10 @@ namespace CodeGenerator
 {
     public class KnownHeaders
     {
-        public readonly static KnownHeader[] RequestHeaders;
-        public readonly static KnownHeader[] ResponseHeaders;
-        public readonly static KnownHeader[] ResponseTrailers;
-        public readonly static string[] InternalHeaderAccessors = new[]
+        public static readonly KnownHeader[] RequestHeaders;
+        public static readonly KnownHeader[] ResponseHeaders;
+        public static readonly KnownHeader[] ResponseTrailers;
+        public static readonly string[] InternalHeaderAccessors = new[]
         {
             HeaderNames.Allow,
             HeaderNames.AltSvc,
@@ -34,12 +34,12 @@ namespace CodeGenerator
 
         public static readonly string[] DefinedHeaderNames = typeof(HeaderNames).GetFields(BindingFlags.Static | BindingFlags.Public).Select(h => h.Name).ToArray();
 
-        public readonly static string[] ObsoleteHeaderNames = new[]
+        public static readonly string[] ObsoleteHeaderNames = new[]
         {
             HeaderNames.DNT,
         };
 
-        public readonly static string[] PsuedoHeaderNames = new[]
+        public static readonly string[] PsuedoHeaderNames = new[]
         {
             "Authority", // :authority
             "Method", // :method
@@ -48,7 +48,7 @@ namespace CodeGenerator
             "Status" // :status
         };
 
-        public readonly static string[] NonApiHeaders =
+        public static readonly string[] NonApiHeaders =
             ObsoleteHeaderNames
             .Concat(PsuedoHeaderNames)
             .ToArray();
@@ -58,7 +58,7 @@ namespace CodeGenerator
             .Except(NonApiHeaders)
             .ToArray();
 
-        public readonly static long InvalidH2H3ResponseHeadersBits;
+        public static readonly long InvalidH2H3ResponseHeadersBits;
 
         static KnownHeaders()
         {
@@ -167,14 +167,16 @@ namespace CodeGenerator
                 HeaderNames.Connection,
                 HeaderNames.Server,
                 HeaderNames.Date,
-                HeaderNames.TransferEncoding
+                HeaderNames.TransferEncoding,
+                HeaderNames.AltSvc
             };
             var enhancedHeaders = new[]
             {
                 HeaderNames.Connection,
                 HeaderNames.Server,
                 HeaderNames.Date,
-                HeaderNames.TransferEncoding
+                HeaderNames.TransferEncoding,
+                HeaderNames.AltSvc
             };
             // http://www.w3.org/TR/cors/#syntax
             var corsResponseHeaders = new[]
@@ -311,7 +313,7 @@ namespace CodeGenerator
                 }}
 
                 // We didn't have a previous matching header value, or have already added a header, so get the string for this value.
-                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector);
+                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector, checkForNewlineChars);
                 if ((_bits & flag) == 0)
                 {{
                     // We didn't already have a header set, so add a new one.
@@ -329,13 +331,15 @@ namespace CodeGenerator
             var header = group.Header;
             if (header.Name == HeaderNames.ContentLength)
             {
-                return $@"if (ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultRequestHeaderEncodingSelector))
+                return $@"var customEncoding = ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
+                        ? null : EncodingSelector(HeaderNames.ContentLength);
+                    if (customEncoding == null)
                     {{
                         AppendContentLength(value);
                     }}
                     else
                     {{
-                        AppendContentLengthCustomEncoding(value, EncodingSelector(HeaderNames.ContentLength));
+                        AppendContentLengthCustomEncoding(value, customEncoding);
                     }}
                     return true;";
             }
@@ -370,13 +374,15 @@ namespace CodeGenerator
                 if (header.Name == HeaderNames.ContentLength)
                 {
                     return $@"
-                        {extraIndent}if (ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultRequestHeaderEncodingSelector))
+                        {extraIndent}var customEncoding = ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
+                        {extraIndent}   ? null : EncodingSelector(HeaderNames.ContentLength);
+                        {extraIndent}if (customEncoding == null)
                         {extraIndent}{{
                         {extraIndent}    AppendContentLength(value);
                         {extraIndent}}}
                         {extraIndent}else
                         {extraIndent}{{
-                        {extraIndent}    AppendContentLengthCustomEncoding(value, EncodingSelector(HeaderNames.ContentLength));
+                        {extraIndent}    AppendContentLengthCustomEncoding(value, customEncoding);
                         {extraIndent}}}
                         {extraIndent}return;";
                 }
@@ -477,7 +483,7 @@ namespace CodeGenerator
                     }
                     else
                     {
-                        return $"(Unsafe.ReadUnaligned<{type}>(ref nameStart) & 0x{mask:x}{suffix})";
+                        return $"(ReadUnalignedLittleEndian_{type}(ref nameStart) & 0x{mask:x}{suffix})";
                     }
                 }
                 else
@@ -488,11 +494,11 @@ namespace CodeGenerator
                     }
                     else if ((offset / count) == 1)
                     {
-                        return $"(Unsafe.ReadUnaligned<{type}>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof({type}))) & 0x{mask:x}{suffix})";
+                        return $"(ReadUnalignedLittleEndian_{type}(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof({type}))) & 0x{mask:x}{suffix})";
                     }
                     else
                     {
-                        return $"(Unsafe.ReadUnaligned<{type}>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)({offset / count} * sizeof({type})))) & 0x{mask:x}{suffix})";
+                        return $"(ReadUnalignedLittleEndian_{type}(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)({offset / count} * sizeof({type})))) & 0x{mask:x}{suffix})";
                     }
                 }
 
@@ -764,16 +770,19 @@ namespace CodeGenerator
                     offset += header.BytesCount;
                 }
             }
-            return $@"// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+            var s = $@"// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.IO.Pipelines;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.Http;
@@ -821,7 +830,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }}
             set
             {{
-                _contentLength = ParseContentLength(value);
+                _contentLength = ParseContentLength(value.ToString());
             }}" : $@"
             get
             {{
@@ -834,7 +843,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }}
             set
             {{
-                {header.SetBit()};
+                if (!StringValues.IsNullOrEmpty(value))
+                {{
+                    {header.SetBit()};
+                }}
+                else
+                {{
+                    {header.ClearBit()};
+                }}
                 _headers._{header.Identifier} = value; {(header.EnhancedSetter == false ? "" : $@"
                 _headers._raw{header.Identifier} = null;")}
             }}")}
@@ -857,7 +873,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 var flag = {header.FlagBit()};
                 if (value.Count > 0)
-                {{
+                {{{(loop.ClassName != "HttpRequestHeaders" ? $@"
+                    ValidateHeaderValueCharacters(HeaderNames.{header.Identifier}, value, EncodingSelector);" : "")}
                     _bits |= flag;
                     _headers._{header.Identifier} = value;
                 }}
@@ -883,8 +900,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }}
             set
             {{
-                if (_isReadOnly) {{ ThrowHeadersReadOnlyException(); }}
-
+                if (_isReadOnly) {{ ThrowHeadersReadOnlyException(); }}{(loop.ClassName != "HttpRequestHeaders" ? $@"
+                ValidateHeaderValueCharacters(HeaderNames.{header}, value, EncodingSelector);" : "")}
                 SetValueUnknown(HeaderNames.{header}, value);
             }}
         }}")}
@@ -947,7 +964,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override void SetValueFast(string key, StringValues value)
         {{{(loop.ClassName != "HttpRequestHeaders" ? @"
-            ValidateHeaderValueCharacters(value);" : "")}
+            ValidateHeaderValueCharacters(key, value, EncodingSelector);" : "")}
             switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
@@ -978,7 +995,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override bool AddValueFast(string key, StringValues value)
         {{{(loop.ClassName != "HttpRequestHeaders" ? @"
-            ValidateHeaderValueCharacters(value);" : "")}
+            ValidateHeaderValueCharacters(key, value, EncodingSelector);" : "")}
             switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
@@ -987,7 +1004,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {{{(header.Name == HeaderNames.ContentLength ? $@"
                         if (!_contentLength.HasValue)
                         {{
-                            _contentLength = ParseContentLength(value);
+                            _contentLength = ParseContentLength(value.ToString());
                             return true;
                         }}
                         return false;" : $@"
@@ -1005,7 +1022,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {{{(header.Name == HeaderNames.ContentLength ? $@"
                         if (!_contentLength.HasValue)
                         {{
-                            _contentLength = ParseContentLength(value);
+                            _contentLength = ParseContentLength(value.ToString());
                             return true;
                         }}
                         return false;" : $@"
@@ -1150,52 +1167,65 @@ $@"        private void Clear(long bitsToClear)
         }}
         internal unsafe void CopyToFast(ref BufferWriter<PipeWriter> output)
         {{
-            var tempBits = (ulong)_bits | (_contentLength.HasValue ? {"0x" + (1L << 63).ToString("x" , CultureInfo.InvariantCulture)}L : 0);
-            var next = 0;
-            var keyStart = 0;
-            var keyLength = 0;
-            ref readonly StringValues values = ref Unsafe.AsRef<StringValues>(null);
+            var tempBits = (ulong)_bits;
+            // Set exact next
+            var next = BitOperations.TrailingZeroCount(tempBits);
 
+            // Output Content-Length now as it isn't contained in the bit flags.
+            if (_contentLength.HasValue)
+            {{
+                output.Write(HeaderBytes.Slice(640, 18));
+                output.WriteNumeric((ulong)ContentLength.GetValueOrDefault());
+            }}
+            if (tempBits == 0)
+            {{
+                return;
+            }}
+
+            ref readonly StringValues values = ref Unsafe.AsRef<StringValues>(null);
             do
             {{
+                int keyStart;
+                int keyLength;
+                var headerName = string.Empty;
                 switch (next)
-                {{{Each(loop.Headers.OrderBy(h => !h.PrimaryHeader).Select((h, i) => (Header: h, Index: i)), hi => $@"
-                    case {hi.Index}: // Header: ""{hi.Header.Name}""
-                        if ({hi.Header.TestTempBit()})
+                {{{Each(loop.Headers.OrderBy(h => h.Index).Where(h => h.Identifier != "ContentLength"), header => $@"
+                    case {header.Index}: // Header: ""{header.Name}""
+                        Debug.Assert({header.TestTempBit()});{(header.EnhancedSetter == false ? $@"
+                        values = ref _headers._{header.Identifier};
+                        keyStart = {header.BytesOffset};
+                        keyLength = {header.BytesCount};" : $@"
+                        if (_headers._raw{header.Identifier} != null)
                         {{
-                            tempBits ^= {"0x" + (1L << hi.Header.Index).ToString("x" , CultureInfo.InvariantCulture)}L;{(hi.Header.Identifier != "ContentLength" ? $@"{(hi.Header.EnhancedSetter == false ? $@"
-                            values = ref _headers._{hi.Header.Identifier};
-                            keyStart = {hi.Header.BytesOffset};
-                            keyLength = {hi.Header.BytesCount};
-                            next = {hi.Index + 1};
-                            break; // OutputHeader" : $@"
-                            if (_headers._raw{hi.Header.Identifier} != null)
-                            {{
-                                output.Write(_headers._raw{hi.Header.Identifier});
-                            }}
-                            else
-                            {{
-                                values = ref _headers._{hi.Header.Identifier};
-                                keyStart = {hi.Header.BytesOffset};
-                                keyLength = {hi.Header.BytesCount};
-                                next = {hi.Index + 1};
-                                break; // OutputHeader
-                            }}")}" : $@"
-                            output.Write(HeaderBytes.Slice({hi.Header.BytesOffset}, {hi.Header.BytesCount}));
-                            output.WriteNumeric((ulong)ContentLength.GetValueOrDefault());
-                            if (tempBits == 0)
-                            {{
-                                return;
-                            }}")}
+                            // Clear and set next as not using common output.
+                            tempBits ^= {"0x" + (1L << header.Index).ToString("x", CultureInfo.InvariantCulture)}L;
+                            next = BitOperations.TrailingZeroCount(tempBits);
+                            output.Write(_headers._raw{header.Identifier});
+                            continue; // Jump to next, already output header
                         }}
-                        {(hi.Index + 1 < loop.Headers.Length ? $"goto case {hi.Index + 1};" : "return;")}")}
+                        else
+                        {{
+                            values = ref _headers._{header.Identifier};
+                            keyStart = {header.BytesOffset};
+                            keyLength = {header.BytesCount};
+                            headerName = HeaderNames.{header.Identifier};
+                        }}")}
+                        break; // OutputHeader
+")}
                     default:
+                        ThrowInvalidHeaderBits();
                         return;
                 }}
 
                 // OutputHeader
                 {{
+                    // Clear bit
+                    tempBits ^= (1UL << next);
+                    var encoding = ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
+                        ? null : EncodingSelector(headerName);
                     var valueCount = values.Count;
+                    Debug.Assert(valueCount > 0);
+
                     var headerKey = HeaderBytes.Slice(keyStart, keyLength);
                     for (var i = 0; i < valueCount; i++)
                     {{
@@ -1203,14 +1233,34 @@ $@"        private void Clear(long bitsToClear)
                         if (value != null)
                         {{
                             output.Write(headerKey);
-                            output.WriteAscii(value);
+                            if (encoding is null)
+                            {{
+                                output.WriteAscii(value);
+                            }}
+                            else
+                            {{
+                                output.WriteEncoded(value, encoding);
+                            }}
                         }}
                     }}
+                    // Set exact next
+                    next = BitOperations.TrailingZeroCount(tempBits);
                 }}
             }} while (tempBits != 0);
         }}" : "")}{(loop.ClassName == "HttpRequestHeaders" ? $@"
+        {Each(new string[] {"ushort", "uint", "ulong"}, type => $@"
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static unsafe {type} ReadUnalignedLittleEndian_{type}(ref byte source)
+        {{
+            {type} result = Unsafe.ReadUnaligned<{type}>(ref source);
+            if (!BitConverter.IsLittleEndian)
+            {{
+                result = BinaryPrimitives.ReverseEndianness(result);
+            }}
+            return result;
+        }}")}
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public unsafe void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        public unsafe void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value, bool checkForNewlineChars)
         {{
             ref byte nameStart = ref MemoryMarshal.GetReference(name);
             var nameStr = string.Empty;
@@ -1227,10 +1277,10 @@ $@"        private void Clear(long bitsToClear)
             else
             {{
                 // The header was not one of the ""known"" headers.
-                // Convert value to string first, because passing two spans causes 8 bytes stack zeroing in 
+                // Convert value to string first, because passing two spans causes 8 bytes stack zeroing in
                 // this method with rep stosd, which is slower than necessary.
                 nameStr = name.GetHeaderName();
-                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector);
+                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector, checkForNewlineChars);
                 AppendUnknownHeaders(nameStr, valueStr);
             }}
         }}
@@ -1241,6 +1291,7 @@ $@"        private void Clear(long bitsToClear)
             ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
             var nameStr = string.Empty;
             var flag = 0L;
+            var checkForNewlineChars = true;
 
             // Does the HPack static index match any ""known"" headers
             {AppendHPackSwitch(GroupHPack(loop.Headers))}
@@ -1308,6 +1359,8 @@ $@"        private void Clear(long bitsToClear)
         }}
     }}
 ")}}}";
+
+            return s;
         }
 
         private static string GetHeaderLookup()

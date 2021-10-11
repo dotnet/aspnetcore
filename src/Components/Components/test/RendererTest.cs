@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
@@ -271,6 +271,121 @@ namespace Microsoft.AspNetCore.Components.Test
 
             AssertStream(0, logForParent);
             AssertStream(1, logForChild);
+        }
+
+        [Fact]
+        public void CanReRenderRootComponentsWithNewParameters()
+        {
+            // This differs from the other "CanReRender..." tests above in that the root component is being supplied
+            // with new parameters from outside, as opposed to making its own decision to re-render.
+
+            // Arrange
+            var renderer = new TestRenderer();
+            var component = new MessageComponent();
+            var componentId = renderer.AssignRootComponentId(component);
+            renderer.RenderRootComponentAsync(componentId, ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                [nameof(MessageComponent.Message)] = "Hello"
+            }));
+
+            // Assert 1: First render
+            var batch = renderer.Batches.Single();
+            var diff = batch.DiffsByComponentId[componentId].Single();
+            Assert.Collection(diff.Edits, edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                Assert.Equal(0, edit.ReferenceFrameIndex);
+            });
+            AssertFrame.Text(batch.ReferenceFrames[0], "Hello");
+
+            // Act 2: Update params
+            renderer.RenderRootComponentAsync(componentId, ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                [nameof(MessageComponent.Message)] = "Goodbye"
+            }));
+
+            // Assert 2: Second render
+            var batch2 = renderer.Batches.Skip(1).Single();
+            var diff2 = batch2.DiffsByComponentId[componentId].Single();
+            Assert.Collection(diff2.Edits, edit =>
+            {
+                Assert.Equal(RenderTreeEditType.UpdateText, edit.Type);
+                Assert.Equal(0, edit.ReferenceFrameIndex);
+            });
+            AssertFrame.Text(batch2.ReferenceFrames[0], "Goodbye");
+        }
+
+        [Fact]
+        public async Task CanAddAndRenderNewRootComponentsWhileNotQuiescent()
+        {
+            // Arrange 1: An async root component
+            var renderer = new TestRenderer();
+            var tcs1 = new TaskCompletionSource();
+            var component1 = new AsyncComponent(tcs1.Task, 1);
+            var component1Id = renderer.AssignRootComponentId(component1);
+
+            // Act/Assert 1: Its SetParametersAsync task remains incomplete
+            var renderTask1 = renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(component1Id));
+            Assert.False(renderTask1.IsCompleted);
+
+            // Arrange/Act 2: Can add a second root component while not quiescent
+            var tcs2 = new TaskCompletionSource();
+            var component2 = new AsyncComponent(tcs2.Task, 1);
+            var component2Id = renderer.AssignRootComponentId(component2);
+            var renderTask2 = renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(component2Id));
+
+            // Assert 2
+            Assert.False(renderTask1.IsCompleted);
+            Assert.False(renderTask2.IsCompleted);
+
+            // Completing the first task isn't enough to consider the system quiescent, because there's now a second task
+            tcs1.SetResult();
+
+            // renderTask1 should not complete until we finish tcs2.
+            // We can't really prove that absolutely, but at least show it doesn't happen during a certain time period.
+            await Assert.ThrowsAsync<TimeoutException>(() => renderTask1.WaitAsync(TimeSpan.FromMilliseconds(250)));
+            Assert.False(renderTask1.IsCompleted);
+            Assert.False(renderTask2.IsCompleted);
+
+            // Completing the second task does finally complete both render tasks
+            tcs2.SetResult();
+            await Task.WhenAll(renderTask1, renderTask2);
+        }
+
+        [Fact]
+        public async Task AsyncComponentTriggeringRootReRenderDoesNotDeadlock()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var tcs = new TaskCompletionSource();
+            int? componentId = null;
+            var hasRendered = false;
+            var component = new CallbackDuringSetParametersAsyncComponent
+            {
+                Callback = async () =>
+                {
+                    await tcs.Task;
+                    if (!hasRendered)
+                    {
+                        hasRendered = true;
+
+                        // If we were to await here, then it would deadlock, because the component would be saying it's not
+                        // finished rendering until the rendering system has already finished. The point of this test is to
+                        // show that, as long as we don't await quiescence here, nothing within the system will be doing so
+                        // and hence the whole process can complete.
+                        _ = renderer.RenderRootComponentAsync(componentId.Value, ParameterView.Empty);
+                    }
+                }
+            };
+            componentId = renderer.AssignRootComponentId(component);
+
+            // Act
+            var renderTask = renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId.Value));
+
+            // Assert
+            Assert.False(renderTask.IsCompleted);
+            tcs.SetResult();
+            await renderTask;
         }
 
         [Fact]
@@ -3815,15 +3930,24 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void DisposingRenderer_RejectsAttemptsToStartMoreRenderBatches()
+        public void DisposingRenderer_DisregardsAttemptsToStartMoreRenderBatches()
         {
             // Arrange
             var renderer = new TestRenderer();
-            renderer.Dispose();
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenElement(0, "my element");
+                builder.AddContent(1, "some text");
+                builder.CloseElement();
+            });
 
-            // Act/Assert
-            var ex = Assert.Throws<ObjectDisposedException>(() => renderer.ProcessPendingRender());
-            Assert.Contains("Cannot process pending renders after the renderer has been disposed.", ex.Message);
+            // Act
+            renderer.AssignRootComponentId(component);
+            renderer.Dispose();
+            component.TriggerRender();
+
+            // Assert
+            Assert.Empty(renderer.Batches);
         }
 
         [Fact]
@@ -4411,6 +4535,204 @@ namespace Microsoft.AspNetCore.Components.Test
                 component => Assert.Same(exception, component.ReceivedException));
         }
 
+        [Fact]
+        public async Task CanRemoveRootComponents()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var rootComponent = new TestComponent(builder =>
+            {
+                builder.OpenComponent<DisposableComponent>(0);
+                builder.CloseComponent();
+
+                builder.OpenComponent<AsyncDisposableComponent>(1);
+                builder.CloseComponent();
+            });
+            var unrelatedComponent = new DisposableComponent();
+            var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+            var unrelatedRootComponentId = renderer.AssignRootComponentId(unrelatedComponent);
+            rootComponent.TriggerRender();
+            unrelatedComponent.TriggerRender();
+            Assert.Equal(2, renderer.Batches.Count);
+
+            var nestedDisposableComponentFrame = renderer.Batches[0]
+                .GetComponentFrames<DisposableComponent>().Single();
+            var nestedAsyncDisposableComponentFrame = renderer.Batches[0]
+                .GetComponentFrames<AsyncDisposableComponent>().Single();
+
+            // Act
+            _ = renderer.Dispatcher.InvokeAsync(() => renderer.RemoveRootComponent(rootComponentId));
+
+            // Assert: we disposed the specified root component and its descendants, but not
+            // the other root component
+            Assert.Equal(3, renderer.Batches.Count);
+            var batch = renderer.Batches.Last();
+            Assert.Equal(new[]
+            {
+                rootComponentId,
+                nestedDisposableComponentFrame.ComponentId,
+                nestedAsyncDisposableComponentFrame.ComponentId,
+            }, batch.DisposedComponentIDs);
+
+            // Assert: component instances were disposed properly
+            Assert.True(((DisposableComponent)nestedDisposableComponentFrame.Component).Disposed);
+            Assert.True(((AsyncDisposableComponent)nestedAsyncDisposableComponentFrame.Component).Disposed);
+
+            // Assert: it's no longer known as a component
+            await renderer.Dispatcher.InvokeAsync(() =>
+            {
+                var ex = Assert.Throws<ArgumentException>(() =>
+                    renderer.RemoveRootComponent(rootComponentId));
+                Assert.Equal($"The renderer does not have a component with ID {rootComponentId}.", ex.Message);
+            });
+        }
+
+        [Fact]
+        public async Task CannotRemoveSameRootComponentMultipleTimesSynchronously()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var rootComponent = new AsyncDisposableComponent
+            {
+                // Show that, even if the component tries to delay its disposal by returning
+                // a task that never completes, it still gets removed from the renderer synchronously
+                AsyncDisposeAction = () => new ValueTask(new TaskCompletionSource().Task)
+            };
+            var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+
+            // Act/Assert
+            var didRunTestLogic = false; // Don't just trust the dispatcher here - verify it runs our callback
+            await renderer.Dispatcher.InvokeAsync(() =>
+            {
+                renderer.RemoveRootComponent(rootComponentId);
+
+                // Even though we didn't await anything, it's synchronously unavailable for re-removal
+                var ex = Assert.Throws<ArgumentException>(() =>
+                    renderer.RemoveRootComponent(rootComponentId));
+                Assert.Equal($"The renderer does not have a component with ID {rootComponentId}.", ex.Message);
+                didRunTestLogic = true;
+            });
+
+            Assert.True(didRunTestLogic);
+        }
+
+        [Fact]
+        public async Task CannotRemoveNonRootComponentsDirectly()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var rootComponent = new TestComponent(builder =>
+            {
+                builder.OpenComponent<DisposableComponent>(0);
+                builder.CloseComponent();
+            });
+            var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+            rootComponent.TriggerRender();
+
+            var nestedComponentFrame = renderer.Batches[0]
+                .GetComponentFrames<DisposableComponent>().Single();
+            var nestedComponent = (DisposableComponent)nestedComponentFrame.Component;
+
+            // Act/Assert
+            await renderer.Dispatcher.InvokeAsync(() =>
+            {
+                var ex = Assert.Throws<InvalidOperationException>(() =>
+                    renderer.RemoveRootComponent(nestedComponentFrame.ComponentId));
+                Assert.Equal("The specified component is not a root component", ex.Message);
+            });
+
+            Assert.False(nestedComponent.Disposed);
+        }
+
+        [Fact]
+        public void RemoveRootComponentHandlesDisposalExceptions()
+        {
+            // Arrange
+            var autoResetEvent = new AutoResetEvent(false);
+            var renderer = new TestRenderer { ShouldHandleExceptions = true };
+            renderer.OnExceptionHandled = () => autoResetEvent.Set();
+            var exception1 = new InvalidTimeZoneException();
+            var exception2Tcs = new TaskCompletionSource();
+            var rootComponent = new TestComponent(builder =>
+            {
+                builder.AddContent(0, "Hello");
+                builder.OpenComponent<DisposableComponent>(1);
+                builder.AddAttribute(1, nameof(DisposableComponent.DisposeAction), (Action)(() => throw exception1));
+                builder.CloseComponent();
+
+                builder.OpenComponent<AsyncDisposableComponent>(2);
+                builder.AddAttribute(1, nameof(AsyncDisposableComponent.AsyncDisposeAction), (Func<ValueTask>)(async () => await exception2Tcs.Task));
+                builder.CloseComponent();
+            });
+            var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+            rootComponent.TriggerRender();
+            Assert.Single(renderer.Batches);
+
+            var nestedDisposableComponentFrame = renderer.Batches[0]
+                .GetComponentFrames<DisposableComponent>().Single();
+            var nestedAsyncDisposableComponentFrame = renderer.Batches[0]
+                .GetComponentFrames<AsyncDisposableComponent>().Single();
+
+            // Act
+            renderer.Dispatcher.InvokeAsync(() => renderer.RemoveRootComponent(rootComponentId));
+
+            // Assert: we get the synchronous exception synchronously
+            Assert.Same(exception1, Assert.Single(renderer.HandledExceptions));
+
+            // Assert: we get the asynchronous exception asynchronously
+            var exception2 = new InvalidTimeZoneException();
+            autoResetEvent.Reset();
+            exception2Tcs.SetException(exception2);
+            autoResetEvent.WaitOne();
+            Assert.Equal(2, renderer.HandledExceptions.Count);
+            Assert.Same(exception2, renderer.HandledExceptions[1]);
+        }
+
+        [Fact]
+        public void DisposeCallsComponentDisposeOnSyncContext()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var wasOnSyncContext = false;
+            var component = new DisposableComponent
+            {
+                DisposeAction = () =>
+                {
+                    wasOnSyncContext = renderer.Dispatcher.CheckAccess();
+                }
+            };
+
+            // Act
+            var componentId = renderer.AssignRootComponentId(component);
+            renderer.Dispose();
+
+            // Assert
+            Assert.True(wasOnSyncContext);
+        }
+
+        [Fact]
+        public async Task DisposeAsyncCallsComponentDisposeAsyncOnSyncContext()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var wasOnSyncContext = false;
+            var component = new AsyncDisposableComponent
+            {
+                AsyncDisposeAction = () =>
+                {
+                    wasOnSyncContext = renderer.Dispatcher.CheckAccess();
+                    return ValueTask.CompletedTask;
+                }
+            };
+
+            // Act
+            var componentId = renderer.AssignRootComponentId(component);
+            await renderer.DisposeAsync();
+
+            // Assert
+            Assert.True(wasOnSyncContext);
+        }
+
         private class TestComponentActivator<TResult> : IComponentActivator where TResult : IComponent, new()
         {
             public List<Type> RequestedComponentTypes { get; } = new List<Type>();
@@ -4443,7 +4765,7 @@ namespace Microsoft.AspNetCore.Components.Test
         private class TestComponent : IComponent, IDisposable
         {
             private RenderHandle _renderHandle;
-            private RenderFragment _renderFragment;
+            private readonly RenderFragment _renderFragment;
 
             public TestComponent(RenderFragment renderFragment)
             {
@@ -5211,7 +5533,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
         private class TestErrorBoundary : AutoRenderComponent, IErrorBoundary
         {
-            private TaskCompletionSource receivedErrorTaskCompletionSource = new();
+            private readonly TaskCompletionSource receivedErrorTaskCompletionSource = new();
 
             public Exception ReceivedException { get; private set; }
             public Task ReceivedErrorTask => receivedErrorTaskCompletionSource.Task;
@@ -5289,6 +5611,23 @@ namespace Microsoft.AspNetCore.Components.Test
                 {
                     await ThrowDuringEventAsync;
                 }
+            }
+        }
+
+        private class CallbackDuringSetParametersAsyncComponent : AutoRenderComponent
+        {
+            public int RenderCount { get; private set; }
+            public Func<Task> Callback { get; set; }
+
+            public override async Task SetParametersAsync(ParameterView parameters)
+            {
+                await Callback();
+                await base.SetParametersAsync(parameters);
+            }
+
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                RenderCount++;
             }
         }
     }

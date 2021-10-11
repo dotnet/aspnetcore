@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -62,14 +62,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
 
             using var httpClient = new HttpClient(socketsHandler);
 
-            using var httpRequsetMessage = new HttpRequestMessage()
+            using var httpRequestMessage = new HttpRequestMessage()
             {
                 RequestUri = new Uri("http://localhost/"),
                 Version = new Version(2, 0),
                 VersionPolicy = HttpVersionPolicy.RequestVersionExact,
             };
 
-            using var responseMessage = await httpClient.SendAsync(httpRequsetMessage);
+            using var responseMessage = await httpClient.SendAsync(httpRequestMessage);
 
             Assert.Equal("hello, world", await responseMessage.Content.ReadAsStringAsync());
 

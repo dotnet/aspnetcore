@@ -1,10 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing.Logging;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Routing
@@ -12,7 +11,7 @@ namespace Microsoft.AspNetCore.Routing
     /// <summary>
     /// Use to evaluate if all route parameter values match their constraints.
     /// </summary>
-    public static class RouteConstraintMatcher
+    public static partial class RouteConstraintMatcher
     {
         /// <summary>
         /// Determines if <paramref name="routeValues"/> match the provided <paramref name="constraints"/>.
@@ -69,7 +68,7 @@ namespace Microsoft.AspNetCore.Routing
                     {
                         routeValues.TryGetValue(kvp.Key, out var routeValue);
 
-                        logger.ConstraintNotMatched(routeValue!, kvp.Key, kvp.Value);
+                        Log.ConstraintNotMatched(logger, routeValue!, kvp.Key, kvp.Value);
                     }
 
                     return false;
@@ -77,6 +76,18 @@ namespace Microsoft.AspNetCore.Routing
             }
 
             return true;
+        }
+
+        private static partial class Log
+        {
+            [LoggerMessage(1, LogLevel.Debug,
+                "Route value '{RouteValue}' with key '{RouteKey}' did not match the constraint '{RouteConstraint}'",
+                EventName = "ConstraintNotMatched")]
+            public static partial void ConstraintNotMatched(
+                ILogger logger,
+                object routeValue,
+                string routeKey,
+                IRouteConstraint routeConstraint);
         }
     }
 }

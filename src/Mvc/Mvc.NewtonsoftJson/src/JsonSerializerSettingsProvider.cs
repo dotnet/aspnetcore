@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -17,12 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
         // return shared resolver by default for perf so slow reflection logic is cached once
         // developers can set their own resolver after the settings are returned if desired
-        private static readonly DefaultContractResolver SharedContractResolver;
-
-        static JsonSerializerSettingsProvider()
-        {
-            SharedContractResolver = CreateContractResolver();
-        }
+        private static readonly DefaultContractResolver SharedContractResolver = CreateContractResolver();
 
         /// <summary>
         /// Creates default <see cref="JsonSerializerSettings"/>.

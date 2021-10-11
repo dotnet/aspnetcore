@@ -1,10 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -44,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var dateHeaderValueManager = new DateHeaderValueManager();
             dateHeaderValueManager.OnHeartbeat(now);
 
-            var testKestrelTrace = new TestKestrelTrace();
+            var testKestrelTrace = new KestrelTrace(NullLoggerFactory.Instance);
 
             using (var heartbeat = new Heartbeat(new IHeartbeatHandler[] { dateHeaderValueManager }, systemClock, DebuggerWrapper.Singleton, testKestrelTrace))
             {
@@ -69,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var dateHeaderValueManager = new DateHeaderValueManager();
             dateHeaderValueManager.OnHeartbeat(now);
 
-            var testKestrelTrace = new TestKestrelTrace();
+            var testKestrelTrace = new KestrelTrace(NullLoggerFactory.Instance);
 
             var mockHeartbeatHandler = new Mock<IHeartbeatHandler>();
 
@@ -102,7 +103,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var dateHeaderValueManager = new DateHeaderValueManager();
             dateHeaderValueManager.OnHeartbeat(now);
 
-            var testKestrelTrace = new TestKestrelTrace();
+            var testKestrelTrace = new KestrelTrace(NullLoggerFactory.Instance);
 
             using (var heartbeat = new Heartbeat(new IHeartbeatHandler[] { dateHeaderValueManager }, systemClock, DebuggerWrapper.Singleton, testKestrelTrace))
             {

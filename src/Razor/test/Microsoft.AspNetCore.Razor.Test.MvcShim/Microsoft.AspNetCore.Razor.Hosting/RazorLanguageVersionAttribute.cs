@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 
@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Hosting
     /// </summary>
     /// <remarks>
     /// This attribute is part of a set of metadata attributes that can be applied to an assembly at build
-    /// time by the Razor SDK. These attributes allow the Razor configuration to be loaded at runtime based 
+    /// time by the Razor SDK. These attributes allow the Razor configuration to be loaded at runtime based
     /// on the settings originally provided by the project file.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false, Inherited = false)]

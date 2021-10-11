@@ -1,9 +1,10 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -43,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             // Assert
             Assert.True(result);
-            var readCollection = await reader(asyncEnumerable);
+            var readCollection = await reader(asyncEnumerable, default);
             var collection = Assert.IsAssignableFrom<ICollection<string>>(readCollection);
             Assert.Equal(new[] { "0", "1", "2", }, collection);
         }
@@ -61,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             // Assert
             Assert.True(result);
-            var readCollection = await reader(asyncEnumerable);
+            var readCollection = await reader(asyncEnumerable, default);
             var collection = Assert.IsAssignableFrom<ICollection<int>>(readCollection);
             Assert.Equal(new[] { 0, 1, 2, }, collection);
         }
@@ -114,8 +115,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             Assert.True(readerFactory.TryGetReader(asyncEnumerable1.GetType(), out var reader));
 
             // Assert
-            Assert.Equal(expected, await reader(asyncEnumerable1));
-            Assert.Equal(expected, await reader(asyncEnumerable2));
+            Assert.Equal(expected, await reader(asyncEnumerable1, default));
+            Assert.Equal(expected, await reader(asyncEnumerable2, default));
         }
 
         [Fact]
@@ -131,8 +132,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             Assert.True(readerFactory.TryGetReader(asyncEnumerable1.GetType(), out var reader));
 
             // Assert
-            Assert.Equal(new[] { "0", "1", "2" }, await reader(asyncEnumerable1));
-            Assert.Equal(new[] { "0", "1", "2", "3" }, await reader(asyncEnumerable2));
+            Assert.Equal(new[] { "0", "1", "2" }, await reader(asyncEnumerable1, default));
+            Assert.Equal(new[] { "0", "1", "2", "3" }, await reader(asyncEnumerable2, default));
         }
 
         [Fact]
@@ -166,7 +167,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             // Assert
             Assert.True(result);
-            var readCollection = await reader(asyncEnumerable);
+            var readCollection = await reader(asyncEnumerable, default);
             var collection = Assert.IsAssignableFrom<ICollection<object>>(readCollection);
             Assert.Equal(new[] { "0", "1", "2", }, collection);
         }
@@ -184,7 +185,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             // Act
             Assert.True(readerFactory.TryGetReader(enumerable.GetType(), out var reader));
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => reader(enumerable));
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => reader(enumerable, default));
 
             // Assert
             Assert.Equal(expected, ex.Message);
@@ -200,7 +201,32 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             // Act & Assert
             Assert.True(readerFactory.TryGetReader(enumerable.GetType(), out var reader));
-            await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => reader(enumerable));
+            await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => reader(enumerable, default));
+        }
+
+        [Fact]
+        public async Task Reader_PassesCancellationTokenToIAsyncEnumerable()
+        {
+            // Arrange
+            var enumerable = AsyncEnumerable();
+            var options = new MvcOptions();
+            CancellationToken token = default;
+            var readerFactory = new AsyncEnumerableReader(options);
+            var cts = new CancellationTokenSource();
+
+            // Act & Assert
+            Assert.True(readerFactory.TryGetReader(enumerable.GetType(), out var reader));
+            await reader(enumerable, cts.Token);
+
+            cts.Cancel();
+            Assert.Equal(cts.Token, token);
+
+            async IAsyncEnumerable<string> AsyncEnumerable([EnumeratorCancellation] CancellationToken cancellationToken = default)
+            {
+                token = cancellationToken;
+                await Task.Yield();
+                yield return string.Empty;
+            }
         }
 
         public static async IAsyncEnumerable<string> TestEnumerable(int count = 3)

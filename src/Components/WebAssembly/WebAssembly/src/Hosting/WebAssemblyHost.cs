@@ -1,11 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.HotReload;
-using Microsoft.AspNetCore.Components.Lifetime;
+using System.Reflection.Metadata;
+using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.HotReload;
 using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
@@ -21,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
     /// </summary>
     public sealed class WebAssemblyHost : IAsyncDisposable
     {
-        private readonly IServiceScope _scope;
+        private readonly AsyncServiceScope _scope;
         private readonly IServiceProvider _services;
         private readonly IConfiguration _configuration;
         private readonly RootComponentMappingCollection _rootComponents;
@@ -41,10 +39,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         private WebAssemblyRenderer? _renderer;
 
         internal WebAssemblyHost(
+            WebAssemblyHostBuilder builder,
             IServiceProvider services,
-            IServiceScope scope,
-            IConfiguration configuration,
-            RootComponentMappingCollection rootComponents,
+            AsyncServiceScope scope,
             string? persistedState)
         {
             // To ensure JS-invoked methods don't get linked out, have a reference to their enclosing types
@@ -52,8 +49,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
             _services = services;
             _scope = scope;
-            _configuration = configuration;
-            _rootComponents = rootComponents;
+            _configuration = builder.Configuration;
+            _rootComponents = builder.RootComponents;
             _persistedState = persistedState;
         }
 
@@ -85,14 +82,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 await _renderer.DisposeAsync();
             }
 
-            if (_scope is IAsyncDisposable asyncDisposableScope)
-            {
-                await asyncDisposableScope.DisposeAsync();
-            }
-            else
-            {
-                _scope?.Dispose();
-            }
+            await _scope.DisposeAsync();
 
             if (_services is IAsyncDisposable asyncDisposableServices)
             {
@@ -138,14 +128,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // This is the earliest opportunity to fetch satellite assemblies for this selection.
             await cultureProvider.LoadCurrentCultureResourcesAsync();
 
-            var manager = Services.GetRequiredService<ComponentApplicationLifetime>();
+            var manager = Services.GetRequiredService<ComponentStatePersistenceManager>();
             var store = !string.IsNullOrEmpty(_persistedState) ?
                 new PrerenderComponentApplicationStore(_persistedState) :
                 new PrerenderComponentApplicationStore();
 
             await manager.RestoreStateAsync(store);
 
-            if (HotReloadFeature.IsSupported)
+            if (MetadataUpdater.IsSupported)
             {
                 await WebAssemblyHotReload.InitializeAsync();
             }
@@ -155,7 +145,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             using (cancellationToken.Register(() => tcs.TrySetResult()))
             {
                 var loggerFactory = Services.GetRequiredService<ILoggerFactory>();
-                _renderer = new WebAssemblyRenderer(Services, loggerFactory);
+                var jsComponentInterop = new JSComponentInterop(_rootComponents.JSComponents);
+                _renderer = new WebAssemblyRenderer(Services, loggerFactory, jsComponentInterop);
 
                 var initializationTcs = new TaskCompletionSource();
                 WebAssemblyCallQueue.Schedule((_rootComponents, _renderer, initializationTcs), static async state =>
@@ -164,10 +155,21 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
                     try
                     {
-                foreach (var rootComponent in rootComponents)
+                        // Here, we add each root component but don't await the returned tasks so that the
+                        // components can be processed in parallel.
+                        var count = rootComponents.Count;
+                        var pendingRenders = new Task[count];
+                        for (var i = 0; i < count; i++)
                         {
-                            await renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Selector, rootComponent.Parameters);
+                            var rootComponent = rootComponents[i];
+                            pendingRenders[i] = renderer.AddComponentAsync(
+                                rootComponent.ComponentType,
+                                rootComponent.Parameters,
+                                rootComponent.Selector);
                         }
+
+                        // Now we wait for all components to finish rendering.
+                        await Task.WhenAll(pendingRenders);
 
                         initializationTcs.SetResult();
                     }

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -25,10 +25,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         private InputFileJsCallbacksRelay? _jsCallbacksRelay;
 
         [Inject]
-        private IJSRuntime JSRuntime { get; set; } = default!;
-
-        [Inject]
-        private IOptions<RemoteBrowserFileStreamOptions> Options { get; set; } = default!;
+        internal IJSRuntime JSRuntime { get; set; } = default!; // Internal for testing
 
         /// <summary>
         /// Gets or sets the event callback that will be invoked when the collection of selected files changes.
@@ -81,10 +78,13 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.CloseElement();
         }
 
-        internal Stream OpenReadStream(BrowserFile file, CancellationToken cancellationToken)
-            => _jsUnmarshalledRuntime != null ?
-                (Stream)new SharedBrowserFileStream(JSRuntime, _jsUnmarshalledRuntime, _inputFileElement, file) :
-                new RemoteBrowserFileStream(JSRuntime, _inputFileElement, file, Options.Value, cancellationToken);
+        internal Stream OpenReadStream(BrowserFile file, long maxAllowedSize, CancellationToken cancellationToken)
+            => new BrowserFileStream(
+                JSRuntime,
+                _inputFileElement,
+                file,
+                maxAllowedSize,
+                cancellationToken);
 
         internal async ValueTask<IBrowserFile> ConvertToImageFileAsync(BrowserFile file, string format, int maxWidth, int maxHeight)
         {

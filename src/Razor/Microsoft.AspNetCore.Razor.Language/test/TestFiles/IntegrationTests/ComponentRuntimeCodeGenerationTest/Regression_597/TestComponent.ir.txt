@@ -13,6 +13,6 @@ Document -
                             LazyIntermediateToken - (18:0,18 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - y
                     ComponentAttribute - (18:0,18 [1] x:\dir\subdir\Test\TestComponent.cshtml) - vChanged -  - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => y = __value, y)
+                            IntermediateToken -  - CSharp - global::Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => y = __value, y)
             CSharpCode - (32:1,7 [24] x:\dir\subdir\Test\TestComponent.cshtml)
                 LazyIntermediateToken - (32:1,7 [24] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string y = null;\n

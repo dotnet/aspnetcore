@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Globalization;
@@ -91,9 +91,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             return read;
         }
 
-        public async override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            int read = await _inner.ReadAsync(buffer, offset, count, cancellationToken);
+            int read = await _inner.ReadAsync(buffer.AsMemory(offset, count), cancellationToken);
             Log("ReadAsync", new ReadOnlySpan<byte>(buffer, offset, read));
             return read;
         }

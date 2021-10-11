@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -16,7 +16,20 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
+#if !IIS_FUNCTIONALS
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
+
+#if IISEXPRESS_FUNCTIONALS
+namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests
+#elif NEWHANDLER_FUNCTIONALS
+namespace Microsoft.AspNetCore.Server.IIS.NewHandler.FunctionalTests
+#elif NEWSHIM_FUNCTIONALS
+namespace Microsoft.AspNetCore.Server.IIS.NewShim.FunctionalTests
+#endif
+
+#else
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
+#endif
 {
     // Contains all tests related to shutdown, including app_offline, abort, and app recycle
     [Collection(PublishedSitesCollection.Name)]

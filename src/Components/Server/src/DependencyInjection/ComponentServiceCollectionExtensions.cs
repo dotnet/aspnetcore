@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.Builder;
@@ -60,8 +60,9 @@ namespace Microsoft.Extensions.DependencyInjection
             // user's configuration. So even if the user has multiple independent server-side
             // Components entrypoints, this lot is the same and repeated registrations are a no-op.
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<StaticFileOptions>, ConfigureStaticFilesOptions>());
-            services.TryAddSingleton<CircuitFactory>();
-            services.TryAddSingleton<ServerComponentDeserializer>();
+            services.TryAddSingleton<ICircuitFactory, CircuitFactory>();
+            services.TryAddSingleton<IServerComponentDeserializer, ServerComponentDeserializer>();
+            services.TryAddSingleton<ICircuitHandleRegistry, CircuitHandleRegistry>();
             services.TryAddSingleton<RootComponentTypeCache>();
             services.TryAddSingleton<ComponentParameterDeserializer>();
             services.TryAddSingleton<ComponentParametersTypeCache>();
@@ -82,6 +83,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
 
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<CircuitOptions>, CircuitOptionsJSInteropDetailedErrorsConfiguration>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<CircuitOptions>, CircuitOptionsJavaScriptInitializersConfiguration>());
 
             if (configure != null)
             {

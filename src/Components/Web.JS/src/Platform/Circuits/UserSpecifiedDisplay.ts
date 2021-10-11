@@ -14,7 +14,7 @@ export class UserSpecifiedDisplay implements ReconnectDisplay {
 
   constructor(private dialog: HTMLElement, private readonly maxRetries: number, private readonly document: Document) {
     this.document = document;
-        
+
     const maxRetriesElement = this.document.getElementById(UserSpecifiedDisplay.MaxRetriesId);
 
     if (maxRetriesElement) {

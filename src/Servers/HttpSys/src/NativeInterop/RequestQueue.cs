@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             Debug.Assert(Created);
             CheckDisposed();
-            // Set the association between request queue and url group. After this, requests for registered urls will 
+            // Set the association between request queue and url group. After this, requests for registered urls will
             // get delivered to this request queue.
 
             var info = new HttpApiTypes.HTTP_BINDING_INFO();
@@ -140,10 +140,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             Debug.Assert(Created);
             CheckDisposed();
-            // Break the association between request queue and url group. After this, requests for registered urls 
+            // Break the association between request queue and url group. After this, requests for registered urls
             // will get 503s.
             // Note that this method may be called multiple times (Stop() and then Abort()). This
-            // is fine since http.sys allows to set HttpServerBindingProperty multiple times for valid 
+            // is fine since http.sys allows to set HttpServerBindingProperty multiple times for valid
             // Url groups.
 
             var info = new HttpApiTypes.HTTP_BINDING_INFO();

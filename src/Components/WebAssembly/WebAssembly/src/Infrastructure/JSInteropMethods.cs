@@ -1,9 +1,13 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Buffers;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
@@ -25,21 +29,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
         public static void NotifyLocationChanged(string uri, bool isInterceptedLink)
         {
             WebAssemblyNavigationManager.Instance.SetLocation(uri, isInterceptedLink);
-        }
-
-        /// <summary>
-        /// For framework use only.
-        /// </summary>
-        [JSInvokable(nameof(DispatchEvent))]
-        public static Task DispatchEvent(WebEventDescriptor eventDescriptor, string eventArgsJson)
-        {
-            var renderer = RendererRegistry.Find(eventDescriptor.BrowserRendererId);
-            var jsonSerializerOptions = DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions();
-            var webEvent = WebEventData.Parse(renderer, jsonSerializerOptions, eventDescriptor, eventArgsJson);
-            return renderer.DispatchEventAsync(
-                webEvent.EventHandlerId,
-                webEvent.EventFieldInfo,
-                webEvent.EventArgs);
         }
     }
 }

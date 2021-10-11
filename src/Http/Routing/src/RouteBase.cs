@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing.Logging;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -17,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing
     /// <summary>
     /// Base class implementation of an <see cref="IRouter"/>.
     /// </summary>
-    public abstract class RouteBase : IRouter, INamedRouter
+    public abstract partial class RouteBase : IRouter, INamedRouter
     {
         private readonly object _loggersLock = new object();
 
@@ -103,7 +102,7 @@ namespace Microsoft.AspNetCore.Routing
         protected abstract Task OnRouteMatched(RouteContext context);
 
         /// <summary>
-        /// Executes whenever a virtual path is dervied from a <paramref name="context"/>.
+        /// Executes whenever a virtual path is derived from a <paramref name="context"/>.
         /// </summary>
         /// <param name="context">A <see cref="VirtualPathContext"/> instance.</param>
         /// <returns>A <see cref="VirtualPathData"/> instance.</returns>
@@ -145,7 +144,7 @@ namespace Microsoft.AspNetCore.Routing
             {
                 return Task.CompletedTask;
             }
-            _logger.RequestMatchedRoute(Name!, ParsedTemplate.TemplateText!);
+            Log.RequestMatchedRoute(_logger, Name, ParsedTemplate.TemplateText);
 
             return OnRouteMatched(context);
         }
@@ -348,6 +347,14 @@ namespace Microsoft.AspNetCore.Routing
         public override string ToString()
         {
             return ParsedTemplate.TemplateText!;
+        }
+
+        private static partial class Log
+        {
+            [LoggerMessage(1, LogLevel.Debug,
+                "Request successfully matched the route with name '{RouteName}' and template '{RouteTemplate}'",
+                EventName = "RequestMatchedRoute")]
+            public static partial void RequestMatchedRoute(ILogger logger, string? routeName, string? routeTemplate);
         }
     }
 }

@@ -1,12 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.DotNet.OpenApi.Tests;
 using Microsoft.Extensions.Tools.Internal;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.OpenApi.Remove.Tests
@@ -15,7 +11,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
     {
         public OpenApiRemoveTests(ITestOutputHelper output) : base(output) { }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
+        [Fact]
         public async Task OpenApi_Remove_File()
         {
             var nswagJsonFile = "openapi.json";
@@ -60,7 +56,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
             Assert.False(File.Exists(Path.Combine(_tempDir.Root, nswagJsonFile)));
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
+        [Fact]
         public async Task OpenApi_Remove_ViaUrl()
         {
             _tempDir
@@ -148,7 +144,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
             }
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
+        [Fact]
         public async Task OpenApi_Remove_Multiple()
         {
             var nswagJsonFile = "openapi.json";

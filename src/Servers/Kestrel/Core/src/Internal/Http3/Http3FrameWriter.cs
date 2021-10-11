@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Http;
 using System.Net.Http.QPack;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -21,55 +22,78 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
     internal class Http3FrameWriter
     {
-        private readonly object _writeLock = new object();
-        private readonly QPackEncoder _qpackEncoder = new QPackEncoder();
+        // These bytes represent a ":status: 100" continue response header frame encoded with
+        // QPACK. To arrive at this, we first take the index in the QPACK static table for status
+        // 100 (https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#appendix-A), which
+        // is 63, and encode it to get ff 00 (see QPackEncoder.EncodeStaticIndexedHeaderField).
+        // The two zero bytes are for the section prefix
+        // (https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#header-prefix)
+        private static ReadOnlySpan<byte> ContinueBytes => new byte[] { 0x00, 0x00, 0xff, 0x00 };
 
-        private readonly PipeWriter _outputWriter;
+        // Size based on HTTP/2 default frame size
+        private const int MaxDataFrameSize = 16 * 1024;
+        private const int HeaderBufferSize = 16 * 1024;
+
+        private readonly object _writeLock = new object();
+
+        private readonly int _maxTotalHeaderSize;
         private readonly ConnectionContext _connectionContext;
         private readonly ITimeoutControl _timeoutControl;
         private readonly MinDataRate? _minResponseDataRate;
-        private readonly string _connectionId;
         private readonly MemoryPool<byte> _memoryPool;
-        private readonly IKestrelTrace _log;
+        private readonly KestrelTrace _log;
         private readonly IStreamIdFeature _streamIdFeature;
+        private readonly IHttp3Stream _http3Stream;
         private readonly Http3RawFrame _outgoingFrame;
         private readonly TimingPipeFlusher _flusher;
 
-        // TODO update max frame size
-        private uint _maxFrameSize = 10000; //Http3PeerSettings.MinAllowedMaxFrameSize;
-        private byte[] _headerEncodingBuffer;
+        private PipeWriter _outputWriter = default!;
+        private string _connectionId = default!;
+
+        // HTTP/3 doesn't have a max frame size (peer can optionally specify a size).
+        // Write headers to a buffer that can grow. Possible performance improvement
+        // by writing directly to output writer (difficult as frame length is prefixed).
+        private readonly ArrayBufferWriter<byte> _headerEncodingBuffer;
+        private readonly Http3HeadersEnumerator _headersEnumerator = new();
+        private int _headersTotalSize;
 
         private long _unflushedBytes;
         private bool _completed;
         private bool _aborted;
 
-        //private int _unflushedBytes;
-
-        public Http3FrameWriter(PipeWriter output, ConnectionContext connectionContext, ITimeoutControl timeoutControl, MinDataRate? minResponseDataRate, string connectionId, MemoryPool<byte> memoryPool, IKestrelTrace log, IStreamIdFeature streamIdFeature)
+        public Http3FrameWriter(ConnectionContext connectionContext, ITimeoutControl timeoutControl, MinDataRate? minResponseDataRate, MemoryPool<byte> memoryPool, KestrelTrace log, IStreamIdFeature streamIdFeature, Http3PeerSettings clientPeerSettings, IHttp3Stream http3Stream)
         {
-            _outputWriter = output;
             _connectionContext = connectionContext;
             _timeoutControl = timeoutControl;
             _minResponseDataRate = minResponseDataRate;
-            _connectionId = connectionId;
             _memoryPool = memoryPool;
             _log = log;
             _streamIdFeature = streamIdFeature;
+            _http3Stream = http3Stream;
             _outgoingFrame = new Http3RawFrame();
-            _flusher = new TimingPipeFlusher(_outputWriter, timeoutControl, log);
-            _headerEncodingBuffer = new byte[_maxFrameSize];
+            _flusher = new TimingPipeFlusher(timeoutControl, log);
+            _headerEncodingBuffer = new ArrayBufferWriter<byte>(HeaderBufferSize);
+
+            // Note that max total header size value doesn't react to settings change during a stream.
+            // Unlikely to be a problem in practice:
+            // - Settings rarely change after the start of a connection.
+            // - Response header size limits are a best-effort requirement in the spec.
+            _maxTotalHeaderSize = clientPeerSettings.MaxRequestHeaderFieldSectionSize > int.MaxValue
+                ? int.MaxValue
+                : (int)clientPeerSettings.MaxRequestHeaderFieldSectionSize;
         }
 
-        public void UpdateMaxFrameSize(uint maxFrameSize)
+        public void Reset(PipeWriter output, string connectionId)
         {
-            lock (_writeLock)
-            {
-                if (_maxFrameSize != maxFrameSize)
-                {
-                    _maxFrameSize = maxFrameSize;
-                    _headerEncodingBuffer = new byte[_maxFrameSize];
-                }
-            }
+            _outputWriter = output;
+            _flusher.Initialize(output);
+            _connectionId = connectionId;
+
+            _headersTotalSize = 0;
+            _headerEncodingBuffer.Clear();
+            _unflushedBytes = 0;
+            _completed = false;
+            _aborted = false;
         }
 
         internal Task WriteSettingsAsync(List<Http3PeerSetting> settings)
@@ -161,7 +185,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             _outgoingFrame.PrepareData();
 
-            if (dataLength > _maxFrameSize)
+            if (dataLength > MaxDataFrameSize)
             {
                 SplitAndWriteDataUnsynchronized(in data, dataLength);
                 return;
@@ -182,7 +206,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 Debug.Assert(dataLength == data.Length);
 
-                var dataPayloadLength = (int)_maxFrameSize;
+                var dataPayloadLength = (int)MaxDataFrameSize;
 
                 Debug.Assert(dataLength > dataPayloadLength);
 
@@ -234,22 +258,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private void WriteHeaderUnsynchronized()
         {
             _log.Http3FrameSending(_connectionId, _streamIdFeature.StreamId, _outgoingFrame);
-            var headerLength = WriteHeader(_outgoingFrame, _outputWriter);
+            var headerLength = WriteHeader(_outgoingFrame.Type, _outgoingFrame.Length, _outputWriter);
 
             // We assume the payload will be written prior to the next flush.
             _unflushedBytes += headerLength + _outgoingFrame.Length;
         }
 
-        internal static int WriteHeader(Http3RawFrame frame, PipeWriter output)
+        public ValueTask<FlushResult> Write100ContinueAsync()
+        {
+            lock (_writeLock)
+            {
+                if (_completed)
+                {
+                    return default;
+                }
+
+                _outgoingFrame.PrepareHeaders();
+                _outgoingFrame.Length = ContinueBytes.Length;
+                WriteHeaderUnsynchronized();
+                _outputWriter.Write(ContinueBytes);
+                return TimeFlushUnsynchronizedAsync();
+            }
+        }
+
+        internal static int WriteHeader(Http3FrameType frameType, long frameLength, PipeWriter output)
         {
             // max size of the header is 16, most likely it will be smaller.
             var buffer = output.GetSpan(16);
 
-            var typeLength = VariableLengthIntegerHelper.WriteInteger(buffer, (int)frame.Type);
+            var typeLength = VariableLengthIntegerHelper.WriteInteger(buffer, (int)frameType);
 
             buffer = buffer.Slice(typeLength);
 
-            var lengthLength = VariableLengthIntegerHelper.WriteInteger(buffer, (int)frame.Length);
+            var lengthLength = VariableLengthIntegerHelper.WriteInteger(buffer, (int)frameLength);
 
             var totalLength = typeLength + lengthLength;
             output.Advance(typeLength + lengthLength);
@@ -257,7 +298,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             return totalLength;
         }
 
-        public ValueTask<FlushResult> WriteResponseTrailers(HttpResponseTrailers headers)
+        public ValueTask<FlushResult> WriteResponseTrailersAsync(long streamId, HttpResponseTrailers headers)
         {
             lock (_writeLock)
             {
@@ -268,15 +309,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 try
                 {
+                    _headersEnumerator.Initialize(headers);
+                    _headersTotalSize = 0;
+                    _headerEncodingBuffer.Clear();
+
                     _outgoingFrame.PrepareHeaders();
-                    var buffer = _headerEncodingBuffer.AsSpan();
-                    var done = _qpackEncoder.BeginEncode(EnumerateHeaders(headers), buffer, out var payloadLength);
+                    var buffer = _headerEncodingBuffer.GetSpan(HeaderBufferSize);
+                    var done = QPackHeaderWriter.BeginEncode(_headersEnumerator, buffer, ref _headersTotalSize, out var payloadLength);
                     FinishWritingHeaders(payloadLength, done);
                 }
-                catch (QPackEncodingException)
+                // Any exception from the QPack encoder can leave the dynamic table in a corrupt state.
+                // Since we allow custom header encoders we don't know what type of exceptions to expect.
+                catch (Exception ex)
                 {
-                    //_log.HPackEncodingError(_connectionId, streamId, hex);
-                    //_http3Stream.Abort(new ConnectionAbortedException(hex.Message, hex));
+                    _log.QPackEncodingError(_connectionId, streamId, ex);
+                    _connectionContext.Abort(new ConnectionAbortedException(ex.Message, ex));
+                    _http3Stream.Abort(new ConnectionAbortedException(ex.Message, ex), Http3ErrorCode.InternalError);
                 }
 
                 return TimeFlushUnsynchronizedAsync();
@@ -307,7 +355,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        internal void WriteResponseHeaders(int statusCode, IHeaderDictionary headers)
+        internal void WriteResponseHeaders(int statusCode, HttpResponseHeaders headers)
         {
             lock (_writeLock)
             {
@@ -318,35 +366,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 try
                 {
+                    _headersEnumerator.Initialize(headers);
+
                     _outgoingFrame.PrepareHeaders();
-                    var buffer = _headerEncodingBuffer.AsSpan();
-                    var done = _qpackEncoder.BeginEncode(statusCode, EnumerateHeaders(headers), buffer, out var payloadLength);
+                    var buffer = _headerEncodingBuffer.GetSpan(HeaderBufferSize);
+                    var done = QPackHeaderWriter.BeginEncode(statusCode, _headersEnumerator, buffer, ref _headersTotalSize, out var payloadLength);
                     FinishWritingHeaders(payloadLength, done);
                 }
-                catch (QPackEncodingException hex)
+                // Any exception from the QPack encoder can leave the dynamic table in a corrupt state.
+                // Since we allow custom header encoders we don't know what type of exceptions to expect.
+                catch (Exception ex)
                 {
-                    // TODO figure out how to abort the stream here.
-                    //_http3Stream.Abort(new ConnectionAbortedException(hex.Message, hex));
-                    throw new InvalidOperationException(hex.Message, hex); // Report the error to the user if this was the first write.
+                    _log.QPackEncodingError(_connectionId, _http3Stream.StreamId, ex);
+                    _connectionContext.Abort(new ConnectionAbortedException(ex.Message, ex));
+                    _http3Stream.Abort(new ConnectionAbortedException(ex.Message, ex), Http3ErrorCode.InternalError);
+                    throw new InvalidOperationException(ex.Message, ex); // Report the error to the user if this was the first write.
                 }
             }
         }
 
         private void FinishWritingHeaders(int payloadLength, bool done)
         {
-            var buffer = _headerEncodingBuffer.AsSpan();
-            _outgoingFrame.Length = payloadLength;
-
-            WriteHeaderUnsynchronized();
-            _outputWriter.Write(buffer.Slice(0, payloadLength));
+            _headerEncodingBuffer.Advance(payloadLength);
 
             while (!done)
             {
-                done = _qpackEncoder.Encode(buffer, out payloadLength);
-                _outgoingFrame.Length = payloadLength;
+                ValidateHeadersTotalSize();
+                var buffer = _headerEncodingBuffer.GetSpan(HeaderBufferSize);
+                done = QPackHeaderWriter.Encode(_headersEnumerator!, buffer, ref _headersTotalSize, out payloadLength);
+                _headerEncodingBuffer.Advance(payloadLength);
+            }
 
-                WriteHeaderUnsynchronized();
-                _outputWriter.Write(buffer.Slice(0, payloadLength));
+            ValidateHeadersTotalSize();
+
+            _outgoingFrame.Length = _headerEncodingBuffer.WrittenCount;
+            WriteHeaderUnsynchronized();
+            _outputWriter.Write(_headerEncodingBuffer.WrittenSpan);
+
+            void ValidateHeadersTotalSize()
+            {
+                // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1.1.3
+                if (_headersTotalSize > _maxTotalHeaderSize)
+                {
+                    throw new QPackEncodingException($"The encoded HTTP headers length exceeds the limit specified by the peer of {_maxTotalHeaderSize} bytes.");
+                }
             }
         }
 
@@ -383,17 +446,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 _completed = true;
                 _outputWriter.Complete();
-            }
-        }
-
-        private static IEnumerable<KeyValuePair<string, string>> EnumerateHeaders(IHeaderDictionary headers)
-        {
-            foreach (var header in headers)
-            {
-                foreach (var value in header.Value)
-                {
-                    yield return new KeyValuePair<string, string>(header.Key, value);
-                }
             }
         }
     }

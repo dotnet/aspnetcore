@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -43,6 +43,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             if (actionDescriptor == null)
             {
                 throw new ArgumentNullException(nameof(actionDescriptor));
+            }
+
+            if (actionDescriptor is CompiledPageActionDescriptor compiledPageActionDescriptor)
+            {
+                // It's possible for some code paths of PageLoaderMatcherPolicy to invoke LoadAsync with an instance
+                // of CompiledPageActionDescriptor. In that case, we'll return the instance as-is.
+                compiledPageActionDescriptor.CompiledPageActionDescriptorTask ??= Task.FromResult(compiledPageActionDescriptor);
+                return compiledPageActionDescriptor.CompiledPageActionDescriptorTask;
             }
 
             var task = actionDescriptor.CompiledPageActionDescriptorTask;

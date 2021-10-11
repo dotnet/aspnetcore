@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Analyzers
                     var semanticModel = compilation.GetSemanticModel(syntaxReferences[j].SyntaxTree);
 
                     var syntax = await syntaxReferences[j].GetSyntaxAsync(cancellationToken).ConfigureAwait(false);
-                    var operation = semanticModel.GetOperation(syntax);
+                    var operation = semanticModel.GetOperation(syntax, cancellationToken);
 
                     // Look for a call to one of the SignalR gestures that applies to the Configure method.
                     if (operation

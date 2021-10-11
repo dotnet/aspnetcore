@@ -1,13 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.DotNet.OpenApi.Tests;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.OpenApi.Add.Tests
@@ -16,7 +11,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
     {
         public OpenApiAddURLTests(ITestOutputHelper output) : base(output){ }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
+        [Fact]
         public async Task OpenApi_Add_Url_WithContentDisposition()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -48,7 +43,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             }
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
+        [Fact]
         public async Task OpenAPI_Add_Url_NoContentDisposition()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -81,7 +76,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             }
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
+        [Fact]
         public async Task OpenAPI_Add_Url_NoExtension_AssumesJson()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -114,7 +109,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             }
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
+        [Fact]
         public async Task OpenApi_Add_Url_NoSegment()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -147,7 +142,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             }
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
+        [Fact]
         public async Task OpenApi_Add_Url()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -179,7 +174,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             }
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
+        [Fact]
         public async Task OpenApi_Add_Url_SameName_UniqueFile()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -239,7 +234,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             }
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
+        [Fact]
         public async Task OpenApi_Add_Url_NSwagCSharp()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -271,7 +266,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             }
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
+        [Fact]
         public async Task OpenApi_Add_Url_NSwagTypeScript()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -303,7 +298,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             }
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
+        [Fact]
         public async Task OpenApi_Add_Url_OutputFile()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -335,7 +330,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             }
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
+        [Fact]
         public async Task OpenApi_Add_URL_FileAlreadyExists_Fail()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -371,7 +366,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             app = GetApplication();
             appExitCode = app.Execute(new[] { "add", "url", DifferentUrl, "--output-file", outputFile});
             Assert.Equal(1, appExitCode);
-            Assert.True(_error.ToString().Contains("Aborting to avoid conflicts."), $"Should have aborted to avoid conflicts");
+            Assert.True(_error.ToString().Contains("Aborting to avoid conflicts."), "Should have aborted to avoid conflicts");
 
             // csproj contents
             using (var csprojStream = new FileInfo(project.Project.Path).OpenRead())
@@ -393,7 +388,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             }
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
+        [Fact]
         public void OpenApi_Add_URL_MultipleTimes_OnlyOneReference()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -419,7 +414,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             Assert.Single(Regex.Matches(content, escapedApiRef));
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32686")]
+        [Fact]
         public async Task OpenAPi_Add_URL_InvalidUrl()
         {
             var project = CreateBasicProject(withOpenApi: false);

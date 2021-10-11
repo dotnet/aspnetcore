@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Runtime.InteropServices;
@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     /// Contains helpers for dealing with TLS token binding.
     /// </summary>
     // TODO: https://github.com/aspnet/HttpSysServer/issues/231
-    internal unsafe static class TokenBindingUtil
+    internal static unsafe class TokenBindingUtil
     {
         private static byte[] ExtractIdentifierBlob(TOKENBINDING_RESULT_DATA* pTokenBindingResultData)
         {

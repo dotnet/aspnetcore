@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading;
@@ -14,12 +14,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private readonly IHeartbeatHandler[] _callbacks;
         private readonly ISystemClock _systemClock;
         private readonly IDebugger _debugger;
-        private readonly IKestrelTrace _trace;
+        private readonly KestrelTrace _trace;
         private readonly TimeSpan _interval;
         private readonly Thread _timerThread;
         private volatile bool _stopped;
 
-        public Heartbeat(IHeartbeatHandler[] callbacks, ISystemClock systemClock, IDebugger debugger, IKestrelTrace trace)
+        public Heartbeat(IHeartbeatHandler[] callbacks, ISystemClock systemClock, IDebugger debugger, KestrelTrace trace)
         {
             _callbacks = callbacks;
             _systemClock = systemClock;

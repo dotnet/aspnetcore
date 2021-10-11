@@ -17,7 +17,7 @@
     "url": "git+https://github.com/dotnet/extensions.git"
   },
   "author": "Microsoft",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/dotnet/aspnetcore/issues"
   },

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         /// <summary>
         /// Gets or sets if the <c>appsecret_proof</c> should be generated and sent with Facebook API calls.
         /// </summary>
-        /// <remarks>See https://developers.facebook.com/docs/graph-api/securing-requests/#appsecret_proof for more details.</remarks>
+        /// <remarks>See https://developers.facebook.com/docs/graph-api/security#appsecret_proof for more details.</remarks>
         /// <value>Defaults to <see langword="true"/>.</value>
         public bool SendAppSecretProof { get; set; }
 

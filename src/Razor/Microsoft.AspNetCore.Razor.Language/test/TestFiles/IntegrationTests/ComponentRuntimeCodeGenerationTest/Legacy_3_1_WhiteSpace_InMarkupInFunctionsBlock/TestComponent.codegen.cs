@@ -45,15 +45,13 @@ using Microsoft.AspNetCore.Components.Rendering;
         __builder.AddContent(3, "                ");
         __builder.OpenElement(4, "li");
         __builder.AddMarkupContent(5, "\r\n                    ");
-        __builder.AddContent(6, 
 #nullable restore
-#line 9 "x:\dir\subdir\Test\TestComponent.cshtml"
-                     i
+#line (9,22)-(9,23) 24 "x:\dir\subdir\Test\TestComponent.cshtml"
+__builder.AddContent(6, i);
 
 #line default
 #line hidden
 #nullable disable
-        );
         __builder.AddMarkupContent(7, "\r\n                ");
         __builder.CloseElement();
         __builder.AddMarkupContent(8, "\r\n");

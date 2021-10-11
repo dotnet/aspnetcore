@@ -29,7 +29,7 @@
         ( $(MSBuildProjectName.EndsWith('Tests')) OR
           $(MSBuildProjectName.EndsWith('.Test')) OR
           $(MSBuildProjectName.EndsWith('.FunctionalTest')) ) ">true</IsUnitTestProject>
-    <IsTestAssetProject Condition=" $(RepoRelativeProjectDir.Contains('testassets')) ">true</IsTestAssetProject>
+    <IsTestAssetProject Condition=" $(RepoRelativeProjectDir.Contains('testassets')) OR $(MSBuildProjectName.Contains('TestCommon'))">true</IsTestAssetProject>
     <IsSampleProject Condition=" $(RepoRelativeProjectDir.ToUpperInvariant().Contains('SAMPLE')) ">true</IsSampleProject>
     <IsAnalyzersProject Condition="$(MSBuildProjectName.EndsWith('.Analyzers'))">true</IsAnalyzersProject>
     <IsShipping Condition=" '$(IsSampleProject)' == 'true' OR
@@ -95,7 +95,7 @@
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
 
     <!-- The SPDX name for the source license. See https://spdx.org/licenses/. -->
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
     <!-- Contact email address for NuGet packages and Linux installers. -->
     <MaintainerEmail>nugetaspnet@microsoft.com</MaintainerEmail>
@@ -104,13 +104,14 @@
     <NuspecBasePath>$(MSBuildProjectDirectory)</NuspecBasePath>
 
     <IncludeSymbols>true</IncludeSymbols>
-    <DefaultNetFxTargetFramework>net461</DefaultNetFxTargetFramework>
+    <DefaultNetFxTargetFramework>net462</DefaultNetFxTargetFramework>
   </PropertyGroup>
 
   <!-- Warnings and errors -->
   <PropertyGroup>
     <!-- Ensure API docs are available. -->
     <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
+    <NoWarn Condition=" '$(BuildingInsideVisualStudio)' == 'true' ">$(NoWarn);0105</NoWarn>
 
     <!-- For local builds, don't make missing XML docs a fatal build error, but still surface so we have visibility into undocumented APIs. -->
     <WarningsNotAsErrors Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">$(WarningsNotAsErrors);CS1591</WarningsNotAsErrors>
@@ -171,7 +172,8 @@
       linux-musl-arm64;
       linux-x64;
       linux-arm;
-      linux-arm64
+      linux-arm64;
+      freebsd-x64
     </SupportedRuntimeIdentifiers>
 
     <!-- Make error messages clickable in VS Code's console -->

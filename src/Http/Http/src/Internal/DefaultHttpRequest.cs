@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -18,12 +18,12 @@ namespace Microsoft.AspNetCore.Http
         private const string Https = "https";
 
         // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
-        private readonly static Func<IFeatureCollection, IHttpRequestFeature?> _nullRequestFeature = f => null;
-        private readonly static Func<IFeatureCollection, IQueryFeature?> _newQueryFeature = f => new QueryFeature(f);
-        private readonly static Func<DefaultHttpRequest, IFormFeature> _newFormFeature = r => new FormFeature(r, r._context.FormOptions ?? FormOptions.Default);
-        private readonly static Func<IFeatureCollection, IRequestCookiesFeature> _newRequestCookiesFeature = f => new RequestCookiesFeature(f);
-        private readonly static Func<IFeatureCollection, IRouteValuesFeature> _newRouteValuesFeature = f => new RouteValuesFeature();
-        private readonly static Func<HttpContext, IRequestBodyPipeFeature> _newRequestBodyPipeFeature = context => new RequestBodyPipeFeature(context);
+        private static readonly Func<IFeatureCollection, IHttpRequestFeature?> _nullRequestFeature = f => null;
+        private static readonly Func<IFeatureCollection, IQueryFeature?> _newQueryFeature = f => new QueryFeature(f);
+        private static readonly Func<DefaultHttpRequest, IFormFeature> _newFormFeature = r => new FormFeature(r, r._context.FormOptions ?? FormOptions.Default);
+        private static readonly Func<IFeatureCollection, IRequestCookiesFeature> _newRequestCookiesFeature = f => new RequestCookiesFeature(f);
+        private static readonly Func<IFeatureCollection, IRouteValuesFeature> _newRouteValuesFeature = f => new RouteValuesFeature();
+        private static readonly Func<HttpContext, IRequestBodyPipeFeature> _newRequestBodyPipeFeature = context => new RequestBodyPipeFeature(context);
 
         private readonly DefaultHttpContext _context;
         private FeatureReferences<FeatureInterfaces> _features;
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Http
 
         public override HostString Host
         {
-            get { return HostString.FromUriComponent(Headers.Host); }
+            get { return HostString.FromUriComponent(Headers.Host.ToString()); }
             set { Headers.Host = value.ToUriComponent(); }
         }
 

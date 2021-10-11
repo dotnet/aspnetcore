@@ -1,5 +1,5 @@
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading;
 using System.Diagnostics;
@@ -22,7 +22,7 @@ namespace System.Buffers
 
         private readonly IMemoryOwner<byte> _memoryOwner;
         private MemoryHandle? _memoryHandle;
-        private Memory<byte> _memory;
+        private readonly Memory<byte> _memory;
 
         private readonly object _syncObj = new object();
         private bool _isDisposed;

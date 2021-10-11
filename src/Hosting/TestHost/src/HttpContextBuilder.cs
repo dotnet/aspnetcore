@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.TestHost
         private readonly ApplicationWrapper _application;
         private readonly bool _preserveExecutionContext;
         private readonly HttpContext _httpContext;
-        
+
         private readonly TaskCompletionSource<HttpContext> _responseTcs = new TaskCompletionSource<HttpContext>(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly ResponseBodyReaderStream _responseReaderStream;
         private readonly ResponseBodyPipeWriter _responsePipeWriter;
@@ -57,6 +57,7 @@ namespace Microsoft.AspNetCore.TestHost
             _httpContext.Features.Set<IHttpResponseBodyFeature>(_responseFeature);
             _httpContext.Features.Set<IHttpRequestLifetimeFeature>(_requestLifetimeFeature);
             _httpContext.Features.Set<IHttpResponseTrailersFeature>(_responseTrailersFeature);
+            _httpContext.Features.Set<IHttpUpgradeFeature>(new UpgradeFeature());
         }
 
         public bool AllowSynchronousIO { get; set; }
@@ -98,7 +99,8 @@ namespace Microsoft.AspNetCore.TestHost
             async Task RunRequestAsync()
             {
                 // HTTP/2 specific features must be added after the request has been configured.
-                if (HttpProtocol.IsHttp2(_httpContext.Request.Protocol))
+                if (HttpProtocol.IsHttp2(_httpContext.Request.Protocol) ||
+                    HttpProtocol.IsHttp3(_httpContext.Request.Protocol))
                 {
                     _httpContext.Features.Set<IHttpResetFeature>(this);
                 }
@@ -150,7 +152,7 @@ namespace Microsoft.AspNetCore.TestHost
             // Async offload, don't let the test code block the caller.
             if (_preserveExecutionContext)
             {
-                _ = Task.Factory.StartNew(RunRequestAsync);
+                _ = Task.Factory.StartNew(RunRequestAsync, default, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
             }
             else
             {

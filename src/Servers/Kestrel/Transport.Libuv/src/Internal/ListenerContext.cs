@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public async ValueTask<LibuvConnection> AcceptAsync(CancellationToken cancellationToken = default)
         {
-            while (await _acceptQueue.Reader.WaitToReadAsync())
+            while (await _acceptQueue.Reader.WaitToReadAsync(cancellationToken))
             {
                 while (_acceptQueue.Reader.TryRead(out var connection))
                 {
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     }
                     catch (UvException ex) when (LibuvConstants.IsConnectionReset(ex.StatusCode))
                     {
-                        TransportContext.Log.ConnectionReset("(null)");
+                        LibuvTrace.ConnectionReset(TransportContext.Log, "(null)");
                         socket.Dispose();
                         return;
                     }

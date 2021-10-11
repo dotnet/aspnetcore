@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             }
 
             // Check to see if the assembly has already been loaded and avoids reloading it if so.
-            // Note: in the future, as an extra precuation, we can call `Assembly.Load` and check
+            // Note: in the future, as an extra precaution, we can call `Assembly.Load` and check
             // to see if it throws FileNotFound to ensure that an assembly hasn't been loaded
             // between when the cache of loaded assemblies was instantiated in the constructor
             // and the invocation of this method.

@@ -1,5 +1,5 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -18,6 +18,8 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -2437,10 +2439,105 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
         private static void Validation_InifnitelyRecursiveModel_ValidationOnTopLevelParameterMethod([Required] RecursiveModel model) { }
 
+        [Fact]
+        public async Task Validation_ModelWithNonNullableReferenceTypes_DoesNotValidateNonNullablePropertiesOnFrameworkTypes()
+        {
+            // Arrange
+            var parameterInfo = GetType().GetMethod(nameof(Validation_ModelWithNonNullableReferenceTypes_DoesNotValidateNonNullablePropertiesOnFrameworkTypesAction), BindingFlags.NonPublic | BindingFlags.Static)
+                .GetParameters()
+                .First();
+
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var services = ModelBindingTestHelper.GetServices(modelMetadataProvider);
+            var modelMetadata = modelMetadataProvider.GetMetadataForParameter(parameterInfo);
+            var options = services.GetRequiredService<IOptions<MvcOptions>>().Value;
+            var validator = new RecordingObjectValidator(
+                modelMetadataProvider,
+                 TestModelValidatorProvider.CreateDefaultProvider().ValidatorProviders,
+                 options);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(modelMetadataProvider, mvcOptions: options, validator: validator);
+
+            var parameter = new ParameterDescriptor()
+            {
+                Name = parameterInfo.Name,
+                ParameterType = parameterInfo.ParameterType,
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = new QueryString("?Name=CoolName");
+            });
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext, modelMetadataProvider, modelMetadata);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<ModelWithNonNullableReferenceTypeProperties>(modelBindingResult.Model);
+            Assert.Equal("CoolName", model.Name);
+
+            Assert.True(modelState.IsValid);
+            Assert.Equal(ModelValidationState.Valid, modelState.ValidationState);
+
+            var visited = validator.ValidationVisitor.Visited;
+            Assert.Collection(
+                visited,
+                v => Assert.Equal(typeof(ModelWithNonNullableReferenceTypeProperties), v.ModelType),
+                v => Assert.Equal(typeof(string), v.ModelType),
+                v => Assert.Equal(typeof(Delegate), v.ModelType));
+        }
+
+#nullable enable
+        private static void Validation_ModelWithNonNullableReferenceTypes_DoesNotValidateNonNullablePropertiesOnFrameworkTypesAction(ModelWithNonNullableReferenceTypeProperties model) { }
+
+        public class ModelWithNonNullableReferenceTypeProperties
+        {
+            public string Name { get; set; } = default!;
+
+            public Delegate Delegate { get; set; } = typeof(ModelWithNonNullableReferenceTypeProperties).GetMethod(nameof(SomeMethod))!.CreateDelegate<Action>();
+
+            public static void SomeMethod() { }
+        }
+#nullable restore
+
         private static void AssertRequiredError(string key, ModelError error)
         {
             Assert.Equal(ValidationAttributeUtil.GetRequiredErrorMessage(key), error.ErrorMessage);
             Assert.Null(error.Exception);
+        }
+
+        private class RecordingObjectValidator : DefaultObjectValidator
+        {
+            public RecordingObjectValidator(IModelMetadataProvider modelMetadataProvider, IList<IModelValidatorProvider> validatorProviders, MvcOptions mvcOptions)
+                : base(modelMetadataProvider, validatorProviders, mvcOptions)
+            {
+            }
+
+            public RecordingValidationVisitor ValidationVisitor { get; private set; }
+
+            public override ValidationVisitor GetValidationVisitor(ActionContext actionContext, IModelValidatorProvider validatorProvider, ValidatorCache validatorCache, IModelMetadataProvider metadataProvider, ValidationStateDictionary validationState)
+            {
+                ValidationVisitor = new RecordingValidationVisitor(actionContext, validatorProvider, validatorCache, metadataProvider, validationState);
+                return ValidationVisitor;
+            }
+        }
+
+        private class RecordingValidationVisitor : ValidationVisitor
+        {
+            public RecordingValidationVisitor(ActionContext actionContext, IModelValidatorProvider validatorProvider, ValidatorCache validatorCache, IModelMetadataProvider metadataProvider, ValidationStateDictionary validationState)
+                : base(actionContext, validatorProvider, validatorCache, metadataProvider, validationState)
+            {
+            }
+
+            public List<ModelMetadata> Visited = new();
+
+            protected override bool Visit(ModelMetadata metadata, string key, object model)
+            {
+                Visited.Add(metadata);
+                return base.Visit(metadata, key, model);
+            }
         }
     }
 }

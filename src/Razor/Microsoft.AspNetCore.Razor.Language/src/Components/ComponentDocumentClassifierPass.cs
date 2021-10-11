@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -100,7 +100,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             {
                 @class.BaseType = ComponentsApi.ComponentBase.FullTypeName;
 
-                var typeParamReferences = documentNode.FindDirectiveReferences(ComponentTypeParamDirective.Directive);
+                // Constrained type parameters are only supported in Razor language versions v6.0
+                var razorLanguageVersion = codeDocument.GetParserOptions()?.Version ?? RazorLanguageVersion.Latest;
+                var directiveType = razorLanguageVersion.CompareTo(RazorLanguageVersion.Version_6_0) >= 0
+                    ? ComponentConstrainedTypeParamDirective.Directive
+                    : ComponentTypeParamDirective.Directive;
+                var typeParamReferences = documentNode.FindDirectiveReferences(directiveType);
                 for (var i = 0; i < typeParamReferences.Count; i++)
                 {
                     var typeParamNode = (DirectiveIntermediateNode)typeParamReferences[i].Node;

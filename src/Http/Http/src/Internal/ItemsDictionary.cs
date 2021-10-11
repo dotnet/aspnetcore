@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
 using System.Collections.Generic;
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Http
         private class EmptyEnumerator : IEnumerator<KeyValuePair<object, object?>>
         {
             // In own class so only initalized if GetEnumerator is called on an empty ItemsDictionary
-            public readonly static IEnumerator<KeyValuePair<object, object?>> Instance = new EmptyEnumerator();
+            public static readonly IEnumerator<KeyValuePair<object, object?>> Instance = new EmptyEnumerator();
             public KeyValuePair<object, object?> Current => default;
 
             object? IEnumerator.Current => null;
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Http
         private static class EmptyDictionary
         {
             // In own class so only initalized if CopyTo is called on an empty ItemsDictionary
-            public readonly static IDictionary<object, object?> Dictionary = new Dictionary<object, object?>();
+            public static readonly IDictionary<object, object?> Dictionary = new Dictionary<object, object?>();
             public static ICollection<KeyValuePair<object, object?>> Collection => Dictionary;
         }
     }

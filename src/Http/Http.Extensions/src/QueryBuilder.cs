@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
     /// </summary>
     public class QueryBuilder : IEnumerable<KeyValuePair<string, string>>
     {
-        private IList<KeyValuePair<string, string>> _params;
+        private readonly IList<KeyValuePair<string, string>> _params;
 
         /// <summary>
         /// Initializes a new instance of <see cref="QueryBuilder"/>.
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
         /// </summary>
         /// <param name="parameters">The parameters to initialize the instance with.</param>
         public QueryBuilder(IEnumerable<KeyValuePair<string, StringValues>> parameters)
-            : this(parameters.SelectMany(kvp => kvp.Value, (kvp, v) => KeyValuePair.Create(kvp.Key, v)))
+            : this(parameters.SelectMany(kvp => kvp.Value, (kvp, v) => KeyValuePair.Create(kvp.Key, v ?? string.Empty)))
         {
 
         }

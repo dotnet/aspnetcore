@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
             {
                 // If the path string has a trailing slash and the other string has a leading slash, we need
                 // to trim one of them.
-                // Just decrement the total lenght, for now.
+                // Just decrement the total length, for now.
                 length--;
             }
 
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
             {
                 // If the path string has a trailing slash and the other string has a leading slash, we need
                 // to trim one of them.
-                // Trim the last slahs from pathBase. The total lenght was decremented before the call to string.Create.
+                // Trim the last slahs from pathBase. The total length was decremented before the call to string.Create.
                 pathBaseSpan = pathBaseSpan[..^1];
             }
 

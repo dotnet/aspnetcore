@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
     public class HttpsTests : LoggedTest
     {
-        private static X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
+        private static readonly X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
 
         private KestrelServerOptions CreateServerOptions()
         {
@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     {
                         try
                         {
-                            await httpContext.Response.WriteAsync($"hello, world", ct);
+                            await httpContext.Response.WriteAsync("hello, world", ct);
                             await Task.Delay(1000, ct);
                         }
                         catch (TaskCanceledException)
@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     httpContext.Abort();
                     try
                     {
-                        await httpContext.Response.WriteAsync($"hello, world");
+                        await httpContext.Response.WriteAsync("hello, world");
                         tcs.SetResult();
                     }
                     catch (Exception ex)
@@ -445,10 +445,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task Http3_NoUseHttp3_NoSslServerOptions()
+        public async Task Http3_ConfigureHttpsDefaults_Works()
         {
             var serverOptions = CreateServerOptions();
-            serverOptions.DefaultCertificate = _x509Certificate2;
 
             IFeatureCollection bindFeatures = null;
             var multiplexedConnectionListenerFactory = new MockMultiplexedConnectionListenerFactory();
@@ -463,9 +462,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 testContext,
                 serverOptions =>
                 {
+                    serverOptions.ConfigureHttpsDefaults(https =>
+                    {
+                        https.ServerCertificate = _x509Certificate2;
+                    });
                     serverOptions.ListenLocalhost(5001, listenOptions =>
                     {
                         listenOptions.Protocols = HttpProtocols.Http3;
+                        listenOptions.UseHttps();
                     });
                 },
                 services =>
@@ -478,20 +482,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.NotNull(bindFeatures);
 
             var sslOptions = bindFeatures.Get<SslServerAuthenticationOptions>();
-            Assert.Null(sslOptions);
+            Assert.NotNull(sslOptions);
+            Assert.Equal(_x509Certificate2, sslOptions.ServerCertificate);
         }
 
         [Fact]
-        public async Task Http3_UseHttp3Callback_NoSslServerOptions()
+        public async Task Http1And2And3_NoUseHttps_MultiplexBindNotCalled()
         {
             var serverOptions = CreateServerOptions();
             serverOptions.DefaultCertificate = _x509Certificate2;
 
-            IFeatureCollection bindFeatures = null;
+            var bindCalled = false;
             var multiplexedConnectionListenerFactory = new MockMultiplexedConnectionListenerFactory();
             multiplexedConnectionListenerFactory.OnBindAsync = (ep, features) =>
             {
-                bindFeatures = features;
+                bindCalled = true;
             };
 
             var testContext = new TestServiceContext(LoggerFactory);
@@ -502,11 +507,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     serverOptions.ListenLocalhost(5001, listenOptions =>
                     {
-                        listenOptions.Protocols = HttpProtocols.Http3;
-                        listenOptions.UseHttps((SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken) =>
-                        {
-                            return ValueTask.FromResult((new SslServerAuthenticationOptions()));
-                        }, state: null);
+                        listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
                     });
                 },
                 services =>
@@ -516,10 +517,120 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
             }
 
-            Assert.NotNull(bindFeatures);
+            Assert.False(bindCalled);
+        }
 
-            var sslOptions = bindFeatures.Get<SslServerAuthenticationOptions>();
-            Assert.Null(sslOptions);
+        [Fact]
+        public async Task Http2and3_NoUseHttps_Throws()
+        {
+            var serverOptions = CreateServerOptions();
+            serverOptions.DefaultCertificate = _x509Certificate2;
+
+            var bindCalled = false;
+            var multiplexedConnectionListenerFactory = new MockMultiplexedConnectionListenerFactory();
+            multiplexedConnectionListenerFactory.OnBindAsync = (ep, features) =>
+            {
+                bindCalled = true;
+            };
+
+            var testContext = new TestServiceContext(LoggerFactory);
+            testContext.ServerOptions = serverOptions;
+            var ex = await Assert.ThrowsAsync<IOException>(async () =>
+            {
+                await using var server = new TestServer(context => Task.CompletedTask,
+                    testContext,
+                    serverOptions =>
+                    {
+                        serverOptions.ListenLocalhost(5001, listenOptions =>
+                        {
+                            listenOptions.Protocols = HttpProtocols.Http3;
+                        });
+                    },
+                    services =>
+                    {
+                        services.AddSingleton<IMultiplexedConnectionListenerFactory>(multiplexedConnectionListenerFactory);
+                    });
+            });
+
+            Assert.False(bindCalled);
+            Assert.Equal("HTTP/3 requires HTTPS.", ex.InnerException.InnerException.Message);
+        }
+
+        [Fact]
+        public async Task Http3_NoUseHttps_Throws()
+        {
+            var serverOptions = CreateServerOptions();
+            serverOptions.DefaultCertificate = _x509Certificate2;
+
+            var bindCalled = false;
+            var multiplexedConnectionListenerFactory = new MockMultiplexedConnectionListenerFactory();
+            multiplexedConnectionListenerFactory.OnBindAsync = (ep, features) =>
+            {
+                bindCalled = true;
+            };
+
+            var testContext = new TestServiceContext(LoggerFactory);
+            testContext.ServerOptions = serverOptions;
+            var ex = await Assert.ThrowsAsync<IOException>(async () =>
+            {
+                await using var server = new TestServer(context => Task.CompletedTask,
+                    testContext,
+                    serverOptions =>
+                    {
+                        serverOptions.ListenLocalhost(5001, listenOptions =>
+                        {
+                            listenOptions.Protocols = HttpProtocols.Http3;
+                        });
+                    },
+                    services =>
+                    {
+                        services.AddSingleton<IMultiplexedConnectionListenerFactory>(multiplexedConnectionListenerFactory);
+                    });
+            });
+
+            Assert.False(bindCalled);
+            Assert.Equal("HTTP/3 requires HTTPS.", ex.InnerException.InnerException.Message);
+        }
+
+        [Fact]
+        public void Http3_ServerOptionsSelectionCallback_Throws()
+        {
+            var serverOptions = CreateServerOptions();
+            serverOptions.DefaultCertificate = _x509Certificate2;
+
+            serverOptions.ListenLocalhost(5001, options =>
+            {
+                options.Protocols = HttpProtocols.Http3;
+                var exception = Assert.Throws<NotSupportedException>(() =>
+                    options.UseHttps((SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken) =>
+                    {
+                        return ValueTask.FromResult((new SslServerAuthenticationOptions()));
+                    }, state: null)
+                );
+                Assert.Equal("UseHttps with ServerOptionsSelectionCallback is not supported with HTTP/3.", exception.Message);
+            });
+        }
+
+        [Fact]
+        public void Http3_TlsHandshakeCallbackOptions_Throws()
+        {
+            var serverOptions = CreateServerOptions();
+            serverOptions.DefaultCertificate = _x509Certificate2;
+
+            serverOptions.ListenLocalhost(5001, options =>
+            {
+                options.Protocols = HttpProtocols.Http3;
+                var exception = Assert.Throws<NotSupportedException>(() =>
+                    options.UseHttps(new TlsHandshakeCallbackOptions()
+                    {
+                        OnConnection = context =>
+                        {
+                            return ValueTask.FromResult(new SslServerAuthenticationOptions());
+                        }
+                    })
+                );
+                Assert.Equal("UseHttps with TlsHandshakeCallbackOptions is not supported with HTTP/3.", exception.Message);
+            });
         }
 
         [Fact]
@@ -653,7 +764,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
         private class HttpsConnectionFilterLogger : ILogger
         {
-            private int? _expectedEventId;
+            private readonly int? _expectedEventId;
 
             public HttpsConnectionFilterLogger()
             {

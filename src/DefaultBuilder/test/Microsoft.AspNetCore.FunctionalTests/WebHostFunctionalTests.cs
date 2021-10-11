@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -111,6 +111,7 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/36079")]
         public void LoggingConfigurationSectionPassedToLoggerByDefault()
         {
             try
@@ -158,7 +159,7 @@ namespace Microsoft.AspNetCore.Tests
             var applicationName = "CreateDefaultBuilderApp";
             var deploymentParameters = new DeploymentParameters(Path.Combine(GetTestSitesPath(), applicationName), ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
             {
-                TargetFramework = "net6.0",
+                TargetFramework = "net7.0",
                 HostingModel =  HostingModel.InProcess
             };
 
@@ -213,7 +214,7 @@ namespace Microsoft.AspNetCore.Tests
         {
             var deploymentParameters = new DeploymentParameters(Path.Combine(GetTestSitesPath(), applicationName), ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
             {
-                TargetFramework = "net6.0",
+                TargetFramework = "net7.0",
             };
 
             if (setTestEnvVars)

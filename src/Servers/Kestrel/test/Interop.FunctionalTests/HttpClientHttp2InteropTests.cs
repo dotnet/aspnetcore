@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Testing;
@@ -449,7 +450,7 @@ namespace Interop.FunctionalTests
 
         private class StreamingContent : HttpContent
         {
-            private TaskCompletionSource<int> _sendStarted = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            private readonly TaskCompletionSource<int> _sendStarted = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             private Func<string, Task> _sendContent;
             private TaskCompletionSource<int> _sendComplete;
 
@@ -738,7 +739,7 @@ namespace Interop.FunctionalTests
             await serverReset.Task.DefaultTimeout();
             var responseEx = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync().DefaultTimeout());
             Assert.Contains("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8)", responseEx.ToString());
-            await Assert.ThrowsAsync<TaskCanceledException>(() => streamingContent.SendAsync("Hello World").DefaultTimeout());
+            await Assert.ThrowsAsync<IOException>(() => streamingContent.SendAsync("Hello World").DefaultTimeout());
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => clientEcho.Task.DefaultTimeout());
 
             await host.StopAsync().DefaultTimeout();
@@ -797,7 +798,7 @@ namespace Interop.FunctionalTests
             await serverReset.Task.DefaultTimeout();
             var responseEx = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync().DefaultTimeout());
             Assert.Contains("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8)", responseEx.ToString());
-            await Assert.ThrowsAsync<TaskCanceledException>(() => streamingContent.SendAsync("Hello World").DefaultTimeout());
+            await Assert.ThrowsAsync<IOException>(() => streamingContent.SendAsync("Hello World").DefaultTimeout());
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => clientEcho.Task.DefaultTimeout());
 
             await host.StopAsync().DefaultTimeout();
@@ -1243,7 +1244,6 @@ namespace Interop.FunctionalTests
         }
 
         [Theory]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27370")]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_MaxConcurrentStreamsPost_Server(string scheme)
         {
@@ -1588,6 +1588,96 @@ namespace Interop.FunctionalTests
             var response = await client.GetAsync(url + " !\"$%&'()*++,-./0123456789:;<>=@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`{|}~點看").DefaultTimeout();
             response.EnsureSuccessStatusCode();
             Assert.Equal("/ !\"$%&'()*++,-./0123456789:;<>=@ABCDEFGHIJKLMNOPQRSTUVWXYZ[/]^_`{|}~點看", await response.Content.ReadAsStringAsync());
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Not supported yet")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
+        public async Task ClientCertificate_Required()
+        {
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder.UseKestrel(options =>
+                    {
+                        options.Listen(IPAddress.Loopback, 0, listenOptions =>
+                        {
+                            listenOptions.Protocols = HttpProtocols.Http2;
+                            listenOptions.UseHttps(httpsOptions =>
+                            {
+                                httpsOptions.ServerCertificate = TestResources.GetTestCertificate();
+                                httpsOptions.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+                                httpsOptions.AllowAnyClientCertificate();
+                            });
+                        });
+                    });
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(async context =>
+                    {
+                        Assert.NotNull(context.Connection.ClientCertificate);
+                        Assert.NotNull(await context.Connection.GetClientCertificateAsync());
+                        await context.Response.WriteAsync("Hello World");
+                    }));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var handler = new SocketsHttpHandler();
+            handler.SslOptions.RemoteCertificateValidationCallback = (_, _, _, _) => true;
+            handler.SslOptions.LocalCertificateSelectionCallback = (_, _, _, _, _) => TestResources.GetTestCertificate();
+            using var client = new HttpClient(handler);
+            client.DefaultRequestVersion = HttpVersion.Version20;
+            client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+            var url = host.MakeUrl(Uri.UriSchemeHttps);
+            var response = await client.GetAsync(url).DefaultTimeout();
+
+            Assert.Equal(HttpVersion.Version20, response.Version);
+            Assert.Equal("Hello World", await response.Content.ReadAsStringAsync());
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Not supported yet")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
+        public async Task ClientCertificate_DelayedNotSupported()
+        {
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder.UseKestrel(options =>
+                    {
+                        options.Listen(IPAddress.Loopback, 0, listenOptions =>
+                        {
+                            listenOptions.Protocols = HttpProtocols.Http2;
+                            listenOptions.UseHttps(httpsOptions =>
+                            {
+                                httpsOptions.ServerCertificate = TestResources.GetTestCertificate();
+                                httpsOptions.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
+                                httpsOptions.AllowAnyClientCertificate();
+                            });
+                        });
+                    });
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(async context =>
+                    {
+                        Assert.Null(context.Connection.ClientCertificate);
+                        Assert.Null(await context.Connection.GetClientCertificateAsync());
+                        await context.Response.WriteAsync("Hello World");
+                    }));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var handler = new SocketsHttpHandler();
+            handler.SslOptions.RemoteCertificateValidationCallback = (_, _, _, _) => true;
+            handler.SslOptions.LocalCertificateSelectionCallback = (_, _, _, _, _) => TestResources.GetTestCertificate();
+            using var client = new HttpClient(handler);
+            client.DefaultRequestVersion = HttpVersion.Version20;
+            client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+            var url = host.MakeUrl(Uri.UriSchemeHttps);
+            var response = await client.GetAsync(url).DefaultTimeout();
+
+            Assert.Equal(HttpVersion.Version20, response.Version);
+            Assert.Equal("Hello World", await response.Content.ReadAsStringAsync());
             await host.StopAsync().DefaultTimeout();
         }
 

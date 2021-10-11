@@ -1,7 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
 using System.Security.Claims;
@@ -9,7 +8,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -60,16 +58,15 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
 
         private string GenerateAppSecretProof(string accessToken)
         {
-            using (var algorithm = new HMACSHA256(Encoding.ASCII.GetBytes(Options.AppSecret)))
+            var key = Encoding.ASCII.GetBytes(Options.AppSecret);
+            var tokenBytes = Encoding.ASCII.GetBytes(accessToken);
+            var hash = HMACSHA256.HashData(key, tokenBytes);
+            var builder = new StringBuilder();
+            for (int i = 0; i < hash.Length; i++)
             {
-                var hash = algorithm.ComputeHash(Encoding.ASCII.GetBytes(accessToken));
-                var builder = new StringBuilder();
-                for (int i = 0; i < hash.Length; i++)
-                {
-                    builder.Append(hash[i].ToString("x2", CultureInfo.InvariantCulture));
-                }
-                return builder.ToString();
+                builder.Append(hash[i].ToString("x2", CultureInfo.InvariantCulture));
             }
+            return builder.ToString();
         }
 
         /// <inheritdoc />

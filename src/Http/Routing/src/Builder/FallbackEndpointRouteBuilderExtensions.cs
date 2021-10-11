@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.Http;
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Builder
         /// The order of the registered endpoint will be <c>int.MaxValue</c>.
         /// </para>
         /// <para>
-        /// This overload will use the provided <paramref name="pattern"/> verbatim. Use the <c>:nonfile</c> route contraint
+        /// This overload will use the provided <paramref name="pattern"/> verbatim. Use the <c>:nonfile</c> route constraint
         /// to exclude requests for static files.
         /// </para>
         /// </remarks>

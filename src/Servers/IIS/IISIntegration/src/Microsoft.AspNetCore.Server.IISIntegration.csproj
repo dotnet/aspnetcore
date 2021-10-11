@@ -24,7 +24,6 @@
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="System.IO.Pipelines" />
-    <Reference Include="System.Security.Principal.Windows" />
   </ItemGroup>
 
 </Project>

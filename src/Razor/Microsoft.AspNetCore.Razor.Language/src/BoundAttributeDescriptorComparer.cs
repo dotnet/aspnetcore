@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    internal class BoundAttributeDescriptorComparer : IEqualityComparer<BoundAttributeDescriptor>
+    internal sealed class BoundAttributeDescriptorComparer : IEqualityComparer<BoundAttributeDescriptor>
     {
         /// <summary>
         /// A default instance of the <see cref="BoundAttributeDescriptorComparer"/>.
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
         }
 
-        public virtual bool Equals(BoundAttributeDescriptor descriptorX, BoundAttributeDescriptor descriptorY)
+        public bool Equals(BoundAttributeDescriptor descriptorX, BoundAttributeDescriptor descriptorY)
         {
             if (object.ReferenceEquals(descriptorX, descriptorY))
             {
@@ -37,6 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 descriptorX.IsEnum == descriptorY.IsEnum &&
                 descriptorX.HasIndexer == descriptorY.HasIndexer &&
                 descriptorX.CaseSensitive == descriptorY.CaseSensitive &&
+                descriptorX.IsEditorRequired == descriptorY.IsEditorRequired &&
                 string.Equals(descriptorX.Name, descriptorY.Name, StringComparison.Ordinal) &&
                 string.Equals(descriptorX.IndexerNamePrefix, descriptorY.IndexerNamePrefix, StringComparison.Ordinal) &&
                 string.Equals(descriptorX.TypeName, descriptorY.TypeName, StringComparison.Ordinal) &&
@@ -48,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     descriptorY.Metadata.OrderBy(propertyY => propertyY.Key, StringComparer.Ordinal));
         }
 
-        public virtual int GetHashCode(BoundAttributeDescriptor descriptor)
+        public int GetHashCode(BoundAttributeDescriptor descriptor)
         {
             if (descriptor == null)
             {
@@ -58,6 +59,9 @@ namespace Microsoft.AspNetCore.Razor.Language
             var hash = HashCodeCombiner.Start();
             hash.Add(descriptor.Kind, StringComparer.Ordinal);
             hash.Add(descriptor.Name, StringComparer.Ordinal);
+            hash.Add(descriptor.IsEditorRequired);
+            hash.Add(descriptor.TypeName, StringComparer.Ordinal);
+            hash.Add(descriptor.Documentation, StringComparer.Ordinal);
 
             if (descriptor.BoundAttributeParameters != null)
             {
@@ -67,10 +71,22 @@ namespace Microsoft.AspNetCore.Razor.Language
                 }
             }
 
-            foreach (var metadata in descriptor.Metadata)
+            // 🐇 Avoid enumerator allocations for Dictionary<TKey, TValue>
+            if (descriptor.Metadata is Dictionary<string, string> metadata)
             {
-                hash.Add(metadata.Key);
-                hash.Add(metadata.Value);
+                foreach (var kvp in metadata)
+                {
+                    hash.Add(kvp.Key);
+                    hash.Add(kvp.Value);
+                }
+            }
+            else
+            {
+                foreach (var kvp in descriptor.Metadata)
+                {
+                    hash.Add(kvp.Key);
+                    hash.Add(kvp.Value);
+                }
             }
 
             return hash.CombinedHash;

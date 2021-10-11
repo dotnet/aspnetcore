@@ -1,16 +1,16 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.JsonPatch.Operations;
 
 namespace Microsoft.AspNetCore.JsonPatch.Exceptions
 {
-    public class JsonPatchException : Exception 
+    public class JsonPatchException : Exception
     {
         public Operation FailedOperation { get; private set; }
         public object AffectedObject { get; private set; }
- 
+
 
         public JsonPatchException()
         {
@@ -25,14 +25,14 @@ namespace Microsoft.AspNetCore.JsonPatch.Exceptions
         }
 
         public JsonPatchException(JsonPatchError jsonPatchError)
-          : this(jsonPatchError, null)          
+          : this(jsonPatchError, null)
         {
-        } 
+        }
 
         public JsonPatchException(string message, Exception innerException)
             : base (message, innerException)
         {
-           
+
         }
     }
 }

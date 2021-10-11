@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -19,31 +19,51 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
     /// </summary>
     internal class QuicConnectionListener : IMultiplexedConnectionListener, IAsyncDisposable
     {
-        private readonly IQuicTrace _log;
+        private readonly ILogger _log;
         private bool _disposed;
         private readonly QuicTransportContext _context;
         private readonly QuicListener _listener;
 
-        public QuicConnectionListener(QuicTransportOptions options, IQuicTrace log, EndPoint endpoint, SslServerAuthenticationOptions sslServerAuthenticationOptions)
+        public QuicConnectionListener(QuicTransportOptions options, ILogger log, EndPoint endpoint, SslServerAuthenticationOptions sslServerAuthenticationOptions)
         {
-            if (options.Alpn == null)
+            if (!QuicImplementationProviders.Default.IsSupported)
             {
-                throw new InvalidOperationException("QuicTransportOptions.Alpn must be configured with a value.");
+                throw new NotSupportedException("QUIC is not supported or enabled on this platform. See https://aka.ms/aspnet/kestrel/http3reqs for details.");
             }
 
             _log = log;
             _context = new QuicTransportContext(_log, options);
-            EndPoint = endpoint;
             var quicListenerOptions = new QuicListenerOptions();
 
-            // TODO Should HTTP/3 specific ALPN still be global? Revisit whether it can be statically set once HTTP/3 is finalized.
-            sslServerAuthenticationOptions.ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol(options.Alpn) };
+            var listenEndPoint = endpoint as IPEndPoint;
+
+            if (listenEndPoint == null)
+            {
+                throw new InvalidOperationException($"QUIC doesn't support listening on the configured endpoint type. Expected {nameof(IPEndPoint)} but got {endpoint.GetType().Name}.");
+            }
+
+            // Workaround for issue in System.Net.Quic
+            // https://github.com/dotnet/runtime/issues/57241
+            if (listenEndPoint.Address.Equals(IPAddress.Any) && listenEndPoint.Address != IPAddress.Any)
+            {
+                listenEndPoint = new IPEndPoint(IPAddress.Any, listenEndPoint.Port);
+            }
+            if (listenEndPoint.Address.Equals(IPAddress.IPv6Any) && listenEndPoint.Address != IPAddress.IPv6Any)
+            {
+                listenEndPoint = new IPEndPoint(IPAddress.IPv6Any, listenEndPoint.Port);
+            }
 
             quicListenerOptions.ServerAuthenticationOptions = sslServerAuthenticationOptions;
-            quicListenerOptions.ListenEndPoint = endpoint as IPEndPoint;
+            quicListenerOptions.ListenEndPoint = listenEndPoint;
             quicListenerOptions.IdleTimeout = options.IdleTimeout;
+            quicListenerOptions.MaxBidirectionalStreams = options.MaxBidirectionalStreamCount;
+            quicListenerOptions.MaxUnidirectionalStreams = options.MaxUnidirectionalStreamCount;
+            quicListenerOptions.ListenBacklog = options.Backlog;
 
-            _listener = new QuicListener(QuicImplementationProviders.MsQuic, quicListenerOptions);
+            _listener = new QuicListener(quicListenerOptions);
+
+            // Listener endpoint will resolve an ephemeral port, e.g. 127.0.0.1:0, into the actual port.
+            EndPoint = _listener.ListenEndPoint;
         }
 
         public EndPoint EndPoint { get; set; }
@@ -53,7 +73,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             try
             {
                 var quicConnection = await _listener.AcceptConnectionAsync(cancellationToken);
-                return new QuicConnectionContext(quicConnection, _context);
+                var connectionContext = new QuicConnectionContext(quicConnection, _context);
+
+                QuicLog.AcceptedConnection(_log, connectionContext);
+
+                return connectionContext;
             }
             catch (QuicOperationAbortedException ex)
             {
@@ -71,14 +95,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         {
             if (_disposed)
             {
-                return new ValueTask();
+                return ValueTask.CompletedTask;
             }
 
+            _listener.Dispose();
             _disposed = true;
 
-            _listener.Dispose();
-
-            return new ValueTask();
+            return ValueTask.CompletedTask;
         }
     }
 }

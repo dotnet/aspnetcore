@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
@@ -52,9 +52,18 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
     public override async global::System.Threading.Tasks.Task ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext __context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput __output)
     {
         (__helper as global::Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware)?.Contextualize(ViewContext);
-        var __helperContent = await __helper.InvokeAsync(""TagCloud"", new { Foo });
+        var __helperContent = await __helper.InvokeAsync(""TagCloud"", ProcessInvokeAsyncArgs(__context));
         __output.TagName = null;
         __output.Content.SetHtmlContent(__helperContent);
+    }
+    private Dictionary<string, object> ProcessInvokeAsyncArgs(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext __context)
+    {
+        Dictionary<string, object> args = new Dictionary<string, object>();
+        if (__context.AllAttributes.ContainsName(""Foo""))
+        {
+            args[nameof(Foo)] = Foo;
+        }
+        return args;
     }
 }
 ",
@@ -107,9 +116,18 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
     public override async global::System.Threading.Tasks.Task ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext __context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput __output)
     {
         (__helper as global::Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware)?.Contextualize(ViewContext);
-        var __helperContent = await __helper.InvokeAsync(""TagCloud"", new { Tags });
+        var __helperContent = await __helper.InvokeAsync(""TagCloud"", ProcessInvokeAsyncArgs(__context));
         __output.TagName = null;
         __output.Content.SetHtmlContent(__helperContent);
+    }
+    private Dictionary<string, object> ProcessInvokeAsyncArgs(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext __context)
+    {
+        Dictionary<string, object> args = new Dictionary<string, object>();
+        if (__context.AllAttributes.ContainsName(""Foo""))
+        {
+            args[nameof(Tags)] = Tags;
+        }
+        return args;
     }
 }
 ",

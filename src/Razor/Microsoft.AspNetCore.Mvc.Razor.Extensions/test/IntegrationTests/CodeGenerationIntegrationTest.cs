@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
 {
     public class CodeGenerationIntegrationTest : IntegrationTestBase
     {
-        private readonly static CSharpCompilation DefaultBaseCompilation = MvcShim.BaseCompilation.WithAssemblyName("AppCode");
+        private static readonly CSharpCompilation DefaultBaseCompilation = MvcShim.BaseCompilation.WithAssemblyName("AppCode");
 
         public CodeGenerationIntegrationTest()
             : base(generateBaselines: null, projectDirectoryHint: "Microsoft.AspNetCore.Mvc.Razor.Extensions")
@@ -494,6 +494,54 @@ public class TestViewComponent
 public class AllTagHelper : {typeof(TagHelper).FullName}
 {{
     public string Bar {{ get; set; }}
+}}
+");
+
+            var projectItem = CreateProjectItemFromFile();
+
+            // Act
+            var compiled = CompileToAssembly(projectItem, designTime: false);
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
+            AssertLinePragmas(compiled.CodeDocument, designTime: false);
+        }
+
+        [Fact]
+        public void ViewComponentTagHelperOptionalParam_Runtime()
+        {
+            // Arrange
+            AddCSharpSyntaxTree($@"
+using System;
+
+public class OptionalTestViewComponent
+{{
+    public string Invoke(bool showSecret = false)
+    {{
+        return showSecret ? ""what a secret"" : ""not a secret"";
+    }}
+}}
+public class OptionalTestWithParamViewComponent
+{{
+    public string Invoke(string secret, bool showSecret = false)
+    {{
+        var isSecret = showSecret ? ""what a secret"" : ""not a secret"";
+        return isSecret + "" : "" + secret;
+    }}
+}}
+public class OptionalWithMultipleTypesViewComponent
+{{
+    public string Invoke(
+        int age = 42,
+        double favoriteDecimal = 12.3,
+        char favoriteLetter = 'b',
+        DateTime? birthDate = null,
+        string anotherOne = null)
+    {{
+        birthDate = new DateTime(1979, 8, 23);
+        return age + "" : "" + favoriteDecimal + "" : "" + favoriteLetter + "" : "" + birthDate + "" : "" + anotherOne;
+    }}
 }}
 ");
 

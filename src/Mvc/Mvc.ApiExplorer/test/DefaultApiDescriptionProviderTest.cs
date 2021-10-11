@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -79,6 +79,37 @@ namespace Microsoft.AspNetCore.Mvc.Description
             // Arrange
             var action = CreateActionDescriptor();
             action.GetProperty<ApiDescriptionActionData>().GroupName = "Customers";
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+            Assert.Equal("Customers", description.GroupName);
+        }
+
+        [Fact]
+        public void GetApiDescription_PopulatesGroupName_FromMetadata()
+        {
+            // Arrange
+            var action = CreateActionDescriptor();
+            action.EndpointMetadata = new List<object>() { new EndpointGroupNameAttribute("Customers") };
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+            Assert.Equal("Customers", description.GroupName);
+        }
+
+        [Fact]
+        public void GetApiDescription_PopulatesGroupName_FromMetadataOrExtensionData()
+        {
+            // Arrange
+            var action = CreateActionDescriptor();
+            action.EndpointMetadata = new List<object>() { new EndpointGroupNameAttribute("Customers") };
+            action.GetProperty<ApiDescriptionActionData>().GroupName = "NotUsedCustomers";
 
             // Act
             var descriptions = GetApiDescriptions(action);
@@ -1443,7 +1474,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
             Assert.Same(BindingSource.Query, id.Source);
             Assert.Equal(typeof(string), id.Type);
         }
-        
+
         [Fact]
         public void GetApiDescription_ParameterDescription_FromQueryManager()
         {

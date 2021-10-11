@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
@@ -770,6 +771,57 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
+        public void LinkWithNullRouteNameGivenExtraEndpointWithNoRouteNameAndNoRequiredValues_ReturnsExpectedResult()
+        {
+            // Arrange
+            var urlHelper = CreateUrlHelperWithDefaultRoutes(
+                "/app",
+                host: null,
+                protocol: null,
+                routeName: null,
+                template: "any/url");
+
+            // Act
+            var url = urlHelper.Link(
+                null,
+                new
+                {
+                    Action = "newaction",
+                    Controller = "home",
+                    id = "someid"
+                });
+
+            // Assert
+            Assert.Equal("http://localhost/app/home/newaction/someid", url);
+        }
+
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/35592
+        [Fact]
+        public void LinkWithNullRouteNameGivenExtraEndpointWithRouteNameAndNoRequiredValues_ReturnsExpectedResult()
+        {
+            // Arrange
+            var urlHelper = CreateUrlHelperWithDefaultRoutes(
+                "/app",
+                host: null,
+                protocol: null,
+                routeName: "MyRouteName",
+                template: "any/url");
+
+            // Act
+            var url = urlHelper.Link(
+                null,
+                new
+                {
+                    Action = "newaction",
+                    Controller = "home",
+                    id = "someid"
+                });
+
+            // Assert
+            Assert.Equal("http://localhost/app/home/newaction/someid", url);
+        }
+
+        [Fact]
         public void RouteUrlWithRouteNameAndDefaults()
         {
             // Arrange
@@ -895,7 +947,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             Assert.Same(urlHelper, actionContext.HttpContext.Items[typeof(IUrlHelper)] as IUrlHelper);
         }
 
-        // Regression test for aspnet/Mvc#2859
+        // Regression test for https://github.com/aspnet/Mvc/issues/2859
         [Fact]
         public void Action_RouteValueInvalidation_DoesNotAffectActionAndController()
         {
@@ -904,14 +956,22 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 appRoot: "",
                 host: null,
                 protocol: null,
-                "default",
-                "{first}/{controller}/{action}",
-                new { second = "default", controller = "default", action = "default" });
+                routeName: "default",
+                template: "{first}/{controller}/{action}",
+                defaults: new { second = "default", controller = "default", action = "default" },
+                // Emulate ActionEndpointFactory.AddConventionalLinkGenerationRoute().
+                // The "controller" and "action" keys are defined automatically by ControllerActionDescriptorBuilder.AddRouteValues().
+                requiredValues: new { controller = RoutePattern.RequiredValueAny, action = RoutePattern.RequiredValueAny });
 
             var routeData = urlHelper.ActionContext.RouteData;
             routeData.Values.Add("first", "a");
             routeData.Values.Add("controller", "Store");
             routeData.Values.Add("action", "Buy");
+
+            urlHelper.ActionContext.HttpContext.Features.Set<IRouteValuesFeature>(new RouteValuesFeature
+            {
+                RouteValues = routeData.Values
+            });
 
             // Act
             //
@@ -925,7 +985,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             Assert.Equal("/b/Store/Checkout", url);
         }
 
-        // Regression test for aspnet/Mvc#2859
+        // Regression test for https://github.com/aspnet/Mvc/issues/2859
         [Fact]
         public void Action_RouteValueInvalidation_AffectsOtherRouteValues()
         {
@@ -934,15 +994,23 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 appRoot: "",
                 host: null,
                 protocol: null,
-                "default",
-                "{first}/{second}/{controller}/{action}",
-                new { second = "default", controller = "default", action = "default" });
+                routeName: "default",
+                template: "{first}/{second}/{controller}/{action}",
+                defaults: new { second = "default", controller = "default", action = "default" },
+                // Emulate ActionEndpointFactory.AddConventionalLinkGenerationRoute().
+                // The "controller" and "action" keys are defined automatically by ControllerActionDescriptorBuilder.AddRouteValues().
+                requiredValues: new { controller = RoutePattern.RequiredValueAny, action = RoutePattern.RequiredValueAny });
 
             var routeData = urlHelper.ActionContext.RouteData;
             routeData.Values.Add("first", "a");
             routeData.Values.Add("second", "x");
             routeData.Values.Add("controller", "Store");
             routeData.Values.Add("action", "Buy");
+
+            urlHelper.ActionContext.HttpContext.Features.Set<IRouteValuesFeature>(new RouteValuesFeature
+            {
+                RouteValues = routeData.Values
+            });
 
             // Act
             //
@@ -958,7 +1026,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             Assert.Equal("/b/default/Store/Checkout", url);
         }
 
-        // Regression test for aspnet/Mvc#2859
+        // Regression test for https://github.com/aspnet/Mvc/issues/2859
         [Fact]
         public void Action_RouteValueInvalidation_DoesNotAffectActionAndController_ActionPassedInRouteValues()
         {
@@ -967,14 +1035,22 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 appRoot: "",
                 host: null,
                 protocol: null,
-                "default",
-                "{first}/{controller}/{action}",
-                new { second = "default", controller = "default", action = "default" });
+                routeName: "default",
+                template: "{first}/{controller}/{action}",
+                defaults: new { second = "default", controller = "default", action = "default" },
+                // Emulate ActionEndpointFactory.AddConventionalLinkGenerationRoute().
+                // The "controller" and "action" keys are defined automatically by ControllerActionDescriptorBuilder.AddRouteValues().
+                requiredValues: new { controller = RoutePattern.RequiredValueAny, action = RoutePattern.RequiredValueAny });
 
             var routeData = urlHelper.ActionContext.RouteData;
             routeData.Values.Add("first", "a");
             routeData.Values.Add("controller", "Store");
             routeData.Values.Add("action", "Buy");
+
+            urlHelper.ActionContext.HttpContext.Features.Set<IRouteValuesFeature>(new RouteValuesFeature
+            {
+                RouteValues = routeData.Values
+            });
 
             // Act
             //
@@ -1044,7 +1120,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             string protocol,
             string routeName,
             string template,
-            object defaults);
+            object defaults,
+            object requiredValues);
 
         protected virtual IUrlHelper CreateUrlHelper(string appRoot, string host, string protocol)
         {

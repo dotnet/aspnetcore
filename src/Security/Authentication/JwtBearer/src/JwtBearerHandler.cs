@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
                 if (string.IsNullOrEmpty(token))
                 {
-                    string authorization = Request.Headers.Authorization;
+                    string authorization = Request.Headers.Authorization.ToString();
 
                     // If no authorization header found, nothing to process further
                     if (string.IsNullOrEmpty(authorization))
@@ -143,8 +143,8 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                             SecurityToken = validatedToken
                         };
 
-                        tokenValidatedContext.Properties.ExpiresUtc = validatedToken.ValidTo;
-                        tokenValidatedContext.Properties.IssuedUtc = validatedToken.ValidFrom;
+                        tokenValidatedContext.Properties.ExpiresUtc = GetSafeDateTime(validatedToken.ValidTo);
+                        tokenValidatedContext.Properties.IssuedUtc = GetSafeDateTime(validatedToken.ValidFrom);
 
                         await Events.TokenValidated(tokenValidatedContext);
                         if (tokenValidatedContext.Result != null)
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                     return AuthenticateResult.Fail(authenticationFailedContext.Exception);
                 }
 
-                return AuthenticateResult.Fail("No SecurityTokenValidator available for token: " + token ?? "[null]");
+                return AuthenticateResult.Fail("No SecurityTokenValidator available for token.");
             }
             catch (Exception ex)
             {
@@ -200,6 +200,17 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
                 throw;
             }
+        }
+
+        private static DateTime? GetSafeDateTime(DateTime dateTime)
+        {
+            // Assigning DateTime.MinValue or default(DateTime) to a DateTimeOffset when in a UTC+X timezone will throw
+            // Since we don't really care about DateTime.MinValue in this case let's just set the field to null
+            if (dateTime == DateTime.MinValue)
+            {
+                return null;
+            }
+            return dateTime;
         }
 
         /// <inheritdoc />

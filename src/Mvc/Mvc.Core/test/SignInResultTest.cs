@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Security.Claims;
@@ -95,70 +95,6 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Act
             await result.ExecuteResultAsync(actionContext);
-
-            // Assert
-            auth.Verify();
-        }
-
-        [Fact]
-        public async Task ExecuteAsync_InvokesSignInAsyncOnAuthenticationManager()
-        {
-            // Arrange
-            var principal = new ClaimsPrincipal();
-            var httpContext = new Mock<HttpContext>();
-            var auth = new Mock<IAuthenticationService>();
-            auth
-                .Setup(c => c.SignInAsync(httpContext.Object, "", principal, null))
-                .Returns(Task.CompletedTask)
-                .Verifiable();
-            httpContext.Setup(c => c.RequestServices).Returns(CreateServices(auth.Object));
-            var result = new SignInResult("", principal, null);
-
-            // Act
-            await ((IResult)result).ExecuteAsync(httpContext.Object);
-
-            // Assert
-            auth.Verify();
-        }
-
-        [Fact]
-        public async Task ExecuteAsync_InvokesSignInAsyncOnAuthenticationManagerWithDefaultScheme()
-        {
-            // Arrange
-            var principal = new ClaimsPrincipal();
-            var httpContext = new Mock<HttpContext>();
-            var auth = new Mock<IAuthenticationService>();
-            auth
-                .Setup(c => c.SignInAsync(httpContext.Object, null, principal, null))
-                .Returns(Task.CompletedTask)
-                .Verifiable();
-            httpContext.Setup(c => c.RequestServices).Returns(CreateServices(auth.Object));
-            var result = new SignInResult(principal);
-
-            // Act
-            await ((IResult)result).ExecuteAsync(httpContext.Object);
-
-            // Assert
-            auth.Verify();
-        }
-
-        [Fact]
-        public async Task ExecuteAsync_InvokesSignInAsyncOnConfiguredScheme()
-        {
-            // Arrange
-            var principal = new ClaimsPrincipal();
-            var authProperties = new AuthenticationProperties();
-            var httpContext = new Mock<HttpContext>();
-            var auth = new Mock<IAuthenticationService>();
-            auth
-                .Setup(c => c.SignInAsync(httpContext.Object, "Scheme1", principal, authProperties))
-                .Returns(Task.CompletedTask)
-                .Verifiable();
-            httpContext.Setup(c => c.RequestServices).Returns(CreateServices(auth.Object));
-            var result = new SignInResult("Scheme1", principal, authProperties);
-
-            // Act
-            await ((IResult)result).ExecuteAsync(httpContext.Object);
 
             // Assert
             auth.Verify();

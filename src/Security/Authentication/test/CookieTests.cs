@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 {
     public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions>
     {
-        private TestClock _clock = new TestClock();
+        private readonly TestClock _clock = new TestClock();
 
         protected override string DefaultScheme => CookieAuthenticationDefaults.AuthenticationScheme;
         protected override Type HandlerType => typeof(CookieAuthenticationHandler);
@@ -707,6 +707,65 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             Assert.Equal("111", FindClaimValue(transaction4, "counter"));
 
             _clock.Add(TimeSpan.FromMinutes(11));
+
+            var transaction5 = await SendAsync(server, "http://example.com/me/Cookies", transaction4.CookieNameValue);
+            Assert.Null(transaction5.SetCookie);
+            Assert.Null(FindClaimValue(transaction5, "counter"));
+        }
+
+        [Fact]
+        public async Task CookieCanBeRenewedByValidatorWithModifiedLifetime()
+        {
+            using var host = await CreateHost(o =>
+            {
+                o.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+                o.Events = new CookieAuthenticationEvents
+                {
+                    OnValidatePrincipal = ctx =>
+                    {
+                        ctx.ShouldRenew = true;
+                        var id = ctx.Principal.Identities.First();
+                        var claim = id.FindFirst("counter");
+                        if (claim == null)
+                        {
+                            id.AddClaim(new Claim("counter", "1"));
+                        }
+                        else
+                        {
+                            id.RemoveClaim(claim);
+                            id.AddClaim(new Claim("counter", claim.Value + "1"));
+                        }
+                        // Causes the expiry time to not be extended because the lifetime is
+                        // calculated relative to the issue time.
+                        ctx.Properties.IssuedUtc = _clock.UtcNow;
+                        return Task.FromResult(0);
+                    }
+                };
+            },
+            context =>
+                context.SignInAsync("Cookies",
+                    new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies")))));
+
+            using var server = host.GetTestServer();
+            var transaction1 = await SendAsync(server, "http://example.com/testpath");
+
+            var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
+            Assert.NotNull(transaction2.SetCookie);
+            Assert.Equal("1", FindClaimValue(transaction2, "counter"));
+
+            _clock.Add(TimeSpan.FromMinutes(1));
+
+            var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction2.CookieNameValue);
+            Assert.NotNull(transaction3.SetCookie);
+            Assert.Equal("11", FindClaimValue(transaction3, "counter"));
+
+            _clock.Add(TimeSpan.FromMinutes(1));
+
+            var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction3.CookieNameValue);
+            Assert.NotNull(transaction4.SetCookie);
+            Assert.Equal("111", FindClaimValue(transaction4, "counter"));
+
+            _clock.Add(TimeSpan.FromMinutes(9));
 
             var transaction5 = await SendAsync(server, "http://example.com/me/Cookies", transaction4.CookieNameValue);
             Assert.Null(transaction5.SetCookie);

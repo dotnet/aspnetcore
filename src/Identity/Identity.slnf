@@ -52,7 +52,7 @@
       "src\\Http\\Http\\src\\Microsoft.AspNetCore.Http.csproj",
       "src\\Http\\Http.Abstractions\\src\\Microsoft.AspNetCore.Http.Abstractions.csproj",
       "src\\Http\\Http.Extensions\\src\\Microsoft.AspNetCore.Http.Extensions.csproj",
-      "src\\Http\\Features\\src\\Microsoft.Extensions.Features.csproj",
+      "src\\Extensions\\Features\\src\\Microsoft.Extensions.Features.csproj",
       "src\\Http\\Http.Features\\src\\Microsoft.AspNetCore.Http.Features.csproj",
       "src\\Middleware\\HttpOverrides\\src\\Microsoft.AspNetCore.HttpOverrides.csproj",
       "src\\Middleware\\Localization\\src\\Microsoft.AspNetCore.Localization.csproj",

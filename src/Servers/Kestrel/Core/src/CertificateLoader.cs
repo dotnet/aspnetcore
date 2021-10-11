@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
@@ -20,6 +20,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         /// <summary>
         /// Loads a certificate from the certificate store.
         /// </summary>
+        /// <remarks>
+        /// Exact subject match is loaded if present, otherwise best matching certificate with the subject name that contains supplied subject.
+        /// Subject comparison is case-insensitive.
+        /// </remarks>
         /// <param name="subject">The certificate subject.</param>
         /// <param name="storeName">The certificate store name.</param>
         /// <param name="storeLocation">The certificate store location.</param>
@@ -36,13 +40,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
                 {
                     store.Open(OpenFlags.ReadOnly);
                     storeCertificates = store.Certificates;
-                    var foundCertificates = storeCertificates.Find(X509FindType.FindBySubjectName, subject, !allowInvalid);
-                    foundCertificate = foundCertificates
+                    foreach (var certificate in storeCertificates.Find(X509FindType.FindBySubjectName, subject, !allowInvalid)
                         .OfType<X509Certificate2>()
                         .Where(IsCertificateAllowedForServerAuth)
                         .Where(DoesCertificateHaveAnAccessiblePrivateKey)
-                        .OrderByDescending(certificate => certificate.NotAfter)
-                        .FirstOrDefault();
+                        .OrderByDescending(certificate => certificate.NotAfter))
+                    {
+                        // Pick the first one if there's no exact match as a fallback to substring default.
+                        foundCertificate ??= certificate;
+
+                        if (certificate.GetNameInfo(X509NameType.SimpleName, true).Equals(subject, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            foundCertificate = certificate;
+                            break;
+                        }
+                    }
 
                     if (foundCertificate == null)
                     {

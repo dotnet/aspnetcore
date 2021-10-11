@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -140,10 +140,10 @@ namespace Microsoft.AspNetCore.Internal
             if (_completedSegments == null && _currentSegment is not null)
             {
                 // There is only one segment so write without awaiting.
-                return destination.WriteAsync(_currentSegment, 0, _position);
+                return destination.WriteAsync(_currentSegment, 0, _position, cancellationToken);
             }
 
-            return CopyToSlowAsync(destination);
+            return CopyToSlowAsync(destination, cancellationToken);
         }
 
         [MemberNotNull(nameof(_currentSegment))]
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Internal
             _position = 0;
         }
 
-        private async Task CopyToSlowAsync(Stream destination)
+        private async Task CopyToSlowAsync(Stream destination, CancellationToken cancellationToken)
         {
             if (_completedSegments != null)
             {
@@ -197,13 +197,21 @@ namespace Microsoft.AspNetCore.Internal
                 for (var i = 0; i < count; i++)
                 {
                     var segment = _completedSegments[i];
-                    await destination.WriteAsync(segment.Buffer, 0, segment.Length);
+#if NETCOREAPP
+                    await destination.WriteAsync(segment.Buffer.AsMemory(0, segment.Length), cancellationToken);
+#else
+                    await destination.WriteAsync(segment.Buffer, 0, segment.Length, cancellationToken);
+#endif
                 }
             }
 
             if (_currentSegment is not null)
             {
-                await destination.WriteAsync(_currentSegment, 0, _position);
+#if NETCOREAPP
+                await destination.WriteAsync(_currentSegment.AsMemory(0, _position), cancellationToken);
+#else
+                await destination.WriteAsync(_currentSegment, 0, _position, cancellationToken);
+#endif
             }
         }
 

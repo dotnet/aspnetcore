@@ -123,7 +123,7 @@ namespace System.Net.Http.QPack
         private int _headerValueLength;
         private int _stringLength;
         private int _stringIndex;
-        private readonly IntegerDecoder _integerDecoder = new IntegerDecoder();
+        private IntegerDecoder _integerDecoder;
 
         private static ArrayPool<byte> Pool => ArrayPool<byte>.Shared;
 

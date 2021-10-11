@@ -1,9 +1,10 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
 using System.Linq;
+using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -18,7 +19,9 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -51,7 +54,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
             }
 
-            var partManager = GetApplicationPartManager(services);
+            var environment = GetServiceFromCollection<IWebHostEnvironment>(services);
+            var partManager = GetApplicationPartManager(services, environment);
             services.TryAddSingleton(partManager);
 
             ConfigureDefaultFeatureProviders(partManager);
@@ -71,14 +75,13 @@ namespace Microsoft.Extensions.DependencyInjection
             }
         }
 
-        private static ApplicationPartManager GetApplicationPartManager(IServiceCollection services)
+        private static ApplicationPartManager GetApplicationPartManager(IServiceCollection services, IWebHostEnvironment? environment)
         {
             var manager = GetServiceFromCollection<ApplicationPartManager>(services);
             if (manager == null)
             {
                 manager = new ApplicationPartManager();
 
-                var environment = GetServiceFromCollection<IWebHostEnvironment>(services);
                 var entryAssemblyName = environment?.ApplicationName;
                 if (string.IsNullOrEmpty(entryAssemblyName))
                 {
@@ -174,7 +177,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddEnumerable(ServiceDescriptor.Transient<IActionConstraintProvider, DefaultActionConstraintProvider>());
 
             // Policies for Endpoints
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, ConsumesMatcherPolicy>());
             services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, ActionConstraintMatcherPolicy>());
 
             //

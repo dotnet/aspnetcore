@@ -11,6 +11,10 @@
     </DebBuildDependsOn>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Templating" Version="$(MicrosoftDotNetBuildTasksTemplatingVersion)" AllowExplicitReference="true" PrivateAssets="All" IsImplicitlyDefined="true" />
+  </ItemGroup>
+
   <Target Name="PrepareForBuild">
     <MakeDir Directories="$(IntermediateOutputPath);$(OutputPath)" />
 

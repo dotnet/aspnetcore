@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Moq;
 using System;
@@ -309,7 +309,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
-        public async static Task ReadAsync_Memory_ReadAllCharactersAtOnce()
+        public static async Task ReadAsync_Memory_ReadAllCharactersAtOnce()
         {
             // Arrange
             var reader = CreateReader();
@@ -328,7 +328,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
-        public async static Task ReadAsync_Memory_WithMoreDataThanInternalBufferSize()
+        public static async Task ReadAsync_Memory_WithMoreDataThanInternalBufferSize()
         {
             // Arrange
             var reader = CreateReader(10);

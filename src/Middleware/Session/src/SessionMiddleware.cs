@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Security.Cryptography;
@@ -161,9 +161,9 @@ namespace Microsoft.AspNetCore.Session
                 response.Cookies.Append(_options.Cookie.Name!, _cookieValue, cookieOptions);
 
                 var responseHeaders = response.Headers;
-                responseHeaders[HeaderNames.CacheControl] = "no-cache,no-store";
-                responseHeaders[HeaderNames.Pragma] = "no-cache";
-                responseHeaders[HeaderNames.Expires] = "-1";
+                responseHeaders.CacheControl = "no-cache,no-store";
+                responseHeaders.Pragma = "no-cache";
+                responseHeaders.Expires = "-1";
             }
 
             // Returns true if the session has already been established, or if it still can be because the response has not been sent.

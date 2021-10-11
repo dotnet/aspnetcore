@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -18,6 +18,7 @@ using MessagePack.Formatters;
 using MessagePack.Resolvers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
@@ -2249,6 +2250,48 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        private class TestConnectionLifetimeNotification : IConnectionLifetimeNotificationFeature
+        {
+            private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+
+            public CancellationToken ConnectionClosedRequested { get => _cts.Token; set => throw new NotImplementedException(); }
+
+            public void RequestClose()
+            {
+                _cts.Cancel();
+            }
+        }
+
+        [Fact]
+        public async Task ConnectionLifetimeNotificationClosesConnectionWithReconnectAllowed()
+        {
+            using (StartVerifiableLog())
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(loggerFactory: LoggerFactory);
+
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+                using (var client = new TestClient())
+                {
+                    client.Connection.Features.Set<IConnectionLifetimeNotificationFeature>(new TestConnectionLifetimeNotification());
+
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    await client.Connected.DefaultTimeout();
+
+                    client.Connection.Features.Get<IConnectionLifetimeNotificationFeature>().RequestClose();
+
+                    var close = Assert.IsType<CloseMessage>(await client.ReadAsync().DefaultTimeout());
+
+                    Assert.True(close.AllowReconnect);
+
+                    client.Dispose();
+
+                    await connectionHandlerTask.DefaultTimeout();
+                }
+            }
+        }
+
         private class TestAuthHandler : IAuthorizationHandler
         {
             public Task HandleAsync(AuthorizationHandlerContext context)
@@ -2686,11 +2729,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartVerifiableLog())
             {
-                var interval = 100;
+                var intervalInMS = 100;
                 var clock = new MockSystemClock();
                 var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                     services.Configure<HubOptions>(options =>
-                        options.KeepAliveInterval = TimeSpan.FromMilliseconds(interval)), LoggerFactory);
+                        options.KeepAliveInterval = TimeSpan.FromMilliseconds(intervalInMS)), LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
                 connectionHandler.SystemClock = clock;
 
@@ -2703,7 +2746,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var heartbeatCount = 5;
                     for (var i = 0; i < heartbeatCount; i++)
                     {
-                        clock.UtcNow = clock.UtcNow.AddMilliseconds(interval + 1);
+                        clock.CurrentTicks = clock.CurrentTicks + intervalInMS + 1;
                         client.TickHeartbeat();
                     }
 
@@ -2748,11 +2791,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartVerifiableLog())
             {
-                var timeout = 100;
+                var timeoutInMS = 100;
                 var clock = new MockSystemClock();
                 var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                     services.Configure<HubOptions>(options =>
-                        options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(timeout)), LoggerFactory);
+                        options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(timeoutInMS)), LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
                 connectionHandler.SystemClock = clock;
 
@@ -2765,7 +2808,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     // We go over the 100 ms timeout interval multiple times
                     for (var i = 0; i < 3; i++)
                     {
-                        clock.UtcNow = clock.UtcNow.AddMilliseconds(timeout + 1);
+                        clock.CurrentTicks = clock.CurrentTicks + timeoutInMS + 1;
                         client.TickHeartbeat();
                     }
 
@@ -2784,11 +2827,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartVerifiableLog())
             {
-                var timeout = 100;
+                var timeoutInMS = 100;
                 var clock = new MockSystemClock();
                 var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                     services.Configure<HubOptions>(options =>
-                        options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(timeout)), LoggerFactory);
+                        options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(timeoutInMS)), LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
                 connectionHandler.SystemClock = clock;
 
@@ -2798,7 +2841,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     await client.Connected.DefaultTimeout();
                     await client.SendHubMessageAsync(PingMessage.Instance);
 
-                    clock.UtcNow = clock.UtcNow.AddMilliseconds(timeout + 1);
+                    clock.CurrentTicks = clock.CurrentTicks + timeoutInMS + 1;
                     client.TickHeartbeat();
 
                     await connectionHandlerTask.DefaultTimeout();
@@ -2811,11 +2854,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartVerifiableLog())
             {
-                var timeout = 300;
+                var timeoutInMS = 300;
                 var clock = new MockSystemClock();
                 var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                     services.Configure<HubOptions>(options =>
-                        options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(timeout)), LoggerFactory);
+                        options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(timeoutInMS)), LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
                 connectionHandler.SystemClock = clock;
 
@@ -2827,7 +2870,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     for (int i = 0; i < 10; i++)
                     {
-                        clock.UtcNow = clock.UtcNow.AddMilliseconds(timeout - 1);
+                        clock.CurrentTicks = clock.CurrentTicks + timeoutInMS - 1;
                         client.TickHeartbeat();
                         await client.SendHubMessageAsync(PingMessage.Instance);
                     }
@@ -2847,7 +2890,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             private readonly PipeReader _originalPipeReader;
             private TaskCompletionSource _waitForRead;
-            private object _lock = new object();
+            private readonly object _lock = new object();
 
             public PipeReaderWrapper(PipeReader pipeReader)
             {
@@ -4438,6 +4481,33 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        public async Task CanSendThroughIHubContext()
+        {
+            using (StartVerifiableLog())
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+                using var client = new TestClient();
+
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                // Wait for a connection, or for the endpoint to fail.
+                await client.Connected.OrThrowIfOtherFails(connectionHandlerTask).DefaultTimeout();
+
+                IHubContext context = (IHubContext)serviceProvider.GetRequiredService<IHubContext<MethodHub>>();
+                await context.Clients.All.SendAsync("Send", "test");
+
+                var message = await client.ReadAsync().DefaultTimeout();
+                var invocation = Assert.IsType<InvocationMessage>(message);
+
+                Assert.Single(invocation.Arguments);
+                Assert.Equal("test", invocation.Arguments[0]);
+                Assert.Equal("Send", invocation.Target);
+            }
+        }
+
+        [Fact]
         public async Task ConnectionCloseCleansUploadStreams()
         {
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider();
@@ -4500,10 +4570,37 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        [Fact]
+        public async Task CanSendThroughIHubContextBaseHub()
+        {
+            using (StartVerifiableLog())
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+                using var client = new TestClient();
+
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                // Wait for a connection, or for the endpoint to fail.
+                await client.Connected.OrThrowIfOtherFails(connectionHandlerTask).DefaultTimeout();
+
+                IHubContext<TestHub> context = serviceProvider.GetRequiredService<IHubContext<MethodHub>>();
+                await context.Clients.All.SendAsync("Send", "test");
+
+                var message = await client.ReadAsync().DefaultTimeout();
+                var invocation = Assert.IsType<InvocationMessage>(message);
+
+                Assert.Single(invocation.Arguments);
+                Assert.Equal("test", invocation.Arguments[0]);
+                Assert.Equal("Send", invocation.Target);
+            }
+        }
+
         private class CustomHubActivator<THub> : IHubActivator<THub> where THub : Hub
         {
             public int ReleaseCount;
-            private IServiceProvider _serviceProvider;
+            private readonly IServiceProvider _serviceProvider;
             public TaskCompletionSource ReleaseTask = new TaskCompletionSource();
             public TaskCompletionSource CreateTask = new TaskCompletionSource();
 

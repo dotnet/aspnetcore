@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Internal
             return (JObject)token;
         }
 
-        public static T GetRequiredProperty<T>(JObject json, string property, JTokenType expectedType = JTokenType.None)
+        public static T? GetRequiredProperty<T>(JObject json, string property, JTokenType expectedType = JTokenType.None)
         {
             var prop = json[property];
 
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Internal
             return GetValue<T>(property, expectedType, prop);
         }
 
-        public static T GetValue<T>(string property, JTokenType expectedType, JToken prop)
+        public static T? GetValue<T>(string property, JTokenType expectedType, JToken prop)
         {
             if (expectedType != JTokenType.None && prop.Type != expectedType)
             {
@@ -192,8 +192,13 @@ namespace Microsoft.AspNetCore.Internal
                 return _inner.Rent(minimumLength);
             }
 
-            public void Return(T[] array)
+            public void Return(T[]? array)
             {
+                if (array is null)
+                {
+                    return;
+                }
+
                 _inner.Return(array);
             }
         }

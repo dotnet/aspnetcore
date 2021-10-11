@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng.Internal
     /// <summary>
     /// Base class used for all CNG-related authentication encryption operations.
     /// </summary>
-    internal unsafe abstract class CngAuthenticatedEncryptorBase : IOptimizedAuthenticatedEncryptor, IDisposable
+    internal abstract unsafe class CngAuthenticatedEncryptorBase : IOptimizedAuthenticatedEncryptor, IDisposable
     {
         public byte[] Decrypt(ArraySegment<byte> ciphertext, ArraySegment<byte> additionalAuthenticatedData)
         {

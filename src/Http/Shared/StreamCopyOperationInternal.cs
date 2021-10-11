@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="cancel">The token to monitor for cancellation requests. The default value is <see cref="P:System.Threading.CancellationToken.None" />.</param>
         public static async Task CopyToAsync(Stream source, Stream destination, long? count, int bufferSize, CancellationToken cancel)
         {
-            long? bytesRemaining = count;
+            var bytesRemaining = count;
 
             var buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
             try
@@ -55,12 +55,12 @@ namespace Microsoft.AspNetCore.Http
 
                     cancel.ThrowIfCancellationRequested();
 
-                    int readLength = buffer.Length;
+                    var readLength = buffer.Length;
                     if (bytesRemaining.HasValue)
                     {
                         readLength = (int)Math.Min(bytesRemaining.GetValueOrDefault(), (long)readLength);
                     }
-                    int read = await source.ReadAsync(buffer, 0, readLength, cancel);
+                    var read = await source.ReadAsync(buffer.AsMemory(0, readLength), cancel);
 
                     if (bytesRemaining.HasValue)
                     {
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Http
 
                     cancel.ThrowIfCancellationRequested();
 
-                    await destination.WriteAsync(buffer, 0, read, cancel);
+                    await destination.WriteAsync(buffer.AsMemory(0, read), cancel);
                 }
             }
             finally

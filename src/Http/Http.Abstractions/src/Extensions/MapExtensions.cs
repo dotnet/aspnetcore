@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.Http;
@@ -12,6 +12,19 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public static class MapExtensions
     {
+        /// <summary>
+        /// Branches the request pipeline based on matches of the given request path. If the request path starts with
+        /// the given path, the branch is executed.
+        /// </summary>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> instance.</param>
+        /// <param name="pathMatch">The request path to match.</param>
+        /// <param name="configuration">The branch to take for positive path matches.</param>
+        /// <returns>The <see cref="IApplicationBuilder"/> instance.</returns>
+        public static IApplicationBuilder Map(this IApplicationBuilder app, string pathMatch, Action<IApplicationBuilder> configuration)
+        {
+            return Map(app, pathMatch, preserveMatchedPathSegment: false, configuration);
+        }
+
         /// <summary>
         /// Branches the request pipeline based on matches of the given request path. If the request path starts with
         /// the given path, the branch is executed.

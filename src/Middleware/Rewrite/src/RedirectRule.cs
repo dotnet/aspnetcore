@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Text.RegularExpressions;
@@ -20,12 +20,12 @@ namespace Microsoft.AspNetCore.Rewrite
         {
             if (string.IsNullOrEmpty(regex))
             {
-                throw new ArgumentException(nameof(regex));
+                throw new ArgumentNullException(nameof(regex));
             }
 
             if (string.IsNullOrEmpty(replacement))
             {
-                throw new ArgumentException(nameof(replacement));
+                throw new ArgumentNullException(nameof(replacement));
             }
 
             InitialMatch = new Regex(regex, RegexOptions.Compiled | RegexOptions.CultureInvariant, _regexTimeout);
