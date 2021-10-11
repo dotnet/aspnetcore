@@ -162,8 +162,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
             else if (modelBindingContext.ValueProvider.ContainsPrefix(parameter.Name))
             {
-                // We have a match for the parameter name, use that as that prefix.
-                modelBindingContext.ModelName = parameter.Name;
+                if(modelBindingContext.ModelMetadata.IsComplexType && modelBindingContext.ValueProvider.GetValue(parameter.Name).Length>0)
+                {
+                    // for ComplexType, the parameter name cannot equals property name.
+                    modelBindingContext.ModelName = string.Empty;
+                }
+                else
+                {
+                    // We have a match for the parameter name, use that as that prefix.
+                    modelBindingContext.ModelName = parameter.Name;
+                }
             }
             else
             {
