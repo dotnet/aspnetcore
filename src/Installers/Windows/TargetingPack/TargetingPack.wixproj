@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="DependencyProvider.wxs" />
     <Compile Include="Product.wxs" />
+    <Compile Include="..\Common\dotnethome_x64.wxs" Link="dotnethome_x64.wxs" />
     <EmbeddedResource Include="Strings.wxl" />
   </ItemGroup>
 
