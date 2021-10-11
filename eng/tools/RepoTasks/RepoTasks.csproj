@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
-    <PackageReference Include="Wix" Version="3.11.1" />
+    <PackageReference Include="Microsoft.Signed.Wix" Version="1.0.0-v3.14.0.5722" />
 
     <Reference Include="Microsoft.Build" />
     <Reference Include="Microsoft.Build.Framework" />
