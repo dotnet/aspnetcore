@@ -20,7 +20,6 @@ parameters:
   IncludeDotNetCli: false                # optional -- true will download a version of the .NET CLI onto the Helix machine as a correlation payload; requires DotNetCliPackageType and DotNetCliVersion
   DotNetCliPackageType: ''               # optional -- either 'sdk', 'runtime' or 'aspnetcore-runtime'; determines whether the sdk or runtime will be sent to Helix; see https://raw.githubusercontent.com/dotnet/core/main/release-notes/releases-index.json
   DotNetCliVersion: ''                   # optional -- version of the CLI to send to Helix; based on this: https://raw.githubusercontent.com/dotnet/core/main/release-notes/releases-index.json
-  EnableXUnitReporter: false             # optional -- true enables XUnit result reporting to Mission Control
   WaitForWorkItemCompletion: true        # optional -- true will make the task wait until work items have been completed and fail the build if work items fail. False is "fire and forget."
   IsExternal: false                      # [DEPRECATED] -- doesn't do anything, jobs are external if HelixAccessToken is empty and Creator is set
   HelixBaseUri: 'https://helix.dot.net/' # optional -- sets the Helix API base URI (allows targeting int)
@@ -54,7 +53,6 @@ steps:
       IncludeDotNetCli: ${{ parameters.IncludeDotNetCli }}
       DotNetCliPackageType: ${{ parameters.DotNetCliPackageType }}
       DotNetCliVersion: ${{ parameters.DotNetCliVersion }}
-      EnableXUnitReporter: ${{ parameters.EnableXUnitReporter }}
       WaitForWorkItemCompletion: ${{ parameters.WaitForWorkItemCompletion }}
       HelixBaseUri: ${{ parameters.HelixBaseUri }}
       Creator: ${{ parameters.Creator }}
@@ -85,7 +83,6 @@ steps:
       IncludeDotNetCli: ${{ parameters.IncludeDotNetCli }}
       DotNetCliPackageType: ${{ parameters.DotNetCliPackageType }}
       DotNetCliVersion: ${{ parameters.DotNetCliVersion }}
-      EnableXUnitReporter: ${{ parameters.EnableXUnitReporter }}
       WaitForWorkItemCompletion: ${{ parameters.WaitForWorkItemCompletion }}
       HelixBaseUri: ${{ parameters.HelixBaseUri }}
       Creator: ${{ parameters.Creator }}
