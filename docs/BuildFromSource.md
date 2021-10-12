@@ -77,7 +77,9 @@ Building ASP.NET Core on Windows (10, version 1803 or newer) requires that you h
 Visual Studio 2019 is required to build the repo locally. If you don't have visual studio installed you can run [eng/scripts/InstallVisualStudio.ps1](/eng/scripts/InstallVisualStudio.ps1) to install the exact required dependencies.
 
 > :bulb: By default, the script will install Visual Studio Enterprise Edition, however you can use a different edition by passing the `-Edition` flag.
+
 > :bulb: To install Visual Studio from the preview channel, you can use the `-Channel` flag to set the channel (`-Channel Preview`).
+
 > :bulb: Even if you have installed Visual Studio, we still recommend using this script to install again to avoid errors due to missing components.
 
 ```powershell
@@ -217,7 +219,7 @@ Studio because those projects are not listed in AspNetCore.sln.
 This will download the required tools and restore all projects inside the repository. At that point, you should be able
 to open the .sln file or one of the project specific .slnf files to work on the projects you care about.
 
-> :bulb: Note, if the build fails whilst running the `restore.cmd` and makes reference to paths like `.tools\msbuild\16.5.0-alpha\`, you will need to re-run the InstallVisualStudio.ps1 script detailed above to resolve any component issues (even if Visual Studio is already installed).
+> :bulb: Note, if the build fails whilst running the `restore.cmd` and makes reference to paths like `.tools\msbuild\16.5.0-alpha\`, you will need to re-run the InstallVisualStudio.ps1 script detailed above to install any missing components (even if Visual Studio is already installed).
 
 > :bulb: Pro tip: you will also want to run this command after pulling large sets of changes. On the main
 > branch, we regularly update the versions of .NET Core SDK required to build the repo.
