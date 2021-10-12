@@ -59,7 +59,7 @@ ASPNET_CORE_GLOBAL_MODULE::OnGlobalConfigurationChange(
         _wcsicmp(pwszChangePath, L"MACHINE") != 0 &&
         _wcsicmp(pwszChangePath, L"MACHINE/WEBROOT") != 0)
     {
-        if (m_pApplicationManager)
+        if (m_pApplicationManager && m_pApplicationManager->ShouldRecycleOnConfigChange())
         {
             m_pApplicationManager->RecycleApplicationFromManager(pwszChangePath);   
         }

@@ -169,6 +169,8 @@ HandlerResolver::GetApplicationFactory(const IHttpApplication& pApplication, con
 
     m_loadedApplicationHostingModel = options.QueryHostingModel();
     m_loadedApplicationId = pApplication.GetApplicationId();
+    m_loadedDisallowRotationOnConfigChange = options.QueryDisallowRotationOnConfigChange();
+
     RETURN_IF_FAILED(LoadRequestHandlerAssembly(pApplication, shadowCopyPath, options, pApplicationFactory, errorContext));
 
     return S_OK;
@@ -187,6 +189,13 @@ APP_HOSTING_MODEL HandlerResolver::GetHostingModel()
     SRWExclusiveLock lock(m_requestHandlerLoadLock);
 
     return m_loadedApplicationHostingModel;
+}
+
+bool HandlerResolver::GetDisallowRotationOnConfigChange()
+{
+    SRWExclusiveLock lock(m_requestHandlerLoadLock);
+
+    return m_loadedDisallowRotationOnConfigChange;
 }
 
 HRESULT
