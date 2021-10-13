@@ -27,7 +27,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   started = true;
 
   if (inAuthRedirectIframe()) {
-    await new Promise(() => {}); // See pauseBecauseInAuthRedirectIframe for explanation
+    await new Promise(() => {}); // See inAuthRedirectIframe for explanation
   }
 
   setDispatchEventMiddleware((browserRendererId, eventHandlerId, continuation) => {
