@@ -175,8 +175,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             public void Reset()
             {
-                _currentBits = 0;
-                _next = 0;
+                _currentBits = _collection._bits;
+                _next = _currentBits != 0 ? BitOperations.TrailingZeroCount(_currentBits) : -1;
             }
         }
 
