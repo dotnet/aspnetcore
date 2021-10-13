@@ -298,11 +298,11 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>f431858f8b1f1510723ace6343786c9194dbd7fc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.11-servicing.21473.8">
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.11-servicing.21474.8">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>f431858f8b1f1510723ace6343786c9194dbd7fc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.11-servicing.21473.8">
+    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.11-servicing.21474.8">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>f431858f8b1f1510723ace6343786c9194dbd7fc</Sha>
     </Dependency>
