@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Extensions.Primitives;
@@ -50,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public partial struct Enumerator : IEnumerator<KeyValuePair<string, StringValues>>
         {
             private readonly HttpResponseTrailers _collection;
-            private readonly long _bits;
+            private long _currentBits;
             private int _next;
             private KeyValuePair<string, StringValues> _current;
             private KnownHeaderType _currentKnownType;
@@ -60,8 +61,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             internal Enumerator(HttpResponseTrailers collection)
             {
                 _collection = collection;
-                _bits = collection._bits;
-                _next = 0;
+                _currentBits = collection._bits;
+                _next = _currentBits != 0 ? BitOperations.TrailingZeroCount(_currentBits) : -1;
                 _current = default;
                 _currentKnownType = default;
                 _hasUnknown = collection.MaybeUnknown != null;

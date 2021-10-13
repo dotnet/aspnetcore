@@ -6,6 +6,7 @@ using System.Buffers.Text;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -222,7 +223,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public partial struct Enumerator : IEnumerator<KeyValuePair<string, StringValues>>
         {
             private readonly HttpRequestHeaders _collection;
-            private readonly long _bits;
+            private long _currentBits;
             private int _next;
             private KeyValuePair<string, StringValues> _current;
             private readonly bool _hasUnknown;
@@ -231,8 +232,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             internal Enumerator(HttpRequestHeaders collection)
             {
                 _collection = collection;
-                _bits = collection._bits;
-                _next = 0;
+                _currentBits = collection._bits;
+                _next = _currentBits != 0 ? BitOperations.TrailingZeroCount(_currentBits) : -1;
                 _current = default;
                 _hasUnknown = collection.MaybeUnknown != null;
                 _unknownEnumerator = _hasUnknown
