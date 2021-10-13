@@ -453,6 +453,11 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
       MONO.mono_wasm_setenv('DOTNET_MODIFIABLE_ASSEMBLIES', resourceLoader.bootConfig.modifiableAssemblies);
     }
 
+    if (resourceLoader.bootConfig.aspnetCoreBrowserTools) {
+      // See https://github.com/dotnet/aspnetcore/issues/37357#issuecomment-941237000
+      MONO.mono_wasm_setenv('_ASPNETCORE_BROWSER_TOOLS', resourceLoader.bootConfig.aspnetCoreBrowserTools);
+    }
+
     const load_runtime = cwrap('mono_wasm_load_runtime', null, ['string', 'number']);
     // -1 enables debugging with logging disabled. 0 disables debugging entirely.
     load_runtime(appBinDirName, hasDebuggingEnabled() ? -1 : 0);
