@@ -148,7 +148,7 @@ namespace Microsoft.Extensions.Http
         }
 
         [Fact]
-        public async Task SendAsync_MultipleHandlers_StaticPolicy_PolicyTriggers_CanReexecuteSendAsync_FirstResponseDisposed()
+        public async Task MultipleHandlers_CanReexecuteSendAsync_FirstResponseDisposed()
         {
             // Arrange
             var policy1 = HttpPolicyExtensions.HandleTransientHttpError()
