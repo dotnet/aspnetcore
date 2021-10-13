@@ -14,6 +14,7 @@
       $(HelixQueueDebian11);
       $(HelixQueueFedora34);
       $(HelixQueueMariner);
+      Redhat.7.Amd64.Open;
       Ubuntu.2004.Amd64.Open;
       Windows.7.Amd64.Open;
       Windows.81.Amd64.Open;
