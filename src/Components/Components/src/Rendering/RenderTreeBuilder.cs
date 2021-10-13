@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// Appends a frame representing markup content.
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
-        /// <param name="markupContent">nullable MarkupString object for the new markup frame.</param>
+        /// <param name="markupContent">Content for the new text frame, or null.</param>
         public void AddContent(int sequence, MarkupString? markupContent)
             => AddMarkupContent(sequence, markupContent?.Value);
 
