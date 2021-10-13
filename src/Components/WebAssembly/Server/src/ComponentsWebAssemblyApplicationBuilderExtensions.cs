@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Builder
 
                         // See https://github.com/dotnet/aspnetcore/issues/37357#issuecomment-941237000
                         // Translate the _ASPNETCORE_BROWSER_TOOLS environment configured by the browser tools agent in to a HTTP response header.
-                        if (Environment.GetEnvironmentVariable("_ASPNETCORE_BROWSER_TOOLS") is string blazorWasmHotReload)
+                        if (Environment.GetEnvironmentVariable("__ASPNETCORE_BROWSER_TOOLS") is string blazorWasmHotReload)
                         {
                             context.Response.Headers.Append("ASPNETCORE-BROWSER-TOOLS", blazorWasmHotReload);
                         }

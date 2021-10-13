@@ -455,7 +455,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
 
     if (resourceLoader.bootConfig.aspnetCoreBrowserTools) {
       // See https://github.com/dotnet/aspnetcore/issues/37357#issuecomment-941237000
-      MONO.mono_wasm_setenv('_ASPNETCORE_BROWSER_TOOLS', resourceLoader.bootConfig.aspnetCoreBrowserTools);
+      MONO.mono_wasm_setenv('__ASPNETCORE_BROWSER_TOOLS', resourceLoader.bootConfig.aspnetCoreBrowserTools);
     }
 
     const load_runtime = cwrap('mono_wasm_load_runtime', null, ['string', 'number']);

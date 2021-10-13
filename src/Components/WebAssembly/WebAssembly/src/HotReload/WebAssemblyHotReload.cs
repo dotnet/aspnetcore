@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload
         {
             _hotReloadAgent = new HotReloadAgent(m => Debug.WriteLine(m));
 
-            if (Environment.GetEnvironmentVariable("_ASPNETCORE_BROWSER_TOOLS") == "true")
+            if (Environment.GetEnvironmentVariable("__ASPNETCORE_BROWSER_TOOLS") == "true")
             {
                 // Attempt to read previously applied hot reload deltas if the ASP.NET Core browser tools are available (indicated by the presence of the Environment variable).
                 // The agent is injected in to the hosted app and can serve this script that can provide results from local-storage .
