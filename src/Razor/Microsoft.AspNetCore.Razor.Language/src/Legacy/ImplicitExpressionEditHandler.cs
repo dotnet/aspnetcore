@@ -53,10 +53,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public override int GetHashCode()
         {
             // Hash code should include only immutable properties and base has none.
-            var hashCode = new HashCode();
-            hashCode.Add(AcceptTrailingDot);
-
-            return hashCode.ToHashCode();
+            return HashCode.Combine(AcceptTrailingDot);
         }
 
         protected override PartialParseResultInternal CanAcceptChange(SyntaxNode target, SourceChange change)

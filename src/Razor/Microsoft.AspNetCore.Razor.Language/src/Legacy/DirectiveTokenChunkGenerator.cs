@@ -26,11 +26,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public override int GetHashCode()
         {
-            var combiner = new HashCode();
-            combiner.Add(base.GetHashCode());
-            combiner.Add(Type);
-
-            return combiner.ToHashCode();
+            return HashCode.Combine(base.GetHashCode(), Type);
         }
 
         public override string ToString()

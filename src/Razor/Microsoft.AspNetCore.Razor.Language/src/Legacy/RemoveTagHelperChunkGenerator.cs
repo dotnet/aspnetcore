@@ -51,10 +51,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             var combiner = new HashCode();
             combiner.Add(base.GetHashCode());
-            combiner.Add(LookupText, StringComparer.Ordinal);
-            combiner.Add(DirectiveText, StringComparer.Ordinal);
-            combiner.Add(TypePattern, StringComparer.Ordinal);
-            combiner.Add(AssemblyName, StringComparer.Ordinal);
+            combiner.Add(LookupText ?? string.Empty, StringComparer.Ordinal);
+            combiner.Add(DirectiveText ?? string.Empty, StringComparer.Ordinal);
+            combiner.Add(TypePattern ?? string.Empty, StringComparer.Ordinal);
+            combiner.Add(AssemblyName ?? string.Empty, StringComparer.Ordinal);
 
             return combiner.ToHashCode();
         }

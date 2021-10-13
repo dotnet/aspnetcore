@@ -33,11 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            var hashCode = new HashCode();
-            hashCode.Add(descriptor.Kind);
-            hashCode.Add(descriptor.Optional ? 1 : 0);
-
-            return hashCode.ToHashCode();
+            return HashCode.Combine(descriptor.Kind, descriptor.Optional ? 1 : 0);
         }
     }
 }

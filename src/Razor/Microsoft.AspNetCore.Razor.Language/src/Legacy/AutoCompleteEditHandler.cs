@@ -59,11 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public override int GetHashCode()
         {
             // Hash code should include only immutable properties but Equals also checks the type.
-            var hashCode = new HashCode();
-            hashCode.Add(TypeHashCode);
-            hashCode.Add(AutoCompleteAtEndOfSpan);
-
-            return hashCode.ToHashCode();
+            return HashCode.Combine(TypeHashCode, AutoCompleteAtEndOfSpan);
         }
     }
 }

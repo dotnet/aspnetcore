@@ -37,11 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override int GetHashCode()
         {
-            var hashCode = new HashCode();
-            hashCode.Add(OriginalSpan);
-            hashCode.Add(GeneratedSpan);
-
-            return hashCode.ToHashCode();
+            return HashCode.Combine(OriginalSpan, GeneratedSpan);
         }
 
         public override string ToString()

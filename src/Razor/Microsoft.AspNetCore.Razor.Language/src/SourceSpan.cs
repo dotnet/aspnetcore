@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public override int GetHashCode()
         {
             var hash = new HashCode();
-            hash.Add(FilePath, StringComparer.Ordinal);
+            hash.Add(FilePath ?? string.Empty, StringComparer.Ordinal);
             hash.Add(AbsoluteIndex);
             hash.Add(LineIndex);
             hash.Add(CharacterIndex);

@@ -40,7 +40,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 }
 
                 var hash = new HashCode();
-                hash.Add(obj.Name, StringComparer.OrdinalIgnoreCase);
+                hash.Add(obj.Name ?? string.Empty, StringComparer.OrdinalIgnoreCase);
                 hash.Add(obj.Version);
                 return hash.ToHashCode();
             }

@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             var hash = new HashCode();
             hash.Add(Span);
-            hash.Add(NewText, StringComparer.Ordinal);
+            hash.Add(NewText ?? string.Empty, StringComparer.Ordinal);
             return hash.ToHashCode();
         }
 

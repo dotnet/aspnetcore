@@ -652,11 +652,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
                 public int GetHashCode(PropertyKey obj)
                 {
-                    var hashCode = new HashCode();
-                    hashCode.Add(obj.ContainerType);
-                    hashCode.Add(obj.PropertyName);
-                    hashCode.Add(obj.Source);
-                    return hashCode.ToHashCode();
+                    return HashCode.Combine(obj.ContainerType, obj.PropertyName, obj.Source);
                 }
             }
         }

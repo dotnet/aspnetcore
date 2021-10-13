@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public override int GetHashCode()
         {
             var hashCode = new HashCode();
-            hashCode.Add(FilePath, StringComparer.Ordinal);
+            hashCode.Add(FilePath ?? string.Empty, StringComparer.Ordinal);
             hashCode.Add(AbsoluteIndex);
 
             return hashCode.ToHashCode();

@@ -46,8 +46,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             var hash = new HashCode();
-            hash.Add(rule.TagName, StringComparer.Ordinal);
-            hash.Add(rule.ParentTag, StringComparer.Ordinal);
+            hash.Add(rule.TagName ?? string.Empty, StringComparer.Ordinal);
+            hash.Add(rule.ParentTag ?? string.Empty, StringComparer.Ordinal);
 
             if (rule.Attributes != null)
             {

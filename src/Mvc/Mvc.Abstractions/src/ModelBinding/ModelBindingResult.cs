@@ -68,11 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            var hashCode = new HashCode();
-            hashCode.Add(IsModelSet);
-            hashCode.Add(Model);
-
-            return hashCode.ToHashCode();
+            return HashCode.Combine(IsModelSet, Model);
         }
 
         /// <inheritdoc />

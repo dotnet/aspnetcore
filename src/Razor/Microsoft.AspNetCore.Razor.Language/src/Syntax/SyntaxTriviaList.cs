@@ -448,10 +448,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
         public override int GetHashCode()
         {
-            var hash = new HashCode();
-            hash.Add(Node);
-            hash.Add(Index);
-            return hash.ToHashCode();
+            return HashCode.Combine(Node, Index);
         }
 
         /// <summary>

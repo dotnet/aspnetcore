@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             var hash = new HashCode();
-            hash.Add(descriptor.Directive, StringComparer.Ordinal);
+            hash.Add(descriptor.Directive ?? string.Empty, StringComparer.Ordinal);
             hash.Add(descriptor.Kind);
 
             if (descriptor.Tokens != null)

@@ -116,10 +116,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             var hash = new HashCode();
-            hash.Add(descriptor.Kind, StringComparer.Ordinal);
-            hash.Add(descriptor.AssemblyName, StringComparer.Ordinal);
-            hash.Add(descriptor.Name, StringComparer.Ordinal);
-            hash.Add(descriptor.DisplayName, StringComparer.Ordinal);
+            hash.Add(descriptor.Kind ?? string.Empty, StringComparer.Ordinal);
+            hash.Add(descriptor.AssemblyName ?? string.Empty, StringComparer.Ordinal);
+            hash.Add(descriptor.Name ?? string.Empty, StringComparer.Ordinal);
+            hash.Add(descriptor.DisplayName ?? string.Empty, StringComparer.Ordinal);
             hash.Add(descriptor.CaseSensitive ? 1 : 0);
 
             if (descriptor.BoundAttributes != null)
@@ -161,16 +161,16 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     foreach (var kvp in metadata)
                     {
-                        hash.Add(kvp.Key, StringComparer.Ordinal);
-                        hash.Add(kvp.Value, StringComparer.Ordinal);
+                        hash.Add(kvp.Key ?? string.Empty, StringComparer.Ordinal);
+                        hash.Add(kvp.Value ?? string.Empty, StringComparer.Ordinal);
                     }
                 }
                 else
                 {
                     foreach (var kvp in descriptor.Metadata)
                     {
-                        hash.Add(kvp.Key, StringComparer.Ordinal);
-                        hash.Add(kvp.Value, StringComparer.Ordinal);
+                        hash.Add(kvp.Key ?? string.Empty, StringComparer.Ordinal);
+                        hash.Add(kvp.Value ?? string.Empty, StringComparer.Ordinal);
                     }
                 }
             }

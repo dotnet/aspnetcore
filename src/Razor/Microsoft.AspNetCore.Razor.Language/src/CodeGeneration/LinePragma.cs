@@ -61,11 +61,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public override int GetHashCode()
         {
-            var hash = new HashCode();
-            hash.Add(StartLineIndex);
-            hash.Add(LineCount);
-            hash.Add(FilePath);
-            return hash.ToHashCode();
+            return HashCode.Combine(StartLineIndex, LineCount, FilePath);
         }
 
         public override string ToString()

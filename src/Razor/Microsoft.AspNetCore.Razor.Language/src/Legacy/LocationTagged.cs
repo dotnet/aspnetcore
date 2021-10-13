@@ -44,11 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public override int GetHashCode()
         {
-            var hashCode = new HashCode();
-            hashCode.Add(Location);
-            hashCode.Add(Value);
-
-            return hashCode.ToHashCode();
+            return HashCode.Combine(Location, Value);
         }
 
         public override string ToString()

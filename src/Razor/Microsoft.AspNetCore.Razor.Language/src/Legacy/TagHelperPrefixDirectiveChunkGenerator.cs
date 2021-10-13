@@ -38,8 +38,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             var combiner = new HashCode();
             combiner.Add(base.GetHashCode());
-            combiner.Add(Prefix, StringComparer.Ordinal);
-            combiner.Add(DirectiveText, StringComparer.Ordinal);
+            combiner.Add(Prefix ?? string.Empty, StringComparer.Ordinal);
+            combiner.Add(DirectiveText ?? string.Empty, StringComparer.Ordinal);
 
             return combiner.ToHashCode();
         }

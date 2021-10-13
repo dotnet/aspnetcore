@@ -374,11 +374,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             public override int GetHashCode()
             {
-                var hashCode = new HashCode();
-                hashCode.Add(Include);
-                hashCode.Add(Exclude);
-
-                return hashCode.ToHashCode();
+                return HashCode.Combine(Include, Exclude);
             }
         }
     }

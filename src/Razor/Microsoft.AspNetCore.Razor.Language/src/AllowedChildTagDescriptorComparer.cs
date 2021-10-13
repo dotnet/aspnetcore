@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public virtual int GetHashCode(AllowedChildTagDescriptor descriptor)
         {
             var hash = new HashCode();
-            hash.Add(descriptor.Name, StringComparer.Ordinal);
+            hash.Add(descriptor.Name ?? string.Empty, StringComparer.Ordinal);
 
             return hash.ToHashCode();
         }

@@ -570,10 +570,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
                     return 0;
                 }
 
-                var hash = new HashCode();
-                hash.Add(_node.GetHashCode());
-                hash.Add(_count);
-                return hash.ToHashCode();
+                return HashCode.Combine(_node.GetHashCode(), _count);
             }
 
             public override bool Equals(object obj)
