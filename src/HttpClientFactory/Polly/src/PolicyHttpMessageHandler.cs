@@ -169,7 +169,7 @@ namespace Microsoft.Extensions.Http
 
             var result = await base.SendAsync(request, cancellationToken);
 
-            request.Properties.Add(PriorResponseKey, result);
+            request.Properties[PriorResponseKey] = result;
 
             return result;
         }
