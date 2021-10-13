@@ -822,6 +822,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
             public void WriteMessage(HubMessage message, IBufferWriter<byte> output)
             {
+                if (message is PingMessage)
+                {
+                    return; // TODO: implement regression test for #37340
+                }
                 if (_error != null)
                 {
                     throw _error;

@@ -452,6 +452,13 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             // Set this at the end to avoid setting internal state until the connection is real
             _state.CurrentConnectionStateUnsynchronized = startingConnectionState;
+            // Tell the server we intend to ping.
+            // Old clients never ping, and shouldn't be timed out, so ping to tell the server that we should be timed out if we stop.
+            // StartAsyncCore is invoked from StartAsyncInner or ReconnectAsync with the connection lock still acquired.
+            if (!(connection.Features.Get<IConnectionInherentKeepAliveFeature>()?.HasInherentKeepAlive ?? false))
+            {
+                await SendHubMessage(startingConnectionState, PingMessage.Instance, cancellationToken);
+            }
             startingConnectionState.ReceiveTask = ReceiveLoop(startingConnectionState);
 
             Log.Started(_logger);
@@ -1811,15 +1818,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             public async Task TimerLoop(TimerAwaitable timer)
             {
-                // Tell the server we intend to ping.
-                // Old clients never ping, and shouldn't be timed out, so ping to tell the server that we should be timed out if we stop.
-                // The TimerLoop is started from the ReceiveLoop with the connection lock still acquired.
-                _hubConnection._state.AssertInConnectionLock();
-                if (!_hasInherentKeepAlive)
-                {
-                    await _hubConnection.SendHubMessage(this, PingMessage.Instance);
-                }
-
                 // initialize the timers
                 timer.Start();
                 ResetTimeout();
