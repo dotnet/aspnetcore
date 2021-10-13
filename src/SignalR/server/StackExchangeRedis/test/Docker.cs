@@ -87,6 +87,25 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
                 Run();
             }
 
+            var started = false;
+            var wait = TimeSpan.FromSeconds(30);
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            while (stopWatch.Elapsed < wait)
+            {
+                RunProcessAndWait(_path, $"logs {_dockerContainerName}", "docker logs", logger, TimeSpan.FromSeconds(5), out var logOutput);
+                if (logOutput.Contains("Ready to accept connections"))
+                {
+                    started = true;
+                    break;
+                }
+            }
+
+            if (!started)
+            {
+                throw new Exception("Redis took too long to start.");
+            }
+
             void Run()
             {
                 // create and run docker container, remove automatically when stopped, map 6379 from the container to 6379 localhost
@@ -106,25 +125,6 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
             RunProcessAndWait(_path, $"stop {_dockerContainerName}", "docker stop", logger, TimeSpan.FromSeconds(15), out var output);
 
             StartRedis(logger);
-
-            var started = false;
-            var wait = TimeSpan.FromSeconds(30);
-            var stopWatch = new Stopwatch();
-            stopWatch.Start();
-            while (stopWatch.Elapsed < wait)
-            {
-                RunProcessAndWait(_path, $"logs {_dockerContainerName}", "docker logs", logger, TimeSpan.FromSeconds(5), out var logOutput);
-                if (logOutput.Contains("Ready to accept connections"))
-                {
-                    started = true;
-                    break;
-                }
-            }
-
-            if (!started)
-            {
-                throw new Exception("Redis took too long to start.");
-            }
 
             // inspect the redis docker image and extract the IPAddress. Necessary when running tests from inside a docker container, spinning up a new docker container for redis
             // outside the current container requires linking the networks (difficult to automate) or using the IP:Port combo
