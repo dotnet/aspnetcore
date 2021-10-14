@@ -1,4 +1,4 @@
- <!--
+<!--
 
   This file defines the versions of external dependencies used by ASP.NET Core.
   This file might be updated by automation.
@@ -59,10 +59,10 @@
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/runtime -->
     <MicrosoftExtensionsDependencyModelPackageVersion>5.0.0</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftNETCoreAppInternalPackageVersion>5.0.12-servicing.21507.8</MicrosoftNETCoreAppInternalPackageVersion>
+    <MicrosoftNETCoreAppInternalPackageVersion>5.0.12-servicing.21513.19</MicrosoftNETCoreAppInternalPackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>5.0.0</MicrosoftNETCoreAppRefPackageVersion>
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.12</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>5.0.12-servicing.21507.8</MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>
+    <MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>5.0.12-servicing.21513.19</MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>5.0.0</MicrosoftWin32RegistryPackageVersion>
     <MicrosoftWin32SystemEventsPackageVersion>5.0.0</MicrosoftWin32SystemEventsPackageVersion>
     <MicrosoftExtensionsCachingAbstractionsPackageVersion>5.0.0</MicrosoftExtensionsCachingAbstractionsPackageVersion>
@@ -104,7 +104,7 @@
     <SystemDiagnosticsDiagnosticSourcePackageVersion>5.0.1</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <SystemDiagnosticsEventLogPackageVersion>5.0.1</SystemDiagnosticsEventLogPackageVersion>
     <SystemDirectoryServicesProtocolsPackageVersion>5.0.1</SystemDirectoryServicesProtocolsPackageVersion>
-    <SystemDrawingCommonPackageVersion>5.0.2</SystemDrawingCommonPackageVersion>
+    <SystemDrawingCommonPackageVersion>5.0.3</SystemDrawingCommonPackageVersion>
     <SystemIOPipelinesPackageVersion>5.0.1</SystemIOPipelinesPackageVersion>
     <SystemNetHttpJsonPackageVersion>5.0.0</SystemNetHttpJsonPackageVersion>
     <SystemNetHttpWinHttpHandlerPackageVersion>5.0.0</SystemNetHttpWinHttpHandlerPackageVersion>
