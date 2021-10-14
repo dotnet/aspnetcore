@@ -38,7 +38,7 @@
     },
     {
       "condition": "(!Hosted)",
-      "path": "ComponentsWebAssembly-CSharp.Client.csproj"
+      "path": "ComponentsWebAssembly-CSharp.csproj"
     },
     {
       "condition": "(Hosted && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
