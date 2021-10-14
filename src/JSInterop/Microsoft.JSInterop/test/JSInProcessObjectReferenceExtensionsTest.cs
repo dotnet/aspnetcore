@@ -16,13 +16,13 @@ namespace Microsoft.JSInterop
             // Arrange
             var method = "someMethod";
             var args = new[] { "a", "b" };
-            var jsRuntime = new Mock<IJSInProcessObjectReference>(MockBehavior.Strict);
+            var jsInProcessObjectReference = new Mock<IJSInProcessObjectReference>(MockBehavior.Strict);
             jsRuntime.Setup(s => s.Invoke<IJSVoidResult>(method, args)).Returns(Mock.Of<IJSVoidResult>());
 
             // Act
-            jsRuntime.Object.InvokeVoid(method, args);
+            jsInProcessObjectReference.Object.InvokeVoid(method, args);
 
-            jsRuntime.Verify();
+            jsInProcessObjectReference.Verify();
         }
     }
 }
