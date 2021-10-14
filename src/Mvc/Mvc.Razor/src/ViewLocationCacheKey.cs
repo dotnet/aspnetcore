@@ -129,23 +129,23 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            var hashCodeCombiner = new HashCode();
-            hashCodeCombiner.Add(IsMainPage ? 1 : 0);
-            hashCodeCombiner.Add(ViewName, StringComparer.Ordinal);
-            hashCodeCombiner.Add(ControllerName, StringComparer.Ordinal);
-            hashCodeCombiner.Add(AreaName, StringComparer.Ordinal);
-            hashCodeCombiner.Add(PageName, StringComparer.Ordinal);
+            var hashCode = new HashCode();
+            hashCode.Add(IsMainPage ? 1 : 0);
+            hashCode.Add(ViewName, StringComparer.Ordinal);
+            hashCode.Add(ControllerName, StringComparer.Ordinal);
+            hashCode.Add(AreaName, StringComparer.Ordinal);
+            hashCode.Add(PageName, StringComparer.Ordinal);
 
             if (ViewLocationExpanderValues != null)
             {
                 foreach (var item in ViewLocationExpanderValues)
                 {
-                    hashCodeCombiner.Add(item.Key, StringComparer.Ordinal);
-                    hashCodeCombiner.Add(item.Value, StringComparer.Ordinal);
+                    hashCode.Add(item.Key, StringComparer.Ordinal);
+                    hashCode.Add(item.Value, StringComparer.Ordinal);
                 }
             }
 
-            return hashCodeCombiner.ToHashCode();
+            return hashCode.ToHashCode();
         }
     }
 }

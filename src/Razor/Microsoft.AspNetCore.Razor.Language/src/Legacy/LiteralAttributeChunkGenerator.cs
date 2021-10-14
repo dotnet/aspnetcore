@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Globalization;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
@@ -33,12 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public override int GetHashCode()
         {
-            var hashCodeCombiner = HashCodeCombiner.Start();
-
-            hashCodeCombiner.Add(Prefix);
-            hashCodeCombiner.Add(Value);
-
-            return hashCodeCombiner;
+            return HashCode.Combine(Prefix, Value);
         }
     }
 }

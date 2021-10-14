@@ -243,23 +243,23 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
                 return _hashcode.Value;
             }
 
-            var hashCodeCombiner = new HashCode();
+            var hashCode = new HashCode();
 
-            hashCodeCombiner.Add(Key, StringComparer.Ordinal);
-            hashCodeCombiner.Add(_expiresAfter);
-            hashCodeCombiner.Add(_expiresOn);
-            hashCodeCombiner.Add(_expiresSliding);
-            hashCodeCombiner.Add(_varyBy, StringComparer.Ordinal);
-            hashCodeCombiner.Add(_username, StringComparer.Ordinal);
-            hashCodeCombiner.Add(_requestCulture);
-            hashCodeCombiner.Add(_requestUICulture);
+            hashCode.Add(Key, StringComparer.Ordinal);
+            hashCode.Add(_expiresAfter);
+            hashCode.Add(_expiresOn);
+            hashCode.Add(_expiresSliding);
+            hashCode.Add(_varyBy, StringComparer.Ordinal);
+            hashCode.Add(_username, StringComparer.Ordinal);
+            hashCode.Add(_requestCulture);
+            hashCode.Add(_requestUICulture);
 
-            CombineCollectionHashCode(ref hashCodeCombiner, VaryByCookieName, _cookies);
-            CombineCollectionHashCode(ref hashCodeCombiner, VaryByHeaderName, _headers);
-            CombineCollectionHashCode(ref hashCodeCombiner, VaryByQueryName, _queries);
-            CombineCollectionHashCode(ref hashCodeCombiner, VaryByRouteName, _routeValues);
+            CombineCollectionHashCode(ref hashCode, VaryByCookieName, _cookies);
+            CombineCollectionHashCode(ref hashCode, VaryByHeaderName, _headers);
+            CombineCollectionHashCode(ref hashCode, VaryByQueryName, _queries);
+            CombineCollectionHashCode(ref hashCode, VaryByRouteName, _routeValues);
 
-            _hashcode = hashCodeCombiner.ToHashCode();
+            _hashcode = hashCode.ToHashCode();
 
             return _hashcode.Value;
         }
@@ -327,19 +327,19 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
         }
 
         private static void CombineCollectionHashCode(
-            ref HashCode hashCodeCombiner,
+            ref HashCode hashCode,
             string collectionName,
             IList<KeyValuePair<string, string>> values)
         {
             if (values != null)
             {
-                hashCodeCombiner.Add(collectionName, StringComparer.Ordinal);
+                hashCode.Add(collectionName, StringComparer.Ordinal);
 
                 for (var i = 0; i < values.Count; i++)
                 {
                     var item = values[i];
-                    hashCodeCombiner.Add(item.Key);
-                    hashCodeCombiner.Add(item.Value);
+                    hashCode.Add(item.Key);
+                    hashCode.Add(item.Value);
                 }
             }
         }

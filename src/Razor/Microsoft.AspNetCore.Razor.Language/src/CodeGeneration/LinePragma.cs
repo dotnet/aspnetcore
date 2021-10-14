@@ -3,7 +3,6 @@
 
 using System;
 using System.Globalization;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
@@ -62,11 +61,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public override int GetHashCode()
         {
-            var hash = HashCodeCombiner.Start();
-            hash.Add(StartLineIndex);
-            hash.Add(LineCount);
-            hash.Add(FilePath);
-            return hash;
+            return HashCode.Combine(StartLineIndex, LineCount, FilePath);
         }
 
         public override string ToString()

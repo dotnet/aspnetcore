@@ -40,15 +40,15 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         public int GetHashCode(MemberExpressionCacheKey obj)
         {
-            var hashCodeCombiner = new HashCode();
-            hashCodeCombiner.Add(obj.ModelType);
+            var hashCode = new HashCode();
+            hashCode.Add(obj.ModelType);
 
             foreach (var member in obj)
             {
-                hashCodeCombiner.Add(member);
+                hashCode.Add(member);
             }
 
-            return hashCodeCombiner.ToHashCode();
+            return hashCode.ToHashCode();
         }
     }
 }

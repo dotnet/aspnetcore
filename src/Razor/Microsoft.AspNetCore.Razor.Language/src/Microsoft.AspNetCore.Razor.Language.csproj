@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)HashCodeCombiner\*.cs" />
+    <Reference Include="Microsoft.Bcl.HashCode" />
   </ItemGroup>
 
 </Project>

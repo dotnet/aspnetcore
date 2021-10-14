@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -46,9 +45,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(rule));
             }
 
-            var hash = HashCodeCombiner.Start();
-            hash.Add(rule.TagName, StringComparer.Ordinal);
-            hash.Add(rule.ParentTag, StringComparer.Ordinal);
+            var hash = new HashCode();
+            hash.Add(rule.TagName ?? string.Empty, StringComparer.Ordinal);
+            hash.Add(rule.ParentTag ?? string.Empty, StringComparer.Ordinal);
 
             if (rule.Attributes != null)
             {
@@ -58,7 +57,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 }
             }
 
-            return hash.CombinedHash;
+            return hash.ToHashCode();
         }
     }
 }

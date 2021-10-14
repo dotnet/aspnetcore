@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
@@ -40,10 +39,10 @@ namespace Microsoft.CodeAnalysis.Razor
                     return 0;
                 }
 
-                var hash = new HashCodeCombiner();
-                hash.Add(obj.Name, StringComparer.OrdinalIgnoreCase);
+                var hash = new HashCode();
+                hash.Add(obj.Name ?? string.Empty, StringComparer.OrdinalIgnoreCase);
                 hash.Add(obj.Version);
-                return hash;
+                return hash.ToHashCode();
             }
         }
     }

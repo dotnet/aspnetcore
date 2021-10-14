@@ -312,10 +312,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             public override int GetHashCode()
             {
-                var hash = new HashCode();
-                hash.Add(_metadata);
-                hash.Add(RuntimeHelpers.GetHashCode(_token));
-                return hash.ToHashCode();
+                return HashCode.Combine(_metadata, RuntimeHelpers.GetHashCode(_token));
             }
 
             public override string ToString()

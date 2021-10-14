@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
@@ -60,11 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public override int GetHashCode()
         {
             // Hash code should include only immutable properties but Equals also checks the type.
-            var hashCodeCombiner = HashCodeCombiner.Start();
-            hashCodeCombiner.Add(TypeHashCode);
-            hashCodeCombiner.Add(AutoCompleteAtEndOfSpan);
-
-            return hashCodeCombiner.CombinedHash;
+            return HashCode.Combine(TypeHashCode, AutoCompleteAtEndOfSpan);
         }
     }
 }

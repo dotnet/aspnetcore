@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language.Syntax
 {
@@ -229,11 +228,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         /// </summary>
         public override int GetHashCode()
         {
-            var combiner = new HashCodeCombiner();
-            combiner.Add(Start);
-            combiner.Add(Length);
-
-            return combiner.CombinedHash;
+            return HashCode.Combine(Start, Length);
         }
 
         /// <summary>

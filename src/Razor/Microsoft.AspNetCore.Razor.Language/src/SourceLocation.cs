@@ -3,7 +3,6 @@
 
 using System;
 using System.Globalization;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -106,11 +105,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            var hashCodeCombiner = HashCodeCombiner.Start();
-            hashCodeCombiner.Add(FilePath, StringComparer.Ordinal);
-            hashCodeCombiner.Add(AbsoluteIndex);
+            var hashCode = new HashCode();
+            hashCode.Add(FilePath ?? string.Empty, StringComparer.Ordinal);
+            hashCode.Add(AbsoluteIndex);
 
-            return hashCodeCombiner;
+            return hashCode.ToHashCode();
         }
 
         /// <inheritdoc />

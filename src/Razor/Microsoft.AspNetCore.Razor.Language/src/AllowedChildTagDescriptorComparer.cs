@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -42,10 +41,10 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// <inheritdoc />
         public virtual int GetHashCode(AllowedChildTagDescriptor descriptor)
         {
-            var hash = HashCodeCombiner.Start();
-            hash.Add(descriptor.Name, StringComparer.Ordinal);
+            var hash = new HashCode();
+            hash.Add(descriptor.Name ?? string.Empty, StringComparer.Ordinal);
 
-            return hash.CombinedHash;
+            return hash.ToHashCode();
         }
     }
 }

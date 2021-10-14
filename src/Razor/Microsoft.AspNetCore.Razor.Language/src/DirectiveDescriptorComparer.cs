@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -39,8 +38,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            var hash = HashCodeCombiner.Start();
-            hash.Add(descriptor.Directive, StringComparer.Ordinal);
+            var hash = new HashCode();
+            hash.Add(descriptor.Directive ?? string.Empty, StringComparer.Ordinal);
             hash.Add(descriptor.Kind);
 
             if (descriptor.Tokens != null)
@@ -51,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 }
             }
 
-            return hash.CombinedHash;
+            return hash.ToHashCode();
         }
     }
 }

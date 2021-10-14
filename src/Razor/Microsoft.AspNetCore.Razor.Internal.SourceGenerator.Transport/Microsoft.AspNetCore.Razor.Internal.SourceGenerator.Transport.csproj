@@ -12,8 +12,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)HashCodeCombiner\HashCodeCombiner.cs" />
-
     <Compile Include="..\Microsoft.AspNetCore.Razor.Language\src\**\*.cs" LinkBase="Language" />
     <EmbeddedResource Include="..\Microsoft.AspNetCore.Razor.Language\src\Resources.resx"
       ClassName="Microsoft.AspNetCore.Razor.Language.Resources" />
@@ -32,6 +30,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.CodeAnalysis.Common" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp" />
+    <Reference Include="Microsoft.Bcl.HashCode" />
   </ItemGroup>
 
 </Project>
