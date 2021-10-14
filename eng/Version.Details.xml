@@ -203,7 +203,7 @@
     </Dependency>
     <Dependency Name="System.DirectoryServices.Protocols" Version="5.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>e234755a116df89304d6edb35e943e9b231ccc46</Sha>
+      <Sha>f431858f8b1f1510723ace6343786c9194dbd7fc</Sha>
     </Dependency>
     <Dependency Name="System.Drawing.Common" Version="5.0.3">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
@@ -311,7 +311,7 @@
     <!-- Listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <Dependency Name="Microsoft.NETCore.Platforms" Version="5.0.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>e234755a116df89304d6edb35e943e9b231ccc46</Sha>
+      <Sha>f431858f8b1f1510723ace6343786c9194dbd7fc</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.21513.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
