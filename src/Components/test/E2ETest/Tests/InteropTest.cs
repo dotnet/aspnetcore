@@ -130,6 +130,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 ["instanceMethodIncomingByRef"] = "123",
                 ["instanceMethodOutgoingByRef"] = "1234",
                 ["jsInProcessObjectReference.identity"] = "Invoked from JSInProcessObjectReference",
+                ["invokeVoidReturnsWithoutSerializingIJSInProcessRuntime"] = "Success",
+                ["invokeVoidReturnsWithoutSerializingInIJSInProcessObjectReference"] = "Success",
                 ["jsUnmarshalledObjectReference.unmarshalledFunction"] = "True",
                 ["jsToDotNetStreamReturnValueUnmarshalled"] = "Success",
                 ["jsCastedUnmarshalledObjectReference.unmarshalledFunction"] = "False",
