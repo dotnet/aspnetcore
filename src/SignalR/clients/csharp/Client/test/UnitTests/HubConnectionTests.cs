@@ -822,9 +822,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
             public void WriteMessage(HubMessage message, IBufferWriter<byte> output)
             {
-                if (message is PingMessage)
+                if (message is PingMessage) // TODO: only within StartAsync() do not throw for the intial ping
                 {
-                    return; // TODO: implement regression test for #37340
+                    // Allows HubConnection.StartAsync() to complete successfully
+                    // when testing InvokeThrowsIfSerializingMessageFails and SendAsyncThrowsIfSerializingMessageFails
+                    return;
                 }
                 if (_error != null)
                 {
