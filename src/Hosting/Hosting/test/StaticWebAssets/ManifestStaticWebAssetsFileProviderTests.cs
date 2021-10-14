@@ -314,6 +314,42 @@ namespace Microsoft.AspNetCore.Hosting.Tests.StaticWebAssets
         }
 
         [Fact]
+        public void GetFileInfoHandlesRootPatternCorrectly()
+        {
+            var (manifest, factory) = CreateTestManifestWithPattern();
+
+            var fileProvider = new ManifestStaticWebAssetFileProvider(manifest, factory);
+
+            // Act
+            var file = fileProvider.GetFileInfo("other.html");
+
+            // Assert
+            Assert.NotNull(file);
+            Assert.True(file.Exists);
+            Assert.False(file.IsDirectory);
+            Assert.Equal("other.html", file.Name);
+        }
+
+        [Fact]
+        public void GetDirectoryContentsHandlesRootPatternCorrectly()
+        {
+            var (manifest, factory) = CreateTestManifestWithPattern();
+
+            var fileProvider = new ManifestStaticWebAssetFileProvider(manifest, factory);
+
+            // Act
+            var contents = fileProvider.GetDirectoryContents("");
+
+            // Assert
+            Assert.NotNull(contents);
+            Assert.True(contents.Exists);
+            var file = contents.Single();
+            Assert.True(file.Exists);
+            Assert.False(file.IsDirectory);
+            Assert.Equal("other.html", file.Name);
+        }
+
+        [Fact]
         public void CanFindFileMatchingPattern()
         {
             var (manifest, factory) = CreateTestManifest();
@@ -695,6 +731,46 @@ namespace Microsoft.AspNetCore.Hosting.Tests.StaticWebAssets
                                 Patterns = new ManifestStaticWebAssetFileProvider.StaticWebAssetPattern[] { new() { ContentRoot = 1, Depth = 2, Pattern = "**" } }
                             }
                         }
+                    }
+                }
+            };
+
+            return (manifest, factory);
+        }
+
+        private static (ManifestStaticWebAssetFileProvider.StaticWebAssetManifest manifest, Func<string, IFileProvider> factory) CreateTestManifestWithPattern()
+        {
+            // Arrange
+            var otherHtml = new TestFileInfo { Exists = true, IsDirectory = false, Name = "other.html" };
+
+            var manifest = new ManifestStaticWebAssetFileProvider.StaticWebAssetManifest();
+            manifest.ContentRoots = new [] { "Cero" };
+            Func<string, IFileProvider> factory = (string contentRoot) =>
+            {
+                if (contentRoot == "Cero")
+                {
+                    var providerMock = new Mock<IFileProvider>();
+                    providerMock.Setup(p => p.GetFileInfo("other.html")).Returns(otherHtml);
+                    providerMock.Setup(p => p.GetDirectoryContents("")).Returns(new TestDirectoryContents(new[] { otherHtml })
+                    {
+                        Exists = true
+                    });
+
+                    return providerMock.Object;
+                }
+
+                throw new InvalidOperationException("Invalid content root");
+            };
+            manifest.Root = new()
+            {
+                Children = new Dictionary<string, ManifestStaticWebAssetFileProvider.StaticWebAssetNode>(),
+                Patterns = new[]
+                {
+                    new ManifestStaticWebAssetFileProvider.StaticWebAssetPattern
+                    {
+                        ContentRoot = 0,
+                        Depth = 0,
+                        Pattern = "**"
                     }
                 }
             };
