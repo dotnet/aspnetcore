@@ -205,9 +205,9 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>e234755a116df89304d6edb35e943e9b231ccc46</Sha>
     </Dependency>
-    <Dependency Name="System.Drawing.Common" Version="5.0.2">
+    <Dependency Name="System.Drawing.Common" Version="5.0.3">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>f27d33729518f5aa478aa818b7b4f54a4d50bef1</Sha>
+      <Sha>88faabc95006b38298b6377380a18b6661a9a2f1</Sha>
     </Dependency>
     <Dependency Name="System.IO.Pipelines" Version="5.0.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -296,15 +296,15 @@
     -->
     <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="5.0.12">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>e234755a116df89304d6edb35e943e9b231ccc46</Sha>
+      <Sha>88faabc95006b38298b6377380a18b6661a9a2f1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.12-servicing.21507.8">
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.12-servicing.21513.19">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>e234755a116df89304d6edb35e943e9b231ccc46</Sha>
+      <Sha>88faabc95006b38298b6377380a18b6661a9a2f1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.12-servicing.21507.8">
+    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.12-servicing.21513.19">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>e234755a116df89304d6edb35e943e9b231ccc46</Sha>
+      <Sha>88faabc95006b38298b6377380a18b6661a9a2f1</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
