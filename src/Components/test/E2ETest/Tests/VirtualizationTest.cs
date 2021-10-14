@@ -370,6 +370,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Theory]
         [InlineData("simple-scroll-horizontal")]
         [InlineData("complex-scroll-horizontal")]
+        [InlineData("simple-scroll-horizontal-on-parent")]
+        [InlineData("complex-scroll-horizontal-on-parent")]
+        [InlineData("complex-scroll-horizontal-on-tbody")]
         public void CanLoadNewDataWithHorizontalScrollToRight(string containerId)
         {
             Browser.MountTestComponent<VirtualizationDataChanges>();
@@ -385,6 +388,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 ScrollLeftToEnd(Browser, container);
                 ScrollTopToEnd(Browser, container);
                 return GetPeopleNames(container).Contains("Person 1000");
+            });
+
+            Browser.True(() =>
+            {
+                ScrollLeftToEnd(Browser, container);
+                ScrollTopToBeginning(Browser, container);
+                return GetPeopleNames(container).Contains("Person 1");
             });
         }
 
@@ -457,6 +467,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             var js = (IJavaScriptExecutor)browser;
             js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight", elem);
+        }
+
+        private static void ScrollTopToBeginning(IWebDriver browser, IWebElement elem)
+        {
+            var js = (IJavaScriptExecutor)browser;
+            js.ExecuteScript("arguments[0].scrollTop = 0", elem);
         }
 
         private static void ScrollLeftToEnd(IWebDriver Browser, IWebElement elem)
