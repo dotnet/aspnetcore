@@ -189,21 +189,19 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           DependsOnTargets="_ResolveTargetingPackContent"
           Inputs="@(RefPackContent)"
           Outputs="@(RefPackContent->'$(LayoutTargetDir)%(PackagePath)%(FileName)%(Extension)')">
+    <RemoveDir Directories="$(TargetingPackLayoutRoot)" />
     <Copy SourceFiles="@(RefPackContent)"
           DestinationFiles="@(RefPackContent->'$(LayoutTargetDir)%(PackagePath)%(FileName)%(Extension)')"
           UseHardlinksIfPossible="true" />
     <Message Importance="High" Text="$(MSBuildProjectName) -> $(LayoutTargetDir)" />
   </Target>
 
-  <ItemGroup>
-    <CreateDirectory Include="$(LocalInstallationOutputPath)" />
-  </ItemGroup>
-
   <!-- Workaround https://github.com/dotnet/sdk/issues/2910 by copying targeting pack into local installation. -->
   <Target Name="_InstallTargetingPackIntoLocalDotNet"
           DependsOnTargets="_ResolveTargetingPackContent"
           Inputs="@(RefPackContent)"
           Outputs="@(RefPackContent->'$(LocalInstallationOutputPath)%(PackagePath)%(FileName)%(Extension)')">
+    <RemoveDir Directories="$(LocalInstallationOutputPath)" />
     <Copy SourceFiles="@(RefPackContent)"
           DestinationFiles="@(RefPackContent->'$(LocalInstallationOutputPath)%(PackagePath)%(FileName)%(Extension)')"
           UseHardlinksIfPossible="true" />

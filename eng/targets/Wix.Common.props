@@ -4,7 +4,7 @@
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
     <ProductVersion>3.14</ProductVersion>
-    <WixVersion>3.14.0-dotnet</WixVersion>
+    <WixVersion>1.0.0-v3.14.0.5722</WixVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -20,7 +20,7 @@
   <Import Project="$(MSBuildProjectExtensionsPath)$(MSBuildProjectFile).*.props" Condition="'$(_ProjectExtensionsWereImported)' != 'true'" />
 
   <ItemGroup>
-    <PackageReference Include="Wix" Version="$(WixVersion)" />
+    <PackageReference Include="Microsoft.Signed.Wix" Version="$(WixVersion)" />
   </ItemGroup>
 
   <PropertyGroup>
