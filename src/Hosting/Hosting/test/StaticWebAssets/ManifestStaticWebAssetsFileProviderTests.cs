@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests.StaticWebAssets
             var fileProvider = new ManifestStaticWebAssetFileProvider(manifest, factory);
 
             // Act
-            var file = fileProvider.GetFileInfo("other.html");
+            var file = fileProvider.GetFileInfo("/other.html");
 
             // Assert
             Assert.NotNull(file);
