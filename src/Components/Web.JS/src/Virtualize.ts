@@ -3,10 +3,6 @@ export const Virtualize = {
   dispose,
 };
 
-enum ContainerKind {
-  HTMLTable
-}
-
 const observersByDotNetId = {};
 
 function findClosestScrollContainer(element: HTMLElement | null): HTMLElement | null {
@@ -33,7 +29,6 @@ function init(dotNetHelper: any, spacerBefore: HTMLElement, spacerAfter: HTMLEle
   if (isContainerTableRalatedElement(spacerAfter.parentElement)) {
     spacerBefore.style.display = 'table-row';
     spacerAfter.style.display = 'table-row';
-    dotNetHelper.invokeMethodAsync('NotifySpecialScenario', ContainerKind.HTMLTable);
   }
 
   const intersectionObserver = new IntersectionObserver(intersectionCallback, {
@@ -57,7 +52,13 @@ function init(dotNetHelper: any, spacerBefore: HTMLElement, spacerAfter: HTMLEle
     // Without the use of thresholds, IntersectionObserver only detects binary changes in visibility,
     // so if a spacer gets resized but remains visible, no additional callbacks will occur. By unobserving
     // and reobserving spacers when they get resized, the intersection callback will re-run if they remain visible.
-    const mutationObserver = new MutationObserver((): void => {
+    const mutationObserver = new MutationObserver((mutations: MutationRecord[], observer: MutationObserver): void => {
+      if (isContainerTableRalatedElement(spacer.parentElement) && spacer.style.display !== 'table-row') {
+        observer.disconnect();
+        spacer.style.display = 'table-row';
+        observer.observe(spacer, { attributes: true });
+      }
+
       intersectionObserver.unobserve(spacer);
       intersectionObserver.observe(spacer);
     });
