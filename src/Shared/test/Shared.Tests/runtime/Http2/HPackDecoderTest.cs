@@ -44,8 +44,6 @@ namespace System.Net.Http.Unit.Tests.HPack
 
         private const string _userAgentString = "user-agent";
 
-        private static readonly byte[] _userAgentBytes = Encoding.ASCII.GetBytes(_userAgentString);
-
         private const string _headerNameString = "new-header";
 
         private static readonly byte[] _headerNameBytes = Encoding.ASCII.GetBytes(_headerNameString);

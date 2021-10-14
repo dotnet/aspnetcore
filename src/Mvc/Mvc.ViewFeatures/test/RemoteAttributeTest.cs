@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.Builder;
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc
                 };
             }
         }
-        
+
         [Fact]
         public void Constructor_WithNullAction_IgnoresArgument()
         {
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(areaName, resultName);
             Assert.Null(attribute.RouteName);
         }
-        
+
         [Fact]
         public void GetUrl_WithBadRouteName_Throws()
         {
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Act
             var actualUrl = testableRemoteAttribute.InvokeGetUrl(context);
-            
+
             // Assert
             Assert.Equal(url, actualUrl);
 
@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal("Action", routeDictionary["action"] as string);
             Assert.Equal("Controller", routeDictionary["controller"] as string);
         }
-        
+
         [Fact]
         public void GetUrl_WithActionControllerArea_CallsUrlHelperWithExpectedValues()
         {
@@ -360,7 +360,7 @@ namespace Microsoft.AspNetCore.Mvc
             var urlHelper = new MockUrlHelper(url, routeName: null);
             return GetValidationContext(urlHelper);
         }
-        
+
         private static ClientModelValidationContext GetValidationContext(
             IUrlHelper urlHelper)
         {
@@ -374,12 +374,12 @@ namespace Microsoft.AspNetCore.Mvc
             factory
                 .Setup(f => f.GetUrlHelper(actionContext))
                 .Returns(urlHelper);
-            
+
             var metadataProvider = new EmptyModelMetadataProvider();
             var metadata = metadataProvider.GetMetadataForProperty(
                 containerType: typeof(string),
                 propertyName: nameof(string.Length));
-            
+
             return new ClientModelValidationContext(
                 actionContext,
                 metadata,
@@ -446,7 +446,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             return builder.Build();
         }
-        
+
         private static RouteBuilder GetRouteBuilder(IServiceProvider serviceProvider)
         {
             var app = new Mock<IApplicationBuilder>(MockBehavior.Strict);

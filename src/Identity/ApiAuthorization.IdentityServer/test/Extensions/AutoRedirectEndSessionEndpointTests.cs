@@ -1,15 +1,15 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using IdentityServer4.Configuration;
-using IdentityServer4.Endpoints.Results;
-using IdentityServer4.Models;
-using IdentityServer4.Services;
-using IdentityServer4.Validation;
+using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Endpoints.Results;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
+using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
             Assert.Equal("https://www.example.com/logout", redirect.Url);
             await response.ExecuteAsync(ctx);
             Assert.Equal(StatusCodes.Status302Found, ctx.Response.StatusCode);
-            Assert.Equal("https://www.example.com/logout", ctx.Response.Headers[HeaderNames.Location]);
+            Assert.Equal("https://www.example.com/logout", ctx.Response.Headers.Location);
         }
 
         [Fact]
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
 
             await response.ExecuteAsync(ctx);
             Assert.Equal(StatusCodes.Status302Found, ctx.Response.StatusCode);
-            Assert.Equal("https://www.example.com/logout?state=appState", ctx.Response.Headers[HeaderNames.Location]);
+            Assert.Equal("https://www.example.com/logout?state=appState", ctx.Response.Headers.Location);
         }
 
         [Fact]
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
             Assert.Equal("/Identity/Error", redirect.Url);
             await response.ExecuteAsync(ctx);
             Assert.Equal(StatusCodes.Status302Found, ctx.Response.StatusCode);
-            Assert.Equal("/Identity/Error", ctx.Response.Headers[HeaderNames.Location]);
+            Assert.Equal("/Identity/Error", ctx.Response.Headers.Location);
         }
 
         [Fact]
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
             Assert.Equal("/Identity/Account/Logout", redirect.Url);
             await response.ExecuteAsync(ctx);
             Assert.Equal(StatusCodes.Status302Found, ctx.Response.StatusCode);
-            Assert.Equal("/Identity/Account/Logout", ctx.Response.Headers[HeaderNames.Location]);
+            Assert.Equal("/Identity/Account/Logout", ctx.Response.Headers.Location);
         }
 
         [Fact]
@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
             Assert.Equal("/Identity/Account/Logout", redirect.Url);
             await response.ExecuteAsync(ctx);
             Assert.Equal(StatusCodes.Status302Found, ctx.Response.StatusCode);
-            Assert.Equal("/Identity/Account/Logout", ctx.Response.Headers[HeaderNames.Location]);
+            Assert.Equal("/Identity/Account/Logout", ctx.Response.Headers.Location);
         }
 
         [Theory]

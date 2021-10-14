@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         public void GetT_KnownTypeWithValidValue_Success()
         {
             var context = new DefaultHttpContext();
-            context.Request.Headers[HeaderNames.ContentType] = "text/plain";
+            context.Request.Headers.ContentType = "text/plain";
 
             var result = context.Request.GetTypedHeaders().Get<MediaTypeHeaderValue>(HeaderNames.ContentType);
 
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         public void GetT_KnownTypeWithInvalidValue_Null()
         {
             var context = new DefaultHttpContext();
-            context.Request.Headers[HeaderNames.ContentType] = "invalid";
+            context.Request.Headers.ContentType = "invalid";
 
             var result = context.Request.GetTypedHeaders().Get<MediaTypeHeaderValue>(HeaderNames.ContentType);
 
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         public void GetListT_KnownTypeWithValidValue_Success()
         {
             var context = new DefaultHttpContext();
-            context.Request.Headers[HeaderNames.Accept] = "text/plain; q=0.9, text/other, */*";
+            context.Request.Headers.Accept = "text/plain; q=0.9, text/other, */*";
 
             var result = context.Request.GetTypedHeaders().GetList<MediaTypeHeaderValue>(HeaderNames.Accept);
 
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         public void GetListT_KnownTypeWithInvalidValue_EmptyList()
         {
             var context = new DefaultHttpContext();
-            context.Request.Headers[HeaderNames.Accept] = "invalid";
+            context.Request.Headers.Accept = "invalid";
 
             var result = context.Request.GetTypedHeaders().GetList<MediaTypeHeaderValue>(HeaderNames.Accept);
 

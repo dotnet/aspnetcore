@@ -23,7 +23,7 @@ namespace Test
 #line hidden
 #nullable disable
             );
-            __builder.AddAttribute(2, "OnChanged", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => ParentValue = __value, ParentValue));
+            __builder.AddAttribute(2, "OnChanged", global::Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => ParentValue = __value, ParentValue));
             __builder.CloseComponent();
         }
         #pragma warning restore 1998

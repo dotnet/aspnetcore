@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     // Treat node with errors as non-HTML
                     _foundNonHtml = true;
                 }
-                
+
                 // Visit Children
                 base.VisitDefault(node);
 
@@ -277,7 +277,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 var isVoid = Legacy.ParserHelpers.VoidElements.Contains(node.TagName);
                 var hasBodyContent = node.Body.Any();
 
-                Builder.Append("<");
+                Builder.Append('<');
                 Builder.Append(node.TagName);
 
                 foreach (var attribute in node.Attributes)
@@ -290,7 +290,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 if (!hasBodyContent && isVoid)
                 {
                     // void
-                    Builder.Append(">");
+                    Builder.Append('>');
                     return;
                 }
                 else if (!hasBodyContent)
@@ -299,12 +299,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     // add a close tag
                     Builder.Append("></");
                     Builder.Append(node.TagName);
-                    Builder.Append(">");
+                    Builder.Append('>');
                     return;
                 }
 
                 // start/end tag with body.
-                Builder.Append(">");
+                Builder.Append('>');
 
                 foreach (var item in node.Body)
                 {
@@ -313,12 +313,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
                 Builder.Append("</");
                 Builder.Append(node.TagName);
-                Builder.Append(">");
+                Builder.Append('>');
             }
 
             public override void VisitHtmlAttribute(HtmlAttributeIntermediateNode node)
             {
-                Builder.Append(" ");
+                Builder.Append(' ');
                 Builder.Append(node.AttributeName);
 
                 if (node.Children.Count == 0)
@@ -327,12 +327,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     return;
                 }
 
-                Builder.Append("=\"");
+                // We examine the node.Prefix (e.g. " onfocus='" or " on focus=\"")
+                // to preserve the quote type that is used in the original markup.
+                var quoteType = node.Prefix.EndsWith("'", StringComparison.Ordinal) ? "'" : "\"";
+
+                Builder.Append('=');
+                Builder.Append(quoteType);
 
                 // Visit Children
                 base.VisitDefault(node);
 
-                Builder.Append("\"");
+                Builder.Append(quoteType);
             }
 
             public override void VisitHtmlAttributeValue(HtmlAttributeValueIntermediateNode node)

@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -36,8 +39,8 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile
 
         }
 
-        private static string NormalizeKey(string key)
-            => key.Replace("__", ConfigurationPath.KeyDelimiter);
+        private string NormalizeKey(string key)
+            => key.Replace(Source.SectionDelimiter, ConfigurationPath.KeyDelimiter);
 
         private static string TrimNewLine(string value)
             => value.EndsWith(Environment.NewLine, StringComparison.Ordinal)
@@ -61,6 +64,7 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile
                 if (Source.Optional || reload) // Always optional on reload
                 {
                     Data = data;
+                    OnReload();
                     return;
                 }
 
@@ -73,6 +77,7 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile
                 if (Source.Optional || reload) // Always optional on reload
                 {
                     Data = data;
+                    OnReload();
                     return;
                 }
                 throw new DirectoryNotFoundException("The root directory for the FileProvider doesn't exist and is not optional.");
@@ -98,6 +103,7 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile
             }
 
             Data = data;
+            OnReload();
         }
 
         private string GetDirectoryName()

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 using System;
@@ -8,6 +8,7 @@ using System.Buffers;
 #endif
 using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.WebEncoders.Sources;
 
 #if WebEncoders_In_WebUtilities
@@ -343,8 +344,11 @@ namespace Microsoft.Extensions.Internal
         /// </summary>
         /// <param name="input">The binary input to encode.</param>
         /// <returns>The base64url-encoded form of <paramref name="input"/>.</returns>
+        [SkipLocalsInit]
         public static string Base64UrlEncode(ReadOnlySpan<byte> input)
         {
+            const int StackAllocThreshold = 128;
+
             if (input.IsEmpty)
             {
                 return string.Empty;
@@ -353,8 +357,8 @@ namespace Microsoft.Extensions.Internal
             int bufferSize = GetArraySizeRequiredToEncode(input.Length);
 
             char[]? bufferToReturnToPool = null;
-            Span<char> buffer = bufferSize <= 128
-                ? stackalloc char[bufferSize]
+            Span<char> buffer = bufferSize <= StackAllocThreshold
+                ? stackalloc char[StackAllocThreshold]
                 : bufferToReturnToPool = ArrayPool<char>.Shared.Rent(bufferSize);
 
             var numBase64Chars = Base64UrlEncode(input, buffer);

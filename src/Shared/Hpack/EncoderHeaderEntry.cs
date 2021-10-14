@@ -1,6 +1,5 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
 
@@ -12,6 +11,7 @@ namespace System.Net.Http.HPack
         // Header name and value
         public string? Name;
         public string? Value;
+        public uint Size;
 
         // Chained list of headers in the same bucket
         public EncoderHeaderEntry? Next;
@@ -27,21 +27,17 @@ namespace System.Net.Http.HPack
         /// <summary>
         /// Initialize header values. An entry will be reinitialized when reused.
         /// </summary>
-        public void Initialize(int hash, string name, string value, int index, EncoderHeaderEntry? next)
+        public void Initialize(int hash, string name, string value, uint size, int index, EncoderHeaderEntry? next)
         {
             Debug.Assert(name != null);
             Debug.Assert(value != null);
 
             Name = name;
             Value = value;
+            Size = size;
             Index = index;
             Hash = hash;
             Next = next;
-        }
-
-        public uint CalculateSize()
-        {
-            return (uint)HeaderField.GetLength(Name!.Length, Value!.Length);
         }
 
         /// <summary>
@@ -57,6 +53,7 @@ namespace System.Net.Http.HPack
             Hash = 0;
             Name = null;
             Value = null;
+            Size = 0;
         }
 
         /// <summary>

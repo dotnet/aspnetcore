@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Net;
@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 {
     public class RetryHandler : DelegatingHandler
     {
-        private static readonly int MaxRetries = 5;
+        private const int MaxRetries = 5;
         private static readonly TimeSpan RetryDelay = TimeSpan.FromSeconds(1);
 
         private readonly ILogger _logger;

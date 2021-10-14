@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 import { HttpClient, HttpTransportType, IHubProtocol, JsonHubProtocol } from "@microsoft/signalr";
 import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
@@ -9,7 +9,7 @@ import { FetchHttpClient } from "@microsoft/signalr/dist/esm/FetchHttpClient";
 import { Platform } from "@microsoft/signalr/dist/esm/Utils";
 import { XhrHttpClient } from "@microsoft/signalr/dist/esm/XhrHttpClient";
 
-export let DEFAULT_TIMEOUT_INTERVAL: number = 40 * 1000;
+export const DEFAULT_TIMEOUT_INTERVAL: number = 40 * 1000;
 export let ENDPOINT_BASE_URL: string = "";
 export let ENDPOINT_BASE_HTTPS_URL: string = "";
 
@@ -24,12 +24,13 @@ if (typeof window !== "undefined" && (window as any).__karma__) {
 
     for (let i = 0; i < args.length; i += 1) {
         switch (args[i]) {
-            case "--server":
+            case "--server": {
                 i += 1;
                 const urls = args[i].split(";");
                 httpServer = urls[1];
                 httpsServer = urls[0];
                 break;
+            }
             case "--sauce":
                 sauce = true;
                 break;
@@ -80,13 +81,13 @@ export function getHttpTransportTypes(): HttpTransportType[] {
     return transportTypes;
 }
 
-export function eachTransport(action: (transport: HttpTransportType) => void) {
+export function eachTransport(action: (transport: HttpTransportType) => void): void {
     getHttpTransportTypes().forEach((t) => {
         return action(t);
     });
 }
 
-export function eachTransportAndProtocol(action: (transport: HttpTransportType, protocol: IHubProtocol) => void) {
+export function eachTransportAndProtocol(action: (transport: HttpTransportType, protocol: IHubProtocol) => void): void {
     const protocols: IHubProtocol[] = [new JsonHubProtocol()];
     // Run messagepack tests in Node and Browsers that support binary content (indicated by the presence of responseType property)
     if (typeof XMLHttpRequest === "undefined" || typeof new XMLHttpRequest().responseType === "string") {
@@ -104,7 +105,7 @@ export function eachTransportAndProtocol(action: (transport: HttpTransportType, 
     });
 }
 
-export function eachTransportAndProtocolAndHttpClient(action: (transport: HttpTransportType, protocol: IHubProtocol, httpClient: HttpClient) => void) {
+export function eachTransportAndProtocolAndHttpClient(action: (transport: HttpTransportType, protocol: IHubProtocol, httpClient: HttpClient) => void): void {
     eachTransportAndProtocol((transport, protocol) => {
         getHttpClients().forEach((httpClient) => {
             action(transport, protocol, httpClient);
@@ -127,7 +128,7 @@ export function getHttpClients(): HttpClient[] {
     return httpClients;
 }
 
-export function eachHttpClient(action: (transport: HttpClient) => void) {
+export function eachHttpClient(action: (transport: HttpClient) => void): void {
     return getHttpClients().forEach((t) => {
         return action(t);
     });

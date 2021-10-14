@@ -1,0 +1,1 @@
+x:\dir\subdir\Test\TestComponent.cshtml(1,1): Warning RZ2012: Component 'ComponentWithEditorRequiredChildContent' expects a value for the parameter 'Found', but a value may not have been provided.

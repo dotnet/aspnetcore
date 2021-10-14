@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             this DiagnosticListener diagnosticListener,
             ActionContext actionContext,
             HandlerMethodDescriptor handlerMethodDescriptor,
-            IReadOnlyDictionary<string, object> arguments,
+            IReadOnlyDictionary<string, object?> arguments,
             object instance)
         {
             Debug.Assert(diagnosticListener != null);
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             }
         }
 
-        private static void BeforeHandlerMethodImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, HandlerMethodDescriptor handlerMethodDescriptor, IReadOnlyDictionary<string, object> arguments, object instance)
+        private static void BeforeHandlerMethodImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, HandlerMethodDescriptor handlerMethodDescriptor, IReadOnlyDictionary<string, object?> arguments, object instance)
         {
             if (diagnosticListener.IsEnabled(Diagnostics.BeforeHandlerMethodEventData.EventName))
             {
@@ -50,9 +50,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             this DiagnosticListener diagnosticListener,
             ActionContext actionContext,
             HandlerMethodDescriptor handlerMethodDescriptor,
-            IReadOnlyDictionary<string, object> arguments,
+            IReadOnlyDictionary<string, object?> arguments,
             object instance,
-            IActionResult result)
+            IActionResult? result)
         {
             Debug.Assert(diagnosticListener != null);
             Debug.Assert(actionContext != null);
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             }
         }
 
-        private static void AfterHandlerMethodImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, HandlerMethodDescriptor handlerMethodDescriptor, IReadOnlyDictionary<string, object> arguments, object instance, IActionResult result)
+        private static void AfterHandlerMethodImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, HandlerMethodDescriptor handlerMethodDescriptor, IReadOnlyDictionary<string, object?> arguments, object instance, IActionResult? result)
         {
             if (diagnosticListener.IsEnabled(Diagnostics.AfterHandlerMethodEventData.EventName))
             {

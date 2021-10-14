@@ -23,31 +23,31 @@
       <argument>ILLink</argument>
       <argument>IL2026</argument>
       <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader.&lt;LoadAssembliesInClientAsync&gt;d__8.MoveNext</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.WebAssemblyComponentParameterDeserializer.DeserializeParameters(System.Collections.Generic.IList{Microsoft.AspNetCore.Components.ComponentParameter},System.Collections.Generic.IList{System.Object})</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.Extensions.HotReload.HotReloadAgent.&lt;TopologicalSort&gt;g__Visit|10_0(System.Reflection.Assembly[],System.Reflection.Assembly,System.Collections.Generic.List{System.Reflection.Assembly},System.Collections.Generic.HashSet{System.String})</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.Extensions.HotReload.HotReloadAgent.GetMetadataUpdateTypes(System.Collections.Generic.IReadOnlyList{Microsoft.Extensions.HotReload.UpdateDelta})</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
       <argument>IL2070</argument>
       <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.&lt;GetMetadataUpdateHandlerActions&gt;g__GetUpdateMethod|7_0(System.Type,System.String)</property>
-    </attribute>
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
-      <argument>IL2072</argument>
-      <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Components.Web.WebEventData.ParseEventArgsJson(Microsoft.AspNetCore.Components.RenderTree.Renderer,System.Text.Json.JsonSerializerOptions,System.UInt64,System.String,System.String)</property>
+      <property name="Target">M:Microsoft.Extensions.HotReload.HotReloadAgent.&lt;GetHandlerActions&gt;g__GetUpdateMethod|9_1(System.Type,System.String)</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
       <argument>IL2072</argument>
       <property name="Scope">member</property>
       <property name="Target">M:Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder.InitializeRegisteredRootComponents(Microsoft.JSInterop.IJSUnmarshalledRuntime)</property>
-    </attribute>
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
-      <argument>IL2072</argument>
-      <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Components.WebAssemblyComponentParameterDeserializer.DeserializeParameters(System.Collections.Generic.IList{Microsoft.AspNetCore.Components.ComponentParameter},System.Collections.Generic.IList{System.Object})</property>
     </attribute>
   </assembly>
 </linker>

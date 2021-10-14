@@ -1,0 +1,37 @@
+Source Location: (33:1,1 [37] x:\dir\subdir\Test\TestComponent.cshtml)
+|for (var i = 0; i < 10; i++)
+{
+    |
+Generated Location: (853:24,1 [37] )
+|for (var i = 0; i < 10; i++)
+{
+    |
+
+Source Location: (74:3,8 [1] x:\dir\subdir\Test\TestComponent.cshtml)
+|i|
+Generated Location: (1020:33,8 [1] )
+|i|
+
+Source Location: (79:3,13 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+}|
+Generated Location: (1157:40,13 [3] )
+|
+}|
+
+Source Location: (127:7,2 [56] x:\dir\subdir\Test\TestComponent.cshtml)
+|System.Console.WriteLine(1);System.Console.WriteLine(2);|
+Generated Location: (1284:48,2 [56] )
+|System.Console.WriteLine(1);System.Console.WriteLine(2);|
+
+Source Location: (224:10,7 [65] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    [Parameter]
+    public int IncrementAmount { get; set; }
+|
+Generated Location: (1519:57,7 [65] )
+|
+    [Parameter]
+    public int IncrementAmount { get; set; }
+|
+

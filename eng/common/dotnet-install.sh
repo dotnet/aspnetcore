@@ -70,7 +70,7 @@ case $cpuname in
     ;;
 esac
 
-dotnetRoot="$repo_root/.dotnet"
+dotnetRoot="${repo_root}.dotnet"
 if [[ $architecture != "" ]] && [[ $architecture != $buildarch ]]; then
   dotnetRoot="$dotnetRoot/$architecture"
 fi

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <summary>
         /// Gets or sets the application root relative path for the page.
         /// </summary>
-        public string RelativePath { get; set; }
+        public string RelativePath { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the path relative to the base path for page discovery.
@@ -54,21 +54,21 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// e.g. the <see cref="ViewEnginePath"/>  for the file Areas/Identity/Pages/Manage/Accounts.cshtml, is <c>/Manage/Accounts</c>.
         /// </para>
         /// </summary>
-        public string ViewEnginePath { get; set; }
+        public string ViewEnginePath { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the area name for this page.
         /// This value will be <c>null</c> for non-area pages.
         /// </summary>
-        public string AreaName { get; set; }
+        public string? AreaName { get; set; }
 
-        internal virtual CompiledPageActionDescriptor CompiledPageDescriptor { get; set; }
+        internal virtual CompiledPageActionDescriptor? CompiledPageDescriptor { get; set; }
 
         // This is a cache to avoid multiple compilation operations kicking off
-        internal Task<CompiledPageActionDescriptor> CompiledPageActionDescriptorTask { get; set; }
+        internal Task<CompiledPageActionDescriptor>? CompiledPageActionDescriptorTask { get; set; }
 
         /// <inheritdoc />
-        public override string DisplayName
+        public override string? DisplayName
         {
             get
             {

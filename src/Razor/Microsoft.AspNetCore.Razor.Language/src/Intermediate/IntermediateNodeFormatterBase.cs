@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
     internal class IntermediateNodeFormatterBase : IntermediateNodeFormatter
     {
         private string _content;
-        private Dictionary<string, string> _properties = new Dictionary<string, string>(StringComparer.Ordinal);
+        private readonly Dictionary<string, string> _properties = new Dictionary<string, string>(StringComparer.Ordinal);
 
         protected FormatterContentMode ContentMode { get; set; }
 
@@ -120,12 +120,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             _properties.Clear();
         }
 
-        private string GetShortName(IntermediateNode node)
+        private StringSegment GetShortName(IntermediateNode node)
         {
             var typeName = node.GetType().Name;
             return
                 typeName.EndsWith(nameof(IntermediateNode), StringComparison.Ordinal) ?
-                typeName.Substring(0, typeName.Length - nameof(IntermediateNode).Length) :
+                new StringSegment(typeName, 0, typeName.Length - nameof(IntermediateNode).Length) :
                 typeName;
         }
 
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             private const int IndentSize = 2;
 
             private readonly IntermediateNodeFormatterBase _formatter;
-            private int _indent = 0;
+            private int _indent;
 
             public FormatterVisitor(IntermediateNodeFormatterBase formatter)
             {
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 }
                 _formatter.FormatNode(node);
                 _formatter.Writer.WriteLine();
-                
+
                 // Process children
                 _indent += IndentSize;
                 base.VisitDefault(node);

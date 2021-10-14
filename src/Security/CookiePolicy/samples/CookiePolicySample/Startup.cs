@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 using System.Linq;
 using System.Security.Claims;
@@ -114,7 +117,7 @@ namespace CookiePolicySample
             }
             await response.WriteAsync("<br>\r\n");
 
-            var responseCookies = response.Headers[HeaderNames.SetCookie];
+            var responseCookies = response.Headers.SetCookie;
             await response.WriteAsync($"{responseCookies.Count} Response Cookies:<br>\r\n");
             foreach (var cookie in responseCookies)
             {

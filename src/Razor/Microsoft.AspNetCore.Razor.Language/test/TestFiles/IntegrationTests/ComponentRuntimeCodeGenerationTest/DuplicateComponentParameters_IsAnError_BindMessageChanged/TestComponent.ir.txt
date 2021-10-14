@@ -16,7 +16,7 @@ Document -
                             LazyIntermediateToken - (59:0,59 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - message
                     ComponentAttribute - (58:0,58 [8] x:\dir\subdir\Test\TestComponent.cshtml) - MessageChanged - MessageChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => message = __value, message)
+                            IntermediateToken -  - CSharp - global::Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => message = __value, message)
                     ComponentAttribute - (58:0,58 [8] x:\dir\subdir\Test\TestComponent.cshtml) - MessageExpression - MessageExpression - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - () => message

@@ -14,20 +14,22 @@
     <!-- Disable the default runtimeconfig.json in favor of the one that we create which contains the correct
     framework references. Workaround for issues launching Blazor WASM apps with IIS Express. -->
     <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
-    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
+
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Templating" PrivateAssets="All" Version="$(MicrosoftDotNetBuildTasksTemplatingVersion)" IsImplicitlyDefined="true" AllowExplicitReference="true" />
   </ItemGroup>
-   
+
   <!--  We include this here to ensure that the shared framework is built before we leverage it when running
   the dev server. -->
   <ItemGroup>
-    <ProjectReference
-      Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
-      PrivateAssets="All"
+    <ProjectReference Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
+      Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>

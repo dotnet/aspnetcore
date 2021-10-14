@@ -1,30 +1,31 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     internal class ConnectionManager
     {
-        private readonly ConcurrentDictionary<long, ConnectionReference> _connectionReferences = new ConcurrentDictionary<long, ConnectionReference>();
-        private readonly IKestrelTrace _trace;
+        private long _lastConnectionId = long.MinValue;
 
-        public ConnectionManager(IKestrelTrace trace, long? upgradedConnectionLimit)
+        private readonly ConcurrentDictionary<long, ConnectionReference> _connectionReferences = new ConcurrentDictionary<long, ConnectionReference>();
+        private readonly KestrelTrace _trace;
+
+        public ConnectionManager(KestrelTrace trace, long? upgradedConnectionLimit)
             : this(trace, GetCounter(upgradedConnectionLimit))
         {
         }
 
-        public ConnectionManager(IKestrelTrace trace, ResourceCounter upgradedConnections)
+        public ConnectionManager(KestrelTrace trace, ResourceCounter upgradedConnections)
         {
             UpgradedConnectionCount = upgradedConnections;
             _trace = trace;
         }
+
+        public long GetNewConnectionId() => Interlocked.Increment(ref _lastConnectionId);
 
         /// <summary>
         /// Connections that have been switched to a different protocol.
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         {
             if (!_connectionReferences.TryAdd(id, connectionReference))
             {
-                throw new ArgumentException(nameof(id));
+                throw new ArgumentException("Unable to add connection.", nameof(id));
             }
         }
 
@@ -43,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         {
             if (!_connectionReferences.TryRemove(id, out var reference))
             {
-                throw new ArgumentException(nameof(id));
+                throw new ArgumentException("Unable to remove connection.", nameof(id));
             }
 
             if (reference.TryGetConnection(out var connection))

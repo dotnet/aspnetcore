@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 
 using System;
@@ -18,8 +18,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     // used with Matcher.
     internal class ActionConstraintMatcherPolicy : MatcherPolicy, IEndpointSelectorPolicy
     {
-        private static readonly IReadOnlyList<Endpoint> EmptyEndpoints = Array.Empty<Endpoint>();
-
         // We need to be able to run IActionConstraints on Endpoints that aren't associated
         // with an action. This is a sentinel value we use when the endpoint isn't from MVC.
         internal static readonly ActionDescriptor NonAction = new ActionDescriptor();

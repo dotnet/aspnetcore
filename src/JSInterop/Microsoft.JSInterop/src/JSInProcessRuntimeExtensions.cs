@@ -1,7 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.JSInterop
 {
@@ -16,14 +18,15 @@ namespace Microsoft.JSInterop
         /// <param name="jsRuntime">The <see cref="IJSInProcessRuntime"/>.</param>
         /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
         /// <param name="args">JSON-serializable arguments.</param>
-        public static void InvokeVoid(this IJSInProcessRuntime jsRuntime, string identifier, params object?[] args)
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "The method returns void, so nothing is deserialized.")]
+        public static void InvokeVoid(this IJSInProcessRuntime jsRuntime, string identifier, params object?[]? args)
         {
             if (jsRuntime == null)
             {
                 throw new ArgumentNullException(nameof(jsRuntime));
             }
 
-            jsRuntime.Invoke<object>(identifier, args);
+            jsRuntime.Invoke<IJSVoidResult>(identifier, args);
         }
     }
 }

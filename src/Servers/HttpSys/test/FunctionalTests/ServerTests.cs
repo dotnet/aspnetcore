@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -384,37 +384,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        public async Task Server_SetConnectionLimitChangeAfterStarted_Success()
-        {
-            HttpSysOptions options = null;
-            using (Utilities.CreateDynamicHost(out var address, opt =>
-            {
-                options = opt;
-                Assert.Null(options.MaxConnections);
-                options.MaxConnections = 3;
-            }, httpContext => Task.FromResult(0)))
-            {
-                using (var client1 = await SendHungRequestAsync("GET", address))
-                using (var client2 = await SendHungRequestAsync("GET", address))
-                using (var client3 = await SendHungRequestAsync("GET", address))
-                {
-                    // Maxed out, refuses connection and throws
-                    await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(address));
-
-                    options.MaxConnections = 4;
-
-                    string responseText = await SendRequestAsync(address);
-                    Assert.Equal(string.Empty, responseText);
-
-                    options.MaxConnections = 2;
-
-                    // Maxed out, refuses connection and throws
-                    await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(address));
-                }
-            }
-        }
-
-        [ConditionalFact]
         public async Task Server_SetConnectionLimitInfinite_Success()
         {
             using (Utilities.CreateDynamicHost(out var address, options =>
@@ -635,6 +604,24 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             var addressesFeature = attachedServer.Features.Get<IServerAddressesFeature>();
             Assert.Empty(addressesFeature.Addresses);
             Assert.Empty(attachedServer.Listener.Options.UrlPrefixes);
+        }
+
+        [ConditionalFact]
+        public async Task Server_UnsafePreferInlineScheduling()
+        {
+            using var server = Utilities.CreateHttpServer(
+                out var address,
+                httpContext =>
+                {
+                    return httpContext.Response.WriteAsync("Hello World");
+                },
+                options =>
+                {
+                    options.UnsafePreferInlineScheduling = true;
+                });
+
+            string response = await SendRequestAsync(address);
+            Assert.Equal("Hello World", response);
         }
 
         private async Task<string> SendRequestAsync(string uri)

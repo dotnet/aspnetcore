@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
         private readonly byte[] _hostHeaderName = Encoding.ASCII.GetBytes("Host");
         private readonly byte[] _hostHeaderValue = Encoding.ASCII.GetBytes("www.example.com");
         private readonly byte[] _acceptHeaderName = Encoding.ASCII.GetBytes("Accept");
-        private readonly byte[] _acceptHeaderValue = Encoding.ASCII.GetBytes("text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7\r\n\r\n");
+        private readonly byte[] _acceptHeaderValue = Encoding.ASCII.GetBytes("text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7");
         private readonly byte[] _connectionHeaderName = Encoding.ASCII.GetBytes("Connection");
         private readonly byte[] _connectionHeaderValue = Encoding.ASCII.GetBytes("keep-alive");
 

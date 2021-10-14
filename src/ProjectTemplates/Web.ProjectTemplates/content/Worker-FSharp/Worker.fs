@@ -12,10 +12,8 @@ type Worker(logger: ILogger<Worker>) =
     inherit BackgroundService()
 
     override _.ExecuteAsync(ct: CancellationToken) =
-        async {
+        task {
             while not ct.IsCancellationRequested do
                 logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now)
-                do! Async.Sleep(1000)
+                do! Task.Delay(1000)
         }
-        |> Async.StartAsTask
-        :> Task // need to convert into the parameter-less task

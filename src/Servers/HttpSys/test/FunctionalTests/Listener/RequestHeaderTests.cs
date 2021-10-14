@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             using (var server = Utilities.CreateHttpServer(out address))
             {
                 string[] customValues = new string[] { "custom1, and custom测试2", "custom3" };
-                Task responseTask = SendRequestAsync(address, "Custom-Header", customValues);
+                Task responseTask = SendRequestAsync(address, "Custom-Header", customValues, Encoding.UTF8);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 var requestHeaders = context.Request.Headers;
@@ -44,13 +44,82 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         }
 
         [ConditionalFact]
+        public async Task RequestHeaders_Latin1Replaced()
+        {
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                string[] customValues = new string[] { "£" };
+                Task responseTask = SendRequestAsync(address, "Custom-Header", customValues, Encoding.Latin1);
+
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var requestHeaders = context.Request.Headers;
+                Assert.Equal(4, requestHeaders.Count);
+                Assert.Equal(new Uri(address).Authority, requestHeaders["Host"]);
+                Assert.Equal(new[] { new Uri(address).Authority }, requestHeaders.GetValues("Host"));
+                Assert.Equal("close", requestHeaders["Connection"]);
+                Assert.Equal(new[] { "close" }, requestHeaders.GetValues("Connection"));
+                // Apparently Http.Sys squashes request headers together.
+                Assert.Equal("�", requestHeaders["Custom-Header"]);
+                Assert.Equal(new[] { "�" }, requestHeaders.GetValues("Custom-Header"));
+                Assert.Equal("spacervalue", requestHeaders["Spacer-Header"]);
+                Assert.Equal(new[] { "spacervalue" }, requestHeaders.GetValues("Spacer-Header"));
+                context.Dispose();
+
+                await responseTask;
+            }
+        }
+
+        [ConditionalFact]
+        public async Task RequestHeaders_ClientSendsLatin1Headers_Success()
+        {
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                server.Options.UseLatin1RequestHeaders = true;
+                string[] customValues = new string[] { "£" };
+                Task responseTask = SendRequestAsync(address, "Custom-Header", customValues, Encoding.Latin1);
+
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var requestHeaders = context.Request.Headers;
+                Assert.Equal(4, requestHeaders.Count);
+                Assert.Equal(new Uri(address).Authority, requestHeaders["Host"]);
+                Assert.Equal(new[] { new Uri(address).Authority }, requestHeaders.GetValues("Host"));
+                Assert.Equal("close", requestHeaders["Connection"]);
+                Assert.Equal(new[] { "close" }, requestHeaders.GetValues("Connection"));
+                // Apparently Http.Sys squashes request headers together.
+                Assert.Equal("£", requestHeaders["Custom-Header"]);
+                Assert.Equal(new[] { "£" }, requestHeaders.GetValues("Custom-Header"));
+                Assert.Equal("spacervalue", requestHeaders["Spacer-Header"]);
+                Assert.Equal(new[] { "spacervalue" }, requestHeaders.GetValues("Spacer-Header"));
+                context.Dispose();
+
+                await responseTask;
+            }
+        }
+
+        [ConditionalFact]
+        public async Task RequestHeaders_ClientSendsBadLatin1Headers_Rejected()
+        {
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                server.Options.UseLatin1RequestHeaders = true;
+                string[] customValues = new string[] { "£\0a" };
+                var responseTask = SendRequestAsync(address, "Custom-Header", customValues, Encoding.Latin1);
+                var response = await responseTask;
+                Assert.StartsWith("400", response.Substring(9));
+            }
+        }
+
+        [ConditionalFact]
         public async Task RequestHeaders_ClientSendsKnownHeaderWithNoValue_Success()
         {
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
                 string[] customValues = new string[] { "" };
-                Task responseTask = SendRequestAsync(address, "If-None-Match", customValues);
+                Task responseTask = SendRequestAsync(address, "If-None-Match", customValues, Encoding.UTF8);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 var requestHeaders = context.Request.Headers;
@@ -75,7 +144,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             using (var server = Utilities.CreateHttpServer(out address))
             {
                 string[] customValues = new string[] { "" };
-                Task responseTask = SendRequestAsync(address, "Custom-Header", customValues);
+                Task responseTask = SendRequestAsync(address, "Custom-Header", customValues, Encoding.UTF8);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 var requestHeaders = context.Request.Headers;
@@ -93,7 +162,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             }
         }
 
-        private async Task SendRequestAsync(string address, string customHeader, string[] customValues)
+        private async Task<string> SendRequestAsync(string address, string customHeader, string[] customValues, Encoding encoding)
         {
             var uri = new Uri(address);
             StringBuilder builder = new StringBuilder();
@@ -110,7 +179,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             }
             builder.AppendLine();
 
-            byte[] request = Encoding.UTF8.GetBytes(builder.ToString());
+            byte[] request = encoding.GetBytes(builder.ToString());
 
             Socket socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
             socket.Connect(uri.Host, uri.Port);
@@ -120,6 +189,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             byte[] response = new byte[1024 * 5];
             await Task.Run(() => socket.Receive(response));
             socket.Dispose();
+            return encoding.GetString(response);
         }
     }
 }

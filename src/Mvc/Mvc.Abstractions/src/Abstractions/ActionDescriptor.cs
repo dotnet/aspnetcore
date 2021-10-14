@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
         public ActionDescriptor()
         {
             Id = Guid.NewGuid().ToString();
-            Properties = new Dictionary<object, object>();
+            Properties = new Dictionary<object, object?>();
             RouteValues = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
         }
 
@@ -74,8 +74,8 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
         /// <summary>
         /// Stores arbitrary metadata properties associated with the <see cref="ActionDescriptor"/>.
         /// </summary>
-        public IDictionary<object, object> Properties { get; set; } = default!;
+        public IDictionary<object, object?> Properties { get; set; } = default!;
 
-        internal IFilterMetadata[]? CachedResuableFilters { get; set; }
+        internal IFilterMetadata[]? CachedReusableFilters { get; set; }
     }
 }

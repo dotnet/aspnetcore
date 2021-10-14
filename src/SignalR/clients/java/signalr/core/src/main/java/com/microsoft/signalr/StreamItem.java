@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 package com.microsoft.signalr;
 
@@ -10,7 +10,7 @@ public final class StreamItem extends HubMessage {
     private Map<String, String> headers;
     private final String invocationId;
     private final Object item;
-    
+
     public StreamItem(Map<String, String> headers, String invocationId, Object item) {
         if (headers != null && !headers.isEmpty()) {
             this.headers = headers;
@@ -18,7 +18,7 @@ public final class StreamItem extends HubMessage {
         this.invocationId = invocationId;
         this.item = item;
     }
-    
+
     public Map<String, String> getHeaders() {
         return headers;
     }

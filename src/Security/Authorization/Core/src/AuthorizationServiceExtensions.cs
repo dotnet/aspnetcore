@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// A flag indicating whether requirement evaluation has succeeded or failed.
         /// This value is <value>true</value> when the user fulfills the policy, otherwise <value>false</value>.
         /// </returns>
-        public static Task<AuthorizationResult> AuthorizeAsync(this IAuthorizationService service, ClaimsPrincipal user, object resource, IAuthorizationRequirement requirement)
+        public static Task<AuthorizationResult> AuthorizeAsync(this IAuthorizationService service, ClaimsPrincipal user, object? resource, IAuthorizationRequirement requirement)
         {
             if (service == null)
             {

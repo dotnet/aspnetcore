@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
     {
         private readonly ScopeStack _scopeStack = new ScopeStack();
 
-        private static readonly string DesignTimeVariable = "__o";
+        private const string DesignTimeVariable = "__o";
 
         public override void WriteMarkupBlock(CodeRenderingContext context, MarkupBlockIntermediateNode node)
         {
@@ -660,7 +660,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     context.CodeWriter.Write(".");
                     context.CodeWriter.Write(ComponentsApi.EventCallbackFactory.CreateMethod);
 
-                    if (node.TryParseEventCallbackTypeArgument(out var argument))
+                    if (node.TryParseEventCallbackTypeArgument(out StringSegment argument))
                     {
                         context.CodeWriter.Write("<");
                         context.CodeWriter.Write(argument);

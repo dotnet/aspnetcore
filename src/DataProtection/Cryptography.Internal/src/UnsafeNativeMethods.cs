@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -16,7 +16,7 @@ using Microsoft.Win32.SafeHandles;
 namespace Microsoft.AspNetCore.Cryptography
 {
     [SuppressUnmanagedCodeSecurity]
-    internal unsafe static class UnsafeNativeMethods
+    internal static unsafe class UnsafeNativeMethods
     {
         private const string BCRYPT_LIB = "bcrypt.dll";
         private static readonly Lazy<SafeLibraryHandle> _lazyBCryptLibHandle = GetLazyLibraryHandle(BCRYPT_LIB);

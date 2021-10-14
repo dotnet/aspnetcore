@@ -1,10 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.JSInterop.Infrastructure;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.JSInterop
@@ -21,14 +22,14 @@ namespace Microsoft.JSInterop
         /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>someScope.someFunction</c> on the target instance.</param>
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
-        public static async ValueTask InvokeVoidAsync(this IJSObjectReference jsObjectReference, string identifier, params object?[] args)
+        public static async ValueTask InvokeVoidAsync(this IJSObjectReference jsObjectReference, string identifier, params object?[]? args)
         {
             if (jsObjectReference is null)
             {
                 throw new ArgumentNullException(nameof(jsObjectReference));
             }
 
-            await jsObjectReference.InvokeAsync<object>(identifier, args);
+            await jsObjectReference.InvokeAsync<IJSVoidResult>(identifier, args);
         }
 
         /// <summary>
@@ -43,7 +44,7 @@ namespace Microsoft.JSInterop
         /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>someScope.someFunction</c> on the target instance.</param>
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
-        public static ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSObjectReference jsObjectReference, string identifier, params object?[] args)
+        public static ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSObjectReference jsObjectReference, string identifier, params object?[]? args)
         {
             if (jsObjectReference is null)
             {
@@ -65,7 +66,7 @@ namespace Microsoft.JSInterop
         /// </param>
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
-        public static ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSObjectReference jsObjectReference, string identifier, CancellationToken cancellationToken, params object?[] args)
+        public static ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSObjectReference jsObjectReference, string identifier, CancellationToken cancellationToken, params object?[]? args)
         {
             if (jsObjectReference is null)
             {
@@ -86,14 +87,14 @@ namespace Microsoft.JSInterop
         /// </param>
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
-        public static async ValueTask InvokeVoidAsync(this IJSObjectReference jsObjectReference, string identifier, CancellationToken cancellationToken, params object?[] args)
+        public static async ValueTask InvokeVoidAsync(this IJSObjectReference jsObjectReference, string identifier, CancellationToken cancellationToken, params object?[]? args)
         {
             if (jsObjectReference is null)
             {
                 throw new ArgumentNullException(nameof(jsObjectReference));
             }
 
-            await jsObjectReference.InvokeAsync<object>(identifier, cancellationToken, args);
+            await jsObjectReference.InvokeAsync<IJSVoidResult>(identifier, cancellationToken, args);
         }
 
         /// <summary>
@@ -104,7 +105,7 @@ namespace Microsoft.JSInterop
         /// <param name="timeout">The duration after which to cancel the async operation. Overrides default timeouts (<see cref="JSRuntime.DefaultAsyncTimeout"/>).</param>
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
-        public static async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSObjectReference jsObjectReference, string identifier, TimeSpan timeout, params object?[] args)
+        public static async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSObjectReference jsObjectReference, string identifier, TimeSpan timeout, params object?[]? args)
         {
             if (jsObjectReference is null)
             {
@@ -125,7 +126,7 @@ namespace Microsoft.JSInterop
         /// <param name="timeout">The duration after which to cancel the async operation. Overrides default timeouts (<see cref="JSRuntime.DefaultAsyncTimeout"/>).</param>
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
-        public static async ValueTask InvokeVoidAsync(this IJSObjectReference jsObjectReference, string identifier, TimeSpan timeout, params object?[] args)
+        public static async ValueTask InvokeVoidAsync(this IJSObjectReference jsObjectReference, string identifier, TimeSpan timeout, params object?[]? args)
         {
             if (jsObjectReference is null)
             {
@@ -135,7 +136,7 @@ namespace Microsoft.JSInterop
             using var cancellationTokenSource = timeout == Timeout.InfiniteTimeSpan ? null : new CancellationTokenSource(timeout);
             var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
 
-            await jsObjectReference.InvokeAsync<object>(identifier, cancellationToken, args);
+            await jsObjectReference.InvokeAsync<IJSVoidResult>(identifier, cancellationToken, args);
         }
     }
 }

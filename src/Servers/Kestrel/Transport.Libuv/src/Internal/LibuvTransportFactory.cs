@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Net;
@@ -37,7 +37,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
 
             var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv");
-            var trace = new LibuvTrace(logger);
 
 #pragma warning disable CS0618
             var threadCount = options.Value.ThreadCount;
@@ -52,19 +51,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
             if (!LibuvConstants.ECONNRESET.HasValue)
             {
-                trace.LogWarning("Unable to determine ECONNRESET value on this platform.");
+                logger.LogWarning("Unable to determine ECONNRESET value on this platform.");
             }
 
             if (!LibuvConstants.EADDRINUSE.HasValue)
             {
-                trace.LogWarning("Unable to determine EADDRINUSE value on this platform.");
+                logger.LogWarning("Unable to determine EADDRINUSE value on this platform.");
             }
 
             _baseTransportContext = new LibuvTransportContext
             {
                 Options = options.Value,
                 AppLifetime = applicationLifetime,
-                Log = trace,
+                Log = logger,
             };
         }
 

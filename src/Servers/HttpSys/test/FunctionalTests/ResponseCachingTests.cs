@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Globalization;
@@ -391,7 +391,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             {
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
                 httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString(CultureInfo.InvariantCulture);
-                httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";
+                httpContext.Response.Headers["Cache-Control"] = "public, max-age=30";
                 httpContext.Response.ContentLength = _fileLength;
                 await httpContext.Response.SendFileAsync(_absoluteFilePath, 0, null, CancellationToken.None);
             }))

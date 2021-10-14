@@ -1,0 +1,3 @@
+# Disable file header warnings, since some code fixes don't do the right thing with them
+[*.cs]
+dotnet_diagnostic.IDE0073.severity = suggestion

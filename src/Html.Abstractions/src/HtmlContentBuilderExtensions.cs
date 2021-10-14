@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Html
         public static IHtmlContentBuilder AppendFormat(
             this IHtmlContentBuilder builder,
             string format,
-            params object[] args)
+            params object?[] args)
         {
             if (builder == null)
             {
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Html
             this IHtmlContentBuilder builder,
             IFormatProvider formatProvider,
             string format,
-            params object[] args)
+            params object?[] args)
         {
             if (builder == null)
             {

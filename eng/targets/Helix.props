@@ -19,10 +19,11 @@
     <IsMacHelixQueue>false</IsMacHelixQueue>
     <IsMacHelixQueue Condition="$(HelixTargetQueue.Contains('OSX')) or $(HelixTargetQueue.Contains('macOs'))">true</IsMacHelixQueue>
     <HelixTestName>$(MSBuildProjectName)--$(TargetFramework)</HelixTestName>
-    <HelixUseArchive>false</HelixUseArchive>
     <LoggingTestingDisableFileLogging Condition="'$(IsHelixJob)' == 'true'">false</LoggingTestingDisableFileLogging>
-    <NodeVersion>10.15.3</NodeVersion>
-    <TestDependsOnAspNetPackages>false</TestDependsOnAspNetPackages>
+    <NodeVersion>16.11.0</NodeVersion>
+    <!-- Have all tests depend on the latest runtimes until we get a net7.0 SDK -->
+    <TestDependsOnAspNetPackages>true</TestDependsOnAspNetPackages>
+    <TestDependsOnAspNetRuntime>true</TestDependsOnAspNetRuntime>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">

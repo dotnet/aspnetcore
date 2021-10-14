@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.JsonPatch.Exceptions;
 using System;
@@ -14,8 +14,6 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
     /// </summary>
     public readonly struct ParsedPath
     {
-        private static readonly string[] Empty = null;
-
         private readonly string[] _segments;
 
         public ParsedPath(string path)
@@ -41,7 +39,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             }
         }
 
-        public IReadOnlyList<string> Segments => _segments ?? Empty;
+        public IReadOnlyList<string> Segments => _segments;
 
         private static string[] ParsePath(string path)
         {

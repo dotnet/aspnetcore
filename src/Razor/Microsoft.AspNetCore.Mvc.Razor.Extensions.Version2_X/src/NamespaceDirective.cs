@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
         {
             if (builder == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException(nameof(builder));
             }
 
             builder.AddDirective(Directive);
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
         // both 'view engine' style paths and absolute paths.
         //
         // We also don't normalize the separators here. We expect that all documents are using a consistent style of path.
-        // 
+        //
         // If we can't normalize the path, we just return null so it will be ignored.
         private static string NormalizeDirectory(string path)
         {
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
         {
             if (builder == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException(nameof(builder));
             }
 
             builder.AddDirective(Directive);

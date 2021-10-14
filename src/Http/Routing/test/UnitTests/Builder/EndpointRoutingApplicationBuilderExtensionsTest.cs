@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -293,6 +294,53 @@ namespace Microsoft.AspNetCore.Builder
                 e => Assert.Equal("Test endpoint 2", e.DisplayName),
                 e => Assert.Equal("Test endpoint 3", e.DisplayName),
                 e => Assert.Equal("Test endpoint 4", e.DisplayName));
+        }
+
+        [Fact]
+        public void UseEndpoints_WithGlobalEndpointRouteBuilderHasRoutes()
+        {
+            // Arrange
+            var services = CreateServices();
+
+            var app = new ApplicationBuilder(services);
+
+            var mockRouteBuilder = new Mock<IEndpointRouteBuilder>();
+            mockRouteBuilder.Setup(m => m.DataSources).Returns(new List<EndpointDataSource>());
+
+            var routeBuilder = mockRouteBuilder.Object;
+            app.Properties.Add("__GlobalEndpointRouteBuilder", routeBuilder);
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.Map("/1", d => Task.CompletedTask).WithDisplayName("Test endpoint 1");
+            });
+
+            var requestDelegate = app.Build();
+
+            var endpointDataSource = Assert.Single(mockRouteBuilder.Object.DataSources);
+            Assert.Collection(endpointDataSource.Endpoints,
+                e => Assert.Equal("Test endpoint 1", e.DisplayName));
+
+            var routeOptions = app.ApplicationServices.GetRequiredService<IOptions<RouteOptions>>();
+            Assert.Equal(mockRouteBuilder.Object.DataSources, routeOptions.Value.EndpointDataSources);
+        }
+
+        [Fact]
+        public void UseRouting_SetsEndpointRouteBuilder_IfGlobalOneExists()
+        {
+            // Arrange
+            var services = CreateServices();
+
+            var app = new ApplicationBuilder(services);
+
+            var routeBuilder = new Mock<IEndpointRouteBuilder>().Object;
+            app.Properties.Add("__GlobalEndpointRouteBuilder", routeBuilder);
+            app.UseRouting();
+
+            Assert.True(app.Properties.TryGetValue("__EndpointRouteBuilder", out var local));
+            Assert.True(app.Properties.TryGetValue("__GlobalEndpointRouteBuilder", out var global));
+            Assert.Same(local, global);
         }
 
         private IServiceProvider CreateServices()

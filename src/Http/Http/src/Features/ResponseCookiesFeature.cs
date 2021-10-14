@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Text;
@@ -12,9 +12,6 @@ namespace Microsoft.AspNetCore.Http.Features
     /// </summary>
     public class ResponseCookiesFeature : IResponseCookiesFeature
     {
-        // Lambda hoisted to static readonly field to improve inlining https://github.com/dotnet/roslyn/issues/13624
-        private readonly static Func<IFeatureCollection, IHttpResponseFeature?> _nullResponseFeature = f => null;
-
         private readonly IFeatureCollection _features;
         private IResponseCookies? _cookiesCollection;
 

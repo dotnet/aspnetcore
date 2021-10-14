@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
@@ -28,6 +28,10 @@ namespace Microsoft.AspNetCore.Components.WebView
             // We could come up with something a little more low-level here if we
             // wanted to avoid a couple of allocations
             var messageTypeAndArgs = args.Prepend(messageType);
+
+            // Note we do NOT need the JSRuntime specific JsonSerializerOptions as the args needing special handling
+            // (JS/DotNetObjectReference & Byte Arrays) have already been serialized earlier in the JSRuntime.
+            // We run the serialization here to add the `messageType`.
             return $"{_ipcMessagePrefix}{JsonSerializer.Serialize(messageTypeAndArgs, JsonSerializerOptionsProvider.Options)}";
         }
 
@@ -56,9 +60,9 @@ namespace Microsoft.AspNetCore.Components.WebView
             AttachPage,
             BeginInvokeDotNet,
             EndInvokeJS,
-            DispatchBrowserEvent,
             OnRenderCompleted,
             OnLocationChanged,
+            ReceiveByteArrayFromJS,
         }
 
         public enum OutgoingMessageType
@@ -66,10 +70,10 @@ namespace Microsoft.AspNetCore.Components.WebView
             RenderBatch,
             Navigate,
             AttachToDocument,
-            DetachFromDocument,
             EndInvokeDotNet,
             NotifyUnhandledException,
             BeginInvokeJS,
+            SendByteArrayToJS,
         }
     }
 }

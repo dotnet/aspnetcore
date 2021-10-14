@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -23,16 +23,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         // Use C#7.3's ReadOnlySpan<byte> optimization for static data https://vcsjones.com/2019/02/01/csharp-readonly-span-bytes-static/
         private static ReadOnlySpan<byte> Http2Id => new[] { (byte)'h', (byte)'2' };
 
-        private readonly HttpConnectionContext _context;
+        private readonly BaseHttpConnectionContext _context;
         private readonly ISystemClock _systemClock;
         private readonly TimeoutControl _timeoutControl;
 
         private readonly object _protocolSelectionLock = new object();
         private ProtocolSelectionState _protocolSelectionState = ProtocolSelectionState.Initializing;
-        private IRequestProcessor? _requestProcessor;
         private Http1Connection? _http1Connection;
 
-        public HttpConnection(HttpConnectionContext context)
+        // Internal for testing
+        internal IRequestProcessor? _requestProcessor;
+
+        public HttpConnection(BaseHttpConnectionContext context)
         {
             _context = context;
             _systemClock = _context.ServiceContext.SystemClock;
@@ -43,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _context.TimeoutControl ??= _timeoutControl;
         }
 
-        private IKestrelTrace Log => _context.ServiceContext.Log;
+        private KestrelTrace Log => _context.ServiceContext.Log;
 
         public async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> httpApplication) where TContext : notnull
         {
@@ -58,14 +60,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 {
                     case HttpProtocols.Http1:
                         // _http1Connection must be initialized before adding the connection to the connection manager
-                        requestProcessor = _http1Connection = new Http1Connection<TContext>(_context);
+                        requestProcessor = _http1Connection = new Http1Connection<TContext>((HttpConnectionContext)_context);
                         _protocolSelectionState = ProtocolSelectionState.Selected;
                         break;
                     case HttpProtocols.Http2:
                         // _http2Connection must be initialized before yielding control to the transport thread,
                         // to prevent a race condition where _http2Connection.Abort() is called just as
                         // _http2Connection is about to be initialized.
-                        requestProcessor = new Http2Connection(_context);
+                        requestProcessor = new Http2Connection((HttpConnectionContext)_context);
+                        _protocolSelectionState = ProtocolSelectionState.Selected;
+                        break;
+                    case HttpProtocols.Http3:
+                        requestProcessor = new Http3Connection((HttpMultiplexedConnectionContext)_context);
                         _protocolSelectionState = ProtocolSelectionState.Selected;
                         break;
                     case HttpProtocols.None:
@@ -73,9 +79,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                         break;
 
                     default:
-                        // SelectProtocol() only returns Http1, Http2 or None.
+                        // SelectProtocol() only returns Http1, Http2, Http3 or None.
                         throw new NotSupportedException($"{nameof(SelectProtocol)} returned something other than Http1, Http2 or None.");
-                }   
+                }
 
                 _requestProcessor = requestProcessor;
 
@@ -196,14 +202,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             var hasTls = _context.ConnectionFeatures.Get<ITlsConnectionFeature>() != null;
             var applicationProtocol = _context.ConnectionFeatures.Get<ITlsApplicationProtocolFeature>()?.ApplicationProtocol
                 ?? new ReadOnlyMemory<byte>();
-            var http1Enabled = (_context.Protocols & HttpProtocols.Http1) == HttpProtocols.Http1;
-            var http2Enabled = (_context.Protocols & HttpProtocols.Http2) == HttpProtocols.Http2;
+            var isMultiplexTransport = _context is HttpMultiplexedConnectionContext;
+            var http1Enabled = _context.Protocols.HasFlag(HttpProtocols.Http1);
+            var http2Enabled = _context.Protocols.HasFlag(HttpProtocols.Http2);
+            var http3Enabled = _context.Protocols.HasFlag(HttpProtocols.Http3);
 
             string? error = null;
 
             if (_context.Protocols == HttpProtocols.None)
             {
                 error = CoreStrings.EndPointRequiresAtLeastOneProtocol;
+            }
+
+            if (isMultiplexTransport)
+            {
+                if (http3Enabled)
+                {
+                    return HttpProtocols.Http3;
+                }
+
+                error = $"Protocols {_context.Protocols} not supported on multiplexed transport.";
             }
 
             if (!http1Enabled && http2Enabled && hasTls && !Http2Id.SequenceEqual(applicationProtocol.Span))

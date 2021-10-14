@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
     internal static class ReactDevelopmentServerMiddleware
     {
         private const string LogCategoryName = "Microsoft.AspNetCore.SpaServices";
-        private static TimeSpan RegexMatchTimeout = TimeSpan.FromSeconds(5); // This is a development-time only feature, so a very long timeout is fine
+        private static readonly TimeSpan RegexMatchTimeout = TimeSpan.FromSeconds(5); // This is a development-time only feature, so a very long timeout is fine
 
         public static void Attach(
             ISpaBuilder spaBuilder,
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
             var devServerPort = spaBuilder.Options.DevServerPort;
             if (string.IsNullOrEmpty(sourcePath))
             {
-                throw new ArgumentException("Cannot be null or empty", nameof(sourcePath));
+                throw new ArgumentException("Property 'SourcePath' cannot be null or empty", nameof(spaBuilder));
             }
 
             if (string.IsNullOrEmpty(scriptName))
@@ -49,23 +49,21 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
             var diagnosticSource = appBuilder.ApplicationServices.GetRequiredService<DiagnosticSource>();
             var portTask = StartCreateReactAppServerAsync(sourcePath, scriptName, pkgManagerCommand, devServerPort, logger, diagnosticSource, applicationStoppingToken);
 
-            // Everything we proxy is hardcoded to target http://localhost because:
-            // - the requests are always from the local machine (we're not accepting remote
-            //   requests that go directly to the create-react-app server)
-            // - given that, there's no reason to use https, and we couldn't even if we
-            //   wanted to, because in general the create-react-app server has no certificate
-            var targetUriTask = portTask.ContinueWith(
-                task => new UriBuilder("http", "localhost", task.Result).Uri);
-
-            SpaProxyingExtensions.UseProxyToSpaDevelopmentServer(spaBuilder, () =>
+            SpaProxyingExtensions.UseProxyToSpaDevelopmentServer(spaBuilder, async () =>
             {
                 // On each request, we create a separate startup task with its own timeout. That way, even if
                 // the first request times out, subsequent requests could still work.
                 var timeout = spaBuilder.Options.StartupTimeout;
-                return targetUriTask.WithTimeout(timeout,
-                    $"The create-react-app server did not start listening for requests " +
-                    $"within the timeout period of {timeout.Seconds} seconds. " +
-                    $"Check the log output for error information.");
+                var port = await portTask.WithTimeout(timeout, "The create-react-app server did not start listening for requests " +
+                    $"within the timeout period of {timeout.TotalSeconds} seconds. " +
+                    "Check the log output for error information.");
+
+                // Everything we proxy is hardcoded to target http://localhost because:
+                // - the requests are always from the local machine (we're not accepting remote
+                //   requests that go directly to the create-react-app server)
+                // - given that, there's no reason to use https, and we couldn't even if we
+                //   wanted to, because in general the create-react-app server has no certificate
+                return new UriBuilder("http", "localhost", port).Uri;
             });
         }
 
@@ -102,7 +100,7 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
                 {
                     throw new InvalidOperationException(
                         $"The {pkgManagerCommand} script '{scriptName}' exited without indicating that the " +
-                        $"create-react-app server was listening for requests. The error output was: " +
+                        "create-react-app server was listening for requests. The error output was: " +
                         $"{stdErrReader.ReadAsString()}", ex);
                 }
             }

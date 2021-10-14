@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -20,16 +20,19 @@ namespace Microsoft.AspNetCore.WebUtilities
     {
         /// <summary>
         /// Gets the default value for <see cref="ValueCountLimit"/>.
+        /// Defaults to 1024.
         /// </summary>
         public const int DefaultValueCountLimit = 1024;
 
         /// <summary>
         /// Gets the default value for <see cref="KeyLengthLimit"/>.
+        /// Defaults to 2,048 bytes‬, which is approximately 2KB.
         /// </summary>
         public const int DefaultKeyLengthLimit = 1024 * 2;
 
         /// <summary>
         /// Gets the default value for <see cref="ValueLengthLimit" />.
+        /// Defaults to 4,194,304 bytes‬, which is approximately 4MB.
         /// </summary>
         public const int DefaultValueLengthLimit = 1024 * 1024 * 4;
 
@@ -74,7 +77,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// <summary>
         /// Initializes a new instance of <see cref="FormReader"/>.
         /// </summary>
-        /// <param name="stream">The <see cref="Stream"/> to read. Assumes a <c>utf-8</c> encoded stream.</param>
+        /// <param name="stream">The <see cref="Stream"/> to read. Assumes a utf-8 encoded stream.</param>
         public FormReader(Stream stream)
             : this(stream, Encoding.UTF8, ArrayPool<char>.Shared)
         {

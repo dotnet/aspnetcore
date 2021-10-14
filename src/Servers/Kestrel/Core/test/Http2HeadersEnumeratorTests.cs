@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.Extensions.Primitives;
+
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
@@ -17,14 +18,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void CanIterateOverResponseHeaders()
         {
-            var responseHeaders = new HttpResponseHeaders
-            {
-                ContentLength = 9,
-                HeaderAcceptRanges = "AcceptRanges!",
-                HeaderAge = new StringValues(new[] { "1", "2" }),
-                HeaderDate = "Date!",
-                HeaderGrpcEncoding = "Identity!"
-            };
+            var responseHeaders = (IHeaderDictionary)new HttpResponseHeaders();
+
+            responseHeaders.ContentLength = 9;
+            responseHeaders.AcceptRanges = "AcceptRanges!";
+            responseHeaders.Age = new StringValues(new[] { "1", "2" });
+            responseHeaders.Date = "Date!";
+            responseHeaders.GrpcEncoding = "Identity!";
+
             responseHeaders.Append("Name1", "Value1");
             responseHeaders.Append("Name2", "Value2-1");
             responseHeaders.Append("Name2", "Value2-2");
@@ -38,10 +39,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(new[]
             {
                 CreateHeaderResult(H2StaticTable.Date, "Date", "Date!"),
-                CreateHeaderResult(-1, "Grpc-Encoding", "Identity!"),
                 CreateHeaderResult(H2StaticTable.AcceptRanges, "Accept-Ranges", "AcceptRanges!"),
                 CreateHeaderResult(H2StaticTable.Age, "Age", "1"),
                 CreateHeaderResult(H2StaticTable.Age, "Age", "2"),
+                CreateHeaderResult(-1, "Grpc-Encoding", "Identity!"),
                 CreateHeaderResult(H2StaticTable.ContentLength, "Content-Length", "9"),
                 CreateHeaderResult(-1, "Name1", "Value1"),
                 CreateHeaderResult(-1, "Name2", "Value2-1"),
@@ -53,11 +54,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void CanIterateOverResponseTrailers()
         {
-            var responseTrailers = new HttpResponseTrailers
-            {
-                ContentLength = 9,
-                HeaderETag = "ETag!"
-            };
+            var responseTrailers = (IHeaderDictionary)new HttpResponseTrailers();
+
+            responseTrailers.ContentLength = 9;
+            responseTrailers.ETag = "ETag!";
+
             responseTrailers.Append("Name1", "Value1");
             responseTrailers.Append("Name2", "Value2-1");
             responseTrailers.Append("Name2", "Value2-2");
@@ -104,10 +105,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("Value2-2", e.Current.Value);
             Assert.Equal(-1, e.HPackStaticTableId);
 
-            var responseTrailers = new HttpResponseTrailers
-            {
-                HeaderGrpcStatus = "1"
-            };
+            var responseTrailers = (IHeaderDictionary)new HttpResponseTrailers();
+
+            responseTrailers.GrpcStatus = "1";
+
             responseTrailers.Append("Name1", "Value1");
             responseTrailers.Append("Name2", "Value2-1");
             responseTrailers.Append("Name2", "Value2-2");

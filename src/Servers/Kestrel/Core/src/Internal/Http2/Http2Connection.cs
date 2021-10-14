@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     {
         public static ReadOnlySpan<byte> ClientPreface => ClientPrefaceBytes;
 
-        private static readonly PseudoHeaderFields _mandatoryRequestPseudoHeaderFields =
+        private const PseudoHeaderFields _mandatoryRequestPseudoHeaderFields =
             PseudoHeaderFields.Method | PseudoHeaderFields.Path | PseudoHeaderFields.Scheme;
 
         private readonly HttpConnectionContext _context;
@@ -56,8 +56,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private int _highestOpenedStreamId;
         private bool _gracefulCloseStarted;
 
-        private int _clientActiveStreamCount = 0;
-        private int _serverActiveStreamCount = 0;
+        private int _clientActiveStreamCount;
+        private int _serverActiveStreamCount;
 
         // The following are the only fields that can be modified outside of the ProcessRequestsAsync loop.
         private readonly ConcurrentQueue<Http2Stream> _completedStreams = new ConcurrentQueue<Http2Stream>();
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         // Internal for testing
         internal readonly Http2KeepAlive? _keepAlive;
         internal readonly Dictionary<int, Http2Stream> _streams = new Dictionary<int, Http2Stream>();
-        internal Http2StreamStack StreamPool;
+        internal PooledStreamStack<Http2Stream> StreamPool;
         // Max tracked streams is double max concurrent streams.
         // If a small MaxConcurrentStreams value is configured then still track at least to 100 streams
         // to support clients that send a burst of streams while the connection is being established.
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _serverSettings.InitialWindowSize = (uint)http2Limits.InitialStreamWindowSize;
 
             // Start pool off at a smaller size if the max number of streams is less than the InitialStreamPoolSize
-            StreamPool = new Http2StreamStack(Math.Min(InitialStreamPoolSize, http2Limits.MaxStreamsPerConnection));
+            StreamPool = new PooledStreamStack<Http2Stream>(Math.Min(InitialStreamPoolSize, http2Limits.MaxStreamsPerConnection));
 
             _inputTask = ReadInputAsync();
         }
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public PipeReader Input => _input.Reader;
 
-        public IKestrelTrace Log => _context.ServiceContext.Log;
+        public KestrelTrace Log => _context.ServiceContext.Log;
         public IFeatureCollection ConnectionFeatures => _context.ConnectionFeatures;
         public ISystemClock SystemClock => _context.ServiceContext.SystemClock;
         public ITimeoutControl TimeoutControl => _context.TimeoutControl;
@@ -437,7 +437,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return false;
         }
 
-        private bool ParsePreface(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        private static bool ParsePreface(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
             consumed = buffer.Start;
             examined = buffer.End;
@@ -650,6 +650,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             var streamContext = new Http2StreamContext(
                 ConnectionId,
                 protocols: default,
+                _context.AltSvcHeader,
                 _context.ServiceContext,
                 _context.ConnectionFeatures,
                 _context.MemoryPool,
@@ -717,8 +718,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // Second reset
                 if (stream.RstStreamReceived)
                 {
-                    // Hard abort, do not allow any more frames on this stream.
-                    throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamAborted(_incomingFrame.Type, stream.StreamId), Http2ErrorCode.STREAM_CLOSED);
+                    // https://tools.ietf.org/html/rfc7540#section-5.1
+                    // If RST_STREAM has already been received then the stream is in a closed state.
+                    // Additional frames (other than PRIORITY) are a stream error.
+                    // The server will usually send a RST_STREAM for a stream error, but RST_STREAM
+                    // shouldn't be sent in response to RST_STREAM to avoid a loop.
+                    // The best course of action here is to do nothing.
+                    return Task.CompletedTask;
                 }
 
                 // No additional inbound header or data frames are allowed for this stream after receiving a reset.
@@ -1302,7 +1308,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
                     else
                     {
-                        _currentHeadersStream.OnHeader(name, value);
+                        _currentHeadersStream.OnHeader(name, value, checkForNewlineChars : true);
                     }
                 }
             }
@@ -1443,7 +1449,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        private PseudoHeaderFields GetPseudoHeaderField(ReadOnlySpan<byte> name)
+        private static PseudoHeaderFields GetPseudoHeaderField(ReadOnlySpan<byte> name)
         {
             if (name.IsEmpty || name[0] != (byte)':')
             {

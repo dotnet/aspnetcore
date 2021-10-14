@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -92,7 +95,7 @@ namespace JwtBearerSample
                     else
                     {
                         response.ContentType = "application/json";
-                        response.Headers[HeaderNames.CacheControl] = "no-cache";
+                        response.Headers.CacheControl = "no-cache";
                         await response.StartAsync();
                         Serialize(Todos, response.BodyWriter);
                         await response.BodyWriter.FlushAsync();

@@ -1,9 +1,10 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -23,7 +24,8 @@ namespace Microsoft.AspNetCore.Mvc
         Attribute,
         IResourceFilter,
         IConsumesActionConstraint,
-        IApiRequestMetadataProvider
+        IApiRequestMetadataProvider,
+        IAcceptsMetadata
     {
         /// <summary>
         /// The order for consumes attribute.
@@ -33,6 +35,8 @@ namespace Microsoft.AspNetCore.Mvc
 
         /// <summary>
         /// Creates a new instance of <see cref="ConsumesAttribute"/>.
+        /// <param name="contentType">The request content type.</param>
+        /// <param name="otherContentTypes">The additional list of allowed request content types.</param>
         /// </summary>
         public ConsumesAttribute(string contentType, params string[] otherContentTypes)
         {
@@ -51,6 +55,35 @@ namespace Microsoft.AspNetCore.Mvc
             }
 
             ContentTypes = GetContentTypes(contentType, otherContentTypes);
+            _contentTypes = GetAllContentTypes(contentType, otherContentTypes);
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="ConsumesAttribute"/>.
+        /// <param name="requestType">The type being read from the request.</param>
+        /// <param name="contentType">The request content type.</param>
+        /// <param name="otherContentTypes">The additional list of allowed request content types.</param>
+        /// </summary>
+        public ConsumesAttribute(Type requestType, string contentType, params string[] otherContentTypes)
+        {
+            if (contentType == null)
+            {
+                throw new ArgumentNullException(nameof(contentType));
+            }
+
+            // We want to ensure that the given provided content types are valid values, so
+            // we validate them using the semantics of MediaTypeHeaderValue.
+            MediaTypeHeaderValue.Parse(contentType);
+
+            for (var i = 0; i < otherContentTypes.Length; i++)
+            {
+                MediaTypeHeaderValue.Parse(otherContentTypes[i]);
+            }
+
+            ContentTypes = GetContentTypes(contentType, otherContentTypes);
+            _contentTypes = GetAllContentTypes(contentType, otherContentTypes);
+            _requestType = requestType;
+
         }
 
         // The value used is a non default value so that it avoids getting mixed with other action constraints
@@ -63,6 +96,20 @@ namespace Microsoft.AspNetCore.Mvc
         /// multiple matches.
         /// </summary>
         public MediaTypeCollection ContentTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value that determines if the request body is optional.
+        /// This value is only used to specify if the request body is required in API explorer.
+        /// </summary>
+        public bool IsOptional { get; set; }
+
+        readonly Type? _requestType;
+
+        readonly List<string> _contentTypes = new();
+
+        Type? IAcceptsMetadata.RequestType => _requestType;
+
+        IReadOnlyList<string> IAcceptsMetadata.ContentTypes => _contentTypes;
 
         /// <inheritdoc />
         public void OnResourceExecuting(ResourceExecutingContext context)
@@ -221,6 +268,16 @@ namespace Microsoft.AspNetCore.Mvc
             }
 
             return contentTypes;
+        }
+
+        private static List<string> GetAllContentTypes(string contentType, string[] additionalContentTypes)
+        {
+            var allContentTypes = new List<string>()
+            {
+                contentType
+            };
+            allContentTypes.AddRange(additionalContentTypes);
+            return allContentTypes;
         }
 
         /// <inheritdoc />

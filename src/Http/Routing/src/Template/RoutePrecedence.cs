@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -24,8 +24,8 @@ namespace Microsoft.AspNetCore.Routing.Template
         ///     /api/{id:int} == 1.2
         ///     /api/template/{id:int} == 1.12
         /// </example>
-        /// <param name="template">The <see cref="RouteTemplate"/> to compute precendence for.</param>
-        /// <returns>A <see cref="decimal"/> representing the route's precendence.</returns>
+        /// <param name="template">The <see cref="RouteTemplate"/> to compute precedence for.</param>
+        /// <returns>A <see cref="decimal"/> representing the route's precedence.</returns>
         public static decimal ComputeInbound(RouteTemplate template)
         {
             ValidateSegementLength(template.Segments.Count);
@@ -76,8 +76,8 @@ namespace Microsoft.AspNetCore.Routing.Template
         ///     /api/{id:int}          == 5.4
         ///     /api/template/{id:int} == 5.54
         /// </example>
-        /// <param name="template">The <see cref="RouteTemplate"/> to compute precendence for.</param>
-        /// <returns>A <see cref="decimal"/> representing the route's precendence.</returns>
+        /// <param name="template">The <see cref="RouteTemplate"/> to compute precedence for.</param>
+        /// <returns>A <see cref="decimal"/> representing the route's precedence.</returns>
         public static decimal ComputeOutbound(RouteTemplate template)
         {
             ValidateSegementLength(template.Segments.Count);

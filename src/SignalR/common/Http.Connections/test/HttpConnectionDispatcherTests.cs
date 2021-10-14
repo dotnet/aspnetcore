@@ -1,31 +1,47 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Net.WebSockets;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.IdentityModel.Tokens;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -187,8 +203,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             {
                 var manager = CreateConnectionManager(LoggerFactory);
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
-                var pipeOptions = new PipeOptions(pauseWriterThreshold: 8, resumeWriterThreshold: 4);
-                var connection = manager.CreateConnection(pipeOptions, pipeOptions);
+                var options = new HttpConnectionDispatcherOptions();
+                options.TransportMaxBufferSize = 8;
+                options.ApplicationMaxBufferSize = 8;
+                var connection = manager.CreateConnection(options);
                 connection.TransportType = transportType;
 
                 using (var requestBody = new MemoryStream())
@@ -486,7 +504,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         {
             using (StartVerifiableLog())
             {
-                var manager = CreateConnectionManager(LoggerFactory, TimeSpan.FromSeconds(5));
+                var disconnectTimeout = TimeSpan.FromSeconds(5);
+                var manager = CreateConnectionManager(LoggerFactory, disconnectTimeout);
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
                 var connection = manager.CreateConnection();
                 connection.TransportType = HttpTransportType.LongPolling;
@@ -532,7 +551,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     await task.DefaultTimeout();
 
                     // We've been gone longer than the expiration time
-                    connection.LastSeenUtc = DateTime.UtcNow.Subtract(TimeSpan.FromSeconds(10));
+                    connection.LastSeenTicks = Environment.TickCount64 - (long)disconnectTimeout.TotalMilliseconds - 1;
 
                     // The application is still running here because the poll is only killed
                     // by the heartbeat so we pretend to do a scan and this should force the application task to complete
@@ -1921,8 +1940,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             using (StartVerifiableLog())
             {
                 var manager = CreateConnectionManager(LoggerFactory);
-                var pipeOptions = new PipeOptions(pauseWriterThreshold: 2, resumeWriterThreshold: 1);
-                var connection = manager.CreateConnection(pipeOptions, pipeOptions);
+                var options = new HttpConnectionDispatcherOptions
+                {
+                    TransportMaxBufferSize = 2,
+                    ApplicationMaxBufferSize = 2
+                };
+                var connection = manager.CreateConnection(options);
                 connection.TransportType = HttpTransportType.LongPolling;
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
@@ -1934,7 +1957,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<NeverEndingConnectionHandler>();
                 var app = builder.Build();
-                var options = new HttpConnectionDispatcherOptions();
 
                 var pollTask = dispatcher.ExecuteAsync(context, options, app);
                 Assert.True(pollTask.IsCompleted);
@@ -2068,8 +2090,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             using (StartVerifiableLog())
             {
                 var manager = CreateConnectionManager(LoggerFactory);
-                var pipeOptions = new PipeOptions(pauseWriterThreshold: 13, resumeWriterThreshold: 10);
-                var connection = manager.CreateConnection(pipeOptions, pipeOptions);
+                var options = new HttpConnectionDispatcherOptions
+                {
+                    TransportMaxBufferSize = 13,
+                    ApplicationMaxBufferSize = 13
+                };
+
+                var connection = manager.CreateConnection(options);
                 connection.TransportType = HttpTransportType.LongPolling;
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
@@ -2079,7 +2106,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<TestConnectionHandler>();
                 var app = builder.Build();
-                var options = new HttpConnectionDispatcherOptions();
 
                 SyncPoint streamCopySyncPoint = new SyncPoint();
 
@@ -2127,8 +2153,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             using (StartVerifiableLog())
             {
                 var manager = CreateConnectionManager(LoggerFactory);
-                var pipeOptions = new PipeOptions(pauseWriterThreshold: 13, resumeWriterThreshold: 10);
-                var connection = manager.CreateConnection(pipeOptions, pipeOptions);
+                var options = new HttpConnectionDispatcherOptions
+                {
+                    TransportMaxBufferSize = 13,
+                    ApplicationMaxBufferSize = 13
+                };
+                var connection = manager.CreateConnection(options);
                 connection.TransportType = HttpTransportType.LongPolling;
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
@@ -2138,7 +2168,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<TestConnectionHandler>();
                 var app = builder.Build();
-                var options = new HttpConnectionDispatcherOptions();
 
                 using (var responseBody = new MemoryStream())
                 using (var requestBody = new MemoryStream())
@@ -2181,8 +2210,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             using (StartVerifiableLog())
             {
                 var manager = CreateConnectionManager(LoggerFactory);
-                var pipeOptions = new PipeOptions(pauseWriterThreshold: 13, resumeWriterThreshold: 10);
-                var connection = manager.CreateConnection(pipeOptions, pipeOptions);
+                var options = new HttpConnectionDispatcherOptions
+                {
+                    TransportMaxBufferSize = 13,
+                    ApplicationMaxBufferSize = 13
+                };
+                var connection = manager.CreateConnection(options);
                 connection.TransportType = HttpTransportType.LongPolling;
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
@@ -2192,7 +2225,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<TestConnectionHandler>();
                 var app = builder.Build();
-                var options = new HttpConnectionDispatcherOptions();
 
                 using (var responseBody = new MemoryStream())
                 using (var requestBody = new MemoryStream())
@@ -2276,8 +2308,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             using (StartVerifiableLog())
             {
                 var manager = CreateConnectionManager(LoggerFactory);
-                var pipeOptions = new PipeOptions(pauseWriterThreshold: 2, resumeWriterThreshold: 1);
-                var connection = manager.CreateConnection(pipeOptions, pipeOptions);
+                var options = new HttpConnectionDispatcherOptions
+                {
+                    TransportMaxBufferSize = 2,
+                    ApplicationMaxBufferSize = 2
+                };
+                var connection = manager.CreateConnection(options);
                 connection.TransportType = HttpTransportType.LongPolling;
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
@@ -2289,7 +2325,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<NeverEndingConnectionHandler>();
                 var app = builder.Build();
-                var options = new HttpConnectionDispatcherOptions();
 
                 var pollTask = dispatcher.ExecuteAsync(context, options, app);
                 Assert.True(pollTask.IsCompleted);
@@ -2386,7 +2421,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         {
             public CancellationToken RequestAborted { get; set; }
 
-            private CancellationTokenSource _cts;
+            private readonly CancellationTokenSource _cts;
             public CustomHttpRequestLifetimeFeature()
             {
                 _cts = new CancellationTokenSource();
@@ -2572,8 +2607,485 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 // ServiceScope will be disposed here
                 await connection.DisposeAsync().DefaultTimeout();
 
-                Assert.Throws<ObjectDisposedException>(() => connection.ServiceScope.ServiceProvider.GetService<MessageWrapper>());
+                Assert.Throws<ObjectDisposedException>(() => connection.ServiceScope.Value.ServiceProvider.GetService<MessageWrapper>());
             }
+        }
+
+        private class TestActivityFeature : IHttpActivityFeature
+        {
+            public TestActivityFeature(Activity activity)
+            {
+                Activity = activity;
+            }
+
+            public Activity Activity { get; set; }
+        }
+
+        [Fact]
+        public async Task LongRunningActivityTagSetOnExecuteAsync()
+        {
+            using (StartVerifiableLog())
+            {
+                var manager = CreateConnectionManager(LoggerFactory);
+                var connection = manager.CreateConnection();
+                connection.TransportType = HttpTransportType.ServerSentEvents;
+
+                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+                var services = new ServiceCollection();
+                services.AddSingleton<NeverEndingConnectionHandler>();
+                var context = MakeRequest("/foo", connection, services);
+                var cts = new CancellationTokenSource();
+                context.RequestAborted = cts.Token;
+                SetTransport(context, HttpTransportType.ServerSentEvents);
+
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
+                builder.UseConnectionHandler<NeverEndingConnectionHandler>();
+                var app = builder.Build();
+
+                var activityFeature = new TestActivityFeature(new Activity("name"));
+                activityFeature.Activity.Start();
+                context.Features.Set<IHttpActivityFeature>(activityFeature);
+
+                _ = dispatcher.ExecuteAsync(context, new HttpConnectionDispatcherOptions(), app);
+
+                Assert.Equal("true", Activity.Current.GetTagItem("http.long_running"));
+
+                connection.Transport.Output.Complete();
+
+                await connection.ConnectionClosed.WaitForCancellationAsync().DefaultTimeout();
+
+                activityFeature.Activity.Dispose();
+            }
+        }
+
+        [Fact]
+        public async Task ConnectionClosedRequestedTriggeredOnAuthExpiration()
+        {
+            using (StartVerifiableLog())
+            {
+                var manager = CreateConnectionManager(LoggerFactory, TimeSpan.FromSeconds(5));
+                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+                var options = new HttpConnectionDispatcherOptions() { CloseOnAuthenticationExpiration = true };
+                var connection = manager.CreateConnection(options);
+                connection.TransportType = HttpTransportType.LongPolling;
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                connection.ConnectionClosedRequested.Register(() => tcs.SetResult());
+
+                var services = new ServiceCollection();
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
+                builder.UseConnectionHandler<HttpContextConnectionHandler>();
+                var app = builder.Build();
+                var context = MakeRequest("/foo", connection, services);
+
+                // Initial poll will complete immediately
+                await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+
+                var pollTask = dispatcher.ExecuteAsync(context, options, app);
+
+                // AuthorizationExpiration is in the future so the scan won't do anything
+                manager.Scan();
+
+                await connection.Application.Output.WriteAsync(new byte[] { 1 }).DefaultTimeout();
+                await pollTask.DefaultTimeout();
+
+                var memory = new Memory<byte>(new byte[10]);
+                context.Response.Body.Position = 0;
+                Assert.Equal(1, await context.Response.Body.ReadAsync(memory).DefaultTimeout());
+                Assert.Equal(new byte[] { 1 }, memory.Slice(0, 1).ToArray());
+
+                context = MakeRequest("/foo", connection, services);
+                pollTask = dispatcher.ExecuteAsync(context, options, app);
+
+                // Set auth to an expired time
+                connection.AuthenticationExpiration = DateTimeOffset.Now.AddSeconds(-1);
+
+                manager.Scan();
+
+                await tcs.Task.DefaultTimeout();
+
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
+
+        [Theory]
+        [InlineData(HttpTransportType.LongPolling)]
+        [InlineData(HttpTransportType.ServerSentEvents)]
+        [InlineData(HttpTransportType.WebSockets)]
+        public async Task AuthenticationExpirationSetOnAuthenticatedConnectionWithJWT(HttpTransportType transportType)
+        {
+            SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
+            JwtSecurityTokenHandler JwtTokenHandler = new JwtSecurityTokenHandler();
+
+            using var host = CreateHost(services =>
+            {
+                services.AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                }).AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters =
+                        new TokenValidationParameters
+                        {
+                            LifetimeValidator = (before, expires, token, parameters) => expires > DateTime.UtcNow,
+                            ValidateAudience = false,
+                            ValidateIssuer = false,
+                            ValidateActor = false,
+                            ValidateLifetime = true,
+                            IssuerSigningKey = SecurityKey
+                        };
+
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+
+                            if (!string.IsNullOrEmpty(accessToken) &&
+                                (context.HttpContext.WebSockets.IsWebSocketRequest || context.Request.Headers["Accept"] == "text/event-stream"))
+                            {
+                                context.Token = context.Request.Query["access_token"];
+                            }
+                            return Task.CompletedTask;
+                        }
+                    };
+                });
+            }, endpoints =>
+            {
+                endpoints.MapConnectionHandler<AuthConnectionHandler>("/foo", o => o.CloseOnAuthenticationExpiration = true);
+
+                endpoints.MapGet("/generatetoken", context =>
+                {
+                    return context.Response.WriteAsync(GenerateToken(context));
+                });
+
+                string GenerateToken(HttpContext httpContext)
+                {
+                    var claims = new[] { new Claim(ClaimTypes.NameIdentifier, httpContext.Request.Query["user"]) };
+                    var credentials = new SigningCredentials(SecurityKey, SecurityAlgorithms.HmacSha256);
+                    var token = new JwtSecurityToken("SignalRTestServer", "SignalRTests", claims, expires: DateTime.UtcNow.AddMinutes(1), signingCredentials: credentials);
+                    return JwtTokenHandler.WriteToken(token);
+                }
+            }, LoggerFactory);
+
+            host.Start();
+
+            var manager = host.Services.GetRequiredService<HttpConnectionManager>();
+            var url = host.Services.GetService<IServer>().Features.Get<IServerAddressesFeature>().Addresses.Single();
+
+            string token = "";
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri(url);
+
+                var response = await client.GetAsync("generatetoken?user=bob");
+                token = await response.Content.ReadAsStringAsync();
+            }
+
+            url += "/foo";
+            var stream = new MemoryStream();
+            var connection = new HttpConnection(
+                new HttpConnectionOptions()
+                {
+                    Url = new Uri(url),
+                    AccessTokenProvider = () => Task.FromResult(token),
+                    Transports = transportType,
+                    DefaultTransferFormat = TransferFormat.Text,
+                    HttpMessageHandlerFactory = handler => new GetNegotiateHttpHandler(handler, stream)
+                },
+                LoggerFactory);
+
+            await connection.StartAsync();
+
+            var negotiateResponse = NegotiateProtocol.ParseResponse(stream.ToArray());
+
+            Assert.True(manager.TryGetConnection(negotiateResponse.ConnectionToken, out var context));
+
+            Assert.True(context.AuthenticationExpiration > DateTimeOffset.UtcNow);
+            Assert.True(context.AuthenticationExpiration < DateTimeOffset.MaxValue);
+
+            await connection.DisposeAsync();
+        }
+
+        [Theory]
+        [InlineData(HttpTransportType.LongPolling)]
+        [InlineData(HttpTransportType.ServerSentEvents)]
+        [InlineData(HttpTransportType.WebSockets)]
+        public async Task AuthenticationExpirationSetOnAuthenticatedConnectionWithCookies(HttpTransportType transportType)
+        {
+            using var host = CreateHost(services =>
+            {
+                services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                    .AddCookie();
+            }, endpoints =>
+            {
+                endpoints.MapConnectionHandler<AuthConnectionHandler>("/foo", o => o.CloseOnAuthenticationExpiration = true);
+
+                endpoints.MapGet("/signin", async context =>
+                {
+                    var claims = new List<Claim>
+                    {
+                        new Claim(ClaimTypes.NameIdentifier, context.Request.Query["user"])
+                    };
+                    await context.SignInAsync(new ClaimsPrincipal(new ClaimsIdentity(claims, "Cookies")));
+                });
+            }, LoggerFactory);
+
+            host.Start();
+
+            var manager = host.Services.GetRequiredService<HttpConnectionManager>();
+            var url = host.Services.GetService<IServer>().Features.Get<IServerAddressesFeature>().Addresses.Single();
+
+            var cookies = new CookieContainer();
+            using (var client = new HttpClient(new HttpClientHandler() { CookieContainer = cookies }))
+            {
+                client.BaseAddress = new Uri(url);
+
+                var response = await client.GetAsync("signin?user=bob");
+            }
+
+            url += "/foo";
+            var stream = new MemoryStream();
+            var connection = new HttpConnection(
+                new HttpConnectionOptions()
+                {
+                    Url = new Uri(url),
+                    Transports = transportType,
+                    DefaultTransferFormat = TransferFormat.Text,
+                    HttpMessageHandlerFactory = handler => new GetNegotiateHttpHandler(handler, stream),
+                    Cookies = cookies
+                },
+                LoggerFactory);
+
+            await connection.StartAsync();
+
+            var negotiateResponse = NegotiateProtocol.ParseResponse(stream.ToArray());
+
+            Assert.True(manager.TryGetConnection(negotiateResponse.ConnectionToken, out var context));
+
+            Assert.True(context.AuthenticationExpiration > DateTimeOffset.UtcNow);
+            Assert.True(context.AuthenticationExpiration < DateTimeOffset.MaxValue);
+
+            await connection.DisposeAsync();
+        }
+
+        [Theory]
+        [InlineData(HttpTransportType.LongPolling)]
+        [InlineData(HttpTransportType.ServerSentEvents)]
+        [InlineData(HttpTransportType.WebSockets)]
+        public async Task AuthenticationExpirationUsesCorrectScheme(HttpTransportType transportType)
+        {
+            var SecurityKey = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
+            var JwtTokenHandler = new JwtSecurityTokenHandler();
+
+            using var host = CreateHost(services =>
+                {
+                    // Set default to Cookie auth but use JWT auth for the endpoint
+                    // This makes sure we take the scheme into account when grabbing the token expiration
+                    services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                        .AddCookie()
+                        .AddJwtBearer(options =>
+                        {
+                            options.TokenValidationParameters =
+                                new TokenValidationParameters
+                                {
+                                    LifetimeValidator = (before, expires, token, parameters) => expires > DateTime.UtcNow,
+                                    ValidateAudience = false,
+                                    ValidateIssuer = false,
+                                    ValidateActor = false,
+                                    ValidateLifetime = true,
+                                    IssuerSigningKey = SecurityKey
+                                };
+
+                            options.Events = new JwtBearerEvents
+                            {
+                                OnMessageReceived = context =>
+                                {
+                                    var accessToken = context.Request.Query["access_token"];
+
+                                    if (!string.IsNullOrEmpty(accessToken) &&
+                                        (context.HttpContext.WebSockets.IsWebSocketRequest || context.Request.Headers["Accept"] == "text/event-stream"))
+                                    {
+                                        context.Token = context.Request.Query["access_token"];
+                                    }
+                                    return Task.CompletedTask;
+                                }
+                            };
+                        });
+                }, endpoints =>
+                {
+                    endpoints.MapConnectionHandler<JwtConnectionHandler>("/foo", o => o.CloseOnAuthenticationExpiration = true);
+
+                    endpoints.MapGet("/generatetoken", context =>
+                    {
+                        return context.Response.WriteAsync(GenerateToken(context));
+                    });
+
+                    string GenerateToken(HttpContext httpContext)
+                    {
+                        var claims = new[] { new Claim(ClaimTypes.NameIdentifier, httpContext.Request.Query["user"]) };
+                        var credentials = new SigningCredentials(SecurityKey, SecurityAlgorithms.HmacSha256);
+                        var token = new JwtSecurityToken("SignalRTestServer", "SignalRTests", claims, expires: DateTime.UtcNow.AddMinutes(1), signingCredentials: credentials);
+                        return JwtTokenHandler.WriteToken(token);
+                    }
+                }, LoggerFactory);
+
+            host.Start();
+
+            var manager = host.Services.GetRequiredService<HttpConnectionManager>();
+            var url = host.Services.GetService<IServer>().Features.Get<IServerAddressesFeature>().Addresses.Single();
+
+            string token;
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri(url);
+
+                var response = await client.GetAsync("generatetoken?user=bob");
+                token = await response.Content.ReadAsStringAsync();
+            }
+
+            url += "/foo";
+            var stream = new MemoryStream();
+            var connection = new HttpConnection(
+                new HttpConnectionOptions()
+                {
+                    Url = new Uri(url),
+                    AccessTokenProvider = () => Task.FromResult(token),
+                    Transports = transportType,
+                    DefaultTransferFormat = TransferFormat.Text,
+                    HttpMessageHandlerFactory = handler => new GetNegotiateHttpHandler(handler, stream),
+                },
+                LoggerFactory);
+
+            await connection.StartAsync();
+
+            var negotiateResponse = NegotiateProtocol.ParseResponse(stream.ToArray());
+
+            Assert.True(manager.TryGetConnection(negotiateResponse.ConnectionToken, out var context));
+
+            Assert.True(context.AuthenticationExpiration > DateTimeOffset.UtcNow);
+            Assert.True(context.AuthenticationExpiration < DateTimeOffset.MaxValue);
+
+            await connection.DisposeAsync();
+        }
+
+        [Fact]
+        public async Task AuthenticationExpirationSetToMaxValueByDefault()
+        {
+            using var host = CreateHost(services =>
+            {
+                services.AddAuthentication();
+            }, endpoints =>
+            {
+                endpoints.MapConnectionHandler<TestConnectionHandler>("/foo");
+            }, LoggerFactory);
+
+            host.Start();
+
+            var manager = host.Services.GetRequiredService<HttpConnectionManager>();
+            var url = host.Services.GetService<IServer>().Features.Get<IServerAddressesFeature>().Addresses.Single();
+
+            url += "/foo";
+            var stream = new MemoryStream();
+            var connection = new HttpConnection(
+                new HttpConnectionOptions()
+                {
+                    Url = new Uri(url),
+                    DefaultTransferFormat = TransferFormat.Text,
+                    HttpMessageHandlerFactory = handler => new GetNegotiateHttpHandler(handler, stream)
+                },
+                LoggerFactory);
+
+            await connection.StartAsync();
+
+            var negotiateResponse = NegotiateProtocol.ParseResponse(stream.ToArray());
+
+            Assert.True(manager.TryGetConnection(negotiateResponse.ConnectionToken, out var context));
+
+            Assert.Equal(DateTimeOffset.MaxValue, context.AuthenticationExpiration);
+
+            await connection.DisposeAsync();
+        }
+
+        private class GetNegotiateHttpHandler : DelegatingHandler
+        {
+            private readonly MemoryStream _stream;
+            private bool _read;
+
+            public GetNegotiateHttpHandler(HttpMessageHandler handler, MemoryStream stream)
+                : base(handler)
+            {
+                _stream = stream;
+            }
+
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                var response = await base.SendAsync(request, cancellationToken);
+                if (!_read)
+                {
+                    await response.Content.CopyToAsync(_stream);
+                    response.Content = new ByteArrayContent(_stream.ToArray());
+                    _stream.Position = 0;
+                    _read = true;
+                }
+                return response;
+            }
+        }
+
+        private class ForwardingLoggerProvider : ILoggerProvider
+        {
+            private readonly ILoggerFactory _loggerFactory;
+
+            public ForwardingLoggerProvider(ILoggerFactory loggerFactory)
+            {
+                _loggerFactory = loggerFactory;
+            }
+
+            public void Dispose()
+            {
+            }
+
+            public ILogger CreateLogger(string categoryName)
+            {
+                return _loggerFactory.CreateLogger(categoryName);
+            }
+        }
+
+        private static IHost CreateHost(Action<IServiceCollection> configureServices, Action<IEndpointRouteBuilder> configureEndpoints,
+            ILoggerFactory loggerFactory)
+        {
+            return new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseKestrel()
+                    .ConfigureLogging(o =>
+                    {
+                        o.AddProvider(new ForwardingLoggerProvider(loggerFactory));
+                    })
+                    .ConfigureServices(services =>
+                    {
+                        services.AddConnections();
+                        configureServices(services);
+                        services.AddAuthorization();
+
+                        // Since tests run in parallel, it's possible multiple servers will startup,
+                        // we use an ephemeral key provider to avoid filesystem contention issues
+                        services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.UseAuthentication();
+                        app.UseAuthorization();
+                        app.UseEndpoints(endpoints =>
+                        {
+                            configureEndpoints(endpoints);
+                        });
+                    })
+                    .UseUrls("http://127.0.0.1:0");
+                })
+                .Build();
         }
 
         private static async Task CheckTransportSupported(HttpTransportType supportedTransports, HttpTransportType transportType, int status, ILoggerFactory loggerFactory)
@@ -2747,7 +3259,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
     public class TestConnectionHandler : ConnectionHandler
     {
-        private TaskCompletionSource _startedTcs = new TaskCompletionSource();
+        private readonly TaskCompletionSource _startedTcs = new TaskCompletionSource();
 
         public Task Started => _startedTcs.Task;
 
@@ -2794,6 +3306,60 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                     // Echo the results
                     await connection.Transport.Output.WriteAsync(message.Buffer.ToArray());
+                }
+                finally
+                {
+                    connection.Transport.Input.AdvanceTo(result.Buffer.End);
+                }
+            }
+        }
+    }
+
+    [Authorize]
+    public class AuthConnectionHandler : ConnectionHandler
+    {
+        public override async Task OnConnectedAsync(ConnectionContext connection)
+        {
+            while (true)
+            {
+                var result = await connection.Transport.Input.ReadAsync();
+
+                try
+                {
+                    if (result.IsCompleted)
+                    {
+                        break;
+                    }
+
+                    // Echo the results
+                    await connection.Transport.Output.WriteAsync(result.Buffer.ToArray());
+                }
+                finally
+                {
+                    connection.Transport.Input.AdvanceTo(result.Buffer.End);
+                }
+            }
+        }
+    }
+
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public class JwtConnectionHandler : ConnectionHandler
+    {
+        public override async Task OnConnectedAsync(ConnectionContext connection)
+        {
+            while (true)
+            {
+                var result = await connection.Transport.Input.ReadAsync();
+
+                try
+                {
+                    if (result.IsCompleted)
+                    {
+                        break;
+                    }
+
+                    // Echo the results
+                    await connection.Transport.Output.WriteAsync(result.Buffer.ToArray());
                 }
                 finally
                 {

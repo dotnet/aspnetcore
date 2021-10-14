@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
 using Microsoft.Extensions.Primitives;
@@ -37,6 +37,14 @@ namespace Microsoft.AspNetCore.Http.Tests
             Assert.Equal(1, cookies.Count);
             Assert.Equal(expectedKey, cookies.Keys.Single());
             Assert.Equal(expectedValue, cookies[expectedKey]);
+        }
+
+        [Fact]
+        public void ParseManyCookies()
+        {
+            var cookies = RequestCookieCollection.Parse(new StringValues(new[] { "a=a", "b=b", "c=c", "d=d", "e=e", "f=f", "g=g", "h=h", "i=i", "j=j", "k=k", "l=l" }));
+
+            Assert.Equal(12, cookies.Count);
         }
     }
 }

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 import { IConnection } from "../src/IConnection";
 import { TextMessageFormat } from "../src/TextMessageFormat";
@@ -69,15 +69,15 @@ export class TestConnection implements IConnection {
         this._invokeOnReceive(TextMessageFormat.write(payload));
     }
 
-    public receiveText(data: string) {
+    public receiveText(data: string): void {
         this._invokeOnReceive(data);
     }
 
-    public receiveBinary(data: ArrayBuffer) {
+    public receiveBinary(data: ArrayBuffer): void {
         this._invokeOnReceive(data);
     }
 
-    private _invokeOnReceive(data: string | ArrayBuffer) {
+    private _invokeOnReceive(data: string | ArrayBuffer): void {
         if (this.onreceive) {
             this.onreceive(data);
         }

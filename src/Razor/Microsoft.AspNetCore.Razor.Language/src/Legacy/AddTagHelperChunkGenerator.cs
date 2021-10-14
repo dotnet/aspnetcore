@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -64,20 +64,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             var builder = new StringBuilder("AddTagHelper:{");
             builder.Append(LookupText);
-            builder.Append(";");
+            builder.Append(';');
             builder.Append(DirectiveText);
-            builder.Append(";");
+            builder.Append(';');
             builder.Append(TypePattern);
-            builder.Append(";");
+            builder.Append(';');
             builder.Append(AssemblyName);
-            builder.Append("}");
+            builder.Append('}');
 
             if (Diagnostics.Count > 0)
             {
                 builder.Append(" [");
                 var ids = string.Join(", ", Diagnostics.Select(diagnostic => $"{diagnostic.Id}{diagnostic.Span}"));
                 builder.Append(ids);
-                builder.Append("]");
+                builder.Append(']');
             }
 
             return builder.ToString();

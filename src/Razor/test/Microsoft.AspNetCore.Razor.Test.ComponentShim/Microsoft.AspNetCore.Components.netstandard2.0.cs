@@ -1,5 +1,7 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -335,8 +337,8 @@ namespace Microsoft.AspNetCore.Components
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         public partial struct Enumerator
         {
-            private object _dummy;
-            private int _dummyPrimitive;
+            private readonly object _dummy;
+            private readonly int _dummyPrimitive;
             public Microsoft.AspNetCore.Components.ParameterValue Current { get { throw null; } }
             public bool MoveNext() { throw null; }
         }
@@ -374,6 +376,11 @@ namespace Microsoft.AspNetCore.Components
         public void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
         protected virtual void Render(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
         public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) { throw null; }
+    }
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+    public partial class EditorRequiredAttribute : Attribute
+    {
+        public EditorRequiredAttribute() { }
     }
 }
 namespace Microsoft.AspNetCore.Components.CompilerServices

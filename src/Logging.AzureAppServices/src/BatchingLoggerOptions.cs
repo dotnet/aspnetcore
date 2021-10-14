@@ -1,6 +1,5 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 using System;
 
@@ -75,6 +74,6 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
         /// Gets or sets a value indicating whether scopes should be included in the message.
         /// Defaults to <c>false</c>.
         /// </summary>
-        public bool IncludeScopes { get; set; } = false;
+        public bool IncludeScopes { get; set; }
     }
 }

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -22,6 +22,12 @@ namespace Microsoft.Extensions.Internal
         /// <param name="additionalPrincipal">The <see cref="ClaimsPrincipal"/> containing <see cref="ClaimsIdentity"/> to be added.</param>
         public static ClaimsPrincipal MergeUserPrincipal(ClaimsPrincipal? existingPrincipal, ClaimsPrincipal? additionalPrincipal)
         {
+            // For the first principal, just use the new principal rather than copying it
+            if (existingPrincipal == null && additionalPrincipal != null)
+            {
+                return additionalPrincipal;
+            }
+
             var newPrincipal = new ClaimsPrincipal();
 
             // New principal identities go first

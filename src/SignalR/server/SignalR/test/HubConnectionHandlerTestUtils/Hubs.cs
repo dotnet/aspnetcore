@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public Task ProtocolError()
         {
-            return Clients.Caller.SendAsync("Send",  new SelfRef());
+            return Clients.Caller.SendAsync("Send", new SelfRef());
         }
 
         public void InvalidArgument(CancellationToken token)
@@ -620,7 +620,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
     public class HubWithAsyncDisposable : TestHub
     {
-        private AsyncDisposable _disposable;
+        private readonly AsyncDisposable _disposable;
 
         public HubWithAsyncDisposable(AsyncDisposable disposable)
         {
@@ -784,7 +784,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public class AsyncEnumerableImplChannelThrows<T> : ChannelReader<T>, IAsyncEnumerable<T>
         {
-            private ChannelReader<T> _inner;
+            private readonly ChannelReader<T> _inner;
 
             public AsyncEnumerableImplChannelThrows(ChannelReader<T> inner)
             {
@@ -922,7 +922,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
     public class LongRunningHub : Hub
     {
-        private TcsService _tcsService;
+        private readonly TcsService _tcsService;
 
         public LongRunningHub(TcsService tcsService)
         {
@@ -1025,6 +1025,39 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             await token.WaitForCancellationAsync();
             _tcsService.EndMethod.SetResult(null);
             yield break;
+        }
+
+        public async IAsyncEnumerable<int> CountingCancelableStreamGeneratedAsyncEnumerable(int count, [EnumeratorCancellation] CancellationToken token)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                await Task.Yield();
+                yield return i;
+            }
+            _tcsService.StartedMethod.SetResult(null);
+            await token.WaitForCancellationAsync();
+            _tcsService.EndMethod.SetResult(null);
+            yield break;
+        }
+
+        public ChannelReader<int> CountingCancelableStreamGeneratedChannel(int count, CancellationToken token)
+        {
+            var channel = Channel.CreateBounded<int>(10);
+
+            Task.Run(async () =>
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    await Task.Yield();
+                    await channel.Writer.WriteAsync(i);
+                }
+                _tcsService.StartedMethod.SetResult(null);
+                await token.WaitForCancellationAsync();
+                channel.Writer.TryComplete();
+                _tcsService.EndMethod.SetResult(null);
+            });
+
+            return channel.Reader;
         }
 
         public IAsyncEnumerable<int> CancelableStreamCustomAsyncEnumerable()

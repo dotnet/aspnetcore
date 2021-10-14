@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public KestrelConnection(long id,
                                  ServiceContext serviceContext,
                                  TransportConnectionManager transportConnectionManager,
-                                 IKestrelTrace logger)
+                                 KestrelTrace logger)
         {
             _id = id;
             _serviceContext = serviceContext;
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             ConnectionClosedRequested = _connectionClosingCts.Token;
         }
 
-        protected IKestrelTrace Logger { get; }
+        protected KestrelTrace Logger { get; }
 
         public CancellationToken ConnectionClosedRequested { get; set; }
         public Task ExecutionTask => _completionTcs.Task;

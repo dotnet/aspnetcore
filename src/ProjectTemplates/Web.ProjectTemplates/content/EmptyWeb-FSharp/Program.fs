@@ -5,10 +5,7 @@ open Microsoft.Extensions.Hosting
 [<EntryPoint>]
 let main args =
     let builder = WebApplication.CreateBuilder(args)
-    use app = builder.Build()
-
-    if app.Environment.IsDevelopment() then
-        app.UseDeveloperExceptionPage() |> ignore
+    let app = builder.Build()
 
     app.MapGet("/", Func<string>(fun () -> "Hello World!")) |> ignore
 

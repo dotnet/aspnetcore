@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 using System.Diagnostics;
 using System.Text.Json;
@@ -14,8 +17,7 @@ namespace IgnitorSample
     /// </summary>
     class Program
     {
-        private static readonly string ServerUrl = "https://localhost:5001";
-        private static readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        private const string ServerUrl = "https://localhost:5001";
 
         static async Task Main(string[] args)
         {

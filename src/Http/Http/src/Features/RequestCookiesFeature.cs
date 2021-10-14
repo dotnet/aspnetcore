@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Http.Features
     public class RequestCookiesFeature : IRequestCookiesFeature
     {
         // Lambda hoisted to static readonly field to improve inlining https://github.com/dotnet/roslyn/issues/13624
-        private readonly static Func<IFeatureCollection, IHttpRequestFeature?> _nullRequestFeature = f => null;
+        private static readonly Func<IFeatureCollection, IHttpRequestFeature?> _nullRequestFeature = f => null;
 
         private FeatureReferences<IHttpRequestFeature> _features;
         private StringValues _original;
@@ -66,11 +66,7 @@ namespace Microsoft.AspNetCore.Http.Features
                 }
 
                 var headers = HttpRequestFeature.Headers;
-                StringValues current;
-                if (!headers.TryGetValue(HeaderNames.Cookie, out current))
-                {
-                    current = string.Empty;
-                }
+                var current = headers.Cookie;
 
                 if (_parsedValues == null || _original != current)
                 {
@@ -88,7 +84,7 @@ namespace Microsoft.AspNetCore.Http.Features
                 {
                     if (_parsedValues == null || _parsedValues.Count == 0)
                     {
-                        HttpRequestFeature.Headers.Remove(HeaderNames.Cookie);
+                        HttpRequestFeature.Headers.Cookie = default;
                     }
                     else
                     {
@@ -98,7 +94,7 @@ namespace Microsoft.AspNetCore.Http.Features
                             headers.Add(new CookieHeaderValue(pair.Key, pair.Value).ToString());
                         }
                         _original = headers.ToArray();
-                        HttpRequestFeature.Headers[HeaderNames.Cookie] = _original;
+                        HttpRequestFeature.Headers.Cookie = _original;
                     }
                 }
             }

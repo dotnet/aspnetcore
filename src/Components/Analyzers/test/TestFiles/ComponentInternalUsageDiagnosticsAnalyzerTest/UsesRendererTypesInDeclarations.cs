@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -6,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Tests.TestFiles.ComponentInt
 {
     /*MMBaseClass*/class UsesRendererTypesInDeclarations : Renderer
     {
-        private Renderer /*MMField*/_field = null;
+        private readonly Renderer /*MMField*/_field = null;
 
         public UsesRendererTypesInDeclarations()
             /*MMInvocation*/: base(null, null)

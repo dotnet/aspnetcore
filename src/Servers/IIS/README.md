@@ -32,7 +32,7 @@ IIS can only be used on Windows.
 
 IIS requires VS C++ native components to build. VS C++ native components can be installed by following the [Build From Source instructions](https://github.com/dotnet/aspnetcore/blob/main/docs/BuildFromSource.md#on-windows).
 
-To build this specific project from source, you can follow the instructions [on building a subset of the code](https://github.com/dotnet/aspnetcore/blob/main/docs/BuildFromSource.md#building-a-subset-of-the-code).
+To build this specific project from source, follow the instructions [on building the project](../../../docs/BuildFromSource.md#step-3-build-the-repo).
 
 Or for the less detailed explanation, run the following command inside this directory.
 ```powershell
@@ -42,6 +42,8 @@ Or for the less detailed explanation, run the following command inside this dire
 ### Test
 
 To run the tests for this project, you can [run the tests on the command line](https://github.com/dotnet/aspnetcore/blob/main/docs/BuildFromSource.md#running-tests-on-command-line) in this directory.
+
+Note: IIS.Tests require both IIS to be enabled, and the [ASP.NET Hosting bundle](https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/hosting-bundle) which must be run after IIS has been enabled.
 
 Or for the less detailed explanation, run the following command inside this directory.
 ```powershell

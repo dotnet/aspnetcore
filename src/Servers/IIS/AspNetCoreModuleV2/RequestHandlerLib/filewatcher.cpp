@@ -362,11 +362,12 @@ DWORD WINAPI FILE_WATCHER::CopyAndShutdown(FILE_WATCHER* watcher)
     auto destination = parentDirectory / std::to_wstring(directoryNameInt);
 
     LOG_INFOF(L"Copying new shadow copy directory to %ls.", destination.wstring().c_str());
+    int copiedFileCount = 0;
 
     // Copy contents before shutdown
     try
     {
-        Environment::CopyToDirectory(watcher->_strDirectoryName.QueryStr(), destination, false, std::filesystem::canonical(parentDirectory));
+        Environment::CopyToDirectory(watcher->_strDirectoryName.QueryStr(), destination, false, parentDirectory, copiedFileCount);
     }
     catch (...)
     {
@@ -374,7 +375,7 @@ DWORD WINAPI FILE_WATCHER::CopyAndShutdown(FILE_WATCHER* watcher)
         return 0;
     }
 
-    LOG_INFOF(L"Finished copy on shutdown to %ls.", destination.wstring().c_str());
+    LOG_INFOF(L"Finished copy on shutdown to %ls. %d files copied.", destination.wstring().c_str(), copiedFileCount);
 
     SetEvent(watcher->m_pDoneCopyEvent);
 

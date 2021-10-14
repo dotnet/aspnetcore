@@ -1,6 +1,7 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -49,22 +50,22 @@ namespace Microsoft.AspNetCore.Components.Authorization
         /// The content that will be displayed if the user is not authorized.
         /// </summary>
         [Parameter]
-        public RenderFragment<AuthenticationState> NotAuthorized { get; set; }
+        public RenderFragment<AuthenticationState>? NotAuthorized { get; set; }
 
         /// <summary>
         /// The content that will be displayed while asynchronous authorization is in progress.
         /// </summary>
         [Parameter]
-        public RenderFragment Authorizing { get; set; }
+        public RenderFragment? Authorizing { get; set; }
 
         /// <summary>
         /// The resource to which access is being controlled.
         /// </summary>
         [Parameter]
-        public object Resource { get; set; }
+        public object? Resource { get; set; }
 
         [CascadingParameter]
-        private Task<AuthenticationState> ExistingCascadedAuthenticationState { get; set; }
+        private Task<AuthenticationState>? ExistingCascadedAuthenticationState { get; set; }
 
         /// <inheritdoc />
         protected override void Render(RenderTreeBuilder builder)
@@ -95,6 +96,10 @@ namespace Microsoft.AspNetCore.Components.Authorization
             builder.CloseComponent();
         }
 
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2111:RequiresUnreferencedCode",
+            Justification = "OpenComponent already has the right set of attributes")]
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2110:RequiresUnreferencedCode",
+            Justification = "OpenComponent already has the right set of attributes")]
         private void RenderContentInDefaultLayout(RenderTreeBuilder builder, RenderFragment content)
         {
             builder.OpenComponent<LayoutView>(0);
@@ -115,12 +120,12 @@ namespace Microsoft.AspNetCore.Components.Authorization
             RenderContentInDefaultLayout(builder, content);
         }
 
-        private class AuthorizeRouteViewCore : AuthorizeViewCore
+        private sealed class AuthorizeRouteViewCore : AuthorizeViewCore
         {
             [Parameter]
-            public RouteData RouteData { get; set; }
+            public RouteData RouteData { get; set; } = default!;
 
-            protected override IAuthorizeData[] GetAuthorizeData()
+            protected override IAuthorizeData[]? GetAuthorizeData()
                 => AttributeAuthorizeDataCache.GetAuthorizeDataForType(RouteData.PageType);
         }
     }

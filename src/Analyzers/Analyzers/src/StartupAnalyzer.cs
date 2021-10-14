@@ -1,10 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.AspNetCore.Analyzers
 {
@@ -35,10 +36,12 @@ namespace Microsoft.AspNetCore.Analyzers
                 return;
             }
 
+            var entryPoint = context.Compilation.GetEntryPoint(context.CancellationToken);
+
             context.RegisterSymbolStartAction(context =>
             {
                 var type = (INamedTypeSymbol)context.Symbol;
-                if (!StartupFacts.IsStartupClass(symbols, type))
+                if (!StartupFacts.IsStartupClass(symbols, type) && !SymbolEqualityComparer.Default.Equals(entryPoint?.ContainingType, type))
                 {
                     // Not a startup class, nothing to do.
                     return;
@@ -60,18 +63,28 @@ namespace Microsoft.AspNetCore.Analyzers
                     }
 
                     var method = (IMethodSymbol)context.OwningSymbol;
-                    if (StartupFacts.IsConfigureServices(symbols, method))
+                    var isConfigureServices = StartupFacts.IsConfigureServices(symbols, method);
+                    if (isConfigureServices)
                     {
                         OnConfigureServicesMethodFound(method);
+                    }
 
+                    // In the future we can consider looking at more methods, but for now limit to Main, implicit Main, and Configure* methods
+                    var isMain = SymbolEqualityComparer.Default.Equals(entryPoint, context.OwningSymbol);
+
+                    if (isConfigureServices || isMain)
+                    {
                         services.AnalyzeConfigureServices(context);
                         options.AnalyzeConfigureServices(context);
                     }
 
-                    if (StartupFacts.IsConfigure(symbols, method))
+                    var isConfigure = StartupFacts.IsConfigure(symbols, method);
+                    if (isConfigure)
                     {
                         OnConfigureMethodFound(method);
-
+                    }
+                    if (isConfigure || isMain)
+                    {
                         middleware.AnalyzeConfigureMethod(context);
                     }
                 });

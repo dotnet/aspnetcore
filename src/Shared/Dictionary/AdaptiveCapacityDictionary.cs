@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Internal
         internal KeyValuePair<TKey, TValue>[]? _arrayStorage;
         private int _count;
         internal Dictionary<TKey, TValue>? _dictionaryStorage;
-        private IEqualityComparer<TKey> _comparer;
+        private readonly IEqualityComparer<TKey> _comparer;
 
         /// <summary>
         /// Creates an empty <see cref="AdaptiveCapacityDictionary{TKey, TValue}"/>.
@@ -76,30 +76,7 @@ namespace Microsoft.AspNetCore.Internal
             }
             else
             {
-                _dictionaryStorage = new Dictionary<TKey, TValue>(capacity);
-                _arrayStorage = Array.Empty<KeyValuePair<TKey, TValue>>();
-            }
-        }
-
-        /// <summary>
-        /// Creates a <see cref="AdaptiveCapacityDictionary{TKey, TValue}"/> initialized with the specified <paramref name="values"/>.
-        /// </summary>
-        /// <param name="values">An object to initialize the dictionary. The value can be of type
-        /// <see cref="IDictionary{TKey, TValue}"/> or <see cref="IReadOnlyDictionary{TKey, TValue}"/>
-        /// or an object with public properties as key-value pairs.
-        /// </param>
-        /// <remarks>This constructor is unoptimized and primarily used for tests.</remarks>
-        /// <param name="comparer">Equality comparison.</param>
-        /// <param name="capacity">Initial capacity.</param>
-        internal AdaptiveCapacityDictionary(IEnumerable<KeyValuePair<TKey, TValue>> values, int capacity, IEqualityComparer<TKey> comparer)
-        {
-            _comparer = comparer ?? EqualityComparer<TKey>.Default;
-
-            _arrayStorage = new KeyValuePair<TKey, TValue>[capacity];
-
-            foreach (var kvp in values)
-            {
-                Add(kvp.Key, kvp.Value);
+                _dictionaryStorage = new Dictionary<TKey, TValue>(capacity, _comparer);
             }
         }
 
@@ -542,7 +519,7 @@ namespace Microsoft.AspNetCore.Internal
 
             if (capacity > DefaultArrayThreshold)
             {
-                _dictionaryStorage = new Dictionary<TKey, TValue>(capacity);
+                _dictionaryStorage = new Dictionary<TKey, TValue>(capacity, _comparer);
                 foreach (var item in _arrayStorage)
                 {
                     _dictionaryStorage[item.Key] = item.Value;
@@ -621,7 +598,6 @@ namespace Microsoft.AspNetCore.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool ContainsKeyArray(TKey key) => TryFindItem(key, out _);
 
-
         /// <inheritdoc />
         public struct Enumerator : IEnumerator<KeyValuePair<TKey, TValue>>
         {
@@ -638,7 +614,7 @@ namespace Microsoft.AspNetCore.Internal
             {
                 if (dictionary == null)
                 {
-                    throw new ArgumentNullException();
+                    throw new ArgumentNullException(nameof(dictionary));
                 }
 
                 _dictionary = dictionary;

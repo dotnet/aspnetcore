@@ -1,17 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 {
     internal class ViewComponentTypeVisitor : SymbolVisitor
     {
-        private static readonly Version SupportedVCTHMvcVersion = new Version(1, 1);
-
         private readonly INamedTypeSymbol _viewComponentAttribute;
         private readonly INamedTypeSymbol _nonViewComponentAttribute;
         private readonly List<INamedTypeSymbol> _results;
@@ -73,11 +70,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
                 return false;
             }
 
-            var attribute = type.GetAttributes().Where(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, queryAttribute)).FirstOrDefault();
-
-            if (attribute != null)
+            foreach (var attribute in type.GetAttributes())
             {
-                return true;
+                if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, queryAttribute))
+                {
+                    return true;
+                }
             }
 
             return AttributeIsDefined(type.BaseType, queryAttribute);

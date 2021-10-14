@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
@@ -64,12 +64,12 @@ namespace Microsoft.AspNetCore.Components.Forms
     }
     public sealed partial class ValidationRequestedEventArgs : System.EventArgs
     {
-        public static readonly new Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs Empty;
+        public static new readonly Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs Empty;
         public ValidationRequestedEventArgs() { }
     }
     public sealed partial class ValidationStateChangedEventArgs : System.EventArgs
     {
-        public static readonly new Microsoft.AspNetCore.Components.Forms.ValidationStateChangedEventArgs Empty;
+        public static new readonly Microsoft.AspNetCore.Components.Forms.ValidationStateChangedEventArgs Empty;
         public ValidationStateChangedEventArgs() { }
     }
 }

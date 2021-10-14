@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -18,11 +18,9 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         public static readonly QueryCollection Empty = new QueryCollection();
         private static readonly string[] EmptyKeys = Array.Empty<string>();
-        private static readonly StringValues[] EmptyValues = Array.Empty<StringValues>();
-        private static readonly Enumerator EmptyEnumerator = new Enumerator();
         // Pre-box
-        private static readonly IEnumerator<KeyValuePair<string, StringValues>> EmptyIEnumeratorType = EmptyEnumerator;
-        private static readonly IEnumerator EmptyIEnumerator = EmptyEnumerator;
+        private static readonly IEnumerator<KeyValuePair<string, StringValues>> EmptyIEnumeratorType = default(Enumerator);
+        private static readonly IEnumerator EmptyIEnumerator = default(Enumerator);
 
         private Dictionary<string, StringValues>? Store { get; }
 
@@ -152,7 +150,7 @@ namespace Microsoft.AspNetCore.Http
             if (Store == null || Store.Count == 0)
             {
                 // Non-boxed Enumerator
-                return EmptyEnumerator;
+                return default;
             }
             return new Enumerator(Store.GetEnumerator());
         }
@@ -192,7 +190,7 @@ namespace Microsoft.AspNetCore.Http
         {
             // Do NOT make this readonly, or MoveNext will not work
             private Dictionary<string, StringValues>.Enumerator _dictionaryEnumerator;
-            private bool _notEmpty;
+            private readonly bool _notEmpty;
 
             internal Enumerator(Dictionary<string, StringValues>.Enumerator dictionaryEnumerator)
             {

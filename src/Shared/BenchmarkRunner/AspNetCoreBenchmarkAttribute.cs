@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -52,7 +52,7 @@ namespace BenchmarkDotNet.Attributes
                         $"Known configurations: {string.Join(", ", ConfigTypes.Keys)}";
                     throw new InvalidOperationException(message);
                 }
-                
+
                 return (IConfig)Activator.CreateInstance(configType, Array.Empty<object>());
             }
         }
@@ -63,11 +63,11 @@ namespace BenchmarkDotNet.Attributes
 
         public static class NamedConfiguration
         {
-            public static readonly string Default = "default";
-            public static readonly string Validation = "validation";
-            public static readonly string Profile = "profile";
-            public static readonly string Debug = "debug";
-            public static readonly string PerfLab = "perflab";
+            public const string Default = "default";
+            public const string Validation = "validation";
+            public const string Profile = "profile";
+            public const string Debug = "debug";
+            public const string PerfLab = "perflab";
         }
     }
 }

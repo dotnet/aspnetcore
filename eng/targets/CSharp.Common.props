@@ -1,10 +1,10 @@
 <Project>
 
   <PropertyGroup>
-    <LangVersion>9.0</LangVersion>
+    <LangVersion>preview</LangVersion>
 
     <!-- Enables Strict mode for Roslyn compiler -->
-    <Features>strict;nullablePublicOnly</Features>
+    <Features>strict</Features>
   </PropertyGroup>
 
   <ItemGroup>

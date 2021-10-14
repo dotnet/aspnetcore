@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -9,9 +9,11 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.Extensions.Configuration;
@@ -28,9 +30,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     public class KestrelServerOptions
     {
         // internal to fast-path header decoding when RequestHeaderEncodingSelector is unchanged.
-        internal static readonly Func<string, Encoding?> DefaultRequestHeaderEncodingSelector = _ => null;
+        internal static readonly Func<string, Encoding?> DefaultHeaderEncodingSelector = _ => null;
 
-        private Func<string, Encoding?> _requestHeaderEncodingSelector = DefaultRequestHeaderEncodingSelector;
+        private Func<string, Encoding?> _requestHeaderEncodingSelector = DefaultHeaderEncodingSelector;
+
+        private Func<string, Encoding?> _responseHeaderEncodingSelector = DefaultHeaderEncodingSelector;
 
         // The following two lists configure the endpoints that Kestrel should listen to. If both lists are empty, the "urls" config setting (e.g. UseUrls) is used.
         internal List<ListenOptions> CodeBackedListenOptions { get; } = new List<ListenOptions>();
@@ -64,7 +68,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <remarks>
         /// Defaults to false.
         /// </remarks>
-        public bool AllowSynchronousIO { get; set; } = false;
+        public bool AllowSynchronousIO { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value that controls how the `:scheme` field for HTTP/2 and HTTP/3 requests is validated.
+        /// <para>
+        /// If <c>false</c> then the `:scheme` field for HTTP/2 and HTTP/3 requests must exactly match the transport (e.g. https for TLS
+        /// connections, http for non-TLS). If <c>true</c> then the `:scheme` field for HTTP/2 and HTTP/3 requests can be set to alternate values
+        /// and this will be reflected by `HttpRequest.Scheme`. The Scheme must still be valid according to
+        /// https://datatracker.ietf.org/doc/html/rfc3986/#section-3.1. Only enable this when working with a trusted proxy. This can be used in
+        /// scenarios such as proxies converting from alternate protocols. See https://datatracker.ietf.org/doc/html/rfc7540#section-8.1.2.3.
+        /// Applications that enable this should validate an expected scheme is provided before using it.
+        /// </para>
+        /// </summary>
+        /// <remarks>
+        /// Defaults to <c>false</c>.
+        /// </remarks>
+        public bool AllowAlternateSchemes { get; set; }
 
         /// <summary>
         /// Gets or sets a value that controls whether the string values materialized
@@ -73,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <remarks>
         /// Defaults to false.
         /// </remarks>
-        public bool DisableStringReuse { get; set; } = false;
+        public bool DisableStringReuse { get; set; }
 
         /// <summary>
         /// Controls whether to return the "Alt-Svc" header from an HTTP/2 or lower response for HTTP/3.
@@ -81,7 +101,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <remarks>
         /// Defaults to false.
         /// </remarks>
-        public bool EnableAltSvc { get; set; } = false;
+        [Obsolete($"This property is obsolete and will be removed in a future version. It no longer has any impact on runtime behavior. Use {nameof(Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions)}.{nameof(Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.DisableAltSvcHeader)} to configure \"Alt-Svc\" behavior.", error: true)]
+        public bool EnableAltSvc { get; set; }
 
         /// <summary>
         /// Gets or sets a callback that returns the <see cref="Encoding"/> to decode the value for the specified request header name,
@@ -91,6 +112,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         {
             get => _requestHeaderEncodingSelector;
             set => _requestHeaderEncodingSelector = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
+        /// <summary>
+        /// Gets or sets a callback that returns the <see cref="Encoding"/> to encode the value for the specified response header
+        /// or trailer name, or <see langword="null"/> to use the default <see cref="ASCIIEncoding"/>.
+        /// </summary>
+        public Func<string, Encoding?> ResponseHeaderEncodingSelector
+        {
+            get => _responseHeaderEncodingSelector;
+            set => _responseHeaderEncodingSelector = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         /// <summary>
@@ -171,6 +202,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             EnsureDefaultCert();
 
             httpsOptions.ServerCertificate = DefaultCertificate;
+        }
+
+        internal void Serialize(Utf8JsonWriter writer)
+        {
+            writer.WritePropertyName(nameof(AllowSynchronousIO));
+            writer.WriteBooleanValue(AllowSynchronousIO);
+
+            writer.WritePropertyName(nameof(AddServerHeader));
+            writer.WriteBooleanValue(AddServerHeader);
+
+            writer.WritePropertyName(nameof(AllowAlternateSchemes));
+            writer.WriteBooleanValue(AllowAlternateSchemes);
+
+            writer.WritePropertyName(nameof(AllowResponseHeaderCompression));
+            writer.WriteBooleanValue(AllowResponseHeaderCompression);
+
+            writer.WritePropertyName(nameof(EnableAltSvc));
+            writer.WriteBooleanValue(EnableAltSvc);
+
+            writer.WritePropertyName(nameof(IsDevCertLoaded));
+            writer.WriteBooleanValue(IsDevCertLoaded);
+
+            writer.WriteString(nameof(RequestHeaderEncodingSelector), RequestHeaderEncodingSelector == DefaultHeaderEncodingSelector ? "default" : "configured");
+            writer.WriteString(nameof(ResponseHeaderEncodingSelector), ResponseHeaderEncodingSelector == DefaultHeaderEncodingSelector ? "default" : "configured");
+
+            // Limits
+            writer.WritePropertyName(nameof(Limits));
+            writer.WriteStartObject();
+            Limits.Serialize(writer);
+            writer.WriteEndObject();
+            
+            // ListenOptions
+            writer.WritePropertyName(nameof(ListenOptions));
+            writer.WriteStartArray();
+            foreach (var listenOptions in OptionsInUse)
+            {
+                writer.WriteStartObject();
+                writer.WriteString("Address", listenOptions.GetDisplayName());
+                writer.WritePropertyName(nameof(listenOptions.IsTls));
+                writer.WriteBooleanValue(listenOptions.IsTls);
+                writer.WriteString(nameof(listenOptions.Protocols), listenOptions.Protocols.ToString());
+                writer.WriteEndObject();
+            }
+            writer.WriteEndArray();
         }
 
         private void EnsureDefaultCert()

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -43,25 +43,24 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
             var outputFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             try
             {
-                var args = new[]
-                {
-                    "msbuild",
-                    projectFile,
-                    "/nologo",
-                    "/t:_ExtractUserSecretsMetadata", // defined in SecretManager.targets
-                    "/p:_UserSecretsMetadataFile=" + outputFile,
-                    "/p:Configuration=" + configuration,
-                    "/p:CustomAfterMicrosoftCommonTargets=" + _targetsFile,
-                    "/p:CustomAfterMicrosoftCommonCrossTargetingTargets=" + _targetsFile,
-                    "-verbosity:detailed",
-                };
                 var psi = new ProcessStartInfo
                 {
                     FileName = DotNetMuxer.MuxerPathOrDefault(),
-                    Arguments = ArgumentEscaper.EscapeAndConcatenate(args),
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,
+                    ArgumentList =
+                    {
+                        "msbuild",
+                        projectFile,
+                        "/nologo",
+                        "/t:_ExtractUserSecretsMetadata", // defined in SecretManager.targets
+                        "/p:_UserSecretsMetadataFile=" + outputFile,
+                        "/p:Configuration=" + configuration,
+                        "/p:CustomAfterMicrosoftCommonTargets=" + _targetsFile,
+                        "/p:CustomAfterMicrosoftCommonCrossTargetingTargets=" + _targetsFile,
+                        "-verbosity:detailed",
+                    }
                 };
 
 #if DEBUG

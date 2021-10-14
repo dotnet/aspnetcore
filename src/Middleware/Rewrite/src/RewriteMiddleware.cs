@@ -1,11 +1,12 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Rewrite.Logging;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
@@ -73,27 +74,56 @@ namespace Microsoft.AspNetCore.Rewrite
                 Result = RuleResult.ContinueRules
             };
 
-            foreach (var rule in _options.Rules)
+            var originalPath = context.Request.Path;
+
+            RunRules(rewriteContext, _options, context, _logger);
+            if (rewriteContext.Result == RuleResult.EndResponse)
+            {
+                return Task.CompletedTask;
+            }
+
+            // If a rule changed the path we want routing to find a new endpoint
+            if (originalPath != context.Request.Path)
+            {
+                if (_options.BranchedNext is not null)
+                {
+                    // An endpoint may have already been set. Since we're going to re-invoke the middleware pipeline we need to reset
+                    // the endpoint and route values to ensure things are re-calculated.
+                    context.SetEndpoint(endpoint: null);
+                    var routeValuesFeature = context.Features.Get<IRouteValuesFeature>();
+                    if (routeValuesFeature is not null)
+                    {
+                        routeValuesFeature.RouteValues = null!;
+                    }
+                    return _options.BranchedNext(context);
+                }
+            }
+
+            return _next(context);
+        }
+
+        static void RunRules(RewriteContext rewriteContext, RewriteOptions options, HttpContext httpContext, ILogger logger)
+        {
+            foreach (var rule in options.Rules)
             {
                 rule.ApplyRule(rewriteContext);
                 switch (rewriteContext.Result)
                 {
                     case RuleResult.ContinueRules:
-                        _logger.RewriteMiddlewareRequestContinueResults(context.Request.GetEncodedUrl());
+                        logger.RewriteMiddlewareRequestContinueResults(httpContext.Request.GetEncodedUrl());
                         break;
                     case RuleResult.EndResponse:
-                        _logger.RewriteMiddlewareRequestResponseComplete(
-                            context.Response.Headers[HeaderNames.Location],
-                            context.Response.StatusCode);
-                        return Task.CompletedTask;
+                        logger.RewriteMiddlewareRequestResponseComplete(
+                            httpContext.Response.Headers.Location.ToString(),
+                            httpContext.Response.StatusCode);
+                        return;
                     case RuleResult.SkipRemainingRules:
-                        _logger.RewriteMiddlewareRequestStopRules(context.Request.GetEncodedUrl());
-                        return _next(context);
+                        logger.RewriteMiddlewareRequestStopRules(httpContext.Request.GetEncodedUrl());
+                        return;
                     default:
                         throw new ArgumentOutOfRangeException($"Invalid rule termination {rewriteContext.Result}");
                 }
             }
-            return _next(context);
         }
     }
 }

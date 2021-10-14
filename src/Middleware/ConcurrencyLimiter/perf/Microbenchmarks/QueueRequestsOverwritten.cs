@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks
     public class QueueRequestsOverwritten
     {
         private const int _numRejects = 5000;
-        private int _queueLength = 20;
+        private readonly int _queueLength = 20;
         private int _rejectionCount = 0;
-        private ManualResetEventSlim _mres = new ManualResetEventSlim();
+        private readonly ManualResetEventSlim _mres = new ManualResetEventSlim();
 
         private ConcurrencyLimiterMiddleware _middlewareQueue;
         private ConcurrencyLimiterMiddleware _middlewareStack;

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
@@ -103,14 +103,14 @@ namespace Microsoft.AspNetCore.HttpsPolicy
 
             var request = context.Request;
             var redirectUrl = UriHelper.BuildAbsolute(
-                "https", 
+                "https",
                 host,
                 request.PathBase,
                 request.Path,
                 request.QueryString);
 
             context.Response.StatusCode = _statusCode;
-            context.Response.Headers[HeaderNames.Location] = redirectUrl;
+            context.Response.Headers.Location = redirectUrl;
 
             _logger.RedirectingToHttps(redirectUrl);
 

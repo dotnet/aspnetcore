@@ -1,7 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop.Infrastructure;
@@ -57,8 +58,8 @@ namespace Microsoft.AspNetCore.Components.WebView
                     case IpcCommon.IncomingMessageType.EndInvokeJS:
                         EndInvokeJS(pageContext, args[0].GetInt64(), args[1].GetBoolean(), args[2].GetString());
                         break;
-                    case IpcCommon.IncomingMessageType.DispatchBrowserEvent:
-                        await DispatchBrowserEventAsync(pageContext, args[0].GetRawText(), args[1].GetRawText());
+                    case IpcCommon.IncomingMessageType.ReceiveByteArrayFromJS:
+                        ReceiveByteArrayFromJS(pageContext, args[0].GetInt32(), args[1].GetBytesFromBase64());
                         break;
                     case IpcCommon.IncomingMessageType.OnRenderCompleted:
                         OnRenderCompleted(pageContext, args[0].GetInt64(), args[1].GetString());
@@ -85,15 +86,9 @@ namespace Microsoft.AspNetCore.Components.WebView
             DotNetDispatcher.EndInvokeJS(pageContext.JSRuntime, argumentsOrError);
         }
 
-        private Task DispatchBrowserEventAsync(PageContext pageContext, string eventDescriptor, string eventArgs)
+        private static void ReceiveByteArrayFromJS(PageContext pageContext, int id, byte[] data)
         {
-            var renderer = pageContext.Renderer;
-            var jsonSerializerOptions = pageContext.JSRuntime.ReadJsonSerializerOptions();
-            var webEventData = WebEventData.Parse(renderer, jsonSerializerOptions, eventDescriptor, eventArgs);
-            return renderer.DispatchEventAsync(
-                webEventData.EventHandlerId,
-                webEventData.EventFieldInfo,
-                webEventData.EventArgs);
+            DotNetDispatcher.ReceiveByteArray(pageContext.JSRuntime, id, data);
         }
 
         private void OnRenderCompleted(PageContext pageContext, long batchId, string errorMessageOrNull)

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Filters = new List<IFilterMetadata>();
             Parameters = new List<ParameterModel>();
             RouteValues = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
-            Properties = new Dictionary<object, object>();
+            Properties = new Dictionary<object, object?>();
             Selectors = new List<SelectorModel>();
         }
 
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             // These are just metadata, safe to create new collections
             Attributes = new List<object>(other.Attributes);
             Filters = new List<IFilterMetadata>(other.Filters);
-            Properties = new Dictionary<object, object>(other.Properties);
+            Properties = new Dictionary<object, object?>(other.Properties);
             RouteValues = new Dictionary<string, string?>(other.RouteValues, StringComparer.OrdinalIgnoreCase);
 
             // Make a deep copy of other 'model' types.
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public IList<ParameterModel> Parameters { get; }
 
         /// <summary>
-        /// Gets or sets an <see cref="IOutboundParameterTransformer"/> that will be used to transform 
+        /// Gets or sets an <see cref="IOutboundParameterTransformer"/> that will be used to transform
         /// built-in route parameters such as <c>action</c>, <c>controller</c>, and <c>area</c> as well as
         /// additional parameters specified by <see cref="RouteValues"/> into static segments in the route template.
         /// </summary>
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public IOutboundParameterTransformer? RouteParameterTransformer { get; set; }
 
         /// <summary>
-        /// Gets a collection of route values that must be present in the 
+        /// Gets a collection of route values that must be present in the
         /// <see cref="RouteData.Values"/> for the corresponding action to be selected.
         /// </summary>
         /// <remarks>
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// Entries will take precedence over entries with the same key in
         /// <see cref="ApplicationModel.Properties"/> and <see cref="ControllerModel.Properties"/>.
         /// </remarks>
-        public IDictionary<object, object> Properties { get; }
+        public IDictionary<object, object?> Properties { get; }
 
         MemberInfo ICommonModel.MemberInfo => ActionMethod;
 

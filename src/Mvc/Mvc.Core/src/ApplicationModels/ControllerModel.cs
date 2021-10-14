@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Attributes = new List<object>(attributes);
             ControllerProperties = new List<PropertyModel>();
             Filters = new List<IFilterMetadata>();
-            Properties = new Dictionary<object, object>();
+            Properties = new Dictionary<object, object?>();
             RouteValues = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
             Selectors = new List<SelectorModel>();
         }
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Attributes = new List<object>(other.Attributes);
             Filters = new List<IFilterMetadata>(other.Filters);
             RouteValues = new Dictionary<string, string?>(other.RouteValues, StringComparer.OrdinalIgnoreCase);
-            Properties = new Dictionary<object, object>(other.Properties);
+            Properties = new Dictionary<object, object?>(other.Properties);
 
             // Make a deep copy of other 'model' types.
             Actions = new List<ActionModel>(other.Actions.Select(a => new ActionModel(a) { Controller = this }));
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public IList<IFilterMetadata> Filters { get; }
 
         /// <summary>
-        /// Gets a collection of route values that must be present in the 
+        /// Gets a collection of route values that must be present in the
         /// <see cref="RouteData.Values"/> for the corresponding action to be selected.
         /// </summary>
         /// <remarks>
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// Entries will take precedence over entries with the same key
         /// in <see cref="ApplicationModel.Properties"/>.
         /// </remarks>
-        public IDictionary<object, object> Properties { get; }
+        public IDictionary<object, object?> Properties { get; }
 
         /// <summary>
         /// The selector models of this controller.

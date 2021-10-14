@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 package com.microsoft.signalr;
 
@@ -21,7 +21,7 @@ class Utils {
             return  original + "?" + queryStringValue;
         }
     }
-    
+
     public static Class<?> typeToClass(Type type) {
         if (type == null) {
             return null;
@@ -39,11 +39,11 @@ class Utils {
         } else if (type instanceof WildcardType) {
             Type[] bounds = ((WildcardType) type).getUpperBounds();
             return bounds.length == 0 ? Object.class : typeToClass(bounds[0]);
-        } else { 
+        } else {
             throw new UnsupportedOperationException("Cannot handle type class: " + type.getClass());
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     public static <T> T cast(Class<?> returnClass, Object obj) {
         // Primitive types can't be cast with the Class cast function
@@ -53,7 +53,7 @@ class Utils {
             return (T)returnClass.cast(obj);
         }
     }
-    
+
     public static <T> T cast(Type returnType, Object obj) {
         return cast(typeToClass(returnType), obj);
     }

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Internal
 
                 var keyValuePairs = new KeyValuePair<string, string>[cookieChunkCount + 1];
                 keyValuePairs[0] = KeyValuePair.Create(key, ChunkCountPrefix + cookieChunkCount.ToString(CultureInfo.InvariantCulture));
-                
+
                 var offset = 0;
                 for (var chunkId = 1; chunkId <= cookieChunkCount; chunkId++)
                 {
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Internal
                     keyValuePairs[chunkId] = KeyValuePair.Create(string.Concat(key, ChunkKeySuffix, chunkId.ToString(CultureInfo.InvariantCulture)), segment);
                 }
 
-                responseCookies.Append(keyValuePairs, options);    
+                responseCookies.Append(keyValuePairs, options);
             }
         }
 
@@ -284,7 +284,7 @@ namespace Microsoft.AspNetCore.Internal
             }
 
             var responseHeaders = context.Response.Headers;
-            var existingValues = responseHeaders[HeaderNames.SetCookie];
+            var existingValues = responseHeaders.SetCookie;
 
             if (!StringValues.IsNullOrEmpty(existingValues))
             {
@@ -293,20 +293,21 @@ namespace Microsoft.AspNetCore.Internal
 
                 for (var i = 0; i < values.Length; i++)
                 {
-                    if (!rejectPredicate(values[i]))
+                    var value = values[i]!;
+                    if (!rejectPredicate(value))
                     {
-                        newValues.Add(values[i]);
+                        newValues.Add(value);
                     }
                 }
 
-                responseHeaders[HeaderNames.SetCookie] = new StringValues(newValues.ToArray());
+                responseHeaders.SetCookie = new StringValues(newValues.ToArray());
             }
 
             var responseCookies = context.Response.Cookies;
 
             var keyValuePairs = new KeyValuePair<string, string>[chunks + 1];
             keyValuePairs[0] = KeyValuePair.Create(key, string.Empty);
-            
+
             for (var i = 1; i <= chunks; i++)
             {
                 keyValuePairs[i] = KeyValuePair.Create(string.Concat(key, "C", i.ToString(CultureInfo.InvariantCulture)), string.Empty);

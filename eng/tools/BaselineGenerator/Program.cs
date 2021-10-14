@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -168,7 +168,7 @@ namespace PackageBaselineGenerator
                     foreach (var group in reader.NuspecReader.GetDependencyGroups())
                     {
                         // Don't bother generating empty ItemGroup elements.
-                        if (group.Packages.Count() == 0)
+                        if (!group.Packages.Any())
                         {
                             continue;
                         }

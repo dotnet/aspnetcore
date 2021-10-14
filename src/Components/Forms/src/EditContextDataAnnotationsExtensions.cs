@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
@@ -7,7 +7,11 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Components.HotReload;
+
+[assembly: MetadataUpdateHandler(typeof(Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions))]
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
@@ -37,6 +41,13 @@ namespace Microsoft.AspNetCore.Components.Forms
             return new DataAnnotationsEventSubscriptions(editContext);
         }
 
+        private static event Action? OnClearCache;
+
+        private static void ClearCache(Type[]? _)
+        {
+            OnClearCache?.Invoke();
+        }
+
         private sealed class DataAnnotationsEventSubscriptions : IDisposable
         {
             private static readonly ConcurrentDictionary<(Type ModelType, string FieldName), PropertyInfo?> _propertyInfoCache = new();
@@ -51,6 +62,11 @@ namespace Microsoft.AspNetCore.Components.Forms
 
                 _editContext.OnFieldChanged += OnFieldChanged;
                 _editContext.OnValidationRequested += OnValidationRequested;
+
+                if (MetadataUpdater.IsSupported)
+                {
+                    OnClearCache += ClearCache;
+                }
             }
 
             private void OnFieldChanged(object? sender, FieldChangedEventArgs eventArgs)
@@ -115,6 +131,11 @@ namespace Microsoft.AspNetCore.Components.Forms
                 _editContext.OnFieldChanged -= OnFieldChanged;
                 _editContext.OnValidationRequested -= OnValidationRequested;
                 _editContext.NotifyValidationStateChanged();
+
+                if (MetadataUpdater.IsSupported)
+                {
+                    OnClearCache -= ClearCache;
+                }
             }
 
             private static bool TryGetValidatableProperty(in FieldIdentifier fieldIdentifier, [NotNullWhen(true)] out PropertyInfo? propertyInfo)
@@ -131,6 +152,11 @@ namespace Microsoft.AspNetCore.Components.Forms
                 }
 
                 return propertyInfo != null;
+            }
+
+            internal void ClearCache()
+            {
+                _propertyInfoCache.Clear();
             }
         }
     }

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.Extensions.Logging;
@@ -37,6 +37,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             private static readonly Action<ILogger, Exception?> _heartbeatEnded =
                 LoggerMessage.Define(LogLevel.Trace, new EventId(10, "HeartBeatEnded"), "Ending connection heartbeat.");
+
+            private static readonly Action<ILogger, string, Exception?> _authenticationExpired =
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(11, "AuthenticationExpired"), "Connection {TransportConnectionId} closing because the authentication token has expired.");
 
             public static void CreatedNewConnection(ILogger logger, string connectionId)
             {
@@ -76,6 +79,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             public static void HeartBeatEnded(ILogger logger)
             {
                 _heartbeatEnded(logger, null);
+            }
+
+            public static void AuthenticationExpired(ILogger logger, string connectionId)
+            {
+                _authenticationExpired(logger, connectionId, null);
             }
         }
     }

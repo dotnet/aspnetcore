@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Linq;
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 RewriteHtmlAttributes(tagHelperNode);
                 AddExecute(tagHelperNode);
 
-                // We need to find all of the 'default' kind tag helpers and rewrite their usage site to use the 
+                // We need to find all of the 'default' kind tag helpers and rewrite their usage site to use the
                 // extension nodes for the default tag helper runtime (ITagHelper).
                 foreach (var tagHelper in tagHelperNode.TagHelpers)
                 {

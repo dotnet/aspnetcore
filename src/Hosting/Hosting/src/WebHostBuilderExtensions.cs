@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -7,6 +7,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting.Infrastructure;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.Extensions.Configuration;
@@ -30,7 +31,28 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder Configure(this IWebHostBuilder hostBuilder, Action<IApplicationBuilder> configureApp)
         {
-            return hostBuilder.Configure((_, app) => configureApp(app), configureApp.GetMethodInfo().DeclaringType!.Assembly.GetName().Name!);
+            if (configureApp == null)
+            {
+                throw new ArgumentNullException(nameof(configureApp));
+            }
+
+            // Light up the ISupportsStartup implementation
+            if (hostBuilder is ISupportsStartup supportsStartup)
+            {
+                return supportsStartup.Configure(configureApp);
+            }
+
+            var startupAssemblyName = configureApp.GetMethodInfo().DeclaringType!.Assembly.GetName().Name!;
+
+            hostBuilder.UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
+
+            return hostBuilder.ConfigureServices((context, services) =>
+            {
+                services.AddSingleton<IStartup>(sp =>
+                {
+                    return new DelegateStartup(sp.GetRequiredService<IServiceProviderFactory<IServiceCollection>>(), (app => configureApp(app)));
+                });
+            });
         }
 
         /// <summary>
@@ -41,23 +63,20 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder Configure(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, IApplicationBuilder> configureApp)
         {
-            return hostBuilder.Configure(configureApp, configureApp.GetMethodInfo().DeclaringType!.Assembly.GetName().Name!);
-        }
-
-        private static IWebHostBuilder Configure(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, IApplicationBuilder> configureApp, string startupAssemblyName)
-        {
             if (configureApp == null)
             {
                 throw new ArgumentNullException(nameof(configureApp));
             }
-
-            hostBuilder.UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
 
             // Light up the ISupportsStartup implementation
             if (hostBuilder is ISupportsStartup supportsStartup)
             {
                 return supportsStartup.Configure(configureApp);
             }
+
+            var startupAssemblyName = configureApp.GetMethodInfo().DeclaringType!.Assembly.GetName().Name!;
+
+            hostBuilder.UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
 
             return hostBuilder.ConfigureServices((context, services) =>
             {
@@ -82,15 +101,15 @@ namespace Microsoft.AspNetCore.Hosting
                 throw new ArgumentNullException(nameof(startupFactory));
             }
 
-            var startupAssemblyName = startupFactory.GetMethodInfo().DeclaringType!.Assembly.GetName().Name;
-
-            hostBuilder.UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
-
             // Light up the GenericWebHostBuilder implementation
             if (hostBuilder is ISupportsStartup supportsStartup)
             {
                 return supportsStartup.UseStartup(startupFactory);
             }
+
+            var startupAssemblyName = startupFactory.GetMethodInfo().DeclaringType!.Assembly.GetName().Name;
+
+            hostBuilder.UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
 
             return hostBuilder
                 .ConfigureServices((context, services) =>
@@ -125,15 +144,15 @@ namespace Microsoft.AspNetCore.Hosting
                 throw new ArgumentNullException(nameof(startupType));
             }
 
-            var startupAssemblyName = startupType.Assembly.GetName().Name;
-
-            hostBuilder.UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
-
             // Light up the GenericWebHostBuilder implementation
             if (hostBuilder is ISupportsStartup supportsStartup)
             {
                 return supportsStartup.UseStartup(startupType);
             }
+
+            var startupAssemblyName = startupType.Assembly.GetName().Name;
+
+            hostBuilder.UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
 
             return hostBuilder
                 .ConfigureServices(services =>

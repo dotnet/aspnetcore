@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Globalization;
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public virtual bool IsEmpty => false;
 
-        protected IKestrelTrace Log => _context.ServiceContext.Log;
+        protected KestrelTrace Log => _context.ServiceContext.Log;
 
         public abstract ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default);
 
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (!startTask.IsCompletedSuccessfully)
             {
                 return ConsumeAwaited(startTask);
-            }    
+            }
 
             return OnConsumeAsync();
         }

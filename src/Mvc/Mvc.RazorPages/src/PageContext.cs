@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -14,10 +14,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     /// </summary>
     public class PageContext : ActionContext
     {
-        private CompiledPageActionDescriptor _actionDescriptor;
-        private IList<IValueProviderFactory> _valueProviderFactories;
-        private ViewDataDictionary _viewData;
-        private IList<Func<IRazorPage>> _viewStartFactories;
+        private CompiledPageActionDescriptor? _actionDescriptor;
+        private IList<IValueProviderFactory>? _valueProviderFactories;
+        private ViewDataDictionary? _viewData;
+        private IList<Func<IRazorPage>>? _viewStartFactories;
 
         /// <summary>
         /// Creates an empty <see cref="PageContext"/>.
@@ -41,9 +41,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <summary>
         /// Gets or sets the <see cref="PageActionDescriptor"/>.
         /// </summary>
-        public virtual new CompiledPageActionDescriptor ActionDescriptor
+        public new virtual CompiledPageActionDescriptor ActionDescriptor
         {
-            get => _actionDescriptor;
+            get => _actionDescriptor!;
             set
             {
                 if (value == null)
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// </summary>
         public virtual ViewDataDictionary ViewData
         {
-            get => _viewData;
+            get => _viewData!;
             set
             {
                 if (value == null)
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// </summary>
         public virtual IList<Func<IRazorPage>> ViewStartFactories
         {
-            get => _viewStartFactories;
+            get => _viewStartFactories!;
             set
             {
                 if (value == null)

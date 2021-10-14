@@ -1,5 +1,6 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 
 using System;
 using System.Diagnostics;
@@ -10,23 +11,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
-    internal class PageRouteModelFactory
+    internal sealed partial class PageRouteModelFactory
     {
-        private static readonly Action<ILogger, string, Exception> _unsupportedAreaPath;
-
         private static readonly string IndexFileName = "Index" + RazorViewEngine.ViewExtension;
         private readonly RazorPagesOptions _options;
         private readonly ILogger _logger;
         private readonly string _normalizedRootDirectory;
         private readonly string _normalizedAreaRootDirectory;
-
-        static PageRouteModelFactory()
-        {
-            _unsupportedAreaPath = LoggerMessage.Define<string>(
-                LogLevel.Warning,
-                new EventId(1, "UnsupportedAreaPath"),
-                "The page at '{FilePath}' is located under the area root directory '/Areas/' but does not follow the path format '/Areas/AreaName/Pages/Directory/FileName.cshtml");
-        }
 
         public PageRouteModelFactory(
             RazorPagesOptions options,
@@ -39,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             _normalizedAreaRootDirectory = "/Areas/";
         }
 
-        public PageRouteModel CreateRouteModel(string relativePath, string routeTemplate)
+        public PageRouteModel CreateRouteModel(string relativePath, string? routeTemplate)
         {
             var viewEnginePath = GetViewEnginePath(_normalizedRootDirectory, relativePath);
             var routeModel = new PageRouteModel(relativePath, viewEnginePath);
@@ -49,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             return routeModel;
         }
 
-        public PageRouteModel CreateAreaRouteModel(string relativePath, string routeTemplate)
+        public PageRouteModel? CreateAreaRouteModel(string relativePath, string? routeTemplate)
         {
             if (!TryParseAreaPath(relativePath, out var areaResult))
             {
@@ -65,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             return routeModel;
         }
 
-        private static void PopulateRouteModel(PageRouteModel model, string pageRoute, string routeTemplate)
+        private static void PopulateRouteModel(PageRouteModel model, string pageRoute, string? routeTemplate)
         {
             model.RouteValues.Add("page", model.ViewEnginePath);
 
@@ -78,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             {
                 // For pages without an override route, and ending in /Index.cshtml, we want to allow
                 // incoming routing, but force outgoing routes to match to the path sans /Index.
-                selectorModel.AttributeRouteModel.SuppressLinkGeneration = true;
+                selectorModel.AttributeRouteModel!.SuppressLinkGeneration = true;
 
                 var index = pageRoute.LastIndexOf('/');
                 var parentDirectoryPath = index == -1 ?
@@ -105,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 areaRootEndIndex >= relativePath.Length - 1 || // There's at least one token after the area root.
                 !relativePath.StartsWith(_normalizedAreaRootDirectory, StringComparison.OrdinalIgnoreCase)) // The path must start with area root.
             {
-                _unsupportedAreaPath(_logger, relativePath, null);
+                Log.UnsupportedAreaPath(_logger, relativePath);
                 return false;
             }
 
@@ -113,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             var areaEndIndex = relativePath.IndexOf('/', startIndex: areaRootEndIndex + 1);
             if (areaEndIndex == -1 || areaEndIndex == relativePath.Length)
             {
-                _unsupportedAreaPath(_logger, relativePath, null);
+                Log.UnsupportedAreaPath(_logger, relativePath);
                 return false;
             }
 
@@ -121,7 +112,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             // Ensure the next token is the "Pages" directory
             if (string.Compare(relativePath, areaEndIndex, AreaPagesRoot, 0, AreaPagesRoot.Length, StringComparison.OrdinalIgnoreCase) != 0)
             {
-                _unsupportedAreaPath(_logger, relativePath, null);
+                Log.UnsupportedAreaPath(_logger, relativePath);
                 return false;
             }
 
@@ -167,7 +158,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             });
         }
 
-        private static SelectorModel CreateSelectorModel(string prefix, string routeTemplate)
+        private static SelectorModel CreateSelectorModel(string prefix, string? routeTemplate)
         {
             return new SelectorModel
             {
@@ -191,6 +182,12 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             }
 
             return directory;
+        }
+
+        private static partial class Log
+        {
+            [LoggerMessage(1, LogLevel.Warning, "The page at '{FilePath}' is located under the area root directory '/Areas/' but does not follow the path format '/Areas/AreaName/Pages/Directory/FileName.cshtml", EventName = "UnsupportedAreaPath")]
+            public static partial void UnsupportedAreaPath(ILogger log, string filePath);
         }
     }
 }

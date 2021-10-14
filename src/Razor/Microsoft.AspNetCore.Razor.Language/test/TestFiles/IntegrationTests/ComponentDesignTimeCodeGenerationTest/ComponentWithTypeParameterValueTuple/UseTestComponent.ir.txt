@@ -1,0 +1,39 @@
+Document - 
+    NamespaceDeclaration -  - Test
+        UsingDirective - (3:1,1 [12] ) - System
+        UsingDirective - (18:2,1 [32] ) - System.Collections.Generic
+        UsingDirective - (53:3,1 [17] ) - System.Linq
+        UsingDirective - (73:4,1 [28] ) - System.Threading.Tasks
+        UsingDirective - (104:5,1 [37] ) - Microsoft.AspNetCore.Components
+        UsingDirective - (1:0,1 [10] x:\dir\subdir\Test\UseTestComponent.cshtml) - Test
+        ClassDeclaration -  - public partial - UseTestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+            DesignTimeDirective - 
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
+            MethodDeclaration -  - protected override - void - BuildRenderTree
+                HtmlContent - (11:0,11 [2] x:\dir\subdir\Test\UseTestComponent.cshtml)
+                    LazyIntermediateToken - (11:0,11 [2] x:\dir\subdir\Test\UseTestComponent.cshtml) - Html - \n
+                Component - (13:1,0 [80] x:\dir\subdir\Test\UseTestComponent.cshtml) - TestComponent
+                    ComponentChildContent -  - ChildContent - context
+                        HtmlContent - (54:1,41 [6] x:\dir\subdir\Test\UseTestComponent.cshtml)
+                            LazyIntermediateToken - (54:1,41 [6] x:\dir\subdir\Test\UseTestComponent.cshtml) - Html - \n    
+                        MarkupElement - (60:2,4 [15] x:\dir\subdir\Test\UseTestComponent.cshtml) - p
+                            CSharpExpression - (64:2,8 [7] x:\dir\subdir\Test\UseTestComponent.cshtml)
+                                LazyIntermediateToken - (64:2,8 [7] x:\dir\subdir\Test\UseTestComponent.cshtml) - CSharp - context
+                        HtmlContent - (75:2,19 [2] x:\dir\subdir\Test\UseTestComponent.cshtml)
+                            LazyIntermediateToken - (75:2,19 [2] x:\dir\subdir\Test\UseTestComponent.cshtml) - Html - \n
+                    ComponentAttribute - (34:1,21 [5] x:\dir\subdir\Test\UseTestComponent.cshtml) - Item1 - Item1 - AttributeStructure.DoubleQuotes
+                        LazyIntermediateToken - (34:1,21 [5] x:\dir\subdir\Test\UseTestComponent.cshtml) - CSharp - item1
+                    ComponentAttribute - (47:1,34 [6] x:\dir\subdir\Test\UseTestComponent.cshtml) - Items2 - Items2 - AttributeStructure.DoubleQuotes
+                        LazyIntermediateToken - (47:1,34 [6] x:\dir\subdir\Test\UseTestComponent.cshtml) - CSharp - items2
+                HtmlContent - (93:3,16 [4] x:\dir\subdir\Test\UseTestComponent.cshtml)
+                    LazyIntermediateToken - (93:3,16 [4] x:\dir\subdir\Test\UseTestComponent.cshtml) - Html - \n\n
+            CSharpCode - (104:5,7 [176] x:\dir\subdir\Test\UseTestComponent.cshtml)
+                LazyIntermediateToken - (104:5,7 [176] x:\dir\subdir\Test\UseTestComponent.cshtml) - CSharp - \n    (string, int) item1 = ("A string", 42);\n    static (string, int) item2 = ("Another string", 42);\n    List<(string, int)> items2 = new List<(string, int)>() { item2 };\n
+    NamespaceDeclaration -  - __Blazor.Test.UseTestComponent
+        ClassDeclaration -  - internal static - TypeInference -  - 
+            ComponentTypeInferenceMethod -  - __Blazor.Test.UseTestComponent.TypeInference - CreateTestComponent_0

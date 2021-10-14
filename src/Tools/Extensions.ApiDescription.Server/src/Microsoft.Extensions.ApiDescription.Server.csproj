@@ -19,12 +19,16 @@
       because publish output matches what was built.
     -->
     <Reference Include="dotnet-getdocument"
-        Targets="Publish"
-        ReferenceOutputAssembly="false"
-        SkipGetTargetFrameworkProperties="true"
-        UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir" />
-    <Reference Include="GetDocument.Insider" ReferenceOutputAssembly="false">
-      <Targets Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">Publish</Targets>
+      Condition=" '$(TargetFramework)' == 'netcoreapp2.1' "
+      Targets="Publish"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
+    <Reference Include="GetDocument.Insider"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true">
+        <Targets Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">Publish</Targets>
     </Reference>
   </ItemGroup>
 

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
     {
         // Not configurable on purpose, high enough that if we reach here, it's likely
         // a buggy server
-        private static readonly int _maxRedirects = 100;
-        private static readonly int _protocolVersionNumber = 1;
+        private const int _maxRedirects = 100;
+        private const int _protocolVersionNumber = 1;
         private static readonly Task<string?> _noAccessToken = Task.FromResult<string?>(null);
 
         private static readonly TimeSpan HttpClientTimeout = TimeSpan.FromSeconds(120);
@@ -471,7 +471,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                     using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
                     {
                         response.EnsureSuccessStatusCode();
+#pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods
                         var responseBuffer = await response.Content.ReadAsByteArrayAsync();
+#pragma warning restore CA2016 // Forward the 'CancellationToken' parameter to methods
                         var negotiateResponse = NegotiateProtocol.ParseResponse(responseBuffer);
                         if (!string.IsNullOrEmpty(negotiateResponse.Error))
                         {

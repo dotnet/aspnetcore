@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// This option must not be used if connections may be shared by requests from different users.
         /// </summary>
         /// <value>Defaults to <see langword="false"/>.</value>
-        public bool PersistKerberosCredentials { get; set; } = false;
+        public bool PersistKerberosCredentials { get; set; }
 
         /// <summary>
         /// Indicates if NTLM credentials should be persisted and re-used for subsquent anonymous requests.

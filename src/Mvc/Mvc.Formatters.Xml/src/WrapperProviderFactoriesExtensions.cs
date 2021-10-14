@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         /// <param name="wrapperProviderContext">The <see cref="WrapperProviderContext"/>.</param>
         /// <returns>An instance of <see cref="IWrapperProvider"/> if there is a wrapping provider for the
         /// supplied type, else null.</returns>
-        public static IWrapperProvider GetWrapperProvider(
+        public static IWrapperProvider? GetWrapperProvider(
             this IEnumerable<IWrapperProviderFactory> wrapperProviderFactories,
             WrapperProviderContext wrapperProviderContext)
         {

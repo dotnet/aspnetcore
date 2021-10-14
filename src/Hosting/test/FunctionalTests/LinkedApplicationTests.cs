@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,7 +16,6 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
 {
     public class LinkedApplicationTests : LoggedTest
     {
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24755")]
         [Fact]
         public async Task LinkedApplicationWorks()
         {

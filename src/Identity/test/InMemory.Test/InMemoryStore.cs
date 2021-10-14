@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory
     public class InMemoryStore<TUser, TRole> :
         InMemoryUserStore<TUser>,
         IUserRoleStore<TUser>,
-        IQueryableRoleStore<TRole>, 
+        IQueryableRoleStore<TRole>,
         IRoleClaimStore<TRole>
         where TRole : PocoRole
         where TUser : PocoUser
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory
             {
                 return Task.FromResult<IList<TUser>>(new List<TUser>());
             }
-            return Task.FromResult<IList<TUser>>(Users.Where(u => (u.Roles.Where(x => x.RoleId == role.Id).Count() > 0)).Select(x => x).ToList());
+            return Task.FromResult<IList<TUser>>(Users.Where(u => (u.Roles.Where(x => x.RoleId == role.Id).Any())).Select(x => x).ToList());
         }
 
         private readonly Dictionary<string, TRole> _roles = new Dictionary<string, TRole>();

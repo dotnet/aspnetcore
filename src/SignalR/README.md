@@ -32,7 +32,7 @@ The following contains a description of the sub-directories.
 
 By default, the build script will try to build Java and Typescript projects. If you don't want to include those, you can pass "-NoBuildJava" and "-NoBuildNodeJS" respectively to the build script to skip them. Or "--no-build-java" and "--no-build-nodejs" on MacOS or Linux.
 
-To build this specific project from source, you can follow the instructions [on building a subset of the code](https://github.com/dotnet/aspnetcore/blob/main/docs/BuildFromSource.md#building-a-subset-of-the-code).
+To build this specific project from source, follow the instructions [on building the project](../../docs/BuildFromSource.md#step-3-build-the-repo).
 
 Or for the less detailed explanation, run the following command inside this directory.
 ```powershell

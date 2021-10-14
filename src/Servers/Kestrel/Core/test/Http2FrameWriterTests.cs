@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class Http2FrameWriterTests
     {
-        private MemoryPool<byte> _dirtyMemoryPool;
+        private readonly MemoryPool<byte> _dirtyMemoryPool;
 
         public Http2FrameWriterTests()
         {
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private Http2FrameWriter CreateFrameWriter(Pipe pipe)
         {
-            var serviceContext = TestContextFactory.CreateServiceContext(new KestrelServerOptions(), log: Mock.Of<IKestrelTrace>());
+            var serviceContext = TestContextFactory.CreateServiceContext(new KestrelServerOptions());
             return new Http2FrameWriter(pipe.Writer, null, null, null, null, null, null, _dirtyMemoryPool, serviceContext);
         }
 

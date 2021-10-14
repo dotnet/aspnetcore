@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Authorization;
 
@@ -23,12 +23,12 @@ namespace Microsoft.AspNetCore.Components.Authorization
         /// <summary>
         /// The policy name that determines whether the content can be displayed.
         /// </summary>
-        [Parameter] public string Policy { get; set; }
+        [Parameter] public string? Policy { get; set; }
 
         /// <summary>
         /// A comma delimited list of roles that are allowed to display the content.
         /// </summary>
-        [Parameter] public string Roles { get; set; }
+        [Parameter] public string? Roles { get; set; }
 
         /// <summary>
         /// Gets the data used for authorization.

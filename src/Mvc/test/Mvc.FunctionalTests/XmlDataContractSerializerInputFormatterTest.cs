@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -18,16 +18,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class XmlDataContractSerializerInputFormatterTest : IClassFixture<MvcTestFixture<Startup>>
     {
-        private readonly string errorMessageFormat = string.Format(
-            CultureInfo.CurrentCulture,
-            "{{1}}:{0} does not recognize '{1}', so instead use '{2}' with '{3}' set to '{4}' for value " +
-            "type property '{{0}}' on type '{{1}}'.",
-            typeof(DataContractSerializer).FullName,
-            typeof(RequiredAttribute).FullName,
-            typeof(DataMemberAttribute).FullName,
-            nameof(DataMemberAttribute.IsRequired),
-            bool.TrueString);
-
         public XmlDataContractSerializerInputFormatterTest(MvcTestFixture<Startup> fixture)
         {
             Client = fixture.CreateDefaultClient();

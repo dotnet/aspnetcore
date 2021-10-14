@@ -1,14 +1,13 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 using System;
 
 namespace Microsoft.Extensions.Logging.Testing
 {
-    public class TestLogger<T> : ILogger
+    public class TestLogger<T> : ILogger<T>
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<T> _logger;
 
         public TestLogger(TestLoggerFactory factory)
         {

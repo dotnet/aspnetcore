@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
 using System.IO;
@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Internal
     {
         // This record separator is supposed to be used only for JSON payloads where 0x1e character
         // will not occur (is not a valid character) and therefore it is safe to not escape it
-        public static readonly byte RecordSeparator = 0x1e;
+        public const byte RecordSeparator = 0x1e;
 
         public static void WriteRecordSeparator(IBufferWriter<byte> output)
         {

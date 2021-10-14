@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         {
             WriteLiteral("This is markup\r\n\r\n");
 #nullable restore
-#line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EmptyExplicitExpression.cshtml"
+#line (3,3)-(3,3) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EmptyExplicitExpression.cshtml"
 Write();
 
 #line default

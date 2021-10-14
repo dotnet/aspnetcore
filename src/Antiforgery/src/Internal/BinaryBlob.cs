@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -28,11 +28,11 @@ namespace Microsoft.AspNetCore.Antiforgery
         {
             if (bitLength < 32 || bitLength % 8 != 0)
             {
-                throw new ArgumentOutOfRangeException("bitLength");
+                throw new ArgumentOutOfRangeException(nameof(bitLength));
             }
             if (data == null || data.Length != bitLength / 8)
             {
-                throw new ArgumentOutOfRangeException("data");
+                throw new ArgumentOutOfRangeException(nameof(data));
             }
 
             _data = data;

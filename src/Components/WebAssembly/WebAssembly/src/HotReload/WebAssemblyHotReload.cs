@@ -1,18 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
-using System.Reflection.Metadata;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
+using Microsoft.Extensions.HotReload;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload
@@ -24,49 +17,25 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class WebAssemblyHotReload
     {
-        private static readonly ConcurrentDictionary<Guid, List<(byte[] metadataDelta, byte[] ilDelta)>> _deltas = new();
-        private static readonly ConcurrentDictionary<Assembly, Assembly> _appliedAssemblies = new();
-        private static (List<Action<Type[]?>> BeforeUpdates, List<Action<Type[]?>> AfterUpdates)? _handlerActions;
-
-        static WebAssemblyHotReload()
+        private static HotReloadAgent? _hotReloadAgent;
+        private static readonly UpdateDelta[] _updateDeltas = new[]
         {
-            if (!HotReloadEnvironment.Instance.IsHotReloadEnabled)
-            {
-                return;
-            }
-
-            // An ApplyDelta can be called on an assembly that has not yet been loaded. This is particularly likely
-            // when we're applying deltas on app start and child components are defined in a referenced project.
-            // To account for this, wire up AssemblyLoad
-            AppDomain.CurrentDomain.AssemblyLoad += (_, eventArgs) =>
-            {
-                var loadedAssembly = eventArgs.LoadedAssembly;
-                var moduleId = loadedAssembly.Modules.FirstOrDefault()?.ModuleVersionId;
-                if (moduleId is null)
-                {
-                    return;
-                }
-
-                if (_deltas.TryGetValue(moduleId.Value, out var result) && _appliedAssemblies.TryAdd(loadedAssembly, loadedAssembly))
-                {
-                    // A delta for this specific Module exists and we haven't called ApplyUpdate on this instance of Assembly as yet.
-                    foreach (var (metadataDelta, ilDelta) in CollectionsMarshal.AsSpan(result))
-                    {
-                        ApplyUpdate(loadedAssembly, metadataDelta, ilDelta);
-                    }
-                }
-            };
-        }
+            new UpdateDelta(),
+        };
 
         internal static async Task InitializeAsync()
         {
-            if (!HotReloadEnvironment.Instance.IsHotReloadEnabled)
-            {
-                return;
-            }
+            _hotReloadAgent = new HotReloadAgent(m => Debug.WriteLine(m));
 
-            var jsObjectReference = (IJSUnmarshalledObjectReference)(await DefaultWebAssemblyJSRuntime.Instance.InvokeAsync<IJSObjectReference>("import", "./_framework/blazor-hotreload.js"));
-            await jsObjectReference.InvokeUnmarshalled<Task<int>>("receiveHotReload");
+            if (Environment.GetEnvironmentVariable("__ASPNETCORE_BROWSER_TOOLS") == "true")
+            {
+                // Attempt to read previously applied hot reload deltas if the ASP.NET Core browser tools are available (indicated by the presence of the Environment variable).
+                // The agent is injected in to the hosted app and can serve this script that can provide results from local-storage .
+                // See https://github.com/dotnet/aspnetcore/issues/37357#issuecomment-941237000
+
+                var jsObjectReference = (IJSUnmarshalledObjectReference)(await DefaultWebAssemblyJSRuntime.Instance.InvokeAsync<IJSObjectReference>("import", "/_framework/blazor-hotreload.js"));
+                await jsObjectReference.InvokeUnmarshalled<Task<int>>("receiveHotReload");
+            }
         }
 
         /// <summary>
@@ -76,109 +45,26 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload
         public static void ApplyHotReloadDelta(string moduleIdString, byte[] metadataDelta, byte[] ilDeta)
         {
             var moduleId = Guid.Parse(moduleIdString);
-            var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.Modules.FirstOrDefault() is Module m && m.ModuleVersionId == moduleId);
 
-            Debug.Assert(HotReloadEnvironment.Instance.IsHotReloadEnabled);
+            _updateDeltas[0].ModuleId = moduleId;
+            _updateDeltas[0].MetadataDelta = metadataDelta;
+            _updateDeltas[0].ILDelta = ilDeta;
 
-            if (assembly is not null)
-            {
-                ApplyUpdate(assembly, metadataDelta, ilDeta);
-                _appliedAssemblies.TryAdd(assembly, assembly);
-            }
-
-            if (_deltas.TryGetValue(moduleId, out var deltas))
-            {
-                deltas.Add((metadataDelta, ilDeta));
-            }
-            else
-            {
-                _deltas[moduleId] = new List<(byte[], byte[])>(1)
-                {
-                    (metadataDelta, ilDeta)
-                };
-            }
+            _hotReloadAgent!.ApplyDeltas(_updateDeltas);
         }
 
-        private static void ApplyUpdate(Assembly assembly, byte[] metadataDelta, byte[] ilDeta)
+        /// <summary>
+        /// For framework use only.
+        /// </summary>
+        [JSInvokable(nameof(GetApplyUpdateCapabilities))]
+        public static string GetApplyUpdateCapabilities()
         {
-            _handlerActions ??= GetMetadataUpdateHandlerActions(AppDomain.CurrentDomain.GetAssemblies());
-            var (beforeUpdates, afterUpdates) = _handlerActions.Value;
-
-            beforeUpdates.ForEach(a => a(null));
-            System.Reflection.Metadata.AssemblyExtensions.ApplyUpdate(assembly, metadataDelta, ilDeta, ReadOnlySpan<byte>.Empty);
-            afterUpdates.ForEach(a => a(null));
-        }
-
-        // Internal for unit testing.
-        internal static (List<Action<Type[]?>> BeforeUpdates, List<Action<Type[]?>> AfterUpdates) GetMetadataUpdateHandlerActions(Assembly[] assemblies)
-        {
-            var beforeUpdates = new List<Action<Type[]?>>();
-            var afterUpdates = new List<Action<Type[]?>>();
-
-            foreach (var assembly in assemblies)
+            var method = typeof(System.Reflection.Metadata.MetadataUpdater).GetMethod("GetCapabilities", BindingFlags.NonPublic | BindingFlags.Static, Type.EmptyTypes);
+            if (method is null)
             {
-                foreach (var attribute in assembly.GetCustomAttributes<MetadataUpdateHandlerAttribute>())
-                {
-                    var handlerType = attribute.HandlerType;
-
-                    var methodFound = false;
-                    if (GetUpdateMethod(handlerType, "BeforeUpdate") is MethodInfo beforeUpdate)
-                    {
-                        beforeUpdates.Add(CreateAction(beforeUpdate));
-                        methodFound = true;
-                    }
-
-                    if (GetUpdateMethod(handlerType, "AfterUpdate") is MethodInfo afterUpdate)
-                    {
-                        afterUpdates.Add(CreateAction(afterUpdate));
-                        methodFound = true;
-                    }
-
-                    if (!methodFound)
-                    {
-                        Debug.WriteLine($"No BeforeUpdate or AfterUpdate method found on '{handlerType}'.");
-                    }
-
-                    static Action<Type[]?> CreateAction(MethodInfo update)
-                    {
-                        var action = update.CreateDelegate<Action<Type[]?>>();
-                        return types =>
-                        {
-                            try
-                            {
-                                action(types);
-                            }
-                            catch (Exception ex)
-                            {
-                                Debug.WriteLine($"Exception from '{action}': {ex}");
-                            }
-                        };
-                    }
-                }
+                return string.Empty;
             }
-
-            static MethodInfo? GetUpdateMethod(Type handlerType, string name)
-            {
-                var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
-                var updateMethod = handlerType.GetMethod(name, bindingFlags, new[] { typeof(Type[]) });
-                if (updateMethod is not null)
-                {
-                    return updateMethod;
-                }
-
-                var methods = handlerType.GetMethods(bindingFlags)
-                    .Where(m => m.Name == name)
-                    .ToArray();
-
-                if (methods.Length > 0)
-                {
-                    Debug.WriteLine($"MetadataUpdateHandler type '{handlerType}' has a method named '{name}' that does not match the required signature.");
-                }
-
-                return null;
-            }
-
-            return (beforeUpdates, afterUpdates);
+            return (string)method.Invoke(obj: null, parameters: null)!;
         }
     }
 }

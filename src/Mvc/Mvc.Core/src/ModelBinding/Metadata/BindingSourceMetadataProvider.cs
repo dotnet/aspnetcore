@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -16,8 +16,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Creates a new <see cref="BindingSourceMetadataProvider"/> for the given <paramref name="type"/>.
         /// </summary>
         /// <param name="type">
-        /// The <see cref="Type"/>. The provider sets <see cref="BindingSource"/> of the given <see cref="Type"/> or 
-        /// anything assignable to the given <see cref="Type"/>. 
+        /// The <see cref="Type"/>. The provider sets <see cref="BindingSource"/> of the given <see cref="Type"/> or
+        /// anything assignable to the given <see cref="Type"/>.
         /// </param>
         /// <param name="bindingSource">
         /// The <see cref="BindingSource"/> to assign to the given <paramref name="type"/>.
@@ -35,8 +35,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
 
         /// <summary>
-        /// The <see cref="Type"/>. The provider sets <see cref="BindingSource"/> of the given <see cref="Type"/> or 
-        /// anything assignable to the given <see cref="Type"/>. 
+        /// The <see cref="Type"/>. The provider sets <see cref="BindingSource"/> of the given <see cref="Type"/> or
+        /// anything assignable to the given <see cref="Type"/>.
         /// </summary>
         public Type Type { get; }
 

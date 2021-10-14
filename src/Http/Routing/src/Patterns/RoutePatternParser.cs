@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         private const char Separator = '/';
         private const char OpenBrace = '{';
         private const char CloseBrace = '}';
-        private const char EqualsSign = '=';
         private const char QuestionMark = '?';
         private const char Asterisk = '*';
         private const string PeriodString = ".";
@@ -359,7 +358,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             }
 
             // if a segment has multiple parts, then only the last one parameter can be optional
-            // if it is following a optional seperator.
+            // if it is following a optional separator.
             for (var i = 0; i < parts.Count; i++)
             {
                 var part = parts[i];
@@ -569,7 +568,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 }
                 else
                 {
-                    return _template.Substring(0, _index) + "|" + _template.Substring(_index);
+                    return string.Concat(_template.Substring(0, _index), "|", _template.Substring(_index));
                 }
             }
         }

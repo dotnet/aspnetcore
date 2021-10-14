@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -191,6 +191,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                     webHostBuilder
                     .ConfigureServices(services => services.AddSingleton(LoggerFactory))
                     .UseKestrel()
+                    .UseUrls(TestUrlHelper.GetTestUrl(ServerType.Kestrel))
                     .UseWebRoot(Path.Combine(AppContext.BaseDirectory, baseDir))
                     .Configure(app => app.UseStaticFiles(new StaticFileOptions
                     {
@@ -301,8 +302,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         {
             var uri = new Uri(address);
             var builder = new StringBuilder();
-            builder.Append($"{method} {path} HTTP/1.1\r\n");
-            builder.Append($"HOST: {uri.Authority}\r\n\r\n");
+            builder.Append(FormattableString.Invariant($"{method} {path} HTTP/1.1\r\n"));
+            builder.Append(FormattableString.Invariant($"HOST: {uri.Authority}\r\n\r\n"));
 
             byte[] request = Encoding.ASCII.GetBytes(builder.ToString());
 

@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -20,12 +20,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
         public string Content => Green.Content;
 
-        internal override sealed SyntaxNode GetCachedSlot(int index)
+        internal sealed override SyntaxNode GetCachedSlot(int index)
         {
             throw new InvalidOperationException("Tokens can't have slots.");
         }
 
-        internal override sealed SyntaxNode GetNodeSlot(int slot)
+        internal sealed override SyntaxNode GetNodeSlot(int slot)
         {
             throw new InvalidOperationException("Tokens can't have slots.");
         }

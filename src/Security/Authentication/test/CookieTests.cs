@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 {
     public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions>
     {
-        private TestClock _clock = new TestClock();
+        private readonly TestClock _clock = new TestClock();
 
         protected override string DefaultScheme => CookieAuthenticationDefaults.AuthenticationScheme;
         protected override Type HandlerType => typeof(CookieAuthenticationHandler);
@@ -714,6 +714,65 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         }
 
         [Fact]
+        public async Task CookieCanBeRenewedByValidatorWithModifiedLifetime()
+        {
+            using var host = await CreateHost(o =>
+            {
+                o.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+                o.Events = new CookieAuthenticationEvents
+                {
+                    OnValidatePrincipal = ctx =>
+                    {
+                        ctx.ShouldRenew = true;
+                        var id = ctx.Principal.Identities.First();
+                        var claim = id.FindFirst("counter");
+                        if (claim == null)
+                        {
+                            id.AddClaim(new Claim("counter", "1"));
+                        }
+                        else
+                        {
+                            id.RemoveClaim(claim);
+                            id.AddClaim(new Claim("counter", claim.Value + "1"));
+                        }
+                        // Causes the expiry time to not be extended because the lifetime is
+                        // calculated relative to the issue time.
+                        ctx.Properties.IssuedUtc = _clock.UtcNow;
+                        return Task.FromResult(0);
+                    }
+                };
+            },
+            context =>
+                context.SignInAsync("Cookies",
+                    new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies")))));
+
+            using var server = host.GetTestServer();
+            var transaction1 = await SendAsync(server, "http://example.com/testpath");
+
+            var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
+            Assert.NotNull(transaction2.SetCookie);
+            Assert.Equal("1", FindClaimValue(transaction2, "counter"));
+
+            _clock.Add(TimeSpan.FromMinutes(1));
+
+            var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction2.CookieNameValue);
+            Assert.NotNull(transaction3.SetCookie);
+            Assert.Equal("11", FindClaimValue(transaction3, "counter"));
+
+            _clock.Add(TimeSpan.FromMinutes(1));
+
+            var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction3.CookieNameValue);
+            Assert.NotNull(transaction4.SetCookie);
+            Assert.Equal("111", FindClaimValue(transaction4, "counter"));
+
+            _clock.Add(TimeSpan.FromMinutes(9));
+
+            var transaction5 = await SendAsync(server, "http://example.com/me/Cookies", transaction4.CookieNameValue);
+            Assert.Null(transaction5.SetCookie);
+            Assert.Null(FindClaimValue(transaction5, "counter"));
+        }
+
+        [Fact]
         public async Task CookieValidatorOnlyCalledOnce()
         {
             using var host = await CreateHost(o =>
@@ -933,6 +992,58 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var transaction5 = await SendAsync(server, "http://example.com/me/Cookies", transaction4.CookieNameValue);
             Assert.Null(transaction5.SetCookie);
             Assert.Equal("Alice", FindClaimValue(transaction5, ClaimTypes.Name));
+        }
+
+        [Fact]
+        public async Task CookieIsRenewedWithSlidingExpirationEvent()
+        {
+            using var host = await CreateHost(o =>
+            {
+                o.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+                o.SlidingExpiration = true;
+                o.Events = new CookieAuthenticationEvents()
+                {
+                    OnCheckSlidingExpiration = context =>
+                    {
+                        var expectRenew = string.Equals("1", context.Request.Query["expectrenew"]);
+                        var renew = string.Equals("1", context.Request.Query["renew"]);
+                        Assert.Equal(expectRenew, context.ShouldRenew);
+                        context.ShouldRenew = renew;
+                        return Task.CompletedTask;
+                    }
+                };
+            },
+            SignInAsAlice);
+
+            using var server = host.GetTestServer();
+            var transaction1 = await SendAsync(server, "http://example.com/testpath");
+
+            var transaction2 = await SendAsync(server, "http://example.com/me/Cookies?expectrenew=0&renew=0", transaction1.CookieNameValue);
+            Assert.Null(transaction2.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
+
+            _clock.Add(TimeSpan.FromMinutes(4));
+
+            var transaction3 = await SendAsync(server, "http://example.com/me/Cookies?expectrenew=0&renew=0", transaction1.CookieNameValue);
+            Assert.Null(transaction3.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction3, ClaimTypes.Name));
+
+            _clock.Add(TimeSpan.FromMinutes(4));
+
+            // A renewal is now expected, but we've suppressed it
+            var transaction4 = await SendAsync(server, "http://example.com/me/Cookies?expectrenew=1&renew=0", transaction1.CookieNameValue);
+            Assert.Null(transaction4.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction4, ClaimTypes.Name));
+
+            // Allow the default renewal to happen
+            var transaction5 = await SendAsync(server, "http://example.com/me/Cookies?expectrenew=1&renew=1", transaction1.CookieNameValue);
+            Assert.NotNull(transaction5.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction5, ClaimTypes.Name));
+
+            // Force a renewal on an un-expired new cookie
+            var transaction6 = await SendAsync(server, "http://example.com/me/Cookies?expectrenew=0&renew=1", transaction5.CookieNameValue);
+            Assert.NotNull(transaction5.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction6, ClaimTypes.Name));
         }
 
         [Fact]

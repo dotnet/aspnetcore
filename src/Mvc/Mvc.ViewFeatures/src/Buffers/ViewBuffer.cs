@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -18,10 +18,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
     [DebuggerDisplay("{DebuggerToString()}")]
     internal class ViewBuffer : IHtmlContentBuilder
     {
-        public static readonly int PartialViewPageSize = 32;
-        public static readonly int TagHelperPageSize = 32;
-        public static readonly int ViewComponentPageSize = 32;
-        public static readonly int ViewPageSize = 256;
+        public const int PartialViewPageSize = 32;
+        public const int TagHelperPageSize = 32;
+        public const int ViewComponentPageSize = 32;
+        public const int ViewPageSize = 256;
 
         private readonly IViewBufferScope _bufferScope;
         private readonly string _name;

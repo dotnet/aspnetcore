@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -99,9 +99,64 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void EntriesCanBeEnumerated()
+        public void EntriesCanBeEnumeratedAfterResets()
         {
-            IDictionary<string, StringValues> headers = new HttpRequestHeaders();
+            HttpRequestHeaders headers = new HttpRequestHeaders();
+
+            EnumerateEntries((IHeaderDictionary)headers);
+            headers.Reset();
+            EnumerateEntries((IDictionary<string, StringValues>)headers);
+            headers.Reset();
+            EnumerateEntries((IHeaderDictionary)headers);
+            headers.Reset();
+            EnumerateEntries((IDictionary<string, StringValues>)headers);
+        }
+
+        [Fact]
+        public void EnumeratorNotReusedBeforeReset()
+        {
+            HttpRequestHeaders headers = new HttpRequestHeaders();
+            IEnumerable<KeyValuePair<string, StringValues>> enumerable = headers;
+
+            var enumerator0 = enumerable.GetEnumerator();
+            var enumerator1 = enumerable.GetEnumerator();
+
+            Assert.NotSame(enumerator0, enumerator1);
+        }
+
+        [Fact]
+        public void EnumeratorReusedAfterReset()
+        {
+            HttpRequestHeaders headers = new HttpRequestHeaders();
+            IEnumerable<KeyValuePair<string, StringValues>> enumerable = headers;
+
+            var enumerator0 = enumerable.GetEnumerator();
+            headers.Reset();
+            var enumerator1 = enumerable.GetEnumerator();
+
+            Assert.Same(enumerator0, enumerator1);
+        }
+
+        private static void EnumerateEntries(IHeaderDictionary headers)
+        {
+            var v1 = new[] { "localhost" };
+            var v2 = new[] { "0" };
+            var v3 = new[] { "value" };
+            headers.Host = v1;
+            headers.ContentLength = 0;
+            headers["custom"] = v3;
+
+            Assert.Equal(
+                new[] {
+                    new KeyValuePair<string, StringValues>("Host", v1),
+                    new KeyValuePair<string, StringValues>("Content-Length", v2),
+                    new KeyValuePair<string, StringValues>("custom", v3),
+                },
+                headers);
+        }
+
+        private static void EnumerateEntries(IDictionary<string, StringValues> headers)
+        {
             var v1 = new[] { "localhost" };
             var v2 = new[] { "0" };
             var v3 = new[] { "value" };
@@ -311,7 +366,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 #pragma warning disable CS0618 // Type or member is obsolete
             var exception = Assert.Throws<BadHttpRequestException>(
 #pragma warning restore CS0618 // Type or member is obsolete
-                () => headers.Append(Encoding.Latin1.GetBytes(key), Encoding.ASCII.GetBytes("value")));
+                () => headers.Append(Encoding.Latin1.GetBytes(key), Encoding.ASCII.GetBytes("value"), checkForNewlineChars : false));
             Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
         }
 
@@ -461,7 +516,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     var headerName = Encoding.ASCII.GetBytes(header.Name).AsSpan();
                     var prevSpan = Encoding.UTF8.GetBytes(headerValueUtf16Latin1CrossOver).AsSpan();
 
-                    headers.Append(headerName, prevSpan);
+                    headers.Append(headerName, prevSpan, checkForNewlineChars : false);
                     headers.OnHeadersComplete();
                     var prevHeaderValue = ((IHeaderDictionary)headers)[header.Name].ToString();
 
@@ -477,7 +532,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                         Assert.False(nextSpan.SequenceEqual(Encoding.ASCII.GetBytes(headerValueUtf16Latin1CrossOver)));
 
-                        headers.Append(headerName, nextSpan);
+                        headers.Append(headerName, nextSpan, checkForNewlineChars : false);
                     });
                 }
 
@@ -523,12 +578,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     Assert.False(latinValueSpan.SequenceEqual(Encoding.ASCII.GetBytes(headerValueUtf16Latin1CrossOver)));
 
                     headers.Reset();
-                    headers.Append(headerName, latinValueSpan);
+                    headers.Append(headerName, latinValueSpan, checkForNewlineChars : false);
                     headers.OnHeadersComplete();
                     var parsedHeaderValue1 = ((IHeaderDictionary)headers)[header.Name].ToString();
 
                     headers.Reset();
-                    headers.Append(headerName, latinValueSpan);
+                    headers.Append(headerName, latinValueSpan, checkForNewlineChars : false);
                     headers.OnHeadersComplete();
                     var parsedHeaderValue2 = ((IHeaderDictionary)headers)[header.Name].ToString();
 
@@ -567,7 +622,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     var headerName = Encoding.ASCII.GetBytes(header.Name).AsSpan();
                     var valueSpan = Encoding.ASCII.GetBytes(valueString).AsSpan();
 
-                    headers.Append(headerName, valueSpan);
+                    headers.Append(headerName, valueSpan, checkForNewlineChars : false);
                 });
 
                 valueArray[i] = 'a';
@@ -593,12 +648,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 return Encoding.UTF8;
             });
 
-            Assert.Throws<InvalidOperationException>(() => headers.Append(acceptNameBytes, headerValueBytes));
-            headers.Append(cookieNameBytes, headerValueBytes);
+            Assert.Throws<InvalidOperationException>(() => headers.Append(acceptNameBytes, headerValueBytes, checkForNewlineChars : false));
+            headers.Append(cookieNameBytes, headerValueBytes, checkForNewlineChars : false);
             headers.OnHeadersComplete();
 
-            var parsedAcceptHeaderValue = ((IHeaderDictionary)headers)[HeaderNames.Accept].ToString();
-            var parsedCookieHeaderValue = ((IHeaderDictionary)headers)[HeaderNames.Cookie].ToString();
+            var parsedAcceptHeaderValue = ((IHeaderDictionary)headers).Accept.ToString();
+            var parsedCookieHeaderValue = ((IHeaderDictionary)headers).Cookie.ToString();
 
             Assert.Empty(parsedAcceptHeaderValue);
             Assert.Equal(headerValue, parsedCookieHeaderValue);
@@ -612,13 +667,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var contentLengthValueBytes = Encoding.UTF32.GetBytes("1337");
 
             var headers = new HttpRequestHeaders(encodingSelector: _ => Encoding.UTF32);
-            headers.Append(contentLengthNameBytes, contentLengthValueBytes);
+            headers.Append(contentLengthNameBytes, contentLengthValueBytes, checkForNewlineChars : false);
             headers.OnHeadersComplete();
 
             Assert.Equal(1337, headers.ContentLength);
 
             Assert.Throws<InvalidOperationException>(() =>
-                new HttpRequestHeaders().Append(contentLengthNameBytes, contentLengthValueBytes));
+                new HttpRequestHeaders().Append(contentLengthNameBytes, contentLengthValueBytes, checkForNewlineChars : false));
         }
 
         [Fact]
@@ -658,7 +713,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var headerName = Encoding.ASCII.GetBytes(header.Name).AsSpan();
             var prevSpan = Encoding.UTF8.GetBytes(HeaderValue).AsSpan();
 
-            headers.Append(headerName, prevSpan);
+            headers.Append(headerName, prevSpan, checkForNewlineChars : false);
             headers.OnHeadersComplete();
             var prevHeaderValue = ((IHeaderDictionary)headers)[header.Name].ToString();
 
@@ -707,8 +762,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var prevSpan1 = Encoding.UTF8.GetBytes(HeaderValue1).AsSpan();
             var prevSpan2 = Encoding.UTF8.GetBytes(HeaderValue2).AsSpan();
 
-            headers.Append(headerName, prevSpan1);
-            headers.Append(headerName, prevSpan2);
+            headers.Append(headerName, prevSpan1, checkForNewlineChars : false);
+            headers.Append(headerName, prevSpan2, checkForNewlineChars : false);
             headers.OnHeadersComplete();
             var prevHeaderValue = ((IHeaderDictionary)headers)[header.Name];
 
@@ -748,7 +803,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var headerName = Encoding.ASCII.GetBytes(prevName).AsSpan();
             var prevSpan = Encoding.UTF8.GetBytes(prevValue).AsSpan();
 
-            headers.Append(headerName, prevSpan);
+            headers.Append(headerName, prevSpan, checkForNewlineChars : false);
             headers.OnHeadersComplete();
             var prevHeaderValue = ((IHeaderDictionary)headers)[prevName].ToString();
 
@@ -758,7 +813,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 headerName = Encoding.ASCII.GetBytes(prevName).AsSpan();
                 var nextSpan = Encoding.UTF8.GetBytes(nextValue).AsSpan();
-                headers.Append(headerName, nextSpan);
+                headers.Append(headerName, nextSpan, checkForNewlineChars : false);
             }
 
             headers.OnHeadersComplete();

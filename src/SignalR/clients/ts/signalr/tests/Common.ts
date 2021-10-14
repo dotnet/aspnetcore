@@ -1,11 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 import { EOL } from "os";
 import { ILogger, LogLevel } from "../src/ILogger";
 import { HttpTransportType } from "../src/ITransport";
 
-export function eachTransport(action: (transport: HttpTransportType) => void) {
+export function eachTransport(action: (transport: HttpTransportType) => void): void {
     const transportTypes = [
         HttpTransportType.WebSockets,
         HttpTransportType.ServerSentEvents,
@@ -13,7 +13,7 @@ export function eachTransport(action: (transport: HttpTransportType) => void) {
     transportTypes.forEach((t) => action(t));
 }
 
-export function eachEndpointUrl(action: (givenUrl: string, expectedUrl: string) => void) {
+export function eachEndpointUrl(action: (givenUrl: string, expectedUrl: string) => void): void {
     const urls = [
         [ "http://tempuri.org/endpoint/?q=my/Data", "http://tempuri.org/endpoint/negotiate?q=my/Data&negotiateVersion=1" ],
         [ "http://tempuri.org/endpoint?q=my/Data", "http://tempuri.org/endpoint/negotiate?q=my/Data&negotiateVersion=1" ],

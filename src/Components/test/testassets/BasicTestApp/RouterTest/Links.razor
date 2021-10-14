@@ -18,10 +18,14 @@
     <li><NavLink href="/subdir/Other#blah">Other with hash</NavLink></li>
     <li><NavLink href="/subdir/WithParameters/name/Abc">With parameters</NavLink></li>
     <li><NavLink href="/subdir/WithParameters/Name/Abc/LastName/McDef">With more parameters</NavLink></li>
+    <li><NavLink href="/subdir/WithQueryParameters/Abc">With query parameters (none)</NavLink></li>
+    <li><NavLink href="/subdir/WithQueryParameters/Abc?stringvalue=Hello+there">With query parameters (passing string value)</NavLink></li>
+    <li><NavLink href="/subdir/WithQueryParameters/Abc?NullableDateTimeValue=2000-01-02%2003:04:05&NullableDateOnlyValue=2000-01-02&NullableTimeOnlyValue=03:04:05">With query parameters (passing Date Time values)</NavLink></li>
     <li><NavLink href="/subdir/LongPage1">Long page 1</NavLink></li>
     <li><NavLink href="/subdir/LongPage2">Long page 2</NavLink></li>
     <li><NavLink href="/subdir/WithLazyAssembly" id="with-lazy-assembly">With lazy assembly</NavLink></li>
     <li><NavLink href="/subdir/WithLazyLoadedRoutes" id="with-lazy-routes">With lazy loaded routes</NavLink></li>
+    <li><NavLink href="/subdir/ProgrammaticNavigationCases">Programmatic navigation cases</NavLink></li>
     <li><NavLink href="PreventDefaultCases">preventDefault cases</NavLink></li>
     <li><a href="/subdir/images/blazor_logo_1000x.png" download>Download Me</a></li>
     <li><NavLink>Null href never matches</NavLink></li>

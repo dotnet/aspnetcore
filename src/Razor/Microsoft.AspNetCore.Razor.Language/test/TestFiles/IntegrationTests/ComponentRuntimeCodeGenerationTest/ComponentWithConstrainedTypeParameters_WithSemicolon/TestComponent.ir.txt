@@ -1,0 +1,22 @@
+Document - 
+    NamespaceDeclaration -  - Test
+        UsingDirective - (3:1,1 [14] ) - System
+        UsingDirective - (18:2,1 [34] ) - System.Collections.Generic
+        UsingDirective - (53:3,1 [19] ) - System.Linq
+        UsingDirective - (73:4,1 [30] ) - System.Threading.Tasks
+        UsingDirective - (1:0,1 [40] x:\dir\subdir\Test\TestComponent.cshtml) - Microsoft.AspNetCore.Components
+        ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase -  - TItem1, TItem2, TItem3
+            MethodDeclaration -  - protected override - void - BuildRenderTree
+                MarkupBlock -  - <h1>Item1</h1>
+                CSharpCode - (186:5,14 [34] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (186:5,14 [34] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - foreach (var item2 in Items2)\n{\n
+                MarkupElement - (224:8,1 [40] x:\dir\subdir\Test\TestComponent.cshtml) - p
+                    CSharpExpression - (234:9,2 [19] x:\dir\subdir\Test\TestComponent.cshtml)
+                        LazyIntermediateToken - (234:9,2 [19] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ChildContent(item2)
+                    HtmlContent - (253:9,21 [7] x:\dir\subdir\Test\TestComponent.cshtml)
+                        LazyIntermediateToken - (253:9,21 [7] x:\dir\subdir\Test\TestComponent.cshtml) - Html - ;\n    
+                CSharpCode - (266:10,7 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (266:10,7 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - }\n
+                MarkupBlock -  - <p>Item3</p>
+            CSharpCode - (294:15,4 [236] x:\dir\subdir\Test\TestComponent.cshtml)
+                LazyIntermediateToken - (294:15,4 [236] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    [Parameter] public TItem1 Item1 { get; set; }\n    [Parameter] public List<TItem2> Items2 { get; set; }\n    [Parameter] public TItem3 Item3 { get; set; }\n    [Parameter] public RenderFragment<TItem2> ChildContent { get; set; }\n

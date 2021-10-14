@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using AngleSharp.Dom.Html;
 using AngleSharp.Parser.Html;
@@ -79,12 +79,9 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         [Theory]
         [MemberData(nameof(ScriptWithFallbackSrcData))]
-        // Ubuntu 16 uses an old version of OpenSSL that doesn't work well when an intermediate CA is expired.
-        // We've decided to not run these tests against that OS anymore and will run on newer versions of Ubuntu.
-        [SkipOnHelix("Skip on Ubuntu 16", Queues = "Ubuntu.1604.Amd64.Open;Ubuntu.1604.Amd64")]
         public async Task IdentityUI_ScriptTags_FallbackSourceContent_Matches_CDNContent(ScriptTag scriptTag)
         {
-            var wwwrootDir = Path.Combine(GetProjectBasePath(), "wwwroot", scriptTag.Version);
+            var wwwrootDir = Path.Combine(GetProjectBasePath(), "wwwroot");
 
             var cdnContent = await _httpClient.GetStringAsync(scriptTag.Src);
             var fallbackSrcContent = File.ReadAllText(
@@ -109,7 +106,7 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         private static List<ScriptTag> GetScriptTags()
         {
-            var uiDirV4 = Path.Combine(GetProjectBasePath(), "Areas", "Identity", "Pages", "V4");
+            var uiDirV4 = Path.Combine(GetProjectBasePath(), "Areas", "Identity", "Pages", "V5");
             var cshtmlFiles = GetRazorFiles(uiDirV4);
 
             var scriptTags = new List<ScriptTag>();

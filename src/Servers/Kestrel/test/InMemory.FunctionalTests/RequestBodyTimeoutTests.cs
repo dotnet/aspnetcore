@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
@@ -81,9 +81,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "HTTP/1.1 408 Request Timeout",
                         "");
                     await connection.ReceiveEnd(
+                        "Content-Length: 0",
                         "Connection: close",
                         $"Date: {serviceContext.DateHeaderValue}",
-                        "Content-Length: 0",
                         "",
                         "");
                 }
@@ -127,8 +127,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     // Disconnects after response completes due to the timeout
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
-                        $"Date: {serviceContext.DateHeaderValue}",
                         "Content-Length: 0",
+                        $"Date: {serviceContext.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -200,8 +200,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "HTTP/1.1 200 OK",
                         "");
                     await connection.ReceiveEnd(
-                        $"Date: {serviceContext.DateHeaderValue}",
                         "Content-Length: 12",
+                        $"Date: {serviceContext.DateHeaderValue}",
                         "",
                         "hello, world");
                 }

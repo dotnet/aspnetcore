@@ -1,6 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNetCore.Hosting
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.Hosting
             return true;
         }
 
-        public static bool TryGetOption(this IConfiguration configuration, string hostingStartupName, string featureName, out string value)
+        public static bool TryGetOption(this IConfiguration configuration, string hostingStartupName, string featureName, [NotNullWhen(true)] out string? value)
         {
             value = configuration[$"HostingStartup:{hostingStartupName}:{featureName}"];
             return !string.IsNullOrEmpty(value);

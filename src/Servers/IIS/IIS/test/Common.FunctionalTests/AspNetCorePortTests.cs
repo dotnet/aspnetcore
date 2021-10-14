@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -13,7 +13,20 @@ using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing;
 
+#if !IIS_FUNCTIONALS
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
+
+#if IISEXPRESS_FUNCTIONALS
+namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests
+#elif NEWHANDLER_FUNCTIONALS
+namespace Microsoft.AspNetCore.Server.IIS.NewHandler.FunctionalTests
+#elif NEWSHIM_FUNCTIONALS
+namespace Microsoft.AspNetCore.Server.IIS.NewShim.FunctionalTests
+#endif
+
+#else
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
+#endif
 {
     [Collection(PublishedSitesCollection.Name)]
     public class AspNetCorePortTests : IISFunctionalTestBase
@@ -21,8 +34,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         // Port range allowed by ANCM config
         private const int _minPort = 1025;
         private const int _maxPort = 48000;
-
-        private static readonly Random _random = new Random();
 
         public AspNetCorePortTests(PublishedSitesFixture fixture) : base(fixture)
         {
@@ -144,7 +155,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
             for (var i = 0; i < retries; i++)
             {
-                var port = _random.Next(_minPort, _maxPort);
+                var port = Random.Shared.Next(_minPort, _maxPort);
 
                 using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
                 {

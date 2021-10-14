@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 {
     internal class ResponseBody : Stream
     {
-        private RequestContext _requestContext;
+        private readonly RequestContext _requestContext;
         private long _leftToWrite = long.MinValue;
         private bool _skipWrites;
         private bool _disposed;
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             else if (!hasData && !addTrailers)
             {
                 // No data
-                dataChunks = new HttpApiTypes.HTTP_DATA_CHUNK[0];
+                dataChunks = Array.Empty<HttpApiTypes.HTTP_DATA_CHUNK>();
                 return pins;
             }
 
@@ -556,7 +556,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             // TODO: Verbose log parameters
             if (string.IsNullOrWhiteSpace(fileName))
             {
-                throw new ArgumentNullException("fileName");
+                throw new ArgumentNullException(nameof(fileName));
             }
             CheckDisposed();
 
@@ -670,7 +670,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 else
                 {
-                    // Abort the request but do not close the stream, let future writes complete 
+                    // Abort the request but do not close the stream, let future writes complete
                     Log.FileSendAsyncErrorIgnored(Logger, statusCode);
                     asyncResult.FailSilently();
                 }

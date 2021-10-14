@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
@@ -13,8 +13,8 @@ namespace Microsoft.AspNetCore.Razor.Language
     /// The first phase of intermediate node procesing is document classification. Passes in this phase should classify the
     /// document according to any relevant criteria (project configuration, file extension, directive) and modify
     /// the intermediate node document to suit the desired document shape. Document classifiers should also set
-    /// <see cref="DocumentIntermediateNode.DocumentKind"/> to prevent other classifiers from running. If no classifier 
-    /// matches the document, then it will be classified as &quot;generic&quot; and processed according to set 
+    /// <see cref="DocumentIntermediateNode.DocumentKind"/> to prevent other classifiers from running. If no classifier
+    /// matches the document, then it will be classified as &quot;generic&quot; and processed according to set
     /// of reasonable defaults.
     /// </para>
     /// <para>

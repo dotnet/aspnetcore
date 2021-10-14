@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
 
             Assert.True(task1.IsCompleted && task1.Result);
         }
- 
+
         [Fact]
         public static void OldestRequestOverwritten()
         {
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
             Assert.False(task3.IsCompleted);
 
             var task4 = stack.TryEnterAsync();
-            
+
             Assert.True(task1.IsCompleted);
             Assert.False(task1.Result);
 
@@ -128,5 +128,5 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
 
             Assert.Throws<InvalidOperationException>(() => stack.OnExit());
         }
-    } 
+    }
 }

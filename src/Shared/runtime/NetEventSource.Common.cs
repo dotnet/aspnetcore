@@ -14,9 +14,6 @@ using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-#if NET46
-using System.Security;
-#endif
 
 #pragma warning disable CA1823 // not all IDs are used by all partial providers
 
@@ -40,9 +37,6 @@ namespace System.Net
     //   method that takes an object and optionally provides a string representation of it, in case a particular library wants to customize further.
 
     /// <summary>Provides logging facilities for System.Net libraries.</summary>
-#if NET46
-    [SecuritySafeCritical]
-#endif
     internal sealed partial class NetEventSource : EventSource
     {
         /// <summary>The single event source instance to use for all logging.</summary>

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Diagnostics
@@ -192,6 +193,95 @@ namespace Microsoft.AspNetCore.Diagnostics
             var response = await client.GetAsync(destination + "?name=James");
             var content = await response.Content.ReadAsStringAsync();
             Assert.Equal($"?id={expectedStatusCode}, /location, ?name=James", content);
+        }
+
+        [Fact]
+        public async Task Reexecute_CaptureEndpointAndRouteData()
+        {
+            var expectedStatusCode = 432;
+            var destination = "/location";
+            var endpoint = new Endpoint((_) => Task.CompletedTask, new EndpointMetadataCollection(), "Test");
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseStatusCodePagesWithReExecute(pathFormat: "/errorPage", queryFormat: "?id={0}");
+
+                        app.Map(destination, (innerAppBuilder) =>
+                        {
+                            innerAppBuilder.Run((httpContext) =>
+                            {
+                                httpContext.SetEndpoint(endpoint);
+                                httpContext.Request.RouteValues["John"] = "Doe";
+                                httpContext.Response.StatusCode = expectedStatusCode;
+                                return Task.CompletedTask;
+                            });
+                        });
+
+                        app.Map("/errorPage", (innerAppBuilder) =>
+                        {
+                            innerAppBuilder.Run(httpContext =>
+                            {
+                                var statusCodeReExecuteFeature = httpContext.Features.Get<IStatusCodeReExecuteFeature>();
+
+                                Assert.Equal(endpoint, statusCodeReExecuteFeature.Endpoint);
+                                Assert.Equal("Doe", statusCodeReExecuteFeature.RouteValues["John"]);
+
+                                return Task.CompletedTask;
+                            });
+                        });
+
+                        app.Run((context) =>
+                        {
+                            throw new InvalidOperationException("Invalid input provided.");
+                        });
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var response = await client.GetAsync(destination + "?name=James");
+        }
+
+        [Fact]
+        public async Task Reexecute_WorksAfterUseRoutingWithGlobalRouteBuilder()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            app.UseRouting();
+
+            app.UseStatusCodePagesWithReExecute(pathFormat: "/errorPage", queryFormat: "?id={0}");
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapGet("/", c =>
+                {
+                    c.Response.StatusCode = 404;
+                    return Task.CompletedTask;
+                });
+
+                endpoints.MapGet("/errorPage", () => "errorPage");
+            });
+
+            app.Run((context) =>
+            {
+                throw new InvalidOperationException("Invalid input provided.");
+            });
+
+            await app.StartAsync();
+
+            using var server = app.GetTestServer();
+            var client = server.CreateClient();
+            var response = await client.GetAsync("/");
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal("errorPage", content);
         }
     }
 }

@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -8,12 +11,12 @@ namespace Microsoft.AspNetCore.Testing.Tracing
 {
     public class CollectingEventListener : EventListener
     {
-        private ConcurrentQueue<EventWrittenEventArgs> _events = new ConcurrentQueue<EventWrittenEventArgs>();
+        private readonly ConcurrentQueue<EventWrittenEventArgs> _events = new ConcurrentQueue<EventWrittenEventArgs>();
 
-        private object _lock = new object();
+        private readonly object _lock = new object();
 
-        private Dictionary<string, EventSource> _existingSources = new Dictionary<string, EventSource>(StringComparer.OrdinalIgnoreCase);
-        private HashSet<string> _requestedEventSources = new HashSet<string>();
+        private readonly Dictionary<string, EventSource> _existingSources = new Dictionary<string, EventSource>(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> _requestedEventSources = new HashSet<string>();
 
         public void CollectFrom(string eventSourceName)
         {

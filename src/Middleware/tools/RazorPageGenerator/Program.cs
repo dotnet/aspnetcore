@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -218,7 +218,7 @@ Examples:
                     var includeFileName = cshtmlContent.Substring(startIndex + startMatch.Length, endIndex - (startIndex + startMatch.Length));
                     Console.WriteLine("      Inlining file {0}", includeFileName);
                     var includeFileContent = File.ReadAllText(System.IO.Path.Combine(basePath, includeFileName));
-                    cshtmlContent = cshtmlContent.Substring(0, startIndex) + includeFileContent + cshtmlContent.Substring(endIndex + endMatch.Length);
+                    cshtmlContent = string.Concat(cshtmlContent.AsSpan(0, startIndex), includeFileContent, cshtmlContent.AsSpan(endIndex + endMatch.Length));
                     startIndex = startIndex + includeFileContent.Length;
                 }
                 return cshtmlContent;

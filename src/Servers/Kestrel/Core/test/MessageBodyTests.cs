@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -13,13 +13,14 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
 using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
-    public class MessageBodyTests
+    public class MessageBodyTests : LoggedTest
     {
         [Theory]
         [InlineData((int)HttpVersion.Http10)]
@@ -559,19 +560,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Theory]
         [InlineData((int)HttpMethod.Post)]
         [InlineData((int)HttpMethod.Put)]
-        public void ForThrowsWhenMethodRequiresLengthButNoContentLengthOrTransferEncodingIsSet(int intMethod)
+        public void ForReturnsZeroLengthWhenNoContentLengthOrTransferEncodingIsSetHttp11(int intMethod)
         {
             var method = (HttpMethod)intMethod;
             using (var input = new TestInput())
             {
                 input.Http1Connection.Method = method;
-#pragma warning disable CS0618 // Type or member is obsolete
-                var ex = Assert.Throws<BadHttpRequestException>(() =>
-#pragma warning restore CS0618 // Type or member is obsolete
-                    Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders(), input.Http1Connection));
+                var result = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders(), input.Http1Connection);
 
-                Assert.Equal(StatusCodes.Status411LengthRequired, ex.StatusCode);
-                Assert.Equal(CoreStrings.FormatBadRequest_LengthRequired(((IHttpRequestFeature)input.Http1Connection).Method), ex.Message);
+                Assert.Same(MessageBody.ZeroContentLengthKeepAlive, result);
             }
         }
 
@@ -762,9 +759,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public async Task ConsumeAsyncCompletesAndDoesNotThrowOnTimeout()
         {
             var mockTimeoutControl = new Mock<ITimeoutControl>();
-            var mockLogger = new Mock<IKestrelTrace>();
 
-            using (var input = new TestInput(log: mockLogger.Object, timeoutControl: mockTimeoutControl.Object))
+            using (var input = new TestInput(log: new KestrelTrace(LoggerFactory), timeoutControl: mockTimeoutControl.Object))
             {
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
 
@@ -781,10 +777,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 await body.ConsumeAsync();
 
-                mockLogger.Verify(logger => logger.ConnectionBadRequest(
-                    It.IsAny<string>(),
 #pragma warning disable CS0618 // Type or member is obsolete
-                    It.Is<BadHttpRequestException>(ex => ex.Reason == RequestRejectionReason.RequestBodyTimeout)));
+                Assert.Contains(TestSink.Writes,
+                    m => m.EventId.Name == "ConnectionBadRequest" &&
+                        m.Exception is BadHttpRequestException ex &&
+                        ex.Reason == RequestRejectionReason.RequestBodyTimeout);
 #pragma warning restore CS0618 // Type or member is obsolete
 
                 await body.StopAsync();
@@ -826,12 +823,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task LogsWhenStartsReadingRequestBody()
         {
-            var mockLogger = new Mock<IKestrelTrace>();
-            mockLogger
-                .Setup(logger => logger.IsEnabled(Extensions.Logging.LogLevel.Debug))
-                .Returns(true);
-
-            using (var input = new TestInput(log: mockLogger.Object))
+            using (var input = new TestInput(log: new KestrelTrace(LoggerFactory)))
             {
                 input.Http1Connection.ConnectionIdFeature = "ConnectionId";
                 input.Http1Connection.TraceIdentifier = "RequestId";
@@ -845,7 +837,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 input.Add("a");
                 Assert.Equal(1, await stream.ReadAsync(new byte[1], 0, 1));
 
-                mockLogger.Verify(logger => logger.RequestBodyStart("ConnectionId", "RequestId"));
+                Assert.Contains(TestSink.Writes,
+                    m => m.EventId.Name == "RequestBodyStart" &&
+                        m.Message.Contains(@"Connection id ""ConnectionId"", Request id ""RequestId"": started reading request body."));
 
                 input.Fin();
 
@@ -857,15 +851,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public async Task LogsWhenStopsReadingRequestBody()
         {
             var logEvent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            var mockLogger = new Mock<IKestrelTrace>();
-            mockLogger
-                .Setup(logger => logger.RequestBodyDone("ConnectionId", "RequestId"))
-                .Callback(() => logEvent.SetResult());
-            mockLogger
-                .Setup(logger => logger.IsEnabled(Extensions.Logging.LogLevel.Debug))
-                .Returns(true);
 
-            using (var input = new TestInput(log: mockLogger.Object))
+            TestSink.MessageLogged += context =>
+            {
+                if (context.EventId.Name == "RequestBodyDone")
+                {
+                    logEvent.SetResult();
+                }
+            };
+
+            using (var input = new TestInput(log: new KestrelTrace(LoggerFactory)))
             {
                 input.Http1Connection.ConnectionIdFeature = "ConnectionId";
                 input.Http1Connection.TraceIdentifier = "RequestId";

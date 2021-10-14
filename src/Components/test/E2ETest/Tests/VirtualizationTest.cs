@@ -1,6 +1,7 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using BasicTestApp;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.Extensions;
+using OpenQA.Selenium.Support.UI;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -168,12 +170,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25929")]
         public void CancelsOutdatedRefreshes_Async()
         {
             Browser.MountTestComponent<VirtualizationComponent>();
             var cancellationCount = Browser.Exists(By.Id("cancellation-count"));
             var finishLoadingButton = Browser.Exists(By.Id("finish-loading-button"));
+            var js = (IJavaScriptExecutor)Browser;
 
             // Load the initial set of items.
             finishLoadingButton.Click();
@@ -181,21 +183,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Validate that there are no initial cancellations.
             Browser.Equal("0", () => cancellationCount.Text);
 
-            // Validate that there is no initial fetch to cancel.
-            Browser.ExecuteJavaScript("const container = document.getElementById('async-container');container.scrollTop = 1000;");
-            Browser.Equal("0", () => cancellationCount.Text);
+            // Validate that scrolling causes cancellations
+            for (var y = 1000; y <= 5000; y += 1000)
+            {
+                js.ExecuteScript($"document.getElementById('async-container').scrollTo({{ top: {y} }})");
+                Browser.Equal(y, () => (long)js.ExecuteScript("return document.getElementById('async-container').scrollTop"));
+            }
 
-            // Validate that scrolling again cancels the first fetch.
-            Browser.ExecuteJavaScript("const container = document.getElementById('async-container');container.scrollTop = 2000;");
-            Browser.Equal("1", () => cancellationCount.Text);
-
-            // Validate that scrolling again cancels the second fetch.
-            Browser.ExecuteJavaScript("const container = document.getElementById('async-container');container.scrollTop = 3000;");
-            Browser.Equal("2", () => cancellationCount.Text);
+            Browser.True(() => int.Parse(cancellationCount.Text, CultureInfo.InvariantCulture) > 0);
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24922")]
         public void CanUseViewportAsContainer()
         {
             Browser.MountTestComponent<VirtualizationComponent>();
@@ -369,10 +367,69 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 name => Assert.Equal("Person 3", name));
         }
 
+        [Fact]
+        public void CanExpandDataSetAndRetainScrollPosition()
+        {
+            Browser.MountTestComponent<VirtualizationDataChanges>();
+            var dataSetLengthSelector = new SelectElement(Browser.Exists(By.Id("large-dataset-length")));
+            var dataSetLengthLastRendered = () => int.Parse(Browser.FindElement(By.Id("large-dataset-length-lastrendered")).Text, CultureInfo.InvariantCulture);
+            var container = Browser.Exists(By.Id("removing-many"));
+
+            // Scroll to the end of a medium list
+            dataSetLengthSelector.SelectByText("1000");
+            Browser.Equal(1000, dataSetLengthLastRendered);
+            Browser.True(() =>
+            {
+                ScrollToEnd(Browser, container);
+                return GetPeopleNames(container).Contains("Person 1000");
+            });
+
+            // Expand the data set
+            dataSetLengthSelector.SelectByText("100000");
+            Browser.Equal(100000, dataSetLengthLastRendered);
+
+            // See that the old data is still visible, because the scroll position is preserved as a pixel count,
+            // not a scroll percentage
+            Browser.True(() => GetPeopleNames(container).Contains("Person 1000"));
+        }
+
+        [Fact]
+        public void CanHandleDataSetShrinkingWithExistingOffsetAlreadyBeyondNewListEnd()
+        {
+            // Represents https://github.com/dotnet/aspnetcore/issues/37245
+            Browser.MountTestComponent<VirtualizationDataChanges>();
+            var dataSetLengthSelector = new SelectElement(Browser.Exists(By.Id("large-dataset-length")));
+            var dataSetLengthLastRendered = () => int.Parse(Browser.FindElement(By.Id("large-dataset-length-lastrendered")).Text, CultureInfo.InvariantCulture);
+            var container = Browser.Exists(By.Id("removing-many"));
+
+            // Scroll to the end of a very long list
+            dataSetLengthSelector.SelectByText("100000");
+            Browser.Equal(100000, dataSetLengthLastRendered);
+            Browser.True(() =>
+            {
+                ScrollToEnd(Browser, container);
+                return GetPeopleNames(container).Contains("Person 100000");
+            });
+
+            // Now make the dataset much shorter
+            // We should automatically have the scroll position reduced to the new maximum
+            // Because the new data set is *so much* shorter than the previous one, if bug #37245 were still here,
+            // this would take over 30 minutes so the test would fail
+            dataSetLengthSelector.SelectByText("25");
+            Browser.Equal(25, dataSetLengthLastRendered);
+            Browser.True(() => GetPeopleNames(container).Contains("Person 25"));
+        }
+
         private string[] GetPeopleNames(IWebElement container)
         {
             var peopleElements = container.FindElements(By.CssSelector(".person span"));
             return peopleElements.Select(element => element.Text).ToArray();
+        }
+
+        private static void ScrollToEnd(IWebDriver browser, IWebElement elem)
+        {
+            var js = (IJavaScriptExecutor)browser;
+            js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight", elem);
         }
     }
 }

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading;
@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNetCore.Identity
 {
     /// <summary>
-    /// Provides an abstraction for a storing information which can be used to implement account lockout, 
+    /// Provides an abstraction for a storing information which can be used to implement account lockout,
     /// including access failures and lockout status
     /// </summary>
     /// <typeparam name="TUser">The type that represents a user.</typeparam>

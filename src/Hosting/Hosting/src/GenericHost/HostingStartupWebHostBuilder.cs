@@ -1,18 +1,18 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting.Infrastructure;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Hosting
 {
-    // We use this type to capture calls to the IWebHostBuilder so the we can properly order calls to 
+    // We use this type to capture calls to the IWebHostBuilder so the we can properly order calls to
     // to GenericHostWebHostBuilder.
-    internal class HostingStartupWebHostBuilder : IWebHostBuilder, ISupportsStartup, ISupportsUseDefaultServiceProvider
+    internal sealed class HostingStartupWebHostBuilder : IWebHostBuilder, ISupportsStartup, ISupportsUseDefaultServiceProvider
     {
         private readonly GenericWebHostBuilder _builder;
         private Action<WebHostBuilderContext, IConfigurationBuilder>? _configureConfiguration;
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Hosting
             return this;
         }
 
-        public string GetSetting(string key) => _builder.GetSetting(key);
+        public string? GetSetting(string key) => _builder.GetSetting(key);
 
         public IWebHostBuilder UseSetting(string key, string? value)
         {
@@ -66,6 +66,11 @@ namespace Microsoft.AspNetCore.Hosting
         public IWebHostBuilder UseDefaultServiceProvider(Action<WebHostBuilderContext, ServiceProviderOptions> configure)
         {
             return _builder.UseDefaultServiceProvider(configure);
+        }
+
+        public IWebHostBuilder Configure(Action<IApplicationBuilder> configure)
+        {
+            return _builder.Configure(configure);
         }
 
         public IWebHostBuilder Configure(Action<WebHostBuilderContext, IApplicationBuilder> configure)

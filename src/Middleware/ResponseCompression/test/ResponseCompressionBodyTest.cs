@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO;
 using System.Threading;
@@ -22,13 +22,13 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         public void OnWrite_AppendsAcceptEncodingToVaryHeader_IfNotPresent(string providedVaryHeader, string expectedVaryHeader)
         {
             var httpContext = new DefaultHttpContext();
-            httpContext.Response.Headers[HeaderNames.Vary] = providedVaryHeader;
+            httpContext.Response.Headers.Vary = providedVaryHeader;
             var stream = new ResponseCompressionBody(httpContext, new MockResponseCompressionProvider(flushable: true), new StreamResponseBodyFeature(new MemoryStream()));
 
             stream.Write(new byte[] { }, 0, 0);
 
 
-            Assert.Equal(expectedVaryHeader, httpContext.Response.Headers[HeaderNames.Vary]);
+            Assert.Equal(expectedVaryHeader, httpContext.Response.Headers.Vary);
         }
 
         [Theory]

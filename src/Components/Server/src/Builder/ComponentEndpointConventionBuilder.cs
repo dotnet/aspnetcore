@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 
@@ -12,11 +12,13 @@ namespace Microsoft.AspNetCore.Builder
     {
         private readonly IEndpointConventionBuilder _hubEndpoint;
         private readonly IEndpointConventionBuilder _disconnectEndpoint;
+        private readonly IEndpointConventionBuilder _jsInitializersEndpoint;
 
-        internal ComponentEndpointConventionBuilder(IEndpointConventionBuilder hubEndpoint, IEndpointConventionBuilder disconnectEndpoint)
+        internal ComponentEndpointConventionBuilder(IEndpointConventionBuilder hubEndpoint, IEndpointConventionBuilder disconnectEndpoint, IEndpointConventionBuilder jsInitializersEndpoint)
         {
             _hubEndpoint = hubEndpoint;
             _disconnectEndpoint = disconnectEndpoint;
+            _jsInitializersEndpoint = jsInitializersEndpoint;
         }
 
         /// <summary>
@@ -27,6 +29,7 @@ namespace Microsoft.AspNetCore.Builder
         {
             _hubEndpoint.Add(convention);
             _disconnectEndpoint.Add(convention);
+            _jsInitializersEndpoint.Add(convention);
         }
     }
 }

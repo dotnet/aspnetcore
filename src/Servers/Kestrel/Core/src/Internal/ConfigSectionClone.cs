@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -10,7 +10,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    internal class ConfigSectionClone
+    internal sealed class ConfigSectionClone
     {
         public ConfigSectionClone(IConfigurationSection configSection)
         {
@@ -21,7 +21,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             Children = children.ToDictionary(child => child.Key, child => new ConfigSectionClone(child));
         }
 
-        public string Value { get; }
+        public string? Value { get; }
+
         public Dictionary<string, ConfigSectionClone> Children { get; }
 
         public override bool Equals(object? obj)

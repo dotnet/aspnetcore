@@ -6,18 +6,12 @@
     <CloneSubmodulesToInnerSourceBuildRepo>false</CloneSubmodulesToInnerSourceBuildRepo>
   </PropertyGroup>
 
-  <Target Name="ApplySourceBuildPatchFiles"
+  <Target Name="PrepareGlobalJsonForSourceBuild"
           AfterTargets="PrepareInnerSourceBuildRepoRoot"
           BeforeTargets="RunInnerSourceBuildCommand">
-
-    <ItemGroup>
-      <SourceBuildPatchFile Include="$(RepositoryEngineeringDir)source-build-patches\*.patch" />
-    </ItemGroup>
-
     <Exec
-      Command="git apply --ignore-whitespace --whitespace=nowarn &quot;%(SourceBuildPatchFile.FullPath)&quot;"
-      WorkingDirectory="$(InnerSourceBuildRepoRoot)"
-      Condition="'@(SourceBuildPatchFile)' != ''" />
+      Command="./eng/scripts/prepare-sourcebuild-globaljson.sh"
+      WorkingDirectory="$(InnerSourceBuildRepoRoot)" />
   </Target>
 
   <!--
@@ -52,8 +46,20 @@
           Condition="'$(ArcadeInnerBuildFromSource)' == 'true'"
           BeforeTargets="Execute">
 
+    <!-- If the alternative runtime location and key are present, pass those through -->
+    <PropertyGroup>
+      <_AdditionalRepoTaskBuildArgs />
+      <_AdditionalRepoTaskBuildArgs Condition="'$(DotNetRuntimeSourceFeed)' != ''" >$(_AdditionalRepoTaskBuildArgs) --runtimesourcefeed $(DotNetRuntimeSourceFeed)</_AdditionalRepoTaskBuildArgs>
+      <_AdditionalRepoTaskBuildArgs Condition="'$(DotNetRuntimeSourceFeedKey)' != ''" >$(_AdditionalRepoTaskBuildArgs) --runtimesourcefeedkey $(DotNetRuntimeSourceFeedKey)</_AdditionalRepoTaskBuildArgs>
+    </PropertyGroup>
+
+    <!-- Call the build.sh script to build the repo tasks. Set IgnoreStandardErrorWarningFormat
+         to true. This avoids fatal errors, because in internal builds there are usually a few failed installation
+         attempts as the install script walks through potential locations for a runtime.
+         The overall build script will return a proper exit code, but we don't want to pick up the printed error messages. -->
     <Exec
-      Command="./eng/build.sh --only-build-repo-tasks"
+      Command="./eng/build.sh --only-build-repo-tasks -bl $(_AdditionalRepoTaskBuildArgs)"
+      IgnoreStandardErrorWarningFormat="true"
       WorkingDirectory="$(InnerSourceBuildRepoRoot)"
       EnvironmentVariables="@(InnerBuildEnv)" />
   </Target>

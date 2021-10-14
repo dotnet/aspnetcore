@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -30,11 +30,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly Http2Frame _outgoingFrame;
         private readonly Http2HeadersEnumerator _headersEnumerator = new Http2HeadersEnumerator();
         private readonly ConcurrentPipeWriter _outputWriter;
-        private readonly ConnectionContext _connectionContext;
+        private readonly BaseConnectionContext _connectionContext;
         private readonly Http2Connection _http2Connection;
         private readonly OutputFlowControl _connectionOutputFlowControl;
         private readonly string _connectionId;
-        private readonly IKestrelTrace _log;
+        private readonly KestrelTrace _log;
         private readonly ITimeoutControl _timeoutControl;
         private readonly MinDataRate? _minResponseDataRate;
         private readonly TimingPipeFlusher _flusher;
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public Http2FrameWriter(
             PipeWriter outputPipeWriter,
-            ConnectionContext connectionContext,
+            BaseConnectionContext connectionContext,
             Http2Connection http2Connection,
             OutputFlowControl connectionOutputFlowControl,
             ITimeoutControl timeoutControl,
@@ -67,7 +67,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _log = serviceContext.Log;
             _timeoutControl = timeoutControl;
             _minResponseDataRate = minResponseDataRate;
-            _flusher = new TimingPipeFlusher(_outputWriter, timeoutControl, serviceContext.Log);
+            _flusher = new TimingPipeFlusher(timeoutControl, serviceContext.Log);
+            _flusher.Initialize(_outputWriter);
             _outgoingFrame = new Http2Frame();
             _headerEncodingBuffer = new byte[_maxFrameSize];
 
@@ -189,11 +190,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     var done = HPackHeaderWriter.BeginEncodeHeaders(statusCode, _hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
                     FinishWritingHeaders(streamId, payloadLength, done);
                 }
-                catch (HPackEncodingException hex)
+                // Any exception from the HPack encoder can leave the dynamic table in a corrupt state.
+                // Since we allow custom header encoders we don't know what type of exceptions to expect.
+                catch (Exception ex)
                 {
-                    _log.HPackEncodingError(_connectionId, streamId, hex);
-                    _http2Connection.Abort(new ConnectionAbortedException(hex.Message, hex));
-                    throw new InvalidOperationException(hex.Message, hex); // Report the error to the user if this was the first write.
+                    _log.HPackEncodingError(_connectionId, streamId, ex);
+                    _http2Connection.Abort(new ConnectionAbortedException(ex.Message, ex));
+                    throw new InvalidOperationException(ex.Message, ex); // Report the error to the user if this was the first write.
                 }
             }
         }
@@ -215,10 +218,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     var done = HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
                     FinishWritingHeaders(streamId, payloadLength, done);
                 }
-                catch (HPackEncodingException hex)
+                // Any exception from the HPack encoder can leave the dynamic table in a corrupt state.
+                // Since we allow custom header encoders we don't know what type of exceptions to expect.
+                catch (Exception ex)
                 {
-                    _log.HPackEncodingError(_connectionId, streamId, hex);
-                    _http2Connection.Abort(new ConnectionAbortedException(hex.Message, hex));
+                    _log.HPackEncodingError(_connectionId, streamId, ex);
+                    _http2Connection.Abort(new ConnectionAbortedException(ex.Message, ex));
                 }
 
                 return TimeFlushUnsynchronizedAsync();

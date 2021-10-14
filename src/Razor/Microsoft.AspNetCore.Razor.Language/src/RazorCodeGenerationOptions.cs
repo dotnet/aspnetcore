@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 
@@ -18,7 +18,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                 suppressMetadataAttributes: false,
                 suppressPrimaryMethodBody: false,
                 suppressNullabilityEnforcement: false,
-                omitMinimizedComponentAttributeValues: false);
+                omitMinimizedComponentAttributeValues: false,
+                supportLocalizedComponentNames: false,
+                useEnhancedLinePragma: true);
         }
 
         public static RazorCodeGenerationOptions CreateDesignTimeDefault()
@@ -32,7 +34,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                 suppressMetadataAttributes: true,
                 suppressPrimaryMethodBody: false,
                 suppressNullabilityEnforcement: false,
-                omitMinimizedComponentAttributeValues: false);
+                omitMinimizedComponentAttributeValues: false,
+                supportLocalizedComponentNames: false,
+                useEnhancedLinePragma: true);
         }
 
         public static RazorCodeGenerationOptions Create(Action<RazorCodeGenerationOptionsBuilder> configure)
@@ -79,7 +83,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public virtual string RootNamespace { get; }
 
         /// <summary>
-        /// Gets a value that indicates whether to suppress the default <c>#pragma checksum</c> directive in the 
+        /// Gets a value that indicates whether to suppress the default <c>#pragma checksum</c> directive in the
         /// generated C# code. If <c>false</c> the checkum directive will be included, otherwise it will not be
         /// generated. Defaults to <c>false</c>, meaning that the checksum will be included.
         /// </summary>
@@ -90,7 +94,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public abstract bool SuppressChecksum { get; }
 
         /// <summary>
-        /// Gets a value that indicates whether to suppress the default metadata attributes in the generated 
+        /// Gets a value that indicates whether to suppress the default metadata attributes in the generated
         /// C# code. If <c>false</c> the default attributes will be included, otherwise they will not be generated.
         /// Defaults to <c>false</c> at run time, meaning that the attributes will be included. Defaults to
         /// <c>true</c> at design time, meaning that the attributes will not be included.
@@ -130,5 +134,15 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// Gets a value that determines if the components code writer may omit values for minimized attributes.
         /// </summary>
         public virtual bool OmitMinimizedComponentAttributeValues { get; }
+
+        /// <summary>
+        /// Gets a value that determines if localized component names are to be supported.
+        /// </summary>
+        public virtual bool SupportLocalizedComponentNames { get; set; }
+
+        /// <summary>
+        /// Gets a value that determines if enhanced line pragmas are to be utilized.
+        /// </summary>
+        public virtual bool UseEnhancedLinePragma { get; }
     }
 }

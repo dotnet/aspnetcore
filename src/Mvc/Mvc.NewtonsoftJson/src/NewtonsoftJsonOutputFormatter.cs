@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
@@ -22,9 +23,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     {
         private readonly IArrayPool<char> _charPool;
         private readonly MvcOptions _mvcOptions;
+        private MvcNewtonsoftJsonOptions? _jsonOptions;
         private readonly AsyncEnumerableReader _asyncEnumerableReaderFactory;
         private JsonSerializerSettings? _serializerSettings;
-        private ILogger? _logger;
 
         /// <summary>
         /// Initializes a new <see cref="NewtonsoftJsonOutputFormatter"/> instance.
@@ -36,10 +37,30 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// </param>
         /// <param name="charPool">The <see cref="ArrayPool{Char}"/>.</param>
         /// <param name="mvcOptions">The <see cref="MvcOptions"/>.</param>
+        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
         public NewtonsoftJsonOutputFormatter(
             JsonSerializerSettings serializerSettings,
             ArrayPool<char> charPool,
-            MvcOptions mvcOptions)
+            MvcOptions mvcOptions) : this(serializerSettings, charPool, mvcOptions, jsonOptions: null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new <see cref="NewtonsoftJsonOutputFormatter"/> instance.
+        /// </summary>
+        /// <param name="serializerSettings">
+        /// The <see cref="JsonSerializerSettings"/>. Should be either the application-wide settings
+        /// (<see cref="MvcNewtonsoftJsonOptions.SerializerSettings"/>) or an instance
+        /// <see cref="JsonSerializerSettingsProvider.CreateSerializerSettings"/> initially returned.
+        /// </param>
+        /// <param name="charPool">The <see cref="ArrayPool{Char}"/>.</param>
+        /// <param name="mvcOptions">The <see cref="MvcOptions"/>.</param>
+        /// <param name="jsonOptions">The <see cref="MvcNewtonsoftJsonOptions"/>.</param>
+        public NewtonsoftJsonOutputFormatter(
+            JsonSerializerSettings serializerSettings,
+            ArrayPool<char> charPool,
+            MvcOptions mvcOptions,
+            MvcNewtonsoftJsonOptions? jsonOptions)
         {
             if (serializerSettings == null)
             {
@@ -54,6 +75,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             SerializerSettings = serializerSettings;
             _charPool = new JsonArrayPool<char>(charPool);
             _mvcOptions = mvcOptions ?? throw new ArgumentNullException(nameof(mvcOptions));
+            _jsonOptions = jsonOptions;
 
             SupportedEncodings.Add(Encoding.UTF8);
             SupportedEncodings.Add(Encoding.Unicode);
@@ -135,22 +157,33 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 throw new ArgumentNullException(nameof(selectedEncoding));
             }
 
+            // Compat mode for derived options
+            _jsonOptions ??= context.HttpContext.RequestServices.GetRequiredService<IOptions<MvcNewtonsoftJsonOptions>>().Value;
+
             var response = context.HttpContext.Response;
 
             var responseStream = response.Body;
             FileBufferingWriteStream? fileBufferingWriteStream = null;
             if (!_mvcOptions.SuppressOutputFormatterBuffering)
             {
-                fileBufferingWriteStream = new FileBufferingWriteStream();
+                fileBufferingWriteStream = new FileBufferingWriteStream(_jsonOptions.OutputFormatterMemoryBufferThreshold);
                 responseStream = fileBufferingWriteStream;
             }
 
             var value = context.Object;
             if (value is not null && _asyncEnumerableReaderFactory.TryGetReader(value.GetType(), out var reader))
             {
-                _logger ??= context.HttpContext.RequestServices.GetRequiredService<ILogger<NewtonsoftJsonOutputFormatter>>();
-                Log.BufferingAsyncEnumerable(_logger, value);
-                value = await reader(value);
+                var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<NewtonsoftJsonOutputFormatter>>();
+                Log.BufferingAsyncEnumerable(logger, value);
+                try
+                {
+                    value = await reader(value, context.HttpContext.RequestAborted);
+                }
+                catch (OperationCanceledException) { }
+                if (context.HttpContext.RequestAborted.IsCancellationRequested)
+                {
+                    return;
+                }
             }
 
             try
@@ -217,11 +250,13 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
         private static class Log
         {
+            private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
+
             private static readonly Action<ILogger, string?, Exception?> _bufferingAsyncEnumerable = LoggerMessage.Define<string?>(
                 LogLevel.Debug,
                 new EventId(1, "BufferingAsyncEnumerable"),
                 "Buffering IAsyncEnumerable instance of type '{Type}'.",
-                skipEnabledCheck: true);
+                SkipEnabledCheckLogOptions);
 
             public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
             {

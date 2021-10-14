@@ -1,8 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
@@ -10,7 +13,20 @@ using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
+#if !IIS_FUNCTIONALS
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
+
+#if IISEXPRESS_FUNCTIONALS
+namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests
+#elif NEWHANDLER_FUNCTIONALS
+namespace Microsoft.AspNetCore.Server.IIS.NewHandler.FunctionalTests
+#elif NEWSHIM_FUNCTIONALS
+namespace Microsoft.AspNetCore.Server.IIS.NewShim.FunctionalTests
+#endif
+
+#else
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
+#endif
 {
     [Collection(PublishedSitesCollection.Name)]
     public class LoggingTests : IISFunctionalTestBase
@@ -296,6 +312,36 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             }
         }
 
+        [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
+        public async Task LogsContainTimestampAndPID()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            await Helpers.AssertStarts(deploymentResult);
+
+            StopServer();
+
+            var aspnetcorev2Log = TestSink.Writes.First(w => w.Message.Contains("Description: IIS ASP.NET Core Module V2. Commit:"));
+            var aspnetcoreHandlerLog = TestSink.Writes.First(w => w.Message.Contains("Description: IIS ASP.NET Core Module V2 Request Handler. Commit:"));
+
+            var processIdPattern = new Regex("Process Id: (\\d+)\\.", RegexOptions.Singleline);
+            var processIdMatch = processIdPattern.Match(aspnetcorev2Log.Message);
+            Assert.True(processIdMatch.Success, $"'{processIdPattern}' did not match '{aspnetcorev2Log}'");
+            var processId = int.Parse(processIdMatch.Groups[1].Value, CultureInfo.InvariantCulture);
+
+            if (DeployerSelector.HasNewShim)
+            {
+                AssertTimestampAndPIDPrefix(processId, aspnetcorev2Log.Message);
+            }
+            if (DeployerSelector.HasNewHandler)
+            {
+                AssertTimestampAndPIDPrefix(processId, aspnetcoreHandlerLog.Message);
+            }
+        }
+
         private static string ReadLogs(string logPath)
         {
             using (var stream = File.Open(logPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
@@ -312,6 +358,24 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             Assert.True(logContents.Contains("[aspnetcorev2_inprocess.dll]") || logContents.Contains("[aspnetcorev2_outofprocess.dll]"));
             Assert.Contains("Description: IIS ASP.NET Core Module V2. Commit:", logContents);
             Assert.Contains("Description: IIS ASP.NET Core Module V2 Request Handler. Commit:", logContents);
+        }
+
+        private static void AssertTimestampAndPIDPrefix(int processId, string log)
+        {
+            var prefixPattern = new Regex(@"\[(.{24}), PID: (\d+)\]", RegexOptions.Singleline);
+            var prefixMatch = prefixPattern.Match(log);
+            Assert.True(prefixMatch.Success, $"'{prefixPattern}' did not match '{log}'");
+
+            var time = DateTime.Parse(prefixMatch.Groups[1].Value, CultureInfo.InvariantCulture).ToUniversalTime();
+            var prefixProcessId = int.Parse(prefixMatch.Groups[2].Value, CultureInfo.InvariantCulture);
+
+            Assert.Equal(processId, prefixProcessId);
+
+            // exact time check isn't reasonable so let's just verify it was somewhat recent
+            // log shouldn't happen in the future
+            Assert.True(DateTime.UtcNow > time);
+            // log shouldn't have been more than two hours ago
+            Assert.True(DateTime.UtcNow.AddHours(-2) < time);
         }
     }
 }

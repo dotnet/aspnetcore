@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Runtime.InteropServices;
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.IIS
         private static extern void http_indicate_completion(NativeSafeHandle pInProcessHandler, REQUEST_NOTIFICATION_STATUS notificationStatus);
 
         [DllImport(AspNetCoreModuleDll)]
-        private unsafe static extern int register_callbacks(NativeSafeHandle pInProcessApplication,
+        private static extern unsafe int register_callbacks(NativeSafeHandle pInProcessApplication,
             delegate* unmanaged<IntPtr, IntPtr, REQUEST_NOTIFICATION_STATUS> requestCallback,
             delegate* unmanaged<IntPtr, int> shutdownCallback,
             delegate* unmanaged<IntPtr, void> disconnectCallback,
@@ -130,6 +130,9 @@ namespace Microsoft.AspNetCore.Server.IIS
 
         [DllImport(AspNetCoreModuleDll)]
         private static extern int http_close_connection(NativeSafeHandle pInProcessHandler);
+
+        [DllImport(AspNetCoreModuleDll)]
+        private static extern int http_response_set_need_goaway(NativeSafeHandle pInProcessHandler);
 
         [DllImport(AspNetCoreModuleDll)]
         private static extern unsafe int http_response_set_unknown_header(NativeSafeHandle pInProcessHandler, byte* pszHeaderName, byte* pszHeaderValue, ushort usHeaderValueLength, bool fReplace);
@@ -296,6 +299,11 @@ namespace Microsoft.AspNetCore.Server.IIS
             Validate(http_response_set_known_header(pInProcessHandler, headerId, pHeaderValue, length, fReplace));
         }
 
+        internal static void HttpSetNeedGoAway(NativeSafeHandle pInProcessHandler)
+        {
+            Validate(http_response_set_need_goaway(pInProcessHandler));
+        }
+
         public static void HttpGetAuthenticationInformation(NativeSafeHandle pInProcessHandler, out string authType, out IntPtr token)
         {
             Validate(http_get_authentication_information(pInProcessHandler, out authType, out token));
@@ -319,7 +327,7 @@ namespace Microsoft.AspNetCore.Server.IIS
             Validate(http_reset_stream(pInProcessHandler, errorCode));
         }
 
-        internal static unsafe bool HttpSupportTrailer(NativeSafeHandle pInProcessHandler)
+        internal static unsafe bool HttpHasResponse4(NativeSafeHandle pInProcessHandler)
         {
             bool supportsTrailers;
             Validate(http_has_response4(pInProcessHandler, out supportsTrailers));

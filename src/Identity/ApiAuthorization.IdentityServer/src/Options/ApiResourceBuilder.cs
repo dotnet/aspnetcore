@@ -1,9 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
-using IdentityServer4.Models;
+using Duende.IdentityServer.Models;
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
 {
@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
     /// </summary>
     public class ApiResourceBuilder
     {
-        private ApiResource _apiResource;
+        private readonly ApiResource _apiResource;
         private bool _built;
 
         /// <summary>
@@ -108,11 +108,11 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
             _apiResource.Properties[ApplicationProfilesPropertyNames.Clients] = ApplicationProfilesPropertyValues.AllowAllApplications;
             return this;
         }
-        
+
         /// <summary>
         /// Builds the API resource.
         /// </summary>
-        /// <returns>The built <see cref="IdentityServer4.Models.ApiResource"/>.</returns>
+        /// <returns>The built <see cref="Duende.IdentityServer.Models.ApiResource"/>.</returns>
         public ApiResource Build()
         {
             if (_built)

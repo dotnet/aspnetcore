@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -14,9 +14,9 @@ namespace Microsoft.AspNetCore.ResponseCaching
     internal class ResponseCachingKeyProvider : IResponseCachingKeyProvider
     {
         // Use the record separator for delimiting components of the cache key to avoid possible collisions
-        private static readonly char KeyDelimiter = '\x1e';
+        private const char KeyDelimiter = '\x1e';
         // Use the unit separator for delimiting subcomponents of the cache key to avoid possible collisions
-        private static readonly char KeySubDelimiter = '\x1f';
+        private const char KeySubDelimiter = '\x1f';
 
         private readonly ObjectPool<StringBuilder> _builderPool;
         private readonly ResponseCachingOptions _options;
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     var requestHeaders = context.HttpContext.Request.Headers;
                     for (var i = 0; i < headersCount; i++)
                     {
-                        var header = varyByRules!.Headers[i];
+                        var header = varyByRules!.Headers[i] ?? string.Empty;
                         var headerValues = requestHeaders[header];
                         builder.Append(KeyDelimiter)
                             .Append(header)
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     {
                         for (var i = 0; i < varyByRules.QueryKeys.Count; i++)
                         {
-                            var queryKey = varyByRules.QueryKeys[i];
+                            var queryKey = varyByRules.QueryKeys[i] ?? string.Empty;
                             var queryKeyValues = context.HttpContext.Request.Query[queryKey];
                             builder.Append(KeyDelimiter)
                                 .Append(queryKey)

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Xml;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
     {
         // Element name used when ModelStateEntry's Key is empty. Dash in element name should avoid collisions with
         // other ModelState entries because the character is not legal in an expression name.
-        internal static readonly string EmptyKey = "MVC-Empty";
+        internal const string EmptyKey = "MVC-Empty";
 
         /// <summary>
         /// Initializes a new <see cref="SerializableErrorWrapper"/>
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         public SerializableError SerializableError { get; }
 
         /// <inheritdoc />
-        public XmlSchema GetSchema()
+        public XmlSchema? GetSchema()
         {
             return null;
         }

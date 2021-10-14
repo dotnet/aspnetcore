@@ -1,15 +1,15 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using IdentityServer4.Configuration;
-using IdentityServer4.EntityFramework.Interfaces;
-using IdentityServer4.Hosting;
-using IdentityServer4.Models;
-using IdentityServer4.Stores;
-using IdentityServer4.Validation;
+using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.EntityFramework.Interfaces;
+using Duende.IdentityServer.Hosting;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Stores;
+using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration;
 using Microsoft.EntityFrameworkCore;
@@ -234,12 +234,14 @@ namespace Microsoft.Extensions.DependencyInjection
             this IIdentityServerBuilder builder,
             IConfiguration configuration)
         {
+            const string KeySectionName = "IdentityServer:Key";
+
             builder.ConfigureReplacedServices();
             builder.Services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IConfigureOptions<ApiAuthorizationOptions>, ConfigureSigningCredentials>(sp =>
                 {
                     var logger = sp.GetRequiredService<ILogger<ConfigureSigningCredentials>>();
-                    var effectiveConfig = configuration ?? sp.GetRequiredService<IConfiguration>().GetSection("IdentityServer:Key");
+                    var effectiveConfig = configuration ?? sp.GetRequiredService<IConfiguration>().GetSection(KeySectionName);
                     return new ConfigureSigningCredentials(effectiveConfig, logger);
                 }));
 
@@ -254,12 +256,20 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.AddSingleton<IValidationKeysStore>(sp =>
             {
                 var options = sp.GetRequiredService<IOptions<ApiAuthorizationOptions>>();
+                var signingCredential = options.Value.SigningCredential;
+
+                if (signingCredential is null)
+                {
+                    throw new InvalidOperationException(
+                        $"No signing credential is configured by the '{KeySectionName}' configuration section.");
+                }
+
                 return new InMemoryValidationKeysStore(new[]
                 {
                     new SecurityKeyInfo
                     {
-                        Key = options.Value.SigningCredential.Key,
-                        SigningAlgorithm = options.Value.SigningCredential.Algorithm
+                        Key = signingCredential.Key,
+                        SigningAlgorithm = signingCredential.Algorithm
                     }
                 });
             });

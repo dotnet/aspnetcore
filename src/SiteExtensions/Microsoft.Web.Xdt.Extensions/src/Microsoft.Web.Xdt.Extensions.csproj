@@ -6,6 +6,7 @@
     <CopySymbolsToArtifacts>true</CopySymbolsToArtifacts>
     <IsPackable>false</IsPackable>
     <IsShippingPackage>false</IsShippingPackage>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

@@ -10,6 +10,7 @@
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
     <!-- No need to track public APIs of this tool. -->
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

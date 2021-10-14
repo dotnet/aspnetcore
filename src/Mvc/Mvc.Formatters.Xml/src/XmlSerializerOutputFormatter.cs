@@ -1,9 +1,10 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
@@ -26,8 +28,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     {
         private readonly ConcurrentDictionary<Type, object> _serializerCache = new ConcurrentDictionary<Type, object>();
         private readonly ILogger _logger;
-        private MvcOptions _mvcOptions;
-        private AsyncEnumerableReader _asyncEnumerableReaderFactory;
+        private MvcOptions? _mvcOptions;
+        private AsyncEnumerableReader? _asyncEnumerableReaderFactory;
 
         /// <summary>
         /// Initializes a new instance of <see cref="XmlSerializerOutputFormatter"/>
@@ -53,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// </summary>
         /// <param name="writerSettings">The settings to be used by the <see cref="XmlSerializer"/>.</param>
         public XmlSerializerOutputFormatter(XmlWriterSettings writerSettings)
-            : this(writerSettings, loggerFactory: null)
+            : this(writerSettings, loggerFactory: NullLoggerFactory.Instance)
         {
         }
 
@@ -84,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             };
             WrapperProviderFactories.Add(new EnumerableWrapperProviderFactory(WrapperProviderFactories));
 
-            _logger = loggerFactory?.CreateLogger(GetType());
+            _logger = loggerFactory.CreateLogger(GetType());
         }
 
         /// <summary>
@@ -118,7 +120,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         /// <inheritdoc />
-        protected override bool CanWriteType(Type type)
+        protected override bool CanWriteType(Type? type)
         {
             if (type == null)
             {
@@ -133,7 +135,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// </summary>
         /// <param name="type">The type of object for which the serializer should be created.</param>
         /// <returns>A new instance of <see cref="XmlSerializer"/></returns>
-        protected virtual XmlSerializer CreateSerializer(Type type)
+        protected virtual XmlSerializer? CreateSerializer(Type type)
         {
             if (type == null)
             {
@@ -147,7 +149,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
             catch (Exception ex)
             {
-                _logger?.FailedToCreateXmlSerializer(type.FullName, ex);
+                _logger.FailedToCreateXmlSerializer(type.FullName!, ex);
 
                 // We do not surface the caught exception because if CanWriteResult returns
                 // false, then this Formatter is not picked up at all.
@@ -229,13 +231,17 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             _asyncEnumerableReaderFactory ??= new AsyncEnumerableReader(_mvcOptions);
 
             var value = context.Object;
-            var valueType = context.ObjectType;
+            var valueType = context.ObjectType!;
             if (value is not null && _asyncEnumerableReaderFactory.TryGetReader(value.GetType(), out var reader))
             {
                 Log.BufferingAsyncEnumerable(_logger, value);
 
-                value = await reader(value);
+                value = await reader(value, context.HttpContext.RequestAborted);
                 valueType = value.GetType();
+                if (context.HttpContext.RequestAborted.IsCancellationRequested)
+                {
+                    return;
+                }
             }
 
             // Wrap the object only if there is a wrapping type.
@@ -246,13 +252,15 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                     declaredType: valueType,
                     isSerialization: true));
 
+                Debug.Assert(wrapperProvider is not null);
+
                 value = wrapperProvider.Wrap(value);
             }
 
-            var xmlSerializer = GetCachedSerializer(wrappingType);
+            var xmlSerializer = GetCachedSerializer(wrappingType!);
 
             var responseStream = response.Body;
-            FileBufferingWriteStream fileBufferingWriteStream = null;
+            FileBufferingWriteStream? fileBufferingWriteStream = null;
             if (!_mvcOptions.SuppressOutputFormatterBuffering)
             {
                 fileBufferingWriteStream = new FileBufferingWriteStream();
@@ -289,7 +297,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <param name="xmlWriter">The writer used by the serializer <paramref name="xmlSerializer"/>
         /// to serialize the <paramref name="value"/>.</param>
         /// <param name="value">The value to be serialized.</param>
-        protected virtual void Serialize(XmlSerializer xmlSerializer, XmlWriter xmlWriter, object value)
+        protected virtual void Serialize(XmlSerializer xmlSerializer, XmlWriter xmlWriter, object? value)
         {
             xmlSerializer.Serialize(xmlWriter, value);
         }
@@ -309,22 +317,24 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 }
             }
 
-            return (XmlSerializer)serializer;
+            return (XmlSerializer)serializer!;
         }
 
         private static class Log
         {
-            private static readonly Action<ILogger, string, Exception> _bufferingAsyncEnumerable = LoggerMessage.Define<string>(
+            private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
+
+            private static readonly Action<ILogger, string, Exception?> _bufferingAsyncEnumerable = LoggerMessage.Define<string>(
                 LogLevel.Debug,
                 new EventId(1, "BufferingAsyncEnumerable"),
                 "Buffering IAsyncEnumerable instance of type '{Type}'.",
-                skipEnabledCheck: true);
+                SkipEnabledCheckLogOptions);
 
             public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
             {
                 if (logger.IsEnabled(LogLevel.Debug))
                 {
-                    _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
+                    _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName!, null);
                 }
             }
         }

@@ -40,6 +40,8 @@ Max allowed files:
 <InputFile OnChange="LoadImage" id="input-image" />
 <br />
 
+<span id="exception-message">@exceptionMessage</span>
+
 @if (imageDataUri != null)
 {
     <p>
@@ -50,7 +52,8 @@ Max allowed files:
 
 <p>
     Source image:<br />
-    <img id="image-source" src="images/blazor_logo_1000x.png" />
+    <img id="image-source" src="images/blazor_logo_1000x.png" onload="document.getElementById('image-status').textContent = 'ready'" />
+    <span id="image-status"></span>
 </p>
 
 @code {
@@ -92,13 +95,22 @@ Max allowed files:
 
     async Task LoadImage(InputFileChangeEventArgs e)
     {
-        var format = "image/jpeg";
-        var imageFile = await e.File.RequestImageFileAsync(format, 640, 480);
+        exceptionMessage = string.Empty;
 
-        using var fileStream = imageFile.OpenReadStream(maxFileSize);
-        using var memoryStream = new MemoryStream();
-        await fileStream.CopyToAsync(memoryStream);
+        try
+        {
+            var format = "image/jpeg";
+            var imageFile = await e.File.RequestImageFileAsync(format, 640, 480);
 
-        imageDataUri = $"data:{format};base64,{Convert.ToBase64String(memoryStream.ToArray())}";
+            using var fileStream = imageFile.OpenReadStream(maxFileSize);
+            using var memoryStream = new MemoryStream();
+            await fileStream.CopyToAsync(memoryStream);
+
+            imageDataUri = $"data:{format};base64,{Convert.ToBase64String(memoryStream.ToArray())}";
+        }
+        catch (Exception ex)
+        {
+            exceptionMessage = ex.Message;
+        }
     }
 }

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Identity
     {
         private static readonly TimeSpan _timestep = TimeSpan.FromMinutes(3);
         private static readonly Encoding _encoding = new UTF8Encoding(false, true);
-#if NETSTANDARD2_0 || NET461
+#if NETSTANDARD2_0 || NETFRAMEWORK
         private static readonly DateTime _unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
 #endif
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Identity
         public static byte[] GenerateRandomKey()
         {
             byte[] bytes = new byte[20];
-#if NETSTANDARD2_0 || NET461
+#if NETSTANDARD2_0 || NETFRAMEWORK
             _rng.GetBytes(bytes);
 #else
             RandomNumberGenerator.Fill(bytes);
@@ -30,7 +30,14 @@ namespace Microsoft.AspNetCore.Identity
             return bytes;
         }
 
-        internal static int ComputeTotp(HashAlgorithm hashAlgorithm, ulong timestepNumber, string modifier)
+        internal static int ComputeTotp(
+#if NET6_0_OR_GREATER
+            byte[] key,
+#else
+            HashAlgorithm hashAlgorithm,
+#endif
+            ulong timestepNumber,
+            string modifier)
         {
             // # of 0's = length of pin
             const int Mod = 1000000;
@@ -38,7 +45,12 @@ namespace Microsoft.AspNetCore.Identity
             // See https://tools.ietf.org/html/rfc4226
             // We can add an optional modifier
             var timestepAsBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder((long)timestepNumber));
+
+#if NET6_0_OR_GREATER
+            var hash = HMACSHA1.HashData(key, ApplyModifier(timestepAsBytes, modifier));
+#else
             var hash = hashAlgorithm.ComputeHash(ApplyModifier(timestepAsBytes, modifier));
+#endif
 
             // Generate DT string
             var offset = hash[hash.Length - 1] & 0xf;
@@ -53,7 +65,7 @@ namespace Microsoft.AspNetCore.Identity
 
         private static byte[] ApplyModifier(byte[] input, string modifier)
         {
-            if (String.IsNullOrEmpty(modifier))
+            if (string.IsNullOrEmpty(modifier))
             {
                 return input;
             }
@@ -68,7 +80,7 @@ namespace Microsoft.AspNetCore.Identity
         // More info: https://tools.ietf.org/html/rfc6238#section-4
         private static ulong GetCurrentTimeStepNumber()
         {
-#if NETSTANDARD2_0 || NET461
+#if NETSTANDARD2_0 || NETFRAMEWORK
             var delta = DateTime.UtcNow - _unixEpoch;
 #else
             var delta = DateTimeOffset.UtcNow - DateTimeOffset.UnixEpoch;
@@ -85,10 +97,15 @@ namespace Microsoft.AspNetCore.Identity
 
             // Allow a variance of no greater than 9 minutes in either direction
             var currentTimeStep = GetCurrentTimeStepNumber();
+
+#if NET6_0_OR_GREATER
+            return ComputeTotp(securityToken, currentTimeStep, modifier);
+#else
             using (var hashAlgorithm = new HMACSHA1(securityToken))
             {
                 return ComputeTotp(hashAlgorithm, currentTimeStep, modifier);
             }
+#endif
         }
 
         public static bool ValidateCode(byte[] securityToken, int code, string modifier = null)
@@ -100,11 +117,18 @@ namespace Microsoft.AspNetCore.Identity
 
             // Allow a variance of no greater than 9 minutes in either direction
             var currentTimeStep = GetCurrentTimeStepNumber();
+
+#if !NET6_0_OR_GREATER
             using (var hashAlgorithm = new HMACSHA1(securityToken))
+#endif
             {
                 for (var i = -2; i <= 2; i++)
                 {
+#if NET6_0_OR_GREATER
+                    var computedTotp = ComputeTotp(securityToken, (ulong)((long)currentTimeStep + i), modifier);
+#else
                     var computedTotp = ComputeTotp(hashAlgorithm, (ulong)((long)currentTimeStep + i), modifier);
+#endif
                     if (computedTotp == code)
                     {
                         return true;

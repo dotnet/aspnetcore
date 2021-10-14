@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -24,9 +24,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public override bool CanSeek => false;
 
         public override bool CanRead => false;
-        
+
         public override bool CanWrite => true;
-        
+
         public override long Length => throw new NotSupportedException();
 
         public override long Position
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             get => throw new NotSupportedException();
             set => throw new NotSupportedException();
         }
-        
+
         public override int ReadTimeout
         {
             get => throw new NotSupportedException();
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
           => throw new NotSupportedException();
-        
+
         public override void Flush()
         {
             if (!_bodyControl.AllowSynchronousIO)
@@ -56,24 +56,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             FlushAsync(default).GetAwaiter().GetResult();
         }
-        
+
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
             return _pipeWriter.FlushAsync(cancellationToken).GetAsTask();
         }
-        
+
         public override long Seek(long offset, SeekOrigin origin)
         {
             throw new NotSupportedException();
         }
 
-        
+
         public override void SetLength(long value)
         {
             throw new NotSupportedException();
         }
 
-        
+
         public override void Write(byte[] buffer, int offset, int count)
         {
             if (!_bodyControl.AllowSynchronousIO)
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             return TaskToApm.Begin(WriteAsync(buffer, offset, count), callback, state);
         }
-        
+
         public override void EndWrite(IAsyncResult asyncResult)
         {
             TaskToApm.End(asyncResult);
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             return _pipeWriter.WriteAsync(new ReadOnlyMemory<byte>(buffer, offset, count), cancellationToken).GetAsTask();
         }
-        
+
         public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
             return _pipeWriter.WriteAsync(source, cancellationToken).GetAsValueTask();

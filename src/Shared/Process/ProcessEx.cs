@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Internal
         private readonly TaskCompletionSource<int> _exited;
         private readonly CancellationTokenSource _stdoutLinesCancellationSource = new CancellationTokenSource(TimeSpan.FromMinutes(5));
         private readonly CancellationTokenSource _processTimeoutCts;
-        private bool _disposed = false;
+        private bool _disposed;
 
         public ProcessEx(ITestOutputHelper output, Process proc, TimeSpan timeout)
         {
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Internal
             // We greedily create a timeout exception message even though a timeout is unlikely to happen for two reasons:
             // 1. To make it less likely for Process getters to throw exceptions like "System.InvalidOperationException: Process has exited, ..."
             // 2. To ensure if/when exceptions are thrown from Process getters, these exceptions can easily be observed.
-            var timeoutExMessage = $"Process proc {proc.ProcessName} {proc.StartInfo.Arguments} timed out after {DefaultProcessTimeout}.";
+            var timeoutExMessage = $"Process proc {proc.ProcessName} {proc.StartInfo.Arguments} timed out after {timeout}.";
 
             _processTimeoutCts = new CancellationTokenSource(timeout);
             _processTimeoutCts.Token.Register(() =>

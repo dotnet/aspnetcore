@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.WebSockets.Microbenchmarks
         {
             _middleware = new ResponseCachingMiddleware(
                     async context => {
-                        context.Response.Headers[HeaderNames.CacheControl] = _cacheControl;
+                        context.Response.Headers.CacheControl = _cacheControl;
                         await context.Response.BodyWriter.WriteAsync(new ReadOnlyMemory<byte>(_data, 0, Size));
                     },
                     Options.Create(new ResponseCachingOptions
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.WebSockets.Microbenchmarks
             context.Request.Path = "/a";
 
             // don't serve from cache but store result
-            context.Request.Headers[HeaderNames.CacheControl] = CacheControlHeaderValue.NoCacheString;
+            context.Request.Headers.CacheControl = CacheControlHeaderValue.NoCacheString;
 
             await _middleware.Invoke(context);
 

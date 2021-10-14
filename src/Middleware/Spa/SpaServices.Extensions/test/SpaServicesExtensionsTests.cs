@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -38,89 +38,6 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Tests
             Assert.Equal("No RootPath was set on the SpaStaticFilesOptions.", exception.Message);
         }
 
-        [ConditionalFact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/29549")]
-        public async Task UseSpa_KillsRds_WhenAppIsStopped()
-        {
-            var serviceProvider = GetServiceProvider(s => s.RootPath = "/");
-            var applicationbuilder = new ApplicationBuilder(serviceProvider);
-            var applicationLifetime = serviceProvider.GetRequiredService<IHostApplicationLifetime>();
-            var diagnosticListener = serviceProvider.GetRequiredService<DiagnosticListener>();
-            var listener = new NpmStartedDiagnosticListener();
-            diagnosticListener.SubscribeWithAdapter(listener);
-
-            applicationbuilder.UseSpa(b =>
-            {
-                b.Options.SourcePath = Directory.GetCurrentDirectory();
-                b.UseReactDevelopmentServer(GetPlatformSpecificWaitCommand());
-            });
-
-            await Assert_NpmKilled_WhenAppIsStopped(applicationLifetime, listener);
-        }
-
-        [ConditionalFact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/29549")]
-        public async Task UseSpa_KillsAngularCli_WhenAppIsStopped()
-        {
-            var serviceProvider = GetServiceProvider(s => s.RootPath = "/");
-            var applicationbuilder = new ApplicationBuilder(serviceProvider);
-            var applicationLifetime = serviceProvider.GetRequiredService<IHostApplicationLifetime>();
-            var diagnosticListener = serviceProvider.GetRequiredService<DiagnosticListener>();
-            var listener = new NpmStartedDiagnosticListener();
-            diagnosticListener.SubscribeWithAdapter(listener);
-
-            applicationbuilder.UseSpa(b =>
-            {
-                b.Options.SourcePath = Directory.GetCurrentDirectory();
-                b.UseAngularCliServer(GetPlatformSpecificWaitCommand());
-            });
-
-            await Assert_NpmKilled_WhenAppIsStopped(applicationLifetime, listener);
-        }
-
-        private async Task Assert_NpmKilled_WhenAppIsStopped(IHostApplicationLifetime applicationLifetime, NpmStartedDiagnosticListener listener)
-        {
-            // Give node a moment to start up
-            await Task.WhenAny(listener.NpmStarted, Task.Delay(TimeSpan.FromSeconds(45)));
-
-            Process npmProcess = null;
-            var npmExitEvent = new ManualResetEventSlim();
-            if (listener.NpmStarted.IsCompleted)
-            {
-                npmProcess = listener.NpmStarted.Result.Process;
-                Assert.False(npmProcess.HasExited);
-                npmProcess.Exited += (_, __) => npmExitEvent.Set();
-            }
-
-            // Act
-            applicationLifetime.StopApplication();
-
-            // Assert
-            AssertNoErrors();
-            Assert.True(listener.NpmStarted.IsCompleted, "npm wasn't launched");
-
-            npmExitEvent.Wait(TimeSpan.FromSeconds(45));
-            Assert.True(npmProcess.HasExited, "npm wasn't killed");
-        }
-
-        private class NpmStartedDiagnosticListener
-        {
-            private readonly TaskCompletionSource<(ProcessStartInfo ProcessStartInfo, Process Process)> _npmStartedTaskCompletionSource
-                = new TaskCompletionSource<(ProcessStartInfo ProcessStartInfo, Process Process)>();
-
-            public Task<(ProcessStartInfo ProcessStartInfo, Process Process)> NpmStarted
-                => _npmStartedTaskCompletionSource.Task;
-
-            [DiagnosticName("Microsoft.AspNetCore.NodeServices.Npm.NpmStarted")]
-            public virtual void OnNpmStarted(ProcessStartInfo processStartInfo, Process process)
-            {
-                _npmStartedTaskCompletionSource.TrySetResult((processStartInfo, process));
-            }
-        }
-
-        private string GetPlatformSpecificWaitCommand()
-            => OperatingSystem.IsWindows() ? "waitWindows" : "wait";
-
         private IApplicationBuilder GetApplicationBuilder(IServiceProvider serviceProvider = null)
         {
             if (serviceProvider == null)
@@ -150,21 +67,6 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Tests
             services.AddSingleton<DiagnosticSource>(listener);
 
             return services.BuildServiceProvider();
-        }
-
-        private void AssertNoErrors()
-        {
-            var builder = new StringBuilder();
-            foreach (var line in ListLoggerFactory.Log)
-            {
-                if (line.Level < LogLevel.Error)
-                {
-                    continue;
-                }
-                builder.AppendLine(line.Message);
-            }
-
-            Assert.True(builder.Length == 0, builder.ToString());
         }
 
         private ListLoggerFactory ListLoggerFactory { get; } = new ListLoggerFactory(c => c == "Microsoft.AspNetCore.SpaServices");

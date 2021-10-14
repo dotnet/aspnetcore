@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -22,13 +22,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             _connectionManager = connectionManager;
         }
 
+        public long GetNewConnectionId() => _connectionManager.GetNewConnectionId();
+
         public void AddConnection(long id, KestrelConnection connection)
         {
             var connectionReference = new ConnectionReference(id, connection, this);
 
             if (!_connectionReferences.TryAdd(id, connectionReference))
             {
-                throw new ArgumentException(nameof(id));
+                throw new ArgumentException("Unable to add specified id.", nameof(id));
             }
 
             _connectionManager.AddConnection(id, connectionReference);
@@ -38,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         {
             if (!_connectionReferences.TryRemove(id, out _))
             {
-                throw new ArgumentException(nameof(id));
+                throw new ArgumentException("No value found for the specified id.", nameof(id));
             }
 
             _connectionManager.RemoveConnection(id);
@@ -50,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         {
             if (!_connectionReferences.TryRemove(id, out _))
             {
-                throw new ArgumentException(nameof(id));
+                throw new ArgumentException("No value found for the specified id.", nameof(id));
             }
         }
 

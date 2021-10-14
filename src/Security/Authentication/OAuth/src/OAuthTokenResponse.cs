@@ -1,7 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Text;
 using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Authentication.OAuth
@@ -23,6 +24,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             TokenType = root.GetString("token_type");
             RefreshToken = root.GetString("refresh_token");
             ExpiresIn = root.GetString("expires_in");
+            Error = GetStandardErrorException(response);
         }
 
         private OAuthTokenResponse(Exception error)
@@ -88,5 +90,38 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// The exception in the event the response was a failure.
         /// </summary>
         public Exception? Error { get; set; }
+
+        internal static Exception? GetStandardErrorException(JsonDocument response)
+        {
+            var root = response.RootElement;
+            var error = root.GetString("error");
+
+            if (error is null)
+            {
+                return null;
+            }
+
+            var result = new StringBuilder("OAuth token endpoint failure: ");
+            result.Append(error);
+
+            if (root.TryGetProperty("error_description", out var errorDescription))
+            {
+                result.Append(";Description=");
+                result.Append(errorDescription);
+            }
+
+            if (root.TryGetProperty("error_uri", out var errorUri))
+            {
+                result.Append(";Uri=");
+                result.Append(errorUri);
+            }
+
+            var exception = new Exception(result.ToString());
+            exception.Data["error"] = error.ToString();
+            exception.Data["error_description"] = errorDescription.ToString();
+            exception.Data["error_uri"] = errorUri.ToString();
+
+            return exception;
+        }
     }
 }

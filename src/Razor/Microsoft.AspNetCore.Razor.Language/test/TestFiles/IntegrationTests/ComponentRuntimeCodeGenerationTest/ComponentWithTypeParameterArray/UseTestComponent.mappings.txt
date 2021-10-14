@@ -1,0 +1,15 @@
+Source Location: (135:5,7 [208] x:\dir\subdir\Test\UseTestComponent.cshtml)
+|
+    static Tag tag = new Tag() { description = "A description."};
+    Tag[] items1 = new [] { tag };
+    List<Tag[]> items2 = new List<Tag[]>() { new [] { tag } };
+    Tag[] items3() => new [] { tag };
+|
+Generated Location: (1780:62,7 [208] )
+|
+    static Tag tag = new Tag() { description = "A description."};
+    Tag[] items1 = new [] { tag };
+    List<Tag[]> items2 = new List<Tag[]>() { new [] { tag } };
+    Tag[] items3() => new [] { tag };
+|
+

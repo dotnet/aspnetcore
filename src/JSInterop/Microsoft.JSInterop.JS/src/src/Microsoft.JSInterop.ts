@@ -6,11 +6,19 @@ export module DotNet {
   export type JsonReviver = ((key: any, value: any) => any);
   const jsonRevivers: JsonReviver[] = [];
 
+  const byteArraysToBeRevived = new Map<number, Uint8Array>();
+  const pendingDotNetToJSStreams = new Map<number, PendingStream>();
+
+  const jsObjectIdKey = "__jsObjectId";
+  const dotNetObjectRefKey = '__dotNetObject';
+  const byteArrayRefKey = '__byte[]';
+  const dotNetStreamRefKey = '__dotNetStream';
+  const jsStreamReferenceLengthKey = "__jsStreamReferenceLength";
+
   class JSObject {
     _cachedFunctions: Map<string, Function>;
 
-    constructor(private _jsObject: any)
-    {
+    constructor(private _jsObject: any) {
       this._cachedFunctions = new Map<string, Function>();
     }
 
@@ -46,8 +54,6 @@ export module DotNet {
       return this._jsObject;
     }
   }
-
-  const jsObjectIdKey = "__jsObjectId";
 
   const pendingAsyncCalls: { [id: number]: PendingAsyncCall<any> } = {};
   const windowJSObjectId = 0;
@@ -138,6 +144,48 @@ export module DotNet {
   }
 
   /**
+   * Creates a JavaScript data reference that can be passed to .NET via interop calls.
+   *
+   * @param streamReference The ArrayBufferView or Blob used to create the JavaScript stream reference.
+   * @returns The JavaScript data reference (this will be the same instance as the given object).
+   * @throws Error if the given value is not an Object or doesn't have a valid byteLength.
+   */
+  export function createJSStreamReference(streamReference: ArrayBuffer | ArrayBufferView | Blob | any): any {
+    let length = -1;
+
+    // If we're given a raw Array Buffer, we interpret it as a `Uint8Array` as
+    // ArrayBuffers' aren't directly readable.
+    if (streamReference instanceof ArrayBuffer) {
+      streamReference = new Uint8Array(streamReference);
+    }
+
+    if (streamReference instanceof Blob) {
+      length = streamReference.size;
+    } else if (streamReference.buffer instanceof ArrayBuffer) {
+      if (streamReference.byteLength === undefined) {
+        throw new Error(`Cannot create a JSStreamReference from the value '${streamReference}' as it doesn't have a byteLength.`);
+      }
+
+      length = streamReference.byteLength;
+    } else {
+      throw new Error('Supplied value is not a typed array or blob.');
+    }
+
+    const result: any = {
+      [jsStreamReferenceLengthKey]: length,
+    }
+
+    try {
+      const jsObjectReference = createJSObjectReference(streamReference);
+      result[jsObjectIdKey] = jsObjectReference[jsObjectIdKey];
+    } catch {
+      throw new Error(`Cannot create a JSStreamReference from the value '${streamReference}'.`);
+    }
+
+    return result;
+  }
+
+  /**
    * Disposes the given JavaScript object reference.
    *
    * @param jsObjectReference The JavaScript Object reference.
@@ -152,10 +200,10 @@ export module DotNet {
 
   /**
    * Parses the given JSON string using revivers to restore args passed from .NET to JS.
-   * 
+   *
    * @param json The JSON stirng to parse.
    */
-  export function parseJsonWithRevivers(json: string): any {
+  function parseJsonWithRevivers(json: string): any {
     return json ? JSON.parse(json, (key, initialValue) => {
       // Invoke each reviver in order, passing the output from the previous reviver,
       // so that each one gets a chance to transform the value
@@ -169,7 +217,7 @@ export module DotNet {
   function invokePossibleInstanceMethod<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): T {
     const dispatcher = getRequiredDispatcher();
     if (dispatcher.invokeDotNetFromJS) {
-      const argsJson = JSON.stringify(args, argReplacer);
+      const argsJson = stringifyArgs(args);
       const resultJson = dispatcher.invokeDotNetFromJS(assemblyName, methodIdentifier, dotNetObjectId, argsJson);
       return resultJson ? parseJsonWithRevivers(resultJson) : null;
     } else {
@@ -188,7 +236,7 @@ export module DotNet {
     });
 
     try {
-      const argsJson = JSON.stringify(args, argReplacer);
+      const argsJson = stringifyArgs(args);
       getRequiredDispatcher().beginInvokeDotNetFromJS(asyncCallId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
     } catch (ex) {
       // Synchronous failure
@@ -230,7 +278,9 @@ export module DotNet {
    */
   export enum JSCallResultType {
     Default = 0,
-    JSObjectReference = 1
+    JSObjectReference = 1,
+    JSStreamReference = 2,
+    JSVoidResult = 3,
   }
 
   /**
@@ -267,6 +317,13 @@ export module DotNet {
      * @param resultOrError The serialized result or the serialized error from the async operation.
      */
     endInvokeJSFromDotNet(callId: number, succeeded: boolean, resultOrError: any): void;
+
+    /**
+     * Invoked by the runtime to transfer a byte array from JS to .NET.
+     * @param id The identifier for the byte array used during revival.
+     * @param data The byte array being transferred for eventual revival.
+     */
+     sendByteArray(id: number, data: Uint8Array): void;
   }
 
   /**
@@ -304,7 +361,7 @@ export module DotNet {
 
       return result === null || result === undefined
         ? null
-        : JSON.stringify(result, argReplacer);
+        : stringifyArgs(result);
     },
 
     /**
@@ -329,7 +386,7 @@ export module DotNet {
         // On completion, dispatch result back to .NET
         // Not using "await" because it codegens a lot of boilerplate
         promise.then(
-          result => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, true, JSON.stringify([asyncHandle, true, createJSCallResult(result, resultType)], argReplacer)),
+          result => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, true, stringifyArgs([asyncHandle, true, createJSCallResult(result, resultType)])),
           error => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, false, JSON.stringify([asyncHandle, false, formatError(error)]))
         );
       }
@@ -339,12 +396,43 @@ export module DotNet {
      * Receives notification that an async call from JS to .NET has completed.
      * @param asyncCallId The identifier supplied in an earlier call to beginInvokeDotNetFromJS.
      * @param success A flag to indicate whether the operation completed successfully.
-     * @param resultOrExceptionMessage Either the operation result or an error message.
+     * @param resultJsonOrExceptionMessage Either the operation result as JSON, or an error message.
      */
-    endInvokeDotNetFromJS: (asyncCallId: string, success: boolean, resultOrExceptionMessage: any): void => {
-      const resultOrError = success ? resultOrExceptionMessage : new Error(resultOrExceptionMessage);
+    endInvokeDotNetFromJS: (asyncCallId: string, success: boolean, resultJsonOrExceptionMessage: string): void => {
+      const resultOrError = success
+        ? parseJsonWithRevivers(resultJsonOrExceptionMessage)
+        : new Error(resultJsonOrExceptionMessage);
       completePendingCall(parseInt(asyncCallId), success, resultOrError);
-    }
+    },
+
+    /**
+     * Receives notification that a byte array is being transferred from .NET to JS.
+     * @param id The identifier for the byte array used during revival.
+     * @param data The byte array being transferred for eventual revival.
+     */
+    receiveByteArray: (id: number, data: Uint8Array): void => {
+      byteArraysToBeRevived.set(id, data);
+    },
+
+    /**
+    * Supplies a stream of data being sent from .NET.
+    *
+    * @param streamId The identifier previously passed to JSRuntime's BeginTransmittingStream in .NET code
+    * @param stream The stream data.
+    */
+    supplyDotNetStream: (streamId: number, stream: ReadableStream) => {
+      if (pendingDotNetToJSStreams.has(streamId)) {
+        // The receiver is already waiting, so we can resolve the promise now and stop tracking this
+        const pendingStream = pendingDotNetToJSStreams.get(streamId)!;
+        pendingDotNetToJSStreams.delete(streamId);
+        pendingStream.resolve!(stream);
+      } else {
+        // The receiver hasn't started waiting yet, so track a pre-completed entry it can attach to later
+        const pendingStream = new PendingStream();
+        pendingStream.resolve!(stream);
+        pendingDotNetToJSStreams.set(streamId, pendingStream);
+      }
+    },
   }
 
   function formatError(error: any): string {
@@ -369,7 +457,7 @@ export module DotNet {
     delete cachedJSObjectsById[id];
   }
 
-  class DotNetObject {
+  export class DotNetObject {
     constructor(private _id: number) {
     }
 
@@ -391,25 +479,30 @@ export module DotNet {
     }
   }
 
-  const dotNetObjectRefKey = '__dotNetObject';
-  attachReviver(function reviveDotNetObject(key: any, value: any) {
-    if (value && typeof value === 'object' && value.hasOwnProperty(dotNetObjectRefKey)) {
-      return new DotNetObject(value.__dotNetObject);
-    }
+  attachReviver(function reviveReference(key: any, value: any) {
+    if (value && typeof value === 'object') {
+      if (value.hasOwnProperty(dotNetObjectRefKey)) {
+        return new DotNetObject(value[dotNetObjectRefKey]);
+      } else if (value.hasOwnProperty(jsObjectIdKey)) {
+        const id = value[jsObjectIdKey];
+        const jsObject = cachedJSObjectsById[id];
 
-    // Unrecognized - let another reviver handle it
-    return value;
-  });
+        if (jsObject) {
+          return jsObject.getWrappedObject();
+        } else {
+          throw new Error(`JS object instance with Id '${id}' does not exist. It may have been disposed.`);
+        }
+      } else if (value.hasOwnProperty(byteArrayRefKey)) {
+        const index = value[byteArrayRefKey];
+        const byteArray = byteArraysToBeRevived.get(index);
+        if (byteArray === undefined) {
+          throw new Error(`Byte array index '${index}' does not exist.`);
+        }
+        byteArraysToBeRevived.delete(index);
 
-  attachReviver(function reviveJSObjectReference(key: any, value: any) {
-    if (value && typeof value === 'object' && value.hasOwnProperty(jsObjectIdKey)) {
-      const id = value[jsObjectIdKey];
-      const jsObject = cachedJSObjectsById[id];
-
-      if (jsObject) {
-        return jsObject.getWrappedObject();
-      } else {
-        throw new Error(`JS object instance with ID ${id} does not exist (has it been disposed?).`);
+        return byteArray;
+      } else if (value.hasOwnProperty(dotNetStreamRefKey)) {
+        return new DotNetStream(value[dotNetStreamRefKey])
       }
     }
 
@@ -417,18 +510,86 @@ export module DotNet {
     return value;
   });
 
+  class DotNetStream {
+    private _streamPromise: Promise<ReadableStream>;
+
+    constructor(streamId: number) {
+      // This constructor runs when we're JSON-deserializing some value from the .NET side.
+      // At this point we might already have started receiving the stream, or maybe it will come later.
+      // We have to handle both possible orderings, but we can count on it coming eventually because
+      // it's not something the developer gets to control, and it would be an error if it doesn't.
+      if (pendingDotNetToJSStreams.has(streamId)) {
+        // We've already started receiving the stream, so no longer need to track it as pending
+        this._streamPromise = pendingDotNetToJSStreams.get(streamId)?.streamPromise!;
+        pendingDotNetToJSStreams.delete(streamId);
+      } else {
+        // We haven't started receiving it yet, so add an entry to track it as pending
+        const pendingStream = new PendingStream();
+        pendingDotNetToJSStreams.set(streamId, pendingStream);
+        this._streamPromise = pendingStream.streamPromise;
+      }
+    }
+
+    /**
+    * Supplies a readable stream of data being sent from .NET.
+    */
+    stream(): Promise<ReadableStream> {
+      return this._streamPromise;
+    }
+
+    /**
+    * Supplies a array buffer of data being sent from .NET.
+    * Note there is a JavaScript limit on the size of the ArrayBuffer equal to approximately 2GB.
+    */
+    async arrayBuffer(): Promise<ArrayBuffer> {
+      return new Response(await this.stream()).arrayBuffer();
+    }
+  }
+
+  class PendingStream {
+    streamPromise: Promise<ReadableStream>;
+    resolve?: (value: ReadableStream) => void;
+    reject?: (reason: any) => void;
+
+    constructor() {
+      this.streamPromise = new Promise((resolve, reject) => {
+        this.resolve = resolve;
+        this.reject = reject;
+      });
+    }
+  }
+
   function createJSCallResult(returnValue: any, resultType: JSCallResultType) {
     switch (resultType) {
       case JSCallResultType.Default:
         return returnValue;
       case JSCallResultType.JSObjectReference:
         return createJSObjectReference(returnValue);
+      case JSCallResultType.JSStreamReference:
+        return createJSStreamReference(returnValue);
+      case JSCallResultType.JSVoidResult:
+        return null;
       default:
         throw new Error(`Invalid JS call result type '${resultType}'.`);
     }
   }
 
+  let nextByteArrayIndex = 0;
+  function stringifyArgs(args: any[] | null) {
+    nextByteArrayIndex = 0;
+    return JSON.stringify(args, argReplacer);
+  }
+
   function argReplacer(key: string, value: any) {
-    return value instanceof DotNetObject ? value.serializeAsArg() : value;
+    if (value instanceof DotNetObject) {
+      return value.serializeAsArg();
+    } else if (value instanceof Uint8Array) {
+      dotNetDispatcher!.sendByteArray(nextByteArrayIndex, value);
+      const jsonValue = { [byteArrayRefKey]: nextByteArrayIndex };
+      nextByteArrayIndex++;
+      return jsonValue;
+    }
+
+    return value;
   }
 }

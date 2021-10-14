@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -53,6 +53,46 @@ namespace Microsoft.AspNetCore.WebUtilities
             var collection = QueryHelpers.ParseQuery("?=value1&=");
             Assert.Single(collection);
             Assert.Equal(new[] { "value1", "" }, collection[""]);
+        }
+
+        [Fact]
+        public void ParseQueryWithEncodedKeyWorks()
+        {
+            var collection = QueryHelpers.ParseQuery("?fields+%5BtodoItems%5D");
+            Assert.Single(collection);
+            Assert.Equal("", collection["fields [todoItems]"].FirstOrDefault());
+        }
+
+        [Fact]
+        public void ParseQueryWithEncodedValueWorks()
+        {
+            var collection = QueryHelpers.ParseQuery("?=fields+%5BtodoItems%5D");
+            Assert.Single(collection);
+            Assert.Equal("fields [todoItems]", collection[""].FirstOrDefault());
+        }
+
+        [Fact]
+        public void ParseQueryWithEncodedKeyEmptyValueWorks()
+        {
+            var collection = QueryHelpers.ParseQuery("?fields+%5BtodoItems%5D=");
+            Assert.Single(collection);
+            Assert.Equal("", collection["fields [todoItems]"].FirstOrDefault());
+        }
+
+        [Fact]
+        public void ParseQueryWithEncodedKeyEncodedValueWorks()
+        {
+            var collection = QueryHelpers.ParseQuery("?fields+%5BtodoItems%5D=%5B+1+%5D");
+            Assert.Single(collection);
+            Assert.Equal("[ 1 ]", collection["fields [todoItems]"].FirstOrDefault());
+        }
+
+        [Fact]
+        public void ParseQueryWithEncodedKeyEncodedValuesWorks()
+        {
+            var collection = QueryHelpers.ParseQuery("?fields+%5BtodoItems%5D=%5B+1+%5D&fields+%5BtodoItems%5D=%5B+2+%5D");
+            Assert.Single(collection);
+            Assert.Equal(new[] { "[ 1 ]", "[ 2 ]" }, collection["fields [todoItems]"]);
         }
 
         [Theory]

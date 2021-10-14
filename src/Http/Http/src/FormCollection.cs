@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -18,12 +18,12 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         public static readonly FormCollection Empty = new FormCollection();
         private static readonly string[] EmptyKeys = Array.Empty<string>();
-        private static readonly Enumerator EmptyEnumerator = new Enumerator();
-        // Pre-box
-        private static readonly IEnumerator<KeyValuePair<string, StringValues>> EmptyIEnumeratorType = EmptyEnumerator;
-        private static readonly IEnumerator EmptyIEnumerator = EmptyEnumerator;
 
-        private static IFormFileCollection EmptyFiles = new FormFileCollection();
+        // Pre-box
+        private static readonly IEnumerator<KeyValuePair<string, StringValues>> EmptyIEnumeratorType = default(Enumerator);
+        private static readonly IEnumerator EmptyIEnumerator = default(Enumerator);
+
+        private static readonly IFormFileCollection EmptyFiles = new FormFileCollection();
 
         private IFormFileCollection? _files;
 
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Http
                     return StringValues.Empty;
                 }
 
-                if (TryGetValue(key, out StringValues value))
+                if (TryGetValue(key, out var value))
                 {
                     return value;
                 }
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Http
             if (Store == null || Store.Count == 0)
             {
                 // Non-boxed Enumerator
-                return EmptyEnumerator;
+                return default;
             }
             // Non-boxed Enumerator
             return new Enumerator(Store.GetEnumerator());
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Http
         {
             // Do NOT make this readonly, or MoveNext will not work
             private Dictionary<string, StringValues>.Enumerator _dictionaryEnumerator;
-            private bool _notEmpty;
+            private readonly bool _notEmpty;
 
             internal Enumerator(Dictionary<string, StringValues>.Enumerator dictionaryEnumerator)
             {

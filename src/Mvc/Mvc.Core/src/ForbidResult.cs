@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -97,7 +97,9 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+            var httpContext = context.HttpContext;
+
+            var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<ForbidResult>();
 
             logger.ForbidResultExecuting(AuthenticationSchemes);
@@ -106,12 +108,12 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 for (var i = 0; i < AuthenticationSchemes.Count; i++)
                 {
-                    await context.HttpContext.ForbidAsync(AuthenticationSchemes[i], Properties);
+                    await httpContext.ForbidAsync(AuthenticationSchemes[i], Properties);
                 }
             }
             else
             {
-                await context.HttpContext.ForbidAsync(Properties);
+                await httpContext.ForbidAsync(Properties);
             }
         }
     }

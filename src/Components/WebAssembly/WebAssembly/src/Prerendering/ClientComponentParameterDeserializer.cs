@@ -1,10 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -51,7 +52,7 @@ namespace Microsoft.AspNetCore.Components
                     var parameterType = _parametersCache.GetParameterType(definition.Assembly, definition.TypeName);
                     if (parameterType == null)
                     {
-                        throw new InvalidOperationException($"The parameter '{definition.Name} with type '{definition.TypeName}' in assembly '{definition.Assembly}' could not be found.");
+                        throw new InvalidOperationException($"The parameter '{definition.Name}' with type '{definition.TypeName}' in assembly '{definition.Assembly}' could not be found.");
                     }
                     try
                     {
@@ -73,6 +74,9 @@ namespace Microsoft.AspNetCore.Components
             return ParameterView.FromDictionary(parametersDictionary);
         }
 
+        [DynamicDependency(JsonSerialized, typeof(ComponentParameter))]
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "The correct members will be preserved by the above DynamicDependency.")]
+        // This should use JSON source generation
         public ComponentParameter[] GetParameterDefinitions(string parametersDefinitions)
         {
             return JsonSerializer.Deserialize<ComponentParameter[]>(parametersDefinitions, WebAssemblyComponentSerializationSettings.JsonSerializationOptions)!;

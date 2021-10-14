@@ -72,7 +72,7 @@ Options:
     --[no-]build-managed              Build managed projects (C#, F#, VB).
     --[no-]build-nodejs               Build NodeJS projects (TypeScript, JS).
     --[no-]build-java                 Build Java projects.
-    --[no-]build-installers           Build Java projects.
+    --[no-]build-installers           Build installers.
 
     --ci                              Apply CI specific settings and environment variables.
     --binarylog|-bl                   Use a binary logger
@@ -342,6 +342,7 @@ if [[ "$binary_log" == true ]]; then
     if [[ "$found" == false ]]; then
         msbuild_args[${#msbuild_args[*]}]="/bl:$log_dir/Build.binlog"
     fi
+    toolset_build_args[${#toolset_build_args[*]}]="/bl:$log_dir/Build.repotasks.binlog"
 elif [[ "$ci" == true ]]; then
     # Ensure the artifacts/log directory isn't empty to avoid warnings.
     touch "$log_dir/empty.log"

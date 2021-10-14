@@ -1,12 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Lifetime;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Html;
@@ -191,7 +190,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             {
                 RequestServices = new ServiceCollection()
                     .AddSingleton(renderer)
-                    .AddSingleton(new ComponentApplicationLifetime(NullLogger<ComponentApplicationLifetime>.Instance))
+                    .AddSingleton(new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance))
                     .AddSingleton<HtmlRenderer>()
                     .AddSingleton(_ephemeralProvider)
                     .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)

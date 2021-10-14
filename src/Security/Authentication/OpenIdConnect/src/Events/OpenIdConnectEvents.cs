@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
@@ -54,7 +54,8 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         public Func<TokenResponseReceivedContext, Task> OnTokenResponseReceived { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
-        /// Invoked when an IdToken has been validated and produced an AuthenticationTicket.
+        /// Invoked when an IdToken has been validated and produced an AuthenticationTicket. Note there are additional checks after this
+        /// event that validate other aspects of the authentication flow like the nonce.
         /// </summary>
         public Func<TokenValidatedContext, Task> OnTokenValidated { get; set; } = context => Task.CompletedTask;
 
@@ -106,7 +107,8 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         public virtual Task TokenResponseReceived(TokenResponseReceivedContext context) => OnTokenResponseReceived(context);
 
         /// <summary>
-        /// Invoked when an IdToken has been validated and produced an AuthenticationTicket.
+        /// Invoked when an IdToken has been validated and produced an AuthenticationTicket. Note there are additional checks after this
+        /// event that validate other aspects of the authentication flow like the nonce.
         /// </summary>
         public virtual Task TokenValidated(TokenValidatedContext context) => OnTokenValidated(context);
 

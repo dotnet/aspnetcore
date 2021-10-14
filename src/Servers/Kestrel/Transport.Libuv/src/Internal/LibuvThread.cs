@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -35,17 +35,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private readonly object _workSync = new object();
         private readonly object _closeHandleSync = new object();
         private readonly object _startSync = new object();
-        private bool _stopImmediate = false;
-        private bool _initCompleted = false;
+        private bool _stopImmediate;
+        private bool _initCompleted;
         private Exception _closeError;
-        private readonly ILibuvTrace _log;
+        private readonly ILogger _log;
 
         public LibuvThread(LibuvFunctions libuv, LibuvTransportContext libuvTransportContext, int maxLoops = 8)
             : this(libuv, libuvTransportContext.AppLifetime, libuvTransportContext.Options.MemoryPoolFactory(), libuvTransportContext.Log, maxLoops)
         {
         }
 
-        public LibuvThread(LibuvFunctions libuv, IHostApplicationLifetime appLifetime, MemoryPool<byte> pool, ILibuvTrace log, int maxLoops = 8)
+        public LibuvThread(LibuvFunctions libuv, IHostApplicationLifetime appLifetime, MemoryPool<byte> pool, ILogger log, int maxLoops = 8)
         {
             _libuv = libuv;
             _appLifetime = appLifetime;

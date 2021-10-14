@@ -1,11 +1,12 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,9 +24,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Hosting
 {
-    internal class WebHost : IWebHost, IAsyncDisposable
+    internal sealed partial class WebHost : IWebHost, IAsyncDisposable
     {
-        private static readonly string DeprecatedServerUrlsKey = "server.urls";
+        private const string DeprecatedServerUrlsKey = "server.urls";
 
         private readonly IServiceCollection _applicationServiceCollection;
         private IStartup? _startup;
@@ -138,13 +139,13 @@ namespace Microsoft.AspNetCore.Hosting
             StartAsync().GetAwaiter().GetResult();
         }
 
-        public virtual async Task StartAsync(CancellationToken cancellationToken = default)
+        public async Task StartAsync(CancellationToken cancellationToken = default)
         {
             Debug.Assert(_applicationServices != null, "Initialize must be called first.");
 
             HostingEventSource.Log.HostStart();
             _logger = _applicationServices.GetRequiredService<ILoggerFactory>().CreateLogger("Microsoft.AspNetCore.Hosting.Diagnostics");
-            _logger.Starting();
+            Log.Starting(_logger);
 
             var application = BuildApplication();
 
@@ -156,23 +157,23 @@ namespace Microsoft.AspNetCore.Hosting
 
             var diagnosticSource = _applicationServices.GetRequiredService<DiagnosticListener>();
             var activitySource = _applicationServices.GetRequiredService<ActivitySource>();
+            var propagator = _applicationServices.GetRequiredService<DistributedContextPropagator>();
             var httpContextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
-            var hostingApp = new HostingApplication(application, _logger, diagnosticSource, activitySource, httpContextFactory);
+            var hostingApp = new HostingApplication(application, _logger, diagnosticSource, activitySource, propagator, httpContextFactory);
             await Server.StartAsync(hostingApp, cancellationToken).ConfigureAwait(false);
             _startedServer = true;
 
             // Fire IApplicationLifetime.Started
             _applicationLifetime?.NotifyStarted();
 
-
-            _logger.Started();
+            Log.Started(_logger);
 
             // Log the fact that we did load hosting startup assemblies.
             if (_logger.IsEnabled(LogLevel.Debug))
             {
                 foreach (var assembly in _options.GetFinalHostingStartupAssemblies())
                 {
-                    _logger.StartupAssemblyLoaded(assembly);
+                    Log.StartupAssemblyLoaded(_logger, assembly);
                 }
             }
 
@@ -248,7 +249,7 @@ namespace Microsoft.AspNetCore.Hosting
                     Console.WriteLine("Application startup exception: " + ex.ToString());
                 }
                 var logger = _applicationServices.GetRequiredService<ILogger<WebHost>>();
-                logger.ApplicationError(ex);
+                _logger.ApplicationError(ex);
 
                 if (!_options.CaptureStartupErrors)
                 {
@@ -300,7 +301,7 @@ namespace Microsoft.AspNetCore.Hosting
             }
             _stopped = true;
 
-            _logger.Shutdown();
+            Log.Shutdown(_logger);
 
             using var timeoutCTS = new CancellationTokenSource(Options.ShutdownTimeout);
             var timeoutToken = timeoutCTS.Token;
@@ -348,7 +349,7 @@ namespace Microsoft.AspNetCore.Hosting
                 }
                 catch (Exception ex)
                 {
-                    _logger.ServerShutdownException(ex);
+                    Log.ServerShutdownException(_logger, ex);
                 }
             }
 
@@ -356,7 +357,7 @@ namespace Microsoft.AspNetCore.Hosting
             await DisposeServiceProviderAsync(_hostingServiceProvider).ConfigureAwait(false);
         }
 
-        private async ValueTask DisposeServiceProviderAsync(IServiceProvider? serviceProvider)
+        private static async ValueTask DisposeServiceProviderAsync(IServiceProvider? serviceProvider)
         {
             switch (serviceProvider)
             {
@@ -367,6 +368,27 @@ namespace Microsoft.AspNetCore.Hosting
                     disposable.Dispose();
                     break;
             }
+        }
+
+        private static partial class Log
+        {
+            [LoggerMessage(3, LogLevel.Debug, "Hosting starting", EventName = "Starting")]
+            public static partial void Starting(ILogger logger);
+
+            [LoggerMessage(4, LogLevel.Debug, "Hosting started", EventName = "Started")]
+            public static partial void Started(ILogger logger);
+
+            [LoggerMessage(5, LogLevel.Debug, "Hosting shutdown", EventName = "Started")]
+            public static partial void Shutdown(ILogger logger);
+
+            [LoggerMessage(12, LogLevel.Debug, "Server shutdown exception", EventName = "ServerShutdownException")]
+            public static partial void ServerShutdownException(ILogger logger, Exception ex);
+
+            [LoggerMessage(13, LogLevel.Debug,
+                "Loaded hosting startup assembly {assemblyName}",
+                EventName = "HostingStartupAssemblyLoaded",
+                SkipEnabledCheck = true)]
+            public static partial void StartupAssemblyLoaded(ILogger logger, string assemblyName);
         }
     }
 }

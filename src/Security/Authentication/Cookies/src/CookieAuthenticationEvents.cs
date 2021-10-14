@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
@@ -17,6 +17,11 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// Invoked to validate the principal.
         /// </summary>
         public Func<CookieValidatePrincipalContext, Task> OnValidatePrincipal { get; set; } = context => Task.CompletedTask;
+
+        /// <summary>
+        /// Invoked to check if the cookie should be renewed.
+        /// </summary>
+        public Func<CookieSlidingExpirationContext, Task> OnCheckSlidingExpiration { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
         /// Invoked on signing in.
@@ -40,7 +45,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         {
             if (IsAjaxRequest(context.Request))
             {
-                context.Response.Headers[HeaderNames.Location] = context.RedirectUri;
+                context.Response.Headers.Location = context.RedirectUri;
                 context.Response.StatusCode = 401;
             }
             else
@@ -57,7 +62,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         {
             if (IsAjaxRequest(context.Request))
             {
-                context.Response.Headers[HeaderNames.Location] = context.RedirectUri;
+                context.Response.Headers.Location = context.RedirectUri;
                 context.Response.StatusCode = 403;
             }
             else
@@ -74,7 +79,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         {
             if (IsAjaxRequest(context.Request))
             {
-                context.Response.Headers[HeaderNames.Location] = context.RedirectUri;
+                context.Response.Headers.Location = context.RedirectUri;
             }
             else
             {
@@ -90,7 +95,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         {
             if (IsAjaxRequest(context.Request))
             {
-                context.Response.Headers[HeaderNames.Location] = context.RedirectUri;
+                context.Response.Headers.Location = context.RedirectUri;
             }
             else
             {
@@ -102,7 +107,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         private static bool IsAjaxRequest(HttpRequest request)
         {
             return string.Equals(request.Query[HeaderNames.XRequestedWith], "XMLHttpRequest", StringComparison.Ordinal) ||
-                string.Equals(request.Headers[HeaderNames.XRequestedWith], "XMLHttpRequest", StringComparison.Ordinal);
+                string.Equals(request.Headers.XRequestedWith, "XMLHttpRequest", StringComparison.Ordinal);
         }
 
         /// <summary>

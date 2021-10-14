@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     /// <summary>
     /// <see cref="IModelBinder"/> implementation for binding complex types.
     /// </summary>
-    public sealed class ComplexObjectModelBinder : IModelBinder
+    public sealed partial class ComplexObjectModelBinder : IModelBinder
     {
         // Don't want a new public enum because communication between the private and internal methods of this class
         // should not be exposed. Can't use an internal enum because types of [TheoryData] values must be public.
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 // Only record types are allowed to have a BoundConstructor. Binding a record type requires
                 // instantiating the type. This means we'll ignore a previously assigned bindingContext.Model value.
                 // This behaior is identical to input formatting with S.T.Json and Json.NET.
- 
+
                 var values = new object[boundConstructor.BoundConstructorParameters!.Count];
                 var (attemptedParameterBinding, parameterBindingSucceeded) = await BindParametersAsync(
                     bindingContext,
@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             for (var i = 0; i < parameters.Count; i++)
             {
                 var parameter = parameters[i];
-                
+
                 var fieldName = parameter.BinderModelName ?? parameter.ParameterName!;
                 var modelName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, fieldName);
 
@@ -740,16 +740,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
         }
 
-        private static class Log
+        private static partial class Log
         {
-            private static readonly Action<ILogger, string, Type, Exception?> _noPublicSettableProperties = LoggerMessage.Define<string, Type>(
-               LogLevel.Debug,
-                new EventId(17, "NoPublicSettableItems"),
-               "Could not bind to model with name '{ModelName}' and type '{ModelType}' as the type has no public settable properties or constructor parameters.");
+            [LoggerMessage(17, LogLevel.Debug, "Could not bind to model with name '{ModelName}' and type '{ModelType}' as the type has no " +
+                "public settable properties or constructor parameters.", EventName = "NoPublicSettableItems")]
+            public static partial void NoPublicSettableItems(ILogger logger, string modelName, Type modelType);
 
             public static void NoPublicSettableItems(ILogger logger, ModelBindingContext bindingContext)
             {
-                _noPublicSettableProperties(logger, bindingContext.ModelName, bindingContext.ModelType, null);
+                NoPublicSettableItems(logger, bindingContext.ModelName, bindingContext.ModelType);
             }
         }
     }

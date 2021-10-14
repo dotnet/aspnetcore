@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 import { HttpResponse } from "../src/HttpClient";
 import { TransferFormat } from "../src/ITransport";
@@ -40,7 +40,7 @@ describe("LongPollingTransport", () => {
                     }
                 })
                 .on("DELETE", () => new HttpResponse(202));
-            const transport = new LongPollingTransport(client, undefined, logger, false, true, {});
+            const transport = new LongPollingTransport(client, undefined, logger, { logMessageContent: false, withCredentials: true, headers: {} });
 
             await transport.connect("http://example.com", TransferFormat.Text);
             const stopPromise = transport.stop();
@@ -64,7 +64,7 @@ describe("LongPollingTransport", () => {
                         return new HttpResponse(204);
                     }
                 });
-            const transport = new LongPollingTransport(client, undefined, logger, false, true, {});
+            const transport = new LongPollingTransport(client, undefined, logger, { logMessageContent: false, withCredentials: true, headers: {} });
 
             const stopPromise = makeClosedPromise(transport);
 
@@ -97,7 +97,7 @@ describe("LongPollingTransport", () => {
                     return new HttpResponse(202);
                 });
 
-            const transport = new LongPollingTransport(httpClient, undefined, logger, false, true, {});
+            const transport = new LongPollingTransport(httpClient, undefined, logger, { logMessageContent: false, withCredentials: true, headers: {} });
 
             await transport.connect("http://tempuri.org", TransferFormat.Text);
 
@@ -146,7 +146,7 @@ describe("LongPollingTransport", () => {
                     return new HttpResponse(202);
                 });
 
-            const transport = new LongPollingTransport(httpClient, undefined, logger, false, true, {});
+            const transport = new LongPollingTransport(httpClient, undefined, logger, { logMessageContent: false, withCredentials: true, headers: {} });
 
             await transport.connect("http://tempuri.org", TransferFormat.Text);
 
@@ -203,7 +203,7 @@ describe("LongPollingTransport", () => {
                     return new HttpResponse(202);
                 });
 
-            const transport = new LongPollingTransport(httpClient, undefined, logger, false, true, headers);
+            const transport = new LongPollingTransport(httpClient, undefined, logger, { logMessageContent: false, withCredentials: true, headers });
 
             await transport.connect("http://tempuri.org", TransferFormat.Text);
 
@@ -224,6 +224,48 @@ describe("LongPollingTransport", () => {
             expect(firstUserHeader).toEqual("VALUE");
             expect(secondUserHeader).toEqual("VALUE");
             expect(deleteUserHeader).toEqual("VALUE");
+        });
+    });
+
+    it("sets timeout on requests", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let firstPoll = true;
+            const pollingPromiseSource = new PromiseSource();
+            const httpClient = new TestHttpClient()
+                .on("GET", async (r) => {
+                    expect(r.timeout).toEqual(100000);
+                    if (firstPoll) {
+                        firstPoll = false;
+                        return new HttpResponse(200);
+                    } else {
+                        await pollingPromiseSource.promise;
+                        return new HttpResponse(204);
+                    }
+                })
+                .on("POST", (r) => {
+                    expect(r.timeout).toEqual(123);
+                    return new HttpResponse(200);
+                })
+                .on("DELETE", (r) => {
+                    expect(r.timeout).toEqual(123);
+                    return new HttpResponse(202);
+                });
+
+            const transport = new LongPollingTransport(httpClient, undefined, logger,
+                { logMessageContent: false, withCredentials: true, headers: {}, timeout: 123 });
+
+            await transport.connect("http://tempuri.org", TransferFormat.Text);
+
+            await transport.send("test");
+
+            // Begin stopping transport
+            const stopPromise = transport.stop();
+
+            // Allow polling to complete
+            pollingPromiseSource.resolve();
+
+            // Wait for stop to complete
+            await stopPromise;
         });
     });
 });

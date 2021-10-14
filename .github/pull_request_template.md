@@ -1,3 +1,4 @@
+# {PR title}
 
 <!-- Thank you for submitting a pull request to our repo. -->
 
@@ -11,11 +12,10 @@ below to ensure a smooth review and merge process for your PR. -->
 
 <!-- Once all that is done, you're ready to go. Open the PR with the content below. -->
 
-**PR Title**
 Summary of the changes (Less than 80 chars)
 
-**PR Description**
-Detail 1
-Detail 2
+## Description
 
-Addresses #bugnumber (in this specific format)
+{Detail}
+
+Fixes #{bug number} (in this specific format)

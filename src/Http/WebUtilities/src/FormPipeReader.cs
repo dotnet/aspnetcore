@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -34,8 +34,8 @@ namespace Microsoft.AspNetCore.WebUtilities
         private static ReadOnlySpan<byte> UTF8AndEncoded => new byte[] { (byte)'&' };
 
         // Used for other encodings
-        private byte[]? _otherEqualEncoding;
-        private byte[]? _otherAndEncoding;
+        private readonly byte[]? _otherEqualEncoding;
+        private readonly byte[]? _otherAndEncoding;
 
         private readonly PipeReader _pipeReader;
         private readonly Encoding _encoding;
@@ -332,6 +332,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             throw new InvalidDataException($"Form value length limit {ValueLengthLimit} exceeded.");
         }
 
+        [SkipLocalsInit]
         private string GetDecodedStringFromReadOnlySequence(in ReadOnlySequence<byte> ros)
         {
             if (ros.IsSingleSegment)
@@ -341,7 +342,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             if (ros.Length < StackAllocThreshold)
             {
-                Span<byte> buffer = stackalloc byte[(int)ros.Length];
+                Span<byte> buffer = stackalloc byte[StackAllocThreshold].Slice(0, (int)ros.Length);
                 ros.CopyTo(buffer);
                 return GetDecodedString(buffer);
             }

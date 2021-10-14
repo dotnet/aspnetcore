@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 using System.Net;
 using System.Net.Http;
@@ -21,7 +24,7 @@ namespace Wasm.Authentication.Client
             _httpClient = new HttpClient { BaseAddress = new Uri(navigationManager.BaseUri) };
         }
 
-        public async override ValueTask<ClaimsPrincipal> CreateUserAsync(
+        public override async ValueTask<ClaimsPrincipal> CreateUserAsync(
             OidcAccount account,
             RemoteAuthenticationUserOptions options)
         {

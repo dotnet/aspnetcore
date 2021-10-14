@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Globalization;
@@ -502,7 +502,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         });
                         app.Run(context =>
                         {
-                            Assert.Equal(hostHeader, context.Request.Headers[HeaderNames.Host]);
+                            Assert.Equal(hostHeader, context.Request.Headers.Host);
                             assertsExecuted = true;
                             return Task.FromResult(0);
                         });
@@ -553,7 +553,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         });
                         app.Run(context =>
                         {
-                            Assert.NotEqual<string>(hostHeader, context.Request.Headers[HeaderNames.Host]);
+                            Assert.NotEqual<string>(hostHeader, context.Request.Headers.Host);
                             assertsExecuted = true;
                             return Task.FromResult(0);
                         });
@@ -589,7 +589,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         });
                         app.Run(context =>
                         {
-                            Assert.Equal("bar.foo.com:432", context.Request.Headers[HeaderNames.Host]);
+                            Assert.Equal("bar.foo.com:432", context.Request.Headers.Host);
                             assertsExecuted = true;
                             return Task.FromResult(0);
                         });

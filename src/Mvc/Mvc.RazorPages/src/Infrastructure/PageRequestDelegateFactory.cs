@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,7 +16,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
-    internal class PageRequestDelegateFactory : IRequestDelegateFactory
+    internal sealed class PageRequestDelegateFactory : IRequestDelegateFactory
     {
         private readonly PageActionInvokerCache _cache;
         private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
@@ -39,8 +39,22 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             IPageHandlerMethodSelector selector,
             DiagnosticListener diagnosticListener,
             ILoggerFactory loggerFactory,
+            IActionResultTypeMapper mapper)
+            : this(cache, modelMetadataProvider, tempDataFactory, mvcOptions, mvcViewOptions, selector, diagnosticListener, loggerFactory, mapper, null)
+        {
+        }
+
+        public PageRequestDelegateFactory(
+            PageActionInvokerCache cache,
+            IModelMetadataProvider modelMetadataProvider,
+            ITempDataDictionaryFactory tempDataFactory,
+            IOptions<MvcOptions> mvcOptions,
+            IOptions<MvcViewOptions> mvcViewOptions,
+            IPageHandlerMethodSelector selector,
+            DiagnosticListener diagnosticListener,
+            ILoggerFactory loggerFactory,
             IActionResultTypeMapper mapper,
-            IActionContextAccessor actionContextAccessor = null)
+            IActionContextAccessor? actionContextAccessor)
         {
             _cache = cache;
             _valueProviderFactories = mvcOptions.Value.ValueProviderFactories.ToArray();
@@ -55,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             _actionContextAccessor = actionContextAccessor ?? ActionContextAccessor.Null;
         }
 
-        public RequestDelegate CreateRequestDelegate(ActionDescriptor actionDescriptor, RouteValueDictionary dataTokens)
+        public RequestDelegate? CreateRequestDelegate(ActionDescriptor actionDescriptor, RouteValueDictionary? dataTokens)
         {
             if (_enableActionInvokers || actionDescriptor is not CompiledPageActionDescriptor page)
             {
@@ -66,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             return context =>
             {
-                RouteData routeData = null;
+                RouteData? routeData = null;
 
                 if (dataTokens is null or { Count: 0 })
                 {

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -92,10 +92,10 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public BoundAttributeDescriptor Build()
         {
-            var validationDiagnostics = Validate();
-            var diagnostics = new HashSet<RazorDiagnostic>(validationDiagnostics);
+            var diagnostics = Validate();
             if (_diagnostics != null)
             {
+                diagnostics ??= new();
                 diagnostics.UnionWith(_diagnostics);
             }
 
@@ -125,7 +125,10 @@ namespace Microsoft.AspNetCore.Razor.Language
                 CaseSensitive,
                 parameters,
                 new Dictionary<string, string>(Metadata),
-                diagnostics.ToArray());
+                diagnostics?.ToArray() ?? Array.Empty<RazorDiagnostic>())
+            {
+                IsEditorRequired = IsEditorRequired,
+            };
 
             return descriptor;
         }
@@ -156,12 +159,14 @@ namespace Microsoft.AspNetCore.Razor.Language
             return Name;
         }
 
-        private IEnumerable<RazorDiagnostic> Validate()
+        private HashSet<RazorDiagnostic> Validate()
         {
             // data-* attributes are explicitly not implemented by user agents and are not intended for use on
             // the server; therefore it's invalid for TagHelpers to bind to them.
             const string DataDashPrefix = "data-";
             var isDirectiveAttribute = this.IsDirectiveAttribute();
+
+            HashSet<RazorDiagnostic> diagnostics = null;
 
             if (string.IsNullOrWhiteSpace(Name))
             {
@@ -171,7 +176,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                         _parent.GetDisplayName(),
                         GetDisplayName());
 
-                    yield return diagnostic;
+                    diagnostics ??= new();
+                    diagnostics.Add(diagnostic);
                 }
             }
             else
@@ -183,13 +189,14 @@ namespace Microsoft.AspNetCore.Razor.Language
                         GetDisplayName(),
                         Name);
 
-                    yield return diagnostic;
+                    diagnostics ??= new();
+                    diagnostics.Add(diagnostic);
                 }
 
-                var name = Name;
+                StringSegment name = Name;
                 if (isDirectiveAttribute && name.StartsWith("@", StringComparison.Ordinal))
                 {
-                    name = name.Substring(1);
+                    name = name.Subsegment(1);
                 }
                 else if (isDirectiveAttribute)
                 {
@@ -198,20 +205,23 @@ namespace Microsoft.AspNetCore.Razor.Language
                             GetDisplayName(),
                             Name);
 
-                    yield return diagnostic;
+                    diagnostics ??= new();
+                    diagnostics.Add(diagnostic);
                 }
 
-                foreach (var character in name)
+                for (var i = 0; i < name.Length; i++)
                 {
-                    if (char.IsWhiteSpace(character) || HtmlConventions.InvalidNonWhitespaceHtmlCharacters.Contains(character))
+                    var character = name[i];
+                    if (char.IsWhiteSpace(character) || HtmlConventions.IsInvalidNonWhitespaceHtmlCharacters(character))
                     {
                         var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributeName(
                             _parent.GetDisplayName(),
                             GetDisplayName(),
-                            name,
+                            name.Value,
                             character);
 
-                        yield return diagnostic;
+                        diagnostics ??= new();
+                        diagnostics.Add(diagnostic);
                     }
                 }
             }
@@ -225,7 +235,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                         GetDisplayName(),
                         IndexerAttributeNamePrefix);
 
-                    yield return diagnostic;
+                    diagnostics ??= new();
+                    diagnostics.Add(diagnostic);
                 }
                 else if (IndexerAttributeNamePrefix.Length > 0 && string.IsNullOrWhiteSpace(IndexerAttributeNamePrefix))
                 {
@@ -233,40 +244,46 @@ namespace Microsoft.AspNetCore.Razor.Language
                         _parent.GetDisplayName(),
                         GetDisplayName());
 
-                    yield return diagnostic;
+                    diagnostics ??= new();
+                    diagnostics.Add(diagnostic);
                 }
                 else
                 {
-                    var indexerPrefix = IndexerAttributeNamePrefix;
+                    StringSegment indexerPrefix = IndexerAttributeNamePrefix;
                     if (isDirectiveAttribute && indexerPrefix.StartsWith("@", StringComparison.Ordinal))
                     {
-                        indexerPrefix = indexerPrefix.Substring(1);
+                        indexerPrefix = indexerPrefix.Subsegment(1);
                     }
                     else if (isDirectiveAttribute)
                     {
                         var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidBoundDirectiveAttributePrefix(
                             _parent.GetDisplayName(),
                             GetDisplayName(),
-                            indexerPrefix);
+                            indexerPrefix.Value);
 
-                        yield return diagnostic;
+                        diagnostics ??= new();
+                        diagnostics.Add(diagnostic);
                     }
 
-                    foreach (var character in indexerPrefix)
+                    for (var i = 0; i < indexerPrefix.Length; i++)
                     {
-                        if (char.IsWhiteSpace(character) || HtmlConventions.InvalidNonWhitespaceHtmlCharacters.Contains(character))
+                        var character = indexerPrefix[i];
+                        if (char.IsWhiteSpace(character) || HtmlConventions.IsInvalidNonWhitespaceHtmlCharacters(character))
                         {
                             var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributePrefix(
                                 _parent.GetDisplayName(),
                                 GetDisplayName(),
-                                indexerPrefix,
+                                indexerPrefix.Value,
                                 character);
 
-                            yield return diagnostic;
+                            diagnostics ??= new();
+                            diagnostics.Add(diagnostic);
                         }
                     }
                 }
             }
+
+            return diagnostics;
         }
 
         private void EnsureAttributeParameterBuilders()

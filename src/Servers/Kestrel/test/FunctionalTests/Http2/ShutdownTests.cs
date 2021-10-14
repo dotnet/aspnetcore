@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -13,17 +13,24 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
 
+#if LIBUV
+namespace Microsoft.AspNetCore.Server.Kestrel.Libuv.FunctionalTests.Http2
+#elif SOCKETS
+namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests.Http2
+#else
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
+#endif
 {
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/runtime/issues/27727")]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
     public class ShutdownTests : TestApplicationErrorLoggerLoggedTest
     {
-        private static X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
+        private static readonly X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
 
         private HttpClient Client { get; set; }
         private List<Http2Frame> ReceivedFrames { get; } = new List<Http2Frame>();
@@ -46,15 +53,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
             var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var requestUnblocked = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var requestStopping = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            var mockKestrelTrace = new Mock<KestrelTrace>(LoggerFactory)
-            {
-                CallBase = true
-            };
-            mockKestrelTrace
-                .Setup(m => m.Http2ConnectionClosing(It.IsAny<string>()))
-                .Callback(() => requestStopping.SetResult());
 
-            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object);
+            TestSink.MessageLogged += context =>
+            {
+
+                if (context.EventId.Name == "Http2ConnectionClosing")
+                {
+                    requestStopping.SetResult();
+                }
+            };
+
+            var testContext = new TestServiceContext(LoggerFactory);
 
             testContext.InitializeHeartbeat();
 

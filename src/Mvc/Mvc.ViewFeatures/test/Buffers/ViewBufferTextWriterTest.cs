@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -122,6 +122,22 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
             // Assert
             var actual = GetValues(buffer);
             Assert.Equal<object>(new[] { newLine, newLine }, actual);
+        }
+
+        [Fact]
+        public void Write_WritesEmptyCharBuffer()
+        {
+            // Arrange
+            var buffer = new ViewBuffer(new TestViewBufferScope(), "some-name", pageSize: 4);
+            var writer = new ViewBufferTextWriter(buffer, Encoding.UTF8);
+            var charBuffer = new char[0];
+
+            // Act
+            writer.Write(charBuffer, 0, 0);
+
+            // Assert
+            var actual = GetValues(buffer);
+            Assert.Equal<object>(new[] { string.Empty }, actual);
         }
 
         [Fact]

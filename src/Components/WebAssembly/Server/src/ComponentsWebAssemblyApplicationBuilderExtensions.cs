@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -47,13 +47,23 @@ namespace Microsoft.AspNetCore.Builder
                 {
                     context.Response.Headers.Append("Blazor-Environment", webHostEnvironment.EnvironmentName);
 
-                    // DOTNET_MODIFIABLE_ASSEMBLIES is used by the runtime to initialize hot-reload specific environment variables and is configured
-                    // by the launching process (dotnet-watch / Visual Studio).
-                    // In Development, we'll transmit the environment variable to WebAssembly as a HTTP header. The bootstrapping code will read the header
-                    // and configure it as env variable for the wasm app.
-                    if (webHostEnvironment.IsDevelopment() &&  Environment.GetEnvironmentVariable("DOTNET_MODIFIABLE_ASSEMBLIES") is not null)
+                    if (webHostEnvironment.IsDevelopment())
                     {
-                        context.Response.Headers.Append("DOTNET-MODIFIABLE-ASSEMBLIES", Environment.GetEnvironmentVariable("DOTNET_MODIFIABLE_ASSEMBLIES"));
+                        // DOTNET_MODIFIABLE_ASSEMBLIES is used by the runtime to initialize hot-reload specific environment variables and is configured
+                        // by the launching process (dotnet-watch / Visual Studio).
+                        // In Development, we'll transmit the environment variable to WebAssembly as a HTTP header. The bootstrapping code will read the header
+                        // and configure it as env variable for the wasm app.
+                        if (Environment.GetEnvironmentVariable("DOTNET_MODIFIABLE_ASSEMBLIES") is string dotnetModifiableAssemblies)
+                        {
+                            context.Response.Headers.Append("DOTNET-MODIFIABLE-ASSEMBLIES", dotnetModifiableAssemblies);
+                        }
+
+                        // See https://github.com/dotnet/aspnetcore/issues/37357#issuecomment-941237000
+                        // Translate the _ASPNETCORE_BROWSER_TOOLS environment configured by the browser tools agent in to a HTTP response header.
+                        if (Environment.GetEnvironmentVariable("__ASPNETCORE_BROWSER_TOOLS") is string blazorWasmHotReload)
+                        {
+                            context.Response.Headers.Append("ASPNETCORE-BROWSER-TOOLS", blazorWasmHotReload);
+                        }
                     }
 
                     await next(context);

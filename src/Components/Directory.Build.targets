@@ -9,19 +9,18 @@
 
     <_BlazorDevServerPath>$(ArtifactsDir)bin/Microsoft.AspNetCore.Components.WebAssembly.DevServer/$(Configuration)/$(DefaultNetCoreTargetFramework)/blazor-devserver.dll</_BlazorDevServerPath>
     <RunCommand>dotnet</RunCommand>
-    <RunArguments>exec &quot;$(_BlazorDevServerPath)&quot; serve --applicationpath &quot;$(TargetPath)&quot; $(AdditionalRunArguments)</RunArguments>
+    <RunArguments>exec &quot;$(_BlazorDevServerPath)&quot; --applicationpath &quot;$(TargetPath)&quot; $(AdditionalRunArguments)</RunArguments>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- Add a project dependency without reference output assemblies to enforce build order -->
     <!-- Applying workaround for https://github.com/microsoft/msbuild/issues/2661 and https://github.com/dotnet/sdk/issues/952 -->
-    <ProjectReference
+    <ProjectReference Include="$(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"
       Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' and '$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'"
-      Include="$(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"
-      ReferenceOutputAssemblies="false"
+      Private="false"
+      ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true"
-      UndefineProperties="TargetFramework"
-      Private="false" />
+      UndefineProperties="TargetFramework" />
   </ItemGroup>
 
   <!-- blazor.webassembly.js should exist after Microsoft.AspNetCore.Components.Web.JS.npmproj builds. -->

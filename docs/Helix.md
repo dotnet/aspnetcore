@@ -4,7 +4,7 @@ Helix is the distributed test platform that we use to run tests.  We build a hel
 send a job with with this payload to a set of queues for the various combinations of OS that we want to test
 for example: `Windows.10.Amd64.ClientRS4.VS2017.Open`, `OSX.1012.Amd64.Open`, `Ubuntu.1804.Amd64.Open`. Helix takes care of unzipping, running the job, and reporting results.
 
-For more info about helix see: [SDK](https://github.com/dotnet/arcade/blob/master/src/Microsoft.DotNet.Helix/Sdk/Readme.md), [JobSender](https://github.com/dotnet/arcade/blob/master/src/Microsoft.DotNet.Helix/Sdk/Readme.md)
+For more info about helix see: [SDK](https://github.com/dotnet/arcade/blob/main/src/Microsoft.DotNet.Helix/Sdk/Readme.md), [JobSender](https://github.com/dotnet/arcade/blob/main/src/Microsoft.DotNet.Helix/Sdk/Readme.md)
 
 ## Running helix tests locally
 
@@ -18,8 +18,8 @@ This will restore, and then publish all the test project including some bootstra
 
 ## Overview of the helix usage in our pipelines
 
-- Required queues: Windows10, OSX, Ubuntu1604
-- Full queue matrix: Windows[7, 81, 10], Ubuntu[1604, 1804, 2004], Centos7, Debian9, Redhat7, Fedora28, Arm64 (Win10, Debian9)
+- Required queues: Windows10, OSX, Ubuntu1804
+- Full queue matrix: Windows[7, 81, 10], Ubuntu[1804, 2004], Debian9, Redhat7, Arm64 (Win10, Debian9)
 - The queues are defined in [Helix.Common.props](https://github.com/dotnet/aspnetcore/blob/main/eng/targets/Helix.Common.props)
 
 [aspnetcore-ci](https://dev.azure.com/dnceng/public/_build?definitionId=278) runs non quarantined tests against the required helix queues as a required PR check and all builds on all branches.
@@ -43,6 +43,14 @@ You can always manually queue pipeline runs by clicking on the link to the pipel
 The easiest way to look at a test failure is via the tests tab in azdo which now should show a summary of the errors and have attachments to the relevant console logs.
 
 You can also drill down into the helix web apis if you take the HelixJobId from the Debug tab of a failing test, and the HelixWorkItemName and go to: `https://helix.dot.net/api/2019-06-17/jobs/<jobId>/workitems/<workitemname>` which will show you more urls you can drill into for more info.
+
+An example of how to get the helix payload to inspect the contents of a test job more completely:
+
+- Start at work item link: https://helix.dot.net/api/jobs/b1c333d0-1681-4140-9a36-ccc70c40a598/workitems?api-version=2019-06-17
+- Remove `/workitems` to get jobs link: https://helix.dot.net/api/jobs/b1c333d0-1681-4140-9a36-ccc70c40a598?api-version=2019-06-17
+- Click on DetailsUrl value: https://helix.dot.net/api/jobs/b1c333d0-1681-4140-9a36-ccc70c40a598/details?api-version=2019-06-17 (yes, 1 and 2 can be done in one go)
+- Click on JobsList: https://helixde8s23ayyeko0k025g8.blob.core.windows.net/helix-job-2e4bec2b-d34f-44a7-976b-aab2c3f237f8e2112b024574d8c8c/job-list-068e8195-20ca-47cb-98de-4be39e9ecc22.json?sv=2019-07-07 (truncated)
+- However that JSON opens, click on one of the PayloadUrl values e.g. https://helixde8s23ayyeko0k025g8.blob.core.windows.net/helix-job-2e4bec2b-d34f-44a7-976b-aab2c3f237f8e2112b024574d8c8c/26267e9c-6a79-4fb9-81ef-8c6e1f5a68a6.zip?sv=2019-07-07 (truncated)
 
 There's also a link embedded in the build.cmd log of the Tests: Helix x64 job on Azure Pipelines, near the bottom right that will look something like this:
 
@@ -133,5 +141,5 @@ Goal is to balance cost/flakiness against having some coverage of supported dist
 ## Example of adding a new docker image to helix
 
 - Example PR: dotnet/dotnet-buildtools-prereqs-docker#398
-- Summary is to update [manifest.json](https://github.com/dotnet/dotnet-buildtools-prereqs-docker/blob/master/manifest.json) with an entry for the new dockerfiles, and then add the docker files as well to dotnet-buildtools-prereqs-docker
-- The resulting new docker queue id will be found in: [image-info.dotnet-dotnet-buildtools-prereqs-docker-master.json](https://github.com/dotnet/versions/blob/master/build-info/docker/image-info.dotnet-dotnet-buildtools-prereqs-docker-master.json)
+- Summary is to update [manifest.json](https://github.com/dotnet/dotnet-buildtools-prereqs-docker/blob/main/manifest.json) with an entry for the new dockerfiles, and then add the docker files as well to dotnet-buildtools-prereqs-docker
+- The resulting new docker queue id will be found in: [image-info.dotnet-dotnet-buildtools-prereqs-docker-main.json](https://github.com/dotnet/versions/blob/main/build-info/docker/image-info.dotnet-dotnet-buildtools-prereqs-docker-main.json)

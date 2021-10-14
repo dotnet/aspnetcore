@@ -2,6 +2,7 @@
 <Router AppAssembly="@typeof(BasicTestApp.Program).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" />
+        <FocusOnNavigate RouteData="@routeData" Selector="#test-info" />
     </Found>
     <NotFound>
         <LayoutView Layout="@typeof(RouterTestLayout)">

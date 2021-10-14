@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Xml;
@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
     [XmlRoot("problem", Namespace = "urn:ietf:rfc:7807")]
     public class ValidationProblemDetailsWrapper : ProblemDetailsWrapper, IUnwrappable
     {
-        private static readonly string ErrorKey = "MVC-Errors";
+        private const string ErrorKey = "MVC-Errors";
 
         /// <summary>
         /// Initializes a new instance of <see cref="ValidationProblemDetailsWrapper"/>.

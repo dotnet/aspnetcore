@@ -29,7 +29,7 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            , 3, Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => Value = __value, Value));
+            , 3, global::Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => Value = __value, Value));
         }
         #pragma warning restore 1998
 #nullable restore

@@ -1,8 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -14,6 +15,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.StaticWebAssets;
 
 namespace Identity.DefaultUI.WebSite
 {
@@ -101,8 +103,11 @@ namespace Identity.DefaultUI.WebSite
                     case PhysicalFileProvider physical:
                         physical.UseActivePolling = false;
                         break;
-                    case IFileProvider staticWebAssets when staticWebAssets.GetType().Name == "StaticWebAssetsFileProvider":
-                        GetUnderlyingProvider(staticWebAssets).UseActivePolling = false;
+                    case ManifestStaticWebAssetFileProvider manifestStaticWebAssets:
+                        foreach (var provider in manifestStaticWebAssets.FileProviders)
+                        {
+                            pendingProviders.Push(provider);
+                        }
                         break;
                     case CompositeFileProvider composite:
                         foreach (var childFileProvider in composite.FileProviders)
@@ -110,15 +115,12 @@ namespace Identity.DefaultUI.WebSite
                             pendingProviders.Push(childFileProvider);
                         }
                         break;
+                    case NullFileProvider:
+                        break;
                     default:
-                        throw new InvalidOperationException("Unknown provider");
+                        throw new InvalidOperationException($"Unknown provider '{currentProvider.GetType().Name}'");
                 }
             }
-        }
-
-        private static PhysicalFileProvider GetUnderlyingProvider(IFileProvider staticWebAssets)
-        {
-            return (PhysicalFileProvider) staticWebAssets.GetType().GetProperty("InnerProvider").GetValue(staticWebAssets);
         }
     }
 }

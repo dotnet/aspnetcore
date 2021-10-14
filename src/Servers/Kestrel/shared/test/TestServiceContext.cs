@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Testing
 {
@@ -16,10 +17,7 @@ namespace Microsoft.AspNetCore.Testing
     {
         public TestServiceContext()
         {
-            var logger = new TestApplicationErrorLogger();
-            var kestrelTrace = new TestKestrelTrace(logger);
-
-            Initialize(kestrelTrace.LoggerFactory, kestrelTrace);
+            Initialize(NullLoggerFactory.Instance, CreateLoggingTrace(NullLoggerFactory.Instance));
         }
 
         public TestServiceContext(ILoggerFactory loggerFactory)
@@ -27,9 +25,9 @@ namespace Microsoft.AspNetCore.Testing
             Initialize(loggerFactory, CreateLoggingTrace(loggerFactory));
         }
 
-        public TestServiceContext(ILoggerFactory loggerFactory, IKestrelTrace kestrelTrace)
+        public TestServiceContext(ILoggerFactory loggerFactory, KestrelTrace kestrelTrace)
         {
-            Initialize(loggerFactory, new CompositeKestrelTrace(kestrelTrace, CreateLoggingTrace(loggerFactory)));
+            Initialize(loggerFactory, kestrelTrace);
         }
 
         private static KestrelTrace CreateLoggingTrace(ILoggerFactory loggerFactory)
@@ -51,7 +49,7 @@ namespace Microsoft.AspNetCore.Testing
             SystemClock = heartbeatManager;
         }
 
-        private void Initialize(ILoggerFactory loggerFactory, IKestrelTrace kestrelTrace)
+        private void Initialize(ILoggerFactory loggerFactory, KestrelTrace kestrelTrace)
         {
             LoggerFactory = loggerFactory;
             Log = kestrelTrace;

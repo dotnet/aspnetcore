@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Testing
 {
@@ -26,7 +27,6 @@ namespace Microsoft.AspNetCore.Testing
         public static ServiceContext CreateServiceContext(
             KestrelServerOptions serverOptions,
             IHttpParser<Http1ParsingHandler> httpParser = null,
-            IKestrelTrace log = null,
             PipeScheduler scheduler = null,
             ISystemClock systemClock = null,
             DateHeaderValueManager dateHeaderValueManager = null,
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Testing
         {
             var context = new ServiceContext
             {
-                Log = log,
+                Log = new KestrelTrace(NullLoggerFactory.Instance),
                 Scheduler = scheduler,
                 HttpParser = httpParser,
                 SystemClock = systemClock,
@@ -60,20 +60,21 @@ namespace Microsoft.AspNetCore.Testing
         {
             var context = new HttpConnectionContext(
                 "TestConnectionId",
-                Server.Kestrel.Core.HttpProtocols.Http1,
+                HttpProtocols.Http1,
+                altSvcHeader: null,
                 connectionContext,
                 serviceContext,
                 connectionFeatures,
                 memoryPool ?? MemoryPool<byte>.Shared,
                 localEndPoint,
-                remoteEndPoint,
-                transport);
+                remoteEndPoint);
             context.TimeoutControl = timeoutControl;
+            context.Transport = transport;
 
             return context;
         }
 
-        public static Http3ConnectionContext CreateHttp3ConnectionContext(
+        public static HttpMultiplexedConnectionContext CreateHttp3ConnectionContext(
             MultiplexedConnectionContext connectionContext = null,
             ServiceContext serviceContext = null,
             IFeatureCollection connectionFeatures = null,
@@ -82,9 +83,11 @@ namespace Microsoft.AspNetCore.Testing
             IPEndPoint remoteEndPoint = null,
             ITimeoutControl timeoutControl = null)
         {
-            var http3ConnectionContext = new Http3ConnectionContext(
-                "TestConnectionId",
-                connectionContext ?? new TestMultiplexedConnectionContext(),
+            var http3ConnectionContext = new HttpMultiplexedConnectionContext(
+                "TEST",
+                HttpProtocols.Http3,
+                altSvcHeader: null,
+                connectionContext ?? new TestMultiplexedConnectionContext { ConnectionId = "TEST" },
                 serviceContext ?? CreateServiceContext(new KestrelServerOptions()),
                 connectionFeatures ?? new FeatureCollection(),
                 memoryPool ?? PinnedBlockMemoryPoolFactory.Create(),
@@ -145,6 +148,7 @@ namespace Microsoft.AspNetCore.Testing
             (
                 connectionId: connectionId ?? "TestConnectionId",
                 protocols: HttpProtocols.Http2,
+                altSvcHeader: null,
                 serviceContext: serviceContext ?? CreateServiceContext(new KestrelServerOptions()),
                 connectionFeatures: connectionFeatures ?? new FeatureCollection(),
                 memoryPool: memoryPool ?? MemoryPool<byte>.Shared,
@@ -165,7 +169,7 @@ namespace Microsoft.AspNetCore.Testing
 
         public static Http3StreamContext CreateHttp3StreamContext(
             string connectionId = null,
-            ConnectionContext connectionContext = null,
+            BaseConnectionContext connectionContext = null,
             ServiceContext serviceContext = null,
             IFeatureCollection connectionFeatures = null,
             MemoryPool<byte> memoryPool = null,
@@ -179,18 +183,20 @@ namespace Microsoft.AspNetCore.Testing
             (
                 connectionId: connectionId ?? "TestConnectionId",
                 protocols: HttpProtocols.Http3,
+                altSvcHeader: null,
                 connectionContext: connectionContext,
                 serviceContext: serviceContext ?? CreateServiceContext(new KestrelServerOptions()),
                 connectionFeatures: connectionFeatures ?? new FeatureCollection(),
                 memoryPool: memoryPool ?? MemoryPool<byte>.Shared,
                 localEndPoint: localEndPoint,
                 remoteEndPoint: remoteEndPoint,
-                transport: transport,
                 streamLifetimeHandler: streamLifetimeHandler,
-                streamContext: null,
-                settings: null
+                streamContext: new DefaultConnectionContext(),
+                clientPeerSettings: new Http3PeerSettings(),
+                serverPeerSettings: null
             );
             context.TimeoutControl = timeoutControl;
+            context.Transport = transport;
 
             return context;
         }

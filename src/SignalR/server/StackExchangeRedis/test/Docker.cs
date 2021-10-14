@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
@@ -85,6 +85,25 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
                 // Call stop just in case the container somehow started after the timeout so our retry logic doesn't fail
                 RunProcessAndWait(_path, $"stop {_dockerContainerName}", "docker stop", logger, TimeSpan.FromSeconds(15), out var _);
                 Run();
+            }
+
+            var started = false;
+            var wait = TimeSpan.FromSeconds(30);
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            while (stopWatch.Elapsed < wait)
+            {
+                RunProcessAndWait(_path, $"logs {_dockerContainerName}", "docker logs", logger, TimeSpan.FromSeconds(5), out var logOutput);
+                if (logOutput.Contains("Ready to accept connections"))
+                {
+                    started = true;
+                    break;
+                }
+            }
+
+            if (!started)
+            {
+                throw new Exception("Redis took too long to start.");
             }
 
             void Run()

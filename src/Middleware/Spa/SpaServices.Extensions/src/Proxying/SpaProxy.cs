@@ -1,8 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -23,11 +24,23 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
         private const int StreamCopyBufferSize = 81920;
 
         // https://github.com/dotnet/aspnetcore/issues/16797
-        private static readonly string[] NotForwardedHttpHeaders = new[] { "Connection" };
+        private static readonly HashSet<string> NotForwardedHttpHeaders = new HashSet<string>(
+            new[] { "Connection" },
+            StringComparer.OrdinalIgnoreCase
+        );
 
         // Don't forward User-Agent/Accept because of https://github.com/aspnet/JavaScriptServices/issues/1469
         // Others just aren't applicable in proxy scenarios
-        private static readonly string[] NotForwardedWebSocketHeaders = new[] { "Accept", "Connection", "Host", "User-Agent", "Upgrade", "Sec-WebSocket-Key", "Sec-WebSocket-Protocol", "Sec-WebSocket-Version" };
+        private static readonly HashSet<string> NotForwardedWebSocketHeaders = new HashSet<string>(
+            new[] { "Accept", "Connection", "Host", "User-Agent", "Upgrade", "Sec-WebSocket-Key", "Sec-WebSocket-Protocol", "Sec-WebSocket-Version" },
+            StringComparer.OrdinalIgnoreCase
+        );
+
+        // In case the connection to the client is HTTP/2 or HTTP/3 and to the server HTTP/1.1 or less, let's get rid of the HTTP/1.1 only headers
+        private static readonly HashSet<string> InvalidH2H3Headers = new HashSet<string>(
+            new[] { "Connection", "Transfer-Encoding", "Keep-Alive", "Upgrade", "Proxy-Connection" },
+            StringComparer.OrdinalIgnoreCase
+        );
 
         public static HttpClient CreateHttpClientForProxy(TimeSpan requestTimeout)
         {
@@ -135,7 +148,7 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
             // Copy the request headers
             foreach (var header in request.Headers)
             {
-                if (NotForwardedHttpHeaders.Contains(header.Key, StringComparer.OrdinalIgnoreCase))
+                if (NotForwardedHttpHeaders.Contains(header.Key))
                 {
                     continue;
                 }
@@ -158,6 +171,11 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
             context.Response.StatusCode = (int)responseMessage.StatusCode;
             foreach (var header in responseMessage.Headers)
             {
+                if ((HttpProtocol.IsHttp2(context.Request.Protocol) || HttpProtocol.IsHttp3(context.Request.Protocol))
+                    && InvalidH2H3Headers.Contains(header.Key))
+                {
+                    continue;
+                }
                 context.Response.Headers[header.Key] = header.Value.ToArray();
             }
 
@@ -169,7 +187,7 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
             // SendAsync removes chunking from the response. This removes the header so it doesn't expect a chunked response.
             context.Response.Headers.Remove("transfer-encoding");
 
-            using (var responseStream = await responseMessage.Content.ReadAsStreamAsync())
+            using (var responseStream = await responseMessage.Content.ReadAsStreamAsync(cancellationToken))
             {
                 await responseStream.CopyToAsync(context.Response.Body, StreamCopyBufferSize, cancellationToken);
             }
@@ -215,7 +233,7 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
                 }
                 foreach (var headerEntry in context.Request.Headers)
                 {
-                    if (!NotForwardedWebSocketHeaders.Contains(headerEntry.Key, StringComparer.OrdinalIgnoreCase))
+                    if (!NotForwardedWebSocketHeaders.Contains(headerEntry.Key))
                     {
                         try
                         {
@@ -223,7 +241,7 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
                         }
                         catch (ArgumentException)
                         {
-                            // On net461, certain header names are reserved and can't be set.
+                            // On net462, certain header names are reserved and can't be set.
                             // We filter out the known ones via the test above, but there could
                             // be others arbitrarily set by the client. It's not helpful to
                             // consider it an error, so just skip non-forwardable headers.
@@ -292,7 +310,7 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
                         break;
                     }
 
-                    await Task.Delay(100);
+                    await Task.Delay(100, cancellationToken);
                 }
 
                 var result = resultTask.Result; // We know it's completed already

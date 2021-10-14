@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Text.Json;
@@ -33,12 +33,12 @@ namespace Microsoft.JSInterop.Infrastructure
                     }
                     else
                     {
-                        throw new JsonException($"Unexcepted JSON property {reader.GetString()}.");
+                        throw new JsonException($"Unexpected JSON property {reader.GetString()}.");
                     }
                 }
                 else
                 {
-                    throw new JsonException($"Unexcepted JSON Token {reader.TokenType}.");
+                    throw new JsonException($"Unexpected JSON Token {reader.TokenType}.");
                 }
             }
 

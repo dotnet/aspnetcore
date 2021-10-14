@@ -1,37 +1,31 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 import { HttpClient } from "./HttpClient";
 import { MessageHeaders } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
 import { ITransport, TransferFormat } from "./ITransport";
-import { EventSourceConstructor } from "./Polyfills";
 import { Arg, getDataDetail, getUserAgentHeader, Platform, sendMessage } from "./Utils";
+import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
 
 /** @private */
 export class ServerSentEventsTransport implements ITransport {
     private readonly _httpClient: HttpClient;
     private readonly _accessTokenFactory: (() => string | Promise<string>) | undefined;
     private readonly _logger: ILogger;
-    private readonly _logMessageContent: boolean;
-    private readonly _withCredentials: boolean;
-    private readonly _eventSourceConstructor: EventSourceConstructor;
+    private readonly _options: IHttpConnectionOptions;
     private _eventSource?: EventSource;
     private _url?: string;
-    private _headers: MessageHeaders;
 
     public onreceive: ((data: string | ArrayBuffer) => void) | null;
     public onclose: ((error?: Error) => void) | null;
 
     constructor(httpClient: HttpClient, accessTokenFactory: (() => string | Promise<string>) | undefined, logger: ILogger,
-                logMessageContent: boolean, eventSourceConstructor: EventSourceConstructor, withCredentials: boolean, headers: MessageHeaders) {
+                options: IHttpConnectionOptions) {
         this._httpClient = httpClient;
         this._accessTokenFactory = accessTokenFactory;
         this._logger = logger;
-        this._logMessageContent = logMessageContent;
-        this._withCredentials = withCredentials;
-        this._eventSourceConstructor = eventSourceConstructor;
-        this._headers = headers;
+        this._options = options;
 
         this.onreceive = null;
         this.onclose = null;
@@ -63,7 +57,7 @@ export class ServerSentEventsTransport implements ITransport {
 
             let eventSource: EventSource;
             if (Platform.isBrowser || Platform.isWebWorker) {
-                eventSource = new this._eventSourceConstructor(url, { withCredentials: this._withCredentials });
+                eventSource = new this._options.EventSource!(url, { withCredentials: this._options.withCredentials });
             } else {
                 // Non-browser passes cookies via the dictionary
                 const cookies = this._httpClient.getCookieString(url);
@@ -72,14 +66,14 @@ export class ServerSentEventsTransport implements ITransport {
                 const [name, value] = getUserAgentHeader();
                 headers[name] = value;
 
-                eventSource = new this._eventSourceConstructor(url, { withCredentials: this._withCredentials, headers: { ...headers, ...this._headers} } as EventSourceInit);
+                eventSource = new this._options.EventSource!(url, { withCredentials: this._options.withCredentials, headers: { ...headers, ...this._options.headers} } as EventSourceInit);
             }
 
             try {
                 eventSource.onmessage = (e: MessageEvent) => {
                     if (this.onreceive) {
                         try {
-                            this._logger.log(LogLevel.Trace, `(SSE transport) data received. ${getDataDetail(e.data, this._logMessageContent)}.`);
+                            this._logger.log(LogLevel.Trace, `(SSE transport) data received. ${getDataDetail(e.data, this._options.logMessageContent!)}.`);
                             this.onreceive(e.data);
                         } catch (error) {
                             this._close(error);
@@ -117,7 +111,7 @@ export class ServerSentEventsTransport implements ITransport {
         if (!this._eventSource) {
             return Promise.reject(new Error("Cannot send until the transport is connected"));
         }
-        return sendMessage(this._logger, "SSE", this._httpClient, this._url!, this._accessTokenFactory, data, this._logMessageContent, this._withCredentials, this._headers);
+        return sendMessage(this._logger, "SSE", this._httpClient, this._url!, this._accessTokenFactory, data, this._options);
     }
 
     public stop(): Promise<void> {

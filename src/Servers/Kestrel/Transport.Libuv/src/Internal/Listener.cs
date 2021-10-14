@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Net;
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         protected UvStreamHandle ListenSocket { get; private set; }
 
-        public ILibuvTrace Log => TransportContext.Log;
+        public ILogger Log => TransportContext.Log;
 
         public Task StartAsync(
             EndPoint endPoint,
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
             catch (UvException ex) when (LibuvConstants.IsConnectionReset(ex.StatusCode))
             {
-                Log.ConnectionReset("(null)");
+                LibuvTrace.ConnectionReset(Log, "(null)");
                 acceptSocket?.Dispose();
             }
             catch (UvException ex)

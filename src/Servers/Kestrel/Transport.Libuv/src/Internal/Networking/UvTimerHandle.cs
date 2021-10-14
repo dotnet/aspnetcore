@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.Extensions.Logging;
@@ -8,11 +8,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
 {
     internal class UvTimerHandle : UvHandle
     {
-        private readonly static LibuvFunctions.uv_timer_cb _uv_timer_cb = UvTimerCb;
+        private static readonly LibuvFunctions.uv_timer_cb _uv_timer_cb = UvTimerCb;
 
         private Action<UvTimerHandle> _callback;
 
-        public UvTimerHandle(ILibuvTrace logger) : base(logger)
+        public UvTimerHandle(ILogger logger) : base(logger)
         {
         }
 

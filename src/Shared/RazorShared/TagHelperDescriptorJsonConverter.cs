@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -187,6 +187,12 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
             {
                 writer.WritePropertyName(nameof(BoundAttributeDescriptor.IndexerNamePrefix));
                 writer.WriteValue(boundAttribute.IndexerNamePrefix);
+            }
+
+            if (boundAttribute.IsEditorRequired)
+            {
+                writer.WritePropertyName(nameof(BoundAttributeDescriptor.IsEditorRequired));
+                writer.WriteValue(boundAttribute.IsEditorRequired);
             }
 
             if (boundAttribute.IndexerTypeName != null)
@@ -432,6 +438,13 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
                             {
                                 var isEnum = (bool)reader.Value;
                                 attribute.IsEnum = isEnum;
+                            }
+                            break;
+                        case nameof(BoundAttributeDescriptor.IsEditorRequired):
+                            if (reader.Read())
+                            {
+                                var value = (bool)reader.Value;
+                                attribute.IsEditorRequired = value;
                             }
                             break;
                         case nameof(BoundAttributeDescriptor.BoundAttributeParameters):

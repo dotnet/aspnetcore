@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         /// <summary>
         /// Gets or sets the <see cref="System.Reflection.PropertyInfo"/> for this property.
         /// </summary>
-        public PropertyInfo Property { get; set; }
+        public PropertyInfo Property { get; set; } = default!;
 
         PropertyInfo IPropertyInfoParameterDescriptor.PropertyInfo => Property;
     }

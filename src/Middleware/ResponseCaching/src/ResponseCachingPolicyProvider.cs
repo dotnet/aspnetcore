@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.Http;
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
 
             // Verify existence of authorization headers
-            if (!StringValues.IsNullOrEmpty(request.Headers[HeaderNames.Authorization]))
+            if (!StringValues.IsNullOrEmpty(request.Headers.Authorization))
             {
                 context.Logger.RequestWithAuthorizationNotCacheable();
                 return false;
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         public virtual bool AllowCacheLookup(ResponseCachingContext context)
         {
             var requestHeaders = context.HttpContext.Request.Headers;
-            var cacheControl = requestHeaders[HeaderNames.CacheControl];
+            var cacheControl = requestHeaders.CacheControl;
 
             // Verify request cache-control parameters
             if (!StringValues.IsNullOrEmpty(cacheControl))
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             else
             {
                 // Support for legacy HTTP 1.0 cache directive
-                if (HeaderUtilities.ContainsCacheDirective(requestHeaders[HeaderNames.Pragma], CacheControlHeaderValue.NoCacheString))
+                if (HeaderUtilities.ContainsCacheDirective(requestHeaders.Pragma, CacheControlHeaderValue.NoCacheString))
                 {
                     context.Logger.RequestWithPragmaNoCacheNotCacheable();
                     return false;
@@ -61,12 +61,12 @@ namespace Microsoft.AspNetCore.ResponseCaching
         public virtual bool AllowCacheStorage(ResponseCachingContext context)
         {
             // Check request no-store
-            return !HeaderUtilities.ContainsCacheDirective(context.HttpContext.Request.Headers[HeaderNames.CacheControl], CacheControlHeaderValue.NoStoreString);
+            return !HeaderUtilities.ContainsCacheDirective(context.HttpContext.Request.Headers.CacheControl, CacheControlHeaderValue.NoStoreString);
         }
 
         public virtual bool IsResponseCacheable(ResponseCachingContext context)
         {
-            var responseCacheControlHeader = context.HttpContext.Response.Headers[HeaderNames.CacheControl];
+            var responseCacheControlHeader = context.HttpContext.Response.Headers.CacheControl;
 
             // Only cache pages explicitly marked with public
             if (!HeaderUtilities.ContainsCacheDirective(responseCacheControlHeader, CacheControlHeaderValue.PublicString))
@@ -92,14 +92,14 @@ namespace Microsoft.AspNetCore.ResponseCaching
             var response = context.HttpContext.Response;
 
             // Do not cache responses with Set-Cookie headers
-            if (!StringValues.IsNullOrEmpty(response.Headers[HeaderNames.SetCookie]))
+            if (!StringValues.IsNullOrEmpty(response.Headers.SetCookie))
             {
                 context.Logger.ResponseWithSetCookieNotCacheable();
                 return false;
             }
 
             // Do not cache responses varying by *
-            var varyHeader = response.Headers[HeaderNames.Vary];
+            var varyHeader = response.Headers.Vary;
             if (varyHeader.Count == 1 && string.Equals(varyHeader, "*", StringComparison.OrdinalIgnoreCase))
             {
                 context.Logger.ResponseWithVaryStarNotCacheable();
@@ -167,8 +167,8 @@ namespace Microsoft.AspNetCore.ResponseCaching
         public virtual bool IsCachedEntryFresh(ResponseCachingContext context)
         {
             var age = context.CachedEntryAge!.Value;
-            var cachedCacheControlHeaders = context.CachedResponseHeaders[HeaderNames.CacheControl];
-            var requestCacheControlHeaders = context.HttpContext.Request.Headers[HeaderNames.CacheControl];
+            var cachedCacheControlHeaders = context.CachedResponseHeaders.CacheControl;
+            var requestCacheControlHeaders = context.HttpContext.Request.Headers.CacheControl;
 
             // Add min-fresh requirements
             if (HeaderUtilities.TryParseSeconds(requestCacheControlHeaders, CacheControlHeaderValue.MinFreshString, out var minFresh))
@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 {
                     // Validate expiration
                     DateTimeOffset expires;
-                    if (HeaderUtilities.TryParseDate(context.CachedResponseHeaders[HeaderNames.Expires].ToString(), out expires) &&
+                    if (HeaderUtilities.TryParseDate(context.CachedResponseHeaders.Expires.ToString(), out expires) &&
                         context.ResponseTime!.Value >= expires)
                     {
                         context.Logger.ExpirationExpiresExceeded(context.ResponseTime.Value, expires);

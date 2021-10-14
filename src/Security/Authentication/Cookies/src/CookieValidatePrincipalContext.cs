@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Security.Claims;
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         public bool ShouldRenew { get; set; }
 
         /// <summary>
-        /// Called to replace the claims principal. The supplied principal will replace the value of the 
+        /// Called to replace the claims principal. The supplied principal will replace the value of the
         /// Principal property, which determines the identity of the authenticated request.
         /// </summary>
         /// <param name="principal">The <see cref="ClaimsPrincipal"/> used as the replacement</param>

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                     "<ul><li style=\"display:none\"></li>" + Environment.NewLine +
                     "</ul></div>";
                 var divWithAttributes = "<div attribute-name=\"HtmlEncode[[attribute-value]]\" " +
-                    "class=\"HtmlEncode[[validation-summary-valid wood smoke]]\" data-valmsg-summary=\"HtmlEncode[[true]]\"><ul>" +
+                    "class=\"HtmlEncode[[wood smoke validation-summary-valid]]\" data-valmsg-summary=\"HtmlEncode[[true]]\"><ul>" +
                     "<li style=\"display:none\"></li>" + Environment.NewLine +
                     "</ul></div>";
                 var divWithMessage = "<div class=\"HtmlEncode[[validation-summary-valid]]\" data-valmsg-summary=\"HtmlEncode[[true]]\">" +
@@ -41,12 +41,12 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                     "<ul><li style=\"display:none\"></li>" + Environment.NewLine +
                     "</ul></div>";
                 var divWithMessageAndAttributes = "<div attribute-name=\"HtmlEncode[[attribute-value]]\" " +
-                    "class=\"HtmlEncode[[validation-summary-valid wood smoke]]\" data-valmsg-summary=\"HtmlEncode[[true]]\">" +
+                    "class=\"HtmlEncode[[wood smoke validation-summary-valid]]\" data-valmsg-summary=\"HtmlEncode[[true]]\">" +
                     "<span>HtmlEncode[[This is my message]]</span>" + Environment.NewLine +
                     "<ul><li style=\"display:none\"></li>" + Environment.NewLine +
                     "</ul></div>";
                 var divWithH3MessageAndAttributes = "<div attribute-name=\"HtmlEncode[[attribute-value]]\" " +
-                    "class=\"HtmlEncode[[validation-summary-valid wood smoke]]\" data-valmsg-summary=\"HtmlEncode[[true]]\">" +
+                    "class=\"HtmlEncode[[wood smoke validation-summary-valid]]\" data-valmsg-summary=\"HtmlEncode[[true]]\">" +
                     "<h3>HtmlEncode[[This is my message]]</h3>" + Environment.NewLine +
                     "<ul><li style=\"display:none\"></li>" + Environment.NewLine +
                     "</ul></div>";

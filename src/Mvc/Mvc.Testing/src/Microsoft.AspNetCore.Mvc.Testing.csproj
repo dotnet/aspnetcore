@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>Support for writing functional tests for MVC applications.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -7,7 +7,7 @@
     <PackageTags>aspnetcore;aspnetcoremvc;aspnetcoremvctesting</PackageTags>
     <IsPackable>true</IsPackable>
     <!-- We're disable NU5100 explicitly bundling assemblies as tasks so they are not referenced when consumed. -->
-    <NoWarn>NU5100</NoWarn>
+    <NoWarn>$(NoWarn);NU5100</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,11 +19,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference
-        Include="Microsoft.AspNetCore.Mvc.Testing.Tasks"
-        ReferenceOutputAssembly="false"
-        SkipGetTargetFrameworkProperties="true"
-        UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Testing.Tasks"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
   <ItemGroup>

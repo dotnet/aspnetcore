@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Text;
@@ -13,15 +13,15 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         /// </summary>
         public static Span<byte> GetPath(Span<byte> raw)
         {
-            // performance 
+            // performance
             var pathStartIndex = 0;
 
-            // Performance improvement: accept two cases upfront 
-            // 
-            // 1) Since nearly all strings are relative Uris, just look if the string starts with '/'. 
+            // Performance improvement: accept two cases upfront
+            //
+            // 1) Since nearly all strings are relative Uris, just look if the string starts with '/'.
             // If so, we have a relative Uri and the path starts at position 0.
             // (http.sys already trimmed leading whitespaces)
-            // 
+            //
             // 2) The URL is simply '*'
             if (raw[0] != '/' && !(raw.Length == 1 && raw[0] == '*'))
             {
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
             // Find end of path: The path is terminated by
             // - the first '?' character
-            // - the first '#' character: This is never the case here, since http.sys won't accept 
+            // - the first '#' character: This is never the case here, since http.sys won't accept
             //   Uris containing fragments. Also, RFC2616 doesn't allow fragments in request Uris.
             // - end of Uri string
             var scan = pathStartIndex + 1;

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -20,9 +20,9 @@ namespace Microsoft.AspNetCore.Components.Rendering
     /// </summary>
     public sealed class RenderTreeBuilder : IDisposable
     {
-        private readonly static object BoxedTrue = true;
-        private readonly static object BoxedFalse = false;
-        private readonly static string ComponentReferenceCaptureInvalidParentMessage = $"Component reference captures may only be added as children of frames of type {RenderTreeFrameType.Component}";
+        private static readonly object BoxedTrue = true;
+        private static readonly object BoxedFalse = false;
+        private static readonly string ComponentReferenceCaptureInvalidParentMessage = $"Component reference captures may only be added as children of frames of type {RenderTreeFrameType.Component}";
 
         private readonly RenderTreeFrameArrayBuilder _entries = new RenderTreeFrameArrayBuilder();
         private readonly Stack<int> _openElementIndices = new Stack<int>();

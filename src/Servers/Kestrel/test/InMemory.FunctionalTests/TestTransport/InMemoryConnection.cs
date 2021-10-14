@@ -1,6 +1,7 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Testing;
@@ -9,8 +10,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
 {
     internal class InMemoryConnection : StreamBackedTestConnection
     {
-        public InMemoryConnection(InMemoryTransportConnection transportConnection)
-            : base(new DuplexPipeStream(transportConnection.Output, transportConnection.Input))
+        public InMemoryConnection(InMemoryTransportConnection transportConnection, Encoding encoding)
+            : base(new DuplexPipeStream(transportConnection.Output, transportConnection.Input), encoding)
         {
             TransportConnection = transportConnection;
         }

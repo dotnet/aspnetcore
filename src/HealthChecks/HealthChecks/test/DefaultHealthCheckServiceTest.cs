@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -434,6 +434,31 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         }
 
         [Fact]
+        public async Task CheckHealthAsync_CheckCanHaveScopedDisposableDependencies()
+        {
+            // Arrange
+            var service = CreateHealthChecksService(b =>
+            {
+                b.Services.AddScoped<SynchronousDisposable>();
+                b.Services.AddScoped<AsyncOnlyDisposable>();
+                b.Services.AddScoped<SyncOrAsyncDisposable>();
+
+                b.AddCheck<DisposableDependeciesCheck>("TestDisposableDepenencies");
+            });
+
+            // Act
+            var results = await service.CheckHealthAsync();
+
+            // Assert
+            var healthCheck = (DisposableDependeciesCheck)results.Entries.Single().Value.Data.Single().Value;
+
+            Assert.True(healthCheck.SynchronousDisposable.IsDisposed);
+            Assert.True(healthCheck.AsyncOnlyDisposable.IsAsyncDisposed);
+            Assert.True(healthCheck.SyncOrAsyncDisposable.IsAsyncDisposed);
+            Assert.False(healthCheck.SyncOrAsyncDisposable.IsDisposed);
+        }
+
+        [Fact]
         public async Task CheckHealthAsync_CheckCanDependOnSingletonService()
         {
             // Arrange
@@ -682,6 +707,73 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
             {
                 throw new Exception("check failed");
+            }
+        }
+
+        private class DisposableDependeciesCheck : IHealthCheck
+        {
+            public DisposableDependeciesCheck(
+                SynchronousDisposable disposable,
+                AsyncOnlyDisposable asyncOnlyDisposable,
+                SyncOrAsyncDisposable syncOrAsyncDisposable)
+            {
+                SynchronousDisposable = disposable;
+                AsyncOnlyDisposable = asyncOnlyDisposable;
+                SyncOrAsyncDisposable = syncOrAsyncDisposable;
+            }
+
+            public SynchronousDisposable SynchronousDisposable { get; }
+
+            public AsyncOnlyDisposable AsyncOnlyDisposable { get; }
+
+            public SyncOrAsyncDisposable SyncOrAsyncDisposable { get; }
+
+            public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken)
+            {
+                return Task.FromResult(HealthCheckResult.Healthy(data: new Dictionary<string, object> { { "self", this } }));
+            }
+        }
+
+        private class SynchronousDisposable : IDisposable
+        {
+            public bool IsDisposed { get; private set; }
+
+            public void Dispose()
+            {
+                if (IsDisposed) throw new InvalidOperationException("Dependency disposed multiple times.");
+                IsDisposed = true;
+            }
+        }
+
+        private class AsyncOnlyDisposable : IAsyncDisposable
+        {
+            public bool IsAsyncDisposed { get; private set; }
+
+            public ValueTask DisposeAsync()
+            {
+                if (IsAsyncDisposed) throw new InvalidOperationException("Dependency disposed multiple times.");
+                IsAsyncDisposed = true;
+                return default;
+            }
+        }
+
+        private class SyncOrAsyncDisposable : IDisposable, IAsyncDisposable
+        {
+            public bool IsDisposed { get; private set; }
+
+            public bool IsAsyncDisposed { get; private set; }
+
+            public void Dispose()
+            {
+                if (IsDisposed || IsAsyncDisposed) throw new InvalidOperationException("Dependency disposed multiple times.");
+                IsDisposed = true;
+            }
+
+            public ValueTask DisposeAsync()
+            {
+                if (IsDisposed || IsAsyncDisposed) throw new InvalidOperationException("Dependency disposed multiple times.");
+                IsAsyncDisposed = true;
+                return default;
             }
         }
     }

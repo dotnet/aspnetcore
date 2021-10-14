@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
     internal sealed class BlazorPackHubProtocol : IHubProtocol
     {
         internal const string ProtocolName = "blazorpack";
-        private static readonly int ProtocolVersion = 1;
+        private const int ProtocolVersion = 1;
 
         private readonly BlazorPackHubProtocolWorker _worker = new BlazorPackHubProtocolWorker();
 
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
         public void WriteMessage(HubMessage message, IBufferWriter<byte> output)
             => _worker.WriteMessage(message, output);
 
-        ///// <inheritdoc />
+        /// <inheritdoc />
         public ReadOnlyMemory<byte> GetMessageBytes(HubMessage message)
             => _worker.GetMessageBytes(message);
     }

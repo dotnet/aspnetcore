@@ -1,7 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
@@ -82,7 +83,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var actualSize = 0;
             if (IndentWithTabs)
             {
-                // Avoid writing directly to the StringBuilder here, that will throw off the manual indexing 
+                // Avoid writing directly to the StringBuilder here, that will throw off the manual indexing
                 // done by the base class.
                 var tabs = size / TabSize;
                 actualSize += tabs;
@@ -114,6 +115,11 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             return Write(value, 0, value.Length);
         }
 
+        internal CodeWriter Write(StringSegment value)
+        {
+            return WriteCore(value.Buffer, value.Offset, value.Length);
+        }
+
         public CodeWriter Write(string value, int startIndex, int count)
         {
             if (value == null)
@@ -136,6 +142,12 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             }
 
+            return WriteCore(value, startIndex, count);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal CodeWriter WriteCore(string value, int startIndex, int count)
+        {
             if (count == 0)
             {
                 return this;

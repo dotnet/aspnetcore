@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -14,15 +14,11 @@ namespace Microsoft.AspNetCore.Routing.Template
     /// </summary>
     public class TemplateMatcher
     {
-        private const string SeparatorString = "/";
-        private const char SeparatorChar = '/';
-
         // Perf: This is a cache to avoid looking things up in 'Defaults' each request.
         private readonly bool[] _hasDefaultValue;
         private readonly object?[] _defaultValues;
 
-        private static readonly char[] Delimiters = new char[] { SeparatorChar };
-        private RoutePatternMatcher _routePatternMatcher;
+        private readonly RoutePatternMatcher _routePatternMatcher;
 
         /// <summary>
         /// Creates a new <see cref="TemplateMatcher"/> instance given a <paramref name="template"/> and <paramref name="defaults"/>.

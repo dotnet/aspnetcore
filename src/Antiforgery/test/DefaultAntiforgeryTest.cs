@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
@@ -313,8 +313,8 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
             Assert.NotNull(antiforgeryFeature);
             Assert.Equal(context.TestTokenSet.OldCookieToken, antiforgeryFeature.CookieToken);
-            Assert.Equal("no-cache, no-store", context.HttpContext.Response.Headers[HeaderNames.CacheControl]);
-            Assert.Equal("no-cache", context.HttpContext.Response.Headers[HeaderNames.Pragma]);
+            Assert.Equal("no-cache, no-store", context.HttpContext.Response.Headers.CacheControl);
+            Assert.Equal("no-cache", context.HttpContext.Response.Headers.Pragma);
         }
 
         [Fact]
@@ -328,7 +328,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 isOldCookieValid: true,
                 antiforgeryFeature: antiforgeryFeature);
             var antiforgery = GetAntiforgery(context);
-            context.HttpContext.Response.Headers["Cache-Control"] = "public";
+            context.HttpContext.Response.Headers.CacheControl = "public";
 
             // Act
             var tokenSet = antiforgery.GetAndStoreTokens(context.HttpContext);
@@ -344,8 +344,8 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
             Assert.NotNull(antiforgeryFeature);
             Assert.Equal(context.TestTokenSet.OldCookieToken, antiforgeryFeature.CookieToken);
-            Assert.Equal("no-cache, no-store", context.HttpContext.Response.Headers[HeaderNames.CacheControl]);
-            Assert.Equal("no-cache", context.HttpContext.Response.Headers[HeaderNames.Pragma]);
+            Assert.Equal("no-cache, no-store", context.HttpContext.Response.Headers.CacheControl);
+            Assert.Equal("no-cache", context.HttpContext.Response.Headers.Pragma);
         }
 
         private string GetAndStoreTokens_CacheHeadersArrangeAct(TestSink testSink, string headerName, string headerValue)
@@ -376,7 +376,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         [InlineData("Cache-Control", "no-cache, no-store")]
         [InlineData("Cache-Control", "NO-CACHE, NO-STORE")]
         [InlineData("Cache-Control", "no-cache, no-store, private")]
-        [InlineData("Cache-Control", "NO-CACHE, NO-STORE, PRIVATE")]        
+        [InlineData("Cache-Control", "NO-CACHE, NO-STORE, PRIVATE")]
         public void GetAndStoreTokens_DoesNotOverwriteCacheControlHeader(string headerName, string headerValue)
         {
             var testSink = new TestSink();
@@ -506,8 +506,8 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Assert.NotNull(antiforgeryFeature);
             Assert.True(antiforgeryFeature.HaveDeserializedCookieToken);
             Assert.Equal(context.TestTokenSet.OldCookieToken, antiforgeryFeature.CookieToken);
-            Assert.Equal("no-cache, no-store", context.HttpContext.Response.Headers[HeaderNames.CacheControl]);
-            Assert.Equal("no-cache", context.HttpContext.Response.Headers[HeaderNames.Pragma]);
+            Assert.Equal("no-cache, no-store", context.HttpContext.Response.Headers.CacheControl);
+            Assert.Equal("no-cache", context.HttpContext.Response.Headers.Pragma);
         }
 
         [Fact]

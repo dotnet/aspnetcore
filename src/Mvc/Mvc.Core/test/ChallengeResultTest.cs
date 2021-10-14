@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc
     public class ChallengeResultTest
     {
         [Fact]
-        public async Task ChallengeResult_Execute()
+        public async Task ChallengeResult_ExecuteResultAsync()
         {
             // Arrange
             var result = new ChallengeResult("", null);
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
-        public async Task ChallengeResult_ExecuteNoSchemes()
+        public async Task ChallengeResult_ExecuteResultAsync_NoSchemes()
         {
             // Arrange
             var result = new ChallengeResult(new string[] { }, null);

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 import { HubConnection, HubConnectionState } from "../src/HubConnection";
 import { IConnection } from "../src/IConnection";
@@ -180,7 +180,6 @@ describe("HubConnection", () => {
                 const hubConnection = createHubConnection(connection, logger);
                 try {
                     // We don't actually care to wait for the send.
-                    // tslint:disable-next-line:no-floating-promises
                     hubConnection.send("testMethod", "arg", 42)
                         .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
 
@@ -208,7 +207,6 @@ describe("HubConnection", () => {
                 const hubConnection = createHubConnection(connection, logger);
                 try {
                     // We don't actually care to wait for the send.
-                    // tslint:disable-next-line:no-floating-promises
                     hubConnection.send("testMethod", "arg", null)
                         .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
 
@@ -238,7 +236,6 @@ describe("HubConnection", () => {
                 const hubConnection = createHubConnection(connection, logger);
                 try {
                     // We don't actually care to wait for the send.
-                    // tslint:disable-next-line:no-floating-promises
                     hubConnection.invoke("testMethod", "arg", 42)
                         .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
 
@@ -1192,6 +1189,57 @@ describe("HubConnection", () => {
                     await hubConnection.stop();
                 }
             });
+        });
+
+        it("ignores error from 'next' and 'complete' function", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    hubConnection.stream("testMethod")
+                        .subscribe({
+                            next: (_item) => {
+                                throw new Error("from next");
+                            },
+                            error: (_e) => {},
+                            complete: () => {
+                                throw new Error("from complete");
+                            }
+                        });
+
+                    connection.receive({ type: MessageType.StreamItem, invocationId: connection.lastInvocationId, item: 1 });
+
+                    connection.receive({ type: MessageType.Completion, invocationId: connection.lastInvocationId });
+                } finally {
+                    await hubConnection.stop();
+                }
+            }, /Stream callback threw error: Error: from complete/,
+            /Stream callback threw error: Error: from next/);
+        });
+
+        it("ignores error from 'error' function", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    hubConnection.stream("testMethod")
+                        .subscribe({
+                            next: (_item) => {},
+                            error: (_e) => {
+                                throw new Error("from error");
+                            },
+                            complete: () => {}
+                        });
+
+                    connection.receive({ type: MessageType.StreamItem, invocationId: connection.lastInvocationId, item: 1 });
+                } finally {
+                    await hubConnection.stop();
+                }
+            }, /Stream 'error' callback called with 'Error: Invocation canceled due to the underlying connection being closed.' threw error: Error: from error/);
         });
     });
 

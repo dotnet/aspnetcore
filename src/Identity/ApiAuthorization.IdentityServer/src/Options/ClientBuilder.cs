@@ -1,10 +1,10 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
-using IdentityServer4;
-using IdentityServer4.Models;
+using Duende.IdentityServer;
+using Duende.IdentityServer.Models;
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
 {
@@ -14,9 +14,8 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
     public class ClientBuilder
     {
         private const string NativeAppClientRedirectUri = "urn:ietf:wg:oauth:2.0:oob";
-
-        Client _client;
-        private bool _built = false;
+        readonly Client _client;
+        private bool _built;
 
         /// <summary>
         /// Creates a new builder for a single page application that coexists with an authorization server.
@@ -128,7 +127,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         /// Adds the <paramref name="redirectUri"/> to the list of valid redirect uris for the client.
         /// </summary>
         /// <param name="redirectUri">The redirect uri to add.</param>
-        /// <returns>The <see cref="ClientBuilder"/>.</returns>        
+        /// <returns>The <see cref="ClientBuilder"/>.</returns>
         public ClientBuilder WithRedirectUri(string redirectUri)
         {
             _client.RedirectUris.Add(redirectUri);
@@ -139,7 +138,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         /// Adds the <paramref name="logoutUri"/> to the list of valid logout redirect uris for the client.
         /// </summary>
         /// <param name="logoutUri">The logout uri to add.</param>
-        /// <returns>The <see cref="ClientBuilder"/>.</returns>        
+        /// <returns>The <see cref="ClientBuilder"/>.</returns>
         public ClientBuilder WithLogoutRedirectUri(string logoutUri)
         {
             _client.PostLogoutRedirectUris.Add(logoutUri);

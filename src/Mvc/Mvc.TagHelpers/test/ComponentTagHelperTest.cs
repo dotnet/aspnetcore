@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -55,10 +55,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var output = GetTagHelperOutput();
 
             // Act & Assert
-            await ExceptionAssert.ThrowsArgumentAsync(
-                () => tagHelper.ProcessAsync(context, output),
-                nameof(RenderMode),
-                "A value for the 'render-mode' attribute must be supplied to the 'component' tag helper.");
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => tagHelper.ProcessAsync(context, output));
+            Assert.Equal("A value for the 'render-mode' attribute must be supplied to the 'component' tag helper.", ex.Message);
         }
 
         private static TagHelperContext GetTagHelperContext()

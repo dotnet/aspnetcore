@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     // Core+Standalone always publishes. This must be Clr+Standalone or Core+Portable.
                     // Run from the pre-built bin/{config}/{tfm} directory.
                     var targetFramework = DeploymentParameters.TargetFramework
-                        ?? (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? Tfm.Net461 : Tfm.NetCoreApp22);
+                        ?? (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? Tfm.Net462 : Tfm.NetCoreApp22);
                     workingDirectory = Path.Combine(DeploymentParameters.ApplicationPath, "bin", DeploymentParameters.Configuration, targetFramework);
                     // CurrentDirectory will point to bin/{config}/{tfm}, but the config and static files aren't copied, point to the app base instead.
                     DeploymentParameters.EnvironmentVariables["ASPNETCORE_CONTENTROOT"] = DeploymentParameters.ApplicationPath;
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 HostProcess.EnableRaisingEvents = true;
                 HostProcess.OutputDataReceived += (sender, dataArgs) =>
                 {
-                    if (string.Equals(dataArgs.Data, ApplicationStartedMessage))
+                    if (!string.IsNullOrEmpty(dataArgs.Data) && dataArgs.Data.Contains(ApplicationStartedMessage))
                     {
                         started.TrySetResult();
                     }

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal class CSharpCodeParser : TokenizerBackedParser<CSharpTokenizer>
     {
-        private static HashSet<char> InvalidNonWhitespaceNameCharacters = new HashSet<char>(new[]
+        private static readonly HashSet<char> InvalidNonWhitespaceNameCharacters = new HashSet<char>(new[]
         {
             '@', '!', '<', '/', '?', '[', '>', ']', '=', '"', '\'', '*'
         });
@@ -46,10 +46,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 builder.Description = Resources.TagHelperPrefixDirective_Description;
             });
 
-        internal static readonly IEnumerable<DirectiveDescriptor> DefaultDirectiveDescriptors = new DirectiveDescriptor[]
-        {
-        };
-
         internal static ISet<string> DefaultKeywords = new HashSet<string>()
         {
             SyntaxConstants.CSharp.TagHelperPrefixKeyword,
@@ -71,8 +67,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private readonly ISet<string> CurrentKeywords = new HashSet<string>(DefaultKeywords);
 
-        private Dictionary<CSharpKeyword, Action<SyntaxListBuilder<RazorSyntaxNode>, CSharpTransitionSyntax>> _keywordParserMap = new Dictionary<CSharpKeyword, Action<SyntaxListBuilder<RazorSyntaxNode>, CSharpTransitionSyntax>>();
-        private Dictionary<string, Action<SyntaxListBuilder<RazorSyntaxNode>, CSharpTransitionSyntax>> _directiveParserMap = new Dictionary<string, Action<SyntaxListBuilder<RazorSyntaxNode>, CSharpTransitionSyntax>>(StringComparer.Ordinal);
+        private readonly Dictionary<CSharpKeyword, Action<SyntaxListBuilder<RazorSyntaxNode>, CSharpTransitionSyntax>> _keywordParserMap = new Dictionary<CSharpKeyword, Action<SyntaxListBuilder<RazorSyntaxNode>, CSharpTransitionSyntax>>();
+        private readonly Dictionary<string, Action<SyntaxListBuilder<RazorSyntaxNode>, CSharpTransitionSyntax>> _directiveParserMap = new Dictionary<string, Action<SyntaxListBuilder<RazorSyntaxNode>, CSharpTransitionSyntax>>(StringComparer.Ordinal);
 
         public CSharpCodeParser(ParserContext context)
             : this(directives: Enumerable.Empty<DirectiveDescriptor>(), context: context)
@@ -226,7 +222,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                         SpanContext.ChunkGenerator = new ExpressionChunkGenerator();
                         SpanContext.EditHandler = new ImplicitExpressionEditHandler(
-                            Language.TokenizeString,
+                            LanguageTokenizeString,
                             CurrentKeywords,
                             acceptTrailingDot: IsNested)
                         {
@@ -352,7 +348,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             using (PushSpanContextConfig(spanContext =>
             {
                 spanContext.EditHandler = new ImplicitExpressionEditHandler(
-                    Language.TokenizeString,
+                    LanguageTokenizeString,
                     Keywords,
                     acceptTrailingDot: IsNested);
                 spanContext.EditHandler.AcceptedCharacters = acceptedCharacters;
@@ -540,7 +536,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 var builder = pooledResult.Builder;
                 // Set up auto-complete and parse the code block
-                var editHandler = new AutoCompleteEditHandler(Language.TokenizeString);
+                var editHandler = new AutoCompleteEditHandler(LanguageTokenizeString);
                 SpanContext.EditHandler = editHandler;
                 ParseCodeBlock(builder, block);
 
@@ -799,7 +795,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             while (!EndOfFile)
             {
                 var bookmark = CurrentStart.AbsoluteIndex;
-                var read = ReadWhile(token =>
+                var read = ReadWhile(static token =>
                     token.Kind != SyntaxKind.Semicolon &&
                     token.Kind != SyntaxKind.RazorCommentTransition &&
                     token.Kind != SyntaxKind.Transition &&
@@ -912,11 +908,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void SetupDirectiveParsers(IEnumerable<DirectiveDescriptor> directiveDescriptors)
         {
-            var allDirectives = directiveDescriptors.Concat(DefaultDirectiveDescriptors).ToList();
-
-            for (var i = 0; i < allDirectives.Count; i++)
+            foreach (var directiveDescriptor in directiveDescriptors)
             {
-                var directiveDescriptor = allDirectives[i];
                 CurrentKeywords.Add(directiveDescriptor.Directive);
                 MapDirectives((builder, transition) => ParseExtensibleDirective(builder, transition, directiveDescriptor), directiveDescriptor.Directive);
             }
@@ -1320,6 +1313,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     {
                         if (!At(SyntaxKind.Whitespace) &&
                             !At(SyntaxKind.NewLine) &&
+                            !At(SyntaxKind.Semicolon) &&
                             !EndOfFile)
                         {
                             // This case should never happen in a real scenario. We're just being defensive.
@@ -1355,7 +1349,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     // We want CSharp intellisense only if there is whitespace after the directive keyword.
                                     AcceptMarkerTokenIfNecessary();
                                     SpanContext.ChunkGenerator = new DirectiveTokenChunkGenerator(tokenDescriptor);
-                                    SpanContext.EditHandler = new DirectiveTokenEditHandler(Language.TokenizeString);
+                                    SpanContext.EditHandler = new DirectiveTokenEditHandler(LanguageTokenizeString);
                                     SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.NonWhitespace;
                                     directiveBuilder.Add(OutputTokensAsStatementLiteral());
                                 }
@@ -1494,6 +1488,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     {
                                         while (!At(SyntaxKind.NewLine))
                                         {
+                                            if (At(SyntaxKind.Semicolon))
+                                            {
+                                                // Consume the ending ';'
+                                                EatCurrentToken();
+                                                break;
+                                            }
+
                                             AcceptAndMoveNext();
                                             if (EndOfFile)
                                             {
@@ -1502,6 +1503,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                             }
                                         }
                                     }
+                                }
+                                else if (At(SyntaxKind.Semicolon))
+                                {
+                                    // Consume the ending ';'
+                                    EatCurrentToken();
                                 }
                                 else
                                 {
@@ -1519,7 +1525,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         }
 
                         SpanContext.ChunkGenerator = new DirectiveTokenChunkGenerator(tokenDescriptor);
-                        SpanContext.EditHandler = new DirectiveTokenEditHandler(Language.TokenizeString);
+                        SpanContext.EditHandler = new DirectiveTokenEditHandler(LanguageTokenizeString);
                         SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.NonWhitespace;
                         directiveBuilder.Add(OutputTokensAsStatementLiteral());
                     }
@@ -1592,7 +1598,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 NextToken();
 
                                 var existingEditHandler = SpanContext.EditHandler;
-                                SpanContext.EditHandler = new CodeBlockEditHandler(Language.TokenizeString);
+                                SpanContext.EditHandler = new CodeBlockEditHandler(LanguageTokenizeString);
 
                                 if (Context.FeatureFlags.AllowRazorInAllCodeBlocks)
                                 {
@@ -1725,7 +1731,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
             else
             {
-                var editHandler = new AutoCompleteEditHandler(Language.TokenizeString, autoCompleteAtEndOfSpan: true);
+                var editHandler = new AutoCompleteEditHandler(LanguageTokenizeString, autoCompleteAtEndOfSpan: true);
                 SpanContext.EditHandler = editHandler;
                 var startingBraceLocation = CurrentStart;
                 Accept(CurrentToken);
@@ -2455,7 +2461,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 !Context.DesignTimeMode &&
                 !IsNested)
             {
-                var whitespace = ReadWhile(token => token.Kind == SyntaxKind.Whitespace);
+                var whitespace = ReadWhile(static token => token.Kind == SyntaxKind.Whitespace);
                 if (At(SyntaxKind.NewLine))
                 {
                     Accept(whitespace);
@@ -2498,13 +2504,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void DefaultSpanContextConfig(SpanContextBuilder spanContext)
         {
-            spanContext.EditHandler = SpanEditHandler.CreateDefault(Language.TokenizeString);
+            spanContext.EditHandler = SpanEditHandler.CreateDefault(LanguageTokenizeString);
             spanContext.ChunkGenerator = new StatementChunkGenerator();
         }
 
         private void ExplicitExpressionSpanContextConfig(SpanContextBuilder spanContext)
         {
-            spanContext.EditHandler = SpanEditHandler.CreateDefault(Language.TokenizeString);
+            spanContext.EditHandler = SpanEditHandler.CreateDefault(LanguageTokenizeString);
             spanContext.ChunkGenerator = new ExpressionChunkGenerator();
         }
 

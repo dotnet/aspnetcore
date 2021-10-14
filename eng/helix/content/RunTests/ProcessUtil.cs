@@ -59,6 +59,12 @@ namespace RunTests
                 return Task.CompletedTask;
             }
 
+            if (!File.Exists($"{Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT")}/dotnet-dump") &&
+                !File.Exists($"{Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT")}/dotnet-dump.exe"))
+            {
+                return Task.CompletedTask;
+            }
+
             return RunAsync($"{Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT")}/dotnet-dump", $"collect -p {pid} -o \"{dumpFilePath}\"");
         }
 

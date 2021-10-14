@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Localization
     /// </summary>
     public class RequestLocalizationMiddleware
     {
-        private static readonly int MaxCultureFallbackDepth = 5;
+        private const int MaxCultureFallbackDepth = 5;
 
         private readonly RequestDelegate _next;
         private readonly RequestLocalizationOptions _options;
@@ -126,7 +126,8 @@ namespace Microsoft.AspNetCore.Localization
 
             if (_options.ApplyCurrentCultureToResponseHeaders)
             {
-                context.Response.Headers.Add(HeaderNames.ContentLanguage, requestCulture.UICulture.Name);
+                var headers = context.Response.Headers;
+                headers.ContentLanguage = requestCulture.UICulture.Name;
             }
 
             await _next(context);

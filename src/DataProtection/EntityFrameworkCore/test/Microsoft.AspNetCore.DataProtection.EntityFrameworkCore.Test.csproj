@@ -7,8 +7,6 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
     <Reference Include="Microsoft.EntityFrameworkCore.InMemory" />
-    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
-    <Reference Include="Microsoft.AspNetCore.DataProtection" />
   </ItemGroup>
 
 </Project>

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -16,6 +16,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Xunit;
@@ -761,7 +762,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                 };
                 o.Events = new JwtBearerEvents()
                 {
-                    OnForbidden = context => 
+                    OnForbidden = context =>
                     {
                         return Task.FromResult(0);
                     }
@@ -787,7 +788,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                 };
                 o.Events = new JwtBearerEvents()
                 {
-                    OnForbidden = context => 
+                    OnForbidden = context =>
                     {
                         context.Response.StatusCode = 418;
                         return context.Response.WriteAsync("You Shall Not Pass");
@@ -799,6 +800,91 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             var response = await SendAsync(server, "http://example.com/forbidden", newBearerToken);
             Assert.Equal(418, (int)response.Response.StatusCode);
             Assert.Equal("You Shall Not Pass", await response.Response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task ExpirationAndIssuedSetOnAuthenticateResult()
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(new string('a', 128)));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, "Bob")
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: "issuer.contoso.com",
+                audience: "audience.contoso.com",
+                claims: claims,
+                notBefore: DateTime.Now.AddMinutes(-10),
+                expires: DateTime.Now.AddMinutes(30),
+                signingCredentials: creds);
+
+            var tokenText = new JwtSecurityTokenHandler().WriteToken(token);
+
+            using var host = await CreateHost(o =>
+            {
+                o.SaveToken = true;
+                o.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidIssuer = "issuer.contoso.com",
+                    ValidAudience = "audience.contoso.com",
+                    IssuerSigningKey = key,
+                };
+            });
+
+            var newBearerToken = "Bearer " + tokenText;
+            using var server = host.GetTestServer();
+            var response = await SendAsync(server, "http://example.com/expiration", newBearerToken);
+            Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
+            var responseBody = await response.Response.Content.ReadAsStringAsync();
+            using var dom = JsonDocument.Parse(responseBody);
+            Assert.NotEqual(DateTimeOffset.MinValue, token.ValidTo);
+            Assert.NotEqual(DateTimeOffset.MinValue, token.ValidFrom);
+            Assert.Equal(token.ValidTo, dom.RootElement.GetProperty("expires").GetDateTimeOffset());
+            Assert.Equal(token.ValidFrom, dom.RootElement.GetProperty("issued").GetDateTimeOffset());
+        }
+
+        [Fact]
+        public async Task ExpirationAndIssuedNullWhenMinOrMaxValue()
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(new string('a', 128)));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, "Bob")
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: "issuer.contoso.com",
+                audience: "audience.contoso.com",
+                claims: claims,
+                expires: DateTime.MaxValue,
+                signingCredentials: creds);
+
+            var tokenText = new JwtSecurityTokenHandler().WriteToken(token);
+
+            using var host = await CreateHost(o =>
+            {
+                o.SaveToken = true;
+                o.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidIssuer = "issuer.contoso.com",
+                    ValidAudience = "audience.contoso.com",
+                    IssuerSigningKey = key,
+                };
+            });
+
+            var newBearerToken = "Bearer " + tokenText;
+            using var server = host.GetTestServer();
+            var response = await SendAsync(server, "http://example.com/expiration", newBearerToken);
+            Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
+            var responseBody = await response.Response.Content.ReadAsStringAsync();
+            using var dom = JsonDocument.Parse(responseBody);
+            Assert.Equal(JsonValueKind.Null, dom.RootElement.GetProperty("expires").ValueKind);
+            Assert.Equal(JsonValueKind.Null, dom.RootElement.GetProperty("issued").ValueKind);
         }
 
         class InvalidTokenValidator : ISecurityTokenValidator
@@ -898,7 +984,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
         class BlobTokenValidator : ISecurityTokenValidator
         {
-            private Action<string> _tokenValidator;
+            private readonly Action<string> _tokenValidator;
 
             public BlobTokenValidator(string authenticationScheme)
             {
@@ -931,7 +1017,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
             public ClaimsPrincipal ValidateToken(string securityToken, TokenValidationParameters validationParameters, out SecurityToken validatedToken)
             {
-                validatedToken = null;
+                validatedToken = new TestSecurityToken();
                 _tokenValidator?.Invoke(securityToken);
 
                 var claims = new[]
@@ -999,7 +1085,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                                 }
                                 else if (context.Request.Path == new PathString("/unauthorized"))
                                 {
-                                    // Simulate Authorization failure 
+                                    // Simulate Authorization failure
                                     var result = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
                                     await context.ChallengeAsync(JwtBearerDefaults.AuthenticationScheme);
                                 }
@@ -1015,6 +1101,12 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                                 else if (context.Request.Path == new PathString("/signOut"))
                                 {
                                     await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignOutAsync(JwtBearerDefaults.AuthenticationScheme));
+                                }
+                                else if (context.Request.Path == new PathString("/expiration"))
+                                {
+                                    var authenticationResult = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
+                                    await context.Response.WriteAsJsonAsync(
+                                        new { Expires = authenticationResult.Properties?.ExpiresUtc, Issued = authenticationResult.Properties?.IssuedUtc });
                                 }
                                 else
                                 {

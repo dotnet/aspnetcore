@@ -6,7 +6,6 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;authentication;security</PackageTags>
     <Nullable>enable</Nullable>
-    <RemoveDevicePlatformSupport>true</RemoveDevicePlatformSupport>
   </PropertyGroup>
 
   <ItemGroup>

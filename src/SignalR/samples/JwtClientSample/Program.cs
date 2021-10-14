@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
@@ -24,7 +24,6 @@ namespace JwtClientSample
         private const string ServerUrl = "http://localhost:54543";
 
         private readonly ConcurrentDictionary<string, Task<string>> _tokens = new ConcurrentDictionary<string, Task<string>>(StringComparer.Ordinal);
-        private readonly Random _random = new Random();
 
         private async Task RunConnection(HttpTransportType transportType)
         {
@@ -72,7 +71,7 @@ namespace JwtClientSample
                     if (ticks % nextMsgAt == 0)
                     {
                         await hubConnection.SendAsync("Broadcast", userId, $"Hello at {DateTime.Now}");
-                        nextMsgAt = _random.Next(2, 5);
+                        nextMsgAt = Random.Shared.Next(2, 5);
                     }
                 }
             }

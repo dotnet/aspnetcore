@@ -84,7 +84,7 @@ namespace Nerdbank.Streams
         /// in which case the higher of the two minimums dictate the minimum array size that will be allocated.
         /// </para>
         /// </remarks>
-        public int MinimumSpanLength { get; set; } = 0;
+        public int MinimumSpanLength { get; set; }
 
         /// <summary>
         /// Gets this sequence expressed as a <see cref="ReadOnlySequence{T}"/>.

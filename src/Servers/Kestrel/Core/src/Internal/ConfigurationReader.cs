@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         }
 
 
-        private static ClientCertificateMode? ParseClientCertificateMode(string clientCertificateMode)
+        private static ClientCertificateMode? ParseClientCertificateMode(string? clientCertificateMode)
         {
             if (Enum.TryParse<ClientCertificateMode>(clientCertificateMode, ignoreCase: true, out var result))
             {
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             return null;
         }
 
-        private static HttpProtocols? ParseProtocols(string protocols)
+        private static HttpProtocols? ParseProtocols(string? protocols)
         {
             if (Enum.TryParse<HttpProtocols>(protocols, ignoreCase: true, out var result))
             {
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     // }
     internal class EndpointConfig
     {
-        private ConfigSectionClone _configSectionClone;
+        private readonly ConfigSectionClone _configSectionClone;
 
         public EndpointConfig(
             string name,
@@ -358,7 +358,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public CertificateConfig(IConfigurationSection configSection)
         {
             ConfigSection = configSection;
-            
+
             // Bind explictly to preserve linkability
             Path = configSection[nameof(Path)];
             KeyPath = configSection[nameof(KeyPath)];

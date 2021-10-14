@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             };
 
             // pagesRootSearchPattern will miss _ViewImports outside the RootDirectory despite these influencing
-            // compilation. e.g. when RootDirectory = /Dir1/Dir2, the search pattern will ignore changes to 
+            // compilation. e.g. when RootDirectory = /Dir1/Dir2, the search pattern will ignore changes to
             // [/_ViewImports.cshtml, /Dir1/_ViewImports.cshtml]. We need to additionally account for these.
             var importFeatures = projectEngine.ProjectFeatures.OfType<IImportProjectFeature>().ToArray();
             var fileAtPagesRoot = projectEngine.FileSystem.GetItem(rootDirectory + "/Index.cshtml", fileKind: null);

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private IReadOnlyDictionary<int, ReadOnlyMemory<byte>>? _requestInfo;
 
-        private bool _isDisposed = false;
+        private bool _isDisposed;
 
         internal Request(RequestContext requestContext)
         {
@@ -133,17 +134,16 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 if (_contentBoundaryType == BoundaryType.None)
                 {
                     // Note Http.Sys adds the Transfer-Encoding: chunked header to HTTP/2 requests with bodies for back compat.
-                    string transferEncoding = Headers[HttpKnownHeaderNames.TransferEncoding];
-                    if (string.Equals("chunked", transferEncoding?.Trim(), StringComparison.OrdinalIgnoreCase))
+                    var transferEncoding = Headers[HeaderNames.TransferEncoding].ToString();
+                    if (string.Equals("chunked", transferEncoding.Trim(), StringComparison.OrdinalIgnoreCase))
                     {
                         _contentBoundaryType = BoundaryType.Chunked;
                     }
                     else
                     {
-                        string length = Headers[HttpKnownHeaderNames.ContentLength];
-                        long value;
-                        if (length != null && long.TryParse(length.Trim(), NumberStyles.None,
-                            CultureInfo.InvariantCulture.NumberFormat, out value))
+                        string? length = Headers[HeaderNames.ContentLength];
+                        if (length != null &&
+                            long.TryParse(length.Trim(), NumberStyles.None, CultureInfo.InvariantCulture.NumberFormat, out var value))
                         {
                             _contentBoundaryType = BoundaryType.ContentLength;
                             _contentLength = value;

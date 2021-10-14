@@ -1,11 +1,13 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.Net.Http.Headers
 {
     /// <summary>
     /// Defines constants for well-known HTTP headers.
     /// </summary>
+    // MODIFICATION POLICY: This list is not intended to be exhaustive, it primarily contains values used by the framework itself.
+    // Please do not open PRs without first opening an issue to discuss a specific item.
     public static class HeaderNames
     {
         // Use readonly statics rather than constants so ReferenceEquals works
@@ -223,6 +225,9 @@ namespace Microsoft.Net.Http.Headers
         /// <summary>Gets the <c>Sec-WebSocket-Version</c> HTTP header name.</summary>
         public static readonly string SecWebSocketVersion = "Sec-WebSocket-Version";
 
+        /// <summary>Gets the <c>Sec-WebSocket-Extensions</c> HTTP header name.</summary>
+        public static readonly string SecWebSocketExtensions = "Sec-WebSocket-Extensions";
+
         /// <summary>Gets the <c>Server</c> HTTP header name.</summary>
         public static readonly string Server = "Server";
 
@@ -283,10 +288,16 @@ namespace Microsoft.Net.Http.Headers
         /// <summary>Gets the <c>X-Frame-Options</c> HTTP header name.</summary>
         public static readonly string XFrameOptions = "X-Frame-Options";
 
+        /// <summary>Gets the <c>X-Powered-By</c> HTTP header name.</summary>
+        public static readonly string XPoweredBy = "X-Powered-By";
+
         /// <summary>Gets the <c>X-Requested-With</c> HTTP header name.</summary>
         public static readonly string XRequestedWith = "X-Requested-With";
 
+        /// <summary>Gets the <c>X-UA-Compatible</c> HTTP header name.</summary>
+        public static readonly string XUACompatible = "X-UA-Compatible";
+
         /// <summary>Gets the <c>X-XSS-Protection</c> HTTP header name.</summary>
-        public static readonly string XXssProtection = "X-XSS-Protection";
+        public static readonly string XXSSProtection = "X-XSS-Protection";
     }
 }

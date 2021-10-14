@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Http
     /// <summary>
     /// A wrapper for the response Set-Cookie header.
     /// </summary>
-    internal class ResponseCookies : IResponseCookies
+    internal partial class ResponseCookies : IResponseCookies
     {
         internal const string EnableCookieNameEncoding = "Microsoft.AspNetCore.Http.EnableCookieNameEncoding";
         internal bool _enableCookieNameEncoding = AppContext.TryGetSwitch(EnableCookieNameEncoding, out var enabled) && enabled;
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Http
             };
             var cookieValue = setCookieHeaderValue.ToString();
 
-            Headers[HeaderNames.SetCookie] = StringValues.Concat(Headers[HeaderNames.SetCookie], cookieValue);
+            Headers.SetCookie = StringValues.Concat(Headers.SetCookie, cookieValue);
         }
 
         /// <inheritdoc />
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Http
 
             var cookieValue = setCookieHeaderValue.ToString();
 
-            Headers[HeaderNames.SetCookie] = StringValues.Concat(Headers[HeaderNames.SetCookie], cookieValue);
+            Headers.SetCookie = StringValues.Concat(Headers.SetCookie, cookieValue);
         }
 
         /// <inheritdoc />
@@ -136,7 +136,9 @@ namespace Microsoft.AspNetCore.Http
                 position++;
             }
 
-            Headers.Append(HeaderNames.SetCookie, cookies);
+            // Can't use += as StringValues does not override operator+
+            // and the implict conversions will cause an incorrect string concat https://github.com/dotnet/runtime/issues/52507
+            Headers.SetCookie = StringValues.Concat(Headers.SetCookie, cookies);
         }
 
         /// <inheritdoc />
@@ -154,11 +156,18 @@ namespace Microsoft.AspNetCore.Http
             }
 
             var encodedKeyPlusEquals = (_enableCookieNameEncoding ? Uri.EscapeDataString(key) : key) + "=";
-            bool domainHasValue = !string.IsNullOrEmpty(options.Domain);
-            bool pathHasValue = !string.IsNullOrEmpty(options.Path);
+            var domainHasValue = !string.IsNullOrEmpty(options.Domain);
+            var pathHasValue = !string.IsNullOrEmpty(options.Path);
 
             Func<string, string, CookieOptions, bool> rejectPredicate;
-            if (domainHasValue)
+            if (domainHasValue && pathHasValue)
+            {
+                rejectPredicate = (value, encKeyPlusEquals, opts) =>
+                    value.StartsWith(encKeyPlusEquals, StringComparison.OrdinalIgnoreCase) &&
+                        value.IndexOf($"domain={opts.Domain}", StringComparison.OrdinalIgnoreCase) != -1 &&
+                        value.IndexOf($"path={opts.Path}", StringComparison.OrdinalIgnoreCase) != -1;
+            }
+            else if (domainHasValue)
             {
                 rejectPredicate = (value, encKeyPlusEquals, opts) =>
                     value.StartsWith(encKeyPlusEquals, StringComparison.OrdinalIgnoreCase) &&
@@ -175,7 +184,7 @@ namespace Microsoft.AspNetCore.Http
                 rejectPredicate = (value, encKeyPlusEquals, opts) => value.StartsWith(encKeyPlusEquals, StringComparison.OrdinalIgnoreCase);
             }
 
-            var existingValues = Headers[HeaderNames.SetCookie];
+            var existingValues = Headers.SetCookie;
             if (!StringValues.IsNullOrEmpty(existingValues))
             {
                 var values = existingValues.ToArray();
@@ -183,13 +192,14 @@ namespace Microsoft.AspNetCore.Http
 
                 for (var i = 0; i < values.Length; i++)
                 {
-                    if (!rejectPredicate(values[i], encodedKeyPlusEquals, options))
+                    var value = values[i] ?? string.Empty;
+                    if (!rejectPredicate(value, encodedKeyPlusEquals, options))
                     {
-                        newValues.Add(values[i]);
+                        newValues.Add(value);
                     }
                 }
 
-                Headers[HeaderNames.SetCookie] = new StringValues(newValues.ToArray());
+                Headers.SetCookie = new StringValues(newValues.ToArray());
             }
 
             Append(key, string.Empty, new CookieOptions
@@ -203,17 +213,10 @@ namespace Microsoft.AspNetCore.Http
             });
         }
 
-        private static class Log
+        private static partial class Log
         {
-            private static readonly Action<ILogger, string, Exception?> _samesiteNotSecure = LoggerMessage.Define<string>(
-                LogLevel.Warning,
-                EventIds.SameSiteNotSecure,
-                "The cookie '{name}' has set 'SameSite=None' and must also set 'Secure'.");
-
-            public static void SameSiteCookieNotSecure(ILogger logger, string name)
-            {
-                _samesiteNotSecure(logger, name, null);
-            }
+            [LoggerMessage(1, LogLevel.Warning, "The cookie '{name}' has set 'SameSite=None' and must also set 'Secure'.", EventName = "SameSiteNotSecure")]
+            public static partial void SameSiteCookieNotSecure(ILogger logger, string name);
         }
     }
 }

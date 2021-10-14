@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Language
     public abstract class TagHelperDescriptor : IEquatable<TagHelperDescriptor>
     {
         private IEnumerable<RazorDiagnostic> _allDiagnostics;
+        private BoundAttributeDescriptor[] _editorRequiredAttributes;
 
         protected TagHelperDescriptor(string kind)
         {
@@ -39,6 +40,20 @@ namespace Microsoft.AspNetCore.Razor.Language
         public IReadOnlyList<RazorDiagnostic> Diagnostics { get; protected set; }
 
         public IReadOnlyDictionary<string, string> Metadata { get; protected set; }
+
+        // Hoisted / cached metadata
+        private int? _hashCode;
+        internal bool? IsComponentFullyQualifiedNameMatchCache { get; set; }
+        internal bool? IsChildContentTagHelperCache { get; set; }
+        internal ParsedTypeInformation? ParsedTypeInfo { get; set; }
+        internal BoundAttributeDescriptor[] EditorRequiredAttributes
+        {
+            get
+            {
+                _editorRequiredAttributes ??= GetEditorRequiredAttributes(BoundAttributes);
+                return _editorRequiredAttributes;
+            }
+        }
 
         public bool HasErrors
         {
@@ -85,7 +100,40 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override int GetHashCode()
         {
-            return TagHelperDescriptorComparer.Default.GetHashCode(this);
+            // TagHelperDescriptors are immutable instances and it should be safe to cache it's hashes once.
+            _hashCode ??= TagHelperDescriptorComparer.Default.GetHashCode(this);
+            return _hashCode.Value;
+        }
+
+        private static BoundAttributeDescriptor[] GetEditorRequiredAttributes(IReadOnlyList<BoundAttributeDescriptor> boundAttributeDescriptors)
+        {
+            List<BoundAttributeDescriptor> editorRequiredAttributes = null;
+            var count = boundAttributeDescriptors.Count;
+            for (var i = 0; i < count; i++)
+            {
+                var attribute = boundAttributeDescriptors[i];
+                if (attribute.IsEditorRequired)
+                {
+                    editorRequiredAttributes ??= new();
+                    editorRequiredAttributes.Add(attribute);
+                }
+            }
+
+            return editorRequiredAttributes?.ToArray() ?? Array.Empty<BoundAttributeDescriptor>();
+        }
+
+        internal readonly struct ParsedTypeInformation
+        {
+            public ParsedTypeInformation(bool success, StringSegment @namespace, StringSegment typeName)
+            {
+                Success = success;
+                Namespace = @namespace;
+                TypeName = typeName;
+            }
+
+            public bool Success { get; }
+            public StringSegment Namespace { get; }
+            public StringSegment TypeName { get; }
         }
     }
 }

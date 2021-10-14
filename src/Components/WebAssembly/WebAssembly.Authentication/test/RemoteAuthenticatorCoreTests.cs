@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -531,7 +531,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             // Arrange
             var renderer = new TestRenderer(new ServiceCollection().BuildServiceProvider());
             var authenticator = new TestRemoteAuthenticatorView();
-            renderer.Attach(authenticator); 
+            renderer.Attach(authenticator);
             validator.SetupFakeRender(authenticator);
 
             var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
@@ -752,7 +752,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             public Func<RemoteAuthenticationContext<RemoteAuthenticationState>, Task<RemoteAuthenticationResult<RemoteAuthenticationState>>> CompleteSignOutCallback { get; set; }
             public Func<ValueTask<ClaimsPrincipal>> GetAuthenticatedUserCallback { get; set; }
 
-            public async override Task<AuthenticationState> GetAuthenticationStateAsync() => new AuthenticationState(await GetAuthenticatedUserCallback());
+            public override async Task<AuthenticationState> GetAuthenticationStateAsync() => new AuthenticationState(await GetAuthenticatedUserCallback());
 
             public override Task<RemoteAuthenticationResult<RemoteAuthenticationState>> CompleteSignInAsync(RemoteAuthenticationContext<RemoteAuthenticationState> context) => CompleteSignInCallback(context);
 

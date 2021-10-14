@@ -1,20 +1,21 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
 {
     internal class UvPipeHandle : UvStreamHandle
     {
-        public UvPipeHandle(ILibuvTrace logger) : base(logger)
+        public UvPipeHandle(ILogger logger) : base(logger)
         {
         }
 
         public void Init(UvLoopHandle loop, Action<Action<IntPtr>, IntPtr> queueCloseHandle, bool ipc = false)
         {
             CreateHandle(
-                loop.Libuv, 
+                loop.Libuv,
                 loop.ThreadId,
                 loop.Libuv.handle_size(LibuvFunctions.HandleType.NAMED_PIPE), queueCloseHandle);
 

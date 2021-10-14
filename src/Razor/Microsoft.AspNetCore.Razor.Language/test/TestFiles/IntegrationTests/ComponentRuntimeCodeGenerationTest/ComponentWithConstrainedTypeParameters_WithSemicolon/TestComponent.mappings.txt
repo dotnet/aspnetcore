@@ -1,0 +1,30 @@
+Source Location: (186:5,14 [34] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+@foreach (var item2 in Items2)
+|
+Generated Location: (884:27,14 [34] )
+|foreach (var item2 in Items2)
+{
+|
+
+Source Location: (266:10,7 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+|>
+|
+Generated Location: (1369:47,7 [3] )
+|}
+|
+
+Source Location: (294:15,4 [236] x:\dir\subdir\Test\TestComponent.cshtml)
+|e {
+    [Parameter] public TItem1 Item1 { get; set; }
+    [Parameter] public List<TItem2> Items2 { get; set; }
+    [Parameter] public TItem3 Item3 { get; set; }
+    [Parameter] public RenderFragment<TItem2> ChildContent { get; set; |
+Generated Location: (1606:57,4 [236] )
+|
+    [Parameter] public TItem1 Item1 { get; set; }
+    [Parameter] public List<TItem2> Items2 { get; set; }
+    [Parameter] public TItem3 Item3 { get; set; }
+    [Parameter] public RenderFragment<TItem2> ChildContent { get; set; }
+|
+

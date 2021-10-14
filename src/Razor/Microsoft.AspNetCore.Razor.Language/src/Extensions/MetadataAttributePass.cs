@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         protected override void OnInitialized()
         {
-            _identifierFeature = Engine.Features.OfType<IMetadataIdentifierFeature>().FirstOrDefault();
+            _identifierFeature = Engine.GetFeature<IMetadataIdentifierFeature>();
         }
 
         protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
             // We need to be able to compute the data we need for the [RazorCompiledItem] attribute - that includes
             // a full type name, and a document kind, and optionally an identifier.
-            // 
+            //
             // If we can't use [RazorCompiledItem] then we don't care about the rest of the attributes.
             var @namespace = documentNode.FindPrimaryNamespace();
             if (@namespace == null || string.IsNullOrEmpty(@namespace.Content))

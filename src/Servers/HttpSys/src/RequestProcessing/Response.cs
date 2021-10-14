@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -14,6 +14,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
+
 using static Microsoft.AspNetCore.HttpSys.Internal.UnsafeNclNativeMethods;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
@@ -24,6 +26,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private static bool SupportsGoAway = true;
 
         private ResponseState _responseState;
+        private bool _aborted;
         private string? _reasonPhrase;
         private ResponseBody? _nativeStream;
         private AuthenticationSchemes _authChallenges;
@@ -154,7 +157,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // Needed to delay the completion of Content-Length responses.
         internal bool TrailersExpected => HasTrailers
             || (HttpApi.SupportsTrailers && Request.ProtocolVersion >= HttpVersion.Version20
-                    && Headers.ContainsKey(HttpKnownHeaderNames.Trailer));
+                    && Headers.ContainsKey(HeaderNames.Trailer));
 
         internal long ExpectedBodyLength
         {
@@ -194,14 +197,16 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal void Abort()
         {
-            // Update state for HasStarted. Do not attempt a graceful Dispose.
-            _responseState = ResponseState.Closed;
+            // Do not attempt a graceful Dispose.
+            // _responseState is not modified because that refers to app state like modifying
+            // status and headers. See https://github.com/dotnet/aspnetcore/issues/12194.
+            _aborted = true;
         }
 
         // should only be called from RequestContext
         internal void Dispose()
         {
-            if (_responseState >= ResponseState.Closed)
+            if (_aborted || _responseState >= ResponseState.Closed)
             {
                 return;
             }
@@ -397,14 +402,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             // Gather everything from the request that affects the response:
             var requestVersion = Request.ProtocolVersion;
-            var requestConnectionString = Request.Headers[HttpKnownHeaderNames.Connection];
+            var requestConnectionString = Request.Headers[HeaderNames.Connection];
             var isHeadRequest = Request.IsHeadMethod;
             var requestCloseSet = Matches(Constants.Close, requestConnectionString);
 
             // Gather everything the app may have set on the response:
             // Http.Sys does not allow us to specify the response protocol version, assume this is a HTTP/1.1 response when making decisions.
-            var responseConnectionString = Headers[HttpKnownHeaderNames.Connection];
-            var transferEncodingString = Headers[HttpKnownHeaderNames.TransferEncoding];
+            var responseConnectionString = Headers[HeaderNames.Connection];
+            var transferEncodingString = Headers[HeaderNames.TransferEncoding];
             var responseContentLength = ContentLength;
             var responseCloseSet = Matches(Constants.Close, responseConnectionString);
             var responseChunkedSet = Matches(Constants.Chunked, transferEncodingString);
@@ -442,7 +447,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (!isHeadRequest && statusCanHaveBody)
                 {
-                    Headers[HttpKnownHeaderNames.ContentLength] = Constants.Zero;
+                    Headers[HeaderNames.ContentLength] = Constants.Zero;
                 }
                 _boundaryType = BoundaryType.ContentLength;
                 _expectedBodyLength = 0;
@@ -450,7 +455,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             else if (requestVersion == Constants.V1_1)
             {
                 _boundaryType = BoundaryType.Chunked;
-                Headers[HttpKnownHeaderNames.TransferEncoding] = Constants.Chunked;
+                Headers[HeaderNames.TransferEncoding] = Constants.Chunked;
             }
             else
             {
@@ -467,7 +472,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 // Note that if we don't add this header, Http.Sys will often do it for us.
                 if (!responseCloseSet)
                 {
-                    Headers.Append(HttpKnownHeaderNames.Connection, Constants.Close);
+                    Headers.Append(HeaderNames.Connection, Constants.Close);
                 }
                 flags = HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
                 if (responseCloseSet && requestVersion >= Constants.V2 && SupportsGoAway)
@@ -480,9 +485,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return flags;
         }
 
-        private static bool Matches(string knownValue, string input)
+        private static bool Matches(string knownValue, StringValues input)
         {
-            return string.Equals(knownValue, input?.Trim(), StringComparison.OrdinalIgnoreCase);
+            return string.Equals(knownValue, input.ToString().Trim(), StringComparison.OrdinalIgnoreCase);
         }
 
         private unsafe List<GCHandle>? SerializeHeaders(bool isOpaqueUpgrade)

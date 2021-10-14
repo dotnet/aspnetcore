@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -12,10 +12,10 @@ using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
-using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Server.IIS.Core.IO;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -35,11 +35,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                                             IHttpBodyControlFeature,
                                             IHttpMaxRequestBodySizeFeature,
                                             IHttpResponseTrailersFeature,
-                                            IHttpResetFeature
+                                            IHttpResetFeature,
+                                            IConnectionLifetimeNotificationFeature
     {
-        // NOTE: When feature interfaces are added to or removed from this HttpProtocol implementation,
-        // then the list of `implementedFeatures` in the generated code project MUST also be updated.
-
         private int _featureRevision;
         private string? _httpProtocolVersion;
         private X509Certificate2? _certificate;
@@ -447,7 +445,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         internal IHttpResponseTrailersFeature? GetResponseTrailersFeature()
         {
             // Check version is above 2.
-            if (HttpVersion >= System.Net.HttpVersion.Version20 && NativeMethods.HttpSupportTrailer(_requestNativeHandle))
+            if (HttpVersion >= System.Net.HttpVersion.Version20 && NativeMethods.HttpHasResponse4(_requestNativeHandle))
             {
                 return this;
             }
@@ -461,10 +459,12 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             set => ResponseTrailers = value;
         }
 
+        CancellationToken IConnectionLifetimeNotificationFeature.ConnectionClosedRequested { get; set; }
+
         internal IHttpResetFeature? GetResetFeature()
         {
             // Check version is above 2.
-            if (HttpVersion >= System.Net.HttpVersion.Version20 && NativeMethods.HttpSupportTrailer(_requestNativeHandle))
+            if (HttpVersion >= System.Net.HttpVersion.Version20 && NativeMethods.HttpHasResponse4(_requestNativeHandle))
             {
                 return this;
             }
@@ -476,7 +476,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         {
             if (errorCode < 0)
             {
-                throw new ArgumentOutOfRangeException("'errorCode' cannot be negative");
+                throw new ArgumentOutOfRangeException(nameof(errorCode), "'errorCode' cannot be negative");
             }
 
             SetResetCode(errorCode);
@@ -498,6 +498,16 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         {
             var serverVariableFeature = (IServerVariablesFeature)this;
             serverVariableFeature["IIS_EnableDynamicCompression"] = "0";
+        }
+
+        void IConnectionLifetimeNotificationFeature.RequestClose()
+        {
+            // Set the connection close feature if the response hasn't sent headers as yet
+            if (!HasResponseStarted)
+            {
+                ResponseHeaders.Connection = ConnectionClose;
+            }
+
         }
     }
 }

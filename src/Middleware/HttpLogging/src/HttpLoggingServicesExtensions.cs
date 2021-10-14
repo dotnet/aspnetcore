@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.HttpLogging;
@@ -29,6 +29,28 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.Configure(configureOptions);
+            return services;
+        }
+
+        /// <summary>
+        /// Adds W3C Logging services.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> for adding services.</param>
+        /// <param name="configureOptions">A delegate to configure the <see cref="W3CLoggerOptions"/>.</param>
+        /// <returns></returns>
+        public static IServiceCollection AddW3CLogging(this IServiceCollection services, Action<W3CLoggerOptions> configureOptions)
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
+
+            services.Configure(configureOptions);
+            services.AddSingleton<W3CLogger>();
             return services;
         }
     }

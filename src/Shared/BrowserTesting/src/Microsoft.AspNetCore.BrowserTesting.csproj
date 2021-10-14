@@ -5,11 +5,13 @@
     <PackageTags>aspnetcore;testing</PackageTags>
     <IsShippingPackage>false</IsShippingPackage>
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="PlaywrightSharp" Condition="'$(TargetOsName)' != 'linux-musl'" />
     <Reference Include="PlaywrightSharp" ExcludeAssets="build" Condition="'$(TargetOsName)' == 'linux-musl'" />
+    <Reference Include="Microsoft.AspNetCore.Testing" />
   </ItemGroup>
 
 </Project>

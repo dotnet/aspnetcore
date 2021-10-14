@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -73,10 +73,10 @@ namespace Microsoft.AspNetCore.Routing
             if (!object.ReferenceEquals(expected, actual))
             {
                 var message = new StringBuilder();
-                message.AppendLine($"Validation failed for request {Array.IndexOf(Requests, httpContext)}");
-                message.AppendLine($"{httpContext.Request.Method} {httpContext.Request.Path}");
-                message.AppendLine($"expected: '{((RouteEndpoint)expected)?.DisplayName ?? "null"}'");
-                message.AppendLine($"actual:   '{((RouteEndpoint)actual)?.DisplayName ?? "null"}'");
+                message.AppendLine(FormattableString.Invariant($"Validation failed for request {Array.IndexOf(Requests, httpContext)}"));
+                message.AppendLine(FormattableString.Invariant($"{httpContext.Request.Method} {httpContext.Request.Path}"));
+                message.AppendLine(FormattableString.Invariant($"expected: '{((RouteEndpoint)expected)?.DisplayName ?? "null"}'"));
+                message.AppendLine(FormattableString.Invariant($"actual:   '{((RouteEndpoint)actual)?.DisplayName ?? "null"}'"));
                 throw new InvalidOperationException(message.ToString());
             }
         }

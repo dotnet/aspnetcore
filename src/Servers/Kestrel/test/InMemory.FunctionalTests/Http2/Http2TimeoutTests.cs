@@ -1,11 +1,12 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -256,6 +257,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _mockTimeoutHandler.VerifyNoOtherCalls();
             _mockConnectionContext.VerifyNoOtherCalls();
+
+            Assert.Contains(TestSink.Writes, w => w.EventId.Name == "ResponseMinimumDataRateNotSatisfied");
         }
 
         [Theory]
@@ -332,8 +335,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _pair.Application.Output.Complete();
         }
 
+        private class EchoAppWithNotification
+        {
+            private readonly TaskCompletionSource _writeStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            public Task WriteStartedTask => _writeStartedTcs.Task;
+
+            public async Task RunApp(HttpContext context)
+            {
+                await context.Response.Body.FlushAsync();
+
+                var buffer = new byte[Http2PeerSettings.MinAllowedMaxFrameSize];
+                int received;
+
+                while ((received = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                {
+                    var writeTask = context.Response.Body.WriteAsync(buffer, 0, received);
+                    _writeStartedTcs.TrySetResult();
+
+                    await writeTask;
+                }
+            }
+        }
+
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/21520")]
         public async Task DATA_Sent_TooSlowlyDueToSocketBackPressureOnSmallWrite_AbortsConnectionAfterGracePeriod()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
@@ -347,7 +372,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
-            await InitializeConnectionAsync(_echoApplication);
+            var app = new EchoAppWithNotification();
+            await InitializeConnectionAsync(app.RunApp);
 
             await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
             await SendDataAsync(1, _helloWorldBytes, endStream: true);
@@ -356,6 +382,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withLength: 32,
                 withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
                 withStreamId: 1);
+
+            await app.WriteStartedTask.DefaultTimeout();
 
             // Complete timing of the request body so we don't induce any unexpected request body rate timeouts.
             _timeoutControl.Tick(mockSystemClock.UtcNow);
@@ -386,7 +414,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/21520")]
         public async Task DATA_Sent_TooSlowlyDueToSocketBackPressureOnLargeWrite_AbortsConnectionAfterRateTimeout()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
@@ -400,7 +427,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
-            await InitializeConnectionAsync(_echoApplication);
+            var app = new EchoAppWithNotification();
+            await InitializeConnectionAsync(app.RunApp);
 
             await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
             await SendDataAsync(1, _maxData, endStream: true);
@@ -409,6 +437,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withLength: 32,
                 withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
                 withStreamId: 1);
+
+            await app.WriteStartedTask.DefaultTimeout();
 
             // Complete timing of the request body so we don't induce any unexpected request body rate timeouts.
             _timeoutControl.Tick(mockSystemClock.UtcNow);

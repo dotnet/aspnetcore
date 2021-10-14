@@ -1,9 +1,10 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Net.Http;
@@ -41,20 +42,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             var httpLimits = context.ServiceContext.ServerOptions.Limits;
             _context = context;
-            _serverPeerSettings = context.ServerSettings;
+            _serverPeerSettings = context.ServerPeerSettings;
             _streamIdFeature = context.ConnectionFeatures.Get<IStreamIdFeature>()!;
             _errorCodeFeature = context.ConnectionFeatures.Get<IProtocolErrorCodeFeature>()!;
             _headerType = -1;
 
             _frameWriter = new Http3FrameWriter(
-                context.Transport.Output,
                 context.StreamContext,
                 context.TimeoutControl,
                 httpLimits.MinResponseDataRate,
-                context.ConnectionId,
                 context.MemoryPool,
                 context.ServiceContext.Log,
-                _streamIdFeature);
+                _streamIdFeature,
+                context.ClientPeerSettings,
+                this);
+            _frameWriter.Reset(context.Transport.Output, context.ConnectionId);
         }
 
         private void OnStreamClosed()
@@ -63,12 +65,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         }
 
         public PipeReader Input => _context.Transport.Input;
-        public IKestrelTrace Log => _context.ServiceContext.Log;
+        public KestrelTrace Log => _context.ServiceContext.Log;
 
-        public long HeaderTimeoutTicks { get; set; }
-        public bool ReceivedHeader => _headerType >= 0;
-
+        public long StreamTimeoutTicks { get; set; }
+        public bool IsReceivingHeader => _headerType == -1;
+        public bool IsDraining => false;
         public bool IsRequestStream => false;
+        public string TraceIdentifier => _context.StreamContext.ConnectionId;
 
         public void Abort(ConnectionAbortedException abortReason, Http3ErrorCode errorCode)
         {
@@ -106,6 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         internal ValueTask<FlushResult> SendGoAway(long id)
         {
+            Log.Http3GoAwayStreamId(_context.ConnectionId, id);
             return _frameWriter.WriteGoAway(id);
         }
 
@@ -154,11 +158,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             try
             {
                 _headerType = await TryReadStreamHeaderAsync();
+                _context.StreamLifetimeHandler.OnStreamHeaderReceived(this);
 
                 switch (_headerType)
                 {
-                    case -1:
-                        return;
                     case ControlStreamTypeId:
                         if (!_context.StreamLifetimeHandler.OnInboundControlStream(this))
                         {
@@ -186,14 +189,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         await HandleEncodingDecodingTask();
                         break;
                     default:
-                        // TODO Close the control stream as it's unexpected.
-                        break;
+                        // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-6.2-6
+                        throw new Http3StreamErrorException(CoreStrings.FormatHttp3ControlStreamErrorUnsupportedType(_headerType), Http3ErrorCode.StreamCreationError);
                 }
+            }
+            catch (Http3StreamErrorException ex)
+            {
+                Abort(new ConnectionAbortedException(ex.Message), ex.ErrorCode);
             }
             catch (Http3ConnectionErrorException ex)
             {
                 _errorCodeFeature.Error = (long)ex.ErrorCode;
                 _context.StreamLifetimeHandler.OnStreamConnectionError(ex);
+            }
+            finally
+            {
+                _context.StreamLifetimeHandler.OnStreamCompleted(this);
             }
         }
 
@@ -222,13 +233,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                     if (result.IsCompleted)
                     {
+                        if (!_context.StreamContext.ConnectionClosed.IsCancellationRequested)
+                        {
+                            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-6.2.1-2
+                            throw new Http3ConnectionErrorException(CoreStrings.Http3ErrorControlStreamClientClosedInbound, Http3ErrorCode.ClosedCriticalStream);
+                        }
+
                         return;
                     }
-                }
-                catch (Http3ConnectionErrorException ex)
-                {
-                    _errorCodeFeature.Error = (long)ex.ErrorCode;
-                    _context.StreamLifetimeHandler.OnStreamConnectionError(ex);
                 }
                 finally
                 {
@@ -286,7 +298,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             while (true)
             {
-                var id = VariableLengthIntegerHelper.GetInteger(payload, out var consumed, out var examinded);
+                var id = VariableLengthIntegerHelper.GetInteger(payload, out var consumed, out _);
                 if (id == -1)
                 {
                     break;
@@ -294,8 +306,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 payload = payload.Slice(consumed);
 
-                var value = VariableLengthIntegerHelper.GetInteger(payload, out consumed, out examinded);
-                if (id == -1)
+                var value = VariableLengthIntegerHelper.GetInteger(payload, out consumed, out _);
+                if (value == -1)
                 {
                     break;
                 }

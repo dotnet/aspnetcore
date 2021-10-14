@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 
@@ -12,12 +12,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         /// <summary>
         /// The endpoint Kestrel will bind to if nothing else is specified.
         /// </summary>
-        public static readonly string DefaultServerAddress = "http://localhost:5000";
+        public const string DefaultServerAddress = "http://localhost:5000";
 
         /// <summary>
         /// The endpoint Kestrel will bind to if nothing else is specified and a default certificate is available.
         /// </summary>
-        public static readonly string DefaultServerHttpsAddress = "https://localhost:5001";
+        public const string DefaultServerHttpsAddress = "https://localhost:5001";
 
         /// <summary>
         /// Prefix of host name used to specify Unix sockets in the configuration.

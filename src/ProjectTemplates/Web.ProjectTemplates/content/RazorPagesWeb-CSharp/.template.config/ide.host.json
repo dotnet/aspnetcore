@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json.schemastore.org/vs-2017.3.host",
+  "order": 400,
+  "icon": "ide/WebApplication.png",
+  "supportsDocker": true,
+  "supportedAuthentications": [
+    {
+      "auth": "None",
+      "authenticationType": "NoAuth",
+      "allowUnsecured": true
+    },
+    {
+      "auth": "Individual",
+      "authenticationType": "IndividualAuth",
+      "b2cAuthenticationOptions": "CloudExisting"
+    },
+    {
+      "auth": "Individual",
+      "authenticationType": "IndividualAuth",
+      "b2cAuthenticationOptions": "Local"
+    },
+    {
+      "auth": "SingleOrg",
+      "authenticationType": "OrgAuth",
+      "orgAuthenticationOptions": "SSO"
+    },
+    {
+      "auth": "MultiOrg",
+      "authenticationType": "OrgAuth",
+      "orgAuthenticationOptions": "MultiOrg"
+    },
+    {
+      "auth": "Windows",
+      "authenticationType": "WindowsAuth"
+    }
+  ],
+  "ports": [
+    {
+      "name": "HttpPort",
+      "useHttps": false
+    },
+    {
+      "name": "HttpsPort",
+      "useHttps": true
+    }
+  ],
+  "symbolInfo": [
+    
+  ],
+  "disableHttpsSymbol": "NoHttps"
+}

@@ -1,11 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Internal;
@@ -13,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
-    internal class RemoteRenderer : Microsoft.AspNetCore.Components.RenderTree.Renderer
+    internal partial class RemoteRenderer : WebRenderer
     {
         private static readonly Task CanceledTask = Task.FromCanceled(new CancellationToken(canceled: true));
 
@@ -22,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private readonly ILogger _logger;
         internal readonly ConcurrentQueue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new ConcurrentQueue<UnacknowledgedRenderBatch>();
         private long _nextRenderId = 1;
-        private bool _disposing = false;
+        private bool _disposing;
 
         /// <summary>
         /// Notifies when a rendering exception occurred.
@@ -38,51 +35,29 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             CircuitOptions options,
             CircuitClientProxy client,
             ILogger logger,
-            ElementReferenceContext? elementReferenceContext)
-            : base(serviceProvider, loggerFactory)
+            RemoteJSRuntime jsRuntime,
+            CircuitJSComponentInterop jsComponentInterop)
+            : base(serviceProvider, loggerFactory, jsRuntime.ReadJsonSerializerOptions(), jsComponentInterop)
         {
             _client = client;
             _options = options;
             _logger = logger;
 
-            ElementReferenceContext = elementReferenceContext;
+            ElementReferenceContext = jsRuntime.ElementReferenceContext;
         }
 
         public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
-        /// <summary>
-        /// Associates the <see cref="IComponent"/> with the <see cref="RemoteRenderer"/>,
-        /// causing it to be displayed in the specified DOM element.
-        /// </summary>
-        /// <param name="componentType">The type of the component.</param>
-        /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
-        public Task AddComponentAsync(Type componentType, string domElementSelector)
-        {
-            var component = InstantiateComponent(componentType);
-            var componentId = AssignRootComponentId(component);
-
-            var attachComponentTask = _client.SendAsync("JS.AttachComponent", componentId, domElementSelector);
-            CaptureAsyncExceptions(attachComponentTask);
-
-            return RenderRootComponentAsync(componentId);
-        }
-
-        /// <summary>
-        /// Associates the <see cref="IComponent"/> with the <see cref="RemoteRenderer"/>,
-        /// causing it to be displayed in the specified DOM element.
-        /// </summary>
-        /// <param name="componentType">The type of the component.</param>
-        /// <param name="parameters">The parameters for the component.</param>
-        /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
         public Task AddComponentAsync(Type componentType, ParameterView parameters, string domElementSelector)
         {
-            var component = InstantiateComponent(componentType);
-            var componentId = AssignRootComponentId(component);
-
-            var attachComponentTask = _client.SendAsync("JS.AttachComponent", componentId, domElementSelector);
-            CaptureAsyncExceptions(attachComponentTask);
-
+            var componentId = AddRootComponent(componentType, domElementSelector);
             return RenderRootComponentAsync(componentId, parameters);
+        }
+
+        protected override void AttachRootComponentToBrowser(int componentId, string domElementSelector)
+        {
+            var attachComponentTask = _client.SendAsync("JS.AttachComponent", componentId, domElementSelector);
+            _ = CaptureAsyncExceptions(attachComponentTask);
         }
 
         protected override void ProcessPendingRender()
@@ -219,7 +194,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     return;
                 }
 
-                Log.BeginUpdateDisplayAsync(_logger, _client.ConnectionId, pending.BatchId, pending.Data.Count);
+                Log.BeginUpdateDisplayAsync(_logger, pending.BatchId, pending.Data.Count, _client.ConnectionId);
                 var segment = new ArraySegment<byte>(pending.Data.Buffer, 0, pending.Data.Count);
                 await _client.SendAsync("JS.RenderBatch", pending.BatchId, segment);
             }
@@ -324,7 +299,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             CompleteRender(entry.CompletionSource, errorMessageOrNull);
         }
 
-        private void CompleteRender(TaskCompletionSource pendingRenderInfo, string? errorMessageOrNull)
+        private static void CompleteRender(TaskCompletionSource pendingRenderInfo, string? errorMessageOrNull)
         {
             if (errorMessageOrNull == null)
             {
@@ -352,142 +327,55 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             public ValueStopwatch ValueStopwatch { get; }
         }
 
-        private void CaptureAsyncExceptions(Task task)
+        private async Task CaptureAsyncExceptions(Task task)
         {
-            task.ContinueWith(t =>
+            try
             {
-                if (t.IsFaulted)
-                {
-                    UnhandledException?.Invoke(this, t.Exception);
-                }
-            });
+                await task;
+            }
+            catch (Exception exception)
+            {
+                UnhandledException?.Invoke(this, exception);
+            }
         }
 
-        private static class Log
+        private static partial class Log
         {
-            private static readonly Action<ILogger, string, Exception> _unhandledExceptionRenderingComponent;
-            private static readonly Action<ILogger, long, int, string, Exception> _beginUpdateDisplayAsync;
-            private static readonly Action<ILogger, string, Exception> _bufferingRenderDisconnectedClient;
-            private static readonly Action<ILogger, string, Exception> _sendBatchDataFailed;
-            private static readonly Action<ILogger, long, string, double, Exception> _completingBatchWithError;
-            private static readonly Action<ILogger, long, double, Exception> _completingBatchWithoutError;
-            private static readonly Action<ILogger, long, Exception> _receivedDuplicateBatchAcknowledgement;
-            private static readonly Action<ILogger, Exception> _fullUnacknowledgedRenderBatchesQueue;
-
-            private static class EventIds
-            {
-                public static readonly EventId UnhandledExceptionRenderingComponent = new EventId(100, "ExceptionRenderingComponent");
-                public static readonly EventId BeginUpdateDisplayAsync = new EventId(101, "BeginUpdateDisplayAsync");
-                public static readonly EventId SkipUpdateDisplayAsync = new EventId(102, "SkipUpdateDisplayAsync");
-                public static readonly EventId SendBatchDataFailed = new EventId(103, "SendBatchDataFailed");
-                public static readonly EventId CompletingBatchWithError = new EventId(104, "CompletingBatchWithError");
-                public static readonly EventId CompletingBatchWithoutError = new EventId(105, "CompletingBatchWithoutError");
-                public static readonly EventId ReceivedDuplicateBatchAcknowledgement = new EventId(106, "ReceivedDuplicateBatchAcknowledgement");
-                public static readonly EventId FullUnacknowledgedRenderBatchesQueue = new EventId(107, "FullUnacknowledgedRenderBatchesQueue");
-            }
-
-            static Log()
-            {
-                _unhandledExceptionRenderingComponent = LoggerMessage.Define<string>(
-                    LogLevel.Warning,
-                    EventIds.UnhandledExceptionRenderingComponent,
-                    "Unhandled exception rendering component: {Message}");
-
-                _beginUpdateDisplayAsync = LoggerMessage.Define<long, int, string>(
-                    LogLevel.Debug,
-                    EventIds.BeginUpdateDisplayAsync,
-                    "Sending render batch {BatchId} of size {DataLength} bytes to client {ConnectionId}.");
-
-                _bufferingRenderDisconnectedClient = LoggerMessage.Define<string>(
-                    LogLevel.Debug,
-                    EventIds.SkipUpdateDisplayAsync,
-                    "Buffering remote render because the client on connection {ConnectionId} is disconnected.");
-
-                _sendBatchDataFailed = LoggerMessage.Define<string>(
-                    LogLevel.Information,
-                    EventIds.SendBatchDataFailed,
-                    "Sending data for batch failed: {Message}");
-
-                _completingBatchWithError = LoggerMessage.Define<long, string, double>(
-                    LogLevel.Debug,
-                    EventIds.CompletingBatchWithError,
-                    "Completing batch {BatchId} with error: {ErrorMessage} in {ElapsedMilliseconds}ms.");
-
-                _completingBatchWithoutError = LoggerMessage.Define<long, double>(
-                    LogLevel.Debug,
-                    EventIds.CompletingBatchWithoutError,
-                    "Completing batch {BatchId} without error in {ElapsedMilliseconds}ms.");
-
-                _receivedDuplicateBatchAcknowledgement = LoggerMessage.Define<long>(
-                    LogLevel.Debug,
-                    EventIds.ReceivedDuplicateBatchAcknowledgement,
-                    "Received a duplicate ACK for batch id '{IncomingBatchId}'.");
-
-                _fullUnacknowledgedRenderBatchesQueue = LoggerMessage.Define(
-                    LogLevel.Debug,
-                    EventIds.FullUnacknowledgedRenderBatchesQueue,
-                    "The queue of unacknowledged render batches is full.");
-            }
-
-            public static void SendBatchDataFailed(ILogger logger, Exception exception)
-            {
-                _sendBatchDataFailed(logger, exception.Message, exception);
-            }
+            [LoggerMessage(100, LogLevel.Warning, "Unhandled exception rendering component: {Message}", EventName = "ExceptionRenderingComponent")]
+            private static partial void UnhandledExceptionRenderingComponent(ILogger logger, string message, Exception exception);
 
             public static void UnhandledExceptionRenderingComponent(ILogger logger, Exception exception)
-            {
-                _unhandledExceptionRenderingComponent(
-                    logger,
-                    exception.Message,
-                    exception);
-            }
+                => UnhandledExceptionRenderingComponent(logger, exception.Message, exception);
 
-            public static void BeginUpdateDisplayAsync(ILogger logger, string connectionId, long batchId, int dataLength)
-            {
-                _beginUpdateDisplayAsync(
-                    logger,
-                    batchId,
-                    dataLength,
-                    connectionId,
-                    null);
-            }
+            [LoggerMessage(101, LogLevel.Debug, "Sending render batch {BatchId} of size {DataLength} bytes to client {ConnectionId}.", EventName = "BeginUpdateDisplayAsync")]
+            public static partial void BeginUpdateDisplayAsync(ILogger logger, long batchId, int dataLength, string connectionId);
 
-            public static void BufferingRenderDisconnectedClient(ILogger logger, string connectionId)
-            {
-                _bufferingRenderDisconnectedClient(
-                    logger,
-                    connectionId,
-                    null);
-            }
+            [LoggerMessage(102, LogLevel.Debug, "Buffering remote render because the client on connection {ConnectionId} is disconnected.", EventName = "SkipUpdateDisplayAsync")]
+            public static partial void BufferingRenderDisconnectedClient(ILogger logger, string connectionId);
+
+            [LoggerMessage(103, LogLevel.Information, "Sending data for batch failed: {Message}", EventName = "SendBatchDataFailed")]
+            private static partial void SendBatchDataFailed(ILogger logger, string message, Exception exception);
+
+            public static void SendBatchDataFailed(ILogger logger, Exception exception)
+                => SendBatchDataFailed(logger, exception.Message, exception);
+
+            [LoggerMessage(104, LogLevel.Debug, "Completing batch {BatchId} with error: {ErrorMessage} in {ElapsedMilliseconds}ms.", EventName = "CompletingBatchWithError")]
+            private static partial void CompletingBatchWithError(ILogger logger, long batchId, string errorMessage, double elapsedMilliseconds);
 
             public static void CompletingBatchWithError(ILogger logger, long batchId, string errorMessage, TimeSpan elapsedTime)
-            {
-                _completingBatchWithError(
-                    logger,
-                    batchId,
-                    errorMessage,
-                    elapsedTime.TotalMilliseconds,
-                    null);
-            }
+                => CompletingBatchWithError(logger, batchId, errorMessage, elapsedTime.TotalMilliseconds);
+
+            [LoggerMessage(105, LogLevel.Debug, "Completing batch {BatchId} without error in {ElapsedMilliseconds}ms.", EventName = "CompletingBatchWithoutError")]
+            private static partial void CompletingBatchWithoutError(ILogger logger, long batchId, double elapsedMilliseconds);
 
             public static void CompletingBatchWithoutError(ILogger logger, long batchId, TimeSpan elapsedTime)
-            {
-                _completingBatchWithoutError(
-                    logger,
-                    batchId,
-                    elapsedTime.TotalMilliseconds,
-                    null);
-            }
+                => CompletingBatchWithoutError(logger, batchId, elapsedTime.TotalMilliseconds);
 
-            public static void ReceivedDuplicateBatchAck(ILogger logger, long incomingBatchId)
-            {
-                _receivedDuplicateBatchAcknowledgement(logger, incomingBatchId, null);
-            }
+            [LoggerMessage(106, LogLevel.Debug, "Received a duplicate ACK for batch id '{IncomingBatchId}'.", EventName = "ReceivedDuplicateBatchAcknowledgement")]
+            public static partial void ReceivedDuplicateBatchAck(ILogger logger, long incomingBatchId);
 
-            public static void FullUnacknowledgedRenderBatchesQueue(ILogger logger)
-            {
-                _fullUnacknowledgedRenderBatchesQueue(logger, null);
-            }
+            [LoggerMessage(107, LogLevel.Debug, "The queue of unacknowledged render batches is full.", EventName = "FullUnacknowledgedRenderBatchesQueue")]
+            public static partial void FullUnacknowledgedRenderBatchesQueue(ILogger logger);
         }
     }
 

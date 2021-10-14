@@ -1,8 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components
@@ -44,9 +45,12 @@ namespace Microsoft.AspNetCore.Components
         public bool IsInitialized => _renderer is not null;
 
         /// <summary>
-        /// Gets a value that determines if the <see cref="Renderer"/> is triggering a render in response to a hot-reload change.
+        /// Gets a value that determines if the <see cref="Renderer"/> is triggering a render in response to a metadata update (hot-reload) change.
         /// </summary>
-        public bool IsHotReloading => _renderer?.IsHotReloading ?? false;
+        public bool IsRenderingOnMetadataUpdate => TestableMetadataUpdate.IsSupported && (_renderer?.IsRenderingOnMetadataUpdate ?? false);
+
+        internal bool IsRendererDisposed => _renderer?.Disposed
+            ?? throw new InvalidOperationException("No renderer has been initialized.");
 
         /// <summary>
         /// Notifies the renderer that the component should be rendered.

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public void RemoveDisconnectedConnection(string connectionId)
         {
-            var groupNames = _groups.Where(x => x.Value.Keys.Contains(connectionId)).Select(x => x.Key);
+            var groupNames = _groups.Where(x => x.Value.ContainsKey(connectionId)).Select(x => x.Key);
             foreach (var groupName in groupNames)
             {
                 Remove(connectionId, groupName);

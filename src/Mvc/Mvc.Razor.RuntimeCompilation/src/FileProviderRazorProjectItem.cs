@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -13,8 +13,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
     /// </summary>
     public class FileProviderRazorProjectItem : RazorProjectItem
     {
-        private string _root;
-        private string _relativePhysicalPath;
+        private readonly string _root;
+        private string? _relativePhysicalPath;
         private bool _isRelativePhysicalPathSet;
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         /// <param name="filePath">The file path.</param>
         /// <param name="root">The root.</param>
         /// <param name="fileKind">The kind of file.</param>
-        public FileProviderRazorProjectItem(IFileInfo fileInfo, string basePath, string filePath, string root, string fileKind)
+        public FileProviderRazorProjectItem(IFileInfo fileInfo, string basePath, string filePath, string root, string? fileKind)
         {
             FileInfo = fileInfo;
             BasePath = basePath;
@@ -63,10 +63,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         public override bool Exists => FileInfo.Exists;
 
         /// <inheritdoc/>
-        public override string PhysicalPath => FileInfo.PhysicalPath;
+        public override string PhysicalPath => FileInfo.PhysicalPath ?? string.Empty;
 
         /// <inheritdoc/>
-        public override string RelativePhysicalPath
+        public override string? RelativePhysicalPath
         {
             get
             {

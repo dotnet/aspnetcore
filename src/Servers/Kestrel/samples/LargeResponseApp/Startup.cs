@@ -1,6 +1,7 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -15,14 +16,14 @@ namespace LargeResponseApp
     {
         private const int _chunkSize = 4096;
         private const int _defaultNumChunks = 16;
-        private static byte[] _chunk = Encoding.UTF8.GetBytes(new string('a', _chunkSize));
+        private static readonly byte[] _chunk = Encoding.UTF8.GetBytes(new string('a', _chunkSize));
 
         public void Configure(IApplicationBuilder app)
         {
             app.Run(async (context) =>
             {
                 var path = context.Request.Path;
-                if (!path.HasValue || !int.TryParse(path.Value.Substring(1), out var numChunks))
+                if (!path.HasValue || !int.TryParse(path.Value.AsSpan(1), out var numChunks))
                 {
                     numChunks = _defaultNumChunks;
                 }
@@ -49,7 +50,7 @@ namespace LargeResponseApp
                         })
                         .UseContentRoot(Directory.GetCurrentDirectory())
                         .UseStartup<Startup>();
-                })                
+                })
                 .Build();
 
             return host.RunAsync();

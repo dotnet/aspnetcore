@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Text;
@@ -67,28 +67,28 @@ $@"Could not locate Syntax Node owner at position '{i}':
 
         private class Verifier : SyntaxWalker
         {
-            private readonly SourceLocationTracker _tracker;
             private readonly RazorSourceDocument _source;
+            private SourceLocation _currentLocation;
 
             public Verifier(RazorSourceDocument source)
             {
-                _tracker = new SourceLocationTracker(new SourceLocation(source.FilePath, 0, 0, 0));
+                _currentLocation = new SourceLocation(source.FilePath, 0, 0, 0);
                 _source = source;
             }
 
-            public SourceLocationTracker SourceLocationTracker => _tracker;
+            // public SourceLocationTracker SourceLocationTracker => _tracker;
 
             public override void VisitToken(SyntaxToken token)
             {
                 if (token != null && !token.IsMissing && token.Kind != SyntaxKind.Marker)
                 {
                     var start = token.GetSourceLocation(_source);
-                    if (!start.Equals(_tracker.CurrentLocation))
+                    if (!start.Equals(_currentLocation))
                     {
-                        throw new InvalidOperationException($"Token starting at {start} should start at {_tracker.CurrentLocation} - {token} ");
+                        throw new InvalidOperationException($"Token starting at {start} should start at {_currentLocation} - {token} ");
                     }
 
-                    _tracker.UpdateLocation(token.Content);
+                    _currentLocation = SourceLocationTracker.Advance(_currentLocation, token.Content);
                 }
 
                 base.VisitToken(token);

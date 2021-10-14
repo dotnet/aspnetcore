@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Net;
@@ -106,9 +106,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             var body = await response.Content.ReadAsStringAsync();
-            Assert.Equal("Copyright (c) .NET Foundation. All rights reserved." +
-                " Licensed under the Apache License, Version 2.0. See License.txt " +
-                "in the project root for license information.", body);
+            Assert.Equal(@"Licensed to the .NET Foundation under one or more agreements.
+The .NET Foundation licenses this file to you under the MIT license.", body);
         }
 
         [Fact]
@@ -183,8 +182,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Theory]
-        [InlineData("Help", "This is the help page")]        
-        [InlineData("MoreHelp", "This is the more help page")]        
+        [InlineData("Help", "This is the help page")]
+        [InlineData("MoreHelp", "This is the more help page")]
         public async Task ControllerModel_CanDuplicateActions_RoutesToDifferentNames(string actionName, string expectedContent)
         {
             // Arrange & Act

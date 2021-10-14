@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             if ((HttpLoggingFields.Request & options.LoggingFields) != HttpLoggingFields.None)
             {
                 var request = context.Request;
-                var list = new List<KeyValuePair<string, string?>>(
+                var list = new List<KeyValuePair<string, object?>>(
                     request.Headers.Count + DefaultRequestFieldsMinusHeaders);
 
                 if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestProtocol))
@@ -202,20 +202,19 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
         }
 
-        private static void AddToList(List<KeyValuePair<string, string?>> list, string key, string? value)
+        private static void AddToList(List<KeyValuePair<string, object?>> list, string key, string? value)
         {
-            list.Add(new KeyValuePair<string, string?>(key, value));
+            list.Add(new KeyValuePair<string, object?>(key, value));
         }
 
         public static void LogResponseHeaders(HttpResponse response, HttpLoggingOptions options, ILogger logger)
         {
-            var list = new List<KeyValuePair<string, string?>>(
+            var list = new List<KeyValuePair<string, object?>>(
                 response.Headers.Count + DefaultResponseFieldsMinusHeaders);
 
             if (options.LoggingFields.HasFlag(HttpLoggingFields.ResponseStatusCode))
             {
-                list.Add(new KeyValuePair<string, string?>(nameof(response.StatusCode),
-                    response.StatusCode.ToString(CultureInfo.InvariantCulture)));
+                list.Add(new KeyValuePair<string, object?>(nameof(response.StatusCode), response.StatusCode));
             }
 
             if (options.LoggingFields.HasFlag(HttpLoggingFields.ResponseHeaders))
@@ -228,7 +227,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             logger.ResponseLog(httpResponseLog);
         }
 
-        internal static void FilterHeaders(List<KeyValuePair<string, string?>> keyValues,
+        internal static void FilterHeaders(List<KeyValuePair<string, object?>> keyValues,
             IHeaderDictionary headers,
             HashSet<string> allowedHeaders)
         {
@@ -237,10 +236,10 @@ namespace Microsoft.AspNetCore.HttpLogging
                 if (!allowedHeaders.Contains(key))
                 {
                     // Key is not among the "only listed" headers.
-                    keyValues.Add(new KeyValuePair<string, string?>(key, Redacted));
+                    keyValues.Add(new KeyValuePair<string, object?>(key, Redacted));
                     continue;
                 }
-                keyValues.Add(new KeyValuePair<string, string?>(key, value.ToString()));
+                keyValues.Add(new KeyValuePair<string, object?>(key, value.ToString()));
             }
         }
     }

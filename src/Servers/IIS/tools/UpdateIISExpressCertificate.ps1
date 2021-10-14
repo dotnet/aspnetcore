@@ -1,3 +1,6 @@
+# Print the OS version for diagnostic purposes
+$PSVersionTable.BuildVersion
+
 $ErrorActionPreference = 'Stop'
 
 if (-not $PSScriptRoot) {

@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// Registers a class configuration delegate that gets invoked during code generation.
         /// </summary>
         /// <param name="builder">The <see cref="RazorProjectEngineBuilder"/>.</param>
-        /// <param name="configureClass"><see cref="Action"/> invoked to configure 
+        /// <param name="configureClass"><see cref="Action"/> invoked to configure
         /// <see cref="ClassDeclarationIntermediateNode"/> during code generation.</param>
         /// <returns>The <see cref="RazorProjectEngineBuilder"/>.</returns>
         public static RazorProjectEngineBuilder ConfigureClass(
@@ -89,6 +89,22 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             builder.Features.Add(new ConfigureRootNamespaceFeature(rootNamespace));
+            return builder;
+        }
+
+        /// <summary>
+        /// Sets the SupportLocalizedComponentNames property to make localized component name diagnostics available.
+        /// </summary>
+        /// <param name="builder">The <see cref="RazorProjectEngineBuilder"/>.</param>
+        /// <returns>The <see cref="RazorProjectEngineBuilder"/>.</returns>
+        public static RazorProjectEngineBuilder SetSupportLocalizedComponentNames(this RazorProjectEngineBuilder builder)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.Features.Add(new SetSupportLocalizedComponentNamesFeature());
             return builder;
         }
 
@@ -215,7 +231,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 throw new ArgumentNullException(nameof(builder));
             }
-            
+
             builder.Features.Add(new AdditionalImportsProjectFeature(imports));
 
             return builder;
@@ -299,6 +315,21 @@ namespace Microsoft.AspNetCore.Razor.Language
                 public override bool Exists => true;
 
                 public override Stream Read() => new MemoryStream(_importBytes);
+            }
+        }
+
+        private class SetSupportLocalizedComponentNamesFeature : RazorEngineFeatureBase, IConfigureRazorCodeGenerationOptionsFeature
+        {
+            public int Order { get; set; }
+
+            public void Configure(RazorCodeGenerationOptionsBuilder options)
+            {
+                if (options == null)
+                {
+                    throw new ArgumentNullException(nameof(options));
+                }
+
+                options.SupportLocalizedComponentNames = true;
             }
         }
 

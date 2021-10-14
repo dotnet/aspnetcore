@@ -1,19 +1,17 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
@@ -21,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     {
         protected override TextOutputFormatter GetOutputFormatter()
         {
-            return new NewtonsoftJsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared, new MvcOptions());
+            return new NewtonsoftJsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared, new MvcOptions(), new MvcNewtonsoftJsonOptions());
         }
 
         [Fact]
@@ -47,6 +45,79 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         [Fact]
+        public async Task MvcJsonOptionsAreUsedToSetBufferThresholdFromServices()
+        {
+            // Arrange
+            var person = new User() { FullName = "John", age = 35 };
+            Stream writeStream = null;
+            var outputFormatterContext = GetOutputFormatterContext(person, typeof(User), writerFactory: (stream, encoding) =>
+            {
+                writeStream = stream;
+                return StreamWriter.Null;
+            });
+
+            var services = new ServiceCollection()
+                    .AddOptions()
+                    .Configure<MvcNewtonsoftJsonOptions>(o =>
+                    {
+                        o.OutputFormatterMemoryBufferThreshold = 1;
+                    })
+                    .BuildServiceProvider();
+
+            outputFormatterContext.HttpContext.RequestServices = services;
+
+            var settings = new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                Formatting = Formatting.Indented,
+            };
+            var expectedOutput = JsonConvert.SerializeObject(person, settings);
+#pragma warning disable CS0618 // Type or member is obsolete
+            var jsonFormatter = new NewtonsoftJsonOutputFormatter(settings, ArrayPool<char>.Shared, new MvcOptions());
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            // Act
+            await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.UTF8);
+
+            // Assert
+            Assert.IsType<FileBufferingWriteStream>(writeStream);
+
+            Assert.Equal(1, ((FileBufferingWriteStream)writeStream).MemoryThreshold);
+        }
+
+        [Fact]
+        public async Task MvcJsonOptionsAreUsedToSetBufferThreshold()
+        {
+            // Arrange
+            var person = new User() { FullName = "John", age = 35 };
+            Stream writeStream = null;
+            var outputFormatterContext = GetOutputFormatterContext(person, typeof(User), writerFactory: (stream, encoding) =>
+            {
+                writeStream = stream;
+                return StreamWriter.Null;
+            });
+
+            var settings = new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                Formatting = Formatting.Indented,
+            };
+            var expectedOutput = JsonConvert.SerializeObject(person, settings);
+            var jsonFormatter = new NewtonsoftJsonOutputFormatter(settings, ArrayPool<char>.Shared, new MvcOptions(), new MvcNewtonsoftJsonOptions()
+            {
+                OutputFormatterMemoryBufferThreshold = 2
+            });
+
+            // Act
+            await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.UTF8);
+
+            // Assert
+            Assert.IsType<FileBufferingWriteStream>(writeStream);
+
+            Assert.Equal(2, ((FileBufferingWriteStream)writeStream).MemoryThreshold);
+        }
+
+        [Fact]
         public async Task ChangesTo_SerializerSettings_AffectSerialization()
         {
             // Arrange
@@ -59,7 +130,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 Formatting = Formatting.Indented,
             };
             var expectedOutput = JsonConvert.SerializeObject(person, settings);
-            var jsonFormatter = new NewtonsoftJsonOutputFormatter(settings, ArrayPool<char>.Shared, new MvcOptions());
+            var jsonFormatter = new NewtonsoftJsonOutputFormatter(settings, ArrayPool<char>.Shared, new MvcOptions(), new MvcNewtonsoftJsonOptions());
 
             // Act
             await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.UTF8);
@@ -277,7 +348,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             // Arrange
             var beforeMessage = "Hello World";
-            var formatter = new NewtonsoftJsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared, new MvcOptions());
+            var formatter = new NewtonsoftJsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared, new MvcOptions(), new MvcNewtonsoftJsonOptions());
             var memStream = new MemoryStream();
             var outputFormatterContext = GetOutputFormatterContext(
                 beforeMessage,
@@ -308,7 +379,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             stream.Setup(v => v.FlushAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
             stream.SetupGet(s => s.CanWrite).Returns(true);
 
-            var formatter = new NewtonsoftJsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared, new MvcOptions());
+            var formatter = new NewtonsoftJsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared, new MvcOptions(), new MvcNewtonsoftJsonOptions());
             var outputFormatterContext = GetOutputFormatterContext(
                 model,
                 typeof(string),
@@ -360,10 +431,55 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
         }
 
+        [Fact]
+        public async Task WriteResponseBodyAsync_AsyncEnumerableConnectionCloses()
+        {
+            // Arrange
+            var formatter = GetOutputFormatter();
+            var mediaType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+
+            var body = new MemoryStream();
+            var actionContext = GetActionContext(mediaType, body);
+            var cts = new CancellationTokenSource();
+            actionContext.HttpContext.RequestAborted = cts.Token;
+            actionContext.HttpContext.RequestServices = new ServiceCollection().AddLogging().BuildServiceProvider();
+
+            var asyncEnumerable = AsyncEnumerableClosedConnection();
+            var outputFormatterContext = new OutputFormatterWriteContext(
+                actionContext.HttpContext,
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                asyncEnumerable.GetType(),
+                asyncEnumerable)
+            {
+                ContentType = new StringSegment(mediaType.ToString()),
+            };
+            var iterated = false;
+
+            // Act
+            await formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.GetEncoding("utf-8"));
+
+            // Assert
+            Assert.Empty(body.ToArray());
+            Assert.False(iterated);
+
+            async IAsyncEnumerable<int> AsyncEnumerableClosedConnection([EnumeratorCancellation] CancellationToken cancellationToken = default)
+            {
+                await Task.Yield();
+                cts.Cancel();
+                // MvcOptions.MaxIAsyncEnumerableBufferLimit is 8192. Pick some value larger than that.
+                foreach (var i in Enumerable.Range(0, 9000))
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    iterated = true;
+                    yield return i;
+                }
+            }
+        }
+
         private class TestableJsonOutputFormatter : NewtonsoftJsonOutputFormatter
         {
             public TestableJsonOutputFormatter(JsonSerializerSettings serializerSettings)
-                : base(serializerSettings, ArrayPool<char>.Shared, new MvcOptions())
+                : base(serializerSettings, ArrayPool<char>.Shared, new MvcOptions(), new MvcNewtonsoftJsonOptions())
             {
             }
 

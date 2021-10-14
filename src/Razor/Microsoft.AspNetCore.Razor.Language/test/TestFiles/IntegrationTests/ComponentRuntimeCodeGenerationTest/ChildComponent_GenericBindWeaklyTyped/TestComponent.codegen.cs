@@ -23,7 +23,7 @@ namespace Test
 #line hidden
 #nullable disable
             );
-            __builder.AddAttribute(2, "ItemChanged", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => Value = __value, Value));
+            __builder.AddAttribute(2, "ItemChanged", global::Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => Value = __value, Value));
             __builder.CloseComponent();
         }
         #pragma warning restore 1998

@@ -5,10 +5,12 @@
   "private": true,
   "scripts": {
     "build": "cd ./signalr && yarn run build && cd ../signalr-protocol-msgpack && yarn run build",
-    "pretest": "node ./common/node_modules/tslint/bin/tslint -c ./tslint.json -p ./signalr/tests/tsconfig.json && node ./common/node_modules/tslint/bin/tslint -c ./tslint.json -p ./signalr-protocol-msgpack/tests/tsconfig.json",
+    "lint-signalr": "node ./common/node_modules/eslint/bin/eslint -c ./signalr/tests/.eslintrc.js --resolve-plugins-relative-to ./common --ext .ts ./signalr/tests ",
+    "lint-signalr-msgpack": "node ./common/node_modules/eslint/bin/eslint -c ./signalr-protocol-msgpack/tests/.eslintrc.js --resolve-plugins-relative-to ./common --ext .ts ./signalr-protocol-msgpack/tests ",
+    "pretest": "yarn run lint-signalr & yarn run lint-signalr-msgpack",
     "test": "node ./common/node_modules/jest/bin/jest.js --config ./jest.config.js",
     "coverage": "node ./common/node_modules/jest/bin/jest.js --config ./jest.config.js --coverage"
   },
   "author": "Microsoft",
-  "license": "Apache-2.0"
+  "license": "MIT"
 }

@@ -1,16 +1,24 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal partial class HttpResponseTrailers : HttpHeaders
     {
+        public Func<string, Encoding?> EncodingSelector { get; set; }
+
+        public HttpResponseTrailers(Func<string, Encoding?>? encodingSelector = null)
+        {
+            EncodingSelector = encodingSelector ?? KestrelServerOptions.DefaultHeaderEncodingSelector;
+        }
+
         public Enumerator GetEnumerator()
         {
             return new Enumerator(this);

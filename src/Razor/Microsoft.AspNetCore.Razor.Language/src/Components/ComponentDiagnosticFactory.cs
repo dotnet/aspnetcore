@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         public static readonly RazorDiagnosticDescriptor UnsupportedTagHelperDirective = new RazorDiagnosticDescriptor(
             $"{DiagnosticPrefix}9978",
-            () => 
+            () =>
                 "The directives @addTagHelper, @removeTagHelper and @tagHelperPrefix are not valid in a component document. " +
                 "Use '@using <namespace>' directive instead.",
             RazorDiagnosticSeverity.Error);

@@ -1,13 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Xml;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.DotNet.OpenApi.Tests;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.OpenApi.Add.Tests
@@ -20,7 +16,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         public void OpenApi_Empty_ShowsHelp()
         {
             var app = GetApplication();
-            var run = app.Execute(new string[] { });
+            var run = app.Execute(Array.Empty<string>());
 
             AssertNoErrors(run);
 

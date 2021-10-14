@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -99,13 +99,13 @@ namespace Microsoft.AspNetCore.HttpOverrides
             _next = next;
 
             PreProcessHosts();
-        }
 
-        private static void EnsureOptionNotNullorWhitespace(string value, string propertyName)
-        {
-            if (string.IsNullOrWhiteSpace(value))
+            static void EnsureOptionNotNullorWhitespace(string value, string propertyName)
             {
-                throw new ArgumentException($"options.{propertyName} is required", "options");
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    throw new ArgumentException($"options.{propertyName} is required", nameof(options));
+                }
             }
         }
 
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
             _allowedHosts = allowedHosts;
         }
 
-        private bool IsTopLevelWildcard(string host)
+        private static bool IsTopLevelWildcard(string host)
         {
             return (string.Equals("*", host, StringComparison.Ordinal) // HttpSys wildcard
                            || string.Equals("[::]", host, StringComparison.Ordinal) // Kestrel wildcard, IPv6 Any
@@ -397,7 +397,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
 
         // Empty was checked for by the caller
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool TryValidateScheme(string scheme)
+        private static bool TryValidateScheme(string scheme)
         {
             for (var i = 0; i < scheme.Length; i++)
             {
@@ -501,7 +501,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool IsNumeric(char ch)
+        private static bool IsNumeric(char ch)
         {
             return '0' <= ch && ch <= '9';
         }

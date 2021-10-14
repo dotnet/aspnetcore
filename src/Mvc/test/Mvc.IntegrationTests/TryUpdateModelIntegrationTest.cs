@@ -1,5 +1,5 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -1296,7 +1296,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
         private class CustomReadOnlyCollection<T> : ICollection<T>
         {
-            private ICollection<T> _original;
+            private readonly ICollection<T> _original;
 
             public CustomReadOnlyCollection()
                 : this(new List<T>())

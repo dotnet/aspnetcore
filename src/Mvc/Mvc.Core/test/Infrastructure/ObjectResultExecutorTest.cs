@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             var httpContext = new DefaultHttpContext();
             var actionContext = new ActionContext() { HttpContext = httpContext };
-            httpContext.Request.Headers[HeaderNames.Accept] = "application/xml"; // This will not be used
+            httpContext.Request.Headers.Accept = "application/xml"; // This will not be used
             httpContext.Response.ContentType = "text/json";
 
             var result = new ObjectResult("input")
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             var httpContext = new DefaultHttpContext();
             var actionContext = new ActionContext() { HttpContext = httpContext };
-            httpContext.Request.Headers[HeaderNames.Accept] = "application/xml"; // This will not be used
+            httpContext.Request.Headers.Accept = "application/xml"; // This will not be used
             httpContext.Response.ContentType = "text/plain";
 
             var result = new ObjectResult("input");
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             var httpContext = new DefaultHttpContext();
             var actionContext = new ActionContext() { HttpContext = httpContext };
-            httpContext.Request.Headers[HeaderNames.Accept] = "application/xml"; // This will not be used
+            httpContext.Request.Headers.Accept = "application/xml"; // This will not be used
             httpContext.Response.ContentType = "application/json";
 
             var result = new ObjectResult("input");
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             var httpContext = new DefaultHttpContext();
             var actionContext = new ActionContext() { HttpContext = httpContext };
-            httpContext.Request.Headers[HeaderNames.Accept] = "application/xml"; // This will not be used
+            httpContext.Request.Headers.Accept = "application/xml"; // This will not be used
             httpContext.Response.ContentType = "application/json";
 
             var result = new ObjectResult("input");
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             httpContext.Response.ContentType = "application/json"; // This will not be used
 
             var result = new ObjectResult(new ProblemDetails());
-            result.Formatters.Add(new TestXmlOutputFormatter()); // This will be chosen based on the problem details content type            
+            result.Formatters.Add(new TestXmlOutputFormatter()); // This will be chosen based on the problem details content type
             result.Formatters.Add(new TestJsonOutputFormatter());
             result.Formatters.Add(new TestStringOutputFormatter());
 
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             httpContext.Response.ContentType = "application/json"; // This will not be used
 
             var result = new ObjectResult(new ProblemDetails());
-            result.Formatters.Add(new TestXmlOutputFormatter()); // This will be chosen based on the problem details content type            
+            result.Formatters.Add(new TestXmlOutputFormatter()); // This will be chosen based on the problem details content type
             result.Formatters.Add(new TestJsonOutputFormatter());
             result.Formatters.Add(new TestStringOutputFormatter());
 
@@ -190,13 +190,13 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             var httpContext = new DefaultHttpContext();
             var actionContext = new ActionContext() { HttpContext = httpContext };
-            httpContext.Request.Headers[HeaderNames.Accept] = "application/json"; // This will not be used
+            httpContext.Request.Headers.Accept = "application/json"; // This will not be used
             httpContext.Response.ContentType = "application/xml"; // This will not be used
 
             var result = new ObjectResult(new ProblemDetails())
             {
                 ContentTypes = { "text/plain" }, // This will not be used
-            }; 
+            };
             result.Formatters.Add(new TestJsonOutputFormatter()); // This will be chosen based on the Accept Headers "application/json"
             result.Formatters.Add(new TestXmlOutputFormatter());
             result.Formatters.Add(new TestStringOutputFormatter());
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             // Assert
             MediaTypeAssert.Equal("application/problem+json; charset=utf-8", httpContext.Response.ContentType);
         }
-        
+
         [Fact]
         public async Task ExecuteAsync_ForProblemDetailsValue_UsesProblemDetailsXMLContentType_BasedOnAcceptHeader()
         {
@@ -216,13 +216,13 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             var httpContext = new DefaultHttpContext();
             var actionContext = new ActionContext() { HttpContext = httpContext };
-            httpContext.Request.Headers[HeaderNames.Accept] = "application/xml"; // This will not be used
+            httpContext.Request.Headers.Accept = "application/xml"; // This will not be used
 
             var result = new ObjectResult(new ProblemDetails())
             {
                 ContentTypes = { "text/plain" }, // This will not be used
-            }; 
-            result.Formatters.Add(new TestJsonOutputFormatter()); 
+            };
+            result.Formatters.Add(new TestJsonOutputFormatter());
             result.Formatters.Add(new TestXmlOutputFormatter()); // This will be chosen based on the Accept Headers "application/xml"
             result.Formatters.Add(new TestStringOutputFormatter());
 
@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             // Assert
             Assert.Equal(
                 "application/json; charset=utf-8",
-                actionContext.HttpContext.Response.Headers[HeaderNames.ContentType]);
+                actionContext.HttpContext.Response.Headers.ContentType);
         }
 
         [Fact]
@@ -390,13 +390,13 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 HttpContext = GetHttpContext(),
             };
-            actionContext.HttpContext.Request.Headers[HeaderNames.Accept] = acceptHeader;
+            actionContext.HttpContext.Request.Headers.Accept = acceptHeader;
 
             // Act
             await executor.ExecuteAsync(actionContext, result);
 
             // Assert
-            Assert.Equal(expectedContentType, actionContext.HttpContext.Response.Headers[HeaderNames.ContentType]);
+            Assert.Equal(expectedContentType, actionContext.HttpContext.Response.Headers.ContentType);
         }
 
         [Theory]
@@ -427,13 +427,13 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 HttpContext = GetHttpContext(),
             };
-            actionContext.HttpContext.Request.Headers[HeaderNames.Accept] = acceptHeader;
+            actionContext.HttpContext.Request.Headers.Accept = acceptHeader;
 
             // Act
             await executor.ExecuteAsync(actionContext, result);
 
             // Assert
-            var responseContentType = actionContext.HttpContext.Response.Headers[HeaderNames.ContentType];
+            var responseContentType = actionContext.HttpContext.Response.Headers.ContentType;
             MediaTypeAssert.Equal(expectedContentType, responseContentType);
         }
 

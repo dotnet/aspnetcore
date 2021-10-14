@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language
     {
         internal const int LargeObjectHeapLimitInChars = 40 * 1024; // 40K Unicode chars is 80KB which is less than the large object heap limit.
 
-        internal static readonly RazorSourceDocument[] EmptyArray = new RazorSourceDocument[0];
+        internal static readonly RazorSourceDocument[] EmptyArray = Array.Empty<RazorSourceDocument>();
 
         /// <summary>
         /// Gets the encoding of the text in the original source document.

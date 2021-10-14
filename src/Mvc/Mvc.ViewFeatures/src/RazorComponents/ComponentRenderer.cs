@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         {
             if (!context.Response.HasStarted)
             {
-                context.Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store, max-age=0";
+                context.Response.Headers.CacheControl = "no-cache, no-store, max-age=0";
             }
 
             var currentInvocation = _serverComponentSerializer.SerializeInvocation(
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         {
             if (!context.Response.HasStarted)
             {
-                context.Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store, max-age=0";
+                context.Response.Headers.CacheControl = "no-cache, no-store, max-age=0";
             }
 
             var currentInvocation = _serverComponentSerializer.SerializeInvocation(invocationId, type, parametersCollection, prerendered: false);

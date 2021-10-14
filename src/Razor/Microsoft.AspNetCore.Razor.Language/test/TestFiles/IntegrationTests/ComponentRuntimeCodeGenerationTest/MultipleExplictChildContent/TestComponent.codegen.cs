@@ -19,15 +19,13 @@ namespace Test
             }
             ));
             __builder.AddAttribute(3, "Footer", (Microsoft.AspNetCore.Components.RenderFragment)((__builder2) => {
-                __builder2.AddContent(4, 
 #nullable restore
-#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
-              "bye!"
+#line (3,15)-(3,21) 25 "x:\dir\subdir\Test\TestComponent.cshtml"
+__builder2.AddContent(4, "bye!");
 
 #line default
 #line hidden
 #nullable disable
-                );
             }
             ));
             __builder.CloseComponent();

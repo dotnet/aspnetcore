@@ -7,4 +7,4 @@ Document -
         UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
         ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                MarkupBlock -  - <input onfocus="alert("Test");">
+                MarkupBlock -  - <input onfocus='alert("Test");'>\n<input onfocus="alert(" Test");">\n<input onfocus="alert('Test');">\n<p data-options='{direction: "fromtop", animation_duration: 25, direction: "reverse"}'></p>

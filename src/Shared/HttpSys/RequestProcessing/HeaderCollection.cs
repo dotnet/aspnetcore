@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             get
             {
                 long value;
-                var rawValue = this[HttpKnownHeaderNames.ContentLength];
+                var rawValue = this[HeaderNames.ContentLength];
 
                 if (_contentLengthText.Equals(rawValue))
                 {
@@ -145,15 +145,15 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 {
                     if (value.Value < 0)
                     {
-                        throw new ArgumentOutOfRangeException("value", value.Value, "Cannot be negative.");
+                        throw new ArgumentOutOfRangeException(nameof(value), value.Value, "Cannot be negative.");
                     }
                     _contentLengthText = HeaderUtilities.FormatNonNegativeInt64(value.Value);
-                    this[HttpKnownHeaderNames.ContentLength] = _contentLengthText;
+                    this[HeaderNames.ContentLength] = _contentLengthText;
                     _contentLength = value;
                 }
                 else
                 {
-                    Remove(HttpKnownHeaderNames.ContentLength);
+                    Remove(HeaderNames.ContentLength);
                     _contentLengthText = StringValues.Empty;
                     _contentLength = null;
                 }
@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             foreach (var value in headerValues)
             {
-                ValidateHeaderCharacters(value);
+                ValidateHeaderCharacters(value!);
             }
         }
 

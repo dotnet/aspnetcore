@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Globalization;
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = contentType.ToString();
-            httpContext.Request.Headers[HeaderNames.AcceptCharset] = contentType.Charset.ToString();
+            httpContext.Request.Headers.AcceptCharset = contentType.Charset.ToString();
 
 
             httpContext.Response.Body = responseStream ?? new MemoryStream();
@@ -182,14 +182,15 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             object outputValue,
             Type outputType,
             string contentType = "application/xml; charset=utf-8",
-            Stream responseStream = null)
+            Stream responseStream = null,
+            Func<Stream, Encoding, TextWriter> writerFactory = null)
         {
             var mediaTypeHeaderValue = MediaTypeHeaderValue.Parse(contentType);
 
             var actionContext = GetActionContext(mediaTypeHeaderValue, responseStream);
             return new OutputFormatterWriteContext(
                 actionContext.HttpContext,
-                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                writerFactory ?? new TestHttpResponseStreamWriterFactory().CreateWriter,
                 outputType,
                 outputValue)
             {

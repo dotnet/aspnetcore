@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -24,9 +25,20 @@ namespace Templates.Test.Helpers
     {
         private const string _urls = "http://127.0.0.1:0;https://127.0.0.1:0";
 
-        public static string ArtifactsLogDir => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT")))
-            ? GetAssemblyMetadata("ArtifactsLogDir")
-            : Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
+        public static string ArtifactsLogDir
+        {
+            get
+            {
+                var testLogFolder = typeof(Project).Assembly.GetCustomAttribute<TestFrameworkFileLoggerAttribute>()?.BaseDirectory;
+                if (!string.IsNullOrEmpty(testLogFolder))
+                {
+                    return testLogFolder;
+                }
+
+                var helixWorkItemUploadRoot = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
+                return string.IsNullOrEmpty(helixWorkItemUploadRoot) ? GetAssemblyMetadata("ArtifactsLogDir") : helixWorkItemUploadRoot;
+            }
+        }
 
         public static string DotNetEfFullPath => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
             ? typeof(ProjectFactoryFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
@@ -102,8 +114,13 @@ namespace Templates.Test.Helpers
             try
             {
                 Output.WriteLine("Acquired DotNetNewLock");
-                // Temporary while investigating why this process occasionally never runs or exits on Debian 9
-                environmentVariables.Add("COREHOST_TRACE", "1");
+
+                if (Directory.Exists(TemplateOutputDir))
+                {
+                    Output.WriteLine($"Template directory already exists, deleting contents of {TemplateOutputDir}");
+                    Directory.Delete(TemplateOutputDir, recursive: true);
+                }
+
                 using var execution = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
                 await execution.Exited;
                 return new ProcessResult(execution);
@@ -154,31 +171,6 @@ namespace Templates.Test.Helpers
                 ["ASPNETCORE_Logging__Console__LogLevel__Microsoft"] = "Debug",
                 ["ASPNETCORE_Logging__Console__FormatterOptions__IncludeScopes"] = "true",
             };
-
-            var launchSettingsJson = Path.Combine(TemplateOutputDir, "Properties", "launchSettings.json");
-            if (File.Exists(launchSettingsJson))
-            {
-                // When executing "dotnet run", the launch urls specified in the app's launchSettings.json have higher precedence
-                // than ambient environment variables. When present, we have to edit this file to allow the application to pick random ports.
-                var original = File.ReadAllText(launchSettingsJson);
-                var updated = original.Replace(
-                    "\"applicationUrl\": \"https://localhost:5001;http://localhost:5000\"",
-                    $"\"applicationUrl\": \"{_urls}\"");
-
-                if (updated == original)
-                {
-                    Output.WriteLine("applicationUrl is not specified in launchSettings.json");
-                }
-                else
-                {
-                    Output.WriteLine("Updating applicationUrl in launchSettings.json");
-                    File.WriteAllText(launchSettingsJson, updated);
-                }
-            }
-            else
-            {
-                Output.WriteLine("No launchSettings.json found to update.");
-            }
 
             var projectDll = Path.Combine(TemplateBuildDir, $"{ProjectName}.dll");
             return new AspNetProcess(DevCert, Output, TemplateOutputDir, projectDll, environment, published: false, hasListeningUri: hasListeningUri, logger: logger);
@@ -438,7 +430,7 @@ namespace Templates.Test.Helpers
                 var sourceFile = Path.Combine(TemplateOutputDir, "msbuild.binlog");
                 Assert.True(File.Exists(sourceFile), $"Log for '{ProjectName}' not found in '{sourceFile}'.");
                 var destination = Path.Combine(ArtifactsLogDir, ProjectName + ".binlog");
-                File.Move(sourceFile, destination);
+                File.Move(sourceFile, destination, overwrite: true); // binlog will exist on retries
             }
         }
 

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -132,9 +132,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     break;
                 case RequestRejectionReason.FinalTransferCodingNotChunked:
                     ex = new BadHttpRequestException(CoreStrings.FormatBadRequest_FinalTransferCodingNotChunked(detail), StatusCodes.Status400BadRequest, reason);
-                    break;
-                case RequestRejectionReason.LengthRequired:
-                    ex = new BadHttpRequestException(CoreStrings.FormatBadRequest_LengthRequired(detail), StatusCodes.Status411LengthRequired, reason);
                     break;
                 case RequestRejectionReason.LengthRequiredHttp10:
                     ex = new BadHttpRequestException(CoreStrings.FormatBadRequest_LengthRequiredHttp10(detail), StatusCodes.Status400BadRequest, reason);

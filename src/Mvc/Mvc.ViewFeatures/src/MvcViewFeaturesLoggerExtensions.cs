@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -14,8 +14,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     internal static class MvcViewFeaturesLoggerExtensions
     {
-        private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
-
         private static readonly Action<ILogger, string, string[], Exception> _viewComponentExecuting;
         private static readonly Action<ILogger, string, double, string, Exception> _viewComponentExecuted;
 
@@ -39,20 +37,22 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private static readonly Action<ILogger, Type, Exception> _notMostEffectiveFilter;
 
+        private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
+
         static MvcViewFeaturesLoggerExtensions()
         {
             _viewComponentExecuting = LoggerMessage.Define<string, string[]>(
                 LogLevel.Debug,
                 new EventId(1, "ViewComponentExecuting"),
                 "Executing view component {ViewComponentName} with arguments ({Arguments}).",
-                skipEnabledCheck: true);
+                SkipEnabledCheckLogOptions);
 
             _viewComponentExecuted = LoggerMessage.Define<string, double, string>(
                 LogLevel.Debug,
                 new EventId(2, "ViewComponentExecuted"),
                 "Executed view component {ViewComponentName} in {ElapsedMilliseconds}ms and returned " +
                 "{ViewComponentResult}",
-                skipEnabledCheck: true);
+                SkipEnabledCheckLogOptions);
 
             _partialViewResultExecuting = LoggerMessage.Define<string>(
                 LogLevel.Information,
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 LogLevel.Information,
                 new EventId(1, "ViewComponentResultExecuting"),
                 "Executing ViewComponentResult, running {ViewComponentName}.",
-                skipEnabledCheck: true);
+                SkipEnabledCheckLogOptions);
 
             _viewResultExecuting = LoggerMessage.Define<string>(
                 LogLevel.Information,

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.Cryptography;
@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.DataProtection.SP800_108
     /// <remarks>
     /// More info at http://csrc.nist.gov/publications/nistpubs/800-108/sp800-108.pdf, Sec. 5.1.
     /// </remarks>
-    internal unsafe static class SP800_108_CTR_HMACSHA512Util
+    internal static unsafe class SP800_108_CTR_HMACSHA512Util
     {
         // Creates a provider with an empty key.
         public static ISP800_108_CTR_HMACSHA512Provider CreateEmptyProvider()

@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
@@ -22,9 +23,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         private readonly RazorReferenceManager _referenceManager;
         private readonly IWebHostEnvironment _hostingEnvironment;
         private bool _optionsInitialized;
-        private CSharpParseOptions _parseOptions;
-        private CSharpCompilationOptions _compilationOptions;
-        private EmitOptions _emitOptions;
+        private CSharpParseOptions? _parseOptions;
+        private CSharpCompilationOptions? _compilationOptions;
+        private EmitOptions? _emitOptions;
         private bool _emitPdb;
 
         public CSharpCompiler(RazorReferenceManager manager, IWebHostEnvironment hostingEnvironment)
@@ -100,6 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             return DependencyContextCompilationOptions.Default;
         }
 
+        [MemberNotNull(nameof(_emitOptions), nameof(_parseOptions), nameof(_compilationOptions))]
         private void EnsureOptions()
         {
             if (!_optionsInitialized)
@@ -111,6 +113,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
 
                 _optionsInitialized = true;
             }
+
+            Debug.Assert(_parseOptions is not null);
+            Debug.Assert(_compilationOptions is not null);
+            Debug.Assert(_emitOptions is not null);
         }
 
         private EmitOptions GetEmitOptions(DependencyContextCompilationOptions dependencyContextOptions)
@@ -205,9 +211,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             DependencyContextCompilationOptions dependencyContextOptions)
         {
             var configurationSymbol = hostingEnvironment.IsDevelopment() ? "DEBUG" : "RELEASE";
-            var defines = dependencyContextOptions.Defines.Concat(new[] { configurationSymbol });
+            var defines = dependencyContextOptions.Defines.Concat(new[] { configurationSymbol }).Where(define => define != null);
 
-            var parseOptions = new CSharpParseOptions(preprocessorSymbols: defines);
+            var parseOptions = new CSharpParseOptions(preprocessorSymbols: (IEnumerable<string>)defines);
 
             if (string.IsNullOrEmpty(dependencyContextOptions.LanguageVersion))
             {

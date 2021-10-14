@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         /// <see cref="WrapperProviderContext.DeclaredType"/> is
         /// <see cref="Microsoft.AspNetCore.Mvc.SerializableError"/>; otherwise <c>null</c>.
         /// </returns>
-        public IWrapperProvider GetProvider(WrapperProviderContext context)
+        public IWrapperProvider? GetProvider(WrapperProviderContext context)
         {
             if (context == null)
             {

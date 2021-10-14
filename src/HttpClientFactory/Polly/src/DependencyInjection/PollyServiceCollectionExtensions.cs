@@ -1,6 +1,5 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 using System;
 using Polly.Registry;
@@ -28,7 +27,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             // Create an empty registry, register and return it as an instance. This is the best way to get a
-            // single instance registered using both interfaces.
+            // single instance registered using all the interfaces.
             var registry = new PolicyRegistry();
 
             services.AddSingleton<IConcurrentPolicyRegistry<string>>(registry);
@@ -90,7 +89,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             // Create an empty registry, configure it and register it as an instance.
-            // This is the best way to get a single instance registered using both interfaces.
+            // This is the best way to get a single instance registered using all the interfaces.
             services.AddSingleton(serviceProvider =>
             {
                 var registry = new PolicyRegistry();

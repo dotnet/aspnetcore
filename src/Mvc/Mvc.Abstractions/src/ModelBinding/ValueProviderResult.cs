@@ -1,9 +1,7 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.Extensions.Primitives;
 
@@ -32,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// A <see cref="ValueProviderResult"/> that represents a lack of data.
         /// </summary>
-        public static ValueProviderResult None = new ValueProviderResult(new string[0]);
+        public static ValueProviderResult None = new ValueProviderResult(Array.Empty<string>());
 
         /// <summary>
         /// Creates a new <see cref="ValueProviderResult"/> using <see cref="CultureInfo.InvariantCulture"/>.
@@ -149,7 +147,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <param name="result">The <see cref="ValueProviderResult"/>.</param>
         public static explicit operator string(ValueProviderResult result)
         {
-            return result.Values;
+            return result.Values.ToString();
         }
 
         /// <summary>
@@ -159,7 +157,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <param name="result">The <see cref="ValueProviderResult"/>.</param>
         public static explicit operator string[](ValueProviderResult result)
         {
-            return result.Values;
+            // ToArray() handles the entirely-null case and we assume individual values are never null.
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
+            return result.Values.ToArray();
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
         }
 
         /// <summary>

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
             _logger.UsingKeyAsDefaultKey(defaultKey.KeyId);
 
-            var nextAutoRefreshTime = now + GetRefreshPeriodWithJitter(_keyManagementOptions.KeyRingRefreshPeriod);
+            var nextAutoRefreshTime = now + GetRefreshPeriodWithJitter(KeyManagementOptions.KeyRingRefreshPeriod);
 
             // The cached keyring should expire at the earliest of (default key expiration, next auto-refresh time).
             // Since the refresh period and safety window are not user-settable, we can guarantee that there's at
@@ -259,7 +259,12 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             // hit a single repository simultaneously. For instance, if the refresh period is 1 hour,
             // we'll return a value in the vicinity of 48 - 60 minutes. We use the Random class since
             // we don't need a secure PRNG for this.
-            return TimeSpan.FromTicks((long)(refreshPeriod.Ticks * (1.0d - (new Random().NextDouble() / 5))));
+#if NET6_0_OR_GREATER
+            var random = Random.Shared;
+#else
+            var random = new Random();
+#endif
+            return TimeSpan.FromTicks((long)(refreshPeriod.Ticks * (1.0d - (random.NextDouble() / 5))));
         }
 
         private static DateTimeOffset Min(DateTimeOffset a, DateTimeOffset b)

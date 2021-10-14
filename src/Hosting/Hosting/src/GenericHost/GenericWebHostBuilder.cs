@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Builder;
+using Microsoft.AspNetCore.Hosting.Infrastructure;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -19,7 +20,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Hosting
 {
-    internal class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup, ISupportsUseDefaultServiceProvider
+    internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup, ISupportsUseDefaultServiceProvider
     {
         private readonly IHostBuilder _builder;
         private readonly IConfiguration _config;
@@ -87,6 +88,7 @@ namespace Microsoft.AspNetCore.Hosting
                 services.TryAddSingleton(sp => new DiagnosticListener("Microsoft.AspNetCore"));
                 services.TryAddSingleton<DiagnosticSource>(sp => sp.GetRequiredService<DiagnosticListener>());
                 services.TryAddSingleton(sp => new ActivitySource("Microsoft.AspNetCore"));
+                services.TryAddSingleton(DistributedContextPropagator.Current);
 
                 services.TryAddSingleton<IHttpContextFactory, DefaultHttpContextFactory>();
                 services.TryAddScoped<IMiddlewareFactory, MiddlewareFactory>();
@@ -213,6 +215,10 @@ namespace Microsoft.AspNetCore.Hosting
 
         public IWebHostBuilder UseStartup([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType)
         {
+            var startupAssemblyName = startupType.Assembly.GetName().Name;
+
+            UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
+
             // UseStartup can be called multiple times. Only run the last one.
             _startupObject = startupType;
 
@@ -230,6 +236,10 @@ namespace Microsoft.AspNetCore.Hosting
 
         public IWebHostBuilder UseStartup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)]TStartup>(Func<WebHostBuilderContext, TStartup> startupFactory)
         {
+            var startupAssemblyName = startupFactory.GetMethodInfo().DeclaringType!.Assembly.GetName().Name;
+
+            UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
+
             // Clear the startup type
             _startupObject = startupFactory;
 
@@ -331,8 +341,35 @@ namespace Microsoft.AspNetCore.Hosting
             builder.Build(instance)(container);
         }
 
+        public IWebHostBuilder Configure(Action<IApplicationBuilder> configure)
+        {
+            var startupAssemblyName = configure.GetMethodInfo().DeclaringType!.Assembly.GetName().Name!;
+
+            UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
+
+            // Clear the startup type
+            _startupObject = configure;
+
+            _builder.ConfigureServices((context, services) =>
+            {
+                if (object.ReferenceEquals(_startupObject, configure))
+                {
+                    services.Configure<GenericWebHostServiceOptions>(options =>
+                    {
+                        options.ConfigureApplication = app => configure(app);
+                    });
+                }
+            });
+
+            return this;
+        }
+
         public IWebHostBuilder Configure(Action<WebHostBuilderContext, IApplicationBuilder> configure)
         {
+            var startupAssemblyName = configure.GetMethodInfo().DeclaringType!.Assembly.GetName().Name!;
+
+            UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
+
             // Clear the startup type
             _startupObject = configure;
 
@@ -351,7 +388,7 @@ namespace Microsoft.AspNetCore.Hosting
             return this;
         }
 
-        private WebHostBuilderContext GetWebHostBuilderContext(HostBuilderContext context)
+        private static WebHostBuilderContext GetWebHostBuilderContext(HostBuilderContext context)
         {
             if (!context.Properties.TryGetValue(typeof(WebHostBuilderContext), out var contextVal))
             {
@@ -373,7 +410,7 @@ namespace Microsoft.AspNetCore.Hosting
             return webHostContext;
         }
 
-        public string GetSetting(string key)
+        public string? GetSetting(string key)
         {
             return _config[key];
         }

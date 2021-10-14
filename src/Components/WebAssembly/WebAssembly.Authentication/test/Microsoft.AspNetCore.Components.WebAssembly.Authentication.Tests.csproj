@@ -9,6 +9,7 @@
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp" />
+    <Reference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup>

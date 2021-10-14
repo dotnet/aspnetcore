@@ -1,8 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using IdentityServer4;
-using IdentityServer4.Models;
+using Duende.IdentityServer;
+using Duende.IdentityServer.Models;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration
             var clientLoader = new ConfigureClients(config, new TestLogger<ConfigureClients>());
 
             var options = new ApiAuthorizationOptions();
-            
+
             // Act
             clientLoader.Configure(options);
 

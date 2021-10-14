@@ -1,14 +1,12 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable warnings
 
-using System;
-using System.Collections.Generic;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Runtime.ExceptionServices;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Routing
@@ -16,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.Routing
     /// <summary>
     /// A component that supplies route data corresponding to the current navigation state.
     /// </summary>
-    public class Router : IComponent, IHandleAfterRender, IDisposable
+    public partial class Router : IComponent, IHandleAfterRender, IDisposable
     {
         static readonly char[] _queryOrHashStartChar = new[] { '?', '#' };
         // Dictionary is intentionally used instead of ReadOnlyDictionary to reduce Blazor size
@@ -33,9 +31,9 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private Task _previousOnNavigateTask = Task.CompletedTask;
 
-        private RouteKey _currentRouteKey;
+        private RouteKey _routeTableLastBuiltForRouteKey;
 
-        private bool _onNavigateCalled = false;
+        private bool _onNavigateCalled;
 
         [Inject] private NavigationManager NavigationManager { get; set; }
 
@@ -46,7 +44,9 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// <summary>
         /// Gets or sets the assembly that should be searched for components matching the URI.
         /// </summary>
-        [Parameter] public Assembly AppAssembly { get; set; }
+        [Parameter]
+        [EditorRequired]
+        public Assembly AppAssembly { get; set; }
 
         /// <summary>
         /// Gets or sets a collection of additional assemblies that should be searched for components
@@ -57,12 +57,16 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// <summary>
         /// Gets or sets the content to display when no match is found for the requested route.
         /// </summary>
-        [Parameter] public RenderFragment NotFound { get; set; }
+        [Parameter]
+        [EditorRequired]
+        public RenderFragment NotFound { get; set; }
 
         /// <summary>
         /// Gets or sets the content to display when a match is found for the requested route.
         /// </summary>
-        [Parameter] public RenderFragment<RouteData> Found { get; set; }
+        [Parameter]
+        [EditorRequired]
+        public RenderFragment<RouteData> Found { get; set; }
 
         /// <summary>
         /// Get or sets the content to display when asynchronous navigation is in progress.
@@ -91,6 +95,11 @@ namespace Microsoft.AspNetCore.Components.Routing
             _baseUri = NavigationManager.BaseUri;
             _locationAbsolute = NavigationManager.Uri;
             NavigationManager.LocationChanged += OnLocationChanged;
+
+            if (TestableMetadataUpdate.IsSupported)
+            {
+                HotReloadManager.OnDeltaApplied += ClearRouteCaches;
+            }
         }
 
         /// <inheritdoc />
@@ -131,6 +140,10 @@ namespace Microsoft.AspNetCore.Components.Routing
         public void Dispose()
         {
             NavigationManager.LocationChanged -= OnLocationChanged;
+            if (TestableMetadataUpdate.IsSupported)
+            {
+                HotReloadManager.OnDeltaApplied -= ClearRouteCaches;
+            }
         }
 
         private static string StringUntilAny(string str, char[] chars)
@@ -145,11 +158,17 @@ namespace Microsoft.AspNetCore.Components.Routing
         {
             var routeKey = new RouteKey(AppAssembly, AdditionalAssemblies);
 
-            if (!routeKey.Equals(_currentRouteKey))
+            if (!routeKey.Equals(_routeTableLastBuiltForRouteKey))
             {
-                _currentRouteKey = routeKey;
+                _routeTableLastBuiltForRouteKey = routeKey;
                 Routes = RouteTableFactory.Create(routeKey);
             }
+        }
+
+        private void ClearRouteCaches()
+        {
+            RouteTableFactory.ClearCaches();
+            _routeTableLastBuiltForRouteKey = default;
         }
 
         internal virtual void Refresh(bool isNavigationIntercepted)
@@ -269,31 +288,16 @@ namespace Microsoft.AspNetCore.Components.Routing
             return Task.CompletedTask;
         }
 
-        private static class Log
+        private static partial class Log
         {
-            private static readonly Action<ILogger, string, string, Exception> _displayingNotFound =
-                LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(1, "DisplayingNotFound"), $"Displaying {nameof(NotFound)} because path '{{Path}}' with base URI '{{BaseUri}}' does not match any component route");
+            [LoggerMessage(1, LogLevel.Debug, $"Displaying {nameof(NotFound)} because path '{{Path}}' with base URI '{{BaseUri}}' does not match any component route", EventName = "DisplayingNotFound")]
+            internal static partial void DisplayingNotFound(ILogger logger, string path, string baseUri);
 
-            private static readonly Action<ILogger, Type, string, string, Exception> _navigatingToComponent =
-                LoggerMessage.Define<Type, string, string>(LogLevel.Debug, new EventId(2, "NavigatingToComponent"), "Navigating to component {ComponentType} in response to path '{Path}' with base URI '{BaseUri}'");
+            [LoggerMessage(2, LogLevel.Debug, "Navigating to component {ComponentType} in response to path '{Path}' with base URI '{BaseUri}'", EventName = "NavigatingToComponent")]
+            internal static partial void NavigatingToComponent(ILogger logger, Type componentType, string path, string baseUri);
 
-            private static readonly Action<ILogger, string, string, string, Exception> _navigatingToExternalUri =
-                LoggerMessage.Define<string, string, string>(LogLevel.Debug, new EventId(3, "NavigatingToExternalUri"), "Navigating to non-component URI '{ExternalUri}' in response to path '{Path}' with base URI '{BaseUri}'");
-
-            internal static void DisplayingNotFound(ILogger logger, string path, string baseUri)
-            {
-                _displayingNotFound(logger, path, baseUri, null);
-            }
-
-            internal static void NavigatingToComponent(ILogger logger, Type componentType, string path, string baseUri)
-            {
-                _navigatingToComponent(logger, componentType, path, baseUri, null);
-            }
-
-            internal static void NavigatingToExternalUri(ILogger logger, string externalUri, string path, string baseUri)
-            {
-                _navigatingToExternalUri(logger, externalUri, path, baseUri, null);
-            }
+            [LoggerMessage(3, LogLevel.Debug, "Navigating to non-component URI '{ExternalUri}' in response to path '{Path}' with base URI '{BaseUri}'", EventName = "NavigatingToExternalUri")]
+            internal static partial void NavigatingToExternalUri(ILogger logger, string externalUri, string path, string baseUri);
         }
     }
 }

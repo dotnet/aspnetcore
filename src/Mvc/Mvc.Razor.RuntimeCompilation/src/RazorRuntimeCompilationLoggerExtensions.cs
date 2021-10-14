@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -14,20 +14,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
     {
         private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
 
-        private static readonly Action<ILogger, string, Exception> _generatedCodeToAssemblyCompilationStart;
-        private static readonly Action<ILogger, string, double, Exception> _generatedCodeToAssemblyCompilationEnd;
-        private static readonly Action<ILogger, string, string[], Exception> _malformedPageDirective;
-        private static readonly Action<ILogger, string, Exception> _viewCompilerLocatedCompiledView;
-        private static readonly Action<ILogger, Exception> _viewCompilerNoCompiledViewsFound;
-        private static readonly Action<ILogger, string, Exception> _viewCompilerLocatedCompiledViewForPath;
-        private static readonly Action<ILogger, string, Exception> _viewCompilerRecompilingCompiledView;
-        private static readonly Action<ILogger, string, Exception> _viewCompilerCouldNotFindFileToCompileForPath;
-        private static readonly Action<ILogger, string, Exception> _viewCompilerFoundFileToCompileForPath;
-        private static readonly Action<ILogger, string, Exception> _viewCompilerInvalidatingCompiledFile;
+        private static readonly Action<ILogger, string, Exception?> _generatedCodeToAssemblyCompilationStart;
+        private static readonly Action<ILogger, string, double, Exception?> _generatedCodeToAssemblyCompilationEnd;
+        private static readonly Action<ILogger, string, string[], Exception?> _malformedPageDirective;
+        private static readonly Action<ILogger, string, Exception?> _viewCompilerLocatedCompiledView;
+        private static readonly Action<ILogger, Exception?> _viewCompilerNoCompiledViewsFound;
+        private static readonly Action<ILogger, string, Exception?> _viewCompilerLocatedCompiledViewForPath;
+        private static readonly Action<ILogger, string, Exception?> _viewCompilerRecompilingCompiledView;
+        private static readonly Action<ILogger, string, Exception?> _viewCompilerCouldNotFindFileToCompileForPath;
+        private static readonly Action<ILogger, string, Exception?> _viewCompilerFoundFileToCompileForPath;
+        private static readonly Action<ILogger, string, Exception?> _viewCompilerInvalidatingCompiledFile;
 
-        private static readonly Action<ILogger, string, string, Exception> _viewLookupCacheMiss;
-        private static readonly Action<ILogger, string, string, Exception> _viewLookupCacheHit;
-        private static readonly Action<ILogger, string, Exception> _precompiledViewFound;
+        private static readonly Action<ILogger, string, string, Exception?> _viewLookupCacheMiss;
+        private static readonly Action<ILogger, string, string, Exception?> _viewLookupCacheHit;
+        private static readonly Action<ILogger, string, Exception?> _precompiledViewFound;
+
+        private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
 
         static MvcRazorLoggerExtensions()
         {
@@ -100,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
                 LogLevel.Warning,
                 new EventId(104, "MalformedPageDirective"),
                 "The page directive at '{FilePath}' is malformed. Please fix the following issues: {Diagnostics}",
-                skipEnabledCheck: true);
+                SkipEnabledCheckLogOptions);
         }
 
         public static void ViewCompilerLocatedCompiledView(this ILogger logger, string view)

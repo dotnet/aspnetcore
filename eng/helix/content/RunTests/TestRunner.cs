@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -46,6 +46,9 @@ namespace RunTests
                 var appRuntimePath = $"{Options.DotnetRoot}/shared/Microsoft.AspNetCore.App/{Options.RuntimeVersion}";
                 Console.WriteLine($"Set ASPNET_RUNTIME_PATH: {appRuntimePath}");
                 EnvironmentVariables.Add("ASPNET_RUNTIME_PATH", appRuntimePath);
+                var dumpPath = Environment.GetEnvironmentVariable("HELIX_DUMP_FOLDER");
+                Console.WriteLine($"Set VSTEST_DUMP_PATH: {dumpPath}");
+                EnvironmentVariables.Add("VSTEST_DUMP_PATH", dumpPath);
 
 #if INSTALLPLAYWRIGHT
                 // Playwright will download and look for browsers to this directory
@@ -126,6 +129,15 @@ namespace RunTests
         {
             try
             {
+                // Install dotnet-dump first so we can catch any failures from running dotnet after this (installing tools, running tests, etc.)
+                await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
+                    $"tool install dotnet-dump --tool-path {Options.HELIX_WORKITEM_ROOT} --version 5.0.0-*",
+                    environmentVariables: EnvironmentVariables,
+                    outputDataReceived: Console.WriteLine,
+                    errorDataReceived: Console.Error.WriteLine,
+                    throwOnError: false,
+                    cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
+
                 Console.WriteLine($"Adding current directory to nuget sources: {Options.HELIX_WORKITEM_ROOT}");
 
                 await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
@@ -160,13 +172,6 @@ namespace RunTests
                     errorDataReceived: Console.Error.WriteLine,
                     throwOnError: false,
                     cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
-
-                await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                    $"tool install dotnet-dump --tool-path {Options.HELIX_WORKITEM_ROOT} --version 5.0.0-*",
-                    environmentVariables: EnvironmentVariables,
-                    outputDataReceived: Console.WriteLine,
-                    errorDataReceived: Console.Error.WriteLine,
-                    throwOnError: false);
 
                 return true;
             }
@@ -209,7 +214,8 @@ namespace RunTests
             {
                 // Timeout test run 5 minutes before the Helix job would timeout
                 var cts = new CancellationTokenSource(Options.Timeout.Subtract(TimeSpan.FromMinutes(5)));
-                var commonTestArgs = $"test {Options.Target} --logger:xunit --logger:\"console;verbosity=normal\" --blame \"CollectHangDump;TestTimeout=15m\"";
+                var diagLog = Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT"), "vstest.log");
+                var commonTestArgs = $"test {Options.Target} --diag:{diagLog} --logger:xunit --logger:\"console;verbosity=normal\" --blame \"CollectHangDump;TestTimeout=15m\"";
                 if (Options.Quarantined)
                 {
                     Console.WriteLine("Running quarantined tests.");
@@ -263,7 +269,7 @@ namespace RunTests
             if (File.Exists("TestResults/TestResults.xml"))
             {
                 Console.WriteLine("Copying TestResults/TestResults.xml to ./testResults.xml");
-                File.Copy("TestResults/TestResults.xml", "testResults.xml");
+                File.Copy("TestResults/TestResults.xml", "testResults.xml", overwrite: true);
             }
             else
             {
@@ -291,10 +297,10 @@ namespace RunTests
             {
                 Console.WriteLine("No logs found in artifacts/log");
             }
-            Console.WriteLine($"Copying TestResults/**/*.dmp to {HELIX_WORKITEM_UPLOAD_ROOT}/");
+            Console.WriteLine($"Copying TestResults/**/Sequence*.xml to {HELIX_WORKITEM_UPLOAD_ROOT}/");
             if (Directory.Exists("TestResults"))
             {
-                foreach (var file in Directory.EnumerateFiles("TestResults", "*.dmp", SearchOption.AllDirectories))
+                foreach (var file in Directory.EnumerateFiles("TestResults", "Sequence*.xml", SearchOption.AllDirectories))
                 {
                     var fileName = Path.GetFileName(file);
                     Console.WriteLine($"Copying: {file} to {Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, fileName)}");
@@ -303,7 +309,7 @@ namespace RunTests
             }
             else
             {
-                Console.WriteLine("No dmps found in TestResults");
+                Console.WriteLine("No TestResults directory found.");
             }
         }
     }

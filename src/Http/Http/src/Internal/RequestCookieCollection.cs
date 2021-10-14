@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -16,10 +16,10 @@ namespace Microsoft.AspNetCore.Http
     {
         public static readonly RequestCookieCollection Empty = new RequestCookieCollection();
         private static readonly string[] EmptyKeys = Array.Empty<string>();
-        private static readonly Enumerator EmptyEnumerator = new Enumerator();
+
         // Pre-box
-        private static readonly IEnumerator<KeyValuePair<string, string>> EmptyIEnumeratorType = EmptyEnumerator;
-        private static readonly IEnumerator EmptyIEnumerator = EmptyEnumerator;
+        private static readonly IEnumerator<KeyValuePair<string, string>> EmptyIEnumeratorType = default(Enumerator);
+        private static readonly IEnumerator EmptyIEnumerator = default(Enumerator);
 
         private AdaptiveCapacityDictionary<string, string> Store { get; set; }
 
@@ -70,7 +70,9 @@ namespace Microsoft.AspNetCore.Http
             {
                 return Empty;
             }
-            var collection = new RequestCookieCollection(values.Count);
+
+            // Do not set the collection capacity based on StringValues.Count, the Cookie header is supposed to be a single combined value.
+            var collection = new RequestCookieCollection();
             var store = collection.Store!;
 
             if (CookieHeaderParserShared.TryParseValues(values, store, enableCookieNameEncoding, supportsMultipleValues: true))
@@ -138,7 +140,7 @@ namespace Microsoft.AspNetCore.Http
             if (Store == null || Store.Count == 0)
             {
                 // Non-boxed Enumerator
-                return EmptyEnumerator;
+                return default;
             }
             // Non-boxed Enumerator
             return new Enumerator(Store.GetEnumerator());
@@ -178,7 +180,7 @@ namespace Microsoft.AspNetCore.Http
         {
             // Do NOT make this readonly, or MoveNext will not work
             private AdaptiveCapacityDictionary<string, string>.Enumerator _dictionaryEnumerator;
-            private bool _notEmpty;
+            private readonly bool _notEmpty;
 
             internal Enumerator(AdaptiveCapacityDictionary<string, string>.Enumerator dictionaryEnumerator)
             {

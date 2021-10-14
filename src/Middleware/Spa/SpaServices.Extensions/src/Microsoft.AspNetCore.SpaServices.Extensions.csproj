@@ -4,7 +4,6 @@
     <Description>Helpers for building single-page applications on ASP.NET MVC Core.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
-    <RemoveDevicePlatformSupport>true</RemoveDevicePlatformSupport>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,5 +15,5 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCode.SpaServices.Extensions.Tests" />
   </ItemGroup>
-  
+
 </Project>

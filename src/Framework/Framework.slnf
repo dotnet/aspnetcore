@@ -2,6 +2,7 @@
   "solution": {
     "path": "..\\..\\AspNetCore.sln",
     "projects": [
+      "src\\Analyzers\\Microsoft.AspNetCore.Analyzer.Testing\\src\\Microsoft.AspNetCore.Analyzer.Testing.csproj",
       "src\\Antiforgery\\src\\Microsoft.AspNetCore.Antiforgery.csproj",
       "src\\Components\\Authorization\\src\\Microsoft.AspNetCore.Components.Authorization.csproj",
       "src\\Components\\Components\\src\\Microsoft.AspNetCore.Components.csproj",
@@ -15,8 +16,12 @@
       "src\\DataProtection\\DataProtection\\src\\Microsoft.AspNetCore.DataProtection.csproj",
       "src\\DataProtection\\Extensions\\src\\Microsoft.AspNetCore.DataProtection.Extensions.csproj",
       "src\\DefaultBuilder\\src\\Microsoft.AspNetCore.csproj",
+      "src\\Extensions\\Features\\src\\Microsoft.Extensions.Features.csproj",
       "src\\FileProviders\\Embedded\\src\\Microsoft.Extensions.FileProviders.Embedded.csproj",
       "src\\FileProviders\\Manifest.MSBuildTask\\src\\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.csproj",
+      "src\\Framework\\AspNetCoreAnalyzers\\src\\Analyzers\\Microsoft.AspNetCore.App.Analyzers.csproj",
+      "src\\Framework\\AspNetCoreAnalyzers\\src\\CodeFixes\\Microsoft.AspNetCore.App.CodeFixes.csproj",
+      "src\\Framework\\AspNetCoreAnalyzers\\test\\Microsoft.AspNetCore.App.Analyzers.Test.csproj",
       "src\\Framework\\App.Ref\\src\\Microsoft.AspNetCore.App.Ref.csproj",
       "src\\Framework\\App.Runtime\\src\\Microsoft.AspNetCore.App.Runtime.csproj",
       "src\\Framework\\test\\Microsoft.AspNetCore.App.UnitTests.csproj",
@@ -32,6 +37,7 @@
       "src\\Http\\Http.Abstractions\\src\\Microsoft.AspNetCore.Http.Abstractions.csproj",
       "src\\Http\\Http.Extensions\\src\\Microsoft.AspNetCore.Http.Extensions.csproj",
       "src\\Http\\Http.Features\\src\\Microsoft.AspNetCore.Http.Features.csproj",
+      "src\\Http\\Http.Results\\src\\Microsoft.AspNetCore.Http.Results.csproj",
       "src\\Http\\Http\\src\\Microsoft.AspNetCore.Http.csproj",
       "src\\Http\\Metadata\\src\\Microsoft.AspNetCore.Metadata.csproj",
       "src\\Http\\Routing.Abstractions\\src\\Microsoft.AspNetCore.Routing.Abstractions.csproj",

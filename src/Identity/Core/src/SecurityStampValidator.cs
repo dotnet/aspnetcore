@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Security.Claims;
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Identity
         /// The <see cref="ILogger"/> used to log messages.
         /// </value>
         public ILogger Logger { get; set; }
-        
+
         /// <summary>
         /// Called when the security stamp has been verified.
         /// </summary>
@@ -90,6 +90,13 @@ namespace Microsoft.AspNetCore.Identity
             // REVIEW: note we lost login authentication method
             context.ReplacePrincipal(newPrincipal);
             context.ShouldRenew = true;
+
+            if (!context.Options.SlidingExpiration)
+            {
+                // On renewal calculate the new ticket length relative to now to avoid
+                // extending the expiration.
+                context.Properties.IssuedUtc = Clock.UtcNow;
+            }
         }
 
         /// <summary>
@@ -110,7 +117,7 @@ namespace Microsoft.AspNetCore.Identity
         public virtual async Task ValidateAsync(CookieValidatePrincipalContext context)
         {
             var currentUtc = DateTimeOffset.UtcNow;
-            if (context.Options != null && Clock != null)
+            if (Clock != null)
             {
                 currentUtc = Clock.UtcNow;
             }
@@ -125,7 +132,7 @@ namespace Microsoft.AspNetCore.Identity
             }
             if (validate)
             {
-                var user = await VerifySecurityStamp(context.Principal); 
+                var user = await VerifySecurityStamp(context.Principal);
                 if (user != null)
                 {
                     await SecurityStampVerified(user, context);
@@ -156,8 +163,8 @@ namespace Microsoft.AspNetCore.Identity
             => ValidateAsync<ISecurityStampValidator>(context);
 
         /// <summary>
-        /// Used to validate the <see cref="IdentityConstants.TwoFactorUserIdScheme"/> and 
-        /// <see cref="IdentityConstants.TwoFactorRememberMeScheme"/> cookies against the user's 
+        /// Used to validate the <see cref="IdentityConstants.TwoFactorUserIdScheme"/> and
+        /// <see cref="IdentityConstants.TwoFactorRememberMeScheme"/> cookies against the user's
         /// stored security stamp.
         /// </summary>
         /// <param name="context">The context containing the <see cref="System.Security.Claims.ClaimsPrincipal"/>

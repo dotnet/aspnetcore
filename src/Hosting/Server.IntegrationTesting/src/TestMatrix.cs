@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             {
                 if (!CheckTfmIsSupportedForServer(tfm, server))
                 {
-                    // Don't generate net461 variations for nginx server.
+                    // Don't generate net462 variations for nginx server.
                     continue;
                 }
 
@@ -190,12 +190,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         private bool CheckTfmIsSupportedForServer(string tfm, ServerType server)
         {
             // Not a combination we test
-            return !(Tfm.Matches(Tfm.Net461, tfm) && ServerType.Nginx == server);
+            return !(Tfm.Matches(Tfm.Net462, tfm) && ServerType.Nginx == server);
         }
 
         private static string SkipIfTfmIsNotSupportedOnThisOS(string tfm)
         {
-            if (Tfm.Matches(Tfm.Net461, tfm) && !OperatingSystem.IsWindows())
+            if (Tfm.Matches(Tfm.Net462, tfm) && !OperatingSystem.IsWindows())
             {
                 return "This TFM is not supported on this operating system.";
             }
@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             foreach (var t in ApplicationTypes)
             {
                 var type = t;
-                if (Tfm.Matches(Tfm.Net461, tfm) && type == ApplicationType.Portable)
+                if (Tfm.Matches(Tfm.Net462, tfm) && type == ApplicationType.Portable)
                 {
                     if (ApplicationTypes.Count == 1)
                     {
@@ -280,7 +280,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 if (hostingModel == HostingModel.InProcess)
                 {
                     // Not supported
-                    if (Tfm.Matches(Tfm.Net461, tfm) || Tfm.Matches(Tfm.NetCoreApp20, tfm))
+                    if (Tfm.Matches(Tfm.Net462, tfm) || Tfm.Matches(Tfm.NetCoreApp20, tfm))
                     {
                         continue;
                     }

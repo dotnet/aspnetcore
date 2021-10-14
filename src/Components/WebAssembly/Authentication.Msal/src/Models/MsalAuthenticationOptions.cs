@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -48,7 +48,7 @@ namespace Microsoft.Authentication.WebAssembly.Msal
         /// <summary>
         /// Gets or sets whether or not to navigate to the login request url after a successful login.
         /// </summary>
-        public bool NavigateToLoginRequestUrl { get; set; } = false;
+        public bool NavigateToLoginRequestUrl { get; set; }
 
         /// <summary>
         /// Gets or sets the set of known authority host names for the application.

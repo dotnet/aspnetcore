@@ -1,6 +1,7 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
+import { HeaderNames } from "../src/HeaderNames";
 import { MessageHeaders } from "../src/IHubProtocol";
 import { ILogger } from "../src/ILogger";
 import { TransferFormat } from "../src/ITransport";
@@ -97,15 +98,20 @@ describe("WebSocketTransport", () => {
         });
     });
 
-    [["http://example.com", "ws://example.com?access_token=secretToken"],
-    ["http://example.com?value=null", "ws://example.com?value=null&access_token=secretToken"],
-    ["https://example.com?value=null", "wss://example.com?value=null&access_token=secretToken"]]
+    [[undefined as any, undefined],
+    ["secretToken", "Bearer secretToken"],
+    ["", undefined]]
         .forEach(([input, expected]) => {
-            it(`generates correct WebSocket URL for  ${input} with access_token`, async () => {
+            it(`sets Authorization header with ${input} correctly`, async () => {
                 await VerifyLogger.run(async (logger) => {
-                    await createAndStartWebSocket(logger, input, () => "secretToken");
+                    await createAndStartWebSocket(logger, "http://example.com", () => input);
 
-                    expect(TestWebSocket.webSocket.url).toBe(expected);
+                    expect(TestWebSocket.webSocket.url).toBe("ws://example.com");
+                    if (expected) {
+                        expect(TestWebSocket.webSocket.options.headers[HeaderNames.Authorization]).toBe(expected);
+                    } else {
+                        expect(TestWebSocket.webSocket.options.headers[HeaderNames.Authorization]).toBeUndefined();
+                    }
                 });
             });
         });

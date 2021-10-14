@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -10,10 +10,8 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
     internal static unsafe class UnsafeNclNativeMethods
     {
         private const string sspicli_LIB = "sspicli.dll";
-        private const string api_ms_win_core_processthreads_LIB = "api-ms-win-core-processthreads-l1-1-1.dll";
         private const string api_ms_win_core_io_LIB = "api-ms-win-core-io-l1-1-0.dll";
         private const string api_ms_win_core_handle_LIB = "api-ms-win-core-handle-l1-1-0.dll";
-        private const string api_ms_win_core_libraryloader_LIB = "api-ms-win-core-libraryloader-l1-1-0.dll";
         private const string api_ms_win_core_heap_LIB = "api-ms-win-core-heap-L1-2-0.dll";
         private const string api_ms_win_core_heap_obsolete_LIB = "api-ms-win-core-heap-obsolete-L1-1-0.dll";
         private const string api_ms_win_core_kernel32_legacy_LIB = "api-ms-win-core-kernel32-legacy-l1-1-0.dll";
@@ -40,10 +38,10 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         }
 
         [DllImport(api_ms_win_core_io_LIB, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
-        internal static unsafe extern uint CancelIoEx(SafeHandle handle, SafeNativeOverlapped overlapped);
+        internal static extern unsafe uint CancelIoEx(SafeHandle handle, SafeNativeOverlapped overlapped);
 
         [DllImport(api_ms_win_core_kernel32_legacy_LIB, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
-        internal static unsafe extern bool SetFileCompletionNotificationModes(SafeHandle handle, FileCompletionNotificationModes modes);
+        internal static extern unsafe bool SetFileCompletionNotificationModes(SafeHandle handle, FileCompletionNotificationModes modes);
 
         [Flags]
         internal enum FileCompletionNotificationModes : byte
@@ -146,14 +144,14 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         // DACL related stuff
 
         [SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses", Justification = "Instantiated natively")]
-        [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", 
+        [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable",
             Justification = "Does not own the resource.")]
         [StructLayout(LayoutKind.Sequential)]
         internal class SECURITY_ATTRIBUTES
         {
             public int nLength = 12;
             public SafeLocalMemHandle lpSecurityDescriptor = new SafeLocalMemHandle(IntPtr.Zero, false);
-            public bool bInheritHandle = false;
+            public bool bInheritHandle;
         }
     }
 }

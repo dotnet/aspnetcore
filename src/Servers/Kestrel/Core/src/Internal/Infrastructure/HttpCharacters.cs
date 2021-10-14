@@ -1,14 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     internal static class HttpCharacters
     {
-        private static readonly int _tableSize = 128;
+        private const int _tableSize = 128;
         private static readonly bool[] _alphaNumeric = InitializeAlphaNumeric();
         private static readonly bool[] _authority = InitializeAuthority();
         private static readonly bool[] _token = InitializeToken();
@@ -18,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         internal static void Initialize()
         {
             // Access _alphaNumeric to initialize static fields
-            var initialize = _alphaNumeric;
+            var _ = _alphaNumeric;
         }
 
         private static bool[] InitializeAlphaNumeric()
@@ -55,6 +54,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             Array.Copy(_alphaNumeric, authority, _tableSize);
             authority[':'] = true;
             authority['.'] = true;
+            authority['-'] = true;
             authority['['] = true;
             authority[']'] = true;
             authority['@'] = true;
@@ -182,6 +182,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return -1;
         }
 
+        // Disallows control characters and anything more than 0x7F
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int IndexOfInvalidFieldValueChar(string s)
         {
@@ -191,6 +192,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             {
                 var c = s[i];
                 if (c >= (uint)fieldValue.Length || !fieldValue[c])
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        // Disallows control characters but allows extended characters > 0x7F
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int IndexOfInvalidFieldValueCharExtended(string s)
+        {
+            var fieldValue = _fieldValue;
+
+            for (var i = 0; i < s.Length; i++)
+            {
+                var c = s[i];
+                if (c < (uint)fieldValue.Length && !fieldValue[c])
                 {
                     return i;
                 }

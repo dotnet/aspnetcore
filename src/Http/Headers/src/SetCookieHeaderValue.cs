@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -329,7 +329,7 @@ namespace Microsoft.Net.Http.Headers
         public void AppendToStringBuilder(StringBuilder builder)
         {
             builder.Append(_name.AsSpan());
-            builder.Append("=");
+            builder.Append('=');
             builder.Append(_value.AsSpan());
 
             if (Expires.HasValue)
@@ -388,7 +388,7 @@ namespace Microsoft.Net.Http.Headers
             builder.Append(name.AsSpan());
             if (value != null)
             {
-                builder.Append("=");
+                builder.Append('=');
                 builder.Append(value.AsSpan());
             }
         }

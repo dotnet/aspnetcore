@@ -1,13 +1,10 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 {
@@ -16,10 +13,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
     /// Access tokens will only be added when the request URI is within one of the base addresses configured using
     /// <see cref="ConfigureHandler(IEnumerable{string}, IEnumerable{string}, string)"/>.
     /// </summary>
-    public class AuthorizationMessageHandler : DelegatingHandler
+    public class AuthorizationMessageHandler : DelegatingHandler, IDisposable
     {
         private readonly IAccessTokenProvider _provider;
         private readonly NavigationManager _navigation;
+        private readonly AuthenticationStateChangedHandler _authenticationStateChangedHandler;
         private AccessToken _lastToken;
         private AuthenticationHeaderValue _cachedHeader;
         private Uri[] _authorizedUris;
@@ -36,6 +34,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         {
             _provider = provider;
             _navigation = navigation;
+
+            // Invalidate the cached _lastToken when the authentication state changes
+            if (_provider is AuthenticationStateProvider authStateProvider)
+            {
+                _authenticationStateChangedHandler = _ => { _lastToken = null; };
+                authStateProvider.AuthenticationStateChanged += _authenticationStateChangedHandler;
+            }
         }
 
         /// <inheritdoc />
@@ -119,6 +124,16 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             }
 
             return this;
+        }
+
+
+        void IDisposable.Dispose()
+        {
+            if (_provider is AuthenticationStateProvider authStateProvider)
+            {
+                authStateProvider.AuthenticationStateChanged -= _authenticationStateChangedHandler;
+            }
+            Dispose(disposing: true);
         }
     }
 }

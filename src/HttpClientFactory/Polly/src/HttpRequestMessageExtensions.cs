@@ -1,6 +1,5 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 using Microsoft.Extensions.Http;
 using System;
@@ -13,8 +12,10 @@ namespace Polly
     /// </summary>
     public static class HttpRequestMessageExtensions
     {
+#pragma warning disable CA1802 //  Use literals where appropriate. Using a static field for reference equality
         internal static readonly string PolicyExecutionContextKey = "PolicyExecutionContext";
-        
+#pragma warning restore CA1802
+
         /// <summary>
         /// Gets the <see cref="Context"/> associated with the provided <see cref="HttpRequestMessage"/>.
         /// </summary>

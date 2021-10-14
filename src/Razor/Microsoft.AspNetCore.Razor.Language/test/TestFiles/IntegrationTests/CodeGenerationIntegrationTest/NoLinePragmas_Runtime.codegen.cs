@@ -29,8 +29,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 #nullable disable
             WriteLiteral("    <p>Hello from C#, #");
 #nullable restore
-#line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NoLinePragmas.cshtml"
-                   Write(i);
+#line (6,26)-(6,27) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NoLinePragmas.cshtml"
+Write(i);
 
 #line default
 #line hidden
@@ -97,8 +97,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 #nullable disable
             WriteLiteral("    <p>Hello again from C#, #");
 #nullable restore
-#line 24 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NoLinePragmas.cshtml"
-                         Write(j);
+#line (24,32)-(24,33) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NoLinePragmas.cshtml"
+Write(j);
 
 #line default
 #line hidden
@@ -129,8 +129,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 #nullable disable
             WriteLiteral("    <p>Oh no! An error occurred: ");
 #nullable restore
-#line 30 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NoLinePragmas.cshtml"
-                             Write(ex.Message);
+#line (30,36)-(30,46) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NoLinePragmas.cshtml"
+Write(ex.Message);
 
 #line default
 #line hidden
@@ -146,8 +146,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 #nullable disable
             WriteLiteral("<p>i is now ");
 #nullable restore
-#line 34 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NoLinePragmas.cshtml"
-       Write(i);
+#line (34,14)-(34,15) 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NoLinePragmas.cshtml"
+Write(i);
 
 #line default
 #line hidden

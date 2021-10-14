@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
 {
-    internal class FileProviderRazorProjectFileSystem : RazorProjectFileSystem
+    internal sealed class FileProviderRazorProjectFileSystem : RazorProjectFileSystem
     {
         private const string RazorFileExtension = ".cshtml";
         private readonly RuntimeCompilationFileProvider _fileProvider;
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             return GetItem(path, fileKind: null);
         }
 
-        public override RazorProjectItem GetItem(string path, string fileKind)
+        public override RazorProjectItem GetItem(string path, string? fileKind)
         {
             path = NormalizeAndEnsureValidPath(path);
             var fileInfo = FileProvider.GetFileInfo(path);
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             var hasLeadingSlash = path2.StartsWith("/", StringComparison.Ordinal);
             if (hasLeadingSlash && hasTrailingSlash)
             {
-                return path1 + path2.Substring(1);
+                return string.Concat(path1, path2.AsSpan(1));
             }
             else if (hasLeadingSlash || hasTrailingSlash)
             {

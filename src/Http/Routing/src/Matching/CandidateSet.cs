@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         /// <summary>
         /// Gets a value which indicates where the <see cref="Http.Endpoint"/> is considered
-        /// a valid candiate for the current request.
+        /// a valid candidate for the current request.
         /// </summary>
         /// <param name="index">The candidate index.</param>
         /// <returns>
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         /// <summary>
-        /// Sets the validitity of the candidate at the provided index.
+        /// Sets the validity of the candidate at the provided index.
         /// </summary>
         /// <param name="index">The candidate index.</param>
         /// <param name="value">
@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     }
 
                     break;
-                    
+
             }
         }
 

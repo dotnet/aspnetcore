@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Globalization;
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Routing
 
             // Assert
             Assert.Equal(
-                $"The constraint reference 'notpresent' could not be resolved to a type. " +
+                "The constraint reference 'notpresent' could not be resolved to a type. " +
                 $"Register the constraint type with '{typeof(RouteOptions)}.{nameof(RouteOptions.ConstraintMap)}'.",
                 exception.Message);
         }
@@ -314,7 +314,7 @@ namespace Microsoft.AspNetCore.Routing
 
             // Assert
             Assert.Equal($"The constructor to use for activating the constraint type '{nameof(CustomParameterPolicyWithAmbigiousMultpleCtors)}' is ambiguous. "
-                + $"Multiple constructors were found with the following number of parameters: 2.", exception.Message);
+                + "Multiple constructors were found with the following number of parameters: 2.", exception.Message);
         }
 
         [Fact]

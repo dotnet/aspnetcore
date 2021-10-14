@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -14,16 +14,12 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public RazorSyntaxTree Execute(RazorCodeDocument codeDocument, RazorSyntaxTree syntaxTree)
         {
-            if (codeDocument == null)
+            if (FileKinds.IsComponent(codeDocument.GetFileKind()))
             {
-                throw new ArgumentNullException(nameof(codeDocument));
+                // Nothing to do here.
+                return syntaxTree;
             }
 
-            if (syntaxTree == null)
-            {
-                throw new ArgumentNullException(nameof(syntaxTree));
-            }
-            
             var sectionVerifier = new NestedSectionVerifier(syntaxTree);
             return sectionVerifier.Verify();
         }
@@ -31,8 +27,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         private class NestedSectionVerifier : SyntaxRewriter
         {
             private int _nestedLevel;
-            private RazorSyntaxTree _syntaxTree;
-            private List<RazorDiagnostic> _diagnostics;
+            private readonly RazorSyntaxTree _syntaxTree;
+            private readonly List<RazorDiagnostic> _diagnostics;
 
             public NestedSectionVerifier(RazorSyntaxTree syntaxTree)
             {

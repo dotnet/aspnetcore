@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Security.Cryptography.X509Certificates;
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
     {
         private StringValues _header;
         private X509Certificate2? _certificate;
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         public ForwardedTlsConnectionFeature(ILogger logger, StringValues header)
         {
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 {
                     try
                     {
-                        var bytes = Convert.FromBase64String(_header);
+                        var bytes = Convert.FromBase64String(_header.ToString());
                         _certificate = new X509Certificate2(bytes);
                     }
                     catch (Exception ex)

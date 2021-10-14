@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -305,9 +305,8 @@ namespace Microsoft.AspNetCore.Identity.Test
             var manager = CreateManager();
             manager.Options.User.RequireUniqueEmail = true;
             manager.UserValidators.Add(new UserValidator<TUser>());
-            var random = new Random();
-            var email = "foo" + random.Next() + "@example.com";
-            var newEmail = "bar" + random.Next() + "@example.com";
+            var email = "foo" + Random.Shared.Next() + "@example.com";
+            var newEmail = "bar" + Random.Shared.Next() + "@example.com";
             var user = CreateTestUser(email: email);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user, newEmail));
@@ -627,7 +626,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.True(await manager.HasPasswordAsync(user));
             IdentityResultAssert.IsFailure(await manager.AddPasswordAsync(user, "password"),
                 "User already has a password set.");
-            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"User already has a password.");
+            IdentityResultAssert.VerifyLogMessage(manager.Logger, "User already has a password.");
         }
 
         /// <summary>
@@ -831,7 +830,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, "password"));
             var result = await manager.ChangePasswordAsync(user, "bogus", "newpassword");
             IdentityResultAssert.IsFailure(result, "Incorrect password.");
-            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"Change password failed for user.");
+            IdentityResultAssert.VerifyLogMessage(manager.Logger, "Change password failed for user.");
         }
 
         /// <summary>
@@ -908,7 +907,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.IsSuccess(await manager.AddLoginAsync(user, login));
             var result = await manager.AddLoginAsync(user, login);
             IdentityResultAssert.IsFailure(result, _errorDescriber.LoginAlreadyAssociated());
-            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"AddLogin for user failed because it was already associated with another user.");
+            IdentityResultAssert.VerifyLogMessage(manager.Logger, "AddLogin for user failed because it was already associated with another user.");
         }
 
         // Email tests
@@ -933,7 +932,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// </summary>
         /// <returns>Task</returns>
         [Fact]
-        public async virtual Task CanFindUsersViaUserQuerable()
+        public virtual async Task CanFindUsersViaUserQuerable()
         {
             var mgr = CreateManager();
             if (mgr.SupportsQueryableUsers)
@@ -1647,7 +1646,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var email = await manager.GetUserNameAsync(user) + "@diddly.bop";
             IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user, email));
             var token = await manager.GenerateEmailConfirmationTokenAsync(user);
-            await manager.ConfirmEmailAsync(user, token);
+            IdentityResultAssert.IsSuccess(await manager.ConfirmEmailAsync(user, token));
 
             var stamp = await manager.GetSecurityStampAsync(user);
             Assert.NotNull(stamp);
@@ -1824,10 +1823,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal("Phone", factors[0]);
             IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user, "test@test.com"));
             token = await manager.GenerateEmailConfirmationTokenAsync(user);
-            await manager.ConfirmEmailAsync(user, token);
+            IdentityResultAssert.IsSuccess(await manager.ConfirmEmailAsync(user, token));
             factors = await manager.GetValidTwoFactorProvidersAsync(user);
             Assert.NotNull(factors);
-            Assert.Equal(2, factors.Count());
+            Assert.Equal(2, factors.Count);
             IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user, null));
             factors = await manager.GetValidTwoFactorProvidersAsync(user);
             Assert.NotNull(factors);
@@ -1836,7 +1835,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.IsSuccess(await manager.ResetAuthenticatorKeyAsync(user));
             factors = await manager.GetValidTwoFactorProvidersAsync(user);
             Assert.NotNull(factors);
-            Assert.Equal(2, factors.Count());
+            Assert.Equal(2, factors.Count);
             Assert.Equal("Authenticator", factors[1]);
         }
 

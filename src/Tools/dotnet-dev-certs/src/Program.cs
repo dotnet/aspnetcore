@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -39,8 +39,8 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
 'dotnet dev-certs https --clean --import ./certificate.pfx -p password'
 'dotnet dev-certs https --check --trust'
 'dotnet dev-certs https -ep ./certificate.pfx -p password --trust'
-'dotnet dev-certs https -ep ./certificate.crt --trust --key-format Pem'
-'dotnet dev-certs https -ep ./certificate.crt -p password --trust --key-format Pem'";
+'dotnet dev-certs https -ep ./certificate.crt --trust --format Pem'
+'dotnet dev-certs https -ep ./certificate.crt -p password --trust --format Pem'";
 
         public static readonly TimeSpan HttpsCertificateValidity = TimeSpan.FromDays(365);
 
@@ -367,7 +367,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                         "already trusted we will run the following command:" + Environment.NewLine +
                         "'sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain <<certificate>>'" +
                         Environment.NewLine + "This command might prompt you for your password to install the certificate " +
-                        "on the system keychain.");
+                        "on the system keychain. To undo these changes: 'sudo security remove-trusted-cert -d <<certificate>>'");
                 }
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

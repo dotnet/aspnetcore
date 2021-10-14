@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -17,9 +17,9 @@ namespace Microsoft.Extensions.Internal
         public PropertyActivator(
             PropertyInfo propertyInfo,
             Func<TContext, object> valueAccessor)
-        {          
-            PropertyInfo = propertyInfo ?? throw new ArgumentNullException(nameof(propertyInfo)); 
-            _valueAccessor = valueAccessor ?? throw new ArgumentNullException(nameof(valueAccessor)); 
+        {
+            PropertyInfo = propertyInfo ?? throw new ArgumentNullException(nameof(propertyInfo));
+            _valueAccessor = valueAccessor ?? throw new ArgumentNullException(nameof(valueAccessor));
             _fastPropertySetter = PropertyHelper.MakeFastPropertySetter(propertyInfo);
         }
 

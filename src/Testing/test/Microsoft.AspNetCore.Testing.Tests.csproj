@@ -17,7 +17,7 @@
     <Reference Include="System.Runtime.InteropServices.RuntimeInformation" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472' OR '$(MSBuildRestoreSessionId)' == ''">
     <Reference Include="System.Net.Http" />
   </ItemGroup>
 </Project>

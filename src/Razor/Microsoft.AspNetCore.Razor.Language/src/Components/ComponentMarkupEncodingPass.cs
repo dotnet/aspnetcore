@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
                         // `entity` is guaranteed to be of the format &#****;
                         var entityValue = entity.Substring(2, entity.Length - 3);
-                        var codePoint = -1;
+                        int codePoint;
                         if (!int.TryParse(entityValue, out codePoint))
                         {
                             // If it is not an integer, check if it is hexadecimal like 0x00CD

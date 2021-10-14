@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Data;
@@ -13,10 +13,10 @@ namespace Microsoft.Extensions.Caching.SqlConfig.Tools
 {
     public class Program
     {
-        private string _connectionString = null;
-        private string _schemaName = null;
-        private string _tableName = null;
-        private string _outputPath = null;
+        private string _connectionString;
+        private string _schemaName;
+        private string _tableName;
+        private string _outputPath;
         private bool _idempotent;
 
         private readonly IConsole _console;

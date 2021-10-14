@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Text.Encodings.Web;
@@ -101,7 +101,8 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         private bool TryGetDirectoryInfo(PathString subpath, out IDirectoryContents contents)
         {
-            contents = _fileProvider.GetDirectoryContents(subpath.Value);
+            // TryMatchPath will not output an empty subpath when it returns true. This is called only in that case.
+            contents = _fileProvider.GetDirectoryContents(subpath.Value!);
             return contents.Exists;
         }
     }

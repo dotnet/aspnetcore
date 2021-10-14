@@ -1,0 +1,38 @@
+{
+  "TimeoutInMilliseconds": 30000,
+  "TimeoutAfterFirstFailureInMilliseconds": 10000,
+  "BaseArtifactsFolder": ".",
+  "GlobalBrowserOptions": {
+    "ChromiumSandbox": true,
+    "DumpIO": true,
+    "IgnoreHTTPSErrors": true,
+    "Headless": true,
+    "Timeout": 30000
+  },
+  "GlobalContextOptions": {
+    "RecordVideo": {
+      "Dir": "videos"
+    },
+    "RecordHar": {
+      "Path": "har"
+    },
+    "IgnoreHTTPSErrors": true
+  },
+  "BrowserOptions": {
+    "Chromium": {
+      "BrowserKind": "Chromium",
+      "IsEnabled": true,
+      "Args": {
+        "--ignore-certificate-errors": true
+      }
+    },
+    "Firefox": {
+      "BrowserKind": "Firefox",
+      "IsEnabled": true
+    },
+    "Webkit": {
+      "BrowserKind": "Webkit",
+      "IsEnabled": true
+    }
+  }
+}

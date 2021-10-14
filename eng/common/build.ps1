@@ -25,6 +25,7 @@ Param(
   [switch] $prepareMachine,
   [string] $runtimeSourceFeed = '',
   [string] $runtimeSourceFeedKey = '',
+  [switch] $excludePrereleaseVS,
   [switch] $help,
   [Parameter(ValueFromRemainingArguments=$true)][String[]]$properties
 )
@@ -65,6 +66,7 @@ function Print-Usage() {
   Write-Host "  -prepareMachine         Prepare machine for CI run, clean up processes after build"
   Write-Host "  -warnAsError <value>    Sets warnaserror msbuild parameter ('true' or 'false')"
   Write-Host "  -msbuildEngine <value>  Msbuild engine to use to run build ('dotnet', 'vs', or unspecified)."
+  Write-Host "  -excludePrereleaseVS    Set to exclude build engines in prerelease versions of Visual Studio"
   Write-Host ""
 
   Write-Host "Command line arguments not listed above are passed thru to msbuild."

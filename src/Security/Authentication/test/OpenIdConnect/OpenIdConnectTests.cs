@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Globalization;
@@ -20,12 +20,9 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
 {
     public class OpenIdConnectTests
     {
-        static string noncePrefix = "OpenIdConnect." + "Nonce.";
-        static string nonceDelimiter = ".";
+        static readonly string noncePrefix = "OpenIdConnect." + "Nonce.";
+        static readonly string nonceDelimiter = ".";
         const string DefaultHost = @"https://example.com";
-        const string Logout = "/logout";
-        const string Signin = "/signin";
-        const string Signout = "/signout";
 
         /// <summary>
         /// Tests RedirectForSignOutContext replaces the OpenIdConnectMesssage correctly.
@@ -387,7 +384,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             Assert.NotNull(jwtHandler);
             Assert.False(jwtHandler.MapInboundClaims);
         }
-        
+
         // Test Cases for calculating the expiration time of cookie from cookie name
         [Fact]
         public void NonceCookieExpirationTime()

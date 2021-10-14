@@ -1,10 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <DebugType>portable</DebugType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoWarn>CS0649;CS0436</NoWarn><!-- Not all APIs are called in the shared test project --><!-- Conflicts between internal and public Quic APIs -->
+    <NoWarn>$(NoWarn);CS0649;CS0436</NoWarn><!-- Not all APIs are called in the shared test project --><!-- Conflicts between internal and public Quic APIs -->
     <Nullable>annotations</Nullable>
   </PropertyGroup>
 
@@ -31,6 +31,8 @@
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\StackFrame\**\*.cs" Link="Shared\TypeNameHelper\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\**\*.cs" Link="Shared\ValueStopwatch\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)WebEncoders\**\*.cs" Link="Shared\WebEncoders\%(Filename)%(Extension)"/>
+    <Compile Include="$(SharedSourceRoot)QueryStringEnumerable.cs" />
+    <Compile Include="$(SharedSourceRoot)UrlDecoder\**\*.cs" Link="Shared\UrlDecoder\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\*.cs" />
     <Compile Include="$(SharedSourceRoot)TaskToApm.cs" />
   </ItemGroup>
@@ -40,8 +42,6 @@
     <Reference Include="System.IO.Pipelines" />
     <Reference Include="System.Reflection.Metadata" />
     <Reference Include="System.Runtime.CompilerServices.Unsafe" />
-    <Reference Include="System.Security.Cryptography.Cng" />
-    <Reference Include="System.Security.Principal.Windows" />
     <Reference Include="System.Threading.Tasks.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.AspNetCore.Http" />

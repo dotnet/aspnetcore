@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public PageParameterModel(
             ParameterInfo parameterInfo,
             IReadOnlyList<object> attributes)
-            : base(parameterInfo?.ParameterType, attributes)
+            : base(parameterInfo.ParameterType, attributes)
         {
             if (parameterInfo == null)
             {
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <summary>
         /// The <see cref="PageHandlerModel"/>.
         /// </summary>
-        public PageHandlerModel Handler { get; set; }
+        public PageHandlerModel Handler { get; set; } = default!;
 
         MemberInfo ICommonModel.MemberInfo => ParameterInfo.Member;
 

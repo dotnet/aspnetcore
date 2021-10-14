@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
             return new DefaultHubProtocolResolver(hubProtocols, NullLogger<DefaultHubProtocolResolver>.Instance);
         }
 
-        private static Dictionary<string, ProtocolTestData> _invocationTestData = new[]
+        private static readonly Dictionary<string, ProtocolTestData> _invocationTestData = new[]
         {
             new ProtocolTestData(
                 "Single supported protocol",
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
         }
 
         // The actual invocation message doesn't matter
-        private static InvocationMessage _testMessage = new InvocationMessage("target", Array.Empty<object>());
+        private static readonly InvocationMessage _testMessage = new InvocationMessage("target", Array.Empty<object>());
 
         internal class TestHubProtocol : IHubProtocol
         {

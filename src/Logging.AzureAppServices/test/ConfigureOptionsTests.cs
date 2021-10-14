@@ -1,6 +1,5 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
@@ -21,7 +20,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Test
         {
             var configuration = new ConfigurationBuilder().AddInMemoryCollection(new[]
             {
-                new KeyValuePair<string, string>("IsEnabledKey", Convert.ToString(enabled))
+                new KeyValuePair<string, string>("IsEnabledKey", enabled?.ToString())
             }).Build();
 
             var options = new BatchingLoggerOptions();
@@ -61,11 +60,12 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Test
             contextMock.SetupGet(c => c.SiteName).Returns("Name");
 
             var options = new AzureBlobLoggerOptions();
-            new BlobLoggerConfigureOptions(configuration, contextMock.Object).Configure(options);
+            new BlobLoggerConfigureOptions(configuration, contextMock.Object, options => options.FileNameFormat = _ => "FilenameFormat").Configure(options);
 
             Assert.Equal("http://container/url", options.ContainerUrl);
             Assert.Equal("InstanceId", options.ApplicationInstanceId);
             Assert.Equal("Name", options.ApplicationName);
+            Assert.Equal("FilenameFormat", options.FileNameFormat(new AzureBlobLoggerContext("", "", DateTimeOffset.MinValue)));
         }
     }
 }

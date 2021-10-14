@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -164,6 +164,14 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         /// <summary>
+        /// The maximum amount of memory in bytes to allocate before switching to a file on disk.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to 32kb.
+        /// </remarks>
+        public int MemoryThreshold => _memoryThreshold;
+
+        /// <summary>
         /// Gets a value that determines if the contents are buffered entirely in memory.
         /// </summary>
         public bool InMemory
@@ -197,7 +205,10 @@ namespace Microsoft.AspNetCore.WebUtilities
             get { return false; }
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// The total bytes read from and buffered by the stream so far, it will not represent the full
+        /// data length until the stream is fully buffered. e.g. using <c>stream.DrainAsync()</c>.
+        /// </summary>
         public override long Length
         {
             get { return _buffer.Length; }
@@ -471,7 +482,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         /// <inheritdoc/>
-        public async override ValueTask DisposeAsync()
+        public override async ValueTask DisposeAsync()
         {
             if (!_disposed)
             {

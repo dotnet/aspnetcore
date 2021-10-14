@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 using static Microsoft.AspNetCore.Routing.Matching.HttpMethodMatcherPolicy;
 
@@ -231,7 +232,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             // Arrange
             var endpoint1 = CreateEndpoint("/{x:int}", httpMethods: new string[] { });
-            var endpoint2 = CreateEndpoint("/hello", httpMethods: new string[] { "DELETE" });
+            var endpoint2 = CreateEndpoint("/{hello:regex(hello)}", httpMethods: new string[] { "DELETE" });
 
             var matcher = CreateMatcher(endpoint1, endpoint2);
             var httpContext = CreateContext("/hello", "POST");
@@ -352,8 +353,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             if (corsPreflight)
             {
-                httpContext.Request.Headers[OriginHeader] = "example.com";
-                httpContext.Request.Headers[AccessControlRequestMethod] = httpMethod;
+                httpContext.Request.Headers[HeaderNames.Origin] = "example.com";
+                httpContext.Request.Headers[HeaderNames.AccessControlRequestMethod] = httpMethod;
             }
 
             return httpContext;

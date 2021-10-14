@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing
     {
         // Holds the 'accepted' parts of the path.
         private readonly StringBuilder _path;
-        private StringBuilder _query;
+        private readonly StringBuilder _query;
 
         // Holds the 'optional' parts of the path. We need a secondary buffer to handle cases where an optional
         // segment is in the middle of the uri. We don't know if we need to write it out - if it's
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Routing
             BufferState = SegmentState.Beginning;
             UriState = SegmentState.Beginning;
         }
-        
+
         public bool LowercaseUrls { get; set; }
 
         public bool LowercaseQueryStrings { get; set; }
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Routing
             {
                 if (_path.Length != 0)
                 {
-                    _path.Append("/");
+                    _path.Append('/');
                 }
             }
 
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Routing
             // This prevents the leading slash from PathString segments from being encoded.
             if (_path.Length == 0 && value.Length > 0 && value[0] == '/')
             {
-                _path.Append("/");
+                _path.Append('/');
                 EncodeValue(value, 1, value.Length - 1, encodeSlashes);
             }
             else
@@ -305,7 +305,7 @@ namespace Microsoft.AspNetCore.Routing
                 while ((end = value.IndexOf('/', start, characterCount)) >= 0)
                 {
                     _urlEncoder.Encode(PathWriter, value, start, end - start);
-                    _path.Append("/");
+                    _path.Append('/');
 
                     start = end + 1;
                     characterCount = length - start;

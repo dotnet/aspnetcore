@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Manifest
 {
     internal static class ManifestParser
     {
-        private static readonly string DefaultManifestName = "Microsoft.Extensions.FileProviders.Embedded.Manifest.xml";
+        private const string DefaultManifestName = "Microsoft.Extensions.FileProviders.Embedded.Manifest.xml";
 
         public static EmbeddedFilesManifest Parse(Assembly assembly)
         {
@@ -143,7 +143,7 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Manifest
 
         private static string EnsureText(XElement element)
         {
-            if (element.Elements().Count() == 0 &&
+            if (!element.Elements().Any() &&
                 !element.IsEmpty &&
                 element.Nodes().Count() == 1 &&
                 element.FirstNode?.NodeType == XmlNodeType.Text)

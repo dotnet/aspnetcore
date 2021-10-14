@@ -13,15 +13,17 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
     [global::Microsoft.AspNetCore.Razor.Hosting.RazorSourceChecksumAttribute(@"SHA1", @"aa3144e1672369f198372f95e6bbee5ac485c5c3", @"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/test.cshtml")]
+    [global::Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItemMetadataAttribute("Identifier", "/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/test.cshtml")]
+    [global::System.Runtime.CompilerServices.CreateNewOnMetadataUpdateAttribute]
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_test : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
     {
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
-            WriteLiteral("\r\n<!DOCTYPE html>\r\n<html TestCssScope lang=\"en\">\r\n<head TestCssScope>\r\n    <meta TestCssScope charset=\"utf-8\" />\r\n    <meta TestCssScope name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\r\n    <title TestCssScope>");
+            WriteLiteral("\r\n<!DOCTYPE html>\r\n<html lang=\"en\">\r\n<head>\r\n    <meta charset=\"utf-8\" />\r\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\r\n    <title>");
 #nullable restore
-#line 7 "TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml"
-      Write(ViewData["Title"]);
+#line (7,13)-(7,30) 6 "TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml"
+Write(ViewData["Title"]);
 
 #line default
 #line hidden

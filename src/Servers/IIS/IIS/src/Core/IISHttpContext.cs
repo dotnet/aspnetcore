@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -24,6 +24,7 @@ using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Server.IIS.Core.IO;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
@@ -32,8 +33,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPoolWorkItem, IDisposable
     {
         private const int MinAllocBufferSize = 2048;
-        private const int PauseWriterThreshold = 65536;
-        private const int ResumeWriterTheshold = PauseWriterThreshold / 2;
 
         protected readonly NativeSafeHandle _requestNativeHandle;
 
@@ -73,6 +72,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private const string NtlmString = "NTLM";
         private const string NegotiateString = "Negotiate";
         private const string BasicString = "Basic";
+        private const string ConnectionClose = "close";
 
         internal unsafe IISHttpContext(
             MemoryPool<byte> memoryPool,
@@ -91,6 +91,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
             ((IHttpBodyControlFeature)this).AllowSynchronousIO = _options.AllowSynchronousIO;
         }
+
+        private int PauseWriterThreshold => _options.MaxRequestBodyBufferSize;
+        private int ResumeWriterTheshold => PauseWriterThreshold / 2;
 
         public Version HttpVersion { get; set; } = default!;
         public string Scheme { get; set; } = default!;
@@ -192,13 +195,15 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
                 (RequestBody, ResponseBody) = _streams.Start();
 
-                var pipe = new Pipe(
-                    new PipeOptions(
-                        _memoryPool,
-                        readerScheduler: PipeScheduler.ThreadPool,
-                        pauseWriterThreshold: PauseWriterThreshold,
-                        resumeWriterThreshold: ResumeWriterTheshold,
-                        minimumSegmentSize: MinAllocBufferSize));
+                var pipe = new Pipe(new PipeOptions(
+                    _memoryPool,
+                    // The readerScheduler schedules internal non-blocking logic, so there's no reason to dispatch.
+                    // The writerScheduler is PipeScheduler.ThreadPool by default which is correct because it
+                    // schedules app code when backpressure is relieved which may block.
+                    readerScheduler: PipeScheduler.Inline,
+                    pauseWriterThreshold: PauseWriterThreshold,
+                    resumeWriterThreshold: ResumeWriterTheshold,
+                    minimumSegmentSize: MinAllocBufferSize));
                 _bodyOutput = new OutputProducer(pipe);
             }
 
@@ -259,7 +264,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             // Http/1.x requests with bodies require either a Content-Length or Transfer-Encoding header.
             // Note Http.Sys adds the Transfer-Encoding: chunked header to HTTP/2 requests with bodies for back compat.
             // Transfer-Encoding takes priority over Content-Length.
-            string transferEncoding = RequestHeaders[HttpKnownHeaderNames.TransferEncoding];
+            string transferEncoding = RequestHeaders.TransferEncoding.ToString();
             if (string.Equals("chunked", transferEncoding?.Trim(), StringComparison.OrdinalIgnoreCase))
             {
                 return true;
@@ -404,6 +409,15 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             // This copies data into the underlying buffer
             NativeMethods.HttpSetResponseStatusCode(_requestNativeHandle, (ushort)StatusCode, reasonPhrase);
 
+            if (HttpVersion >= System.Net.HttpVersion.Version20 && NativeMethods.HttpHasResponse4(_requestNativeHandle))
+            {
+                // Check if connection close is set, if so setting goaway
+                if (string.Equals(ConnectionClose, HttpResponseHeaders[HeaderNames.Connection], StringComparison.OrdinalIgnoreCase))
+                {
+                    NativeMethods.HttpSetNeedGoAway(_requestNativeHandle);
+                }
+            }
+
             HttpResponseHeaders.IsReadOnly = true;
             foreach (var headerPair in HttpResponseHeaders)
             {
@@ -417,13 +431,16 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 var knownHeaderIndex = HttpApiTypes.HTTP_RESPONSE_HEADER_ID.IndexOfKnownHeader(headerPair.Key);
                 for (var i = 0; i < headerValues.Count; i++)
                 {
-                    if (string.IsNullOrEmpty(headerValues[i]))
+                    var headerValue = headerValues[i];
+
+                    if (string.IsNullOrEmpty(headerValue))
                     {
                         continue;
                     }
 
                     var isFirst = i == 0;
-                    var headerValueBytes = Encoding.UTF8.GetBytes(headerValues[i]);
+                    var headerValueBytes = Encoding.UTF8.GetBytes(headerValue);
+
                     fixed (byte* pHeaderValue = headerValueBytes)
                     {
                         if (knownHeaderIndex == -1)
@@ -604,7 +621,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             AsyncIO!.NotifyCompletion(hr, bytes);
         }
 
-        private bool disposedValue = false; // To detect redundant calls
+        private bool disposedValue; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
         {

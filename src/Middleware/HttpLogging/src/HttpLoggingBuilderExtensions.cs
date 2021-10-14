@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.HttpLogging;
@@ -24,6 +24,22 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             app.UseMiddleware<HttpLoggingMiddleware>();
+            return app;
+        }
+
+        /// <summary>
+        /// Adds a middleware that can log HTTP requests and responses for server logs in W3C format.
+        /// </summary>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> instance this method extends.</param>
+        /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
+        public static IApplicationBuilder UseW3CLogging(this IApplicationBuilder app)
+        {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            app.UseMiddleware<W3CLoggingMiddleware>();
             return app;
         }
     }

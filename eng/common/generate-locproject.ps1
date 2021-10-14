@@ -14,7 +14,7 @@ $ErrorActionPreference = "Stop"
 
 Import-Module -Name (Join-Path $PSScriptRoot 'native\CommonLibrary.psm1')
 
-$exclusionsFilePath = "$SourcesDirectory\Localize\LocExclusions.json"
+$exclusionsFilePath = "$SourcesDirectory\eng\Localize\LocExclusions.json"
 $exclusions = @{ Exclusions = @() }
 if (Test-Path -Path $exclusionsFilePath)
 {
@@ -25,8 +25,15 @@ Push-Location "$SourcesDirectory" # push location for Resolve-Path -Relative to 
 
 # Template files
 $jsonFiles = @()
-$jsonFiles += Get-ChildItem -Recurse -Path "$SourcesDirectory" | Where-Object { $_.FullName -Match "\.template\.config\\localize\\en\..+\.json" } # .NET templating pattern
-$jsonFiles += Get-ChildItem -Recurse -Path "$SourcesDirectory" | Where-Object { $_.FullName -Match "en\\strings\.json" } # current winforms pattern
+$jsonTemplateFiles = Get-ChildItem -Recurse -Path "$SourcesDirectory" | Where-Object { $_.FullName -Match "\.template\.config\\localize\\.+\.en\.json" } # .NET templating pattern
+$jsonTemplateFiles | ForEach-Object {
+    $null = $_.Name -Match "(.+)\.[\w-]+\.json" # matches '[filename].[langcode].json
+    
+    $destinationFile = "$($_.Directory.FullName)\$($Matches.1).json"
+    $jsonFiles += Copy-Item "$($_.FullName)" -Destination $destinationFile -PassThru
+}
+
+$jsonWinformsTemplateFiles = Get-ChildItem -Recurse -Path "$SourcesDirectory" | Where-Object { $_.FullName -Match "en\\strings\.json" } # current winforms pattern
 
 $xlfFiles = @()
 
@@ -44,7 +51,7 @@ $langXlfFiles | ForEach-Object {
     $xlfFiles += Copy-Item "$($_.FullName)" -Destination $destinationFile -PassThru
 }
 
-$locFiles = $jsonFiles + $xlfFiles
+$locFiles = $jsonFiles + $jsonWinformsTemplateFiles + $xlfFiles
 
 $locJson = @{
     Projects = @(
@@ -66,10 +73,19 @@ $locJson = @{
                     }
                     if ($continue)
                     {
-                        return @{
-                            SourceFile = $sourceFile
-                            CopyOption = "LangIDOnName"
-                            OutputPath = $outputPath
+                        if ($_.Directory.Name -eq 'en' -and $_.Extension -eq '.json') {
+                            return @{
+                                SourceFile = $sourceFile
+                                CopyOption = "LangIDOnPath"
+                                OutputPath = "$($_.Directory.Parent.FullName | Resolve-Path -Relative)\"
+                            }
+                        }
+                        else {
+                            return @{
+                                SourceFile = $sourceFile
+                                CopyOption = "LangIDOnName"
+                                OutputPath = $outputPath
+                            }
                         }
                     }
                 }
@@ -83,14 +99,14 @@ Write-Host "LocProject.json generated:`n`n$json`n`n"
 Pop-Location
 
 if (!$UseCheckedInLocProjectJson) {
-    New-Item "$SourcesDirectory\Localize\LocProject.json" -Force # Need this to make sure the Localize directory is created
-    Set-Content "$SourcesDirectory\Localize\LocProject.json" $json
+    New-Item "$SourcesDirectory\eng\Localize\LocProject.json" -Force # Need this to make sure the Localize directory is created
+    Set-Content "$SourcesDirectory\eng\Localize\LocProject.json" $json
 }
 else {
-    New-Item "$SourcesDirectory\Localize\LocProject-generated.json" -Force # Need this to make sure the Localize directory is created
-    Set-Content "$SourcesDirectory\Localize\LocProject-generated.json" $json
+    New-Item "$SourcesDirectory\eng\Localize\LocProject-generated.json" -Force # Need this to make sure the Localize directory is created
+    Set-Content "$SourcesDirectory\eng\Localize\LocProject-generated.json" $json
 
-    if ((Get-FileHash "$SourcesDirectory\Localize\LocProject-generated.json").Hash -ne (Get-FileHash "$SourcesDirectory\Localize\LocProject.json").Hash) {
+    if ((Get-FileHash "$SourcesDirectory\eng\Localize\LocProject-generated.json").Hash -ne (Get-FileHash "$SourcesDirectory\eng\Localize\LocProject.json").Hash) {
         Write-PipelineTelemetryError -Category "OneLocBuild" -Message "Existing LocProject.json differs from generated LocProject.json. Download LocProject-generated.json and compare them."
         
         exit 1

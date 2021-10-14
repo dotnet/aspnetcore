@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -11,10 +11,10 @@ namespace Microsoft.Extensions.Tools.Internal
 {
     public class TemporaryDirectory : IDisposable
     {
-        private List<TemporaryCSharpProject> _projects = new List<TemporaryCSharpProject>();
-        private List<TemporaryDirectory> _subdirs = new List<TemporaryDirectory>();
-        private Dictionary<string, string> _files = new Dictionary<string, string>();
-        private TemporaryDirectory? _parent;
+        private readonly List<TemporaryCSharpProject> _projects = new List<TemporaryCSharpProject>();
+        private readonly List<TemporaryDirectory> _subdirs = new List<TemporaryDirectory>();
+        private readonly Dictionary<string, string> _files = new Dictionary<string, string>();
+        private readonly TemporaryDirectory? _parent;
 
         public TemporaryDirectory()
         {

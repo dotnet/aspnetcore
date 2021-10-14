@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 {
                     matchesSb.Insert(0, branch);
                 }
-                sb.Append(matchesSb.ToString());
+                sb.Append(matchesSb);
                 sb.Append(" (Matches: ");
                 sb.AppendJoin(", ", node.Matches.Select(m => m.Entry.RouteTemplate.TemplateText));
                 sb.AppendLine(")");

@@ -1,7 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Text.Json;
 using System.Threading;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
@@ -33,14 +34,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         // Matches the default LimitRequestFields in Apache httpd.
         private int _maxRequestHeaderCount = 100;
 
-        // Matches the default http.sys connectionTimeout.
-        private TimeSpan _keepAliveTimeout = TimeSpan.FromMinutes(2);
+        // Slightly more than SocketHttpHandler's old PooledConnectionIdleTimeout of 2 minutes.
+        // https://github.com/dotnet/runtime/issues/52267
+        private TimeSpan _keepAliveTimeout = TimeSpan.FromSeconds(130);
 
         private TimeSpan _requestHeadersTimeout = TimeSpan.FromSeconds(30);
 
         // Unlimited connections are allowed by default.
-        private long? _maxConcurrentConnections = null;
-        private long? _maxConcurrentUpgradedConnections = null;
+        private long? _maxConcurrentConnections;
+        private long? _maxConcurrentUpgradedConnections;
 
         /// <summary>
         /// Gets or sets the maximum size of the response buffer before write
@@ -169,7 +171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         /// <summary>
         /// Gets or sets the keep-alive timeout.
-        /// Defaults to 2 minutes.
+        /// Defaults to 130 seconds.
         /// </summary>
         /// <remarks>
         /// </remarks>
@@ -254,6 +256,86 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 }
                 _maxConcurrentUpgradedConnections = value;
             }
+        }
+
+        internal void Serialize(Utf8JsonWriter writer)
+        {
+            writer.WriteString(nameof(KeepAliveTimeout), KeepAliveTimeout.ToString());
+
+            writer.WritePropertyName(nameof(MaxConcurrentConnections));
+            if (MaxConcurrentConnections is null)
+            {
+                writer.WriteNullValue();
+            }
+            else
+            {
+                writer.WriteNumberValue(MaxConcurrentConnections.Value);
+            }
+
+            writer.WritePropertyName(nameof(MaxConcurrentUpgradedConnections));
+            if (MaxConcurrentUpgradedConnections is null)
+            {
+                writer.WriteNullValue();
+            }
+            else
+            {
+                writer.WriteNumberValue(MaxConcurrentUpgradedConnections.Value);
+            }
+
+            writer.WritePropertyName(nameof(MaxRequestBodySize));
+            if (MaxRequestBodySize is null)
+            {
+                writer.WriteNullValue();
+            }
+            else
+            {
+                writer.WriteNumberValue(MaxRequestBodySize.Value);
+            }
+
+            writer.WritePropertyName(nameof(MaxRequestBufferSize));
+            if (MaxRequestBufferSize is null)
+            {
+                writer.WriteNullValue();
+            }
+            else
+            {
+                writer.WriteNumberValue(MaxRequestBufferSize.Value);
+            }
+
+            writer.WritePropertyName(nameof(MaxRequestHeaderCount));
+            writer.WriteNumberValue(MaxRequestHeaderCount);
+
+            writer.WritePropertyName(nameof(MaxRequestHeadersTotalSize));
+            writer.WriteNumberValue(MaxRequestHeadersTotalSize);
+
+            writer.WritePropertyName(nameof(MaxRequestLineSize));
+            writer.WriteNumberValue(MaxRequestLineSize);
+
+            writer.WritePropertyName(nameof(MaxResponseBufferSize));
+            if (MaxResponseBufferSize is null)
+            {
+                writer.WriteNullValue();
+            }
+            else
+            {
+                writer.WriteNumberValue(MaxResponseBufferSize.Value);
+            }
+
+            writer.WriteString(nameof(MinRequestBodyDataRate), MinRequestBodyDataRate?.ToString());
+            writer.WriteString(nameof(MinResponseDataRate), MinResponseDataRate?.ToString());
+            writer.WriteString(nameof(RequestHeadersTimeout), RequestHeadersTimeout.ToString());
+
+            // HTTP2
+            writer.WritePropertyName(nameof(Http2));
+            writer.WriteStartObject();
+            Http2.Serialize(writer);
+            writer.WriteEndObject();
+
+            // HTTP3
+            writer.WritePropertyName(nameof(Http3));
+            writer.WriteStartObject();
+            Http3.Serialize(writer);
+            writer.WriteEndObject();
         }
 
         /// <summary>

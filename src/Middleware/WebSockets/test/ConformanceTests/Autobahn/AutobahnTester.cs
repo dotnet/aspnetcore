@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -116,7 +119,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
                 var serverExpectation = _expectations.FirstOrDefault(e => e.Server == serverResult.Server && e.Ssl == serverResult.Ssl);
                 if (serverExpectation == null)
                 {
-                    failures.AppendLine($"Expected no results for server: {serverResult.Name} but found results!");
+                    failures.AppendLine(FormattableString.Invariant($"Expected no results for server: {serverResult.Name} but found results!"));
                 }
                 else
                 {
@@ -139,7 +142,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
             {
                 Scheme = (ssl ? Uri.UriSchemeHttps : Uri.UriSchemeHttp),
                 ApplicationType = ApplicationType.Portable,
-                TargetFramework = "Net6.0",
+                TargetFramework = "Net7.0",
                 EnvironmentName = environment,
                 SiteName = "HttpTestSite", // This is configured in the Http.config
                 ServerConfigTemplateContent = (server == ServerType.IISExpress) ? File.ReadAllText(configPath) : null,

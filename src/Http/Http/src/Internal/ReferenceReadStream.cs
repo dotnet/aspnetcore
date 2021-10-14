@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -106,12 +106,15 @@ namespace Microsoft.AspNetCore.Http
             return read;
         }
 
-        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            => ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
+
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
             VerifyPosition();
-            var toRead = Math.Min(count, _length - _position);
-            var read = await _inner.ReadAsync(buffer, offset, (int)toRead, cancellationToken);
+            var toRead = (int)Math.Min(buffer.Length, _length - _position);
+            var read = await _inner.ReadAsync(buffer.Slice(0, toRead), cancellationToken);
             _position += read;
             return read;
         }

@@ -152,18 +152,18 @@ bool Environment::IsRunning64BitProcess()
     return systemInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64;
 }
 
-HRESULT Environment::CopyToDirectory(const std::wstring& source, const std::filesystem::path& destination, bool cleanDest, const std::filesystem::path& directoryToIgnore)
+HRESULT Environment::CopyToDirectory(const std::wstring& source, const std::filesystem::path& destination, bool cleanDest, const std::filesystem::path& directoryToIgnore, int& copiedFileCount)
 {
     if (cleanDest && std::filesystem::exists(destination))
     {
         std::filesystem::remove_all(destination);
     }
 
-    Environment::CopyToDirectoryInner(source, destination, directoryToIgnore);
+    Environment::CopyToDirectoryInner(source, destination, directoryToIgnore, copiedFileCount);
     return S_OK;
 }
 
-void Environment::CopyToDirectoryInner(const std::filesystem::path& source, const std::filesystem::path& destination, const std::filesystem::path& directoryToIgnore)
+void Environment::CopyToDirectoryInner(const std::filesystem::path& source, const std::filesystem::path& destination, const std::filesystem::path& directoryToIgnore, int& copiedFileCount)
 {
     auto destinationDirEntry = std::filesystem::directory_entry(destination);
     if (!destinationDirEntry.exists())
@@ -188,16 +188,16 @@ void Environment::CopyToDirectoryInner(const std::filesystem::path& source, cons
                 }
             }
 
+            copiedFileCount++;
             CopyFile(path.path().wstring().c_str(), destinationPath.wstring().c_str(), FALSE);
         }
         else if (path.is_directory())
         {
             auto sourceInnerDirectory = path.path();
 
-            // Make sure we aren't navigating into shadow copy directory.
             if (sourceInnerDirectory.wstring().rfind(directoryToIgnore, 0) != 0)
             {
-                CopyToDirectoryInner(path.path(), destination / path.path().filename(), directoryToIgnore);
+                CopyToDirectoryInner(path.path(), destination / path.path().filename(), directoryToIgnore, copiedFileCount);
             }
         }
     }

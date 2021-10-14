@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -36,19 +36,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                     .Name("bound")
                     .PropertyName("IntProp")
                     .TypeName("System.Int32"),
-            });
-
-        private static readonly TagHelperDescriptor StringIndexerTagHelper = CreateTagHelperDescriptor(
-            tagName: "input",
-            typeName: "InputTagHelper",
-            assemblyName: "TestAssembly",
-            attributes: new Action<BoundAttributeDescriptorBuilder>[]
-            {
-                builder => builder
-                    .Name("bound")
-                    .PropertyName("StringIndexer")
-                    .TypeName("System.Collections.Generic.Dictionary<System.String, System.String>")
-                    .AsDictionary("foo-", "System.String"),
             });
 
         private static readonly TagHelperDescriptor IntIndexerTagHelper = CreateTagHelperDescriptor(
@@ -1083,7 +1070,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelpe
             // Arrange
             var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateDesignTime();
-            
+
             var node = new DefaultTagHelperRuntimeIntermediateNode();
 
             // Act
@@ -1108,7 +1095,7 @@ private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner __
             // Arrange
             var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateRuntime();
-            
+
             var node = new DefaultTagHelperRuntimeIntermediateNode();
 
             // Act
@@ -1222,7 +1209,7 @@ private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeMana
 
         private class DesignTimeOptionsFeature : IConfigureRazorParserOptionsFeature, IConfigureRazorCodeGenerationOptionsFeature
         {
-            private bool _designTime;
+            private readonly bool _designTime;
 
             public DesignTimeOptionsFeature(bool designTime)
             {

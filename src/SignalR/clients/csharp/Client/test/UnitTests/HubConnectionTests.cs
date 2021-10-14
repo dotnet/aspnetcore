@@ -1,13 +1,17 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
+using System.IO;
+using System.Net;
+using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.Testing;
@@ -516,6 +520,32 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
         [Fact]
         [LogLevel(LogLevel.Trace)]
+        public async Task UploadStreamErrorSendsStreamComplete()
+        {
+            using (StartVerifiableLog())
+            {
+                var connection = new TestConnection();
+                var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
+                await hubConnection.StartAsync().DefaultTimeout();
+
+                var cts = new CancellationTokenSource();
+                var channel = Channel.CreateUnbounded<int>();
+                var invokeTask = hubConnection.InvokeAsync<object>("UploadMethod", channel.Reader, cts.Token);
+
+                var invokeMessage = await connection.ReadSentJsonAsync().DefaultTimeout();
+                Assert.Equal(HubProtocolConstants.InvocationMessageType, invokeMessage["type"]);
+
+                channel.Writer.Complete(new Exception("error from client"));
+
+                // the next sent message should be a completion message
+                var complete = await connection.ReadSentJsonAsync().DefaultTimeout();
+                Assert.Equal(HubProtocolConstants.CompletionMessageType, complete["type"]);
+                Assert.StartsWith("Stream errored by client: 'System.Exception: error from client", ((string)complete["error"]));
+            }
+        }
+
+        [Fact]
+        [LogLevel(LogLevel.Trace)]
         public async Task InvocationCanCompleteBeforeStreamCompletes()
         {
             using (StartVerifiableLog())
@@ -635,6 +665,94 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 await using var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
                 await hubConnection.StartAsync().DefaultTimeout();
             }
+        }
+
+        [Fact]
+        public async Task VerifyUserOptionsAreNotChanged()
+        {
+            using (StartVerifiableLog())
+            {
+                HttpConnectionOptions originalOptions = null, resolvedOptions = null;
+                var accessTokenFactory = new Func<Task<string>>(() => Task.FromResult("fakeAccessToken"));
+                var fakeHeader = "fakeHeader";
+
+                var connection = new HubConnectionBuilder()
+                    .WithUrl("http://example.com", Http.Connections.HttpTransportType.WebSockets,
+                        options =>
+                        {
+                            originalOptions = options;
+                            options.SkipNegotiation = true;
+                            options.Headers.Add(fakeHeader, "value");
+                            options.AccessTokenProvider = accessTokenFactory;
+                            options.WebSocketFactory = (context, token) =>
+                            {
+                                resolvedOptions = context.Options;
+                                return ValueTask.FromResult<WebSocket>(null);
+                            };
+                        })
+                    .Build();
+
+                try
+                {
+                    // since we returned null WebSocket it would fail
+                    await Assert.ThrowsAsync<InvalidOperationException>(() => connection.StartAsync().DefaultTimeout());
+                }
+                finally
+                {
+                    await connection.DisposeAsync().DefaultTimeout();
+                }
+
+                Assert.NotNull(resolvedOptions);
+                Assert.NotNull(originalOptions);
+                // verify that object was copied
+                Assert.NotSame(resolvedOptions, originalOptions);
+                Assert.NotSame(resolvedOptions.AccessTokenProvider, originalOptions.AccessTokenProvider);
+                // verify original object still points to the same provider
+                Assert.Same(originalOptions.AccessTokenProvider, accessTokenFactory);
+                Assert.Same(resolvedOptions.Headers, originalOptions.Headers);
+                Assert.Contains(fakeHeader, resolvedOptions.Headers);
+            }
+        }
+
+        [Fact]
+        public async Task HubConnectionIsMockable()
+        {
+            var mockConnection = new Mock<HubConnection>(new Mock<IConnectionFactory>().Object, new Mock<IHubProtocol>().Object, new Mock<EndPoint>().Object,
+                new Mock<IServiceProvider>().Object, new Mock<ILoggerFactory>().Object, new Mock<IRetryPolicy>().Object);
+
+            mockConnection.Setup(c => c.StartAsync(default)).Returns(() => Task.CompletedTask);
+            mockConnection.Setup(c => c.StopAsync(default)).Returns(() => Task.CompletedTask);
+            mockConnection.Setup(c => c.DisposeAsync()).Returns(() => ValueTask.CompletedTask);
+            mockConnection.Setup(c => c.On(It.IsAny<string>(), It.IsAny<Type[]>(), It.IsAny<Func<object[], object, Task>>(), It.IsAny<object>()));
+            mockConnection.Setup(c => c.Remove(It.IsAny<string>()));
+            mockConnection.Setup(c => c.StreamAsChannelCoreAsync(It.IsAny<string>(), It.IsAny<Type>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult(It.IsAny<ChannelReader<object>>()));
+            mockConnection.Setup(c => c.InvokeCoreAsync(It.IsAny<string>(), It.IsAny<Type>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>())).Returns(() => Task.FromResult(It.IsAny<object>()));
+            mockConnection.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>())).Returns(() => Task.CompletedTask);
+            mockConnection.Setup(c => c.StreamAsyncCore<object>(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>())).Returns(() => It.IsAny<IAsyncEnumerable<object>>());
+
+            var hubConnection = mockConnection.Object;
+            // .On extension method
+            _ = hubConnection.On("someMethod", () => { });
+            // .On non-extension method
+            _ = hubConnection.On("someMethod2", new Type[] { typeof(int) }, (args, obj) => Task.CompletedTask, 2);
+            hubConnection.Remove("someMethod");
+            await hubConnection.StartAsync();
+            _ = await hubConnection.StreamAsChannelCoreAsync("stream", typeof(int), Array.Empty<object>(), default);
+            _ = await hubConnection.InvokeCoreAsync("test", typeof(int), Array.Empty<object>(), default);
+            await hubConnection.SendCoreAsync("test2", Array.Empty<object>(), default);
+            _ = hubConnection.StreamAsyncCore<int>("stream2", Array.Empty<object>(), default);
+            await hubConnection.StopAsync();
+
+            mockConnection.Verify(c => c.On("someMethod", It.IsAny<Type[]>(), It.IsAny<Func<object[], object, Task>>(), It.IsAny<object>()), Times.Once);
+            mockConnection.Verify(c => c.On("someMethod2", It.IsAny<Type[]>(), It.IsAny<Func<object[], object, Task>>(), 2), Times.Once);
+            mockConnection.Verify(c => c.Remove("someMethod"), Times.Once);
+            mockConnection.Verify(c => c.StreamAsChannelCoreAsync("stream", It.IsAny<Type>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()), Times.Once);
+            mockConnection.Verify(c => c.InvokeCoreAsync("test", typeof(int), Array.Empty<object>(), It.IsAny<CancellationToken>()), Times.Once);
+            mockConnection.Verify(c => c.SendCoreAsync("test2", Array.Empty<object>(), It.IsAny<CancellationToken>()), Times.Once);
+            mockConnection.Verify(c => c.StreamAsyncCore<int>("stream2", Array.Empty<object>(), It.IsAny<CancellationToken>()), Times.Once);
+            mockConnection.Verify(c => c.StartAsync(It.IsAny<CancellationToken>()), Times.Once);
+            mockConnection.Verify(c => c.StopAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         private class SampleObject

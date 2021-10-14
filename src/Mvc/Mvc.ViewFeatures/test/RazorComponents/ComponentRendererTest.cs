@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -9,7 +9,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Lifetime;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
@@ -316,7 +316,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.Equal(typeof(TestComponent).FullName, serverComponent.TypeName);
             Assert.NotEqual(Guid.Empty, serverComponent.InvocationId);
 
-            Assert.Equal("no-cache, no-store, max-age=0", viewContext.HttpContext.Response.Headers[HeaderNames.CacheControl]);
+            Assert.Equal("no-cache, no-store, max-age=0", viewContext.HttpContext.Response.Headers.CacheControl);
             Assert.DoesNotContain(viewContext.Items.Values, value => value is InvokedRenderModes);
         }
 
@@ -360,7 +360,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.Null(epilogueMarker.Descriptor);
             Assert.Null(epilogueMarker.Type);
 
-            Assert.Equal("no-cache, no-store, max-age=0", viewContext.HttpContext.Response.Headers[HeaderNames.CacheControl]);
+            Assert.Equal("no-cache, no-store, max-age=0", viewContext.HttpContext.Response.Headers.CacheControl);
             var (_, mode) = Assert.Single(viewContext.Items, (kvp) => kvp.Value is InvokedRenderModes);
             Assert.Equal(InvokedRenderModes.Mode.Server, ((InvokedRenderModes)mode).Value);
         }
@@ -796,7 +796,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // Assert
             Assert.Equal(302, ctx.Response.StatusCode);
-            Assert.Equal("http://localhost/redirect", ctx.Response.Headers[HeaderNames.Location]);
+            Assert.Equal("http://localhost/redirect", ctx.Response.Headers.Location);
         }
 
         [Fact]
@@ -881,9 +881,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             services.AddSingleton<IJSRuntime, UnsupportedJavaScriptRuntime>();
             services.AddSingleton<NavigationManager, HttpNavigationManager>();
             services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
-            services.AddSingleton<ILogger<ComponentApplicationLifetime>, NullLogger<ComponentApplicationLifetime>>();
-            services.AddSingleton<ComponentApplicationLifetime>();
-            services.AddSingleton(sp => sp.GetRequiredService<ComponentApplicationLifetime>().State);
+            services.AddSingleton<ILogger<ComponentStatePersistenceManager>, NullLogger<ComponentStatePersistenceManager>>();
+            services.AddSingleton<ComponentStatePersistenceManager>();
+            services.AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
             return services;
         }
 
@@ -1012,7 +1012,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private class AsyncComponent : ComponentBase
         {
-            private static WeatherRow[] _weatherData = new[]
+            private static readonly WeatherRow[] _weatherData = new[]
             {
                 new WeatherRow
                 {

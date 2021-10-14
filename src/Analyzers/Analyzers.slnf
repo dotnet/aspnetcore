@@ -26,6 +26,7 @@
       "src\\SignalR\\common\\Http.Connections\\src\\Microsoft.AspNetCore.Http.Connections.csproj",
       "src\\SignalR\\common\\Http.Connections.Common\\src\\Microsoft.AspNetCore.Http.Connections.Common.csproj",
       "src\\Http\\Http.Extensions\\src\\Microsoft.AspNetCore.Http.Extensions.csproj",
+      "src\\Extensions\\Features\\src\\Microsoft.Extensions.Features.csproj",
       "src\\Http\\Http.Features\\src\\Microsoft.AspNetCore.Http.Features.csproj",
       "src\\Middleware\\Localization\\src\\Microsoft.AspNetCore.Localization.csproj",
       "src\\Mvc\\Mvc.Abstractions\\src\\Microsoft.AspNetCore.Mvc.Abstractions.csproj",

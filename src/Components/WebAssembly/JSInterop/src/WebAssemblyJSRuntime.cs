@@ -1,7 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using System.Text.Json;
 using Microsoft.JSInterop.Infrastructure;
 using WebAssembly.JSInterop;
@@ -57,17 +59,20 @@ namespace Microsoft.JSInterop.WebAssembly
         }
 
         /// <inheritdoc />
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "TODO: This should be in the xml suppressions file, but can't be because https://github.com/mono/linker/issues/2006")]
         protected override void EndInvokeDotNet(DotNetInvocationInfo callInfo, in DotNetInvocationResult dispatchResult)
         {
-            // For failures, the common case is to call EndInvokeDotNet with the Exception object.
-            // For these we'll serialize as something that's useful to receive on the JS side.
-            // If the value is not an Exception, we'll just rely on it being directly JSON-serializable.
-            var resultOrError = dispatchResult.Success ? dispatchResult.Result : dispatchResult.Exception!.ToString();
+            var resultJsonOrErrorMessage = dispatchResult.Success
+                ? dispatchResult.ResultJson!
+                : dispatchResult.Exception!.ToString();
+            InvokeUnmarshalled<string?, bool, string, object>("Blazor._internal.endInvokeDotNetFromJS",
+                callInfo.CallId, dispatchResult.Success, resultJsonOrErrorMessage);
+        }
 
-            // We pass 0 as the async handle because we don't want the JS-side code to
-            // send back any notification (we're just providing a result for an existing async call)
-            var args = JsonSerializer.Serialize(new[] { callInfo.CallId, dispatchResult.Success, resultOrError }, JsonSerializerOptions);
-            BeginInvokeJS(0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", args, JSCallResultType.Default, 0);
+        /// <inheritdoc />
+        protected override void SendByteArray(int id, byte[] data)
+        {
+            InvokeUnmarshalled<int, byte[], object>("Blazor._internal.receiveByteArray", id, data);
         }
 
         internal TResult InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2, long targetInstanceId)
@@ -86,6 +91,7 @@ namespace Microsoft.JSInterop.WebAssembly
             switch (resultType)
             {
                 case JSCallResultType.Default:
+                case JSCallResultType.JSVoidResult:
                     var result = InternalCalls.InvokeJS<T0, T1, T2, TResult>(out exception, ref callInfo, arg0, arg1, arg2);
                     return exception != null
                         ? throw new JSException(exception)
@@ -95,9 +101,26 @@ namespace Microsoft.JSInterop.WebAssembly
                     return exception != null
                         ? throw new JSException(exception)
                         : (TResult)(object)new WebAssemblyJSObjectReference(this, id);
+                case JSCallResultType.JSStreamReference:
+                    var serializedStreamReference = InternalCalls.InvokeJS<T0, T1, T2, string>(out exception, ref callInfo, arg0, arg1, arg2);
+                    return exception != null
+                        ? throw new JSException(exception)
+                        : (TResult)(object)DeserializeJSStreamReference(serializedStreamReference);
                 default:
                     throw new InvalidOperationException($"Invalid result type '{resultType}'.");
             }
+        }
+
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "IJSStreamReference is referenced in Microsoft.JSInterop.Infrastructure.JSStreamReferenceJsonConverter")]
+        private IJSStreamReference DeserializeJSStreamReference(string serializedStreamReference)
+        {
+            var jsStreamReference = JsonSerializer.Deserialize<IJSStreamReference>(serializedStreamReference, JsonSerializerOptions);
+            if (jsStreamReference is null)
+            {
+                throw new NullReferenceException($"Unable to parse the {nameof(serializedStreamReference)}.");
+            }
+
+            return jsStreamReference;
         }
 
         /// <inheritdoc />

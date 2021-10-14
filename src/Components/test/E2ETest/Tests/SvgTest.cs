@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.NotNull(svgCircleElement);
         }
 
-        [Fact(Skip="Skipped because functionality is not supported. See https://github.com/dotnet/aspnetcore/issues/18271.")]
+        [Fact]
         public void CanRenderVariablesInForeignObject()
         {
             var appElement = Browser.MountTestComponent<SvgComponent>();
@@ -70,14 +70,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.NotNull(svgElement);
 
             Func<IEnumerable<IWebElement>> strongElement =
-                () => appElement.FindElements(By.TagName("strong"));
+                () => svgElement.FindElements(By.TagName("strong"));
 
             Browser.Collection<IWebElement>(strongElement,
                 e => Assert.Equal("thestringfoo", e.Text),
                 e => Assert.Equal("thestringbar", e.Text));
         }
 
-        [Fact(Skip="Skipped because functionality is not supported. See https://github.com/dotnet/aspnetcore/issues/18271.")]
+        [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34941")]
         public void CanRenderSvgWithLink()
         {
             var appElement = Browser.MountTestComponent<SvgComponent>();
@@ -90,10 +91,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             svgLinkElement.Click();
 
             var currentScenario = Browser.FindElement(By.Id("test-selector-select"));
-            Assert.Equal("SVG", currentScenario.Text);
+            // Should have navigated away from current page
+            Browser.True(() => Browser.Url.EndsWith("/subdir/counter", StringComparison.Ordinal));
         }
 
-        [Fact(Skip="Skipped because functionality is not supported. See https://github.com/dotnet/aspnetcore/issues/18271.")]
+        [Fact]
         public void CanRenderSvgWithTwoWayBinding()
         {
             var appElement = Browser.MountTestComponent<SvgComponent>();
@@ -107,11 +109,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var svgInputElement = svgElement.FindElement(By.TagName("input"));
             Assert.NotNull(svgInputElement);
 
+            svgInputElement.SendKeys(Keys.Backspace);
+            svgInputElement.SendKeys(Keys.Backspace);
             svgInputElement.SendKeys("15");
             Assert.Equal("15", valueElement.Text);
         }
 
-        [Fact(Skip="Skipped because functionality is not supported. See https://github.com/dotnet/aspnetcore/issues/18271.")]
+        [Fact]
         public void CanRenderSvgRenderFragment()
         {
             var appElement = Browser.MountTestComponent<SvgComponent>();

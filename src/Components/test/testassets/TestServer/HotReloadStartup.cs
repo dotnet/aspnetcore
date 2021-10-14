@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
 using Microsoft.AspNetCore.Builder;
@@ -12,9 +12,13 @@ namespace TestServer
 {
     public class HotReloadStartup
     {
+        public HotReloadStartup()
+        {
+            TestableMetadataUpdate.TestIsSupported = true;
+        }
+
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton(new HotReloadEnvironment(isHotReloadEnabled: true));
             services.AddControllers();
             services.AddRazorPages();
             services.AddServerSideBlazor();

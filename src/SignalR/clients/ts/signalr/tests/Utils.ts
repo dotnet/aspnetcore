@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
 
@@ -54,11 +54,11 @@ export class PromiseSource<T = void> implements Promise<T> {
         throw new Error("Method not implemented.");
     }
 
-    public resolve(value: T | PromiseLike<T>) {
+    public resolve(value: T | PromiseLike<T>): void {
         this._resolver(value);
     }
 
-    public reject(reason?: any) {
+    public reject(reason?: any): void {
         this._rejecter(reason);
     }
 
@@ -84,7 +84,7 @@ export class SyncPoint {
         return this._atSyncPoint.promise;
     }
 
-    public continue() {
+    public continue(): void {
         this._continueFromSyncPoint.resolve();
     }
 

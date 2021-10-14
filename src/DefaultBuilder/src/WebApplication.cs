@@ -1,11 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -24,7 +19,7 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteBuilder, IAsyncDisposable
     {
-        internal const string EndpointRouteBuilder = "__EndpointRouteBuilder";
+        internal const string GlobalEndpointRouteBuilderKey = "__GlobalEndpointRouteBuilder";
 
         private readonly IHost _host;
         private readonly List<EndpointDataSource> _dataSources = new();
@@ -34,6 +29,8 @@ namespace Microsoft.AspNetCore.Builder
             _host = host;
             ApplicationBuilder = new ApplicationBuilder(host.Services);
             Logger = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger(Environment.ApplicationName);
+
+            Properties[GlobalEndpointRouteBuilderKey] = this;
         }
 
         /// <summary>
@@ -82,15 +79,6 @@ namespace Microsoft.AspNetCore.Builder
         internal ICollection<EndpointDataSource> DataSources => _dataSources;
         ICollection<EndpointDataSource> IEndpointRouteBuilder.DataSources => DataSources;
 
-        internal IEndpointRouteBuilder RouteBuilder
-        {
-            get
-            {
-                Properties.TryGetValue(EndpointRouteBuilder, out var value);
-                return (IEndpointRouteBuilder)value!;
-            }
-        }
-
         internal ApplicationBuilder ApplicationBuilder { get; }
 
         IServiceProvider IEndpointRouteBuilder.ServiceProvider => Services;
@@ -101,15 +89,30 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="args">Command line arguments</param>
         /// <returns>The <see cref="WebApplication"/>.</returns>
         public static WebApplication Create(string[]? args = null) =>
-            new WebApplicationBuilder(Assembly.GetCallingAssembly(), args).Build();
+            new WebApplicationBuilder(new() { Args = args }).Build();
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WebApplicationBuilder"/> class with preconfigured defaults.
+        /// </summary>
+        /// <returns>The <see cref="WebApplicationBuilder"/>.</returns>
+        public static WebApplicationBuilder CreateBuilder() =>
+            new(new());
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebApplicationBuilder"/> class with preconfigured defaults.
         /// </summary>
         /// <param name="args">Command line arguments</param>
         /// <returns>The <see cref="WebApplicationBuilder"/>.</returns>
-        public static WebApplicationBuilder CreateBuilder(string[]? args = null) =>
-            new WebApplicationBuilder(Assembly.GetCallingAssembly(), args);
+        public static WebApplicationBuilder CreateBuilder(string[] args) =>
+            new(new() { Args = args });
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WebApplicationBuilder"/> class with preconfigured defaults.
+        /// </summary>
+        /// <param name="options">The <see cref="WebApplicationOptions"/> to configure the <see cref="WebApplicationBuilder"/>.</param>
+        /// <returns>The <see cref="WebApplicationBuilder"/>.</returns>
+        public static WebApplicationBuilder CreateBuilder(WebApplicationOptions options) =>
+            new(options);
 
         /// <summary>
         /// Start the application.
@@ -166,11 +169,17 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         public ValueTask DisposeAsync() => ((IAsyncDisposable)_host).DisposeAsync();
 
-        internal RequestDelegate BuildRequstDelegate() => ApplicationBuilder.Build();
-        RequestDelegate IApplicationBuilder.Build() => BuildRequstDelegate();
+        internal RequestDelegate BuildRequestDelegate() => ApplicationBuilder.Build();
+        RequestDelegate IApplicationBuilder.Build() => BuildRequestDelegate();
 
         // REVIEW: Should this be wrapping another type?
-        IApplicationBuilder IApplicationBuilder.New() => ApplicationBuilder.New();
+        IApplicationBuilder IApplicationBuilder.New()
+        {
+            var newBuilder = ApplicationBuilder.New();
+            // Remove the route builder so branched pipelines have their own routing world
+            newBuilder.Properties.Remove(GlobalEndpointRouteBuilderKey);
+            return newBuilder;
+        }
 
         IApplicationBuilder IApplicationBuilder.Use(Func<RequestDelegate, RequestDelegate> middleware)
         {
@@ -178,7 +187,7 @@ namespace Microsoft.AspNetCore.Builder
             return this;
         }
 
-        IApplicationBuilder IEndpointRouteBuilder.CreateApplicationBuilder() => ApplicationBuilder.New();
+        IApplicationBuilder IEndpointRouteBuilder.CreateApplicationBuilder() => ((IApplicationBuilder)this).New();
 
         private void Listen(string? url)
         {

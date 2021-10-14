@@ -1,10 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// An action result which formats the given object as JSON.
     /// </summary>
-    public class JsonResult : ActionResult, IResult, IStatusCodeActionResult
+    public class JsonResult : ActionResult, IStatusCodeActionResult
     {
         /// <summary>
         /// Creates a new <see cref="JsonResult"/> with the given <paramref name="value"/>.
@@ -80,16 +79,6 @@ namespace Microsoft.AspNetCore.Mvc
             var services = context.HttpContext.RequestServices;
             var executor = services.GetRequiredService<IActionResultExecutor<JsonResult>>();
             return executor.ExecuteAsync(context, this);
-        }
-
-        /// <summary>
-        /// Write the result as JSON to the HTTP response.
-        /// </summary>
-        /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
-        /// <returns>A task that represents the asynchronous execute operation.</returns>
-        Task IResult.ExecuteAsync(HttpContext httpContext)
-        {
-            return httpContext.Response.WriteAsJsonAsync(Value);
         }
     }
 }

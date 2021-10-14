@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
     internal static class AngularCliMiddleware
     {
         private const string LogCategoryName = "Microsoft.AspNetCore.SpaServices";
-        private static TimeSpan RegexMatchTimeout = TimeSpan.FromSeconds(5); // This is a development-time only feature, so a very long timeout is fine
+        private static readonly TimeSpan RegexMatchTimeout = TimeSpan.FromSeconds(5); // This is a development-time only feature, so a very long timeout is fine
 
         public static void Attach(
             ISpaBuilder spaBuilder,
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
             var devServerPort = spaBuilder.Options.DevServerPort;
             if (string.IsNullOrEmpty(sourcePath))
             {
-                throw new ArgumentException("Cannot be null or empty", nameof(sourcePath));
+                throw new ArgumentException("Property 'SourcePath' cannot be null or empty", nameof(spaBuilder));
             }
 
             if (string.IsNullOrEmpty(scriptName))

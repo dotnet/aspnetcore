@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -17,12 +17,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class RequestSizeLimitTest : IClassFixture<MvcTestFixture<BasicWebSite.StartupRequestLimitSize>>
     {
-        // Some tests require comparing the actual response body against an expected response baseline
-        // so they require a reference to the assembly on which the resources are located, in order to
-        // make the tests less verbose, we get a reference to the assembly with the resources and we
-        // use it on all the rest of the tests.
-        private static readonly Assembly _resourcesAssembly = typeof(BasicTests).GetTypeInfo().Assembly;
-
         public RequestSizeLimitTest(MvcTestFixture<BasicWebSite.StartupRequestLimitSize> fixture)
         {
             var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 import { HandshakeProtocol, HandshakeRequestMessage, HandshakeResponseMessage } from "./HandshakeProtocol";
 import { IConnection } from "./IConnection";
@@ -8,7 +8,7 @@ import { ILogger, LogLevel } from "./ILogger";
 import { IRetryPolicy } from "./IRetryPolicy";
 import { IStreamResult } from "./Stream";
 import { Subject } from "./Subject";
-import { Arg } from "./Utils";
+import { Arg, getErrorString, Platform } from "./Utils";
 
 const DEFAULT_TIMEOUT_IN_MS: number = 30 * 1000;
 const DEFAULT_PING_INTERVAL_IN_MS: number = 15 * 1000;
@@ -31,6 +31,7 @@ export enum HubConnectionState {
 export class HubConnection {
     private readonly _cachedPingMessage: string | ArrayBuffer;
     // Needs to not start with _ for tests
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private readonly connection: IConnection;
     private readonly _logger: ILogger;
     private readonly _reconnectPolicy?: IRetryPolicy;
@@ -63,6 +64,11 @@ export class HubConnection {
     private _reconnectDelayHandle?: any;
     private _timeoutHandle?: any;
     private _pingServerHandle?: any;
+
+    private _freezeEventListener = () =>
+    {
+        this._logger.log(LogLevel.Warning, "The page is being frozen, this will likely lead to the connection being closed and messages being lost. For more information see the docs at https://docs.microsoft.com/aspnet/core/signalr/javascript-client#bsleep");
+    };
 
     /** The server timeout in milliseconds.
      *
@@ -173,6 +179,13 @@ export class HubConnection {
         try {
             await this._startInternal();
 
+            if (Platform.isBrowser) {
+                if (document) {
+                    // Log when the browser freezes the tab so users know why their connection unexpectedly stopped working
+                    document.addEventListener("freeze", this._freezeEventListener);
+                }
+            }
+
             this._connectionState = HubConnectionState.Connected;
             this._connectionStarted = true;
             this._logger.log(LogLevel.Debug, "HubConnection connected successfully.");
@@ -220,6 +233,7 @@ export class HubConnection {
                 // It's important to throw instead of returning a rejected promise, because we don't want to allow any state
                 // transitions to occur between now and the calling code observing the exceptions. Returning a rejected promise
                 // will cause the calling continuation to get scheduled to run later.
+                // eslint-disable-next-line @typescript-eslint/no-throw-literal
                 throw this._stopDuringStartError;
             }
         } catch (e) {
@@ -303,7 +317,9 @@ export class HubConnection {
         const [streams, streamIds] = this._replaceStreamingParams(args);
         const invocationDescriptor = this._createStreamInvocation(methodName, args, streamIds);
 
+        // eslint-disable-next-line prefer-const
         let promiseQueue: Promise<void>;
+
         const subject = new Subject<T>();
         subject.cancelCallback = () => {
             const cancelInvocation: CancelInvocationMessage = this._createCancelInvocation(invocationDescriptor.invocationId);
@@ -428,7 +444,7 @@ export class HubConnection {
      * @param {string} methodName The name of the hub method to define.
      * @param {Function} newMethod The handler that will be raised when the hub method is invoked.
      */
-    public on(methodName: string, newMethod: (...args: any[]) => void) {
+    public on(methodName: string, newMethod: (...args: any[]) => void): void {
         if (!methodName || !newMethod) {
             return;
         }
@@ -489,7 +505,7 @@ export class HubConnection {
      *
      * @param {Function} callback The handler that will be invoked when the connection is closed. Optionally receives a single argument containing the error that caused the connection to close (if any).
      */
-    public onclose(callback: (error?: Error) => void) {
+    public onclose(callback: (error?: Error) => void): void {
         if (callback) {
             this._closedCallbacks.push(callback);
         }
@@ -499,7 +515,7 @@ export class HubConnection {
      *
      * @param {Function} callback The handler that will be invoked when the connection starts reconnecting. Optionally receives a single argument containing the error that caused the connection to start reconnecting (if any).
      */
-    public onreconnecting(callback: (error?: Error) => void) {
+    public onreconnecting(callback: (error?: Error) => void): void {
         if (callback) {
             this._reconnectingCallbacks.push(callback);
         }
@@ -509,7 +525,7 @@ export class HubConnection {
      *
      * @param {Function} callback The handler that will be invoked when the connection successfully reconnects.
      */
-    public onreconnected(callback: (connectionId?: string) => void) {
+    public onreconnected(callback: (connectionId?: string) => void): void {
         if (callback) {
             this._reconnectedCallbacks.push(callback);
         }
@@ -534,19 +550,24 @@ export class HubConnection {
                         this._invokeClientMethod(message);
                         break;
                     case MessageType.StreamItem:
-                    case MessageType.Completion:
+                    case MessageType.Completion: {
                         const callback = this._callbacks[message.invocationId];
                         if (callback) {
                             if (message.type === MessageType.Completion) {
                                 delete this._callbacks[message.invocationId];
                             }
-                            callback(message);
+                            try {
+                                callback(message);
+                            } catch (e) {
+                                this._logger.log(LogLevel.Error, `Stream callback threw error: ${getErrorString(e)}`);
+                            }
                         }
                         break;
+                    }
                     case MessageType.Ping:
                         // Don't care about pings
                         break;
-                    case MessageType.Close:
+                    case MessageType.Close: {
                         this._logger.log(LogLevel.Information, "Close message received from server.");
 
                         const error = message.error ? new Error("Server returned an error on close: " + message.error) : undefined;
@@ -555,7 +576,7 @@ export class HubConnection {
                             // It feels wrong not to await connection.stop() here, but processIncomingData is called as part of an onreceive callback which is not async,
                             // this is already the behavior for serverTimeout(), and HttpConnection.Stop() should catch and log all possible exceptions.
 
-                            // tslint:disable-next-line:no-floating-promises
+                            // eslint-disable-next-line @typescript-eslint/no-floating-promises
                             this.connection.stop(error);
                         } else {
                             // We cannot await stopInternal() here, but subsequent calls to stop() will await this if stopInternal() is still ongoing.
@@ -563,6 +584,7 @@ export class HubConnection {
                         }
 
                         break;
+                    }
                     default:
                         this._logger.log(LogLevel.Warning, `Invalid message type: ${message.type}.`);
                         break;
@@ -643,11 +665,11 @@ export class HubConnection {
         }
     }
 
-    // tslint:disable-next-line:naming-convention
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private serverTimeout() {
         // The server hasn't talked to us in a while. It doesn't like us anymore ... :(
         // Terminate the connection, but we don't need to wait on the promise. This could trigger reconnecting.
-        // tslint:disable-next-line:no-floating-promises
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.connection.stop(new Error("Server timeout elapsed without receiving a message from the server."));
     }
 
@@ -693,7 +715,7 @@ export class HubConnection {
         if (this._connectionState === HubConnectionState.Disconnecting) {
             this._completeClose(error);
         } else if (this._connectionState === HubConnectionState.Connected && this._reconnectPolicy) {
-            // tslint:disable-next-line:no-floating-promises
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this._reconnect(error);
         } else if (this._connectionState === HubConnectionState.Connected) {
             this._completeClose(error);
@@ -710,6 +732,12 @@ export class HubConnection {
         if (this._connectionStarted) {
             this._connectionState = HubConnectionState.Disconnected;
             this._connectionStarted = false;
+
+            if (Platform.isBrowser) {
+                if (document) {
+                    document.removeEventListener("freeze", this._freezeEventListener);
+                }
+            }
 
             try {
                 this._closedCallbacks.forEach((c) => c.apply(this, [error]));
@@ -824,7 +852,11 @@ export class HubConnection {
         Object.keys(callbacks)
             .forEach((key) => {
                 const callback = callbacks[key];
-                callback(null, error);
+                try {
+                    callback(null, error);
+                } catch (e) {
+                    this._logger.log(LogLevel.Error, `Stream 'error' callback called with '${error}' threw error: ${getErrorString(e)}`);
+                }
             });
     }
 
@@ -891,7 +923,7 @@ export class HubConnection {
         }
 
         // We want to iterate over the keys, since the keys are the stream ids
-        // tslint:disable-next-line:forin
+        // eslint-disable-next-line guard-for-in
         for (const streamId in streams) {
             streams[streamId].subscribe({
                 complete: () => {

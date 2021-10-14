@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 
@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 {
     internal static class RouteParameterParser
     {
-        // This code parses the inside of the route parameter 
+        // This code parses the inside of the route parameter
         //
         // Ex: {hello} - this method is responsible for parsing 'hello'
         // The factoring between this class and RoutePatternParser is due to legacy.
@@ -163,8 +163,8 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                             case ':':
                             case '=':
                                 // In the original implementation, the Regex would've backtracked if it encountered an
-                                // unbalanced opening bracket followed by (not necessarily immediatiely) a delimiter.
-                                // Simply verifying that the parantheses will eventually be closed should suffice to
+                                // unbalanced opening bracket followed by (not necessarily immediately) a delimiter.
+                                // Simply verifying that the parentheses will eventually be closed should suffice to
                                 // determine if the terminator needs to be consumed as part of the current constraint
                                 // specification.
                                 var indexOfClosingParantheses = text.IndexOf(')', currentIndex + 1);

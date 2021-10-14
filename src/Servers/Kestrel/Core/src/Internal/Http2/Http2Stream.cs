@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -20,7 +20,7 @@ using HttpMethods = Microsoft.AspNetCore.Http.HttpMethods;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem, IDisposable
+    internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem, IDisposable, IPooledStream
     {
         private Http2StreamContext _context = default!;
         private Http2OutputProducer _http2Output = default!;
@@ -41,7 +41,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             base.Initialize(context);
 
-            CanReuse = false;
             _decrementCalled = false;
             _completionState = StreamCompletionFlags.None;
             InputRemaining = null;
@@ -107,7 +106,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public bool CanReuse { get; private set; }
+        // We only want to reuse a stream that was not aborted and has completely finished writing.
+        // This ensures Http2OutputProducer.ProcessDataWrites is in the correct state to be reused.
+
+        // CanReuse must be evaluated on the main frame-processing looping after the stream is removed
+        // from the connection's active streams collection. This is required because a RST_STREAM
+        // frame could arrive after the END_STREAM flag is received. Only once the stream is removed
+        // from the connection's active stream collection can no longer be reset, and is safe to
+        // evaluate for pooling.
+
+        public bool CanReuse => !_connectionAborted && HasResponseCompleted;
 
         protected override void OnReset()
         {
@@ -119,6 +127,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _currentIHttp2StreamIdFeature = this;
             _currentIHttpResponseTrailersFeature = this;
             _currentIHttpResetFeature = this;
+            _currentIPersistentStateFeature = this;
         }
 
         protected override void OnRequestProcessingEnded()
@@ -163,9 +172,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // connection's flow-control window.
                 _inputFlowControl.Abort();
 
-                // We only want to reuse a stream that was not aborted and has completely finished writing.
-                // This ensures Http2OutputProducer.ProcessDataWrites is in the correct state to be reused.
-                CanReuse = !_connectionAborted && HasResponseCompleted;
             }
             finally
             {
@@ -240,22 +246,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // ":scheme" is not restricted to "http" and "https" schemed URIs.  A
             // proxy or gateway can translate requests for non - HTTP schemes,
             // enabling the use of HTTP to interact with non - HTTP services.
-
-            // - That said, we shouldn't allow arbitrary values or use them to populate Request.Scheme, right?
-            // - For now we'll restrict it to http/s and require it match the transport.
-            // - We'll need to find some concrete scenarios to warrant unblocking this.
+            // A common example is TLS termination.
             var headerScheme = HttpRequestHeaders.HeaderScheme.ToString();
+            HttpRequestHeaders.HeaderScheme = default; // Suppress pseduo headers from the public headers collection.
             if (!ReferenceEquals(headerScheme, Scheme) &&
                 !string.Equals(headerScheme, Scheme, StringComparison.OrdinalIgnoreCase))
             {
-                ResetAndAbort(new ConnectionAbortedException(
-                    CoreStrings.FormatHttp2StreamErrorSchemeMismatch(HttpRequestHeaders.HeaderScheme, Scheme)), Http2ErrorCode.PROTOCOL_ERROR);
-                return false;
+                if (!ServerOptions.AllowAlternateSchemes || !Uri.CheckSchemeName(headerScheme))
+                {
+                    ResetAndAbort(new ConnectionAbortedException(
+                        CoreStrings.FormatHttp2StreamErrorSchemeMismatch(headerScheme, Scheme)), Http2ErrorCode.PROTOCOL_ERROR);
+                    return false;
+                }
+
+                Scheme = headerScheme;
             }
 
             // :path (and query) - Required
             // Must start with / except may be * for OPTIONS
             var path = HttpRequestHeaders.HeaderPath.ToString();
+            HttpRequestHeaders.HeaderPath = default; // Suppress pseduo headers from the public headers collection.
             RawTarget = path;
 
             // OPTIONS - https://tools.ietf.org/html/rfc7540#section-8.1.2.3
@@ -293,6 +303,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             // :method
             _methodText = HttpRequestHeaders.HeaderMethod.ToString();
+            HttpRequestHeaders.HeaderMethod = default; // Suppress pseduo headers from the public headers collection.
             Method = HttpUtilities.GetKnownMethod(_methodText);
 
             if (Method == HttpMethod.None)
@@ -319,6 +330,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // Prefer this over Host
 
             var authority = HttpRequestHeaders.HeaderAuthority;
+            HttpRequestHeaders.HeaderAuthority = default; // Suppress pseduo headers from the public headers collection.
             var host = HttpRequestHeaders.HeaderHost;
             if (!StringValues.IsNullOrEmpty(authority))
             {
@@ -352,10 +364,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return true;
         }
 
+        [SkipLocalsInit]
         private bool TryValidatePath(ReadOnlySpan<char> pathSegment)
         {
             // Must start with a leading slash
-            if (pathSegment.Length == 0 || pathSegment[0] != '/')
+            if (pathSegment.IsEmpty || pathSegment[0] != '/')
             {
                 ResetAndAbort(new ConnectionAbortedException(CoreStrings.FormatHttp2StreamErrorPathInvalid(RawTarget)), Http2ErrorCode.PROTOCOL_ERROR);
                 return false;
@@ -454,7 +467,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                             // It shouldn't be possible for the RequestBodyPipe to fill up an return an incomplete task if
                             // _inputFlowControl.Advance() didn't throw.
                             Debug.Assert(flushTask.IsCompletedSuccessfully);
-                            
+
                             // If it's a IValueTaskSource backed ValueTask,
                             // inform it its result has been read so it can reset
                             flushTask.GetAwaiter().GetResult();
@@ -506,7 +519,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             DecrementActiveClientStreamCount();
 
             ApplyCompletionFlag(StreamCompletionFlags.RstStreamReceived);
-            Abort(new IOException(CoreStrings.Http2StreamResetByClient));
+            Abort(new IOException(CoreStrings.HttpStreamResetByClient));
         }
 
         public void Abort(IOException abortReason)
@@ -582,7 +595,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 _decrementCalled = true;
             }
-          
+
             _context.StreamLifetimeHandler.DecrementActiveClientStreamCount();
         }
 
@@ -670,7 +683,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void AppendHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
-            HttpRequestHeaders.Append(name, value);
+            HttpRequestHeaders.Append(name, value, checkForNewlineChars : true);
         }
+
+        void IPooledStream.DisposeCore()
+        {
+            Dispose();
+        }
+
+        long IPooledStream.PoolExpirationTicks => DrainExpirationTicks;
     }
 }

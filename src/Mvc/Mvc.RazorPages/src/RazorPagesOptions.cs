@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// Gets a collection of <see cref="IPageConvention"/> instances that are applied during
         /// route and page model construction.
         /// </summary>
-        public PageConventionCollection Conventions { get; internal set; }
+        public PageConventionCollection Conventions { get; internal set; } = default!;
 
         /// <summary>
         /// Application relative path used as the root of discovery for Razor Page files.

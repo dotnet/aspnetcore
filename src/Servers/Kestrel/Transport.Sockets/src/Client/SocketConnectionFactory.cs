@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
     {
         private readonly SocketTransportOptions _options;
         private readonly MemoryPool<byte> _memoryPool;
-        private readonly SocketsTrace _trace;
+        private readonly ILogger _trace;
         private readonly PipeOptions _inputOptions;
         private readonly PipeOptions _outputOptions;
         private readonly SocketSenderPool _socketSenderPool;
@@ -38,8 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
             _options = options.Value;
             _memoryPool = options.Value.MemoryPoolFactory();
-            var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Client");
-            _trace = new SocketsTrace(logger);
+            _trace = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Client");
 
             var maxReadBufferSize = _options.MaxReadBufferSize ?? 0;
             var maxWriteBufferSize = _options.MaxWriteBufferSize ?? 0;

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -535,7 +535,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
                     if (property.PropertyHasValidators)
                     {
-                        // When constructing the mapping of paramets -> properties, also determine
+                        // When constructing the mapping of parameters -> properties, also determine
                         // if the property has any validators (without looking at metadata on the type).
                         // This will help us throw during validation if a user defines validation attributes
                         // on the property of a record type.

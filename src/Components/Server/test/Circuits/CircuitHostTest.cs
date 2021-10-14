@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -7,11 +7,11 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Web.Rendering;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using Moq;
 using Xunit;
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var serviceScope = new Mock<IServiceScope>();
             var remoteRenderer = GetRemoteRenderer();
             var circuitHost = TestCircuitHost.Create(
-                serviceScope: serviceScope.Object,
+                serviceScope: new AsyncServiceScope(serviceScope.Object),
                 remoteRenderer: remoteRenderer);
 
             // Act
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             var remoteRenderer = GetRemoteRenderer();
             var circuitHost = TestCircuitHost.Create(
-                serviceScope: serviceScope.Object,
+                serviceScope: new AsyncServiceScope(serviceScope.Object),
                 remoteRenderer: remoteRenderer);
 
             // Act
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 .Throws<InvalidTimeZoneException>();
             var remoteRenderer = GetRemoteRenderer();
             var circuitHost = TestCircuitHost.Create(
-                serviceScope: serviceScope.Object,
+                serviceScope: new AsyncServiceScope(serviceScope.Object),
                 remoteRenderer: remoteRenderer,
                 handlers: new[] { handler.Object });
 
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var serviceScope = new Mock<IServiceScope>();
             var remoteRenderer = GetRemoteRenderer();
             var circuitHost = TestCircuitHost.Create(
-                serviceScope: serviceScope.Object,
+                serviceScope: new AsyncServiceScope(serviceScope.Object),
                 remoteRenderer: remoteRenderer);
 
             var component = new DispatcherComponent(circuitHost.Renderer.Dispatcher);
@@ -120,6 +120,38 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 // Not sure if the line above messes up the xunit sync context, so just being cautious here.
                 SynchronizationContext.SetSynchronizationContext(original);
             }
+        }
+
+        [Fact]
+        public async Task DisposeAsync_MarksJSRuntimeAsDisconnectedBeforeDisposingRenderer()
+        {
+            // Arrange
+            var serviceScope = new Mock<IServiceScope>();
+            var remoteRenderer = GetRemoteRenderer();
+            var circuitHost = TestCircuitHost.Create(
+                serviceScope: new AsyncServiceScope(serviceScope.Object),
+                remoteRenderer: remoteRenderer);
+
+            var component = new PerformJSInteropOnDisposeComponent(circuitHost.JSRuntime);
+            circuitHost.Renderer.AssignRootComponentId(component);
+
+            var circuitUnhandledExceptions = new List<UnhandledExceptionEventArgs>();
+            circuitHost.UnhandledException += (sender, eventArgs) =>
+            {
+                circuitUnhandledExceptions.Add(eventArgs);
+            };
+
+            // Act
+            await circuitHost.DisposeAsync();
+
+            // Assert: Component disposal logic sees the exception
+            var componentException = Assert.IsType<JSDisconnectedException>(component.ExceptionDuringDisposeAsync);
+
+            // Assert: Circuit host notifies about the exception
+            Assert.Collection(circuitUnhandledExceptions, eventArgs =>
+            {
+                Assert.Same(componentException, eventArgs.ExceptionObject);
+            });
         }
 
         [Fact]
@@ -163,6 +195,49 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             // Assert
             handler1.VerifyAll();
             handler2.VerifyAll();
+        }
+
+        [Fact]
+        public async Task InitializeAsync_RendersRootComponentsInParallel()
+        {
+            // To test that root components are run in parallel, we ensure that each root component
+            // finishes rendering (i.e. returns from SetParametersAsync()) only after all other
+            // root components have started rendering. If the root components were rendered
+            // sequentially, the 1st component would get stuck rendering forever because the
+            // 2nd component had not yet started rendering. We call RenderInParallelComponent.Setup()
+            // to configure how many components will be rendered in advance so that each component
+            // can be assigned a TaskCompletionSource and await the same array of tasks. A timeout
+            // is configured for circuitHost.InitializeAsync() so that the test can fail rather than
+            // hang forever.
+
+            // Arrange
+            var componentCount = 3;
+            var initializeTimeout = TimeSpan.FromMilliseconds(5000);
+            var cancellationToken = new CancellationToken();
+            var serviceScope = new Mock<IServiceScope>();
+            var descriptors = new List<ComponentDescriptor>();
+            RenderInParallelComponent.Setup(componentCount);
+            for (var i = 0; i < componentCount; i++)
+            {
+                descriptors.Add(new()
+                {
+                    ComponentType = typeof(RenderInParallelComponent),
+                    Parameters = ParameterView.Empty,
+                    Sequence = 0
+                });
+            }
+            var circuitHost = TestCircuitHost.Create(
+                serviceScope: new AsyncServiceScope(serviceScope.Object),
+                descriptors: descriptors);
+
+            // Act
+            object initializeException = null;
+            circuitHost.UnhandledException += (sender, eventArgs) => initializeException = eventArgs.ExceptionObject;
+            var initializeTask = circuitHost.InitializeAsync(new ProtectedPrerenderComponentApplicationStore(Mock.Of<IDataProtectionProvider>()), cancellationToken);
+            await initializeTask.WaitAsync(initializeTimeout);
+
+            // Assert: This was not reached only because an exception was thrown in InitializeAsync()
+            Assert.True(initializeException is null, $"An exception was thrown in {nameof(TestCircuitHost.InitializeAsync)}(): {initializeException}");
         }
 
         [Fact]
@@ -251,8 +326,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         private static TestRemoteRenderer GetRemoteRenderer()
         {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(new Mock<IJSRuntime>().Object);
             return new TestRemoteRenderer(
-                Mock.Of<IServiceProvider>(),
+                serviceCollection.BuildServiceProvider(),
                 Mock.Of<IClientProxy>());
         }
 
@@ -265,17 +342,18 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                       new CircuitOptions(),
                       new CircuitClientProxy(client, "connection"),
                       NullLogger.Instance,
-                      null)
+                      CreateJSRuntime(new CircuitOptions()),
+                      new CircuitJSComponentInterop(new CircuitOptions()))
             {
             }
-
-            public bool Disposed { get; set; }
 
             protected override void Dispose(bool disposing)
             {
                 base.Dispose(disposing);
-                Disposed = true;
             }
+
+            private static RemoteJSRuntime CreateJSRuntime(CircuitOptions options)
+                => new RemoteJSRuntime(Options.Create(options), Options.Create(new HubOptions()), null);
         }
 
         private class DispatcherComponent : ComponentBase, IDisposable
@@ -307,6 +385,88 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 DidCallDispose = true;
                 throw new InvalidFilterCriteriaException();
+            }
+        }
+
+        private class RenderInParallelComponent : IComponent, IDisposable
+        {
+            private static TaskCompletionSource[] _renderTcsArray;
+            private static int _instanceCount = 0;
+
+            private readonly int _id;
+
+            public static void Setup(int numComponents)
+            {
+                if (_instanceCount > 0)
+                {
+                    throw new InvalidOperationException(
+                        $"Cannot call '{nameof(Setup)}' when there are still " +
+                        $"{nameof(RenderInParallelComponent)} instances active.");
+                }
+
+                _renderTcsArray = new TaskCompletionSource[numComponents];
+
+                for (int i = 0; i < _renderTcsArray.Length; i++)
+                {
+                    _renderTcsArray[i] = new(TaskCreationOptions.RunContinuationsAsynchronously);
+                }
+            }
+
+            public RenderInParallelComponent()
+            {
+                if (_instanceCount >= _renderTcsArray.Length)
+                {
+                    throw new InvalidOperationException("Created more test component instances than expected.");
+                }
+
+                _id = _instanceCount++;
+            }
+
+            public void Attach(RenderHandle renderHandle)
+            {
+            }
+
+            public async Task SetParametersAsync(ParameterView parameters)
+            {
+                _renderTcsArray[_id].SetResult();
+                await Task.WhenAll(_renderTcsArray.Select(tcs => tcs.Task));
+            }
+
+            public void Dispose()
+            {
+                _instanceCount--;
+            }
+        }
+
+        private class PerformJSInteropOnDisposeComponent : IComponent, IAsyncDisposable
+        {
+            private readonly IJSRuntime _js;
+
+            public PerformJSInteropOnDisposeComponent(IJSRuntime jsRuntime)
+            {
+                _js = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
+            }
+
+            public Exception ExceptionDuringDisposeAsync { get; private set; }
+
+            public void Attach(RenderHandle renderHandle)
+            {
+            }
+
+            public Task SetParametersAsync(ParameterView parameters)
+                => Task.CompletedTask;
+
+            public async ValueTask DisposeAsync()
+            {
+                try
+                {
+                    await _js.InvokeVoidAsync("SomeJsCleanupCode");
+                }
+                catch (Exception ex)
+                {
+                    ExceptionDuringDisposeAsync = ex;
+                    throw;
+                }
             }
         }
     }

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -14,9 +14,9 @@ namespace Microsoft.AspNetCore.Http
     internal sealed class DefaultHttpResponse : HttpResponse
     {
         // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
-        private readonly static Func<IFeatureCollection, IHttpResponseFeature?> _nullResponseFeature = f => null;
-        private readonly static Func<IFeatureCollection, IHttpResponseBodyFeature?> _nullResponseBodyFeature = f => null;
-        private readonly static Func<IFeatureCollection, IResponseCookiesFeature?> _newResponseCookiesFeature = f => new ResponseCookiesFeature(f);
+        private static readonly Func<IFeatureCollection, IHttpResponseFeature?> _nullResponseFeature = f => null;
+        private static readonly Func<IFeatureCollection, IHttpResponseBodyFeature?> _nullResponseBodyFeature = f => null;
+        private static readonly Func<IFeatureCollection, IResponseCookiesFeature?> _newResponseCookiesFeature = f => new ResponseCookiesFeature(f);
 
         private readonly DefaultHttpContext _context;
         private FeatureReferences<FeatureInterfaces> _features;
@@ -90,21 +90,21 @@ namespace Microsoft.AspNetCore.Http
             set { Headers.ContentLength = value; }
         }
 
-        public override string ContentType
+        public override string? ContentType
         {
             get
             {
-                return Headers[HeaderNames.ContentType];
+                return Headers.ContentType;
             }
             set
             {
                 if (string.IsNullOrEmpty(value))
                 {
-                    HttpResponseFeature.Headers.Remove(HeaderNames.ContentType);
+                    HttpResponseFeature.Headers.ContentType = default;
                 }
                 else
                 {
-                    HttpResponseFeature.Headers[HeaderNames.ContentType] = value;
+                    HttpResponseFeature.Headers.ContentType = value;
                 }
             }
         }
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Http
                 HttpResponseFeature.StatusCode = 302;
             }
 
-            Headers[HeaderNames.Location] = location;
+            Headers.Location = location;
         }
 
         public override Task StartAsync(CancellationToken cancellationToken = default)

@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     routeToken.Content[1] == '/' &&
                     routeToken.Content[routeToken.Content.Length - 1] == '\"')
                 {
-                    var template = routeToken.Content.Substring(1, routeToken.Content.Length - 2);
+                    var template = new StringSegment(routeToken.Content, 1, routeToken.Content.Length - 2);
                     @namespace.Children.Insert(index++, new RouteAttributeExtensionNode(template));
                 }
                 else

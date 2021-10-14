@@ -1,15 +1,15 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.WebUtilities;
@@ -29,8 +29,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         private readonly ConcurrentDictionary<Type, object> _serializerCache = new ConcurrentDictionary<Type, object>();
         private readonly ILogger _logger;
         private DataContractSerializerSettings _serializerSettings;
-        private MvcOptions _mvcOptions;
-        private AsyncEnumerableReader _asyncEnumerableReaderFactory;
+        private MvcOptions? _mvcOptions;
+        private AsyncEnumerableReader? _asyncEnumerableReaderFactory;
 
         /// <summary>
         /// Initializes a new instance of <see cref="XmlDataContractSerializerOutputFormatter"/>
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// </summary>
         /// <param name="writerSettings">The settings to be used by the <see cref="DataContractSerializer"/>.</param>
         public XmlDataContractSerializerOutputFormatter(XmlWriterSettings writerSettings)
-            : this(writerSettings, loggerFactory: null)
+            : this(writerSettings, loggerFactory: NullLoggerFactory.Instance)
         {
         }
 
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             };
             WrapperProviderFactories.Add(new EnumerableWrapperProviderFactory(WrapperProviderFactories));
 
-            _logger = loggerFactory?.CreateLogger(GetType()) ?? NullLogger.Instance;
+            _logger = loggerFactory.CreateLogger(GetType());
         }
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         /// <inheritdoc />
-        protected override bool CanWriteType(Type type)
+        protected override bool CanWriteType(Type? type)
         {
             if (type == null)
             {
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// </summary>
         /// <param name="type">The type of object for which the serializer should be created.</param>
         /// <returns>A new instance of <see cref="DataContractSerializer"/></returns>
-        protected virtual DataContractSerializer CreateSerializer(Type type)
+        protected virtual DataContractSerializer? CreateSerializer(Type type)
         {
             if (type == null)
             {
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
             catch (Exception ex)
             {
-                _logger?.FailedToCreateDataContractSerializer(type.FullName, ex);
+                _logger.FailedToCreateDataContractSerializer(type.FullName!, ex);
 
                 // We do not surface the caught exception because if CanWriteResult returns
                 // false, then this Formatter is not picked up at all.
@@ -261,10 +261,15 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 Log.BufferingAsyncEnumerable(_logger, value);
 
-                value = await reader(value);
+                value = await reader(value, context.HttpContext.RequestAborted);
                 valueType = value.GetType();
+                if (context.HttpContext.RequestAborted.IsCancellationRequested)
+                {
+                    return;
+                }
             }
 
+            Debug.Assert(valueType is not null);
             // Wrap the object only if there is a wrapping type.
             var wrappingType = GetSerializableType(valueType);
             if (wrappingType != null && wrappingType != valueType)
@@ -273,14 +278,15 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                     declaredType: valueType,
                     isSerialization: true));
 
+                Debug.Assert(wrapperProvider is not null);
+
                 value = wrapperProvider.Wrap(value);
             }
 
-            var dataContractSerializer = GetCachedSerializer(wrappingType);
-
+            var dataContractSerializer = GetCachedSerializer(wrappingType!);
 
             var responseStream = response.Body;
-            FileBufferingWriteStream fileBufferingWriteStream = null;
+            FileBufferingWriteStream? fileBufferingWriteStream = null;
             if (!_mvcOptions.SuppressOutputFormatterBuffering)
             {
                 fileBufferingWriteStream = new FileBufferingWriteStream();
@@ -325,22 +331,24 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 }
             }
 
-            return (DataContractSerializer)serializer;
+            return (DataContractSerializer)serializer!;
         }
 
         private static class Log
         {
-            private static readonly Action<ILogger, string, Exception> _bufferingAsyncEnumerable = LoggerMessage.Define<string>(
+            private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
+
+            private static readonly Action<ILogger, string, Exception?> _bufferingAsyncEnumerable = LoggerMessage.Define<string>(
                 LogLevel.Debug,
                 new EventId(1, "BufferingAsyncEnumerable"),
                 "Buffering IAsyncEnumerable instance of type '{Type}'.",
-                skipEnabledCheck: true);
+                SkipEnabledCheckLogOptions);
 
             public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
             {
                 if (logger.IsEnabled(LogLevel.Debug))
                 {
-                    _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
+                    _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName!, null);
                 }
             }
         }

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 Func<string, string, KeyValuePair<string, string>> kvp =
                     (key, value) => new KeyValuePair<string, string>(key, value);
                 var empty = Enumerable.Empty<KeyValuePair<string, string>>();
-                var csharp = TagHelperParseTreeRewriter.Rewriter.InvalidAttributeValueMarker;
+                var csharp = TagHelperParseTreeRewriter.Rewriter.InvalidAttributeValueMarker.ToString();
 
                 // documentContent, expectedPairs
                 return new TheoryData<string, IEnumerable<KeyValuePair<string, string>>>

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     {
         private const int MaxReadSize = 0x20000; // http.sys recommends we limit reads to 128k
 
-        private RequestContext _requestContext;
+        private readonly RequestContext _requestContext;
         private uint _dataChunkOffset;
         private int _dataChunkIndex;
         private long? _maxSize;
@@ -100,15 +100,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             if (buffer == null)
             {
-                throw new ArgumentNullException("buffer");
+                throw new ArgumentNullException(nameof(buffer));
             }
             if (offset < 0 || offset > buffer.Length)
             {
-                throw new ArgumentOutOfRangeException("offset", offset, string.Empty);
+                throw new ArgumentOutOfRangeException(nameof(offset), offset, string.Empty);
             }
             if (size <= 0 || size > buffer.Length - offset)
             {
-                throw new ArgumentOutOfRangeException("size", size, string.Empty);
+                throw new ArgumentOutOfRangeException(nameof(size), size, string.Empty);
             }
         }
 

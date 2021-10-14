@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 // This is where we add any polyfills we'll need for the browser. It is the entry module for browser-specific builds.
 
@@ -15,7 +15,7 @@ if (!Uint8Array.prototype.indexOf) {
 if (!Uint8Array.prototype.slice) {
     Object.defineProperty(Uint8Array.prototype, "slice", {
         // wrap the slice in Uint8Array so it looks like a Uint8Array.slice call
-        // tslint:disable-next-line:object-literal-shorthand
+        // eslint-disable-next-line object-shorthand
         value: function(start?: number, end?: number) { return new Uint8Array(Array.prototype.slice.call(this, start, end)); },
         writable: true,
     });

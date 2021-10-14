@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting
 {
@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         Portable,
 
         /// <summary>
-        /// All dlls are published with the app for x-copy deploy. Net461 requires this because ASP.NET Core is not in the GAC.
+        /// All dlls are published with the app for x-copy deploy. Net462 requires this because ASP.NET Core is not in the GAC.
         /// </summary>
         Standalone
     }

@@ -1,10 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -97,7 +98,8 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+            var httpContext = context.HttpContext;
+            var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<ChallengeResult>();
 
             logger.ChallengeResultExecuting(AuthenticationSchemes);
@@ -106,12 +108,12 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 foreach (var scheme in AuthenticationSchemes)
                 {
-                    await context.HttpContext.ChallengeAsync(scheme, Properties);
+                    await httpContext.ChallengeAsync(scheme, Properties);
                 }
             }
             else
             {
-                await context.HttpContext.ChallengeAsync(Properties);
+                await httpContext.ChallengeAsync(Properties);
             }
         }
     }

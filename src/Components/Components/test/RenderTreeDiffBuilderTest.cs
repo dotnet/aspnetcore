@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -1692,6 +1692,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 tree.AddAttribute(1, "MyDouble", double.MaxValue);
                 tree.AddAttribute(1, "MyDecimal", decimal.MinusOne);
                 tree.AddAttribute(1, "MyDate", dateTimeWillNotChange);
+                tree.AddAttribute(1, "MyGuid", Guid.Empty);
                 tree.CloseComponent();
             }
 

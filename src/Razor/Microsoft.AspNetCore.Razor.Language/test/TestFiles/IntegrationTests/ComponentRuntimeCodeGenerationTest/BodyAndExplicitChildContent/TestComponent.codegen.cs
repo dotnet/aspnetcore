@@ -22,15 +22,13 @@ namespace Test
 #nullable disable
             (__builder2) => {
                 __builder2.OpenElement(0, "div");
-                __builder2.AddContent(1, 
 #nullable restore
-#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                                       context.ToLowerInvariant()
+#line (1,56)-(1,82) 25 "x:\dir\subdir\Test\TestComponent.cshtml"
+__builder2.AddContent(1, context.ToLowerInvariant());
 
 #line default
 #line hidden
 #nullable disable
-                );
                 __builder2.CloseElement();
             }
 #nullable restore
@@ -41,7 +39,7 @@ namespace Test
 #line hidden
 #nullable disable
             __builder.OpenComponent<Test.MyComponent>(2);
-            __builder.AddAttribute(3, "Header", new Microsoft.AspNetCore.Components.RenderFragment<System.String>(
+            __builder.AddAttribute(3, "Header", (Microsoft.AspNetCore.Components.RenderFragment<System.String>)(
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                      header

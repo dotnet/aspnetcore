@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -9,6 +10,8 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.HttpSys.Internal
 {
+    #pragma warning disable IDE0044 // Add readonly modifier. We don't want to modify these interop types
+
     internal static unsafe class HttpApiTypes
     {
         internal enum HTTP_API_VERSION
@@ -81,10 +84,10 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         internal enum HTTP_FEATURE_ID
         {
-            HttpFeatureUnknown = 0,
-            HttpFeatureResponseTrailers = 1,
-            HttpFeatureApiTimings = 2,
-            HttpFeatureDelegateEx = 3,
+            HttpFeatureUnknown,
+            HttpFeatureResponseTrailers,
+            HttpFeatureApiTimings,
+            HttpFeatureDelegateEx,
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
@@ -506,6 +509,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             MoreEntityBodyExists = 1,
             IPRouted = 2,
             Http2 = 4,
+            Http3 = 8,
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -651,6 +655,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             HTTP_SEND_REQUEST_FLAG_MORE_DATA = 0x00000001,
             HTTP_PROPERTY_FLAG_PRESENT = 0x00000001,
             HTTP_INITIALIZE_SERVER = 0x00000001,
+            HTTP_INITIALIZE_CONFIG = 0x00000002,
             HTTP_INITIALIZE_CBT = 0x00000004,
             HTTP_SEND_RESPONSE_FLAG_OPAQUE = 0x00000040,
             HTTP_SEND_RESPONSE_FLAG_GOAWAY = 0x00000100,
@@ -680,7 +685,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         internal static class HTTP_RESPONSE_HEADER_ID
         {
-            private static string[] _strings =
+            private static readonly string[] _strings =
             {
                     "Cache-Control",
                     "Connection",
@@ -716,7 +721,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     "WWW-Authenticate",
                 };
 
-            private static Dictionary<string, int> _lookupTable = CreateLookupTable();
+            private static readonly Dictionary<string, int> _lookupTable = CreateLookupTable();
 
             private static Dictionary<string, int> CreateLookupTable()
             {

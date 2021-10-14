@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Net.WebSockets;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
@@ -77,6 +78,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             Func<HttpMessageHandler, HttpMessageHandler> handlerFactory = handler => handler;
             Func<Task<string>> tokenProvider = () => Task.FromResult("");
+            Func<WebSocketConnectionContext, CancellationToken, ValueTask<WebSocket>> webSocketFactory = (context, token) => ValueTask.FromResult<WebSocket>(null);
             Action<ClientWebSocketOptions> webSocketConfig = options => { };
 
             var testValues = new Dictionary<string, object>
@@ -95,6 +97,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 { $"{nameof(HttpConnectionOptions.UseDefaultCredentials)}", true },
                 { $"{nameof(HttpConnectionOptions.DefaultTransferFormat)}", TransferFormat.Text },
                 { $"{nameof(HttpConnectionOptions.WebSocketConfiguration)}", webSocketConfig },
+                { $"{nameof(HttpConnectionOptions.WebSocketFactory)}", webSocketFactory },
+                { $"{nameof(HttpConnectionOptions.ApplicationMaxBufferSize)}", 1L * 1024 * 1024 },
+                { $"{nameof(HttpConnectionOptions.TransportMaxBufferSize)}", 1L * 1024 * 1024 },
             };
 
             var options = new HttpConnectionOptions();

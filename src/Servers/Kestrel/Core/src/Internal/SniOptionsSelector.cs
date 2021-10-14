@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
                     if (_fallbackServerCertificateSelector is null)
                     {
-                        // Cache the fallback ServerCertificate since there's no fallback ServerCertificateSelector taking precedence. 
+                        // Cache the fallback ServerCertificate since there's no fallback ServerCertificateSelector taking precedence.
                         sslOptions.ServerCertificate = fallbackHttpsOptions.ServerCertificate;
                     }
                 }
@@ -84,7 +84,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
                 if (clientCertificateMode != ClientCertificateMode.NoCertificate)
                 {
-                    sslOptions.ClientCertificateRequired = true;
+                    sslOptions.ClientCertificateRequired = clientCertificateMode == ClientCertificateMode.AllowCertificate
+                        || clientCertificateMode == ClientCertificateMode.RequireCertificate;
                     sslOptions.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
                         HttpsConnectionMiddleware.RemoteCertificateValidationCallback(
                             clientCertificateMode, fallbackHttpsOptions.ClientCertificateValidation, certificate, chain, sslPolicyErrors);
@@ -94,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 httpProtocols = HttpsConnectionMiddleware.ValidateAndNormalizeHttpProtocols(httpProtocols, logger);
                 HttpsConnectionMiddleware.ConfigureAlpn(sslOptions, httpProtocols);
 
-                var sniOptions = new SniOptions(sslOptions, httpProtocols);
+                var sniOptions = new SniOptions(sslOptions, httpProtocols, clientCertificateMode);
 
                 if (name.Equals(WildcardHost, StringComparison.Ordinal))
                 {
@@ -112,7 +113,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
         }
 
-        public SslServerAuthenticationOptions GetOptions(ConnectionContext connection, string serverName)
+        public (SslServerAuthenticationOptions, ClientCertificateMode) GetOptions(ConnectionContext connection, string serverName)
         {
             SniOptions? sniOptions = null;
 
@@ -172,13 +173,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 _onAuthenticateCallback(connection, sslOptions);
             }
 
-            return sslOptions;
+            return (sslOptions, sniOptions.ClientCertificateMode);
         }
 
-        public static ValueTask<SslServerAuthenticationOptions> OptionsCallback(ConnectionContext connection, SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken)
+        public static ValueTask<SslServerAuthenticationOptions> OptionsCallback(TlsHandshakeCallbackContext callbackContext)
         {
-            var sniOptionsSelector = (SniOptionsSelector)state;
-            var options = sniOptionsSelector.GetOptions(connection, clientHelloInfo.ServerName);
+            var sniOptionsSelector = (SniOptionsSelector)callbackContext.State!;
+            var (options, clientCertificateMode) = sniOptionsSelector.GetOptions(callbackContext.Connection, callbackContext.ClientHelloInfo.ServerName);
+            callbackContext.AllowDelayedClientCertificateNegotation = clientCertificateMode == ClientCertificateMode.DelayCertificate;
             return new ValueTask<SslServerAuthenticationOptions>(options);
         }
 
@@ -200,14 +202,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private class SniOptions
         {
-            public SniOptions(SslServerAuthenticationOptions sslOptions, HttpProtocols httpProtocols)
+            public SniOptions(SslServerAuthenticationOptions sslOptions, HttpProtocols httpProtocols, ClientCertificateMode clientCertificateMode)
             {
                 SslOptions = sslOptions;
                 HttpProtocols = httpProtocols;
+                ClientCertificateMode = clientCertificateMode;
             }
 
             public SslServerAuthenticationOptions SslOptions { get; }
             public HttpProtocols HttpProtocols { get; }
+            public ClientCertificateMode ClientCertificateMode { get; }
         }
 
         private class LongestStringFirstComparer : IComparer<string>

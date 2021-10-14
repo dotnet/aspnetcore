@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -153,11 +153,11 @@ namespace Microsoft.AspNetCore.Hosting
             }
         }
 
-        private static async Task WaitForTokenShutdownAsync(this IWebHost host, CancellationToken token)
+        private static async Task WaitForTokenShutdownAsync(this IWebHost host, CancellationToken cancellationToken)
         {
             var applicationLifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
 
-            token.Register(state =>
+            cancellationToken.Register(state =>
             {
                 ((IHostApplicationLifetime)state!).StopApplication();
             },
@@ -173,7 +173,9 @@ namespace Microsoft.AspNetCore.Hosting
             await waitForStop.Task;
 
             // WebHost will use its default ShutdownTimeout if none is specified.
+#pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods. StopAsync should not be canceled by the token to RunAsync.
             await host.StopAsync();
+#pragma warning restore CA2016
         }
     }
 }

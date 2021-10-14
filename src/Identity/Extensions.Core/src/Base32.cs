@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Text;
@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Identity
     // See http://tools.ietf.org/html/rfc3548#section-5
     internal static class Base32
     {
-        private static readonly string _base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+        private const string _base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
         public static string ToBase32(byte[] input)
         {
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Identity
             input = input.TrimEnd('=').ToUpperInvariant();
             if (input.Length == 0)
             {
-                return new byte[0];
+                return Array.Empty<byte>();
             }
 
             var output = new byte[input.Length * 5 / 8];

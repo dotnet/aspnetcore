@@ -10,7 +10,7 @@ This project contains interfaces and abstractions used in MVC to support writing
 
 ### Build
 
-To build this specific project from source, follow the instructions [on building a subset of the code](../../../BuildFromSource.md#building-a-subset-of-the-code).
+To build this specific project from source, follow the instructions [on building the project](../../docs/BuildFromSource.md#step-3-build-the-repo).
 
 ### Test
 

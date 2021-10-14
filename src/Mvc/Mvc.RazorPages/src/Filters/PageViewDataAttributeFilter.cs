@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 
 namespace Microsoft.AspNetCore.Mvc.Filters
 {
-    internal class PageViewDataAttributeFilter : IPageFilter, IViewDataValuesProviderFeature
+    internal sealed class PageViewDataAttributeFilter : IPageFilter, IViewDataValuesProviderFeature
     {
         public PageViewDataAttributeFilter(IReadOnlyList<LifecycleProperty> properties)
         {
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
 
         public IReadOnlyList<LifecycleProperty> Properties { get;  }
 
-        public object Subject { get; set; }
+        public object? Subject { get; set; }
 
         public void OnPageHandlerExecuted(PageHandlerExecutedContext context)
         {

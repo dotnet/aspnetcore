@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -299,7 +299,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             TryParseResult result,
             MarkupTagHelperAttributeValueSyntax rewrittenValue)
         {
-            // 
+            //
             // Consider, <Foo @bind:param="..." />
             // We're now going to rewrite @bind:param from a regular MarkupAttributeBlock to a MarkupTagHelperDirectiveAttribute.
             // We need to split the name "@bind:param" into four parts,
@@ -360,7 +360,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             MarkupMinimizedAttributeBlockSyntax attributeBlock,
             TryParseResult result)
         {
-            // 
+            //
             // Consider, <Foo @bind:param />
             // We're now going to rewrite @bind:param from a regular MarkupAttributeBlock to a MarkupTagHelperDirectiveAttribute.
             // We need to split the name "@bind:param" into four parts,
@@ -531,7 +531,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private class AttributeValueRewriter : SyntaxRewriter
         {
             private readonly TryParseResult _tryParseResult;
-            private bool _rewriteAsMarkup = false;
+            private bool _rewriteAsMarkup;
 
             public AttributeValueRewriter(TryParseResult result)
             {

@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public abstract class TagMatchingRuleDescriptor : IEquatable<TagMatchingRuleDescriptor>
     {
+        private int? _hashCode;
         private IEnumerable<RazorDiagnostic> _allDiagnostics;
 
         public string TagName { get; protected set; }
@@ -22,6 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public bool CaseSensitive { get; protected set; }
 
         public IReadOnlyList<RazorDiagnostic> Diagnostics { get; protected set; }
+
 
         public bool HasErrors
         {
@@ -58,7 +60,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override int GetHashCode()
         {
-            return TagMatchingRuleDescriptorComparer.Default.GetHashCode(this);
+            _hashCode ??= TagMatchingRuleDescriptorComparer.Default.GetHashCode(this);
+            return _hashCode.Value;
         }
     }
 }

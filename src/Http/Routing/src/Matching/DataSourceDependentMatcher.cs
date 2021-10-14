@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -41,14 +41,33 @@ namespace Microsoft.AspNetCore.Routing.Matching
         private Matcher CreateMatcher(IReadOnlyList<Endpoint> endpoints)
         {
             var builder = _matcherBuilderFactory();
+            var seenEndpointNames = new Dictionary<string, string?>();
             for (var i = 0; i < endpoints.Count; i++)
             {
                 // By design we only look at RouteEndpoint here. It's possible to
                 // register other endpoint types, which are non-routable, and it's
                 // ok that we won't route to them.
-                if (endpoints[i] is RouteEndpoint endpoint && endpoint.Metadata.GetMetadata<ISuppressMatchingMetadata>()?.SuppressMatching != true)
+                if (endpoints[i] is RouteEndpoint endpoint)
                 {
-                    builder.AddEndpoint(endpoint);
+                    // Validate that endpoint names are unique.
+                    var endpointName = endpoint.Metadata.GetMetadata<IEndpointNameMetadata>()?.EndpointName;
+                    if (endpointName is not null)
+                    {
+                        if (seenEndpointNames.TryGetValue(endpointName, out var existingEndpoint))
+                        {
+                            throw new InvalidOperationException($"Duplicate endpoint name '{endpointName}' found on '{endpoint.DisplayName}' and '{existingEndpoint}'. Endpoint names must be globally unique.");
+                        }
+
+                        seenEndpointNames.Add(endpointName, endpoint.DisplayName ?? endpoint.RoutePattern.RawText);
+                    }
+
+                    // We check for duplicate endpoint names on all endpoints regardless
+                    // of whether they suppress matching because endpoint names can be
+                    // used in OpenAPI specifications as well.
+                    if (endpoint.Metadata.GetMetadata<ISuppressMatchingMetadata>()?.SuppressMatching != true)
+                    {
+                        builder.AddEndpoint(endpoint);
+                    }
                 }
             }
 

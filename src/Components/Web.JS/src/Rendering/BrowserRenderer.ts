@@ -1,12 +1,12 @@
 import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './Events/EventDelegator';
-import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd, permuteLogicalChildren, getClosestDomElement } from './LogicalElements';
+import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
-const selectValuePropname = '_blazorSelectValue';
+const deferredValuePropname = '_blazorDeferredValue';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-const rootComponentsPendingFirstRender: { [componentId: number]: LogicalElement } = {};
+const elementsToClearOnRootComponentRender: { [componentId: number]: LogicalElement } = {};
 const internalAttributeNamePrefix = '__internal_';
 const eventPreventDefaultAttributeNamePrefix = 'preventDefault_';
 const eventStopPropagationAttributeNamePrefix = 'stopPropagation_';
@@ -14,6 +14,7 @@ const eventStopPropagationAttributeNamePrefix = 'stopPropagation_';
 export class BrowserRenderer {
   public eventDelegator: EventDelegator;
 
+  private rootComponentIds = new Set<number>();
   private childComponentLocations: { [componentId: number]: LogicalElement } = {};
 
   public constructor(browserRendererId: number) {
@@ -25,9 +26,15 @@ export class BrowserRenderer {
     attachNavigationManagerToEventDelegator(this.eventDelegator);
   }
 
-  public attachRootComponentToLogicalElement(componentId: number, element: LogicalElement): void {
+  public attachRootComponentToLogicalElement(componentId: number, element: LogicalElement, appendContent: boolean): void {
     this.attachComponentToElement(componentId, element);
-    rootComponentsPendingFirstRender[componentId] = element;
+    this.rootComponentIds.add(componentId);
+
+    // If we want to preserve existing HTML content of the root element, we don't apply the mechanism for
+    // clearing existing children. Rendered content will then append rather than replace the existing HTML content.
+    if (!appendContent) {
+      elementsToClearOnRootComponentRender[componentId] = element;
+    }
   }
 
   public updateComponent(batch: RenderBatch, componentId: number, edits: ArrayBuilderSegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>): void {
@@ -37,10 +44,10 @@ export class BrowserRenderer {
     }
 
     // On the first render for each root component, clear any existing content (e.g., prerendered)
-    const rootElementToClear = rootComponentsPendingFirstRender[componentId];
+    const rootElementToClear = elementsToClearOnRootComponentRender[componentId];
     if (rootElementToClear) {
       const rootElementToClearEnd = getLogicalSiblingEnd(rootElementToClear);
-      delete rootComponentsPendingFirstRender[componentId];
+      delete elementsToClearOnRootComponentRender[componentId];
 
       if (!rootElementToClearEnd) {
         clearElement(rootElementToClear as unknown as Element);
@@ -49,7 +56,7 @@ export class BrowserRenderer {
       }
     }
 
-    const ownerDocument = getClosestDomElement(element)?.ownerDocument;
+    const ownerDocument = getClosestDomElement(element)?.getRootNode() as Document;
     const activeElementBefore = ownerDocument && ownerDocument.activeElement;
 
     this.applyEdits(batch, componentId, element, 0, edits, referenceFrames);
@@ -61,6 +68,13 @@ export class BrowserRenderer {
   }
 
   public disposeComponent(componentId: number) {
+    if (this.rootComponentIds.delete(componentId)) {
+      // When disposing a root component, the container element won't be removed from the DOM (because there's
+      // no parent to remove that child), so we empty it to restore it to the state it was in before the root
+      // component was added.
+      emptyLogicalElement(this.childComponentLocations[componentId]);
+    }
+
     delete this.childComponentLocations[componentId];
   }
 
@@ -220,7 +234,8 @@ export class BrowserRenderer {
   private insertElement(batch: RenderBatch, componentId: number, parent: LogicalElement, childIndex: number, frames: ArrayValues<RenderTreeFrame>, frame: RenderTreeFrame, frameIndex: number) {
     const frameReader = batch.frameReader;
     const tagName = frameReader.elementName(frame)!;
-    const newDomElementRaw = tagName === 'svg' || isSvgElement(parent) ?
+
+    const newDomElementRaw = (tagName === 'svg' || isSvgElement(parent)) ?
       document.createElementNS('http://www.w3.org/2000/svg', tagName) :
       document.createElement(tagName);
     const newElement = toLogicalElement(newDomElementRaw);
@@ -256,24 +271,43 @@ export class BrowserRenderer {
     // [3] In case the the value of the select and the option value is changed in the same batch.
     //     We just receive an attribute frame and have to set the select value afterwards.
 
+    // We also defer setting the 'value' property for <input> because certain types of inputs have
+    // default attribute values that may incorrectly constain the specified 'value'.
+    // For example, range inputs have default 'min' and 'max' attributes that may incorrectly
+    // clamp the 'value' property if it is applied before custom 'min' and 'max' attributes.
+
     if (newDomElementRaw instanceof HTMLOptionElement) {
       // Situation 1
       this.trySetSelectValueFromOptionElement(newDomElementRaw);
-    } else if (newDomElementRaw instanceof HTMLSelectElement && selectValuePropname in newDomElementRaw) {
+    } else if (deferredValuePropname in newDomElementRaw) {
       // Situation 2
-      const selectValue: string | null = newDomElementRaw[selectValuePropname];
-      setSelectElementValue(newDomElementRaw, selectValue);
+      setDeferredElementValue(newDomElementRaw, newDomElementRaw[deferredValuePropname]);
     }
   }
 
   private trySetSelectValueFromOptionElement(optionElement: HTMLOptionElement) {
     const selectElem = this.findClosestAncestorSelectElement(optionElement);
-    if (selectElem && (selectValuePropname in selectElem) && selectElem[selectValuePropname] === optionElement.value) {
-      setSelectElementValue(selectElem, optionElement.value);
-      delete selectElem[selectValuePropname];
-      return true;
+
+    if (!isBlazorSelectElement(selectElem)) {
+      return false;
     }
-    return false;
+
+    if (isMultipleSelectElement(selectElem)) {
+      optionElement.selected = selectElem._blazorDeferredValue!.indexOf(optionElement.value) !== -1;
+    } else {
+      if (selectElem._blazorDeferredValue !== optionElement.value) {
+        return false;
+      }
+
+      setSingleSelectElementValue(selectElem, optionElement.value);
+      delete selectElem._blazorDeferredValue;
+    }
+
+    return true;
+
+    function isBlazorSelectElement(selectElem: HTMLSelectElement | null) : selectElem is BlazorHtmlSelectElement {
+      return !!selectElem && (deferredValuePropname in selectElem);
+    }
   }
 
   private insertComponent(batch: RenderBatch, parent: LogicalElement, childIndex: number, frame: RenderTreeFrame) {
@@ -360,37 +394,37 @@ export class BrowserRenderer {
     // Certain elements have built-in behaviour for their 'value' property
     const frameReader = batch.frameReader;
 
-    if (element.tagName === 'INPUT' && element.getAttribute('type') === 'time' && !element.getAttribute('step')) {
-      const timeValue = attributeFrame ? frameReader.attributeValue(attributeFrame) : null;
-      if (timeValue) {
-        element['value'] = timeValue.substring(0, 5);
-        return true;
-      }
+    let value = attributeFrame ? frameReader.attributeValue(attributeFrame) : null;
+
+    if (value && element.tagName === 'INPUT') {
+      value = normalizeInputValue(value, element.getAttribute('type'));
     }
 
     switch (element.tagName) {
       case 'INPUT':
       case 'SELECT':
       case 'TEXTAREA': {
-        const value = attributeFrame ? frameReader.attributeValue(attributeFrame) : null;
+        // <select> is special, in that anything we write to .value will be lost if there
+        // isn't yet a matching <option>. To maintain the expected behavior no matter the
+        // element insertion/update order, preserve the desired value separately so
+        // we can recover it when inserting any matching <option> or after inserting an
+        // entire markup block of descendants.
 
-        if (element instanceof HTMLSelectElement) {
-          setSelectElementValue(element, value);
+        // We also defer setting the 'value' property for <input> because certain types of inputs have
+        // default attribute values that may incorrectly constain the specified 'value'.
+        // For example, range inputs have default 'min' and 'max' attributes that may incorrectly
+        // clamp the 'value' property if it is applied before custom 'min' and 'max' attributes.
 
-          // <select> is special, in that anything we write to .value will be lost if there
-          // isn't yet a matching <option>. To maintain the expected behavior no matter the
-          // element insertion/update order, preserve the desired value separately so
-          // we can recover it when inserting any matching <option> or after inserting an
-          // entire markup block of descendants.
-          element[selectValuePropname] = value;
-        } else {
-          (element as any).value = value;
+        if (value && element instanceof HTMLSelectElement && isMultipleSelectElement(element)) {
+          value = JSON.parse(value);
         }
+
+        setDeferredElementValue(element, value);
+        element[deferredValuePropname] = value;
 
         return true;
       }
       case 'OPTION': {
-        const value = attributeFrame ? frameReader.attributeValue(attributeFrame) : null;
         if (value || value === '') {
           element.setAttribute('value', value);
         } else {
@@ -460,6 +494,27 @@ function parseMarkup(markup: string, isSvg: boolean) {
   }
 }
 
+function normalizeInputValue(value: string, type: string | null): string {
+  // Time inputs (e.g. 'time' and 'datetime-local') misbehave on chromium-based
+  // browsers when a time is set that includes a seconds value of '00', most notably
+  // when entered from keyboard input. This behavior is not limited to specific
+  // 'step' attribute values, so we always remove the trailing seconds value if the
+  // time ends in '00'.
+
+  switch (type) {
+    case 'time':
+      return value.length === 8 && value.endsWith('00')
+        ? value.substring(0, 5)
+        : value;
+    case 'datetime-local':
+      return value.length === 19 && value.endsWith('00')
+        ? value.substring(0, 16)
+        : value;
+    default:
+      return value;
+  }
+}
+
 function countDescendantFrames(batch: RenderBatch, frame: RenderTreeFrame): number {
   const frameReader = batch.frameReader;
   switch (frameReader.frameType(frame)) {
@@ -509,7 +564,13 @@ function stripOnPrefix(attributeName: string) {
   throw new Error(`Attribute should be an event name, but doesn't start with 'on'. Value: '${attributeName}'`);
 }
 
-function setSelectElementValue(element: HTMLSelectElement, value: string | null) {
+type BlazorHtmlSelectElement = HTMLSelectElement & { _blazorDeferredValue?: string };
+
+function isMultipleSelectElement(element: HTMLSelectElement) {
+  return element.type === 'select-multiple';
+}
+
+function setSingleSelectElementValue(element: HTMLSelectElement, value: string | null) {
   // There's no sensible way to represent a select option with value 'null', because
   // (1) HTML attributes can't have null values - the closest equivalent is absence of the attribute
   // (2) When picking an <option> with no 'value' attribute, the browser treats the value as being the
@@ -519,4 +580,23 @@ function setSelectElementValue(element: HTMLSelectElement, value: string | null)
   // write <option value=@someNullVariable>, and that we can never distinguish between null and empty
   // string in a bound <select>, but that's a limit in the representational power of HTML.
   element.value = value || '';
+}
+
+function setMultipleSelectElementValue(element: HTMLSelectElement, value: string[] | null) {
+  value ||= [];
+  for (let i = 0; i < element.options.length; i++) {
+    element.options[i].selected = value.indexOf(element.options[i].value) !== -1;
+  }
+}
+
+function setDeferredElementValue(element: Element, value: any) {
+  if (element instanceof HTMLSelectElement) {
+    if (isMultipleSelectElement(element)) {
+      setMultipleSelectElementValue(element, value);
+    } else {
+      setSingleSelectElementValue(element, value);
+    }
+  } else {
+    (element as any).value = value;
+  }
 }

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -358,7 +358,7 @@ namespace Microsoft.AspNetCore.TestHost
                 {
                     webBuilder
                         .UseTestServer(options =>
-                        { 
+                        {
                             options.AllowSynchronousIO = true;
                             options.PreserveExecutionContext = true;
                             options.BaseAddress = baseAddress;
@@ -771,7 +771,7 @@ namespace Microsoft.AspNetCore.TestHost
         public async Task ManuallySetHostWinsOverInferredHostFromRequestUri(string uri)
         {
             RequestDelegate appDelegate = ctx =>
-                ctx.Response.WriteAsync(ctx.Request.Headers[HeaderNames.Host]);
+                ctx.Response.WriteAsync(ctx.Request.Headers.Host);
 
             var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
             var server = new TestServer(builder);

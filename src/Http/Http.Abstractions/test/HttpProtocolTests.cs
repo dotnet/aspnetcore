@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Xunit;
@@ -84,12 +84,32 @@ namespace Microsoft.AspNetCore.Http.Abstractions
             Assert.Equal(match, HttpProtocol.IsHttp10(protocol));
         }
 
+        [Fact]
+        public void Http09_Success()
+        {
+            Assert.Equal("HTTP/0.9", HttpProtocol.Http09);
+        }
+
+        [Theory]
+        [InlineData("HTTP/0.9", true)]
+        [InlineData("http/0.9", true)]
+        [InlineData("HTTP/2", false)]
+        [InlineData("HTTP/1", false)]
+        [InlineData("HTTP/09", false)]
+        [InlineData(" HTTP/0.9", false)]
+        [InlineData("HTTP/0.9 ", false)]
+        public void IsHttp09_Success(string protocol, bool match)
+        {
+            Assert.Equal(match, HttpProtocol.IsHttp09(protocol));
+        }
+
         public static TheoryData<Version, string> s_ValidData = new TheoryData<Version, string>
         {
             { new Version(3, 0), "HTTP/3" },
             { new Version(2, 0), "HTTP/2" },
             { new Version(1, 1), "HTTP/1.1" },
-            { new Version(1, 0), "HTTP/1.0" }
+            { new Version(1, 0), "HTTP/1.0" },
+            { new Version(0, 9), "HTTP/0.9" }
         };
 
         [Theory]

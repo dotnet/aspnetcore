@@ -1,14 +1,12 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Http;
 using System.Net.Http.QPack;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -20,7 +18,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
-    internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpHeadersHandler, IThreadPoolWorkItem, ITimeoutHandler, IRequestProcessor
+    internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpHeadersHandler, IThreadPoolWorkItem
     {
         private static ReadOnlySpan<byte> AuthorityBytes => new byte[10] { (byte)':', (byte)'a', (byte)'u', (byte)'t', (byte)'h', (byte)'o', (byte)'r', (byte)'i', (byte)'t', (byte)'y' };
         private static ReadOnlySpan<byte> MethodBytes => new byte[7] { (byte)':', (byte)'m', (byte)'e', (byte)'t', (byte)'h', (byte)'o', (byte)'d' };
@@ -32,63 +30,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private static ReadOnlySpan<byte> TrailersBytes => new byte[8] { (byte)'t', (byte)'r', (byte)'a', (byte)'i', (byte)'l', (byte)'e', (byte)'r', (byte)'s' };
         private static ReadOnlySpan<byte> ConnectBytes => new byte[7] { (byte)'C', (byte)'O', (byte)'N', (byte)'N', (byte)'E', (byte)'C', (byte)'T' };
 
-        private static readonly PseudoHeaderFields _mandatoryRequestPseudoHeaderFields =
+        private const PseudoHeaderFields _mandatoryRequestPseudoHeaderFields =
             PseudoHeaderFields.Method | PseudoHeaderFields.Path | PseudoHeaderFields.Scheme;
 
-        private readonly Http3FrameWriter _frameWriter;
-        private readonly Http3OutputProducer _http3Output;
+        private Http3FrameWriter _frameWriter = default!;
+        private Http3OutputProducer _http3Output = default!;
+        private Http3StreamContext _context = default!;
+        private IProtocolErrorCodeFeature _errorCodeFeature = default!;
+        private IStreamIdFeature _streamIdFeature = default!;
+        private IStreamAbortFeature _streamAbortFeature = default!;
         private int _isClosed;
-        private int _gracefulCloseInitiator;
-        private readonly Http3StreamContext _context;
-        private readonly IProtocolErrorCodeFeature _errorCodeFeature;
-        private readonly IStreamIdFeature _streamIdFeature;
         private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
         protected RequestHeaderParsingState _requestHeaderParsingState;
         private PseudoHeaderFields _parsedPseudoHeaderFields;
         private int _totalParsedHeaderSize;
         private bool _isMethodConnect;
 
+        // TODO: Change to resetable ValueTask source
         private TaskCompletionSource? _appCompleted;
 
-        public Pipe RequestBodyPipe { get; }
+        private StreamCompletionFlags _completionState;
+        private readonly object _completionLock = new object();
 
-        public Http3Stream(Http3StreamContext context)
-        {
-            Initialize(context);
+        public bool EndStreamReceived => (_completionState & StreamCompletionFlags.EndStreamReceived) == StreamCompletionFlags.EndStreamReceived;
+        private bool IsAborted => (_completionState & StreamCompletionFlags.Aborted) == StreamCompletionFlags.Aborted;
+        private bool IsCompleted => (_completionState & StreamCompletionFlags.Completed) == StreamCompletionFlags.Completed;
 
-            InputRemaining = null;
-
-            _context = context;
-
-            _errorCodeFeature = _context.ConnectionFeatures.Get<IProtocolErrorCodeFeature>()!;
-            _streamIdFeature = _context.ConnectionFeatures.Get<IStreamIdFeature>()!;
-
-            _frameWriter = new Http3FrameWriter(
-                context.Transport.Output,
-                context.StreamContext,
-                context.TimeoutControl,
-                context.ServiceContext.ServerOptions.Limits.MinResponseDataRate,
-                context.ConnectionId,
-                context.MemoryPool,
-                context.ServiceContext.Log,
-                _streamIdFeature);
-
-            // ResponseHeaders aren't set, kind of ugly that we need to reset.
-            Reset();
-
-            _http3Output = new Http3OutputProducer(
-                _frameWriter,
-                context.MemoryPool,
-                this,
-                context.ServiceContext.Log);
-            RequestBodyPipe = CreateRequestBodyPipe(64 * 1024); // windowSize?
-            Output = _http3Output;
-            QPackDecoder = new QPackDecoder(_context.ServiceContext.ServerOptions.Limits.Http3.MaxRequestHeaderFieldSize);
-        }
+        public Pipe RequestBodyPipe { get; private set; } = default!;
 
         public long? InputRemaining { get; internal set; }
 
-        public QPackDecoder QPackDecoder { get; }
+        public QPackDecoder QPackDecoder { get; private set; } = default!;
 
         public PipeReader Input => _context.Transport.Input;
 
@@ -96,35 +68,112 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         public KestrelServerLimits Limits => _context.ServiceContext.ServerOptions.Limits;
         public long StreamId => _streamIdFeature.StreamId;
 
-        public long HeaderTimeoutTicks { get; set; }
-        public bool ReceivedHeader => _appCompleted != null; // TCS is assigned once headers are received
+        public long StreamTimeoutTicks { get; set; }
+        public bool IsReceivingHeader => _appCompleted == null; // TCS is assigned once headers are received
+        public bool IsDraining => _appCompleted?.Task.IsCompleted ?? false; // Draining starts once app is complete
 
         public bool IsRequestStream => true;
 
-        public void Abort(ConnectionAbortedException ex)
+        public void Initialize(Http3StreamContext context)
         {
-            Abort(ex, Http3ErrorCode.InternalError);
+            base.Initialize(context);
+
+            InputRemaining = null;
+
+            _context = context;
+
+            _errorCodeFeature = _context.ConnectionFeatures.Get<IProtocolErrorCodeFeature>()!;
+            _streamIdFeature = _context.ConnectionFeatures.Get<IStreamIdFeature>()!;
+            _streamAbortFeature = _context.ConnectionFeatures.Get<IStreamAbortFeature>()!;
+
+            _appCompleted = null;
+            _isClosed = 0;
+            _requestHeaderParsingState = default;
+            _parsedPseudoHeaderFields = default;
+            _totalParsedHeaderSize = 0;
+            _isMethodConnect = false;
+            _completionState = default;
+            StreamTimeoutTicks = 0;
+
+            if (_frameWriter == null)
+            {
+                _frameWriter = new Http3FrameWriter(
+                    context.StreamContext,
+                    context.TimeoutControl,
+                    context.ServiceContext.ServerOptions.Limits.MinResponseDataRate,
+                    context.MemoryPool,
+                    context.ServiceContext.Log,
+                    _streamIdFeature,
+                    context.ClientPeerSettings,
+                    this);
+
+                _http3Output = new Http3OutputProducer(
+                    _frameWriter,
+                    context.MemoryPool,
+                    this,
+                    context.ServiceContext.Log);
+                Output = _http3Output;
+                RequestBodyPipe = CreateRequestBodyPipe(64 * 1024); // windowSize?
+                QPackDecoder = new QPackDecoder(_context.ServiceContext.ServerOptions.Limits.Http3.MaxRequestHeaderFieldSize);
+            }
+            else
+            {
+                _http3Output.StreamReset();
+                RequestBodyPipe.Reset();
+                QPackDecoder.Reset();
+            }
+
+            _frameWriter.Reset(context.Transport.Output, context.ConnectionId);
+        }
+
+        public void InitializeWithExistingContext(IDuplexPipe transport)
+        {
+            _context.Transport = transport;
+            Initialize(_context);
         }
 
         public void Abort(ConnectionAbortedException abortReason, Http3ErrorCode errorCode)
         {
-            // TODO - Should there be a check here to track abort state to avoid
-            // running twice for a request?
+            AbortCore(abortReason, errorCode);
+        }
 
-            Log.Http3StreamAbort(TraceIdentifier, errorCode, abortReason);
+        private void AbortCore(Exception exception, Http3ErrorCode errorCode)
+        {
+            lock (_completionLock)
+            {
+                if (IsCompleted)
+                {
+                    return;
+                }
 
-            _errorCodeFeature.Error = (long)errorCode;
-            _frameWriter.Abort(abortReason);
+                var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
 
-            // Call _http3Output.Stop() prior to poisoning the request body stream or pipe to
-            // ensure that an app that completes early due to the abort doesn't result in header frames being sent.
-            _http3Output.Stop();
+                if (oldState == newState)
+                {
+                    return;
+                }
 
-            CancelRequestAbortedToken();
+                if (!(exception is ConnectionAbortedException abortReason))
+                {
+                    abortReason = new ConnectionAbortedException(exception.Message, exception);
+                }
 
-            // Unblock the request body.
-            PoisonBody(abortReason);
-            RequestBodyPipe.Writer.Complete(abortReason);
+                Log.Http3StreamAbort(TraceIdentifier, errorCode, abortReason);
+
+                // Call _http3Output.Stop() prior to poisoning the request body stream or pipe to
+                // ensure that an app that completes early due to the abort doesn't result in header frames being sent.
+                _http3Output.Stop();
+
+                CancelRequestAbortedToken();
+
+                // Unblock the request body.
+                PoisonBody(exception);
+                RequestBodyPipe.Writer.Complete(exception);
+
+                // Abort framewriter and underlying transport after stopping output.
+                _errorCodeFeature.Error = (long)errorCode;
+                _frameWriter.Abort(abortReason);
+            }
         }
 
         protected override void OnErrorAfterResponseStarted()
@@ -151,7 +200,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             OnHeader(knownHeader.Name, value);
         }
 
-        public override void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value) => OnHeader(name, value, checkForNewlineChars : true);
+
+        public override void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value, bool checkForNewlineChars)
         {
             // https://tools.ietf.org/html/rfc7540#section-6.5.2
             // "The value is based on the uncompressed size of header fields, including the length of the name and value in octets plus an overhead of 32 octets for each header field.";
@@ -172,7 +223,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 {
                     // Throws BadRequest for header count limit breaches.
                     // Throws InvalidOperation for bad encoding.
-                    base.OnHeader(name, value);
+                    base.OnHeader(name, value, checkForNewlineChars);
                 }
             }
             catch (Microsoft.AspNetCore.Http.BadHttpRequestException bre)
@@ -278,7 +329,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        private bool IsPseudoHeaderField(ReadOnlySpan<byte> name, out PseudoHeaderFields headerField)
+        private static bool IsPseudoHeaderField(ReadOnlySpan<byte> name, out PseudoHeaderFields headerField)
         {
             headerField = PseudoHeaderFields.None;
 
@@ -320,28 +371,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             return name.SequenceEqual(ConnectionBytes) || (name.SequenceEqual(TeBytes) && !value.SequenceEqual(TrailersBytes));
         }
 
-        public void HandleReadDataRateTimeout()
-        {
-            Debug.Assert(Limits.MinRequestBodyDataRate != null);
-
-            Log.RequestBodyMinimumDataRateNotSatisfied(ConnectionId, null, Limits.MinRequestBodyDataRate.BytesPerSecond);
-            Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestBodyTimeout), Http3ErrorCode.RequestRejected);
-        }
-
-        public void HandleRequestHeadersTimeout()
-        {
-            Log.ConnectionBadRequest(ConnectionId, KestrelBadHttpRequestException.GetException(RequestRejectionReason.RequestHeadersTimeout));
-            Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestHeadersTimeout), Http3ErrorCode.RequestRejected);
-        }
-
-        public void OnInputOrOutputCompleted()
-        {
-            TryClose();
-            Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient), Http3ErrorCode.NoError);
-        }
-
         protected override void OnRequestProcessingEnded()
         {
+            CompleteStream(errored: false);
+        }
+
+        private void CompleteStream(bool errored)
+        {
+            if (!EndStreamReceived)
+            {
+                if (!errored)
+                {
+                    Log.RequestBodyNotEntirelyRead(ConnectionIdFeature, TraceIdentifier);
+                }
+
+                var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.AbortedRead);
+                if (oldState != newState)
+                {
+                    // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1-15
+                    // When the server does not need to receive the remainder of the request, it MAY abort reading
+                    // the request stream, send a complete response, and cleanly close the sending part of the stream.
+                    // The error code H3_NO_ERROR SHOULD be used when requesting that the client stop sending on the
+                    // request stream.
+                    _streamAbortFeature.AbortRead((long)Http3ErrorCode.NoError, new ConnectionAbortedException("The application completed without reading the entire request body."));
+                    RequestBodyPipe.Writer.Complete();
+                }
+
+                TryClose();
+            }
+
+            // Stream will be pooled after app completed.
+            // Wait to signal app completed after any potential aborts on the stream.
             Debug.Assert(_appCompleted != null);
             _appCompleted.SetResult();
         }
@@ -350,10 +410,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             if (Interlocked.Exchange(ref _isClosed, 1) == 0)
             {
+                // Wake ProcessRequestAsync loop so that it can exit.
+                Input.CancelPendingRead();
+
                 return true;
             }
 
-            // TODO make this actually close the Http3Stream by telling quic to close the stream.
             return false;
         }
 
@@ -389,14 +451,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                             return;
                         }
                     }
-
                     finally
                     {
                         Input.AdvanceTo(consumed, examined);
                     }
                 }
             }
-            // catch ConnectionResetException here?
             catch (Http3StreamErrorException ex)
             {
                 error = ex;
@@ -408,6 +468,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 _errorCodeFeature.Error = (long)ex.ErrorCode;
 
                 _context.StreamLifetimeHandler.OnStreamConnectionError(ex);
+            }
+            catch (ConnectionAbortedException ex)
+            {
+                error = ex;
+            }
+            catch (ConnectionResetException ex)
+            {
+                error = ex;
+                var resolvedErrorCode = _errorCodeFeature.Error >= 0 ? _errorCodeFeature.Error : 0;
+                AbortCore(new IOException(CoreStrings.HttpStreamResetByClient, ex), (Http3ErrorCode)resolvedErrorCode);
             }
             catch (Exception ex)
             {
@@ -421,10 +491,44 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 await Input.CompleteAsync();
 
-                // Make sure application func is completed before completing writer.
-                if (_appCompleted != null)
+                var appCompleted = _appCompleted?.Task ?? Task.CompletedTask;
+                if (!appCompleted.IsCompletedSuccessfully)
                 {
-                    await _appCompleted.Task;
+                    // At this point in the stream's read-side is complete. However, with HTTP/3
+                    // the write-side of the stream can still be aborted by the client on request
+                    // aborted.
+                    //
+                    // To get notification of request aborted we register to connection closed
+                    // token. It will notify this type that the client has aborted the request
+                    // and Kestrel will complete pipes and cancel the RequestAborted token.
+                    //
+                    // Only subscribe to this event after the stream's read-side is complete to
+                    // avoid interactions between reading that is in-progress and an abort.
+                    // This means while reading, read-side abort will handle getting abort notifications.
+                    //
+                    // We don't need to hang on to the CancellationTokenRegistration from register.
+                    // The CTS is cleaned up in StreamContext.DisposeAsync.
+                    //
+                    // TODO: Consider a better way to provide this notification. For perf we want to
+                    // make the ConnectionClosed CTS pay-for-play, and change this event to use
+                    // something that is more lightweight than a CTS.
+                    _context.StreamContext.ConnectionClosed.Register(static s =>
+                    {
+                        var stream = (Http3Stream)s!;
+
+                        if (!stream.IsCompleted)
+                        {
+                            // An error code value other than -1 indicates a value was set and the request didn't gracefully complete.
+                            var errorCode = stream._errorCodeFeature.Error;
+                            if (errorCode >= 0)
+                            {
+                                stream.AbortCore(new IOException(CoreStrings.HttpStreamResetByClient), (Http3ErrorCode)errorCode);
+                            }
+                        }
+                    }, this);
+
+                    // Make sure application func is completed before completing writer.
+                    await appCompleted;
                 }
 
                 try
@@ -438,15 +542,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 }
                 finally
                 {
+                    // Drain transports and dispose.
                     await _context.StreamContext.DisposeAsync();
 
+                    // Tells the connection to remove the stream from its active collection.
+                    ApplyCompletionFlag(StreamCompletionFlags.Completed);
                     _context.StreamLifetimeHandler.OnStreamCompleted(this);
+
+                    // TODO this is a hack for .NET 6 pooling.
+                    //
+                    // Pooling needs to happen after transports have been drained and stream
+                    // has been completed and is no longer active. All of this logic can't
+                    // be placed in ConnectionContext.DisposeAsync. Instead, QuicStreamContext
+                    // has pooling happen in QuicStreamContext.Dispose.
+                    //
+                    // ConnectionContext only implements IDisposableAsync by default. Only
+                    // QuicStreamContext should pass this check.
+                    if (_context.StreamContext is IDisposable disposableStream)
+                    {
+                        disposableStream.Dispose();
+                    }
                 }
             }
         }
 
         private ValueTask OnEndStreamReceived()
         {
+            ApplyCompletionFlag(StreamCompletionFlags.EndStreamReceived);
+
             if (_requestHeaderParsingState == RequestHeaderParsingState.Ready)
             {
                 // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1-14
@@ -490,7 +613,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        private Task ProcessUnknownFrameAsync()
+        private static Task ProcessUnknownFrameAsync()
         {
             // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-9
             // Unknown frames must be explicitly ignored.
@@ -511,8 +634,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 _requestHeaderParsingState = RequestHeaderParsingState.Trailers;
             }
 
-            QPackDecoder.Decode(payload, handler: this);
-            QPackDecoder.Reset();
+            try
+            {
+                QPackDecoder.Decode(payload, handler: this);
+                QPackDecoder.Reset();
+            }
+            catch (QPackDecodingException ex)
+            {
+                Log.QPackDecodingError(ConnectionId, StreamId, ex);
+                throw new Http3StreamErrorException(ex.Message, Http3ErrorCode.InternalError);
+            }
 
             switch (_requestHeaderParsingState)
             {
@@ -523,8 +654,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 case RequestHeaderParsingState.Headers:
                     break;
                 case RequestHeaderParsingState.Trailers:
-                    // trailers
-                    // TODO figure out if there is anything else to do here.
                     return;
                 default:
                     Debug.Fail("Unexpected header parsing state.");
@@ -550,6 +679,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
 
             _appCompleted = new TaskCompletionSource();
+            StreamTimeoutTicks = default;
+            _context.StreamLifetimeHandler.OnStreamHeaderReceived(this);
 
             ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
         }
@@ -567,7 +698,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1
             if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
             {
-                var message = CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3Formatting.ToFormattedType(Http3FrameType.Data)));
+                var message = CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3Formatting.ToFormattedType(Http3FrameType.Data));
                 throw new Http3ConnectionErrorException(message, Http3ErrorCode.UnexpectedFrame);
             }
 
@@ -591,25 +722,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             return RequestBodyPipe.Writer.FlushAsync().AsTask();
         }
 
-        public void StopProcessingNextRequest()
-            => StopProcessingNextRequest(serverInitiated: true);
-
-        public void StopProcessingNextRequest(bool serverInitiated)
-        {
-            var initiator = serverInitiated ? GracefulCloseInitiator.Server : GracefulCloseInitiator.Client;
-
-            if (Interlocked.CompareExchange(ref _gracefulCloseInitiator, initiator, GracefulCloseInitiator.None) == GracefulCloseInitiator.None)
-            {
-                Input.CancelPendingRead();
-            }
-        }
-
-        public void Tick(DateTimeOffset now)
-        {
-        }
-
         protected override void OnReset()
         {
+            _keepAlive = true;
+            _connectionAborted = false;
+
             // Reset Http3 Features
             _currentIHttpMinRequestBodyDataRateFeature = this;
             _currentIHttpResponseTrailersFeature = this;
@@ -625,13 +742,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         protected override string CreateRequestId()
         {
-            // TODO include stream id.
-            return ConnectionId;
+            return _context.StreamContext.ConnectionId;
         }
 
         protected override MessageBody CreateMessageBody()
             => Http3MessageBody.For(this);
-
 
         protected override bool TryParseRequest(ReadResult result, out bool endConnection)
         {
@@ -671,20 +786,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // ":scheme" is not restricted to "http" and "https" schemed URIs.  A
             // proxy or gateway can translate requests for non - HTTP schemes,
             // enabling the use of HTTP to interact with non - HTTP services.
-
-            // - That said, we shouldn't allow arbitrary values or use them to populate Request.Scheme, right?
-            // - For now we'll restrict it to http/s and require it match the transport.
-            // - We'll need to find some concrete scenarios to warrant unblocking this.
-            if (!string.Equals(RequestHeaders[HeaderNames.Scheme], Scheme, StringComparison.OrdinalIgnoreCase))
+            var headerScheme = HttpRequestHeaders.HeaderScheme.ToString();
+            HttpRequestHeaders.HeaderScheme = default; // Suppress pseduo headers from the public headers collection.
+            if (!ReferenceEquals(headerScheme, Scheme) &&
+                !string.Equals(headerScheme, Scheme, StringComparison.OrdinalIgnoreCase))
             {
-                var str = CoreStrings.FormatHttp3StreamErrorSchemeMismatch(RequestHeaders[HeaderNames.Scheme], Scheme);
-                Abort(new ConnectionAbortedException(str), Http3ErrorCode.ProtocolError);
-                return false;
+                if (!ServerOptions.AllowAlternateSchemes || !Uri.CheckSchemeName(headerScheme))
+                {
+                    var str = CoreStrings.FormatHttp3StreamErrorSchemeMismatch(headerScheme, Scheme);
+                    Abort(new ConnectionAbortedException(str), Http3ErrorCode.ProtocolError);
+                    return false;
+                }
+
+                Scheme = headerScheme;
             }
 
             // :path (and query) - Required
             // Must start with / except may be * for OPTIONS
-            var path = RequestHeaders[HeaderNames.Path].ToString();
+            var path = HttpRequestHeaders.HeaderPath.ToString();
+            HttpRequestHeaders.HeaderPath = default; // Suppress pseduo headers from the public headers collection.
             RawTarget = path;
 
             // OPTIONS - https://tools.ietf.org/html/rfc7540#section-8.1.2.3
@@ -722,7 +842,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private bool TryValidateMethod()
         {
             // :method
-            _methodText = RequestHeaders[HeaderNames.Method].ToString();
+            _methodText = HttpRequestHeaders.HeaderMethod.ToString();
+            HttpRequestHeaders.HeaderMethod = default; // Suppress pseduo headers from the public headers collection.
             Method = HttpUtilities.GetKnownMethod(_methodText);
 
             if (Method == Http.HttpMethod.None)
@@ -748,7 +869,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // :authority (optional)
             // Prefer this over Host
 
-            var authority = RequestHeaders[HeaderNames.Authority];
+            var authority = HttpRequestHeaders.HeaderAuthority;
+            HttpRequestHeaders.HeaderAuthority = default; // Suppress pseduo headers from the public headers collection.
             var host = HttpRequestHeaders.HeaderHost;
             if (!StringValues.IsNullOrEmpty(authority))
             {
@@ -782,10 +904,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             return true;
         }
 
+        [SkipLocalsInit]
         private bool TryValidatePath(ReadOnlySpan<char> pathSegment)
         {
             // Must start with a leading slash
-            if (pathSegment.Length == 0 || pathSegment[0] != '/')
+            if (pathSegment.IsEmpty || pathSegment[0] != '/')
             {
                 Abort(new ConnectionAbortedException(CoreStrings.FormatHttp3StreamErrorPathInvalid(RawTarget)), Http3ErrorCode.ProtocolError);
                 return false;
@@ -845,15 +968,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 minimumSegmentSize: _context.MemoryPool.GetMinimumSegmentSize()
             ));
 
+        private (StreamCompletionFlags OldState, StreamCompletionFlags NewState) ApplyCompletionFlag(StreamCompletionFlags completionState)
+        {
+            lock (_completionLock)
+            {
+                var oldCompletionState = _completionState;
+                _completionState |= completionState;
+
+                return (oldCompletionState, _completionState);
+            }
+        }
+
         /// <summary>
         /// Used to kick off the request processing loop by derived classes.
         /// </summary>
         public abstract void Execute();
-
-        public void OnTimeout(TimeoutReason reason)
-        {
-            throw new NotImplementedException();
-        }
 
         protected enum RequestHeaderParsingState
         {
@@ -873,6 +1002,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             Scheme = 0x8,
             Status = 0x10,
             Unknown = 0x40000000
+        }
+
+        [Flags]
+        private enum StreamCompletionFlags
+        {
+            None = 0,
+            EndStreamReceived = 1,
+            AbortedRead = 2,
+            Aborted = 4,
+            Completed = 8,
         }
 
         private static class GracefulCloseInitiator

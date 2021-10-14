@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         private const int NumberOfIPv6Labels = 8;
         // Lower case hex, no leading zeros
         private const string IPv6NumberFormat = "{0:x}";
-        private const string IPv6StringSeparator = ":";
+        private const char IPv6StringSeparator = ':';
         private const string IPv4StringFormat = "{0:d}.{1:d}.{2:d}.{3:d}";
 
         internal const int IPv6AddressSize = 28;
@@ -36,8 +36,8 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         private const int WriteableOffset = 2;
 
-        private int _size;
-        private byte[] _buffer;
+        private readonly int _size;
+        private readonly byte[] _buffer;
         private int _hash;
 
         /// <devdoc>
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 // it doesn't make sense to create a socket address with less tha
                 // 2 bytes, that's where we store the address family.
 
-                throw new ArgumentOutOfRangeException("size");
+                throw new ArgumentOutOfRangeException(nameof(size));
             }
             _size = size;
             _buffer = new byte[((size / IntPtr.Size) + 2) * IntPtr.Size]; // sizeof DWORD
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 // access
                 if (offset < 0 || offset >= Size)
                 {
-                    throw new ArgumentOutOfRangeException("offset");
+                    throw new ArgumentOutOfRangeException(nameof(offset));
                 }
                 return _buffer[offset];
             }
@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             {
                 if (i > WriteableOffset)
                 {
-                    bytes.Append(",");
+                    bytes.Append(',');
                 }
                 bytes.Append(this[i].ToString(NumberFormatInfo.InvariantInfo));
             }

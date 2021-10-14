@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Globalization;
@@ -7,7 +7,7 @@ using System.Globalization;
 namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
 {
     /// <summary>
-    /// Parses the "CondPattern" portion of the RewriteCond. 
+    /// Parses the "CondPattern" portion of the RewriteCond.
     /// RewriteCond TestString CondPattern
     /// </summary>
     internal class ConditionPatternParser
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
                 }
             }
 
-            // Control Block for strings. Set the operation and type fields based on the sign 
+            // Control Block for strings. Set the operation and type fields based on the sign
             // Switch on current character
             switch (context.Current)
             {
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
                             throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(context.Template, context.Index));
                     }
                 case 'l':
-                    // name conflict with -l and -lt/-le, so the assumption is if there is no 
+                    // name conflict with -l and -lt/-le, so the assumption is if there is no
                     // charcters after -l, we assume it a symbolic link
                     if (!context.Next())
                     {

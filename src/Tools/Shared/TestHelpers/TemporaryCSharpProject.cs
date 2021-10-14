@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
@@ -75,7 +75,7 @@ namespace Microsoft.Extensions.Tools.Internal
         public TemporaryCSharpProject WithItem(ItemSpec item)
         {
             var sb = new StringBuilder("<");
-            sb.Append(item.Name).Append(" ");
+            sb.Append(item.Name).Append(' ');
             if (item.Include != null) sb.Append(" Include=\"").Append(item.Include).Append('"');
             if (item.Remove != null) sb.Append(" Remove=\"").Append(item.Remove).Append('"');
             if (item.Update != null) sb.Append(" Update=\"").Append(item.Update).Append('"');

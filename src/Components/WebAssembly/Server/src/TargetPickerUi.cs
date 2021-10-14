@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -27,8 +27,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Server
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
-        private string _browserHost;
-        private string _debugProxyUrl;
+        private readonly string _browserHost;
+        private readonly string _debugProxyUrl;
 
         /// <summary>
         /// Initialize a new instance of <see cref="TargetPickerUi"/>.
@@ -71,11 +71,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Server
 <h2>Resolution</h2>
 <p>
     <h4>If you are using Google Chrome for your development, follow these instructions:</h4>
-    {GetLaunchChromeInstructions(targetApplicationUrl)}
+    {GetLaunchChromeInstructions(targetApplicationUrl.ToString())}
 </p>
 <p>
     <h4>If you are using Microsoft Edge (80+) for your development, follow these instructions:</h4>
-    {GetLaunchEdgeInstructions(targetApplicationUrl)}
+    {GetLaunchEdgeInstructions(targetApplicationUrl.ToString())}
 </p>
 <strong>This should launch a new browser window with debugging enabled..</p>
 <h2>Underlying exception:</h2>
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Server
             else if (OperatingSystem.IsMacOS())
             {
                 return $@"<p>Execute the following:</p>
-                          <p><strong><code>open /Applications/Google\ Chrome.app --args --remote-debugging-port={debuggerPort} --user-data-dir={profilePath} {targetApplicationUrl}</code></strong></p>";
+                          <p><strong><code>open -n /Applications/Google\ Chrome.app --args --remote-debugging-port={debuggerPort} --user-data-dir={profilePath} {targetApplicationUrl}</code></strong></p>";
             }
             else
             {
@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Server
             else if (OperatingSystem.IsMacOS())
             {
                 return $@"<p>In a terminal window execute the following:</p>
-                          <p><strong><code>open /Applications/Microsoft\ Edge\ Dev.app --args --remote-debugging-port={debuggerPort} --user-data-dir={profilePath} {targetApplicationUrl}</code></strong></p>";
+                          <p><strong><code>open -n /Applications/Microsoft\ Edge.app --args --remote-debugging-port={debuggerPort} --user-data-dir={profilePath} {targetApplicationUrl}</code></strong></p>";
             }
             else
             {

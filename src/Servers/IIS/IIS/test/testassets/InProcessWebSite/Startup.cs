@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -1040,7 +1040,7 @@ namespace TestSite
 
         private async Task ProcessId(HttpContext context)
         {
-            await context.Response.WriteAsync(Process.GetCurrentProcess().Id.ToString(CultureInfo.InvariantCulture));
+            await context.Response.WriteAsync(Environment.ProcessId.ToString(CultureInfo.InvariantCulture));
         }
 
         public async Task ANCM_HTTPS_PORT(HttpContext context)
@@ -1363,6 +1363,12 @@ namespace TestSite
             return Task.CompletedTask;
         }
 
+        public Task ConnectionRequestClose(HttpContext httpContext)
+        {
+            httpContext.Connection.RequestClose();
+            return Task.CompletedTask;
+        }
+
         private TaskCompletionSource _completeAsync = new TaskCompletionSource();
 
         public async Task CompleteAsync(HttpContext httpContext)
@@ -1517,7 +1523,7 @@ namespace TestSite
 #endif
             Assert.Null(httpContext.Request.ContentLength);
             // The client didn't send this header, Http.Sys added it for back compat with HTTP/1.1.
-            Assert.Equal("chunked", httpContext.Request.Headers[HeaderNames.TransferEncoding]);
+            Assert.Equal("chunked", httpContext.Request.Headers.TransferEncoding);
             return httpContext.Request.Body.CopyToAsync(httpContext.Response.Body);
         }
 
@@ -1541,6 +1547,111 @@ namespace TestSite
                 throw new Exception();
             });
 
+            return Task.CompletedTask;
+        }
+
+        public Task Http3_Direct(HttpContext context)
+        {
+            try
+            {
+                Assert.True(context.Request.IsHttps);
+                return context.Response.WriteAsync(context.Request.Protocol);
+            }
+            catch (Exception ex)
+            {
+                return context.Response.WriteAsync(ex.ToString());
+            }
+        }
+
+        public Task Http3_AltSvcHeader_UpgradeFromHttp1(HttpContext context)
+        {
+            var altsvc = $@"h3="":{context.Connection.LocalPort}""";
+            try
+            {
+                Assert.True(context.Request.IsHttps);
+                context.Response.Headers.AltSvc = altsvc;
+                return context.Response.WriteAsync(context.Request.Protocol);
+            }
+            catch (Exception ex)
+            {
+                return context.Response.WriteAsync(ex.ToString());
+            }
+        }
+
+        public Task Http3_AltSvcHeader_UpgradeFromHttp2(HttpContext context)
+        {
+            return Http3_AltSvcHeader_UpgradeFromHttp1(context);
+        }
+
+        public async Task Http3_ResponseTrailers(HttpContext context)
+        {
+            try
+            {
+                Assert.True(context.Request.IsHttps);
+                await context.Response.WriteAsync(context.Request.Protocol);
+                context.Response.AppendTrailer("custom", "value");
+            }
+            catch (Exception ex)
+            {
+                await context.Response.WriteAsync(ex.ToString());
+            }
+        }
+
+        public Task Http3_ResetBeforeHeaders(HttpContext context)
+        {
+            try
+            {
+                Assert.True(context.Request.IsHttps);
+                context.Features.Get<IHttpResetFeature>().Reset(0x010b); // H3_REQUEST_REJECTED
+                return Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                return context.Response.WriteAsync(ex.ToString());
+            }
+        }
+
+        private TaskCompletionSource _http3_ResetAfterHeadersCts = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public async Task Http3_ResetAfterHeaders(HttpContext context)
+        {
+            try
+            {
+                Assert.True(context.Request.IsHttps);
+                await context.Response.Body.FlushAsync();
+                await _http3_ResetAfterHeadersCts.Task;
+                context.Features.Get<IHttpResetFeature>().Reset(0x010c); // H3_REQUEST_CANCELLED
+            }
+            catch (Exception ex)
+            {
+                await context.Response.WriteAsync(ex.ToString());
+            }
+        }
+
+        public Task Http3_ResetAfterHeaders_SetResult(HttpContext context)
+        {
+            _http3_ResetAfterHeadersCts.SetResult();
+            return Task.CompletedTask;
+        }
+
+        private TaskCompletionSource _http3_AppExceptionAfterHeaders_InternalErrorCts = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public async Task Http3_AppExceptionAfterHeaders_InternalError(HttpContext context)
+        {
+            await context.Response.Body.FlushAsync();
+            await _http3_AppExceptionAfterHeaders_InternalErrorCts.Task;
+            throw new Exception("App Exception");
+        }
+
+        public Task Http3_AppExceptionAfterHeaders_InternalError_SetResult(HttpContext context)
+        {
+            _http3_AppExceptionAfterHeaders_InternalErrorCts.SetResult();
+            return Task.CompletedTask;
+        }
+
+        public Task Http3_Abort_Cancel(HttpContext context)
+        {
+            context.Abort();
             return Task.CompletedTask;
         }
 

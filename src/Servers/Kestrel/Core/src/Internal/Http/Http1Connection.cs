@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -34,9 +34,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         // The _parsed fields cache the Path, QueryString, RawTarget, and/or _absoluteRequestTarget
         // from the previous request when DisableStringReuse is false.
-        private string? _parsedPath = null;
-        private string? _parsedQueryString = null;
-        private string? _parsedRawTarget = null;
+        private string? _parsedPath;
+        private string? _parsedQueryString;
+        private string? _parsedRawTarget;
         private Uri? _parsedAbsoluteRequestTarget;
 
         private long _remainingRequestHeadersBytesAllowed;
@@ -616,7 +616,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override void OnReset()
         {
-
             _requestTimedOut = false;
             _requestTargetForm = HttpRequestTarget.Unknown;
             _absoluteRequestTarget = null;
@@ -628,6 +627,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Reset Http1 Features
             _currentIHttpMinRequestBodyDataRateFeature = this;
             _currentIHttpMinResponseDataRateFeature = this;
+            _currentIPersistentStateFeature = this;
         }
 
         protected override void OnRequestProcessingEnding()

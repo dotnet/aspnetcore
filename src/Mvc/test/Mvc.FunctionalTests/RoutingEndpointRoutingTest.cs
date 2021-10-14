@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async override Task HasEndpointMatch()
+        public override async Task HasEndpointMatch()
         {
             // Arrange & Act
             var response = await Client.GetAsync("http://localhost/Routing/HasEndpointMatch");
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async override Task RouteData_Routers_ConventionalRoute()
+        public override async Task RouteData_Routers_ConventionalRoute()
         {
             // Arrange & Act
             var response = await Client.GetAsync("http://localhost/RouteData/Conventional");
@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async override Task RouteData_Routers_AttributeRoute()
+        public override async Task RouteData_Routers_AttributeRoute()
         {
             // Arrange & Act
             var response = await Client.GetAsync("http://localhost/RouteData/Attribute");
@@ -381,7 +381,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task LinkGenerator_EndpointName_LinkToConventionalRoutedAction()
         {
             // Arrange
-            
+
             // Act
             var response = await Client.GetAsync("/EndpointName/LinkToConventionalRouted");
 

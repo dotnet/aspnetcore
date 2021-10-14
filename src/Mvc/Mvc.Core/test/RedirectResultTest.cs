@@ -1,24 +1,39 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
-using Moq;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc
 {
-    public class RedirectResultTest
+    public class RedirectResultTest : RedirectResultTestBase
     {
+        protected override Task ExecuteAsync(HttpContext httpContext, string contentPath)
+        {
+            httpContext.RequestServices = GetServiceProvider();
+            var actionContext = new ActionContext(httpContext, new(), new());
+
+            var redirectResult = new RedirectResult(contentPath);
+            return redirectResult.ExecuteResultAsync(actionContext);
+        }
+
+        private static IServiceProvider GetServiceProvider()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IActionResultExecutor<RedirectResult>, RedirectResultExecutor>();
+            serviceCollection.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
+            serviceCollection.AddTransient<ILoggerFactory, NullLoggerFactory>();
+            return serviceCollection.BuildServiceProvider();
+        }
+
         [Fact]
         public void RedirectResult_Constructor_WithParameterUrl_SetsResultUrlAndNotPermanentOrPreserveMethod()
         {
@@ -62,81 +77,6 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.True(result.PreserveMethod);
             Assert.True(result.Permanent);
             Assert.Same(url, result.Url);
-        }
-
-        [Theory]
-        [InlineData("", "/Home/About", "/Home/About")]
-        [InlineData("/myapproot", "/test", "/test")]
-        public async Task Execute_ReturnsContentPath_WhenItDoesNotStartWithTilde(
-            string appRoot,
-            string contentPath,
-            string expectedPath)
-        {
-            // Arrange
-            var httpContext = GetHttpContext(appRoot);
-            var actionContext = GetActionContext(httpContext);
-            var result = new RedirectResult(contentPath);
-
-            // Act
-            await result.ExecuteResultAsync(actionContext);
-
-            // Assert
-            // Verifying if Redirect was called with the specific Url and parameter flag.
-            Assert.Equal(expectedPath, httpContext.Response.Headers[HeaderNames.Location].ToString());
-            Assert.Equal(StatusCodes.Status302Found, httpContext.Response.StatusCode);
-        }
-
-        [Theory]
-        [InlineData(null, "~/Home/About", "/Home/About")]
-        [InlineData("/", "~/Home/About", "/Home/About")]
-        [InlineData("/", "~/", "/")]
-        [InlineData("", "~/Home/About", "/Home/About")]
-        [InlineData("/myapproot", "~/", "/myapproot/")]
-        public async Task Execute_ReturnsAppRelativePath_WhenItStartsWithTilde(
-            string appRoot,
-            string contentPath,
-            string expectedPath)
-        {
-            // Arrange
-            var httpContext = GetHttpContext(appRoot);
-            var actionContext = GetActionContext(httpContext);
-            var result = new RedirectResult(contentPath);
-
-            // Act
-            await result.ExecuteResultAsync(actionContext);
-
-            // Assert
-            // Verifying if Redirect was called with the specific Url and parameter flag.
-            Assert.Equal(expectedPath, httpContext.Response.Headers[HeaderNames.Location].ToString());
-            Assert.Equal(StatusCodes.Status302Found, httpContext.Response.StatusCode);
-        }
-
-        private static ActionContext GetActionContext(HttpContext httpContext)
-        {
-            var routeData = new RouteData();
-            routeData.Routers.Add(new Mock<IRouter>().Object);
-
-            return new ActionContext(httpContext,
-                                    routeData,
-                                    new ActionDescriptor());
-        }
-
-        private static IServiceProvider GetServiceProvider()
-        {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<IActionResultExecutor<RedirectResult>, RedirectResultExecutor>();
-            serviceCollection.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
-            serviceCollection.AddTransient<ILoggerFactory, LoggerFactory>();
-            return serviceCollection.BuildServiceProvider();
-        }
-
-        private static HttpContext GetHttpContext(
-            string appRoot)
-        {
-            var httpContext = new DefaultHttpContext();
-            httpContext.RequestServices = GetServiceProvider();
-            httpContext.Request.PathBase = new PathString(appRoot);
-            return httpContext;
         }
     }
 }

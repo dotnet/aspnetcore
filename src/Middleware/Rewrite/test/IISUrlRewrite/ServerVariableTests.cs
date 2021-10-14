@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -142,11 +142,11 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.IISUrlRewrite
             context.Request.QueryString = QueryString.FromUriComponent("?bar=1");
             context.Request.ContentLength = 10;
             context.Request.ContentType = "json";
-            context.Request.Headers[HeaderNames.Accept] = "accept";
-            context.Request.Headers[HeaderNames.Cookie] = "cookie";
-            context.Request.Headers[HeaderNames.Referer] = "referer";
-            context.Request.Headers[HeaderNames.UserAgent] = "useragent";
-            context.Request.Headers[HeaderNames.Connection] = "connection";
+            context.Request.Headers.Accept = "accept";
+            context.Request.Headers.Cookie = "cookie";
+            context.Request.Headers.Referer = "referer";
+            context.Request.Headers.UserAgent = "useragent";
+            context.Request.Headers.Connection = "connection";
 
             return context;
         }

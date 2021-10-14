@@ -66,8 +66,8 @@
 
     <BundleNameShort>Microsoft ASP.NET Core $(PackageBrandingVersion)</BundleNameShort>
     <BundleNameSub>Shared Framework</BundleNameSub>
-    <BundleName>$(BundleNameShort) - $(BundleNameSub)</BundleName>
-    <BundleNameFull>$(BundleName) ($(Platform))</BundleNameFull>
+    <BundleName>$(BundleNameShort) - $(BundleNameSub) ($(Platform))</BundleName>
+    <BundleNameFull>$(BundleName)</BundleNameFull>
     <BundleRegName>$(BundleNameFull)</BundleRegName>
 
     <BundleManufacturer>Microsoft Corporation</BundleManufacturer>

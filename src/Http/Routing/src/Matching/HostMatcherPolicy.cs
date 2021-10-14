@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return applies;
         }
 
-        private bool AppliesToEndpointsCore(IReadOnlyList<Endpoint> endpoints)
+        private static bool AppliesToEndpointsCore(IReadOnlyList<Endpoint> endpoints)
         {
             return endpoints.Any(e =>
             {
@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return new HostPolicyJumpTable(exitDestination, ordered);
         }
 
-        private int GetScore(in EdgeKey key)
+        private static int GetScore(in EdgeKey key)
         {
             // Higher score == lower priority.
             if (key.MatchesHost && !key.HasHostWildcard && key.MatchesPort)
@@ -359,8 +359,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         private class HostPolicyJumpTable : PolicyJumpTable
         {
-            private (EdgeKey host, int destination)[] _destinations;
-            private int _exitDestination;
+            private readonly (EdgeKey host, int destination)[] _destinations;
+            private readonly int _exitDestination;
 
             public HostPolicyJumpTable(int exitDestination, (EdgeKey host, int destination)[] destinations)
             {

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 {
     internal sealed class RequestBufferingStream : BufferingStream
     {
-        private Encoding _encoding;
+        private readonly Encoding _encoding;
         private readonly int _limit;
 
         public bool HasLogged { get; private set; }
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            var res = await _innerStream.ReadAsync(buffer, offset, count, cancellationToken);
+            var res = await _innerStream.ReadAsync(buffer.AsMemory(offset, count), cancellationToken);
 
             WriteToBuffer(buffer.AsSpan(offset, res));
 

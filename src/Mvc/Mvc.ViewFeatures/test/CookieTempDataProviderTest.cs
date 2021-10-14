@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var base64AndUrlEncodedDataInCookie = WebEncoders.Base64UrlEncode(expectedDataToUnprotect);
 
             var context = new DefaultHttpContext();
-            context.Request.Headers[HeaderNames.Cookie] = $"{CookieTempDataProvider.CookieName}={base64AndUrlEncodedDataInCookie}";
+            context.Request.Headers.Cookie = $"{CookieTempDataProvider.CookieName}={base64AndUrlEncodedDataInCookie}";
 
             // Act
             var tempDataDictionary = tempDataProvider.LoadTempData(context);
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var dataProtector = new PassThroughDataProtector();
             var tempDataProvider = GetProvider(dataProtector);
             var httpContext = new DefaultHttpContext();
-            httpContext.Request.Headers[HeaderNames.Cookie] = $"{CookieTempDataProvider.CookieName}={base64AndUrlEncodedDataInCookie}";
+            httpContext.Request.Headers.Cookie = $"{CookieTempDataProvider.CookieName}={base64AndUrlEncodedDataInCookie}";
 
             // Act
             var actualValues = tempDataProvider.LoadTempData(httpContext);
@@ -305,7 +305,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var requestCookies = $"{CookieTempDataProvider.CookieName}={base64AndUrlEncodedData}";
             var httpContext = new DefaultHttpContext();
             httpContext.Request.PathBase = "/";
-            httpContext.Request.Headers[HeaderNames.Cookie] = requestCookies;
+            httpContext.Request.Headers.Cookie = requestCookies;
 
             // Act
             tempDataProvider.SaveTempData(httpContext, new Dictionary<string, object>());
@@ -364,13 +364,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                     stringBuilder.Append(";");
                 }
 
-                httpContext.Request.Headers[HeaderNames.Cookie] = stringBuilder.ToString();
+                httpContext.Request.Headers.Cookie = stringBuilder.ToString();
             }
         }
 
         private class MockResponseCookieCollection : IResponseCookies, IEnumerable<CookieInfo>
         {
-            private Dictionary<string, CookieInfo> _cookies = new Dictionary<string, CookieInfo>(StringComparer.OrdinalIgnoreCase);
+            private readonly Dictionary<string, CookieInfo> _cookies = new Dictionary<string, CookieInfo>(StringComparer.OrdinalIgnoreCase);
 
             public int Count
             {

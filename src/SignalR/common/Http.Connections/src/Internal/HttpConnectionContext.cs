@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -31,9 +30,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                                          IHttpContextFeature,
                                          IHttpTransportFeature,
                                          IConnectionInherentKeepAliveFeature,
-                                         IConnectionLifetimeFeature
+                                         IConnectionLifetimeFeature,
+                                         IConnectionLifetimeNotificationFeature
     {
-        private static long _tenSeconds = TimeSpan.FromSeconds(10).Ticks;
+        private readonly HttpConnectionDispatcherOptions _options;
 
         private readonly object _stateLock = new object();
         private readonly object _itemsLock = new object();
@@ -43,7 +43,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private PipeWriterStream _applicationStream;
         private IDuplexPipe _application;
         private IDictionary<object, object?>? _items;
-        private CancellationTokenSource _connectionClosedTokenSource;
+        private readonly CancellationTokenSource _connectionClosedTokenSource;
+        private readonly CancellationTokenSource _connectionCloseRequested;
 
         private CancellationTokenSource? _sendCts;
         private bool _activeSend;
@@ -59,7 +60,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         /// Creates the DefaultConnectionContext without Pipes to avoid upfront allocations.
         /// The caller is expected to set the <see cref="Transport"/> and <see cref="Application"/> pipes manually.
         /// </summary>
-        public HttpConnectionContext(string connectionId, string connectionToken, ILogger logger, IDuplexPipe transport, IDuplexPipe application)
+        public HttpConnectionContext(string connectionId, string connectionToken, ILogger logger, IDuplexPipe transport, IDuplexPipe application, HttpConnectionDispatcherOptions options)
         {
             Transport = transport;
             _applicationStream = new PipeWriterStream(application.Output);
@@ -67,7 +68,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             ConnectionId = connectionId;
             ConnectionToken = connectionToken;
-            LastSeenUtc = DateTime.UtcNow;
+            LastSeenTicks = Environment.TickCount64;
+            _options = options;
 
             // The default behavior is that both formats are supported.
             SupportedFormats = TransferFormat.Binary | TransferFormat.Text;
@@ -87,9 +89,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             Features.Set<IHttpTransportFeature>(this);
             Features.Set<IConnectionInherentKeepAliveFeature>(this);
             Features.Set<IConnectionLifetimeFeature>(this);
+            Features.Set<IConnectionLifetimeNotificationFeature>(this);
 
             _connectionClosedTokenSource = new CancellationTokenSource();
             ConnectionClosed = _connectionClosedTokenSource.Token;
+
+            _connectionCloseRequested = new CancellationTokenSource();
+            ConnectionClosedRequested = _connectionCloseRequested.Token;
+            AuthenticationExpiration = DateTimeOffset.MaxValue;
         }
 
         public CancellationTokenSource? Cancellation { get; set; }
@@ -102,7 +109,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         internal Task? DisposeAndRemoveTask { get; set; }
 
         // Used for LongPolling because we need to create a scope that spans the lifetime of multiple requests on the cloned HttpContext
-        internal IServiceScope? ServiceScope { get; set; }
+        internal AsyncServiceScope? ServiceScope { get; set; }
+
+        internal DateTimeOffset AuthenticationExpiration { get; set; }
+
+        internal bool IsAuthenticationExpirationEnabled => _options.CloseOnAuthenticationExpiration;
 
         public Task? TransportTask { get; set; }
 
@@ -110,15 +121,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         public Task? ApplicationTask { get; set; }
 
-        public DateTime LastSeenUtc { get; set; }
+        public long LastSeenTicks { get; set; }
 
-        public DateTime? LastSeenUtcIfInactive
+        public long? LastSeenTicksIfInactive
         {
             get
             {
                 lock (_stateLock)
                 {
-                    return Status == HttpConnectionStatus.Inactive ? (DateTime?)LastSeenUtc : null;
+                    return Status == HttpConnectionStatus.Inactive ? LastSeenTicks : null;
                 }
             }
         }
@@ -175,6 +186,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         public HttpContext? HttpContext { get; set; }
 
         public override CancellationToken ConnectionClosed { get; set; }
+
+        public CancellationToken ConnectionClosedRequested { get; set; }
 
         public override void Abort()
         {
@@ -530,7 +543,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 if (Status == HttpConnectionStatus.Active)
                 {
                     Status = HttpConnectionStatus.Inactive;
-                    LastSeenUtc = DateTime.UtcNow;
+                    LastSeenTicks = Environment.TickCount64;
                 }
             }
         }
@@ -550,6 +563,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         internal void StartSendCancellation()
         {
+            if (!_options.TransportSendTimeoutEnabled)
+            {
+                return;
+            }
+
             lock (_sendingLock)
             {
                 if (_sendCts == null || _sendCts.IsCancellationRequested)
@@ -557,29 +575,48 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     _sendCts = new CancellationTokenSource();
                     SendingToken = _sendCts.Token;
                 }
-                _startedSendTime = DateTime.UtcNow.Ticks;
+                _startedSendTime = Environment.TickCount64;
                 _activeSend = true;
             }
         }
+
         internal void TryCancelSend(long currentTicks)
         {
+            if (!_options.TransportSendTimeoutEnabled)
+            {
+                return;
+            }
+
             lock (_sendingLock)
             {
                 if (_activeSend)
                 {
-                    if (currentTicks - _startedSendTime > _tenSeconds)
+                    if (currentTicks - _startedSendTime > _options.TransportSendTimeoutTicks)
                     {
                         _sendCts!.Cancel();
+
+                        Log.TransportSendTimeout(_logger, _options.TransportSendTimeout, ConnectionId);
                     }
                 }
             }
         }
+
         internal void StopSendCancellation()
         {
+            if (!_options.TransportSendTimeoutEnabled)
+            {
+                return;
+            }
+
             lock (_sendingLock)
             {
                 _activeSend = false;
             }
+        }
+
+        public void RequestClose()
+        {
+            ThreadPool.UnsafeQueueUserWorkItem(static cts => ((CancellationTokenSource)cts!).Cancel(), _connectionCloseRequested);
         }
 
         private static class Log
@@ -607,6 +644,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             private static readonly Action<ILogger, HttpTransportType, Exception?> _transportAndApplicationComplete =
                 LoggerMessage.Define<HttpTransportType>(LogLevel.Trace, new EventId(8, "TransportAndApplicationComplete"), "The application and {TransportType} transport are both complete.");
+
+            private static readonly Action<ILogger, int, string, Exception?> _transportSendtimeout =
+                LoggerMessage.Define<int, string>(LogLevel.Trace, new EventId(9, "TransportSendTimeout"), "{Timeout}ms elapsed attempting to send a message to the transport. Closing connection {TransportConnectionId}.");
 
             public static void DisposingConnection(ILogger logger, string connectionId)
             {
@@ -686,6 +726,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 }
 
                 _transportAndApplicationComplete(logger, transportType, null);
+            }
+
+            public static void TransportSendTimeout(ILogger logger, TimeSpan transportTimeout, string connectionId)
+            {
+                _transportSendtimeout(logger, (int)transportTimeout.TotalMilliseconds, connectionId, null);
             }
         }
     }
