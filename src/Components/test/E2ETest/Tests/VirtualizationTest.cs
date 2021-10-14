@@ -373,6 +373,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [InlineData("simple-scroll-horizontal-on-parent")]
         [InlineData("complex-scroll-horizontal-on-parent")]
         [InlineData("complex-scroll-horizontal-on-tbody")]
+        [InlineData("simple-display-table-scroll-horizontal")]
+        [InlineData("complex-display-table-scroll-horizontal")]
         public void CanLoadNewDataWithHorizontalScrollToRight(string containerId)
         {
             Browser.MountTestComponent<VirtualizationDataChanges>();
@@ -401,6 +403,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Theory]
         [InlineData("simple-scroll-horizontal")]
         [InlineData("complex-scroll-horizontal")]
+        [InlineData("simple-scroll-horizontal-on-parent")]
+        [InlineData("complex-scroll-horizontal-on-parent")]
+        [InlineData("complex-scroll-horizontal-on-tbody")]
+        [InlineData("simple-display-table-scroll-horizontal")]
+        [InlineData("complex-display-table-scroll-horizontal")]
         [InlineData("removing-many")]
         public void CanExpandDataSetAndRetainScrollPosition(string containerId)
         {
@@ -430,6 +437,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Theory]
         [InlineData("simple-scroll-horizontal")]
         [InlineData("complex-scroll-horizontal")]
+        [InlineData("simple-scroll-horizontal-on-parent")]
+        [InlineData("complex-scroll-horizontal-on-parent")]
+        [InlineData("complex-scroll-horizontal-on-tbody")]
+        [InlineData("simple-display-table-scroll-horizontal")]
+        [InlineData("complex-display-table-scroll-horizontal")]
         [InlineData("removing-many")]
         public void CanHandleDataSetShrinkingWithExistingOffsetAlreadyBeyondNewListEnd(string containerId)
         {

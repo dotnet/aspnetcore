@@ -26,7 +26,7 @@ function init(dotNetHelper: any, spacerBefore: HTMLElement, spacerAfter: HTMLEle
   const scrollContainer = findClosestScrollContainer(spacerBefore);
   (scrollContainer || document.documentElement).style.overflowAnchor = 'none';
 
-  if (isContainerTableRalatedElement(spacerAfter.parentElement)) {
+  if (isValidTableElement(spacerAfter.parentElement)) {
     spacerBefore.style.display = 'table-row';
     spacerAfter.style.display = 'table-row';
   }
@@ -53,7 +53,7 @@ function init(dotNetHelper: any, spacerBefore: HTMLElement, spacerAfter: HTMLEle
     // so if a spacer gets resized but remains visible, no additional callbacks will occur. By unobserving
     // and reobserving spacers when they get resized, the intersection callback will re-run if they remain visible.
     const mutationObserver = new MutationObserver((mutations: MutationRecord[], observer: MutationObserver): void => {
-      if (isContainerTableRalatedElement(spacer.parentElement) && spacer.style.display !== 'table-row') {
+      if (isValidTableElement(spacer.parentElement)) {
         observer.disconnect();
         spacer.style.display = 'table-row';
         observer.observe(spacer, { attributes: true });
@@ -90,8 +90,13 @@ function init(dotNetHelper: any, spacerBefore: HTMLElement, spacerAfter: HTMLEle
     });
   }
 
-  function isContainerTableRalatedElement(container: HTMLElement | null): boolean {
-    return container !== null && (container instanceof HTMLTableElement || container instanceof HTMLTableSectionElement);
+  function isValidTableElement(element: HTMLElement | null): boolean {
+    if (element === null) {
+      return false;
+    }
+
+    return ((element instanceof HTMLTableElement && element.style.display === '') || element.style.display === 'table') 
+      || ((element instanceof HTMLTableSectionElement && element.style.display === '') || element.style.display === 'table-row-group')
   }
 }
 
