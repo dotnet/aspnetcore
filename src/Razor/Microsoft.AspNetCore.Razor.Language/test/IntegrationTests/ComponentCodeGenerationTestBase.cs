@@ -320,6 +320,62 @@ public class Tag
         }
 
         [Fact]
+        public void ComponentWithTypeParameterValueTuple()
+        {
+            // Arrange
+            var classes = @"
+public class Tag
+{
+    public string description { get; set; }
+}
+";
+
+            AdditionalSyntaxTrees.Add(Parse(classes));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components;
+@typeparam TItem1
+@typeparam TItem2
+
+<h1>Item</h1>
+
+<p>@ChildContent(Item1)</p>
+
+@foreach (var item in Items2)
+{
+    <p>@ChildContent(item)</p>
+}
+
+@code {
+    [Parameter] public (TItem1, TItem2) Item1 { get; set; }
+    [Parameter] public List<(TItem1, TItem2)> Items2 { get; set; }
+    [Parameter] public RenderFragment<(TItem1, TItem2)> ChildContent { get; set; }
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+
+            AdditionalSyntaxTrees.Add(Parse(generated.CodeDocument.GetCSharpDocument().GeneratedCode));
+            var useGenerated = CompileToCSharp("UseTestComponent.cshtml", @"
+@using Test
+<TestComponent Item1=item1 Items2=items2>
+    <p>@context</p>
+</TestComponent>
+
+@code {
+    (string, int) item1 = (""A string"", 42);
+    static (string, int) item2 = (""Another string"", 42);
+    List<(string, int)> items2 = new List<(string, int)>() { item2 };
+}");
+            AssertDocumentNodeMatchesBaseline(useGenerated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(useGenerated.CodeDocument);
+            CompileToAssembly(useGenerated);
+        }
+
+        [Fact]
         public void ComponentWithConstrainedTypeParameters()
         {
             // Arrange
