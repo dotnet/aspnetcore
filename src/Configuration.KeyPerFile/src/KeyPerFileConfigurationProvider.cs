@@ -57,7 +57,7 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile
 
         private void Load(bool reload)
         {
-            var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var data = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
 
             if (Source.FileProvider == null)
             {

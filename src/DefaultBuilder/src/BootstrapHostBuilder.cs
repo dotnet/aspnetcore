@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Hosting
             // This is the hosting environment based on configuration we've seen so far.
             var hostingEnvironment = new HostingEnvironment()
             {
-                ApplicationName = hostConfiguration[HostDefaults.ApplicationKey],
+                ApplicationName = hostConfiguration[HostDefaults.ApplicationKey] ?? string.Empty,
                 EnvironmentName = hostConfiguration[HostDefaults.EnvironmentKey] ?? Environments.Production,
                 ContentRootPath = HostingPathResolver.ResolvePath(hostConfiguration[HostDefaults.ContentRootKey]),
             };
