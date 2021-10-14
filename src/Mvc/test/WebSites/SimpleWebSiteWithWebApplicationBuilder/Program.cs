@@ -50,3 +50,10 @@ public class MyController : ControllerBase
     [HttpGet("/greet")]
     public string Greet() => $"Hello human";
 }
+
+namespace SimpleWebSiteWithWebApplicationBuilder
+{
+    public partial class Program
+    {
+    }
+}
