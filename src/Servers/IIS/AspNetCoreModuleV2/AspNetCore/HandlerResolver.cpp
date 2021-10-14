@@ -24,7 +24,7 @@ HandlerResolver::HandlerResolver(HMODULE hModule, const IHttpServer &pServer)
       m_pServer(pServer),
       m_loadedApplicationHostingModel(HOSTING_UNKNOWN)
 {
-    m_loadedDisallowRotationOnConfigChange = false;
+    m_disallowRotationOnConfigChange = false;
     InitializeSRWLock(&m_requestHandlerLoadLock);
 }
 
@@ -170,7 +170,7 @@ HandlerResolver::GetApplicationFactory(const IHttpApplication& pApplication, con
 
     m_loadedApplicationHostingModel = options.QueryHostingModel();
     m_loadedApplicationId = pApplication.GetApplicationId();
-    m_loadedDisallowRotationOnConfigChange = options.QueryDisallowRotationOnConfigChange();
+    m_disallowRotationOnConfigChange = options.QueryDisallowRotationOnConfigChange();
 
     RETURN_IF_FAILED(LoadRequestHandlerAssembly(pApplication, shadowCopyPath, options, pApplicationFactory, errorContext));
 
@@ -194,7 +194,7 @@ APP_HOSTING_MODEL HandlerResolver::GetHostingModel()
 
 bool HandlerResolver::GetDisallowRotationOnConfigChange()
 {
-    return m_loadedDisallowRotationOnConfigChange;
+    return m_disallowRotationOnConfigChange;
 }
 
 HRESULT

@@ -39,7 +39,7 @@ private:
     std::wstring m_loadedApplicationId;
     APP_HOSTING_MODEL m_loadedApplicationHostingModel;
     HostFxr m_hHostFxrDll;
-    bool m_loadedDisallowRotationOnConfigChange;
+    bool m_disallowRotationOnConfigChange;
 
     static const PCWSTR          s_pwzAspnetcoreInProcessRequestHandlerName;
     static const PCWSTR          s_pwzAspnetcoreOutOfProcessRequestHandlerName;
