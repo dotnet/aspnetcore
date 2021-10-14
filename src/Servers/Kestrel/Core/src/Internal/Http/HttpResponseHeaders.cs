@@ -7,11 +7,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO.Pipelines;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
-using System.Numerics;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
