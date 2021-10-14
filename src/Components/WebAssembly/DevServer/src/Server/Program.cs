@@ -31,7 +31,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server
                     var name = Path.ChangeExtension(applicationPath, ".staticwebassets.runtime.json");
                     name = !File.Exists(name) ? Path.ChangeExtension(applicationPath, ".StaticWebAssets.xml") : name;
 
-#nullable enable
                     var inMemoryConfiguration = new Dictionary<string, string?>
                     {
                         [WebHostDefaults.EnvironmentKey] = "Development",
