@@ -24,6 +24,7 @@ HandlerResolver::HandlerResolver(HMODULE hModule, const IHttpServer &pServer)
       m_pServer(pServer),
       m_loadedApplicationHostingModel(HOSTING_UNKNOWN)
 {
+    m_loadedDisallowRotationOnConfigChange = false;
     InitializeSRWLock(&m_requestHandlerLoadLock);
 }
 
@@ -193,8 +194,6 @@ APP_HOSTING_MODEL HandlerResolver::GetHostingModel()
 
 bool HandlerResolver::GetDisallowRotationOnConfigChange()
 {
-    SRWExclusiveLock lock(m_requestHandlerLoadLock);
-
     return m_loadedDisallowRotationOnConfigChange;
 }
 
