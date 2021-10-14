@@ -148,6 +148,58 @@ namespace Microsoft.Extensions.Http
         }
 
         [Fact]
+        public async Task MultipleHandlers_CanReexecuteSendAsync_FirstResponseDisposed()
+        {
+            // Arrange
+            var policy1 = HttpPolicyExtensions.HandleTransientHttpError()
+                .RetryAsync(retryCount: 1);
+            var policy2 = HttpPolicyExtensions.HandleTransientHttpError()
+                .CircuitBreakerAsync(handledEventsAllowedBeforeBreaking: 2, durationOfBreak: TimeSpan.FromSeconds(10));
+
+            var callCount = 0;
+            var fakeContent = new FakeContent();
+            var firstResponse = new HttpResponseMessage()
+            {
+                StatusCode = System.Net.HttpStatusCode.InternalServerError,
+                Content = fakeContent,
+            };
+            var expected = new HttpResponseMessage();
+
+            var handler1 = new PolicyHttpMessageHandler(policy1);
+            var handler2 = new PolicyHttpMessageHandler(policy2);
+            handler1.InnerHandler = handler2;
+            handler2.InnerHandler = new TestHandler()
+            {
+                OnSendAsync = (req, ct) =>
+                {
+                    if (callCount == 0)
+                    {
+                        callCount++;
+                        return Task.FromResult(firstResponse);
+                    }
+                    else if (callCount == 1)
+                    {
+                        callCount++;
+                        return Task.FromResult(expected);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException();
+                    }
+                }
+            };
+            var invoke = new HttpMessageInvoker(handler1);
+
+            // Act
+            var response = await invoke.SendAsync(new HttpRequestMessage(), CancellationToken.None);
+
+            // Assert
+            Assert.Equal(2, callCount);
+            Assert.Same(expected, response);
+            Assert.True(fakeContent.Disposed);
+        }
+
+        [Fact]
         public async Task SendAsync_DynamicPolicy_PolicySelectorReturnsNull_ThrowsException()
         {
             // Arrange
