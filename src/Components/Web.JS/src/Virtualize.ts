@@ -30,7 +30,7 @@ function init(dotNetHelper: any, spacerBefore: HTMLElement, spacerAfter: HTMLEle
   const scrollContainer = findClosestScrollContainer(spacerBefore);
   (scrollContainer || document.documentElement).style.overflowAnchor = 'none';
 
-  if (isContainerTableRalatedElement(scrollContainer)) {
+  if (isContainerTableRalatedElement(spacerAfter.parentElement)) {
     spacerBefore.style.display = 'table-row';
     spacerAfter.style.display = 'table-row';
     dotNetHelper.invokeMethodAsync('NotifySpecialScenario', ContainerKind.HTMLTable);
@@ -90,7 +90,7 @@ function init(dotNetHelper: any, spacerBefore: HTMLElement, spacerAfter: HTMLEle
   }
 
   function isContainerTableRalatedElement(container: HTMLElement | null): boolean {
-    return container !== null && (scrollContainer instanceof HTMLTableElement || scrollContainer instanceof HTMLTableSectionElement);
+    return container !== null && (container instanceof HTMLTableElement || container instanceof HTMLTableSectionElement);
   }
 }
 
