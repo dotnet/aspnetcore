@@ -454,7 +454,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             _state.CurrentConnectionStateUnsynchronized = startingConnectionState;
             // Tell the server we intend to ping.
             // Old clients never ping, and shouldn't be timed out, so ping to tell the server that we should be timed out if we stop.
-            // StartAsyncCore is invoked from StartAsyncInner or ReconnectAsync with the connection lock still acquired.
+            // StartAsyncCore is invoked and awaited by StartAsyncInner and ReconnectAsync with the connection lock still acquired.
             if (!(connection.Features.Get<IConnectionInherentKeepAliveFeature>()?.HasInherentKeepAlive ?? false))
             {
                 await SendHubMessage(startingConnectionState, PingMessage.Instance, cancellationToken);
