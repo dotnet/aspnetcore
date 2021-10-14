@@ -64,7 +64,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25542")]
         public async Task UseHttpsWithAsyncCallbackDoeNotFallBackToDefaultCert()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
