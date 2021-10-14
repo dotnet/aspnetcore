@@ -284,6 +284,18 @@
     {
         var inProcRuntime = ((IJSInProcessRuntime)JSRuntime);
 
+		try
+        {
+            // Fetch a non-serializable Window (https://developer.mozilla.org/en-US/docs/Web/API/Window)
+            // InvokeVoid shouldn't serialize return values, and thus there shouldn't be any exception thrown.
+            inProcRuntime.InvokeVoid("eval", "window");
+            ReturnValues["invokeVoidReturnsWithoutSerializingIJSInProcessRuntime"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["invokeVoidReturnsWithoutSerializingIJSInProcessRuntime"] = $"Failure: {ex.Message}";
+        }
+
         var jsInProcObjectReference = inProcRuntime.Invoke<IJSInProcessObjectReference>("returnJSObjectReference");
         ReturnValues["jsInProcessObjectReference.identity"] = jsInProcObjectReference.Invoke<string>("identity", "Invoked from JSInProcessObjectReference");
 

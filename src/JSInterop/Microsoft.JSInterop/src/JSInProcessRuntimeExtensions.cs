@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.JSInterop
 {
@@ -25,7 +26,7 @@ namespace Microsoft.JSInterop
                 throw new ArgumentNullException(nameof(jsRuntime));
             }
 
-            jsRuntime.Invoke<object>(identifier, args);
+            jsRuntime.Invoke<IJSVoidResult>(identifier, args);
         }
     }
 }
