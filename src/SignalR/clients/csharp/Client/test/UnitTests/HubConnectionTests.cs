@@ -822,7 +822,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
             public void WriteMessage(HubMessage message, IBufferWriter<byte> output)
             {
-                if (message is PingMessage) // TODO: only within StartAsync() do not throw for the intial ping
+                if (message is PingMessage)
                 {
                     // Allows HubConnection.StartAsync() to complete successfully
                     // when testing InvokeThrowsIfSerializingMessageFails and SendAsyncThrowsIfSerializingMessageFails
