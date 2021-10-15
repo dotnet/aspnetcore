@@ -173,6 +173,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/37081")]
         public async Task ShadowCopyE2EWorksWithOldFoldersPresent()
         {
             using var directory = TempDirectory.Create();
@@ -212,6 +213,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/36887")]
         public async Task ShadowCopyCleansUpOlderFolders()
         {
             using var directory = TempDirectory.Create();
