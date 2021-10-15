@@ -997,7 +997,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
 
         [ConditionalTheory]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27178")]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [InlineData("CheckLargeStdErrWrites")]
         [InlineData("CheckLargeStdOutWrites")]
@@ -1024,7 +1023,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalTheory]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27858")]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [InlineData("CheckLargeStdOutWrites")]
         [InlineData("CheckOversizedStdOutWrites")]
