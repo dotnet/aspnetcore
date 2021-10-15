@@ -431,7 +431,8 @@ namespace Microsoft.AspNetCore.Components.Forms
             Assert.Equal("invalid", component.CssClass);
             Assert.NotNull(component.AdditionalAttributes);
             Assert.Equal(1, component.AdditionalAttributes.Count);
-            Assert.True((bool)component.AdditionalAttributes["aria-invalid"]);
+            //Check for "true" see https://www.w3.org/TR/wai-aria-1.1/#aria-invalid
+            Assert.Equal("true", component.AdditionalAttributes["aria-invalid"]);
         }
 
         [Fact]
