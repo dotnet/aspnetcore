@@ -4,6 +4,12 @@ import { enableJSRootComponents, JSComponentParametersByIdentifier, JSComponentI
 
 const interopMethodsByRenderer = new Map<number, DotNet.DotNetObject>();
 
+let resolveRendererAttached : () => void;
+
+export const rendererAttached = new Promise<void>((resolve) => {
+  resolveRendererAttached = resolve;
+});
+
 export function attachWebRendererInterop(
   rendererId: number,
   interopMethods: DotNet.DotNetObject,
@@ -20,6 +26,8 @@ export function attachWebRendererInterop(
     const manager = getInteropMethods(rendererId);
     enableJSRootComponents(manager, jsComponentParameters, jsComponentInitializers);
   }
+
+  resolveRendererAttached();
 }
 
 export function dispatchEvent(browserRendererId: number, eventDescriptor: EventDescriptor, eventArgs: any) {

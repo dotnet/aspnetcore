@@ -1,4 +1,5 @@
 import { Blazor } from '../GlobalExports';
+import { rendererAttached } from "../Rendering/WebRendererInteropMethods";
 
 type BeforeBlazorStartedCallback = (...args: unknown[]) => Promise<void>;
 export type AfterBlazorStartedCallback = (blazor: typeof Blazor) => Promise<void>;
@@ -34,7 +35,8 @@ export class JSInitializer {
     }
   }
 
-  async invokeAfterStartedCallbacks(blazor: typeof Blazor) {
+  async invokeAfterStartedCallbacks(blazor: typeof Blazor): Promise<void> {
+    await rendererAttached;
     await Promise.all(this.afterStartedCallbacks.map(callback => callback(blazor)));
   }
 }
