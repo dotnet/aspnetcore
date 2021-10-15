@@ -1,19 +1,16 @@
 {
   "version" : 1,
   "defaultOnFailure": "fail",
-  "localRerunCount" : 20,
+  "localRerunCount" : 3,
   "retryOnRules": [
-    {"testName": {"contains": "FailsAlot"}},
-    {"testName": {"contains": "AppOfflineDroppedWhileSiteStarting_SiteShutsDown_InProcess()"}},
-    {"testName": {"wildcard": "Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests.StartupTests.*" }},
-    {"testAssembly": "BlazorTemplates.Tests"},
+    {"testName": {"contains": "AppOfflineDroppedWhileSiteStarting_SiteShutsDown_InProcess"}},
+    {"testName": {"contains": "CheckFrebDisconnect"}},
+    {"testName": {"contains": "CheckStdoutWithLargeWrites"}},
+    {"testName": {"contains": "ServerShutsDownWhenMainExitsStress" }},
     {"failureMessage": "network disconnected" }
   ],
   "failOnRules": [
   ],
   "quarantineRules": [
-    {"testName": "Microsoft.AspNetCore.Mvc.FunctionalTests.HtmlGenerationTest.CacheTagHelper_BubblesExpirationOfNestedTagHelpers"},
-    {"testName": "Microsoft.AspNetCore.Server.IIS.FunctionalTests.ShadowCopyTests.ShadowCopyE2EWorksWithOldFoldersPresent"},
-    {"testName": "Microsoft.AspNetCore.Server.IIS.FunctionalTests.ShadowCopyTests.ShadowCopyCleansUpOlderFolders"}
   ]
 }
