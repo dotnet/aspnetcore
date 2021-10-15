@@ -182,12 +182,7 @@ namespace Interop.FunctionalTests.Http3
             request.Version = HttpVersion.Version30;
             request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
-            var ex = await Assert.ThrowsAsync<HttpRequestException>(() => client.SendAsync(request, CancellationToken.None).DefaultTimeout());
-            // This poor error is likely a symptom of https://github.com/dotnet/runtime/issues/57246
-            // QuicListener returns the connection before (or in spite of) the cert validation failing.
-            // There's a race where the stream could be accepted before the connection is aborted.
-            var qex = Assert.IsType<QuicOperationAbortedException>(ex.InnerException);
-            Assert.Equal("Operation aborted.", qex.Message);
+            await Assert.ThrowsAnyAsync<Exception>(() => client.SendAsync(request, CancellationToken.None)).DefaultTimeout();
 
             await host.StopAsync().DefaultTimeout();
         }
