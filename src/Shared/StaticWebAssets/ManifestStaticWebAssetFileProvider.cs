@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets
             // The list of patterns is ordered by pattern depth, so we compute the string to check for patterns only
             // once per level. We don't aim to solve conflicts here where multiple files could match a given path,
             // we have a build check that takes care of that.
-            var currentDepth = 0;
+            var currentDepth = -1;
             var candidatePath = subpath;
 
             if (patterns != null)
