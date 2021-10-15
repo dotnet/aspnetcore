@@ -253,19 +253,20 @@
     async Task SetLargeDataSetLengthAsync(int length)
     {
         largeDataSetLength = length;
-        await removeManyVirtualize.RefreshDataAsync();
-        await tableSimpleLayoutVirtualize.RefreshDataAsync();
-        await tableComplexLayoutVirtualize.RefreshDataAsync();
-        await tableComplexLayoutWithTBodyAsContainerVirtualize.RefreshDataAsync();
-        await tableSimpleLayoutWithParentVirtualize.RefreshDataAsync();
-        await tableComplexLayoutWithParentVirtualize.RefreshDataAsync();
-        await displayTableSimpleLayoutVirtualize.RefreshDataAsync();
-        await displayTableComplexLayoutVirtualize.RefreshDataAsync();
+        await Task.WhenAll(
+            removeManyVirtualize.RefreshDataAsync(),
+            tableSimpleLayoutVirtualize.RefreshDataAsync(),
+            tableComplexLayoutVirtualize.RefreshDataAsync(),
+            tableComplexLayoutWithTBodyAsContainerVirtualize.RefreshDataAsync(),
+            tableSimpleLayoutWithParentVirtualize.RefreshDataAsync(),
+            tableComplexLayoutWithParentVirtualize.RefreshDataAsync(),
+            displayTableSimpleLayoutVirtualize.RefreshDataAsync(),
+            displayTableComplexLayoutVirtualize.RefreshDataAsync());
     }
 
     async ValueTask<ItemsProviderResult<Person>> GetLargeDataSetAsync(ItemsProviderRequest request)
     {
-        await Task.Delay(500);
+        await Task.Delay(200);
         largeDataSetLengthLastRendered = largeDataSetLength;
 
         // Behave like a .Skip(startIndex).Take(count), so that if you ask for data beyond the end of the
