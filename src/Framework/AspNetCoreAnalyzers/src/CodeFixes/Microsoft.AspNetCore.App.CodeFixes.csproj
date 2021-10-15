@@ -2,6 +2,12 @@
   <PropertyGroup>
     <Description>CSharp CodeFixes for ASP.NET Core.</Description>
     <IsShippingPackage>false</IsShippingPackage>
+    <!--
+      This project is fed into the targeting pack build. It needs to be built. One way to build it
+      is to mark it as an analyzers project, which it seems to be even though it doesn't end in
+      '.Analyzers' for the automatic detection.
+    -->
+    <IsAnalyzersProject>true</IsAnalyzersProject>
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
     <TargetFramework>netstandard2.0</TargetFramework>
     <IncludeBuildOutput>false</IncludeBuildOutput>
