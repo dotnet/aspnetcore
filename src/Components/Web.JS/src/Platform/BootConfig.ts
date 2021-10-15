@@ -21,6 +21,7 @@ export class BootConfigResult {
     const applicationEnvironment = environment || bootConfigResponse.headers.get('Blazor-Environment') || 'Production';
     const bootConfig: BootJsonData = await bootConfigResponse.json();
     bootConfig.modifiableAssemblies = bootConfigResponse.headers.get('DOTNET-MODIFIABLE-ASSEMBLIES');
+    bootConfig.aspnetCoreBrowserTools = bootConfigResponse.headers.get('ASPNETCORE-BROWSER-TOOLS');
 
     return new BootConfigResult(bootConfig, applicationEnvironment);
 
@@ -48,6 +49,7 @@ export interface BootJsonData {
 
   // These properties are tacked on, and not found in the boot.json file
   modifiableAssemblies: string | null;
+  aspnetCoreBrowserTools: string | null;
 }
 
 export type BootJsonDataExtension = { [extensionName: string]: ResourceList };
