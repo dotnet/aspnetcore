@@ -98,7 +98,7 @@ If you're reading this, you probably already have Git installed to support cloni
 
 #### [NodeJS](https://nodejs.org) on Windows
 
-Building the repo requires version 14.17.6 or newer of Node. You can find installation executables for Node at <https://nodejs.org>.
+Building the repo requires version 16.11.0 or newer of Node. You can find installation executables for Node at <https://nodejs.org>.
 
 #### [Yarn](https://yarnpkg.com/) on Windows
 
@@ -119,7 +119,7 @@ This repo contains some Java source code that depends on an install of the JDK v
 - OpenJDK <https://jdk.java.net/>
 - Oracle's JDK <https://www.oracle.com/technetwork/java/javase/downloads/index.html>
 
-Alternatively, you can run [eng/scripts/InstallJdk.ps1](/eng/scripts/InstallJdk.ps1) to install a version of the JDK that will only be used in this repo. 
+Alternatively, you can run [eng/scripts/InstallJdk.ps1](/eng/scripts/InstallJdk.ps1) to install a version of the JDK that will only be used in this repo.
 
 ```powershell
 ./eng/scripts/InstallJdk.ps1
