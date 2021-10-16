@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 #endif
+#if (WindowsAuth)
+using Microsoft.AspNetCore.Authentication.Negotiate;
+#endif
 #if (OrganizationalAuth)
 #if (MultiOrgAuth)
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -92,6 +95,17 @@ builder.Services.AddAuthorization(options =>
     options.FallbackPolicy = options.DefaultPolicy;
 });
 
+#elif (WindowsAuth)
+
+builder.Services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
+   .AddNegotiate();
+
+builder.Services.AddAuthorization(options =>
+{
+    // By default, all incoming requests will be authorized according to the default policy.
+    options.FallbackPolicy = options.DefaultPolicy;
+});
+
 #endif
 builder.Services.AddRazorPages();
 #if (OrganizationalAuth || IndividualB2CAuth)
@@ -134,7 +148,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-#if (OrganizationalAuth || IndividualAuth)
+#if (OrganizationalAuth || IndividualAuth || WindowsAuth)
 app.UseAuthentication();
 app.UseAuthorization();
 
