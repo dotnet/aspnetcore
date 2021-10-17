@@ -141,7 +141,10 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                     await disposable.DisposeAsync().ConfigureAwait(false);
                     return;
                 }
-                Dispose();
+                else
+                {
+                    _host.Dispose();
+                }
             }
 
             public async Task StartAsync(CancellationToken cancellationToken = default)
