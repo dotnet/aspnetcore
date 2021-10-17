@@ -24,6 +24,8 @@ namespace Microsoft.AspNetCore.Builder
         private readonly IHost _host;
         private readonly List<EndpointDataSource> _dataSources = new();
 
+        private bool _disposed;
+
         internal WebApplication(IHost host)
         {
             _host = host;
@@ -162,12 +164,26 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Disposes the application.
         /// </summary>
-        void IDisposable.Dispose() => _host.Dispose();
+        void IDisposable.Dispose()
+        {
+            if (!_disposed)
+            {
+                _host.Dispose();
+                _disposed = true;
+            }
+        }
 
         /// <summary>
         /// Disposes the application.
         /// </summary>
-        public ValueTask DisposeAsync() => ((IAsyncDisposable)_host).DisposeAsync();
+        public async ValueTask DisposeAsync()
+        {
+            if (!_disposed)
+            {
+                await ((IAsyncDisposable)_host).DisposeAsync();
+                _disposed = true;
+            }
+        }
 
         internal RequestDelegate BuildRequestDelegate() => ApplicationBuilder.Build();
         RequestDelegate IApplicationBuilder.Build() => BuildRequestDelegate();

@@ -1,10 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -124,6 +120,8 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             private readonly IHost _host;
             private readonly TaskCompletionSource _hostStartedTcs;
 
+            private bool _disposed;
+
             public DeferredHost(IHost host, TaskCompletionSource hostStartedTcs)
             {
                 _host = host;
@@ -132,19 +130,24 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
             public IServiceProvider Services => _host.Services;
 
-            public void Dispose() => _host.Dispose();
+            public void Dispose()
+            {
+                if (!_disposed)
+                {
+                    _host.Dispose();
+                    _disposed = true;
+                }
+            }
 
             public async ValueTask DisposeAsync()
             {
                 if (_host is IAsyncDisposable disposable)
                 {
                     await disposable.DisposeAsync().ConfigureAwait(false);
+                    _disposed = true;
                     return;
                 }
-                else
-                {
-                    _host.Dispose();
-                }
+                Dispose();
             }
 
             public async Task StartAsync(CancellationToken cancellationToken = default)
