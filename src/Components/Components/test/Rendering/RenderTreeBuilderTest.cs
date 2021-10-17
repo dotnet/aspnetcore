@@ -88,6 +88,28 @@ namespace Microsoft.AspNetCore.Components.Rendering
         }
 
         [Fact]
+        public void CanAddNullableMarkupViaMarkupString()
+        {
+            // This represents putting @someMarkupString into the component,
+            // as opposed to calling builder.AddMarkupContent directly.
+
+            // Arrange
+            var builder = new RenderTreeBuilder();
+            MarkupString? nullableEmptyString = new MarkupString(null);
+            MarkupString? nullableString = new MarkupString("Test nullable Markup");
+
+            // Act - can use either constructor or cast
+            builder.AddContent(0, nullableString);
+            builder.AddContent(1, nullableEmptyString);
+
+            // Assert
+            var frames = builder.GetFrames();
+            Assert.Collection(frames.AsEnumerable(),
+                frame => AssertFrame.Markup(frame, "Test nullable Markup"),
+                frame => AssertFrame.Markup(frame, string.Empty));
+        }
+
+        [Fact]
         public void CanAddNullMarkup()
         {
             // Arrange
