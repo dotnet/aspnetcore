@@ -50,5 +50,8 @@
   "devDependencies": {},
   "resolutions": {
     "url-parse": ">=1.5.0"
+  },
+  "engines": {
+    "node": "16.x"
   }
 }

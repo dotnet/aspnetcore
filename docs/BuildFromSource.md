@@ -11,11 +11,12 @@ To get started, you'll need to have a fork of the repo cloned locally. This work
 git clone --recursive https://github.com/YOUR_USERNAME/aspnetcore
 ```
 
-3. If you've already cloned the repo without passing the `--recursive` flag, you can fetch submodule sources at any time using:
-
-```
-git submodule update --init --recursive
-```
+> :bulb: If you've already cloned the repo without passing the `--recursive` flag, you can fetch submodule sources at any time using:
+>
+> ```
+> git submodule update --init --recursive
+> ```
+>
 
 The experience for building the repo is slightly different based on what environment you are looking to develop in. Select one of the links below to navigate to the instructions for your environment of choice.
 
@@ -62,8 +63,10 @@ Can't find a solution that has the projects you care about? Feel free to make a 
 
 ## Visual Studio Code on Windows, Linux, Mac
 
+> :bulb: The instructions below use Visual Studio code as the editor of choice but the same instructions can be used for any other text editor by replacing the `code` command with an invocation to your editor of choice.
+
 1. In order to use Visual Studio Code for development on this repo, you'll need to have [VS Code](https://code.visualstudio.com/) installed and [the `code` command installed](https://code.visualstudio.com/docs/setup/mac#_launching-from-the-command-line) on your machine.
-2. The repo constains some JavaScript dependencies, so you will need to install [Node](https://nodejs.org/en/) and [yarn](https://yarnpkg.com/) on your machine.
+2. The repo contains some JavaScript dependencies, so you will need to install [Node](https://nodejs.org/en/) and [yarn](https://yarnpkg.com/) on your machine.
 3. Prior to opening the code in Visual Studio code, you'll need to run the `restore` script locally to install the required dotnet dependencies and setup the repo. The `restore` script is located in the root of the repo.
 
 ```bash

@@ -12,5 +12,8 @@
   "license": "MIT",
   "dependencies": {
     "selenium-standalone": "^7.1.0"
+  },
+  "engines": {
+    "node": "16.x"
   }
 }

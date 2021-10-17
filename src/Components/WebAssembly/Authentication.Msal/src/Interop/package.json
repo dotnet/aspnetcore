@@ -27,5 +27,8 @@
   },
   "dependencies": {
     "@azure/msal-browser": "^2.16.1"
+  },
+  "engines": {
+    "node": "16.x"
   }
 }

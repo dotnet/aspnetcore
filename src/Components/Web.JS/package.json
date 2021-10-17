@@ -43,5 +43,8 @@
   "resolutions": {
     "**/set-value": "^3.0.2",
     "url-parse": ">=1.5.0"
+  },
+  "engines": {
+    "node": "16.x"
   }
 }
