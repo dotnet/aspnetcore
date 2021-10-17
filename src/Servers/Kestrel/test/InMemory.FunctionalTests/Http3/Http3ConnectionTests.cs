@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
@@ -10,10 +11,12 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 using Http3SettingType = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.Http3SettingType;
@@ -393,6 +396,48 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
         }
 
+        [Fact]
+        public async Task CustomResponseTrailersCollection_MultipleStreams_Reset()
+        {
+            var requestHeaders = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/hello"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+                new KeyValuePair<string, string>(HeaderNames.ContentType, "application/json")
+            };
+
+            IHeaderDictionary trailersFirst = null;
+            IHeaderDictionary trailersSecond = null;
+            var requestCount = 0;
+            await Http3Api.InitializeConnectionAsync(async context =>
+            {
+                requestCount++;
+
+                var trailersFeature = context.Features.Get<IHttpResponseTrailersFeature>();
+                if (requestCount == 1)
+                {
+                    trailersFirst = new ResponseTrailersWrapper(trailersFeature.Trailers);
+                    trailersFeature.Trailers = trailersFirst;
+                }
+                else
+                {
+                    trailersSecond = trailersFeature.Trailers;
+                }
+                await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes($"Hello world").AsMemory());
+            });
+
+            for (int i = 0; i < 2; i++)
+            {
+                var streamContext = await MakeRequestAsync(i, requestHeaders, sendData: false, waitForServerDispose: true);
+            }
+
+            Assert.NotNull(trailersFirst);
+            Assert.NotNull(trailersSecond);
+            Assert.NotSame(trailersFirst, trailersSecond);
+        }
+
         private async Task<ConnectionContext> MakeRequestAsync(int index, KeyValuePair<string, string>[] headers, bool sendData, bool waitForServerDispose)
         {
             var requestStream = await Http3Api.CreateRequestStream();
@@ -431,5 +476,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             return streamContext;
         }
+
+        private class ResponseTrailersWrapper : IHeaderDictionary
+        {
+            readonly IHeaderDictionary _innerHeaders;
+
+            public ResponseTrailersWrapper(IHeaderDictionary headers)
+            {
+                _innerHeaders = headers;
+            }
+
+            public StringValues this[string key] { get => _innerHeaders[key]; set => _innerHeaders[key] = value; }
+            public long? ContentLength { get => _innerHeaders.ContentLength; set => _innerHeaders.ContentLength = value; }
+            public ICollection<string> Keys => _innerHeaders.Keys;
+            public ICollection<StringValues> Values => _innerHeaders.Values;
+            public int Count => _innerHeaders.Count;
+            public bool IsReadOnly => _innerHeaders.IsReadOnly;
+            public void Add(string key, StringValues value) => _innerHeaders.Add(key, value);
+            public void Add(KeyValuePair<string, StringValues> item) => _innerHeaders.Add(item);
+            public void Clear() => _innerHeaders.Clear();
+            public bool Contains(KeyValuePair<string, StringValues> item) => _innerHeaders.Contains(item);
+            public bool ContainsKey(string key) => _innerHeaders.ContainsKey(key);
+            public void CopyTo(KeyValuePair<string, StringValues>[] array, int arrayIndex) => _innerHeaders.CopyTo(array, arrayIndex);
+            public IEnumerator<KeyValuePair<string, StringValues>> GetEnumerator() => _innerHeaders.GetEnumerator();
+            public bool Remove(string key) => _innerHeaders.Remove(key);
+            public bool Remove(KeyValuePair<string, StringValues> item) => _innerHeaders.Remove(item);
+            public bool TryGetValue(string key, out StringValues value) => _innerHeaders.TryGetValue(key, out value);
+            IEnumerator IEnumerable.GetEnumerator() => _innerHeaders.GetEnumerator();
+        }
+
+       
     }
 }

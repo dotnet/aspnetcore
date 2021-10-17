@@ -731,6 +731,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _currentIHttpMinRequestBodyDataRateFeature = this;
             _currentIHttpResponseTrailersFeature = this;
             _currentIHttpResetFeature = this;
+            _userTrailers = null;
         }
 
         protected override void ApplicationAbort() => ApplicationAbort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication), Http3ErrorCode.InternalError);
