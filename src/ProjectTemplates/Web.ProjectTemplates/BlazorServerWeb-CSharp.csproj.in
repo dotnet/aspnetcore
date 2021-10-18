@@ -35,7 +35,7 @@
   <!--#endif -->
   <!--#if (WindowsAuth) -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Negotiate" Version="7.0.0-dev" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Negotiate" Version="${MicrosoftAspNetCoreAuthenticationNegotiateVersion}" />
   </ItemGroup>
 
   <!--#endif -->
