@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public string GetMessageFormat()
         {
-            var message = _messageFormat.Invoke();
+            var message = _messageFormat();
             if (string.IsNullOrEmpty(message))
             {
                 return Resources.FormatRazorDiagnosticDescriptor_DefaultError(Id);
