@@ -13,4 +13,3 @@ Currently we leverage [Selenium](https://www.selenium.dev/selenium/docs/api/dotn
 ### Adding a new E2E Test
 1. Update or create a new component in `testassets/BasicTestApp`
 2. Update or add a new test in `E2ETest/Tests`
-3. 
