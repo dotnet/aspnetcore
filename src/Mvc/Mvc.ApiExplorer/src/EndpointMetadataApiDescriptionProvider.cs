@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             return new ApiParameterRouteInfo()
             {
-                Constraints = constraints.AsEnumerable(),
+                Constraints = constraints.AsReadOnly(),
                 DefaultValue = parameter.DefaultValue,
                 IsOptional = isOptional
             };
