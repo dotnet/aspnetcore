@@ -96,7 +96,6 @@ builder.Services.AddAuthorization(options =>
 });
 
 #elif (WindowsAuth)
-
 builder.Services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
    .AddNegotiate();
 
@@ -153,7 +152,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 #endif
-
 #if (OrganizationalAuth || IndividualAuth)
 app.MapControllers();
 #endif
