@@ -30,21 +30,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         // Executes before MVC's DefaultApiDescriptionProvider and GrpcHttpApiDescriptionProvider for no particular reason.
         public int Order => -1100;
 
-        public EndpointMetadataApiDescriptionProvider(EndpointDataSource endpointDataSource, IHostEnvironment environment, ParameterPolicyFactory parameterPolicyFactory)
-            :this(endpointDataSource, environment, null, parameterPolicyFactory)
-        {
-        }
-
-        public EndpointMetadataApiDescriptionProvider(EndpointDataSource endpointDataSource, IHostEnvironment environment, IServiceProviderIsService serviceProviderIsService)
-            :this(endpointDataSource, environment, serviceProviderIsService, null)
-        {
-        }
-
         public EndpointMetadataApiDescriptionProvider(
             EndpointDataSource endpointDataSource,
             IHostEnvironment environment,
-            IServiceProviderIsService? serviceProviderIsService,
-            ParameterPolicyFactory? parameterPolicyFactory)
+            ParameterPolicyFactory parameterPolicyFactory,
+            IServiceProviderIsService? serviceProviderIsService)
         {
             _endpointDataSource = endpointDataSource;
             _environment = environment;
@@ -207,22 +197,14 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             var constraints = new List<IRouteConstraint>();
 
-            if (pattern.ParameterPolicies.TryGetValue(parameter.Name, out var parameterPolicies))
+            if (pattern.ParameterPolicies.TryGetValue(parameter.Name, out var parameterPolicyReferences))
             {
-                foreach (var parameterPolicy in parameterPolicies)
+                foreach (var parameterPolicyReference in parameterPolicyReferences)
                 {
-                    if (parameterPolicy.ParameterPolicy is IRouteConstraint constraint)
+                    var policy = _parameterPolicyFactory?.Create(parameterPart, parameterPolicyReference);
+                    if (policy is IRouteConstraint generatedConstraint)
                     {
-                        constraints.Add(constraint);
-                    }
-
-                    if (parameterPolicy.Content is string constraintText)
-                    {
-                        var policy = _parameterPolicyFactory?.Create(parameterPart, constraintText);
-                        if (policy is IRouteConstraint generatedConstraint)
-                        {
-                            constraints.Add(generatedConstraint);
-                        }
+                        constraints.Add(generatedConstraint);
                     }
                 }
             }
