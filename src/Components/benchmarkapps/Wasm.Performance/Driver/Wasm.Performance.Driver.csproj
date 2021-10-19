@@ -9,6 +9,7 @@
     <SignAssembly>false</SignAssembly>
     <IsTestAssetProject>true</IsTestAssetProject>
     <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
+    <Nullable>annotations</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
