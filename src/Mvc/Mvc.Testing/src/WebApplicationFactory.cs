@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                 // assembly name.
                 deferredHostBuilder.ConfigureHostConfiguration(config =>
                 {
-                    config.AddInMemoryCollection(new Dictionary<string, string>
+                    config.AddInMemoryCollection(new Dictionary<string, string?>
                     {
                         { HostDefaults.ApplicationKey, typeof(TEntryPoint).Assembly.GetName()?.Name ?? string.Empty }
                     });

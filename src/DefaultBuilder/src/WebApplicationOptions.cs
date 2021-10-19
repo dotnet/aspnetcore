@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Builder
 
         internal void ApplyHostConfiguration(IConfigurationBuilder builder)
         {
-            Dictionary<string, string>? config = null;
+            Dictionary<string, string?>? config = null;
 
             if (EnvironmentName is not null)
             {
