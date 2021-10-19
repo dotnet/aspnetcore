@@ -123,7 +123,16 @@ namespace Templates.Test.Helpers
 
                 using var execution = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
                 await execution.Exited;
-                return new ProcessResult(execution);
+                
+                var result = new ProcessResult(execution);
+                
+                // Because dotnet new automatically restores but silently ignores restore errors, need to handle restore errors explicitly
+                if (execution.Output.Contains("Restore failed.") || execution.Error.Contains("Restore failed.") 
+                {
+                    result.ExitCode = -1;
+                }
+                
+                return result;
             }
             finally
             {
