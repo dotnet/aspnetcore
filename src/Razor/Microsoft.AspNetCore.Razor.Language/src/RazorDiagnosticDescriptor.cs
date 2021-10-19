@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -35,7 +35,16 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public RazorDiagnosticSeverity Severity { get; }
 
-        public string GetMessageFormat() => _messageFormat();
+        public string GetMessageFormat()
+        {
+            var message = _messageFormat();
+            if (string.IsNullOrEmpty(message))
+            {
+                return Resources.FormatRazorDiagnosticDescriptor_DefaultError(Id);
+            }
+
+            return message;
+        }
 
         public override bool Equals(object obj)
         {

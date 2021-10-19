@@ -574,4 +574,7 @@
   <data name="Component_EditorRequiredParameterNotSpecified" xml:space="preserve">
     <value>Component '{0}' expects a value for the parameter '{1}', but a value may not have been provided.</value>
   </data>
+  <data name="RazorDiagnosticDescriptor_DefaultError" xml:space="preserve">
+    <value>Encountered diagnostic '{0}'.</value>
+  </data>
 </root>
