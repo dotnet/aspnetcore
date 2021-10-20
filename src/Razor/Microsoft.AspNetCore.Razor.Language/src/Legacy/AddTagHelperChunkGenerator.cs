@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
@@ -49,14 +50,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            var combiner = new HashCode();
+            var combiner = HashCodeCombiner.Start();
             combiner.Add(base.GetHashCode());
-            combiner.Add(LookupText ?? string.Empty, StringComparer.Ordinal);
-            combiner.Add(DirectiveText ?? string.Empty, StringComparer.Ordinal);
-            combiner.Add(TypePattern ?? string.Empty, StringComparer.Ordinal);
-            combiner.Add(AssemblyName ?? string.Empty, StringComparer.Ordinal);
+            combiner.Add(LookupText, StringComparer.Ordinal);
+            combiner.Add(DirectiveText, StringComparer.Ordinal);
+            combiner.Add(TypePattern, StringComparer.Ordinal);
+            combiner.Add(AssemblyName, StringComparer.Ordinal);
 
-            return combiner.ToHashCode();
+            return combiner.CombinedHash;
         }
 
         public override string ToString()

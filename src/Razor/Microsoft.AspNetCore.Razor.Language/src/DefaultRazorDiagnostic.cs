@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -68,7 +69,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override int GetHashCode()
         {
-            var hash = new HashCode();
+            var hash = new HashCodeCombiner();
             hash.Add(Descriptor.GetHashCode());
             hash.Add(Span.GetHashCode());
 
@@ -77,7 +78,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 hash.Add(Args[i]);
             }
 
-            return hash.ToHashCode();
+            return hash;
         }
     }
 }

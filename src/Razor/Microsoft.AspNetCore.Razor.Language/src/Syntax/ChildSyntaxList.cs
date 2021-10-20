@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language.Syntax
 {
@@ -570,7 +571,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
                     return 0;
                 }
 
-                return HashCode.Combine(_node.GetHashCode(), _count);
+                var hash = HashCodeCombiner.Start();
+                hash.Add(_node.GetHashCode());
+                hash.Add(_count);
+                return hash.CombinedHash;
             }
 
             public override bool Equals(object obj)
