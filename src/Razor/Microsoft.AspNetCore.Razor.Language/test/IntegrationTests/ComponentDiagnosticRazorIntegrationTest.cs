@@ -62,7 +62,7 @@ Goodbye");
                 item =>
                 {
                     Assert.Equal("RZ9992", item.Id);
-                    Assert.Equal("Script tags should not be placed inside components because they cannot be updated dynamically. To fix this, move the script tag to the 'index.html' file or another static location. For more information see https://go.microsoft.com/fwlink/?linkid=872131", item.GetMessage(CultureInfo.CurrentCulture));
+                    Assert.Equal("Script tags should not be placed inside components because they cannot be updated dynamically. To fix this, move the script tag to the 'index.html' file or another static location. For more information, see https://aka.ms/AAe3qu3", item.GetMessage(CultureInfo.CurrentCulture));
                     Assert.Equal(2, item.Span.LineIndex);
                     Assert.Equal(4, item.Span.CharacterIndex);
                 });

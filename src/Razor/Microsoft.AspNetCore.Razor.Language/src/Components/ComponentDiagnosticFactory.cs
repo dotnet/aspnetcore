@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         public static readonly RazorDiagnosticDescriptor DisallowedScriptTag = new RazorDiagnosticDescriptor(
             $"{DiagnosticPrefix}9992",
-            () => "Script tags should not be placed inside components because they cannot be updated dynamically. To fix this, move the script tag to the 'index.html' file or another static location. For more information see https://go.microsoft.com/fwlink/?linkid=872131",
+            () => "Script tags should not be placed inside components because they cannot be updated dynamically. To fix this, move the script tag to the 'index.html' file or another static location. For more information, see https://aka.ms/AAe3qu3",
             RazorDiagnosticSeverity.Error);
 
         // Reserved: BL9993 Component parameters should not be public
