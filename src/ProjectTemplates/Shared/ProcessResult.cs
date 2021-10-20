@@ -17,7 +17,7 @@ namespace Templates.Test.Helpers
 
         public string Process { get; }
 
-        public int ExitCode { get; }
+        public int ExitCode { get; set; }
 
         public string Error { get; }
 
