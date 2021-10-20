@@ -52,7 +52,7 @@ namespace Templates.Test
                 project.TargetFramework = targetFramework;
             }
 
-            var createResult = await project.RunDotNetNewAsync(ProjectType, auth: auth, args: args);
+            var createResult = await project.RunDotNetNewAsync(ProjectType, auth: auth, args: args, errorOnRestoreError: false);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
 
             if (!onlyCreate)
