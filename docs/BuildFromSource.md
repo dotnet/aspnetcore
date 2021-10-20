@@ -21,8 +21,8 @@ git clone --recursive https://github.com/YOUR_USERNAME/aspnetcore
 The experience for building the repo is slightly different based on what environment you are looking to develop in. Select one of the links below to navigate to the instructions for your environment of choice.
 
 * [Visual Studio on Windows](#visual-studio-in-windows)
-* [Visual Studio Code on Windows, Linux, Mac](visual-studio-code-on-windows-linux-mac)
-* [Codespaces on GitHub](codespaces-on-github)
+* [Visual Studio Code on Windows, Linux, Mac](#visual-studio-code-on-windows-linux-mac)
+* [Codespaces on GitHub](#codespaces-on-github)
 
 ## Visual Studio on Windows
 
