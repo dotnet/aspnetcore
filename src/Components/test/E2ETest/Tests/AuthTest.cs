@@ -123,7 +123,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/33657")]
         public void AuthorizeViewCases_RequirePolicy_Authorized()
         {
             SignInAs("Bert", null);
