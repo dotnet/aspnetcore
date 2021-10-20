@@ -904,7 +904,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var unnamedParameter = Expression.Parameter(typeof(int));
             var lambda = Expression.Lambda(Expression.Block(), unnamedParameter);
             var ex = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(lambda.Compile()));
-            Assert.Equal("A parameter does not have a name! Was it generated? All parameters must be named.", ex.Message);
+            Assert.Equal("Encountered a parameter of type 'System.Runtime.CompilerServices.Closure' without a name. Parameters must have a name.", ex.Message);
         }
 
         [Fact]
