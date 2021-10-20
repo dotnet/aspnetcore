@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Http
         {
             if (parameter.Name is null)
             {
-                throw new InvalidOperationException("A parameter does not have a name! Was it generated? All parameters must be named.");
+                throw new InvalidOperationException($"Encountered a parameter of type '{parameter.ParameterType}' without a name. Parameters must have a name.");
             }
 
             var parameterCustomAttributes = parameter.GetCustomAttributes();

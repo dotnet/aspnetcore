@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         private readonly IHostEnvironment _environment;
         private readonly IServiceProviderIsService? _serviceProviderIsService;
         private readonly ParameterBindingMethodCache ParameterBindingMethodCache = new();
-        private readonly ParameterPolicyFactory? _parameterPolicyFactory;
+        private readonly ParameterPolicyFactory _parameterPolicyFactory;
 
         // Executes before MVC's DefaultApiDescriptionProvider and GrpcHttpApiDescriptionProvider for no particular reason.
         public int Order => -1100;
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 foreach (var parameterPolicyReference in parameterPolicyReferences)
                 {
-                    var policy = _parameterPolicyFactory?.Create(parameterPart, parameterPolicyReference);
+                    var policy = _parameterPolicyFactory.Create(parameterPart, parameterPolicyReference);
                     if (policy is IRouteConstraint generatedConstraint)
                     {
                         constraints.Add(generatedConstraint);
