@@ -565,6 +565,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [Theory]
         [MemberData(nameof(ConnectionMiddlewareDataName))]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/37750")]
         public async Task ConnectionClosedTokenFiresOnServerFIN(string listenOptionsName)
         {
             var testContext = new TestServiceContext(LoggerFactory);
