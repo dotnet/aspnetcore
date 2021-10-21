@@ -54,6 +54,6 @@ namespace Microsoft.AspNetCore.Testing
         /// <summary>
         /// 2022, 20348
         /// </summary>
-        public const string Win10_2022 = "10.0.20348";
+        public const string Win_Server_2022 = "10.0.20348";
     }
 }
