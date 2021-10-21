@@ -991,7 +991,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             private static MethodInfo MyActionMethodInfo
                 => typeof(ParameterWithValidateNever).GetMethod(nameof(MyAction));
 
-            public static ParameterInfo NameParamterInfo
+            public static ParameterInfo NameParameterInfo
                 => MyActionMethodInfo.GetParameters()[0];
 
             public static ParameterInfo ValidateNeverParameterInfo
