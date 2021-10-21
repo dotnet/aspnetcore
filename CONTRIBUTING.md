@@ -60,7 +60,7 @@ If there is some other area not included here where you want to contribute to, f
 Before submitting a pull request, make sure that it checks the following requirements:
 
 * You find an existing issue with the "help-wanted" label or discuss with the team to agree on adding a new issue with that label
-* You post a high-level description of how it will be implemented and receive a positive acknowledgment from the team before getting too committed to the approach or investing too much effort in implementing it
+* You post a high-level description of how it will be implemented and receive a positive acknowledgement from the team before getting too committed to the approach or investing too much effort in implementing it.
 * You add test coverage following existing patterns within the codebase
 * Your code matches the existing syntax conventions within the codebase
 * Your PR is small, focused, and avoids making unrelated changes
