@@ -29,7 +29,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/33204")]
     public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
     {
         private const int MaxRetries = 10;
@@ -104,7 +103,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [ConditionalTheory]
         [MemberData(nameof(IPEndPointRegistrationDataDynamicPort))]
         [IPv6SupportedCondition]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/26626")]
         public async Task RegisterIPEndPoint_DynamicPort_Success(IPEndPoint endPoint, string testUrl)
         {
             await RegisterIPEndPoint_Success(endPoint, testUrl);
@@ -113,7 +111,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [ConditionalTheory]
         [MemberData(nameof(IPEndPointRegistrationDataPort443))]
         [IPv6SupportedCondition]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27401")]
         public async Task RegisterIPEndPoint_Port443_Success(IPEndPoint endpoint, string testUrl)
         {
             if (!CanBindToEndpoint(endpoint.Address, 443))
@@ -127,7 +124,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [ConditionalTheory]
         [MemberData(nameof(AddressRegistrationDataIPv6))]
         [IPv6SupportedCondition]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25403")]
         public async Task RegisterAddresses_IPv6_Success(string addressInput, string[] testUrls)
         {
             await RegisterAddresses_Success(addressInput, testUrls);
@@ -136,7 +132,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [ConditionalTheory]
         [MemberData(nameof(AddressRegistrationDataIPv6Port5000And5001Default))]
         [IPv6SupportedCondition]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27401")]
         public async Task RegisterAddresses_IPv6Port5000And5001Default_Success(string addressInput, string[] testUrls)
         {
             if ((!CanBindToEndpoint(IPAddress.Loopback, 5000) || !CanBindToEndpoint(IPAddress.IPv6Loopback, 5000)) &&
@@ -151,7 +146,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [ConditionalTheory]
         [MemberData(nameof(AddressRegistrationDataIPv6Port80))]
         [IPv6SupportedCondition]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27401")]
         public async Task RegisterAddresses_IPv6Port80_Success(string addressInput, string[] testUrls)
         {
             if (!CanBindToEndpoint(IPAddress.Loopback, 80) || !CanBindToEndpoint(IPAddress.IPv6Loopback, 80))
@@ -163,7 +157,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [ConditionalTheory]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27401")]
         [MemberData(nameof(AddressRegistrationDataIPv6ScopeId))]
         [IPv6SupportedCondition]
         [IPv6ScopeIdPresentCondition]
@@ -743,7 +736,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/33185")]
         public void ThrowsWhenBindingLocalhostToIPv4AddressInUse()
         {
             ThrowsWhenBindingLocalhostToAddressInUse(AddressFamily.InterNetwork);
