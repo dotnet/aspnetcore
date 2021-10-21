@@ -256,7 +256,7 @@
     <PollyExtensionsHttpVersion>3.0.0</PollyExtensionsHttpVersion>
     <PollyVersion>7.2.2</PollyVersion>
     <SeleniumSupportVersion>4.0.0</SeleniumSupportVersion>
-    <SeleniumWebDriverChromeDriverVersion>95.0.4638.1700-beta</SeleniumWebDriverChromeDriverVersion>
+    <SeleniumWebDriverChromeDriverVersion>95.0.4638.1700</SeleniumWebDriverChromeDriverVersion>
     <SeleniumWebDriverVersion>4.0.0</SeleniumWebDriverVersion>
     <SerilogExtensionsLoggingVersion>1.4.0</SerilogExtensionsLoggingVersion>
     <SerilogSinksFileVersion>4.0.0</SerilogSinksFileVersion>
