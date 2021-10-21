@@ -29,8 +29,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
         [OSSkipCondition(OperatingSystems.Linux, SkipReason = "TLS 1.1 ciphers are now disabled by default: https://github.com/dotnet/docs/issues/20842")]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10,
             SkipReason = "Missing Windows ALPN support: https://en.wikipedia.org/wiki/Application-Layer_Protocol_Negotiation#Support or incompatible ciphers on Windows 8.1")]
-        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_2022,
-            SkipReason = "Windows Server 2022 does not enable TLS 1.1: https://github.com/dotnet/aspnetcore/issues/37761")]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2,
+            SkipReason = "Windows versions newer than 20H2 do not enable TLS 1.1: https://github.com/dotnet/aspnetcore/issues/37761")]
         public async Task TlsHandshakeRejectsTlsLessThan12()
         {
             await using (var server = new TestServer(context =>
