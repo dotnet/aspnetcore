@@ -66,6 +66,7 @@ namespace Templates.Test.Helpers
             string language = null,
             bool useLocalDB = false,
             bool noHttps = false,
+            bool errorOnRestoreError = true,
             string[] args = null,
             // Used to set special options in MSBuild
             IDictionary<string, string> environmentVariables = null)
@@ -127,7 +128,7 @@ namespace Templates.Test.Helpers
                 var result = new ProcessResult(execution);
                 
                 // Because dotnet new automatically restores but silently ignores restore errors, need to handle restore errors explicitly
-                if (execution.Output.Contains("Restore failed.") || execution.Error.Contains("Restore failed."))
+                if (errorOnRestoreError && (execution.Output.Contains("Restore failed.") || execution.Error.Contains("Restore failed.")))
                 {
                     result.ExitCode = -1;
                 }
