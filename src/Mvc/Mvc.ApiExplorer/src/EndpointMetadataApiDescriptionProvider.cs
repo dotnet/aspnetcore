@@ -25,23 +25,21 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         private readonly IHostEnvironment _environment;
         private readonly IServiceProviderIsService? _serviceProviderIsService;
         private readonly ParameterBindingMethodCache ParameterBindingMethodCache = new();
+        private readonly ParameterPolicyFactory _parameterPolicyFactory;
 
         // Executes before MVC's DefaultApiDescriptionProvider and GrpcHttpApiDescriptionProvider for no particular reason.
         public int Order => -1100;
 
-        public EndpointMetadataApiDescriptionProvider(EndpointDataSource endpointDataSource, IHostEnvironment environment)
-            : this(endpointDataSource, environment, null)
-        {
-        }
-
         public EndpointMetadataApiDescriptionProvider(
             EndpointDataSource endpointDataSource,
             IHostEnvironment environment,
+            ParameterPolicyFactory parameterPolicyFactory,
             IServiceProviderIsService? serviceProviderIsService)
         {
             _endpointDataSource = endpointDataSource;
             _environment = environment;
             _serviceProviderIsService = serviceProviderIsService;
+            _parameterPolicyFactory = parameterPolicyFactory;
         }
 
         public void OnProvidersExecuting(ApiDescriptionProviderContext context)
@@ -161,6 +159,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             var nullability = nullabilityContext.Create(parameter);
             var isOptional = parameter.HasDefaultValue || nullability.ReadState != NullabilityState.NotNull || allowEmpty;
             var parameterDescriptor = CreateParameterDescriptor(parameter);
+            var routeInfo = CreateParameterRouteInfo(pattern, parameter, isOptional);
 
             return new ApiParameterDescription
             {
@@ -170,7 +169,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 DefaultValue = parameter.DefaultValue,
                 Type = parameter.ParameterType,
                 IsRequired = !isOptional,
-                ParameterDescriptor = parameterDescriptor
+                ParameterDescriptor = parameterDescriptor,
+                RouteInfo = routeInfo
             };
         }
 
@@ -181,6 +181,41 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 ParameterInfo = parameter,
                 ParameterType = parameter.ParameterType,
             };
+
+        private ApiParameterRouteInfo? CreateParameterRouteInfo(RoutePattern pattern, ParameterInfo parameter, bool isOptional)
+        {
+            if (parameter.Name is null)
+            {
+                throw new InvalidOperationException($"Encountered a parameter of type '{parameter.ParameterType}' without a name. Parameters must have a name.");
+            }
+
+            // Only produce a `RouteInfo` property for parameters that are defined in the route template
+            if (pattern.GetParameter(parameter.Name) is not RoutePatternParameterPart parameterPart)
+            {
+                return null;
+            }
+
+            var constraints = new List<IRouteConstraint>();
+
+            if (pattern.ParameterPolicies.TryGetValue(parameter.Name, out var parameterPolicyReferences))
+            {
+                foreach (var parameterPolicyReference in parameterPolicyReferences)
+                {
+                    var policy = _parameterPolicyFactory.Create(parameterPart, parameterPolicyReference);
+                    if (policy is IRouteConstraint generatedConstraint)
+                    {
+                        constraints.Add(generatedConstraint);
+                    }
+                }
+            }
+
+            return new ApiParameterRouteInfo()
+            {
+                Constraints = constraints.AsReadOnly(),
+                DefaultValue = parameter.DefaultValue,
+                IsOptional = isOptional
+            };
+        }
 
         // TODO: Share more of this logic with RequestDelegateFactory.CreateArgument(...) using RequestDelegateFactoryUtilities
         // which is shared source.
