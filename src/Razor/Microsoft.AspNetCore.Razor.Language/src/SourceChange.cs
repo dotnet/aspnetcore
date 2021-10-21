@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override int GetHashCode()
         {
-            var hash = new HashCodeCombiner();
+            var hash = HashCodeCombiner.Start();
             hash.Add(Span);
             hash.Add(NewText, StringComparer.Ordinal);
             return hash;

@@ -10,8 +10,8 @@ namespace Microsoft.Extensions.Internal
         [Fact]
         public void GivenTheSameInputs_ItProducesTheSameOutput()
         {
-            var hashCode1 = new HashCodeCombiner();
-            var hashCode2 = new HashCodeCombiner();
+            var hashCode1 = HashCodeCombiner.Start();
+            var hashCode2 = HashCodeCombiner.Start();
 
             hashCode1.Add(42);
             hashCode1.Add("foo");
