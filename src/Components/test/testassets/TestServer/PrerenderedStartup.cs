@@ -47,8 +47,6 @@ namespace TestServer
                 app.UseRouting();
                 app.UseEndpoints(endpoints =>
                 {
-                    endpoints.MapGet("ishotreloadsubscribedto", () => HotReloadManager.IsSubscribedTo);
-
                     endpoints.MapRazorPages();
                     endpoints.MapFallbackToPage("/PrerenderedHost");
                     endpoints.MapBlazorHub();
