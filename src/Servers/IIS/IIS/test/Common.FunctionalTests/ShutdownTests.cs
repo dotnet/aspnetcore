@@ -40,7 +40,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task ShutdownTimeoutIsApplied()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -62,7 +61,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [ConditionalTheory]
         [InlineData("/ShutdownStopAsync")]
         [InlineData("/ShutdownStopAsyncWithCancelledToken")]
-        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/30149")]
         public async Task CallStopAsyncOnRequestThread_DoesNotHangIndefinitely(string path)
         {
             // Canceled token doesn't affect shutdown, in-proc doesn't handle ungraceful shutdown
@@ -432,7 +430,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task ConfigurationTouchedStress_InProcess()
         {
             await ConfigurationTouchedStress(HostingModel.InProcess);
