@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public static class ConnectionEndpointRouteBuilderExtensions
     {
+        private static readonly NegotiateMetadata _negotiateMetadata = new NegotiateMetadata();
+        
         /// <summary>
         /// Maps incoming requests with the specified path to the provided connection pipeline.
         /// </summary>
@@ -101,7 +103,7 @@ namespace Microsoft.AspNetCore.Builder
             var negotiateBuilder = endpoints.Map(pattern + "/negotiate", negotiateHandler);
             conventionBuilders.Add(negotiateBuilder);
             // Add the negotiate metadata so this endpoint can be identified
-            negotiateBuilder.WithMetadata(new NegotiateMetadata());
+            negotiateBuilder.WithMetadata(_negotiateMetadata);
             negotiateBuilder.WithMetadata(options);
 
             // build the execute handler part of the protocol
