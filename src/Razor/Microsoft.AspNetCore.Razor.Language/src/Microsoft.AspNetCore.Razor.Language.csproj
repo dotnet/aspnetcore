@@ -8,8 +8,4 @@
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Reference Include="Microsoft.Bcl.HashCode" />
-  </ItemGroup>
-
 </Project>

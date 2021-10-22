@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
@@ -53,7 +54,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public override int GetHashCode()
         {
             // Hash code should include only immutable properties and base has none.
-            return HashCode.Combine(AcceptTrailingDot);
+            var hashCodeCombiner = HashCodeCombiner.Start();
+            hashCodeCombiner.Add(AcceptTrailingDot);
+
+            return hashCodeCombiner;
         }
 
         protected override PartialParseResultInternal CanAcceptChange(SyntaxNode target, SourceChange change)

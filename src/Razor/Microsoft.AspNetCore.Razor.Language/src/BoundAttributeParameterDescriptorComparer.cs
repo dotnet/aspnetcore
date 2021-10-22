@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -49,13 +50,13 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            var hash = new HashCode();
-            hash.Add(descriptor.Kind ?? string.Empty, StringComparer.Ordinal);
-            hash.Add(descriptor.Name ?? string.Empty, StringComparer.Ordinal);
-            hash.Add(descriptor.TypeName ?? string.Empty, StringComparer.Ordinal);
+            var hash = HashCodeCombiner.Start();
+            hash.Add(descriptor.Kind, StringComparer.Ordinal);
+            hash.Add(descriptor.Name, StringComparer.Ordinal);
+            hash.Add(descriptor.TypeName, StringComparer.Ordinal);
             hash.Add(descriptor.Metadata?.Count);
 
-            return hash.ToHashCode();
+            return hash.CombinedHash;
         }
     }
 }

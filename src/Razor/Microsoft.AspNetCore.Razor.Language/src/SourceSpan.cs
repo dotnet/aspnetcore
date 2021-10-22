@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -72,14 +73,14 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override int GetHashCode()
         {
-            var hash = new HashCode();
-            hash.Add(FilePath ?? string.Empty, StringComparer.Ordinal);
+            var hash = HashCodeCombiner.Start();
+            hash.Add(FilePath, StringComparer.Ordinal);
             hash.Add(AbsoluteIndex);
             hash.Add(LineIndex);
             hash.Add(CharacterIndex);
             hash.Add(Length);
 
-            return hash.ToHashCode();
+            return hash;
         }
 
         public override string ToString()

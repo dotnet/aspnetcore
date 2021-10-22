@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -93,7 +94,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override int GetHashCode()
         {
-            var hash = new HashCode();
+            var hash = HashCodeCombiner.Start();
             hash.Add(LanguageVersion);
             hash.Add(ConfigurationName);
 
@@ -102,7 +103,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 hash.Add(Extensions[i].ExtensionName);
             }
 
-            return hash.ToHashCode();
+            return hash;
         }
 
         private class DefaultRazorConfiguration : RazorConfiguration

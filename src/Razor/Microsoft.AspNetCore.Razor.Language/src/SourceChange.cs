@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -124,10 +125,10 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override int GetHashCode()
         {
-            var hash = new HashCode();
+            var hash = HashCodeCombiner.Start();
             hash.Add(Span);
-            hash.Add(NewText ?? string.Empty, StringComparer.Ordinal);
-            return hash.ToHashCode();
+            hash.Add(NewText, StringComparer.Ordinal);
+            return hash;
         }
 
         public override string ToString()
