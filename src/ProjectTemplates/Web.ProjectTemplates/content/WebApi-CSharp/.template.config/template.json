@@ -291,7 +291,7 @@
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false",
-      "description": "Whether to use mininmal APIs instead of controllers."
+      "description": "Whether to use minimal APIs instead of controllers."
     },
     "Framework": {
       "type": "parameter",
