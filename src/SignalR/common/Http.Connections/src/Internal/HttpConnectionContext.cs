@@ -255,7 +255,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
                 Cancellation = null;
 
-                if (User != null && User.Identity is WindowsIdentity)
+                // Long Polling clones the windows identity if set
+                if (TransportType == HttpTransportType.LongPolling && User != null && User.Identity is WindowsIdentity)
                 {
                     foreach (var identity in User.Identities)
                     {
