@@ -1742,6 +1742,55 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             }
         }
 
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [InlineData(HttpTransportType.LongPolling)]
+        [InlineData(HttpTransportType.ServerSentEvents)]
+        [InlineData(HttpTransportType.WebSockets)]
+        public async Task WindowsIdentityNotClosed(HttpTransportType transportType)
+        {
+            using (StartVerifiableLog())
+            {
+                var manager = CreateConnectionManager(LoggerFactory);
+                var connection = manager.CreateConnection();
+                connection.TransportType = transportType;
+                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+                var services = new ServiceCollection();
+                services.AddOptions();
+                services.AddSingleton<TestConnectionHandler>();
+                services.AddLogging();
+
+                var context = MakeRequest("/foo", connection, services);
+                SetTransport(context, transportType);
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
+                builder.UseConnectionHandler<ImmediatelyCompleteConnectionHandler>();
+                var app = builder.Build();
+                var options = new HttpConnectionDispatcherOptions();
+                options.WebSockets.CloseTimeout = TimeSpan.FromSeconds(0);
+
+                var windowsIdentity = WindowsIdentity.GetAnonymous();
+                context.User = new WindowsPrincipal(windowsIdentity);
+                context.User.AddIdentity(new ClaimsIdentity());
+
+                if (transportType == HttpTransportType.LongPolling)
+                {
+                    // first poll effectively noops
+                    await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+                }
+
+                await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+
+                // Identity shouldn't be closed by the connections layer
+                Assert.False(windowsIdentity.AccessToken.IsClosed);
+
+                if (transportType == HttpTransportType.LongPolling)
+                {
+                    // Long polling clones the user, make sure it disposes it too
+                    Assert.True(((WindowsIdentity)connection.User.Identity).AccessToken.IsClosed);
+                }
+            }
+        }
+
         [Fact]
         public async Task SetsInherentKeepAliveFeatureOnFirstLongPollingRequest()
         {
