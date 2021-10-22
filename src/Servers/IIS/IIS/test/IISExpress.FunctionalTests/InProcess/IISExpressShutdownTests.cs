@@ -42,7 +42,6 @@ namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests
 
 
         [ConditionalFact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/28994")]
         public async Task ServerShutsDownWhenMainExitsStress()
         {
             var parameters = Fixture.GetBaseDeploymentParameters();
