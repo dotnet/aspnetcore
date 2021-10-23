@@ -54,7 +54,8 @@
   },
   "resolutions": {
     "lodash": ">=4.17.21",
-    "url-parse": ">=1.5.0"
+    "url-parse": ">=1.5.0",
+    "ua-parser-js": "^0.7.30"
   },
   "author": "",
   "license": "MIT"
