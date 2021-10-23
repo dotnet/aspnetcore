@@ -15,7 +15,6 @@ using Xunit;
 
 namespace Interop.FunctionalTests.Http3
 {
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35070")]
     public class Http3TlsTests : LoggedTest
     {
         [ConditionalFact]
@@ -156,6 +155,7 @@ namespace Interop.FunctionalTests.Http3
         [InlineData(ClientCertificateMode.AllowCertificate, true)]
         [MsQuicSupported]
         [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/aspnetcore/issues/35800")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35070")]
         public async Task ClientCertificate_AllowOrRequire_Available_Invalid_Refused(ClientCertificateMode mode, bool serverAllowInvalid)
         {
             var builder = CreateHostBuilder(async context =>
@@ -212,6 +212,7 @@ namespace Interop.FunctionalTests.Http3
         [ConditionalFact]
         [MsQuicSupported]
         [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/aspnetcore/issues/35800")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35070")]
         public async Task ClientCertificate_Allow_NotAvailable_Optional()
         {
             var builder = CreateHostBuilder(async context =>
