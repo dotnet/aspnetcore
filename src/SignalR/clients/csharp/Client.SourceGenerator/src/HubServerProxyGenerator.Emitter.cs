@@ -157,16 +157,18 @@ using Microsoft.AspNetCore.SignalR.Client;
 
 namespace {_spec.GetterNamespace}
 {{
-    {_spec.GetterClassAccessibility} static partial class {_spec.GetterClassName} {{
-    private sealed class {classSpec.ClassTypeName} : {classSpec.FullyQualifiedInterfaceTypeName}
+    {_spec.GetterClassAccessibility} static partial class {_spec.GetterClassName}
     {{
-        private readonly HubConnection connection;
-        internal {classSpec.ClassTypeName}(HubConnection connection)
+        private sealed class {classSpec.ClassTypeName} : {classSpec.FullyQualifiedInterfaceTypeName}
         {{
-            this.connection = connection;
+            private readonly HubConnection connection;
+            internal {classSpec.ClassTypeName}(HubConnection connection)
+            {{
+                this.connection = connection;
+            }}
+    {methods.ToString()}
         }}
-{methods.ToString()}
-    }} }}
+    }}
 }}";
 
                 _context.AddSource($"HubServerProxy.{classSpec.ClassTypeName}.g.cs", SourceText.From(proxy.ToString(), Encoding.UTF8));

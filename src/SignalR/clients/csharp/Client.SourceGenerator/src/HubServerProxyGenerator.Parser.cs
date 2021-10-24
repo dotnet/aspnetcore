@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                 var attributeSymbol = context.SemanticModel.GetSymbolInfo(attributeSyntax).Symbol;
 
                 if (attributeSymbol is null ||
-                    attributeSymbol.ToString() != "Microsoft.AspNetCore.SignalR.Client.HubServerProxyAttribute.HubServerProxyAttribute()")
+                    !attributeSymbol.ToString().EndsWith("HubServerProxyAttribute()", StringComparison.Ordinal))
                 {
                     return null;
                 }
@@ -151,7 +151,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
 
                 foreach (var attributeData in methodSymbol.GetAttributes())
                 {
-                    if (attributeData.AttributeClass.ToString() != "Microsoft.AspNetCore.SignalR.Client.HubServerProxyAttribute")
+                    if (!attributeData.AttributeClass.ToString()
+                        .EndsWith("HubServerProxyAttribute", StringComparison.Ordinal))
                     {
                         continue;
                     }

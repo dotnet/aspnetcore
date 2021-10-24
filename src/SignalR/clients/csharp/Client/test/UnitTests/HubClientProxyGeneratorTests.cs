@@ -9,6 +9,12 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
+    [AttributeUsage(AttributeTargets.Method)]
+    internal class HubClientProxyAttribute : Attribute
+    {
+
+    }
+
     internal static partial class RegisterCallbackProviderExtensions
     {
         [HubClientProxy]

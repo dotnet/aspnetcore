@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
                 var attributeSymbol = ModelExtensions.GetSymbolInfo(context.SemanticModel, attributeSyntax).Symbol;
 
                 if (attributeSymbol is null ||
-                    attributeSymbol.ToString() != "Microsoft.AspNetCore.SignalR.Client.HubClientProxyAttribute.HubClientProxyAttribute()")
+                    !attributeSymbol.ToString().EndsWith("HubClientProxyAttribute()", StringComparison.Ordinal))
                 {
                     return null;
                 }
@@ -158,7 +159,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
 
                 foreach (var attributeData in methodSymbol.GetAttributes())
                 {
-                    if (attributeData.AttributeClass.ToString() != "Microsoft.AspNetCore.SignalR.Client.HubClientProxyAttribute")
+                    if (!attributeData.AttributeClass.ToString()
+                        .EndsWith("HubClientProxyAttribute", StringComparison.Ordinal))
                     {
                         continue;
                     }
