@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
 
         public static DiagnosticDescriptor HubServerProxyAttributedMethodIsNotPartial { get; } = new DiagnosticDescriptor(
             id: "SSG0004",
-            title: "HubServerProxy attributed method has is not partial",
+            title: "HubServerProxy attributed method is not partial",
             messageFormat: "HubServerProxy attributed method must be partial.",
             category: "SignalR.Client.SourceGenerator",
             defaultSeverity: DiagnosticSeverity.Error,
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
 
         public static DiagnosticDescriptor HubServerProxyAttributedMethodIsNotExtension { get; } = new DiagnosticDescriptor(
             id: "SSG0005",
-            title: "HubServerProxy attributed method is not extension method",
+            title: "HubServerProxy attributed method is not an extension method",
             messageFormat: "HubServerProxy attributed method must be an extension method for HubConnection.",
             category: "SignalR.Client.SourceGenerator",
             defaultSeverity: DiagnosticSeverity.Error,
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
         public static DiagnosticDescriptor HubServerProxyAttributedMethodTypeArgAndReturnTypeDoesNotMatch { get; } = new DiagnosticDescriptor(
             id: "SSG0007",
             title: "HubServerProxy attributed method type argument and return type does not match",
-            messageFormat: "HubServerProxy attributed method must have the same type argument and return type",
+            messageFormat: "HubServerProxy attributed method must have the same type argument and return type.",
             category: "SignalR.Client.SourceGenerator",
             defaultSeverity: DiagnosticSeverity.Error,
             isEnabledByDefault: true);
@@ -91,6 +91,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
             defaultSeverity: DiagnosticSeverity.Error,
             isEnabledByDefault: true);
 
+        // HubClientProxy section
+        
         public static DiagnosticDescriptor HubClientProxyUnsupportedReturnType { get; } = new DiagnosticDescriptor(
             id: "SSG0100",
             title: "Unsupported return type",
@@ -117,7 +119,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
 
         public static DiagnosticDescriptor HubClientProxyAttributedMethodIsNotPartial { get; } = new DiagnosticDescriptor(
             id: "SSG0104",
-            title: "HubClientProxy attributed method has is not partial",
+            title: "HubClientProxy attributed method is not partial",
             messageFormat: "HubClientProxy attributed method must be partial.",
             category: "SignalR.Client.SourceGenerator",
             defaultSeverity: DiagnosticSeverity.Error,
@@ -125,7 +127,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
 
         public static DiagnosticDescriptor HubClientProxyAttributedMethodIsNotExtension { get; } = new DiagnosticDescriptor(
             id: "SSG0105",
-            title: "HubClientProxy attributed method is not extension method",
+            title: "HubClientProxy attributed method is not an extension method",
             messageFormat: "HubClientProxy attributed method must be an extension method for HubConnection.",
             category: "SignalR.Client.SourceGenerator",
             defaultSeverity: DiagnosticSeverity.Error,
@@ -142,7 +144,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
         public static DiagnosticDescriptor HubClientProxyAttributedMethodTypeArgAndProviderTypeDoesNotMatch { get; } = new DiagnosticDescriptor(
             id: "SSG0107",
             title: "HubClientProxy attributed method type argument and return type does not match",
-            messageFormat: "HubClientProxy attributed method must have the same type argument and return type",
+            messageFormat: "HubClientProxy attributed method must have the same type argument and return type.",
             category: "SignalR.Client.SourceGenerator",
             defaultSeverity: DiagnosticSeverity.Error,
             isEnabledByDefault: true);
