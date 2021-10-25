@@ -93,7 +93,6 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35142")]
         public void IHttpActivityFeatureIsPopulated()
         {
             var testSource = new ActivitySource(Path.GetRandomFileName());
@@ -167,7 +166,6 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34072")]
         public void IHttpActivityFeatureIsNotPopulatedWithoutAListener()
         {
             var hostingApplication = CreateApplication();
