@@ -1691,7 +1691,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 services.AddSingleton<TestConnectionHandler>();
                 services.AddLogging();
 
-                var context = MakeRequest("/foo", connection, services);
+                var context = MakeRequest("/foo", connection);
                 SetTransport(context, transportType);
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<ImmediatelyCompleteConnectionHandler>();
@@ -1706,10 +1706,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 if (transportType == HttpTransportType.LongPolling)
                 {
                     // first poll effectively noops
-                    await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+                    await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
                 }
 
-                await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
 
                 // Identity shouldn't be closed by the connections layer
                 Assert.False(windowsIdentity.AccessToken.IsClosed);
