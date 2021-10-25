@@ -1775,10 +1775,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 if (transportType == HttpTransportType.LongPolling)
                 {
                     // first poll effectively noops
-                    await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+                    await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
                 }
 
-                await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
 
                 // Identity shouldn't be closed by the connections layer
                 Assert.False(windowsIdentity.AccessToken.IsClosed);
