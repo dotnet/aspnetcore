@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,11 +16,12 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public sealed class WebApplicationBuilder
     {
+        private const string EndpointRouteBuilderKey = "__EndpointRouteBuilder";
+
         private readonly HostBuilder _hostBuilder = new();
         private readonly BootstrapHostBuilder _bootstrapHostBuilder;
         private readonly WebApplicationServiceCollection _services = new();
-        private readonly List<KeyValuePair<string, string>> _hostConfigurationValues;
-        private const string EndpointRouteBuilderKey = "__EndpointRouteBuilder";
+        private readonly List<KeyValuePair<string, string?>> _hostConfigurationValues;
 
         private WebApplication? _builtApplication;
 
@@ -62,7 +64,6 @@ namespace Microsoft.AspNetCore.Builder
             });
 
             // Apply the args to host configuration last since ConfigureWebHostDefaults overrides a host specific setting (the application name).
-
             _bootstrapHostBuilder.ConfigureHostConfiguration(config =>
             {
                 if (args is { Length: > 0 })
@@ -73,7 +74,6 @@ namespace Microsoft.AspNetCore.Builder
                 // Apply the options after the args
                 options.ApplyHostConfiguration(config);
             });
-
 
             Configuration = new();
 
@@ -99,6 +99,8 @@ namespace Microsoft.AspNetCore.Builder
             Logging = new LoggingBuilder(Services);
             Host = new ConfigureHostBuilder(hostContext, Configuration, Services);
             WebHost = new ConfigureWebHostBuilder(webHostContext, Configuration, Services);
+
+            Services.AddSingleton<IConfiguration>(_ => Configuration);
         }
 
         /// <summary>
@@ -146,14 +148,13 @@ namespace Microsoft.AspNetCore.Builder
                 builder.AddInMemoryCollection(_hostConfigurationValues);
             });
 
-            // Wire up the application configuration by copying the already built configuration providers over to final configuration builder.
-            // We wrap the existing provider in a configuration source to avoid re-bulding the already added configuration sources.
+            // Wire up the _hostBuilder's application configuration with a ChainedConfigurationSource to the ConfigurationManager.
+            // We use a "tracking" source to avoid creating a circular reference when copying providers in ConfigureServices.
+            var chainedConfigSource = new TrackingChainedConfigurationSource(Configuration);
+
             _hostBuilder.ConfigureAppConfiguration(builder =>
             {
-                foreach (var provider in ((IConfigurationRoot)Configuration).Providers)
-                {
-                    builder.Sources.Add(new ConfigurationProviderSource(provider));
-                }
+                builder.Add(chainedConfigSource);
 
                 foreach (var (key, value) in ((IConfigurationBuilder)Configuration).Properties)
                 {
@@ -192,6 +193,27 @@ namespace Microsoft.AspNetCore.Builder
                 // Drop the reference to the existing collection and set the inner collection
                 // to the new one. This allows code that has references to the service collection to still function.
                 _services.InnerCollection = services;
+
+                var hostBuilderProviders = ((IConfigurationRoot)context.Configuration).Providers;
+
+                if (!hostBuilderProviders.Contains(chainedConfigSource.BuiltProvider))
+                {
+                    // Something removed the _hostBuilder's TrackingChainedConfigurationSource pointing back to the ConfigurationManager.
+                    // This is likely a test using WebApplicationFactory. Replicate the effect by clearing the ConfingurationManager sources.
+                    ((IConfigurationBuilder)Configuration).Sources.Clear();
+                }
+
+                // Make the ConfigurationManager match the final _hostBuilder's configuration. To do that, we add the additional providers
+                // to the inner _hostBuilders's configuration to the ConfigurationManager. We wrap the existing provider in a
+                // configuration source to avoid rebulding or reloading the already added configuration sources.
+                foreach (var provider in hostBuilderProviders)
+                {
+                    // Avoid creating a circular reference to the ConfigurationManager via the chained configuration source.
+                    if (!ReferenceEquals(provider, chainedConfigSource.BuiltProvider))
+                    {
+                        ((IConfigurationBuilder)Configuration).Add(new ConfigurationProviderSource(provider));
+                    }
+                }
             });
 
             // Run the other callbacks on the final host builder
@@ -199,13 +221,12 @@ namespace Microsoft.AspNetCore.Builder
 
             _builtApplication = new WebApplication(_hostBuilder.Build());
 
-            // Make builder.Configuration match the final configuration. To do that
-            // we clear the sources and add the built configuration as a source
-            ((IConfigurationBuilder)Configuration).Sources.Clear();
-            Configuration.AddConfiguration(_builtApplication.Configuration);
-
             // Mark the service collection as read-only to prevent future modifications
             _services.IsReadOnly = true;
+
+            // Resolve both the _hostBuilder's Configuration and builder.Configuration to mark both as resolved within the
+            // service provider ensuring both will be properly disposed with the provider.
+            _ = _builtApplication.Services.GetService<IEnumerable<IConfiguration>>();
 
             return _builtApplication;
         }
@@ -286,21 +307,6 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             public IServiceCollection Services { get; }
-        }
-
-        private sealed class ConfigurationProviderSource : IConfigurationSource
-        {
-            private readonly IConfigurationProvider _configurationProvider;
-
-            public ConfigurationProviderSource(IConfigurationProvider configurationProvider)
-            {
-                _configurationProvider = configurationProvider;
-            }
-
-            public IConfigurationProvider Build(IConfigurationBuilder builder)
-            {
-                return _configurationProvider;
-            }
         }
     }
 }

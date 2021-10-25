@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -40,7 +40,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     return 0;
                 }
 
-                var hash = new HashCodeCombiner();
+                var hash = HashCodeCombiner.Start();
                 hash.Add(obj.Name, StringComparer.OrdinalIgnoreCase);
                 hash.Add(obj.Version);
                 return hash;

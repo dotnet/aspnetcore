@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal
@@ -115,8 +114,67 @@ namespace Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Manage.Internal
         public static string PageNavClass(ViewContext viewContext, string page)
         {
             var activePage = viewContext.ViewData["ActivePage"] as string
-                ?? System.IO.Path.GetFileNameWithoutExtension(viewContext.ActionDescriptor.DisplayName);
+                ?? Path.GetFileNameWithoutExtension(viewContext.ActionDescriptor.DisplayName);
             return string.Equals(activePage, page, StringComparison.OrdinalIgnoreCase) ? "active" : null;
+        }
+
+        /// <summary>
+        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public static string IndexAriaCurrent(ViewContext viewContext) => AriaCurrent(viewContext, Index);
+
+        /// <summary>
+        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public static string EmailAriaCurrent(ViewContext viewContext) => AriaCurrent(viewContext, Email);
+
+        /// <summary>
+        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public static string ChangePasswordAriaCurrent(ViewContext viewContext) => AriaCurrent(viewContext, ChangePassword);
+
+        /// <summary>
+        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public static string DownloadPersonalDataAriaCurrent(ViewContext viewContext) => AriaCurrent(viewContext, DownloadPersonalData);
+
+        /// <summary>
+        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public static string DeletePersonalDataAriaCurrent(ViewContext viewContext) => AriaCurrent(viewContext, DeletePersonalData);
+
+        /// <summary>
+        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public static string ExternalLoginsAriaCurrent(ViewContext viewContext) => AriaCurrent(viewContext, ExternalLogins);
+
+        /// <summary>
+        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public static string PersonalDataAriaCurrent(ViewContext viewContext) => AriaCurrent(viewContext, PersonalData);
+
+        /// <summary>
+        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public static string TwoFactorAuthenticationAriaCurrent(ViewContext viewContext) => AriaCurrent(viewContext, TwoFactorAuthentication);
+
+        /// <summary>
+        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public static string AriaCurrent(ViewContext viewContext, string page)
+        {
+            var activePage = viewContext.ViewData["ActivePage"] as string
+                ?? Path.GetFileNameWithoutExtension(viewContext.ActionDescriptor.DisplayName);
+            return string.Equals(activePage, page, StringComparison.OrdinalIgnoreCase) ? "page" : null;
         }
     }
 }

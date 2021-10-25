@@ -1050,7 +1050,7 @@ namespace Microsoft.AspNetCore.Routing
 
         // Default values are visible to the constraint when they are used to fill a parameter.
         [Fact]
-        public void GetVirtualPath_ConstraintsSeesDefault_WhenThereItsAParamter()
+        public void GetVirtualPath_ConstraintsSeesDefault_WhenThereItsAParameter()
         {
             // Arrange
             var constraint = new CapturingConstraint();

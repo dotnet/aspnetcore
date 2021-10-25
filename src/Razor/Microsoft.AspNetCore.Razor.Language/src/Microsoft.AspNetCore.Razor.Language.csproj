@@ -8,8 +8,4 @@
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)HashCodeCombiner\*.cs" />
-  </ItemGroup>
-
 </Project>

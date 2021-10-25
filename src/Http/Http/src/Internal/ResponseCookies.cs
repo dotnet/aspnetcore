@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Http
 
                 for (var i = 0; i < values.Length; i++)
                 {
-                    var value = values[i]!;
+                    var value = values[i] ?? string.Empty;
                     if (!rejectPredicate(value, encodedKeyPlusEquals, options))
                     {
                         newValues.Add(value);

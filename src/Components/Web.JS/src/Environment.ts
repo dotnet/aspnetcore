@@ -5,7 +5,7 @@ import { Platform } from './Platform/Platform';
 
 export let platform: Platform;
 
-export function setPlatform(platformInstance: Platform) {
+export function setPlatform(platformInstance: Platform): Platform {
   platform = platformInstance;
   return platform;
 }

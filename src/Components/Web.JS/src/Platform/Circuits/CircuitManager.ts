@@ -8,6 +8,7 @@ export class CircuitDescriptor {
   public circuitId?: string;
 
   public components: ServerComponentDescriptor[];
+
   public applicationState: string;
 
   public constructor(components: ServerComponentDescriptor[], appState: string) {

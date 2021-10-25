@@ -445,18 +445,11 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
             File.Delete(Path.Combine(deploymentResult.ContentRoot, "aspnetcorev2_inprocess.dll"));
 
-            if (DeployerSelector.HasNewShim && DeployerSelector.HasNewHandler)
+            if (DeployerSelector.HasNewShim)
             {
                 await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "500.33");
 
                 EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindRequestHandler(deploymentResult), Logger);
-            }
-            else if (DeployerSelector.HasNewShim)
-            {
-                // Forwards compat tests fail earlier due to a error with the M.AspNetCore.Server.IIS package.
-                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "500.31");
-
-                EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindNativeDependencies(deploymentResult), Logger);
             }
             else
             {
@@ -1004,7 +997,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
 
         [ConditionalTheory]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27178")]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [InlineData("CheckLargeStdErrWrites")]
         [InlineData("CheckLargeStdOutWrites")]
@@ -1031,7 +1023,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalTheory]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27858")]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [InlineData("CheckLargeStdOutWrites")]
         [InlineData("CheckOversizedStdOutWrites")]

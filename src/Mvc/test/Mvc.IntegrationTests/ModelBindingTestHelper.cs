@@ -87,7 +87,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public static ParameterBinder GetParameterBinder(
             IModelMetadataProvider metadataProvider,
             IModelBinderProvider binderProvider = null,
-            MvcOptions mvcOptions = null)
+            MvcOptions mvcOptions = null,
+            ObjectModelValidator validator = null)
         {
             var services = GetServices(metadataProvider, mvcOptions: mvcOptions);
             var options = services.GetRequiredService<IOptions<MvcOptions>>();
@@ -97,13 +98,15 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 options.Value.ModelBinderProviders.Insert(0, binderProvider);
             }
 
+            validator ??= new DefaultObjectValidator(
+                metadataProvider,
+                new[] { new CompositeModelValidatorProvider(GetModelValidatorProviders(options)) },
+                options.Value);
+
             return new ParameterBinder(
                 metadataProvider,
                 new ModelBinderFactory(metadataProvider, options, services),
-                new DefaultObjectValidator(
-                    metadataProvider,
-                    new[] { new CompositeModelValidatorProvider(GetModelValidatorProviders(options)) },
-                    options.Value),
+                validator,
                 options,
                 NullLoggerFactory.Instance);
         }

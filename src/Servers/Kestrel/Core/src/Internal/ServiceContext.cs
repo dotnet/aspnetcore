@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     // Changing this type would be a lot of work.
     internal class ServiceContext
     {
-        public IKestrelTrace Log { get; set; } = default!;
+        public KestrelTrace Log { get; set; } = default!;
 
         public PipeScheduler Scheduler { get; set; } = default!;
 

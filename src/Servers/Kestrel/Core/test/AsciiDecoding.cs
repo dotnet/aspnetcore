@@ -111,7 +111,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31500")]
         private void AsciiBytesEqualAsciiStrings()
         {
             var byteRange = Enumerable.Range(1, 127).Select(x => (byte)x);

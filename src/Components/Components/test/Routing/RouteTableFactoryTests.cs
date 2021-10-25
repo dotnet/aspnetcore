@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Routing
@@ -12,6 +13,7 @@ namespace Microsoft.AspNetCore.Components.Routing
     public class RouteTableFactoryTests
     {
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/36888")]
         public void CanCacheRouteTable()
         {
             // Arrange

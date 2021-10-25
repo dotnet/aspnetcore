@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         private ServiceContext ServiceContext { get; }
 
-        private IKestrelTrace Trace => ServiceContext.Log;
+        private KestrelTrace Trace => ServiceContext.Log;
 
         private AddressBindContext? AddressBindContext { get; set; }
 
@@ -417,7 +417,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
         }
 
-        private static ConnectionDelegate EnforceConnectionLimit(ConnectionDelegate innerDelegate, long? connectionLimit, IKestrelTrace trace)
+        private static ConnectionDelegate EnforceConnectionLimit(ConnectionDelegate innerDelegate, long? connectionLimit, KestrelTrace trace)
         {
             if (!connectionLimit.HasValue)
             {
@@ -427,7 +427,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             return new ConnectionLimitMiddleware<ConnectionContext>(c => innerDelegate(c), connectionLimit.Value, trace).OnConnectionAsync;
         }
 
-        private static MultiplexedConnectionDelegate EnforceConnectionLimit(MultiplexedConnectionDelegate innerDelegate, long? connectionLimit, IKestrelTrace trace)
+        private static MultiplexedConnectionDelegate EnforceConnectionLimit(MultiplexedConnectionDelegate innerDelegate, long? connectionLimit, KestrelTrace trace)
         {
             if (!connectionLimit.HasValue)
             {

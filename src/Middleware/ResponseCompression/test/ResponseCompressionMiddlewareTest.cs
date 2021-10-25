@@ -960,6 +960,73 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             }
         }
 
+        [Theory]
+        [MemberData(nameof(SupportedEncodings))]
+        public async Task UncompressedTrickleWriteAndFlushAsync_FlushesEachWrite(string encoding)
+        {
+            var responseReceived = new[]
+            {
+                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
+            };
+
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
+                    {
+                        services.AddResponseCompression();
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseResponseCompression();
+                        app.Run(async context =>
+                        {
+                            context.Response.Headers.ContentMD5 = "MD5";
+                            context.Response.ContentType = "Un/compressed";
+                            context.Features.Get<IHttpResponseBodyFeature>().DisableBuffering();
+
+                            foreach (var signal in responseReceived)
+                            {
+                                await context.Response.WriteAsync("a");
+                                await context.Response.Body.FlushAsync();
+                                await signal.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
+                            }
+                        });
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "");
+            request.Headers.AcceptEncoding.ParseAdd(encoding);
+
+            var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            Assert.True(response.Content.Headers.TryGetValues(HeaderNames.ContentMD5, out var md5));
+            Assert.Equal("MD5", md5.SingleOrDefault());
+            Assert.Empty(response.Content.Headers.ContentEncoding);
+
+            var body = await response.Content.ReadAsStreamAsync();
+
+            var data = new byte[100];
+            foreach (var signal in responseReceived)
+            {
+                var read = await body.ReadAsync(data, 0, data.Length);
+                Assert.Equal(1, read);
+                Assert.Equal('a', (char)data[0]);
+
+                signal.SetResult(0);
+            }
+        }
+
         [Fact]
         public async Task SendFileAsync_DifferentContentType_NotBypassed()
         {

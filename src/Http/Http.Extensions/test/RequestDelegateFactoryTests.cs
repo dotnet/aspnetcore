@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var ex = Assert.Throws<InvalidOperationException>(() =>
                 RequestDelegateFactory.Create(([FromRoute] int id) => { }, new() { RouteParameterNames = Array.Empty<string>() }));
 
-            Assert.Equal("id is not a route paramter.", ex.Message);
+            Assert.Equal("'id' is not a route parameter.", ex.Message);
         }
 
         [Fact]
@@ -476,7 +476,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     new object[] { (Action<HttpContext, float>)Store, "0.5", 0.5f },
                     new object[] { (Action<HttpContext, Half>)Store, "0.5", (Half)0.5f },
                     new object[] { (Action<HttpContext, decimal>)Store, "0.5", 0.5m },
-                    new object[] { (Action<HttpContext, DateTime>)Store, now.ToString("o"), now },
+                    new object[] { (Action<HttpContext, DateTime>)Store, now.ToString("o"), now.ToUniversalTime() },
                     new object[] { (Action<HttpContext, DateTimeOffset>)Store, "1970-01-01T00:00:00.0000000+00:00", DateTimeOffset.UnixEpoch },
                     new object[] { (Action<HttpContext, TimeSpan>)Store, "00:00:42", TimeSpan.FromSeconds(42) },
                     new object[] { (Action<HttpContext, Guid>)Store, "00000000-0000-0000-0000-000000000000", Guid.Empty },
@@ -660,6 +660,28 @@ namespace Microsoft.AspNetCore.Routing.Internal
             }
         }
 
+        private interface IBindAsync<T>
+        {
+            static ValueTask<T?> BindAsync(HttpContext context)
+            {
+                if (typeof(T) != typeof(MyBindAsyncFromInterfaceRecord))
+                {
+                    throw new InvalidOperationException();
+                }
+
+                if (!Uri.TryCreate(context.Request.Headers.Referer, UriKind.Absolute, out var uri))
+                {
+                    return new(default(T));
+                }
+
+                return new(result: (T)(object)new MyBindAsyncFromInterfaceRecord(uri));
+            }
+        }
+
+        private record MyBindAsyncFromInterfaceRecord(Uri uri) : IBindAsync<MyBindAsyncFromInterfaceRecord>
+        {
+        }
+
         [Theory]
         [MemberData(nameof(TryParsableParameters))]
         public async Task RequestDelegatePopulatesUnattributedTryParsableParametersFromRouteValue(Delegate action, string? routeValue, object? expectedParameterValue)
@@ -832,6 +854,25 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(new MyAwaitedBindAsyncStruct(new Uri("https://example.org")), httpContext.Items["myAwaitedBindAsyncStruct"]);
         }
 
+        [Fact]
+        public async Task RequestDelegateUsesBindAsyncFromImplementedInterface()
+        {
+            var httpContext = CreateHttpContext();
+
+            httpContext.Request.Headers.Referer = "https://example.org";
+
+            var resultFactory = RequestDelegateFactory.Create((HttpContext httpContext, MyBindAsyncFromInterfaceRecord myBindAsyncRecord) =>
+            {
+                httpContext.Items["myBindAsyncFromInterfaceRecord"] = myBindAsyncRecord;
+            });
+
+            var requestDelegate = resultFactory.RequestDelegate;
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(new MyBindAsyncFromInterfaceRecord(new Uri("https://example.org")), httpContext.Items["myBindAsyncFromInterfaceRecord"]);
+        }
+
         public static object[][] DelegatesWithAttributesOnNotTryParsableParameters
         {
             get
@@ -863,7 +904,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var unnamedParameter = Expression.Parameter(typeof(int));
             var lambda = Expression.Lambda(Expression.Block(), unnamedParameter);
             var ex = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(lambda.Compile()));
-            Assert.Equal("A parameter does not have a name! Was it generated? All parameters must be named.", ex.Message);
+            Assert.Equal("Encountered a parameter of type 'System.Runtime.CompilerServices.Closure' without a name. Parameters must have a name.", ex.Message);
         }
 
         [Fact]
@@ -1569,8 +1610,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 invoked = true;
             }
 
-            var invalidDataException = new InvalidDataException();
-
             var httpContext = CreateHttpContext();
             httpContext.Request.Headers["Content-Type"] = "application/json";
             httpContext.Request.Headers["Content-Length"] = "1";
@@ -1964,6 +2003,10 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 static Task<object> StaticTaskOfIResultAsObject() => Task.FromResult<object>(new CustomResult("Still not enough tests!"));
                 static ValueTask<object> StaticValueTaskOfIResultAsObject() => ValueTask.FromResult<object>(new CustomResult("Still not enough tests!"));
 
+                StructResult TestStructAction() => new StructResult(resultString);
+                Task<StructResult> TaskTestStructAction() => Task.FromResult(new StructResult(resultString));
+                ValueTask<StructResult> ValueTaskTestStructAction() => ValueTask.FromResult(new StructResult(resultString));
+
                 return new List<object[]>
                 {
                     new object[] { (Func<CustomResult>)TestAction },
@@ -1982,6 +2025,10 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
                     new object[] { (Func<Task<object>>)StaticTaskOfIResultAsObject},
                     new object[] { (Func<ValueTask<object>>)StaticValueTaskOfIResultAsObject},
+
+                    new object[] { (Func<StructResult>)TestStructAction },
+                    new object[] { (Func<Task<StructResult>>)TaskTestStructAction },
+                    new object[] { (Func<ValueTask<StructResult>>)ValueTaskTestStructAction },
                 };
             }
         }
@@ -2889,6 +2936,166 @@ namespace Microsoft.AspNetCore.Routing.Internal
             }
         }
 
+        public static IEnumerable<object?[]> DateTimeDelegates
+        {
+            get
+            {
+                string dateTimeParsing(DateTime time) => $"Time: {time.ToString("O", CultureInfo.InvariantCulture)}, Kind: {time.Kind}";
+
+                return new List<object?[]>
+                {
+                    new object?[] { (Func<DateTime, string>)dateTimeParsing, "9/20/2021 4:18:44 PM", "Time: 2021-09-20T16:18:44.0000000, Kind: Unspecified" },
+                    new object?[] { (Func<DateTime, string>)dateTimeParsing, "2021-09-20 4:18:44", "Time: 2021-09-20T04:18:44.0000000, Kind: Unspecified" },
+                    new object?[] { (Func<DateTime, string>)dateTimeParsing, "   9/20/2021    4:18:44 PM  ", "Time: 2021-09-20T16:18:44.0000000, Kind: Unspecified" },
+                    new object?[] { (Func<DateTime, string>)dateTimeParsing, "2021-09-20T16:28:02.000-07:00", "Time: 2021-09-20T23:28:02.0000000Z, Kind: Utc" },
+                    new object?[] { (Func<DateTime, string>)dateTimeParsing, "  2021-09-20T 16:28:02.000-07:00  ", "Time: 2021-09-20T23:28:02.0000000Z, Kind: Utc" },
+                    new object?[] { (Func<DateTime, string>)dateTimeParsing, "2021-09-20T23:30:02.000+00:00", "Time: 2021-09-20T23:30:02.0000000Z, Kind: Utc" },
+                    new object?[] { (Func<DateTime, string>)dateTimeParsing, "     2021-09-20T23:30: 02.000+00:00 ", "Time: 2021-09-20T23:30:02.0000000Z, Kind: Utc" },
+                    new object?[] { (Func<DateTime, string>)dateTimeParsing, "2021-09-20 16:48:02-07:00", "Time: 2021-09-20T23:48:02.0000000Z, Kind: Utc" },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(DateTimeDelegates))]
+        public async Task RequestDelegateCanProcessDateTimesToUtc(Delegate @delegate, string inputTime, string expectedResponse)
+        {
+            var httpContext = CreateHttpContext();
+            var responseBodyStream = new MemoryStream();
+            httpContext.Response.Body = responseBodyStream;
+
+            httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["time"] = inputTime
+            });
+
+            var factoryResult = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = factoryResult.RequestDelegate;
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(200, httpContext.Response.StatusCode);
+            Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+            var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+            Assert.Equal(expectedResponse, decodedResponseBody);
+        }
+
+        public static IEnumerable<object?[]> DateTimeOffsetDelegates
+        {
+            get
+            {
+                string dateTimeOffsetParsing(DateTimeOffset time) => $"Time: {time.ToString("O", CultureInfo.InvariantCulture)}, Offset: {time.Offset}";
+
+                return new List<object?[]>
+                {
+                    new object?[] { (Func<DateTimeOffset, string>)dateTimeOffsetParsing, "09/20/2021 16:35:12 +00:00", "Time: 2021-09-20T16:35:12.0000000+00:00, Offset: 00:00:00" },
+                    new object?[] { (Func<DateTimeOffset, string>)dateTimeOffsetParsing, "09/20/2021 11:35:12 +07:00", "Time: 2021-09-20T11:35:12.0000000+07:00, Offset: 07:00:00" },
+                    new object?[] { (Func<DateTimeOffset, string>)dateTimeOffsetParsing, "09/20/2021 16:35:12", "Time: 2021-09-20T16:35:12.0000000+00:00, Offset: 00:00:00" },
+                    new object?[] { (Func<DateTimeOffset, string>)dateTimeOffsetParsing, " 09/20/2021 16:35:12 ", "Time: 2021-09-20T16:35:12.0000000+00:00, Offset: 00:00:00" },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(DateTimeOffsetDelegates))]
+        public async Task RequestDelegateCanProcessDateTimeOffsetsToUtc(Delegate @delegate, string inputTime, string expectedResponse)
+        {
+            var httpContext = CreateHttpContext();
+            var responseBodyStream = new MemoryStream();
+            httpContext.Response.Body = responseBodyStream;
+
+            httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["time"] = inputTime
+            });
+
+            var factoryResult = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = factoryResult.RequestDelegate;
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(200, httpContext.Response.StatusCode);
+            Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+            var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+            Assert.Equal(expectedResponse, decodedResponseBody);
+        }
+
+        public static IEnumerable<object?[]> DateOnlyDelegates
+        {
+            get
+            {
+                string dateOnlyParsing(DateOnly time) => $"Time: {time.ToString("O", CultureInfo.InvariantCulture)}";
+
+                return new List<object?[]>
+                {
+                    new object?[] { (Func<DateOnly, string>)dateOnlyParsing, "9/20/2021", "Time: 2021-09-20" },
+                    new object?[] { (Func<DateOnly, string>)dateOnlyParsing, "9 /20 /2021", "Time: 2021-09-20" },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(DateOnlyDelegates))]
+        public async Task RequestDelegateCanProcessDateOnlyValues(Delegate @delegate, string inputTime, string expectedResponse)
+        {
+            var httpContext = CreateHttpContext();
+            var responseBodyStream = new MemoryStream();
+            httpContext.Response.Body = responseBodyStream;
+
+            httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["time"] = inputTime
+            });
+
+            var factoryResult = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = factoryResult.RequestDelegate;
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(200, httpContext.Response.StatusCode);
+            Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+            var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+            Assert.Equal(expectedResponse, decodedResponseBody);
+        }
+
+        public static IEnumerable<object?[]> TimeOnlyDelegates
+        {
+            get
+            {
+                string timeOnlyParsing(TimeOnly time) => $"Time: {time.ToString("O", CultureInfo.InvariantCulture)}";
+
+                return new List<object?[]>
+                {
+                    new object?[] { (Func<TimeOnly, string>)timeOnlyParsing, "4:34 PM", "Time: 16:34:00.0000000" },
+                    new object?[] { (Func<TimeOnly, string>)timeOnlyParsing, "    4:34 PM   ", "Time: 16:34:00.0000000" },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(TimeOnlyDelegates))]
+        public async Task RequestDelegateCanProcessTimeOnlyValues(Delegate @delegate, string inputTime, string expectedResponse)
+        {
+            var httpContext = CreateHttpContext();
+            var responseBodyStream = new MemoryStream();
+            httpContext.Response.Body = responseBodyStream;
+
+            httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["time"] = inputTime
+            });
+
+            var factoryResult = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = factoryResult.RequestDelegate;
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(200, httpContext.Response.StatusCode);
+            Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+            var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+            Assert.Equal(expectedResponse, decodedResponseBody);
+        }
+
         private DefaultHttpContext CreateHttpContext()
         {
             var responseFeature = new TestHttpResponseFeature();
@@ -3038,6 +3245,21 @@ namespace Microsoft.AspNetCore.Routing.Internal
             private readonly string _resultString;
 
             public CustomResult(string resultString)
+            {
+                _resultString = resultString;
+            }
+
+            public Task ExecuteAsync(HttpContext httpContext)
+            {
+                return httpContext.Response.WriteAsync(_resultString);
+            }
+        }
+
+        private struct StructResult : IResult
+        {
+            private readonly string _resultString;
+
+            public StructResult(string resultString)
             {
                 _resultString = resultString;
             }

@@ -87,6 +87,25 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
                 Run();
             }
 
+            var started = false;
+            var wait = TimeSpan.FromSeconds(30);
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            while (stopWatch.Elapsed < wait)
+            {
+                RunProcessAndWait(_path, $"logs {_dockerContainerName}", "docker logs", logger, TimeSpan.FromSeconds(5), out var logOutput);
+                if (logOutput.Contains("Ready to accept connections"))
+                {
+                    started = true;
+                    break;
+                }
+            }
+
+            if (!started)
+            {
+                throw new Exception("Redis took too long to start.");
+            }
+
             void Run()
             {
                 // create and run docker container, remove automatically when stopped, map 6379 from the container to 6379 localhost

@@ -71,13 +71,17 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     continue;
                 }
 
+                // ApiDescriptionActionData is only added to the ControllerActionDescriptor if
+                // the action is marked as `IsVisible` to the ApiExplorer. This null-check is
+                // effectively asserting if the endpoint should be generated into the final
+                // OpenAPI metadata.
                 var extensionData = action.GetProperty<ApiDescriptionActionData>();
                 if (extensionData != null)
                 {
                     var httpMethods = GetHttpMethods(action);
                     foreach (var httpMethod in httpMethods)
                     {
-                        context.Results.Add(CreateApiDescription(action, httpMethod, extensionData.GroupName));
+                        context.Results.Add(CreateApiDescription(action, httpMethod, GetGroupName(action, extensionData)));
                     }
                 }
             }
@@ -463,6 +467,19 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 .ToArray();
         }
 
+        private static string? GetGroupName(ControllerActionDescriptor action, ApiDescriptionActionData extensionData)
+        {
+            // The `GroupName` set in the `ApiDescriptionActionData` is either the
+            // group name set via [ApiExplorerSettings(GroupName = "foo")] on the
+            // action or controller. So, this lookup favors the following sequence:
+            // - EndpointGroupName on the action, if it is set
+            // - EndpointGroupName on the controller, if it is set
+            // - ApiExplorerSettings.GroupName on the action, if it is set
+            // - ApiExplorerSettings.GroupName on the controller, if it is set
+            var endpointGroupName = action.EndpointMetadata.OfType<IEndpointGroupNameMetadata>().LastOrDefault();
+            return endpointGroupName?.EndpointGroupName ?? extensionData.GroupName;
+        }
+
         private class ApiParameterDescriptionContext
         {
             public ModelMetadata ModelMetadata { get; }
@@ -652,11 +669,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
                 public int GetHashCode(PropertyKey obj)
                 {
-                    var hashCodeCombiner = new HashCode();
-                    hashCodeCombiner.Add(obj.ContainerType);
-                    hashCodeCombiner.Add(obj.PropertyName);
-                    hashCodeCombiner.Add(obj.Source);
-                    return hashCodeCombiner.ToHashCode();
+                    return HashCode.Combine(obj.ContainerType, obj.PropertyName, obj.Source);
                 }
             }
         }

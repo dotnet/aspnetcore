@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Hosting
     /// </summary>
     public static class WebHostBuilderQuicExtensions
     {
-        [RequiresPreviewFeatures]
         public static IWebHostBuilder UseQuic(this IWebHostBuilder hostBuilder)
         {
             if (QuicImplementationProviders.Default.IsSupported)
@@ -29,7 +28,6 @@ namespace Microsoft.AspNetCore.Hosting
             return hostBuilder;
         }
 
-        [RequiresPreviewFeatures]
         public static IWebHostBuilder UseQuic(this IWebHostBuilder hostBuilder, Action<QuicTransportOptions> configureOptions)
         {
             return hostBuilder.UseQuic().ConfigureServices(services =>

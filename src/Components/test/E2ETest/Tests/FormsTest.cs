@@ -95,19 +95,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("valid", () => nameInput.GetAttribute("class"));
             nameInput.SendKeys("Bert\t");
             Browser.Equal("modified valid", () => nameInput.GetAttribute("class"));
-            EnsureAttributeRendering(nameInput, "aria-invalid", false);
+            EnsureAttributeNotRendered(nameInput, "aria-invalid");
 
             // Can become invalid
             nameInput.SendKeys("01234567890123456789\t");
             Browser.Equal("modified invalid", () => nameInput.GetAttribute("class"));
-            EnsureAttributeRendering(nameInput, "aria-invalid");
+            EnsureAttributeValue(nameInput, "aria-invalid", "true");
             Browser.Equal(new[] { "That name is too long" }, messagesAccessor);
 
             // Can become valid
             nameInput.Clear();
             nameInput.SendKeys("Bert\t");
             Browser.Equal("modified valid", () => nameInput.GetAttribute("class"));
-            EnsureAttributeRendering(nameInput, "aria-invalid", false);
+            EnsureAttributeNotRendered(nameInput, "aria-invalid");
             Browser.Empty(messagesAccessor);
         }
 
@@ -978,9 +978,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 .ToArray();
         }
 
-        private void EnsureAttributeRendering(IWebElement element, string attributeName, bool shouldBeRendered = true)
+        private void EnsureAttributeValue(IWebElement element, string attributeName, string value)
         {
-            Browser.Equal(shouldBeRendered, () => element.GetAttribute(attributeName) != null);
+            Browser.Equal(value, () => element.GetAttribute(attributeName));
+        }
+
+        private void EnsureAttributeNotRendered(IWebElement element, string attributeName)
+        {
+            Browser.True(() => element.GetAttribute(attributeName) == null);
         }
 
         private bool ElementHasAttribute(IWebElement webElement, string attribute)

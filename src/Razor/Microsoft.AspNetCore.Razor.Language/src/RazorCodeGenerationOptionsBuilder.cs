@@ -73,6 +73,14 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// </summary>
         public virtual bool OmitMinimizedComponentAttributeValues { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value that determines if localized component names are to be supported.
+        /// </summary>
+        public virtual bool SupportLocalizedComponentNames { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value that determines if enhanced line pragmas are to be utilized.
+        /// </summary>
         public virtual bool UseEnhancedLinePragma { get; set; }
 
         public abstract RazorCodeGenerationOptions Build();

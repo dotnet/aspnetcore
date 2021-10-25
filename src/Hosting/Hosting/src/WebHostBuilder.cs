@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// </summary>
         /// <param name="key">The key of the setting to look up.</param>
         /// <returns>The value the setting currently contains.</returns>
-        public string GetSetting(string key)
+        public string? GetSetting(string key)
         {
             return _config[key];
         }
@@ -353,7 +353,7 @@ namespace Microsoft.AspNetCore.Hosting
             services.Replace(ServiceDescriptor.Singleton(typeof(ActivitySource), activitySource!));
         }
 
-        private static string ResolveContentRootPath(string contentRootPath, string basePath)
+        private static string ResolveContentRootPath(string? contentRootPath, string basePath)
         {
             if (string.IsNullOrEmpty(contentRootPath))
             {

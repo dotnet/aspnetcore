@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.BrowserTesting;
 using Templates.Test.Helpers;
 using Xunit;
 
-namespace Templates.Test
+namespace BlazorTemplates.Tests
 {
     public abstract class BlazorTemplateTest : BrowserTestBase
     {

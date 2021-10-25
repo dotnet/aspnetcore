@@ -76,7 +76,8 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var scope = _scopeFactory.CreateScope())
+            var scope = _scopeFactory.CreateAsyncScope();
+            await using (scope.ConfigureAwait(false))
             {
                 var healthCheck = registration.Factory(scope.ServiceProvider);
 

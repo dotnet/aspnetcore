@@ -14,7 +14,6 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 {
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35070")]
     public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
     {
         private static readonly byte[] TestData = Encoding.UTF8.GetBytes("Hello world");
@@ -111,7 +110,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
             using var clientConnection = new QuicConnection(options);
 
             var qex = await Assert.ThrowsAsync<QuicException>(async () => await clientConnection.ConnectAsync().DefaultTimeout());
-            Assert.Equal("Connection has been shutdown by transport. Error Code: 0x80410100", qex.Message);
+            Assert.StartsWith("Connection has been shutdown by transport.", qex.Message);
         }
     }
 }

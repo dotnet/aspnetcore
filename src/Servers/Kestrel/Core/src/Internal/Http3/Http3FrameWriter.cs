@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private readonly ITimeoutControl _timeoutControl;
         private readonly MinDataRate? _minResponseDataRate;
         private readonly MemoryPool<byte> _memoryPool;
-        private readonly IKestrelTrace _log;
+        private readonly KestrelTrace _log;
         private readonly IStreamIdFeature _streamIdFeature;
         private readonly IHttp3Stream _http3Stream;
         private readonly Http3RawFrame _outgoingFrame;
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private bool _completed;
         private bool _aborted;
 
-        public Http3FrameWriter(ConnectionContext connectionContext, ITimeoutControl timeoutControl, MinDataRate? minResponseDataRate, MemoryPool<byte> memoryPool, IKestrelTrace log, IStreamIdFeature streamIdFeature, Http3PeerSettings clientPeerSettings, IHttp3Stream http3Stream)
+        public Http3FrameWriter(ConnectionContext connectionContext, ITimeoutControl timeoutControl, MinDataRate? minResponseDataRate, MemoryPool<byte> memoryPool, KestrelTrace log, IStreamIdFeature streamIdFeature, Http3PeerSettings clientPeerSettings, IHttp3Stream http3Stream)
         {
             _connectionContext = connectionContext;
             _timeoutControl = timeoutControl;

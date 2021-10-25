@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
     {
         private readonly SocketTransportOptions _options;
         private readonly MemoryPool<byte> _memoryPool;
-        private readonly SocketsTrace _trace;
+        private readonly ILogger _trace;
         private readonly PipeOptions _inputOptions;
         private readonly PipeOptions _outputOptions;
         private readonly SocketSenderPool _socketSenderPool;
@@ -38,8 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
             _options = options.Value;
             _memoryPool = options.Value.MemoryPoolFactory();
-            var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Client");
-            _trace = new SocketsTrace(logger);
+            _trace = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Client");
 
             var maxReadBufferSize = _options.MaxReadBufferSize ?? 0;
             var maxWriteBufferSize = _options.MaxWriteBufferSize ?? 0;

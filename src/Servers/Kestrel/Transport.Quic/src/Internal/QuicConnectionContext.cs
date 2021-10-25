@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         private readonly object _shutdownLock = new object();
         private readonly QuicConnection _connection;
         private readonly QuicTransportContext _context;
-        private readonly IQuicTrace _log;
+        private readonly ILogger _log;
         private readonly CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
 
         private Task? _closeTask;
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
                 var resolvedErrorCode = _error ?? 0;
                 _abortReason = ExceptionDispatchInfo.Capture(abortReason);
-                _log.ConnectionAbort(this, resolvedErrorCode, abortReason.Message);
+                QuicLog.ConnectionAbort(_log, this, resolvedErrorCode, abortReason.Message);
                 _closeTask = _connection.CloseAsync(errorCode: resolvedErrorCode).AsTask();
             }
         }
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 context.Initialize(stream);
                 context.Start();
 
-                _log.AcceptedStream(context);
+                QuicLog.AcceptedStream(_log, context);
 
                 return context;
             }
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             {
                 // Shutdown initiated by peer, abortive.
                 _error = ex.ErrorCode;
-                _log.ConnectionAborted(this, ex.ErrorCode, ex);
+                QuicLog.ConnectionAborted(_log, this, ex.ErrorCode, ex);
 
                 ThreadPool.UnsafeQueueUserWorkItem(state =>
                 {
@@ -141,19 +141,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 // Throw error so consumer sees the connection is aborted by peer.
                 throw new ConnectionResetException(ex.Message, ex);
             }
-            catch (QuicOperationAbortedException)
+            catch (QuicOperationAbortedException ex)
             {
-                // Shutdown initiated by us.
-
                 lock (_shutdownLock)
                 {
-                    // Connection has been aborted. Throw reason exception.
-                    _abortReason?.Throw();
+                    // This error should only happen when shutdown has been initiated by the server.
+                    // If there is no abort reason and we have this error then the connection is in an
+                    // unexpected state. Abort connection and throw reason error.
+                    if (_abortReason == null)
+                    {
+                        Abort(new ConnectionAbortedException("Unexpected error when accepting stream.", ex));
+                    }
+
+                    _abortReason!.Throw();
                 }
             }
             catch (OperationCanceledException)
             {
-                // Shutdown initiated by us.
+                Debug.Assert(cancellationToken.IsCancellationRequested, "Error requires cancellation is requested.");
 
                 lock (_shutdownLock)
                 {
@@ -210,7 +215,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             context.Initialize(quicStream);
             context.Start();
 
-            _log.ConnectedStream(context);
+            QuicLog.ConnectedStream(_log, context);
 
             return new ValueTask<ConnectionContext>(context);
         }

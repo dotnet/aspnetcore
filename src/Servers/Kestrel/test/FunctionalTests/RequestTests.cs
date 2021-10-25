@@ -565,6 +565,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [Theory]
         [MemberData(nameof(ConnectionMiddlewareDataName))]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/37750")]
         public async Task ConnectionClosedTokenFiresOnServerFIN(string listenOptionsName)
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -762,8 +763,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             };
 
-            var mockKestrelTrace = new Mock<IKestrelTrace>();
-            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)
+            var testContext = new TestServiceContext(LoggerFactory)
             {
                 ServerOptions =
                 {
@@ -809,7 +809,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 await appFuncCompleted.Task.DefaultTimeout();
             }
 
-            mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
+            Assert.Single(TestSink.Writes.Where(c => c.EventId.Name == "ConnectionStop"));
         }
 
         [Theory]
@@ -820,8 +820,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var readTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var appStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var mockKestrelTrace = new Mock<IKestrelTrace>();
-            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object);
+            var testContext = new TestServiceContext(LoggerFactory);
 
             var scratchBuffer = new byte[4096];
 
@@ -862,7 +861,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 await Assert.ThrowsAnyAsync<IOException>(() => readTcs.Task).DefaultTimeout();
             }
 
-            mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
+            Assert.Single(TestSink.Writes.Where(c => c.EventId.Name == "ConnectionStop"));
         }
 
         private async Task TestRemoteIPAddress(string registerAddress, string requestAddress, string expectAddress)

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Language
     public abstract class RazorConfiguration : IEquatable<RazorConfiguration>
     {
         public static readonly RazorConfiguration Default = new DefaultRazorConfiguration(
-            RazorLanguageVersion.Latest, 
+            RazorLanguageVersion.Latest,
             "unnamed",
             Array.Empty<RazorExtension>(),
             false);
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override int GetHashCode()
         {
-            var hash = new HashCodeCombiner();
+            var hash = HashCodeCombiner.Start();
             hash.Add(LanguageVersion);
             hash.Add(ConfigurationName);
 

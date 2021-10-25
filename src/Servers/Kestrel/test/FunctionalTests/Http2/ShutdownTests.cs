@@ -53,15 +53,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
             var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var requestUnblocked = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var requestStopping = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            var mockKestrelTrace = new Mock<KestrelTrace>(LoggerFactory)
-            {
-                CallBase = true
-            };
-            mockKestrelTrace
-                .Setup(m => m.Http2ConnectionClosing(It.IsAny<string>()))
-                .Callback(() => requestStopping.SetResult());
 
-            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object);
+            TestSink.MessageLogged += context =>
+            {
+
+                if (context.EventId.Name == "Http2ConnectionClosing")
+                {
+                    requestStopping.SetResult();
+                }
+            };
+
+            var testContext = new TestServiceContext(LoggerFactory);
 
             testContext.InitializeHeartbeat();
 

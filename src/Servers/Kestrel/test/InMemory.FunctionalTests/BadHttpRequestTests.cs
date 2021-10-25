@@ -224,13 +224,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             BadHttpRequestException loggedException = null;
 
-            var mockKestrelTrace = new Mock<IKestrelTrace>();
-            mockKestrelTrace
-                .Setup(trace => trace.IsEnabled(LogLevel.Information))
-                .Returns(true);
-            mockKestrelTrace
-                .Setup(trace => trace.ConnectionBadRequest(It.IsAny<string>(), It.IsAny<BadHttpRequestException>()))
-                .Callback<string, BadHttpRequestException>((connectionId, exception) => loggedException = exception);
+            TestSink.MessageLogged += context =>
+            {
+                if (context.EventId.Name == "ConnectionBadRequest" && context.Exception is BadHttpRequestException ex)
+                {
+                    loggedException = ex;
+                }
+            };
 
             // Set up a listener to catch the BadRequest event
             var diagListener = new DiagnosticListener("BadRequestTestsDiagListener");
@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             });
 
-            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory, mockKestrelTrace.Object) { DiagnosticSource = diagListener }))
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory) { DiagnosticSource = diagListener }))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
-            mockKestrelTrace.Verify(trace => trace.ConnectionBadRequest(It.IsAny<string>(), It.IsAny<BadHttpRequestException>()));
+            Assert.NotNull(loggedException);
             Assert.Equal(expectedExceptionMessage, loggedException.Message);
 
             // Verify DiagnosticSource event for bad request

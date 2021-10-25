@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         }
 
 
-        private static ClientCertificateMode? ParseClientCertificateMode(string clientCertificateMode)
+        private static ClientCertificateMode? ParseClientCertificateMode(string? clientCertificateMode)
         {
             if (Enum.TryParse<ClientCertificateMode>(clientCertificateMode, ignoreCase: true, out var result))
             {
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             return null;
         }
 
-        private static HttpProtocols? ParseProtocols(string protocols)
+        private static HttpProtocols? ParseProtocols(string? protocols)
         {
             if (Enum.TryParse<HttpProtocols>(protocols, ignoreCase: true, out var result))
             {

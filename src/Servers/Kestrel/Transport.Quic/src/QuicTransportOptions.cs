@@ -12,7 +12,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
     /// <summary>
     /// Options for Quic based connections.
     /// </summary>
-    [RequiresPreviewFeatures]
     public class QuicTransportOptions
     {
         /// <summary>

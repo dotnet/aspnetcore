@@ -58,7 +58,7 @@
   <ItemGroup Condition="'$(TestTrimmedApps)' == 'true'">
     <ProjectReference Include="..\..\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj"
       Targets="Build;Publish"
-      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\Wasm.Performance.TestApp\" />
+      Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\Wasm.Performance.TestApp\" />
 
     <ProjectReference
       Include="..\testassets\BasicTestApp\BasicTestApp.csproj"
@@ -68,17 +68,17 @@
     <ProjectReference
       Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj"
       Targets="Build;Publish"
-      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\GlobalizationWasmApp\;" />
+      Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\GlobalizationWasmApp\;" />
 
     <ProjectReference
       Include="..\..\WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj"
       Targets="Build;Publish"
-      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\StandaloneApp\;" />
+      Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\StandaloneApp\;" />
 
     <ProjectReference
       Include="..\..\WebAssembly\testassets\Wasm.Prerendered.Server\Wasm.Prerendered.Server.csproj"
       Targets="Build;Publish"
-      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\Wasm.Prerendered.Server\;" />
+      Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\Wasm.Prerendered.Server\;" />
   </ItemGroup>
 
   <!-- Shared testing infrastructure for running E2E tests using selenium -->

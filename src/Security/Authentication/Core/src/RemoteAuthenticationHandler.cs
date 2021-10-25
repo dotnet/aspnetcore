@@ -238,7 +238,7 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         /// <summary>
-        /// Validates that the current request correlates wit hthe
+        /// Validates that the current request correlates with the current remote authentication request.
         /// </summary>
         /// <param name="properties"></param>
         /// <returns></returns>

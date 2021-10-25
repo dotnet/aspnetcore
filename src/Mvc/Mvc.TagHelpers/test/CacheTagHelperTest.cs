@@ -485,6 +485,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/36765")]
         public async Task ProcessAsync_FlowsEntryLinkThatAllowsAddingTriggersToAddedEntry()
         {
             // Arrange

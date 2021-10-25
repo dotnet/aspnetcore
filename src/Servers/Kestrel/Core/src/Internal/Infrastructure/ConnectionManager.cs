@@ -12,14 +12,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private long _lastConnectionId = long.MinValue;
 
         private readonly ConcurrentDictionary<long, ConnectionReference> _connectionReferences = new ConcurrentDictionary<long, ConnectionReference>();
-        private readonly IKestrelTrace _trace;
+        private readonly KestrelTrace _trace;
 
-        public ConnectionManager(IKestrelTrace trace, long? upgradedConnectionLimit)
+        public ConnectionManager(KestrelTrace trace, long? upgradedConnectionLimit)
             : this(trace, GetCounter(upgradedConnectionLimit))
         {
         }
 
-        public ConnectionManager(IKestrelTrace trace, ResourceCounter upgradedConnections)
+        public ConnectionManager(KestrelTrace trace, ResourceCounter upgradedConnections)
         {
             UpgradedConnectionCount = upgradedConnections;
             _trace = trace;

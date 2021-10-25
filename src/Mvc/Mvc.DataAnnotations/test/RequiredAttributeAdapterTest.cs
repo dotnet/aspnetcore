@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             var attribute = new RequiredAttribute();
 
             var expectedProperties = new object[] { "Length" };
-            var message = "This paramter is required.";
+            var message = "This parameter is required.";
             var expectedMessage = "FR This parameter is required.";
             attribute.ErrorMessage = message;
 

@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         /// </summary>
         public override int GetHashCode()
         {
-            var combiner = new HashCodeCombiner();
+            var combiner = HashCodeCombiner.Start();
             combiner.Add(Start);
             combiner.Add(Length);
 

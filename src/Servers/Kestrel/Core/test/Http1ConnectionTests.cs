@@ -1,85 +1,24 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Pipelines;
-using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
-    public class Http1ConnectionTests : IDisposable
+    public class Http1ConnectionTests : Http1ConnectionTestsBase
     {
-        private readonly IDuplexPipe _transport;
-        private readonly IDuplexPipe _application;
-        private readonly TestHttp1Connection _http1Connection;
-        private readonly ServiceContext _serviceContext;
-        private readonly HttpConnectionContext _http1ConnectionContext;
-        private readonly MemoryPool<byte> _pipelineFactory;
-        private SequencePosition _consumed;
-        private SequencePosition _examined;
-        private readonly Mock<ITimeoutControl> _timeoutControl;
-
-        public Http1ConnectionTests()
-        {
-            _pipelineFactory = PinnedBlockMemoryPoolFactory.Create();
-            var options = new PipeOptions(_pipelineFactory, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
-            var pair = DuplexPipe.CreateConnectionPair(options, options);
-
-            _transport = pair.Transport;
-            _application = pair.Application;
-
-            var connectionFeatures = new FeatureCollection();
-            connectionFeatures.Set(Mock.Of<IConnectionLifetimeFeature>());
-
-            _serviceContext = new TestServiceContext()
-            {
-                Scheduler = PipeScheduler.Inline
-            };
-
-            _timeoutControl = new Mock<ITimeoutControl>();
-            _http1ConnectionContext = TestContextFactory.CreateHttpConnectionContext(
-                serviceContext: _serviceContext,
-                connectionContext: Mock.Of<ConnectionContext>(),
-                transport: pair.Transport,
-                timeoutControl: _timeoutControl.Object,
-                memoryPool: _pipelineFactory,
-                connectionFeatures: connectionFeatures);
-
-            _http1Connection = new TestHttp1Connection(_http1ConnectionContext);
-        }
-
-        public void Dispose()
-        {
-            _transport.Input.Complete();
-            _transport.Output.Complete();
-
-            _application.Input.Complete();
-            _application.Output.Complete();
-
-            _pipelineFactory.Dispose();
-        }
-
         [Fact]
         public async Task TakeMessageHeadersSucceedsWhenHeaderValueContainsUTF8()
         {
@@ -825,12 +764,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             try
             {
-                var mockTrace = new Mock<IKestrelTrace>();
-                mockTrace
-                    .Setup(trace => trace.IsEnabled(LogLevel.Information))
-                    .Returns(false);
-
-                _serviceContext.Log = mockTrace.Object;
+                _serviceContext.Log = new KestrelTrace(NullLoggerFactory.Instance);
 
                 await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"GET /%00 HTTP/1.1\r\n"));
                 var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;

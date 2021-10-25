@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                                  TransportConnectionManager transportConnectionManager,
                                  Func<T, Task> connectionDelegate,
                                  T connectionContext,
-                                 IKestrelTrace logger)
+                                 KestrelTrace logger)
             : base(id, serviceContext, transportConnectionManager, logger)
         {
             _connectionDelegate = connectionDelegate;

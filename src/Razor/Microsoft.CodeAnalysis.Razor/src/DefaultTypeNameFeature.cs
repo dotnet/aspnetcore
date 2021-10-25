@@ -28,6 +28,10 @@ namespace Microsoft.CodeAnalysis.Razor
             {
                 return new[] { array.ElementType.ToString() };
             }
+            else if (parsed is TupleTypeSyntax tuple)
+            {
+                return tuple.Elements.Select(a => a.ToString()).ToList();
+            }
             else
             {
                 return parsed.DescendantNodesAndSelf()

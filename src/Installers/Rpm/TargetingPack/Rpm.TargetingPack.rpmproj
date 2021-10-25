@@ -17,10 +17,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-    </ProjectReference>
+    <ProjectReference Include="..\..\..\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
 
     <InstallerOwnedDirectory Include="$(RpmPackageInstallRoot)packs/$(TargetingPackName)/" />
     <RpmDependency Include="dotnet-targeting-pack-$(MicrosoftNETCoreAppRefMajorMinorVersion)" Version="$(MicrosoftNETCoreAppRefVersion.Split('-')[0])" />
@@ -33,7 +33,7 @@
     <CblMarinerTargetFileName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion)-cm.1.rpm</CblMarinerTargetFileName>
     <TargetPath>$(InstallersOutputPath)$(TargetFileName)</TargetPath>
     <CblMarinerTargetPath>$(InstallersOutputPath)$(CblMarinerTargetFileName)</CblMarinerTargetPath>
-    
+
     <PackageVersion>$(TargetingPackVersionPrefix)</PackageVersion>
 
     <!-- Set package revision to '1' for RTM releases, but include the build number in pre-releases -->

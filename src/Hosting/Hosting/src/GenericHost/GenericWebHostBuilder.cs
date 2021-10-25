@@ -20,7 +20,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Hosting
 {
-    internal class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup, ISupportsUseDefaultServiceProvider
+    internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup, ISupportsUseDefaultServiceProvider
     {
         private readonly IHostBuilder _builder;
         private readonly IConfiguration _config;
@@ -410,7 +410,7 @@ namespace Microsoft.AspNetCore.Hosting
             return webHostContext;
         }
 
-        public string GetSetting(string key)
+        public string? GetSetting(string key)
         {
             return _config[key];
         }

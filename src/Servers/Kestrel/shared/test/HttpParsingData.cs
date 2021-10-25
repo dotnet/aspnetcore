@@ -456,6 +456,7 @@ namespace Microsoft.AspNetCore.Testing
                     { "GET https://localhost:443/", "localhost:443" },
                     { "CONNECT asp.net:80", "asp.net:80" },
                     { "CONNECT asp.net:443", "asp.net:443" },
+                    { "CONNECT user-images.githubusercontent.com:443", "user-images.githubusercontent.com:443" },
                 };
 
         public static TheoryData<string, string> HostHeaderInvalidData

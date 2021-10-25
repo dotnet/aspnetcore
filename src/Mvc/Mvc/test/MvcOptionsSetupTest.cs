@@ -213,6 +213,31 @@ namespace Microsoft.AspNetCore.Mvc
                 provider =>
                 {
                     var excludeFilter = Assert.IsType<SuppressChildValidationMetadataProvider>(provider);
+                    Assert.Equal(typeof(Delegate), excludeFilter.Type);
+                },
+                provider =>
+                {
+                    var excludeFilter = Assert.IsType<SuppressChildValidationMetadataProvider>(provider);
+                    Assert.Equal(typeof(MethodInfo), excludeFilter.Type);
+                },
+                provider =>
+                {
+                    var excludeFilter = Assert.IsType<SuppressChildValidationMetadataProvider>(provider);
+                    Assert.Equal(typeof(MemberInfo), excludeFilter.Type);
+                },
+                provider =>
+                {
+                    var excludeFilter = Assert.IsType<SuppressChildValidationMetadataProvider>(provider);
+                    Assert.Equal(typeof(ParameterInfo), excludeFilter.Type);
+                },
+                provider =>
+                {
+                    var excludeFilter = Assert.IsType<SuppressChildValidationMetadataProvider>(provider);
+                    Assert.Equal(typeof(Assembly), excludeFilter.Type);
+                },
+                provider =>
+                {
+                    var excludeFilter = Assert.IsType<SuppressChildValidationMetadataProvider>(provider);
                     Assert.Equal(typeof(Uri), excludeFilter.Type);
                 },
                 provider =>

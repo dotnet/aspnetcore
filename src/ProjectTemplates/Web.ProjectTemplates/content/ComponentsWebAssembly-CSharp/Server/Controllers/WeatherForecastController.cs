@@ -21,8 +21,10 @@ namespace ComponentsWebAssembly_CSharp.Server.Controllers;
 #endif
 [ApiController]
 [Route("[controller]")]
-#if (OrganizationalAuth || IndividualB2CAuth)
+#if (OrganizationalAuth)
 [RequiredScope(RequiredScopesConfigurationKey = "AzureAd:Scopes")]
+#elseif (IndividualB2CAuth)
+[RequiredScope(RequiredScopesConfigurationKey = "AzureAdB2C:Scopes")]
 #endif
 public class WeatherForecastController : ControllerBase
 {

@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Net;
 using System.Reflection;
+using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
@@ -23,7 +24,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Xunit;
 
 [assembly: HostingStartup(typeof(WebApplicationTests.TestHostingStartup))]
 
@@ -237,13 +237,14 @@ namespace Microsoft.AspNetCore.Tests
         {
             var builder = WebApplication.CreateBuilder();
 
-            var contentRoot = Path.GetTempPath().ToString();
-            var webRoot = Path.GetTempPath().ToString();
+            var contentRoot = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            var webRoot = Path.Combine(contentRoot, "wwwroot");
             var envName = $"{nameof(WebApplicationTests)}_ENV";
 
             Assert.Throws<NotSupportedException>(() => builder.WebHost.UseSetting(WebHostDefaults.ApplicationKey, nameof(WebApplicationTests)));
             Assert.Throws<NotSupportedException>(() => builder.WebHost.UseSetting(WebHostDefaults.EnvironmentKey, envName));
             Assert.Throws<NotSupportedException>(() => builder.WebHost.UseSetting(WebHostDefaults.ContentRootKey, contentRoot));
+            Assert.Throws<NotSupportedException>(() => builder.WebHost.UseSetting(WebHostDefaults.WebRootKey, webRoot));
             Assert.Throws<NotSupportedException>(() => builder.WebHost.UseSetting(WebHostDefaults.HostingStartupAssembliesKey, "hosting"));
             Assert.Throws<NotSupportedException>(() => builder.WebHost.UseSetting(WebHostDefaults.HostingStartupExcludeAssembliesKey, "hostingexclude"));
             Assert.Throws<NotSupportedException>(() => builder.WebHost.UseEnvironment(envName));
@@ -255,8 +256,8 @@ namespace Microsoft.AspNetCore.Tests
         {
             var builder = WebApplication.CreateBuilder();
 
-            var contentRoot = Path.GetTempPath().ToString();
-            var webRoot = Path.GetTempPath().ToString();
+            var contentRoot = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            var webRoot = Path.Combine(contentRoot, "wwwroot");
             var envName = $"{nameof(WebApplicationTests)}_ENV";
 
             Assert.Throws<NotSupportedException>(() => builder.WebHost.ConfigureAppConfiguration(builder =>
@@ -287,6 +288,14 @@ namespace Microsoft.AspNetCore.Tests
             {
                 builder.AddInMemoryCollection(new Dictionary<string, string>
                 {
+                    { WebHostDefaults.WebRootKey, webRoot }
+                });
+            }));
+
+            Assert.Throws<NotSupportedException>(() => builder.WebHost.ConfigureAppConfiguration(builder =>
+            {
+                builder.AddInMemoryCollection(new Dictionary<string, string>
+                {
                     { WebHostDefaults.HostingStartupAssembliesKey, "hosting" }
                 });
             }));
@@ -298,6 +307,141 @@ namespace Microsoft.AspNetCore.Tests
                     { WebHostDefaults.HostingStartupExcludeAssembliesKey, "hostingexclude" }
                 });
             }));
+        }
+
+        [Fact]
+        public void SettingContentRootToSameCanonicalValueWorks()
+        {
+            var contentRoot = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(contentRoot);
+
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+            {
+                ContentRootPath = contentRoot
+            });
+
+            builder.Host.UseContentRoot(contentRoot + Path.DirectorySeparatorChar);
+            builder.Host.UseContentRoot(contentRoot.ToUpperInvariant());
+            builder.Host.UseContentRoot(contentRoot.ToLowerInvariant());
+
+            builder.WebHost.UseContentRoot(contentRoot + Path.DirectorySeparatorChar);
+            builder.WebHost.UseContentRoot(contentRoot.ToUpperInvariant());
+            builder.WebHost.UseContentRoot(contentRoot.ToLowerInvariant());
+        }
+
+        [Theory]
+        [InlineData("wwwroot2")]
+        [InlineData("./wwwroot2")]
+        [InlineData("./bar/../wwwroot2")]
+        [InlineData("foo/../wwwroot2")]
+        [InlineData("wwwroot2/.")]
+        public void WebApplicationBuilder_CanHandleVariousWebRootPaths(string webRoot)
+        {
+            var contentRoot = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(contentRoot);
+            var fullWebRootPath = Path.Combine(contentRoot, "wwwroot2");
+
+            try
+            {
+                var options = new WebApplicationOptions
+                {
+                    ContentRootPath = contentRoot,
+                    WebRootPath = "wwwroot2"
+                };
+
+                var builder = new WebApplicationBuilder(options);
+
+                Assert.Equal(contentRoot + Path.DirectorySeparatorChar, builder.Environment.ContentRootPath);
+                Assert.Equal(fullWebRootPath, builder.Environment.WebRootPath);
+
+                builder.WebHost.UseWebRoot(webRoot);
+            }
+            finally
+            {
+                Directory.Delete(contentRoot, recursive: true);
+            }
+        }
+
+        [Fact]
+        public void WebApplicationBuilder_CanOverrideWithFullWebRootPaths()
+        {
+            var contentRoot = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(contentRoot);
+            var fullWebRootPath = Path.Combine(contentRoot, "wwwroot");
+            Directory.CreateDirectory(fullWebRootPath);
+
+            try
+            {
+                var options = new WebApplicationOptions
+                {
+                    ContentRootPath = contentRoot,
+                };
+
+                var builder = new WebApplicationBuilder(options);
+
+                Assert.Equal(contentRoot + Path.DirectorySeparatorChar, builder.Environment.ContentRootPath);
+                Assert.Equal(fullWebRootPath, builder.Environment.WebRootPath);
+
+                builder.WebHost.UseWebRoot(fullWebRootPath);
+            }
+            finally
+            {
+                Directory.Delete(contentRoot, recursive: true);
+            }
+        }
+
+        [Theory]
+        [InlineData("wwwroot")]
+        [InlineData("./wwwroot")]
+        [InlineData("./bar/../wwwroot")]
+        [InlineData("foo/../wwwroot")]
+        [InlineData("wwwroot/.")]
+        public void WebApplicationBuilder_CanHandleVariousWebRootPaths_OverrideDefaultPath(string webRoot)
+        {
+            var contentRoot = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(contentRoot);
+            var fullWebRootPath = Path.Combine(contentRoot, "wwwroot");
+            Directory.CreateDirectory(fullWebRootPath);
+
+            try
+            {
+                var options = new WebApplicationOptions
+                {
+                    ContentRootPath = contentRoot
+                };
+
+                var builder = new WebApplicationBuilder(options);
+
+                Assert.Equal(contentRoot + Path.DirectorySeparatorChar, builder.Environment.ContentRootPath);
+                Assert.Equal(fullWebRootPath, builder.Environment.WebRootPath);
+
+                builder.WebHost.UseWebRoot(webRoot);
+            }
+            finally
+            {
+                Directory.Delete(contentRoot, recursive: true);
+            }
+        }
+
+        [Theory]
+        [InlineData("")]  // Empty behaves differently to null
+        [InlineData(".")]
+        public void SettingContentRootToRelativePathUsesAppContextBaseDirectoryAsPathBase(string path)
+        {
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+            {
+                ContentRootPath = path
+            });
+
+            builder.Host.UseContentRoot(AppContext.BaseDirectory);
+            builder.Host.UseContentRoot(Path.TrimEndingDirectorySeparator(AppContext.BaseDirectory));
+            builder.Host.UseContentRoot("");
+
+            builder.WebHost.UseContentRoot(AppContext.BaseDirectory);
+            builder.WebHost.UseContentRoot(Path.TrimEndingDirectorySeparator(AppContext.BaseDirectory));
+            builder.WebHost.UseContentRoot("");
+
+            Assert.Equal(AppContext.BaseDirectory, builder.Environment.ContentRootPath);
         }
 
         [Fact]
@@ -316,101 +460,136 @@ namespace Microsoft.AspNetCore.Tests
         [Fact]
         public void WebApplicationBuilderCanConfigureHostSettingsUsingWebApplicationOptions()
         {
-            var contentRoot = Path.GetTempPath().ToString();
-            var webRoot = Path.GetTempPath().ToString();
+            var contentRoot = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(contentRoot);
+            var webRoot = "wwwroot2";
+            var fullWebRootPath = Path.Combine(contentRoot, webRoot);
             var envName = $"{nameof(WebApplicationTests)}_ENV";
 
-            var options = new WebApplicationOptions
+            try
             {
-                ApplicationName = nameof(WebApplicationTests),
-                ContentRootPath = contentRoot,
-                EnvironmentName = envName
-            };
-
-            var builder = new WebApplicationBuilder(
-                options,
-                bootstrapBuilder =>
+                var options = new WebApplicationOptions
                 {
-                    bootstrapBuilder.ConfigureAppConfiguration((context, config) =>
-                    {
-                        Assert.Equal(nameof(WebApplicationTests), context.HostingEnvironment.ApplicationName);
-                        Assert.Equal(envName, context.HostingEnvironment.EnvironmentName);
-                        Assert.Equal(contentRoot, context.HostingEnvironment.ContentRootPath);
-                    });
-                });
+                    ApplicationName = nameof(WebApplicationTests),
+                    ContentRootPath = contentRoot,
+                    EnvironmentName = envName,
+                    WebRootPath = webRoot
+                };
 
-            Assert.Equal(nameof(WebApplicationTests), builder.Environment.ApplicationName);
-            Assert.Equal(envName, builder.Environment.EnvironmentName);
-            Assert.Equal(contentRoot, builder.Environment.ContentRootPath);
+                var builder = new WebApplicationBuilder(
+                    options,
+                    bootstrapBuilder =>
+                    {
+                        bootstrapBuilder.ConfigureAppConfiguration((context, config) =>
+                        {
+                            Assert.Equal(nameof(WebApplicationTests), context.HostingEnvironment.ApplicationName);
+                            Assert.Equal(envName, context.HostingEnvironment.EnvironmentName);
+                            Assert.Equal(contentRoot + Path.DirectorySeparatorChar, context.HostingEnvironment.ContentRootPath);
+                        });
+                    });
+
+                Assert.Equal(nameof(WebApplicationTests), builder.Environment.ApplicationName);
+                Assert.Equal(envName, builder.Environment.EnvironmentName);
+                Assert.Equal(contentRoot + Path.DirectorySeparatorChar, builder.Environment.ContentRootPath);
+                Assert.Equal(fullWebRootPath, builder.Environment.WebRootPath);
+            }
+            finally
+            {
+                Directory.Delete(contentRoot, recursive: true);
+            }
         }
 
         [Fact]
         public void WebApplicationBuilderWebApplicationOptionsPropertiesOverridesArgs()
         {
-            var contentRoot = Path.GetTempPath().ToString();
-            var webRoot = Path.GetTempPath().ToString();
+            var contentRoot = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(contentRoot);
+            var webRoot = "wwwroot2";
+            var fullWebRootPath = Path.Combine(contentRoot, webRoot);
             var envName = $"{nameof(WebApplicationTests)}_ENV";
 
-            var options = new WebApplicationOptions
+            try
             {
-                Args = new[] {
-                    $"--{WebHostDefaults.ApplicationKey}=testhost",
-                    $"--{WebHostDefaults.ContentRootKey}=c:\foo",
-                    $"--{WebHostDefaults.EnvironmentKey}=Test"
-                },
-                ApplicationName = nameof(WebApplicationTests),
-                ContentRootPath = contentRoot,
-                EnvironmentName = envName,
-            };
-
-            var builder = new WebApplicationBuilder(
-                options,
-                bootstrapBuilder =>
+                var options = new WebApplicationOptions
                 {
-                    bootstrapBuilder.ConfigureAppConfiguration((context, config) =>
-                    {
-                        Assert.Equal(nameof(WebApplicationTests), context.HostingEnvironment.ApplicationName);
-                        Assert.Equal(envName, context.HostingEnvironment.EnvironmentName);
-                        Assert.Equal(contentRoot, context.HostingEnvironment.ContentRootPath);
-                    });
-                });
+                    Args = new[] {
+                        $"--{WebHostDefaults.ApplicationKey}=testhost",
+                        $"--{WebHostDefaults.ContentRootKey}={contentRoot}",
+                        $"--{WebHostDefaults.WebRootKey}=wwwroot2",
+                        $"--{WebHostDefaults.EnvironmentKey}=Test"
+                    },
+                    ApplicationName = nameof(WebApplicationTests),
+                    ContentRootPath = contentRoot,
+                    EnvironmentName = envName,
+                    WebRootPath = webRoot
+                };
 
-            Assert.Equal(nameof(WebApplicationTests), builder.Environment.ApplicationName);
-            Assert.Equal(envName, builder.Environment.EnvironmentName);
-            Assert.Equal(contentRoot, builder.Environment.ContentRootPath);
+                var builder = new WebApplicationBuilder(
+                    options,
+                    bootstrapBuilder =>
+                    {
+                        bootstrapBuilder.ConfigureAppConfiguration((context, config) =>
+                        {
+                            Assert.Equal(nameof(WebApplicationTests), context.HostingEnvironment.ApplicationName);
+                            Assert.Equal(envName, context.HostingEnvironment.EnvironmentName);
+                            Assert.Equal(contentRoot + Path.DirectorySeparatorChar, context.HostingEnvironment.ContentRootPath);
+                        });
+                    });
+
+                Assert.Equal(nameof(WebApplicationTests), builder.Environment.ApplicationName);
+                Assert.Equal(envName, builder.Environment.EnvironmentName);
+                Assert.Equal(contentRoot + Path.DirectorySeparatorChar, builder.Environment.ContentRootPath);
+                Assert.Equal(fullWebRootPath, builder.Environment.WebRootPath);
+            }
+            finally
+            {
+                Directory.Delete(contentRoot, recursive: true);
+            }
         }
 
         [Fact]
         public void WebApplicationBuilderCanConfigureHostSettingsUsingWebApplicationOptionsArgs()
         {
-            var contentRoot = Path.GetTempPath().ToString();
-            var webRoot = Path.GetTempPath().ToString();
+            var contentRoot = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(contentRoot);
+            var webRoot = "wwwroot";
+            var fullWebRootPath = Path.Combine(contentRoot, webRoot);
             var envName = $"{nameof(WebApplicationTests)}_ENV";
 
-            var options = new WebApplicationOptions
+            try
             {
-                Args = new[] {
-                    $"--{WebHostDefaults.ApplicationKey}={nameof(WebApplicationTests)}",
-                    $"--{WebHostDefaults.ContentRootKey}={contentRoot}",
-                    $"--{WebHostDefaults.EnvironmentKey}={envName}"
-                }
-            };
 
-            var builder = new WebApplicationBuilder(
-                options,
-                bootstrapBuilder =>
+                var options = new WebApplicationOptions
                 {
-                    bootstrapBuilder.ConfigureAppConfiguration((context, config) =>
-                    {
-                        Assert.Equal(nameof(WebApplicationTests), context.HostingEnvironment.ApplicationName);
-                        Assert.Equal(envName, context.HostingEnvironment.EnvironmentName);
-                        Assert.Equal(contentRoot, context.HostingEnvironment.ContentRootPath);
-                    });
-                });
+                    Args = new[] {
+                        $"--{WebHostDefaults.ApplicationKey}={nameof(WebApplicationTests)}",
+                        $"--{WebHostDefaults.ContentRootKey}={contentRoot}",
+                        $"--{WebHostDefaults.EnvironmentKey}={envName}",
+                        $"--{WebHostDefaults.WebRootKey}={webRoot}",
+                    }
+                };
 
-            Assert.Equal(nameof(WebApplicationTests), builder.Environment.ApplicationName);
-            Assert.Equal(envName, builder.Environment.EnvironmentName);
-            Assert.Equal(contentRoot, builder.Environment.ContentRootPath);
+                var builder = new WebApplicationBuilder(
+                    options,
+                    bootstrapBuilder =>
+                    {
+                        bootstrapBuilder.ConfigureAppConfiguration((context, config) =>
+                        {
+                            Assert.Equal(nameof(WebApplicationTests), context.HostingEnvironment.ApplicationName);
+                            Assert.Equal(envName, context.HostingEnvironment.EnvironmentName);
+                            Assert.Equal(contentRoot + Path.DirectorySeparatorChar, context.HostingEnvironment.ContentRootPath);
+                        });
+                    });
+
+                Assert.Equal(nameof(WebApplicationTests), builder.Environment.ApplicationName);
+                Assert.Equal(envName, builder.Environment.EnvironmentName);
+                Assert.Equal(contentRoot + Path.DirectorySeparatorChar, builder.Environment.ContentRootPath);
+                Assert.Equal(fullWebRootPath, builder.Environment.WebRootPath);
+            }
+            finally
+            {
+                Directory.Delete(contentRoot, recursive: true);
+            }
         }
 
         [Fact]
@@ -538,40 +717,9 @@ namespace Microsoft.AspNetCore.Tests
                     { HostDefaults.ApplicationKey, "myapp" }
                 });
             }));
+
             Assert.Throws<NotSupportedException>(() => builder.Host.UseEnvironment(envName));
             Assert.Throws<NotSupportedException>(() => builder.Host.UseContentRoot(contentRoot));
-        }
-
-        [Fact]
-        public void WebApplicationBuilderCanModifyWebRootAfterCreateBuilder()
-        {
-            var builder = WebApplication.CreateBuilder();
-
-            var webRoot = Path.GetTempPath().ToString();
-
-            builder.WebHost.UseSetting("WEBROOT", webRoot);
-
-            Assert.Equal(webRoot, builder.WebHost.GetSetting("webroot"));
-
-            var app = builder.Build();
-
-            Assert.Equal(webRoot, app.Environment.WebRootPath);
-        }
-
-        [Fact]
-        public void WebApplicationBuilderWebRootIsRelativeToContentRoot()
-        {
-            var contentRoot = Path.GetTempPath().ToString();
-
-            var builder = WebApplication.CreateBuilder(new[] { $"--contentRoot={contentRoot}" });
-
-            builder.WebHost.UseSetting("WEBROOT", "wwwroot");
-
-            Assert.Equal("wwwroot", builder.WebHost.GetSetting("webroot"));
-
-            var app = builder.Build();
-
-            Assert.Equal(Path.Combine(contentRoot, "wwwroot"), app.Environment.WebRootPath);
         }
 
         [Fact]
@@ -653,6 +801,128 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
+        public async Task WebApplicationCanObserveSourcesClearedInBuild()
+        {
+            // This mimics what WebApplicationFactory<T> does and runs configure
+            // services callbacks
+            using var listener = new HostingListener(hostBuilder =>
+            {
+                hostBuilder.ConfigureHostConfiguration(config =>
+                {
+                    // Clearing here would not remove the app config added via builder.Configuration.
+                    config.AddInMemoryCollection(new Dictionary<string, string>()
+                    {
+                        { "A", "A" },
+                    });
+                });
+
+                hostBuilder.ConfigureAppConfiguration(config =>
+                {
+                    // This clears both the chained host configuration and chained builder.Configuration.
+                    config.Sources.Clear();
+                    config.AddInMemoryCollection(new Dictionary<string, string>()
+                    {
+                        { "B", "B" },
+                    });
+                });
+            });
+
+            var builder = WebApplication.CreateBuilder();
+
+            builder.Configuration.AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                { "C", "C" },
+            });
+
+            await using var app = builder.Build();
+
+            Assert.True(string.IsNullOrEmpty(app.Configuration["A"]));
+            Assert.True(string.IsNullOrEmpty(app.Configuration["C"]));
+
+            Assert.Equal("B", app.Configuration["B"]);
+
+            Assert.Same(builder.Configuration, app.Configuration);
+        }
+
+        [Fact]
+        public async Task WebApplicationCanHandleStreamBackedConfigurationAddedInBuild()
+        {
+            static Stream CreateStreamFromString(string data) => new MemoryStream(Encoding.UTF8.GetBytes(data));
+
+            using var jsonAStream = CreateStreamFromString(@"{ ""A"": ""A"" }");
+            using var jsonBStream = CreateStreamFromString(@"{ ""B"": ""B"" }");
+
+            // This mimics what WebApplicationFactory<T> does and runs configure
+            // services callbacks
+            using var listener = new HostingListener(hostBuilder =>
+            {
+                hostBuilder.ConfigureHostConfiguration(config => config.AddJsonStream(jsonAStream));
+                hostBuilder.ConfigureAppConfiguration(config => config.AddJsonStream(jsonBStream));
+            });
+
+            var builder = WebApplication.CreateBuilder();
+            await using var app = builder.Build();
+
+            Assert.Equal("A", app.Configuration["A"]);
+            Assert.Equal("B", app.Configuration["B"]);
+
+            Assert.Same(builder.Configuration, app.Configuration);
+        }
+
+        [Fact]
+        public async Task WebApplicationDisposesConfigurationProvidersAddedInBuild()
+        {
+            var hostConfigSource = new RandomConfigurationSource();
+            var appConfigSource = new RandomConfigurationSource();
+
+            // This mimics what WebApplicationFactory<T> does and runs configure
+            // services callbacks
+            using var listener = new HostingListener(hostBuilder =>
+            {
+                hostBuilder.ConfigureHostConfiguration(config => config.Add(hostConfigSource));
+                hostBuilder.ConfigureAppConfiguration(config => config.Add(appConfigSource));
+            });
+
+            var builder = WebApplication.CreateBuilder();
+
+            {
+                await using var app = builder.Build();
+
+                Assert.Equal(1, hostConfigSource.ProvidersBuilt);
+                Assert.Equal(1, appConfigSource.ProvidersBuilt);
+                Assert.Equal(1, hostConfigSource.ProvidersLoaded);
+                Assert.Equal(1, appConfigSource.ProvidersLoaded);
+                Assert.Equal(0, hostConfigSource.ProvidersDisposed);
+                Assert.Equal(0, appConfigSource.ProvidersDisposed);
+            }
+
+            Assert.Equal(1, hostConfigSource.ProvidersBuilt);
+            Assert.Equal(1, appConfigSource.ProvidersBuilt);
+            Assert.Equal(1, hostConfigSource.ProvidersLoaded);
+            Assert.Equal(1, appConfigSource.ProvidersLoaded);
+            Assert.True(hostConfigSource.ProvidersDisposed > 0);
+            Assert.True(appConfigSource.ProvidersDisposed > 0);
+        }
+
+        [Fact]
+        public async Task WebApplicationMakesOriginalConfigurationProvidersAddedInBuildAccessable()
+        {
+            // This mimics what WebApplicationFactory<T> does and runs configure
+            // services callbacks
+            using var listener = new HostingListener(hostBuilder =>
+            {
+                hostBuilder.ConfigureAppConfiguration(config => config.Add(new RandomConfigurationSource()));
+            });
+
+            var builder = WebApplication.CreateBuilder();
+            await using var app = builder.Build();
+
+            var wrappedProviders = ((IConfigurationRoot)app.Configuration).Providers.OfType<IEnumerable<IConfigurationProvider>>();
+            var unwrappedProviders = wrappedProviders.Select(p => Assert.Single(p));
+            Assert.Single(unwrappedProviders.OfType<RandomConfigurationProvider>());
+        }
+
+        [Fact]
         public void WebApplicationBuilderHostProperties_IsCaseSensitive()
         {
             var builder = WebApplication.CreateBuilder();
@@ -691,6 +961,58 @@ namespace Microsoft.AspNetCore.Tests
             await changed.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
             options = monitor.CurrentValue;
             Assert.Contains("NewHost", options.AllowedHosts);
+        }
+
+        [Fact]
+        public void CanResolveIConfigurationBeforeBuildingApplication()
+        {
+            var builder = WebApplication.CreateBuilder();
+            var sp = builder.Services.BuildServiceProvider();
+
+            var config = sp.GetService<IConfiguration>();
+            Assert.NotNull(config);
+            Assert.Same(config, builder.Configuration);
+
+            var app = builder.Build();
+
+            Assert.Same(app.Configuration, builder.Configuration);
+        }
+
+        [Fact]
+        public void ManuallyAddingConfigurationAsServiceWorks()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
+            var sp = builder.Services.BuildServiceProvider();
+
+            var config = sp.GetService<IConfiguration>();
+            Assert.NotNull(config);
+            Assert.Same(config, builder.Configuration);
+
+            var app = builder.Build();
+
+            Assert.Same(app.Configuration, builder.Configuration);
+        }
+
+        [Fact]
+        public void AddingMemoryStreamBackedConfigurationWorks()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            var jsonConfig = @"{ ""foo"": ""bar"" }";
+            using var ms = new MemoryStream();
+            using var sw = new StreamWriter(ms);
+            sw.WriteLine(jsonConfig);
+            sw.Flush();
+
+            ms.Position = 0;
+            builder.Configuration.AddJsonStream(ms);
+
+            Assert.Equal("bar", builder.Configuration["foo"]);
+
+            var app = builder.Build();
+
+            Assert.Equal("bar", app.Configuration["foo"]);
         }
 
         [Fact]
@@ -881,41 +1203,6 @@ namespace Microsoft.AspNetCore.Tests
             Assert.DoesNotContain(events, args =>
                 args.EventSource.Name == "Microsoft-Extensions-Logging" &&
                 args.Payload.OfType<string>().Any(p => p.Contains(guid)));
-        }
-
-        [Fact]
-        public void WebApplicationBuilder_CanSetWebRootPaths()
-        {
-            var builder = WebApplication.CreateBuilder();
-            var webRootPath = "www";
-            var fullWebRootPath = Path.Combine(Directory.GetCurrentDirectory(), webRootPath);
-
-            builder.WebHost.UseWebRoot(webRootPath);
-            Assert.Equal(webRootPath, builder.WebHost.GetSetting("webroot"));
-
-            var app = builder.Build();
-            Assert.Equal(fullWebRootPath, app.Environment.WebRootPath);
-        }
-
-        [Fact]
-        public void WebApplicationBuilder_CanChangeSetWebRootPathsViaConfigureAppConfiguration()
-        {
-            var builder = WebApplication.CreateBuilder();
-            var webRootPath = "www";
-            var fullWebRootPath = Path.Combine(Directory.GetCurrentDirectory(), webRootPath);
-
-            builder.WebHost.ConfigureAppConfiguration(builder =>
-            {
-                builder.AddInMemoryCollection(new Dictionary<string, string>
-                {
-                    { WebHostDefaults.WebRootKey , webRootPath }
-                });
-            });
-
-            Assert.Equal(webRootPath, builder.WebHost.GetSetting("webroot"));
-
-            var app = builder.Build();
-            Assert.Equal(fullWebRootPath, app.Environment.WebRootPath);
         }
 
         [Fact]
@@ -1408,8 +1695,7 @@ namespace Microsoft.AspNetCore.Tests
         {
             var builder = WebApplication.CreateBuilder();
 
-            var contentRoot = Path.GetTempPath();
-            var webRoot = Path.GetTempPath();
+            var contentRoot = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             var envName = $"{nameof(WebApplicationTests)}_ENV";
 
             builder.Configuration[WebHostDefaults.ApplicationKey] = nameof(WebApplicationTests);
@@ -1463,6 +1749,22 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
+        public void ConfigurationGetDebugViewWorks()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            builder.Configuration.AddInMemoryCollection(new Dictionary<string, string>
+            {
+                ["foo"] = "bar",
+            });
+
+            var app = builder.Build();
+
+            // Make sure we don't lose "MemoryConfigurationProvider" from GetDebugView() when wrapping the provider.
+            Assert.Contains("foo=bar (MemoryConfigurationProvider)", ((IConfigurationRoot)app.Configuration).GetDebugView());
+        }
+
+        [Fact]
         public void ConfigurationCanBeReloaded()
         {
             var builder = WebApplication.CreateBuilder();
@@ -1491,23 +1793,77 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Equal(1, configSource.ProvidersBuilt);
         }
 
+        [Fact]
+        public void ConfigurationProvidersAreLoadedOnceAfterBuild()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            var configSource = new RandomConfigurationSource();
+            ((IConfigurationBuilder)builder.Configuration).Sources.Add(configSource);
+
+            using var app = builder.Build();
+
+            Assert.Equal(1, configSource.ProvidersLoaded);
+        }
+
+        [Fact]
+        public void ConfigurationProvidersAreDisposedWithWebApplication()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            var configSource = new RandomConfigurationSource();
+            ((IConfigurationBuilder)builder.Configuration).Sources.Add(configSource);
+
+            {
+                using var app = builder.Build();
+
+                Assert.Equal(0, configSource.ProvidersDisposed);
+            }
+
+            Assert.Equal(1, configSource.ProvidersDisposed);
+        }
+
+        [Fact]
+        public void ConfigurationProviderTypesArePreserved()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            ((IConfigurationBuilder)builder.Configuration).Sources.Add(new RandomConfigurationSource());
+
+            var app = builder.Build();
+
+            Assert.Single(((IConfigurationRoot)app.Configuration).Providers.OfType<RandomConfigurationProvider>());
+        }
+
         public class RandomConfigurationSource : IConfigurationSource
         {
             public int ProvidersBuilt { get; set; }
+            public int ProvidersLoaded { get; set; }
+            public int ProvidersDisposed { get; set; }
 
             public IConfigurationProvider Build(IConfigurationBuilder builder)
             {
                 ProvidersBuilt++;
-                return new RandomConfigurationProvider();
+                return new RandomConfigurationProvider(this);
             }
         }
 
-        public class RandomConfigurationProvider : ConfigurationProvider
+        public class RandomConfigurationProvider : ConfigurationProvider, IDisposable
         {
+            private readonly RandomConfigurationSource _source;
+
+            public RandomConfigurationProvider(RandomConfigurationSource source)
+            {
+                _source = source;
+            }
+
             public override void Load()
             {
+                _source.ProvidersLoaded++;
                 Data["Random"] = Guid.NewGuid().ToString();
             }
+
+            public void Dispose() => _source.ProvidersDisposed++;
         }
 
         class ThrowingStartupFilter : IStartupFilter

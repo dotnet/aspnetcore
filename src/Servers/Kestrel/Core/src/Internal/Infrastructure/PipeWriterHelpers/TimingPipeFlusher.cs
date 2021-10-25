@@ -21,11 +21,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
     {
         private PipeWriter _writer = default!;
         private readonly ITimeoutControl? _timeoutControl;
-        private readonly IKestrelTrace _log;
+        private readonly KestrelTrace _log;
 
         public TimingPipeFlusher(
             ITimeoutControl? timeoutControl,
-            IKestrelTrace log)
+            KestrelTrace log)
         {
             _timeoutControl = timeoutControl;
             _log = log;

@@ -54,13 +54,24 @@ namespace Microsoft.AspNetCore.Identity
                 return false;
             }
 
-            using var hash = new HMACSHA1(Base32.FromBase32(key));
+            var keyBytes = Base32.FromBase32(key);
+
+#if NET6_0_OR_GREATER
+            var unixTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+#else
+            using var hash = new HMACSHA1(keyBytes);
             var unixTimestamp = Convert.ToInt64(Math.Round((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds));
+#endif
+
             var timestep = Convert.ToInt64(unixTimestamp / 30);
             // Allow codes from 90s in each direction (we could make this configurable?)
             for (int i = -2; i <= 2; i++)
             {
+#if NET6_0_OR_GREATER
+                var expectedCode = Rfc6238AuthenticationService.ComputeTotp(keyBytes, (ulong)(timestep + i), modifier: null);
+#else
                 var expectedCode = Rfc6238AuthenticationService.ComputeTotp(hash, (ulong)(timestep + i), modifier: null);
+#endif
                 if (expectedCode == code)
                 {
                     return true;

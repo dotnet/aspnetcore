@@ -22,6 +22,12 @@ namespace Microsoft.Extensions.Internal
         /// <param name="additionalPrincipal">The <see cref="ClaimsPrincipal"/> containing <see cref="ClaimsIdentity"/> to be added.</param>
         public static ClaimsPrincipal MergeUserPrincipal(ClaimsPrincipal? existingPrincipal, ClaimsPrincipal? additionalPrincipal)
         {
+            // For the first principal, just use the new principal rather than copying it
+            if (existingPrincipal == null && additionalPrincipal != null)
+            {
+                return additionalPrincipal;
+            }
+
             var newPrincipal = new ClaimsPrincipal();
 
             // New principal identities go first

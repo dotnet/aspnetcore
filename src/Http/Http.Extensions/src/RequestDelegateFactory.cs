@@ -208,39 +208,40 @@ namespace Microsoft.AspNetCore.Http
         {
             if (parameter.Name is null)
             {
-                throw new InvalidOperationException("A parameter does not have a name! Was it generated? All parameters must be named.");
+                throw new InvalidOperationException($"Encountered a parameter of type '{parameter.ParameterType}' without a name. Parameters must have a name.");
             }
 
             var parameterCustomAttributes = parameter.GetCustomAttributes();
 
             if (parameterCustomAttributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
             {
-                factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.RouteAttribue);
-                if (factoryContext.RouteParameters is { } routeParams && !routeParams.Contains(parameter.Name, StringComparer.OrdinalIgnoreCase))
+                var routeName = routeAttribute.Name ?? parameter.Name;
+                factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.RouteAttribute);
+                if (factoryContext.RouteParameters is { } routeParams && !routeParams.Contains(routeName, StringComparer.OrdinalIgnoreCase))
                 {
-                    throw new InvalidOperationException($"{parameter.Name} is not a route paramter.");
+                    throw new InvalidOperationException($"'{routeName}' is not a route parameter.");
                 }
 
-                return BindParameterFromProperty(parameter, RouteValuesExpr, routeAttribute.Name ?? parameter.Name, factoryContext, "route");
+                return BindParameterFromProperty(parameter, RouteValuesExpr, routeName, factoryContext, "route");
             }
             else if (parameterCustomAttributes.OfType<IFromQueryMetadata>().FirstOrDefault() is { } queryAttribute)
             {
-                factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.QueryAttribue);
+                factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.QueryAttribute);
                 return BindParameterFromProperty(parameter, QueryExpr, queryAttribute.Name ?? parameter.Name, factoryContext, "query string");
             }
             else if (parameterCustomAttributes.OfType<IFromHeaderMetadata>().FirstOrDefault() is { } headerAttribute)
             {
-                factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.HeaderAttribue);
+                factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.HeaderAttribute);
                 return BindParameterFromProperty(parameter, HeadersExpr, headerAttribute.Name ?? parameter.Name, factoryContext, "header");
             }
             else if (parameterCustomAttributes.OfType<IFromBodyMetadata>().FirstOrDefault() is { } bodyAttribute)
             {
-                factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.BodyAttribue);
+                factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.BodyAttribute);
                 return BindParameterFromBody(parameter, bodyAttribute.AllowEmpty, factoryContext);
             }
             else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)))
             {
-                factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.ServiceAttribue);
+                factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.ServiceAttribute);
                 return BindParameterFromService(parameter, factoryContext);
             }
             else if (parameter.ParameterType == typeof(HttpContext))
@@ -486,6 +487,11 @@ namespace Microsoft.AspNetCore.Http
             }
             else if (typeof(IResult).IsAssignableFrom(returnType))
             {
+                if (returnType.IsValueType)
+                {
+                    var box = Expression.TypeAs(methodCall, typeof(IResult));
+                    return Expression.Call(ResultWriteResponseAsyncMethod, box, HttpContextExpr);
+                }
                 return Expression.Call(ResultWriteResponseAsyncMethod, methodCall, HttpContextExpr);
             }
             else if (returnType == typeof(string))
@@ -879,7 +885,7 @@ namespace Microsoft.AspNetCore.Http
                 factoryContext.ParamCheckExpressions.Add(checkRequiredBodyBlock);
             }
 
-            // (ParamterType)boundValues[i]
+            // (ParameterType)boundValues[i]
             return Expression.Convert(boundValueExpr, parameter.ParameterType);
         }
 
@@ -1192,11 +1198,11 @@ namespace Microsoft.AspNetCore.Http
 
         private static class RequestDelegateFactoryConstants
         {
-            public const string RouteAttribue = "Route (Attribute)";
-            public const string QueryAttribue = "Query (Attribute)";
-            public const string HeaderAttribue = "Header (Attribute)";
-            public const string BodyAttribue = "Body (Attribute)";
-            public const string ServiceAttribue = "Service (Attribute)";
+            public const string RouteAttribute = "Route (Attribute)";
+            public const string QueryAttribute = "Query (Attribute)";
+            public const string HeaderAttribute = "Header (Attribute)";
+            public const string BodyAttribute = "Body (Attribute)";
+            public const string ServiceAttribute = "Service (Attribute)";
             public const string RouteParameter = "Route (Inferred)";
             public const string QueryStringParameter = "Query String (Inferred)";
             public const string ServiceParameter = "Services (Inferred)";

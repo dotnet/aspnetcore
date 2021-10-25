@@ -1,10 +1,10 @@
-import { JSInitializer } from "./JSInitializers";
+import { JSInitializer } from './JSInitializers';
 
 export async function fetchAndInvokeInitializers() : Promise<JSInitializer> {
   const jsInitializersResponse = await fetch('_framework/blazor.modules.json', {
     method: 'GET',
     credentials: 'include',
-    cache: 'no-cache'
+    cache: 'no-cache',
   });
 
   const initializers: string[] = await jsInitializersResponse.json();

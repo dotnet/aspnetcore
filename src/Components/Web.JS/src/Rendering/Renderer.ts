@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/camelcase */
 import '../Platform/Platform';
 import '../Environment';
 import { RenderBatch } from './RenderBatch/RenderBatch';

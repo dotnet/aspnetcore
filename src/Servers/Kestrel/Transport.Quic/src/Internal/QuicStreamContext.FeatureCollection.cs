@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                     if (_stream.CanRead)
                     {
                         _shutdownReadReason = abortReason;
-                        _log.StreamAbortRead(this, errorCode, abortReason.Message);
+                        QuicLog.StreamAbortRead(_log, this, errorCode, abortReason.Message);
                         _stream.AbortRead(errorCode);
                     }
                     else
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                     if (_stream.CanWrite)
                     {
                         _shutdownWriteReason = abortReason;
-                        _log.StreamAbortWrite(this, errorCode, abortReason.Message);
+                        QuicLog.StreamAbortWrite(_log, this, errorCode, abortReason.Message);
                         _stream.AbortWrite(errorCode);
                     }
                     else

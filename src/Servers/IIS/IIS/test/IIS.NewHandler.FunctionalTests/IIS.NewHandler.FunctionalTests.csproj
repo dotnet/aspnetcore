@@ -28,9 +28,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\testassets\IIS.Common.TestLib\IIS.Common.TestLib.csproj" />
-    <ProjectReference Include="..\testassets\InProcessWebSite\InProcessWebSite.csproj">
-      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
-    </ProjectReference>
+    <ProjectReference Include="..\testassets\InProcessWebSite\InProcessWebSite.csproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
   <ItemGroup>

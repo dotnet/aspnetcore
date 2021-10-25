@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _transportConnectionManager = transportConnectionManager;
         }
 
-        private IKestrelTrace Log => _serviceContext.Log;
+        private KestrelTrace Log => _serviceContext.Log;
 
         public Task StartAcceptingConnections(IConnectionListener<T> listener)
         {

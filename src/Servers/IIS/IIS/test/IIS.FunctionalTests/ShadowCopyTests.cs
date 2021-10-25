@@ -173,6 +173,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/37081")]
         public async Task ShadowCopyE2EWorksWithOldFoldersPresent()
         {
             using var directory = TempDirectory.Create();
@@ -199,7 +200,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             // Depending on timing, this could result in a shutdown failure, but sometimes it succeeds, handle both situations
             if (!response.IsSuccessStatusCode)
             {
-                Assert.Equal("Application Shutting Down", response.ReasonPhrase);
+                Assert.True(response.ReasonPhrase == "Application Shutting Down" || response.ReasonPhrase == "Server has been shutdown");
             }
 
             // This shutdown should trigger a copy to the next highest directory, which will be 2
@@ -212,6 +213,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/36887")]
         public async Task ShadowCopyCleansUpOlderFolders()
         {
             using var directory = TempDirectory.Create();
@@ -240,7 +242,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             // Depending on timing, this could result in a shutdown failure, but sometimes it succeeds, handle both situations
             if (!response.IsSuccessStatusCode)
             {
-                Assert.Equal("Application Shutting Down", response.ReasonPhrase);
+                Assert.True(response.ReasonPhrase == "Application Shutting Down" || response.ReasonPhrase == "Server has been shutdown");
             }
 
             // This shutdown should trigger a copy to the next highest directory, which will be 11
@@ -250,7 +252,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
             response = await deploymentResult.HttpClient.GetAsync("Wow!");
             Assert.True(response.IsSuccessStatusCode);
- 
+
             // Verify old directories were cleaned up
             Assert.False(Directory.Exists(Path.Combine(directory.DirectoryPath, "1")), "Expected 1 shadow copy directory to be deleted");
             Assert.False(Directory.Exists(Path.Combine(directory.DirectoryPath, "3")), "Expected 3 shadow copy directory to be deleted");

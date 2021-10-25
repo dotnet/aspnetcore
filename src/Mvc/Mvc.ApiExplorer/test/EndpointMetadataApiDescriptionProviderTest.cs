@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -502,7 +503,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
             };
-            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+            var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
 
             // Act
             provider.OnProvidersExecuting(context);
@@ -527,7 +528,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
             };
-            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+            var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
 
             // Act
             provider.OnProvidersExecuting(context);
@@ -552,7 +553,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
             };
-            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+            var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
 
             // Act
             provider.OnProvidersExecuting(context);
@@ -578,7 +579,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
             };
-            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+            var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
 
             // Act
             provider.OnProvidersExecuting(context);
@@ -629,7 +630,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
             };
-            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+            var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
 
             // Act
             provider.OnProvidersExecuting(context);
@@ -667,7 +668,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
             };
-            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+            var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
 
             // Act
             provider.OnProvidersExecuting(context);
@@ -700,7 +701,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
             };
-            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+            var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
 
             // Act
             provider.OnProvidersExecuting(context);
@@ -728,7 +729,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
             };
-            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+            var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
 
             // Act
             provider.OnProvidersExecuting(context);
@@ -763,7 +764,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
             };
-            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+            var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
 
             // Act
             provider.OnProvidersExecuting(context);
@@ -801,7 +802,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
             };
-            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+            var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
 
             // Act
             provider.OnProvidersExecuting(context);
@@ -839,7 +840,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
             };
-            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+            var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
 
             // Act
             provider.OnProvidersExecuting(context);
@@ -859,6 +860,73 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
 #nullable restore
+
+        [Fact]
+        public void ProducesRouteInfoOnlyForRouteParameters()
+        {
+            var builder = CreateBuilder();
+            string GetName(int fromQuery, string name = "default") => $"Hello {name}!";
+            builder.MapGet("/api/todos/{name}", GetName);
+            var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+            var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+            var hostEnvironment = new HostEnvironment
+            {
+                ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+            };
+            var provider = new EndpointMetadataApiDescriptionProvider(
+                endpointDataSource,
+                hostEnvironment,
+                new DefaultParameterPolicyFactory(Options.Create(new RouteOptions()), new TestServiceProvider()),
+                new ServiceProviderIsService());
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var apiDescription = Assert.Single(context.Results);
+            Assert.Collection(apiDescription.ParameterDescriptions,
+                parameter =>
+                {
+                    Assert.Equal("fromQuery", parameter.Name);
+                    Assert.Null(parameter.RouteInfo);
+                },
+                parameter =>
+                {
+                    Assert.Equal("name", parameter.Name);
+                    Assert.NotNull(parameter.RouteInfo);
+                    Assert.Empty(parameter.RouteInfo!.Constraints);
+                    Assert.True(parameter.RouteInfo!.IsOptional);
+                    Assert.Equal("default", parameter.RouteInfo!.DefaultValue);
+                });
+        }
+
+        [Fact]
+        public void HandlesEndpointWithRouteConstraints()
+        {
+            var builder = CreateBuilder();
+            builder.MapGet("/api/todos/{name:minlength(8):guid:maxlength(20)}", (string name) => "");
+            var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+            var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+            var hostEnvironment = new HostEnvironment
+            {
+                ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+            };
+            var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var apiDescription = Assert.Single(context.Results);
+            var parameter = Assert.Single(apiDescription.ParameterDescriptions);
+            Assert.NotNull(parameter.RouteInfo);
+            Assert.Collection(parameter.RouteInfo!.Constraints,
+                constraint => Assert.IsType<MinLengthRouteConstraint>(constraint),
+                constraint => Assert.IsType<GuidRouteConstraint>(constraint),
+                constraint => Assert.IsType<MaxLengthRouteConstraint>(constraint));
+        }
 
         private static IEnumerable<string> GetSortedMediaTypes(ApiResponseType apiResponseType)
         {
@@ -884,18 +952,20 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             var endpoint = new RouteEndpoint(httpContext => Task.CompletedTask, routePattern, 0, endpointMetadata, displayName);
             var endpointDataSource = new DefaultEndpointDataSource(endpoint);
-            var hostEnvironment = new HostEnvironment
-            {
-                ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
-            };
 
-            var provider = new EndpointMetadataApiDescriptionProvider(endpointDataSource, hostEnvironment, new ServiceProviderIsService());
+            var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
 
             provider.OnProvidersExecuting(context);
             provider.OnProvidersExecuted(context);
 
             return context.Results;
         }
+
+        private static EndpointMetadataApiDescriptionProvider CreateEndpointMetadataApiDescriptionProvider(EndpointDataSource endpointDataSource) => new EndpointMetadataApiDescriptionProvider(
+                endpointDataSource,
+                new HostEnvironment { ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest) },
+                new DefaultParameterPolicyFactory(Options.Create(new RouteOptions()), new TestServiceProvider()),
+                new ServiceProviderIsService());
 
         private static TestEndpointRouteBuilder CreateBuilder() =>
             new TestEndpointRouteBuilder(new ApplicationBuilder(new TestServiceProvider()));

@@ -1,5 +1,13 @@
 <Project>
   <!-- this file is shared between Helix.proj and .csproj files -->
+  <PropertyGroup>
+    <HelixQueueAlpine312>(Alpine.312.Amd64.Open)Ubuntu.1804.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.12-helix-20200908125345-56c6673</HelixQueueAlpine312>
+    <HelixQueueDebian11>(Debian.11.Amd64.Open)ubuntu.1804.amd64.open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-amd64-20210304164428-5a7c380</HelixQueueDebian11>
+    <HelixQueueFedora34>(Fedora.34.Amd64.Open)ubuntu.1804.amd64.open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-34-helix-20210728124700-4f64125</HelixQueueFedora34>
+    <HelixQueueMariner>(Mariner)Ubuntu.1804.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-1.0-helix-20210528192219-92bf620</HelixQueueMariner>
+    <HelixQueueArmDebian9>(Debian.9.Arm64.Open)Ubuntu.1804.Armarch.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-9-helix-arm64v8-a12566d-20190807161036</HelixQueueArmDebian9>
+  </PropertyGroup>
+  
   <ItemGroup Condition="'$(IsWindowsOnlyTest)' != 'true'">
     <HelixAvailablePlatform Include="Windows" />
     <HelixAvailablePlatform Include="OSX" />
@@ -19,13 +27,13 @@
   
   <!-- x64 Quarantined-only (quarantined-pr.yml and quarantined-tests.yml) test queues -->
   <ItemGroup Condition="'$(IsRequiredCheck)' == 'true' AND '$(TargetArchitecture)' == 'x64' AND '$(_UseHelixOpenQueues)' == 'true' AND '$(RunQuarantinedTests)' == 'true'">
-    <HelixAvailableTargetQueue Include="(Fedora.34.Amd64.Open)ubuntu.1804.amd64.open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-34-helix-20210728124700-4f64125" Platform="Linux" />
+    <HelixAvailableTargetQueue Include="$(HelixQueueFedora34)" Platform="Linux" />
   </ItemGroup>
 
   <!-- x64 Queues for public helix-matrix.yml and quarantine pipelines, except in windows-only cases -->
   <ItemGroup Condition="'$(TargetArchitecture)' == 'x64' AND '$(IsHelixDaily)' == 'true' AND '$(_UseHelixOpenQueues)' == 'true' AND '$(IsWindowsOnlyTest)' != 'true'">
     <!-- Linux -->
-    <HelixAvailableTargetQueue Include="Debian.9.Amd64.Open" Platform="Linux" />
+    <HelixAvailableTargetQueue Include="$(HelixQueueDebian11)" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Redhat.7.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Ubuntu.2004.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Ubuntu.1804.Amd64.Open" Platform="Linux" />
@@ -35,9 +43,9 @@
     <HelixAvailableTargetQueue Include="OSX.1100.Amd64.Open" Platform="OSX" />
 
     <!-- Containers -->
-    <HelixAvailableTargetQueue Include="(Fedora.34.Amd64.Open)ubuntu.1804.amd64.open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-34-helix-20210728124700-4f64125" Platform="Linux" />
-    <HelixAvailableTargetQueue Include="(Alpine.312.Amd64.Open)Ubuntu.1804.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.12-helix-20200908125345-56c6673" Platform="Linux" />
-    <HelixAvailableTargetQueue Include="(Mariner)Ubuntu.1804.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-1.0-helix-20210528192219-92bf620" Platform="Linux" />    
+    <HelixAvailableTargetQueue Include="$(HelixQueueFedora34)" Platform="Linux" />
+    <HelixAvailableTargetQueue Include="$(HelixQueueAlpine312)" Platform="Linux" />
+    <HelixAvailableTargetQueue Include="$(HelixQueueMariner)" Platform="Linux" />    
   </ItemGroup>
 
   <!-- x64 Queues for public helix-matrix.yml and quarantine pipelines, Windows cases-->
@@ -54,7 +62,7 @@
 
   <!-- arm64 queues for helix-matrix.yml and quarantine pipeline -->
   <ItemGroup Condition="'$(TargetArchitecture)' == 'arm64' AND '$(IsHelixDaily)' == 'true' AND '$(_UseHelixOpenQueues)' == 'true' AND '$(IsWindowsOnlyTest)' != 'true'">
-    <HelixAvailableTargetQueue Include="(Debian.9.Arm64.Open)Ubuntu.1804.Armarch.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-9-helix-arm64v8-a12566d-20190807161036" Platform="Linux" />
+    <HelixAvailableTargetQueue Include="$(HelixQueueArmDebian9)" Platform="Linux" />
   </ItemGroup>
 
   <!-- IIS Express isn't supported on arm64 and most of the IsWindowsOnlyTests depend on it's setup scripts. -->

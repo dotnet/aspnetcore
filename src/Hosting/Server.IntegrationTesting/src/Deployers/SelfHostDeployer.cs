@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     // Core+Standalone always publishes. This must be Clr+Standalone or Core+Portable.
                     // Run from the pre-built bin/{config}/{tfm} directory.
                     var targetFramework = DeploymentParameters.TargetFramework
-                        ?? (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? Tfm.Net461 : Tfm.NetCoreApp22);
+                        ?? (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? Tfm.Net462 : Tfm.NetCoreApp22);
                     workingDirectory = Path.Combine(DeploymentParameters.ApplicationPath, "bin", DeploymentParameters.Configuration, targetFramework);
                     // CurrentDirectory will point to bin/{config}/{tfm}, but the config and static files aren't copied, point to the app base instead.
                     DeploymentParameters.EnvironmentVariables["ASPNETCORE_CONTENTROOT"] = DeploymentParameters.ApplicationPath;

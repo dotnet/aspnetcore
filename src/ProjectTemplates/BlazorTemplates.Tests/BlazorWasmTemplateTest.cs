@@ -21,9 +21,8 @@ using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Templates.Test
+namespace BlazorTemplates.Tests
 {
-    [Retry]
     public class BlazorWasmTemplateTest : BlazorTemplateTest
     {
         public BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory)
@@ -390,7 +389,7 @@ namespace Templates.Test
 
         [Theory]
         [MemberData(nameof(TemplateData))]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30851")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/37782")]
         public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_Works(TemplateInstance instance)
             => CreateBuildPublishAsync(instance.Name, args: instance.Arguments, targetFramework: "netstandard2.1");
 

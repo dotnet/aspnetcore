@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-5.2-2
         private long GetCurrentGoAwayStreamId() => Interlocked.Read(ref _highestOpenedRequestStreamId) + 4;
 
-        private IKestrelTrace Log => _context.ServiceContext.Log;
+        private KestrelTrace Log => _context.ServiceContext.Log;
         public KestrelServerLimits Limits => _context.ServiceContext.ServerOptions.Limits;
         public Http3ControlStream? OutboundControlStream { get; set; }
         public Http3ControlStream? ControlStream { get; set; }

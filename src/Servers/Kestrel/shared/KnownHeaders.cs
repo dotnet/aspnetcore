@@ -428,8 +428,9 @@ namespace CodeGenerator
             public bool EnhancedSetter { get; set; }
             public bool PrimaryHeader { get; set; }
             public string FlagBit() => $"{"0x" + (1L << Index).ToString("x", CultureInfo.InvariantCulture)}L";
-            public string TestBit() => $"(_bits & {"0x" + (1L << Index).ToString("x", CultureInfo.InvariantCulture)}L) != 0";
-            public string TestTempBit() => $"(tempBits & {"0x" + (1L << Index).ToString("x", CultureInfo.InvariantCulture)}L) != 0";
+            public string TestBitCore(string name) => $"({name} & {"0x" + (1L << Index).ToString("x", CultureInfo.InvariantCulture)}L) != 0";
+            public string TestBit() => TestBitCore("_bits");
+            public string TestTempBit() => TestBitCore("tempBits");
             public string TestNotTempBit() => $"(tempBits & ~{"0x" + (1L << Index).ToString("x", CultureInfo.InvariantCulture)}L) == 0";
             public string TestNotBit() => $"(_bits & {"0x" + (1L << Index).ToString("x", CultureInfo.InvariantCulture)}L) == 0";
             public string SetBit() => $"_bits |= {"0x" + (1L << Index).ToString("x", CultureInfo.InvariantCulture)}L";
@@ -1321,40 +1322,40 @@ $@"        private void Clear(long bitsToClear)
             {{
                 switch (_next)
                 {{{Each(loop.Headers.Where(header => header.Identifier != "ContentLength"), header => $@"
-                    case {header.Index}:
-                        goto Header{header.Identifier};")}
-                    {(!loop.ClassName.Contains("Trailers") ? $@"case {loop.Headers.Length - 1}:
-                        goto HeaderContentLength;" : "")}
-                    default:
-                        goto ExtraHeaders;
-                }}
-                {Each(loop.Headers.Where(header => header.Identifier != "ContentLength"), header => $@"
-                Header{header.Identifier}: // case {header.Index}
-                    if ({header.TestBit()})
-                    {{
+                    case {header.Index}: // Header: ""{header.Name}""
+                        Debug.Assert({header.TestBitCore("_currentBits")});
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.{header.Identifier}, _collection._headers._{header.Identifier});
                         {(loop.ClassName.Contains("Request") ? "" : @$"_currentKnownType = KnownHeaderType.{header.Identifier};
-                        ")}_next = {header.Index + 1};
-                        return true;
-                    }}")}
-                {(!loop.ClassName.Contains("Trailers") ? $@"HeaderContentLength: // case {loop.Headers.Length - 1}
-                    if (_collection._contentLength.HasValue)
-                    {{
-                        _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
+                        ")}_currentBits ^= {"0x" + (1L << header.Index).ToString("x", CultureInfo.InvariantCulture)}L;
+                        break;")}
+                    {(!loop.ClassName.Contains("Trailers") ? $@"case {loop.Headers.Length - 1}: // Header: ""Content-Length""
+                        Debug.Assert(_currentBits == 0);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.GetValueOrDefault()));
                         {(loop.ClassName.Contains("Request") ? "" : @"_currentKnownType = KnownHeaderType.ContentLength;
-                        ")}_next = {loop.Headers.Length};
-                        return true;
-                    }}" : "")}
-                ExtraHeaders:
-                    if (!_hasUnknown || !_unknownEnumerator.MoveNext())
-                    {{
-                        _current = default(KeyValuePair<string, StringValues>);
-                        {(loop.ClassName.Contains("Request") ? "" : @"_currentKnownType = default;
-                        ")}return false;
-                    }}
-                    _current = _unknownEnumerator.Current;
-                    {(loop.ClassName.Contains("Request") ? "" : @"_currentKnownType = KnownHeaderType.Unknown;
-                    ")}return true;
+                        ")}_next = -1;
+                        return true;" : "")}
+                    default:
+                        if (!_hasUnknown || !_unknownEnumerator.MoveNext())
+                        {{
+                            _current = default(KeyValuePair<string, StringValues>);
+                            {(loop.ClassName.Contains("Request") ? "" : @"_currentKnownType = default;
+                            ")}return false;
+                        }}
+                        _current = _unknownEnumerator.Current;
+                        {(loop.ClassName.Contains("Request") ? "" : @"_currentKnownType = KnownHeaderType.Unknown;
+                        ")}return true;
+                }}
+
+                if (_currentBits != 0)
+                {{
+                    _next = BitOperations.TrailingZeroCount(_currentBits);
+                    return true;
+                }}
+                else
+                {{
+                    {(!loop.ClassName.Contains("Trailers") ? $@"_next = _collection._contentLength.HasValue ? {loop.Headers.Length - 1} : -1;" : "_next = -1;")}
+                    return true;
+                }}
             }}
         }}
     }}

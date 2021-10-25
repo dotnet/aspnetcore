@@ -1,24 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture<SimpleWebSiteWithWebApplicationBuilder.FakeStartup>>
+    public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture<SimpleWebSiteWithWebApplicationBuilder.Program>>
     {
-        private readonly MvcTestFixture<SimpleWebSiteWithWebApplicationBuilder.FakeStartup> _fixture;
+        private readonly MvcTestFixture<SimpleWebSiteWithWebApplicationBuilder.Program> _fixture;
 
-        public SimpleWithWebApplicationBuilderTests(MvcTestFixture<SimpleWebSiteWithWebApplicationBuilder.FakeStartup> fixture)
+        public SimpleWithWebApplicationBuilderTests(MvcTestFixture<SimpleWebSiteWithWebApplicationBuilder.Program> fixture)
         {
             _fixture = fixture;
             Client = _fixture.CreateDefaultClient();
@@ -136,7 +132,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             // Arrange
             var expected = "Development";
-            using var client = new WebApplicationFactory<SimpleWebSiteWithWebApplicationBuilder.FakeStartup>().CreateClient();
+            using var client = new WebApplicationFactory<SimpleWebSiteWithWebApplicationBuilder.Program>().CreateClient();
 
             // Act
             var content = await client.GetStringAsync("http://localhost/environment");
@@ -189,6 +185,27 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(expected, content);
+        }
+
+        [Fact]
+        public async Task WebRoot_Can_Be_Overriden()
+        {
+            var webRoot = "foo";
+            var expectedWebRoot = "";
+            // Arrange
+            var fixture = _fixture.WithWebHostBuilder(builder =>
+            {
+                expectedWebRoot = Path.GetFullPath(Path.Combine(builder.GetSetting(WebHostDefaults.ContentRootKey), webRoot));
+                builder.UseSetting(WebHostDefaults.WebRootKey, webRoot);
+            });
+
+            using var client = fixture.CreateDefaultClient();
+
+            // Act
+            var content = await client.GetStringAsync("http://localhost/webroot");
+
+            // Assert
+            Assert.Equal(expectedWebRoot, content);
         }
 
         [Fact]

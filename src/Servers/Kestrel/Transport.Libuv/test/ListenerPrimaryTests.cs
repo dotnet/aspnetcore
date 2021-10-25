@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var endpoint = new IPEndPoint(IPAddress.Loopback, 0);
             var logger = new TestApplicationErrorLogger();
 
-            var transportContextPrimary = new TestLibuvTransportContext { Log = new LibuvTrace(logger) };
+            var transportContextPrimary = new TestLibuvTransportContext { Log = logger };
             var transportContextSecondary = new TestLibuvTransportContext();
 
             var pipeName = (libuv.IsWindows ? @"\\.\pipe\kestrel_" : "/tmp/kestrel_") + Guid.NewGuid().ToString("n");
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
             // Create a pipe connection and keep it open without sending any data
             var connectTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            var connectionTrace = new LibuvTrace(new TestApplicationErrorLogger());
+            var connectionTrace = new TestApplicationErrorLogger();
             var pipe = new UvPipeHandle(connectionTrace);
 
             libuvThreadPrimary.Post(_ =>
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
             var logger = new TestApplicationErrorLogger();
 
-            var transportContextPrimary = new TestLibuvTransportContext { Log = new LibuvTrace(logger) };
+            var transportContextPrimary = new TestLibuvTransportContext { Log = logger };
             var transportContextSecondary = new TestLibuvTransportContext();
 
             var pipeName = (libuv.IsWindows ? @"\\.\pipe\kestrel_" : "/tmp/kestrel_") + Guid.NewGuid().ToString("n");

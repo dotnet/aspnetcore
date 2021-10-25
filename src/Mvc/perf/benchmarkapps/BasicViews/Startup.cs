@@ -45,7 +45,7 @@ namespace BasicViews
 
             switch (databaseType.ToUpperInvariant())
             {
-#if !NET461
+#if !NETFRAMEWORK
                 case "MYSQL":
                     services
                         .AddEntityFrameworkMySql()
