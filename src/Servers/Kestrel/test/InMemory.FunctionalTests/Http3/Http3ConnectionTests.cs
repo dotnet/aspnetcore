@@ -397,7 +397,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task CustomResponseTrailersCollection_MultipleStreams_Reset()
+        public async Task ResponseTrailers_MultipleStreams_Reset()
         {
             var requestHeaders = new[]
             {
@@ -408,34 +408,43 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>(HeaderNames.ContentType, "application/json")
             };
 
-            IHeaderDictionary trailersFirst = null;
-            IHeaderDictionary trailersSecond = null;
             var requestCount = 0;
-            await Http3Api.InitializeConnectionAsync(async context =>
+            IHeaderDictionary trailersFirst = null;
+            IHeaderDictionary trailersLast = null;
+            await Http3Api.InitializeConnectionAsync(context =>
             {
-                requestCount++;
-
                 var trailersFeature = context.Features.Get<IHttpResponseTrailersFeature>();
-                if (requestCount == 1)
+                if (requestCount == 0)
                 {
                     trailersFirst = new ResponseTrailersWrapper(trailersFeature.Trailers);
                     trailersFeature.Trailers = trailersFirst;
                 }
                 else
                 {
-                    trailersSecond = trailersFeature.Trailers;
+                    trailersLast = trailersFeature.Trailers;
                 }
-                await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes($"Hello world").AsMemory());
+                trailersFeature.Trailers[$"trailer-{requestCount++}"] = "true";
+                return Task.CompletedTask;
             });
 
-            for (int i = 0; i < 2; i++)
+
+            for (int i = 0; i < 3; i++)
             {
-                var streamContext = await MakeRequestAsync(i, requestHeaders, sendData: false, waitForServerDispose: true);
+                var requestStream = await Http3Api.CreateRequestStream();
+                await requestStream.SendHeadersAsync(requestHeaders, endStream: true);
+                var responseHeaders = await requestStream.ExpectHeadersAsync();
+
+                var data = await requestStream.ExpectTrailersAsync();
+                Assert.Single(data);
+                Assert.True(data.TryGetValue($"trailer-{i}", out var trailerValue) && bool.Parse(trailerValue));
+
+                await requestStream.ExpectReceiveEndOfStream();
+                await requestStream.OnDisposedTask.DefaultTimeout();
             }
 
             Assert.NotNull(trailersFirst);
-            Assert.NotNull(trailersSecond);
-            Assert.NotSame(trailersFirst, trailersSecond);
+            Assert.NotNull(trailersLast);
+            Assert.NotSame(trailersFirst, trailersLast);
         }
 
         private async Task<ConnectionContext> MakeRequestAsync(int index, KeyValuePair<string, string>[] headers, bool sendData, bool waitForServerDispose)
@@ -504,7 +513,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public bool TryGetValue(string key, out StringValues value) => _innerHeaders.TryGetValue(key, out value);
             IEnumerator IEnumerable.GetEnumerator() => _innerHeaders.GetEnumerator();
         }
-
-       
     }
 }
