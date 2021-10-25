@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 #endif
 {
     [Collection(PublishedSitesCollection.Name)]
+    [SkipNonHelix("https://github.com/dotnet/aspnetcore/issues/25107")]
     public class FrebTests : IISFunctionalTestBase
     {
         public FrebTests(PublishedSitesFixture fixture) : base(fixture)

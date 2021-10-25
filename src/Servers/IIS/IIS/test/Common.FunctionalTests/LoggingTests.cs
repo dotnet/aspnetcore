@@ -29,6 +29,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 #endif
 {
     [Collection(PublishedSitesCollection.Name)]
+    [SkipNonHelix("https://github.com/dotnet/aspnetcore/issues/25107")]
     public class LoggingTests : IISFunctionalTestBase
     {
         public LoggingTests(PublishedSitesFixture fixture) : base(fixture)

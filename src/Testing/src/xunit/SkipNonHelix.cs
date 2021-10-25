@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Testing
 {
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.Testing
         {
             get
             {
-                return !OnHelix();
+                return OnHelix();
             }
         }
 

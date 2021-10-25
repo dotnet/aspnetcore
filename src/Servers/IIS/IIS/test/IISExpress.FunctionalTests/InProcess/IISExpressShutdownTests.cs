@@ -67,6 +67,7 @@ namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests
         }
 
         [ConditionalFact]
+        [SkipNonHelix("https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task GracefulShutdown_DoesNotCrashProcess()
         {
             var parameters = Fixture.GetBaseDeploymentParameters();
