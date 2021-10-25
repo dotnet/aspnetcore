@@ -1,27 +1,3 @@
-# Description
-
-Starting in 5.0, certain areas within the dotnet/aspnetcore and dotnet/extensions repos will require formal *incremental* API reviews before any PRs that change APIs are merged.
-
-API changes to the following areas are required to go follow this process:
-
-* area-blazor
-* area-dataprotection
-* area-healthchecks
-* area-grpc
-* area-mvc
-  * feature-model-binding
-  * feature-razor-pages
-  * feature-JSONPatch
-  * feature-discovery
-  * feature-formatters
-  * feature-api-explorer
-  * feature-tag-helpers
-* area-razor.compiler
-* area-security
-* area-signalr
-* area-identity
-* area-servers
-
 ## Process
 
 The goal of the API Review process is to ensure that the new APIs are following common patterns and the best practices.
@@ -70,4 +46,4 @@ If you are assigned a community-submitted change to *champion* in our API-review
 
 ## API Review Meeting
 
-The API Review meeting is open to all members of the ASP.NET Core team. The meeting invite is sent out to all the team members to join. Every API review meeting should include the area owners of the API change proposals as mandatory attendees. To list of all pending API review proposals can be found at: <https://aka.ms/aspnet/apireviews>
+The API Review meeting is open to all members of the ASP.NET Core team. The meeting invite as well as communication about API reviews is shared on the internal `ASP.NET Core API Reviews` distribution list. Every API review meeting should include the area owners of the API change proposals as mandatory attendees. To list of all pending API review proposals can be found at: <https://aka.ms/aspnet/apireviews>
