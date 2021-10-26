@@ -687,6 +687,17 @@ namespace Microsoft.AspNetCore.Testing
             return http3WithPayload.Payload;
         }
 
+        internal async ValueTask<Dictionary<string, string>> ExpectTrailersAsync()
+        {
+            var http3WithPayload = await ReceiveFrameAsync(false, true);
+            Http3InMemory.AssertFrameType(http3WithPayload.Type, Http3FrameType.Headers);
+
+            _headerHandler.DecodedHeaders.Clear();
+            _headerHandler.QpackDecoder.Decode(http3WithPayload.PayloadSequence, this);
+            _headerHandler.QpackDecoder.Reset();
+            return _headerHandler.DecodedHeaders.ToDictionary(kvp => kvp.Key, kvp => kvp.Value, _headerHandler.DecodedHeaders.Comparer);
+        }
+
         internal async Task ExpectReceiveEndOfStream()
         {
             var result = await ReadApplicationInputAsync();
