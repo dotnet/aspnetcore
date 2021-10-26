@@ -53,6 +53,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             _activationInfo.Clear();
         }
 
+        internal ConcurrentDictionary<CacheKey, RazorPagePropertyActivator> ActivationInfo => _activationInfo;
+
         /// <inheritdoc />
         public void Activate(IRazorPage page, ViewContext context)
         {
@@ -107,7 +109,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             return propertyActivator;
         }
 
-        private readonly struct CacheKey : IEquatable<CacheKey>
+        internal readonly struct CacheKey : IEquatable<CacheKey>
         {
             public CacheKey(Type pageType, Type? providedModelType)
             {
