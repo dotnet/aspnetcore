@@ -74,6 +74,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             _compiledViews = compiledViews;
         }
 
+        internal Dictionary<string, Task<CompiledViewDescriptor>>? CompiledViews => _compiledViews;
+
         // Invoked as part of a hot reload event.
         internal void ClearCache()
         {
