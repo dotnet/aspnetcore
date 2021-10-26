@@ -151,6 +151,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalFact]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/26294")]
+        [SkipNonHelix("This test takes 5 minutes to run")]
         public async Task ReadAndWriteSynchronously()
         {
             var content = new StringContent(new string('a', 100000));

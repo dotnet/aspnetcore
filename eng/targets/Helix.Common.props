@@ -21,7 +21,7 @@
   <!-- x64 PR(ci.yaml) required queues for internal and public cases -->
   <ItemGroup Condition="'$(IsRequiredCheck)' == 'true' AND '$(TargetArchitecture)' == 'x64' AND '$(IsHelixDaily)' != 'true'">
     <HelixAvailableTargetQueue Include="Ubuntu.1804.Amd64.Open" Platform="Linux" />
-    <HelixAvailableTargetQueue Include="Windows.10.Amd64.Server20H2.Open" Platform="Windows" />
+    <HelixAvailableTargetQueue Include="Windows.11.Amd64.ClientPre.Open" Platform="Windows" />
     <HelixAvailableTargetQueue Include="OSX.1014.Amd64.Open" Platform="OSX" />
   </ItemGroup>
   

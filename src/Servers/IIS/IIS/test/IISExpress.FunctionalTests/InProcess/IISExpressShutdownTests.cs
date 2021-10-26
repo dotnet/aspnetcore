@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests
         }
 
         [ConditionalFact]
-        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
+        [SkipNonHelix("https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task GracefulShutdown_DoesNotCrashProcess()
         {
             var parameters = Fixture.GetBaseDeploymentParameters();
