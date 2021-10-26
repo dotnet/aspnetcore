@@ -7,7 +7,6 @@ name: MacOS Build and Test Packaging
 on: [push]
 
 env:
-  DEVELOPER_DIR: /Applications/Xcode_12.2.app/Contents/Developer
   BuildScriptArgs: >
     --pack
     --all
@@ -21,6 +20,9 @@ jobs:
   Build-MacOs:
     runs-on: macos-latest
     steps:
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '12.4'
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
@@ -32,4 +34,4 @@ jobs:
         run: ./restore.sh
       - name: Build
         working-directory: ./eng
-        run: ./build.sh ${{ env.BuildScriptArgs }}
+        run: source ../activate.sh && ./build.sh ${{ env.BuildScriptArgs }}
