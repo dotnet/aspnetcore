@@ -1,0 +1,35 @@
+#
+# Based on /.azure/pipelines/ci.yml
+#
+
+name: MacOS Build and Test Packaging
+
+on: [push]
+
+env:
+  DEVELOPER_DIR: /Applications/Xcode_12.2.app/Contents/Developer
+  BuildScriptArgs: >
+    --pack
+    --all
+    --no-build-nodejs
+    --no-build-java
+    -p:SkipTestBuild=true
+    -p:OnlyPackPlatformSpecificPackages=true
+    -p:AssetManifestFileName=aspnetcore-MacOS_x64.xml
+
+jobs:
+  Build-MacOs:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: recursive
+      - name: Echo Build Command
+        working-directory: ./eng
+        run: echo ./build.sh ${{ env.BuildScriptArgs }}
+      - name: Restore
+        run: ./restore.sh
+      - name: Build
+        working-directory: ./eng
+        run: ./build.sh ${{ env.BuildScriptArgs }}
