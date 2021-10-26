@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <summary>
         /// A cache for results of view lookups.
         /// </summary>
-        protected IMemoryCache ViewLookupCache { get; private set; }
+        protected internal IMemoryCache ViewLookupCache { get; private set; }
 
         /// <summary>
         /// Gets the case-normalized route value for the specified route <paramref name="key"/>.
