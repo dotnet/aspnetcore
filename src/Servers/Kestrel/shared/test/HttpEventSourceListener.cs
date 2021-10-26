@@ -5,7 +5,7 @@ using System.Diagnostics.Tracing;
 using System.Text;
 using Microsoft.Extensions.Logging;
 
-namespace Interop.FunctionalTests.Http3
+namespace Microsoft.AspNetCore.Testing
 {
     public sealed class HttpEventSourceListener : EventListener
     {
