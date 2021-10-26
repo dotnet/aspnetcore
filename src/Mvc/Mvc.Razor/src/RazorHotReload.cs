@@ -28,9 +28,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             // For Razor view services, use the service locator pattern because they views not be registered by default.
             _razorCompiledItemFeatureProvider = applicationPartManager.FeatureProviders.OfType<RazorCompiledItemFeatureProvider>().FirstOrDefault();
 
-            if (viewCompilerProvider is DefaultViewCompiler defaultViewCompiler)
+            if (viewCompilerProvider is DefaultViewCompilerProvider defaultViewCompilerProvider)
             {
-                _defaultViewCompiler = defaultViewCompiler;
+                _defaultViewCompiler = defaultViewCompilerProvider.Compiler;
             }
 
             if (razorViewEngine.GetType() == typeof(RazorViewEngine))
