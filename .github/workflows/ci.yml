@@ -10,7 +10,6 @@ env:
   BuildScriptArgs: >
     --pack
     --all
-    --no-build-nodejs
     --no-build-java
     -p:SkipTestBuild=true
     -p:OnlyPackPlatformSpecificPackages=true
