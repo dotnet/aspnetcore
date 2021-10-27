@@ -426,7 +426,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31893")]
         public async Task RemoveInProcessReference_FailedToFindRequestHandler()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
