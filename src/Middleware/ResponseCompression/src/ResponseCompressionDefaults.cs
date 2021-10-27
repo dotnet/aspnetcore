@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             // Static files
             "text/css",
             "application/javascript",
+            "text/javascript",
             // MVC
             "text/html",
             "application/xml",
