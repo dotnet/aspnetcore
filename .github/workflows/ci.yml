@@ -10,6 +10,7 @@ env:
   BuildScriptArgs: >
     --pack
     --all
+    --no-build-nodejs
     --no-build-java
     -p:SkipTestBuild=true
     -p:OnlyPackPlatformSpecificPackages=true
@@ -31,6 +32,9 @@ jobs:
         run: echo ./build.sh ${{ env.BuildScriptArgs }}
       - name: Restore
         run: ./restore.sh
+      - name: Build nodejs
+        working-directory: ./eng
+        run: source ../activate.sh && ./build.sh --build-nodejs || true
       - name: Build
         working-directory: ./eng
         run: source ../activate.sh && ./build.sh ${{ env.BuildScriptArgs }}
