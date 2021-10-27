@@ -43,3 +43,11 @@ jobs:
       - name: Build
         working-directory: ./eng
         run: source ../activate.sh && ./build.sh ${{ env.BuildScriptArgs }}
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: artifacts
+          path: |
+            artifacts/
+            !artifacts/bin/
+            !artifacts/obj/
