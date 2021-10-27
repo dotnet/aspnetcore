@@ -452,6 +452,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 
         [ConditionalFact]
         [MsQuicSupported]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/37862")]
         public async Task StreamPool_Heartbeat_ExpiredStreamRemoved()
         {
             // Arrange
