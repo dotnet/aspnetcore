@@ -24,7 +24,10 @@ jobs:
     steps:
       - uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '12.4'
+          xcode-version: "12.4"
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "16"
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
