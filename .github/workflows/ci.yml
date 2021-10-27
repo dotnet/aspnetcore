@@ -39,7 +39,8 @@ jobs:
         run: ./restore.sh
       - name: Build nodejs
         working-directory: ./eng
-        run: source ../activate.sh && ./build.sh ${{ env.BuildNodejsScriptArgs }} || true
+        run: source ../activate.sh && ./build.sh ${{ env.BuildNodejsScriptArgs }}
+        continue-on-error: true
       - name: Build
         working-directory: ./eng
         run: source ../activate.sh && ./build.sh ${{ env.BuildScriptArgs }}
