@@ -57,7 +57,6 @@
   <!-- x64 Queues for internal helix-matrix.yml and quarantine pipelines -->
   <!-- The preview queue is only available internally, and should only be run on a daily basis -->
   <ItemGroup Condition="'$(TargetArchitecture)' == 'x64' AND '$(IsHelixDaily)' == 'true' AND '$(_UseHelixOpenQueues)' != 'true'">
-    <HelixAvailableTargetQueue Include="Windows.10.Amd64.ClientPre.VS2019.Pre" Platform="Windows" />
   </ItemGroup>
 
   <!-- arm64 queues for helix-matrix.yml and quarantine pipeline -->
