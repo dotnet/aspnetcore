@@ -96,9 +96,9 @@ namespace Microsoft.AspNetCore.Components.Routing
             _locationAbsolute = NavigationManager.Uri;
             NavigationManager.LocationChanged += OnLocationChanged;
 
-            if (TestableMetadataUpdate.IsSupported)
+            if (HotReloadManager.Default.MetadataUpdateSupported)
             {
-                HotReloadManager.OnDeltaApplied += ClearRouteCaches;
+                HotReloadManager.Default.OnDeltaApplied += ClearRouteCaches;
             }
         }
 
@@ -140,9 +140,9 @@ namespace Microsoft.AspNetCore.Components.Routing
         public void Dispose()
         {
             NavigationManager.LocationChanged -= OnLocationChanged;
-            if (TestableMetadataUpdate.IsSupported)
+            if (HotReloadManager.Default.MetadataUpdateSupported)
             {
-                HotReloadManager.OnDeltaApplied -= ClearRouteCaches;
+                HotReloadManager.Default.OnDeltaApplied -= ClearRouteCaches;
             }
         }
 

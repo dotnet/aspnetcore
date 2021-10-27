@@ -3,12 +3,8 @@
 
 #nullable disable warnings
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -44,6 +40,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         private List<Task>? _pendingTasks;
         private Task? _disposeTask;
         private bool _rendererIsDisposed;
+
+        private bool _hotReloadInitialized;
 
         /// <summary>
         /// Allows the caller to handle exceptions from the SynchronizationContext when one is available.
@@ -97,12 +95,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             _serviceProvider = serviceProvider;
             _logger = loggerFactory.CreateLogger<Renderer>();
             _componentFactory = new ComponentFactory(componentActivator);
-
-            if (TestableMetadataUpdate.IsSupported)
-            {
-                HotReloadManager.OnDeltaApplied += RenderRootComponentsOnHotReload;
-            }
         }
+
+        internal HotReloadManager HotReloadManager { get; set; } = HotReloadManager.Default;
+
 
         private static IComponentActivator GetComponentActivatorOrDefault(IServiceProvider serviceProvider)
         {
@@ -179,7 +175,18 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <returns>The component's assigned identifier.</returns>
         // Internal for unit testing
         protected internal int AssignRootComponentId(IComponent component)
-            => AttachAndInitComponent(component, -1).ComponentId;
+        {
+            if (!_hotReloadInitialized)
+            {
+                _hotReloadInitialized = true;
+                if (HotReloadManager.MetadataUpdateSupported)
+                {
+                    HotReloadManager.OnDeltaApplied += RenderRootComponentsOnHotReload;
+                }
+            }
+
+            return AttachAndInitComponent(component, -1).ComponentId;
+        }
 
         /// <summary>
         /// Gets the current render tree for a given component.
@@ -232,7 +239,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             _pendingTasks ??= new();
 
             var componentState = GetRequiredRootComponentState(componentId);
-            if (TestableMetadataUpdate.IsSupported)
+            if (HotReloadManager.MetadataUpdateSupported)
             {
                 // When we're doing hot-reload, stash away the parameters used while rendering root components.
                 // We'll use this to trigger re-renders on hot reload updates.
@@ -262,7 +269,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // Currently there's no known scenario where we need to support calling RemoveRootComponentAsync
             // during a batch, but if a scenario emerges we can add support.
             _batchBuilder.ComponentDisposalQueue.Enqueue(componentId);
-            if (TestableMetadataUpdate.IsSupported)
+            if (HotReloadManager.MetadataUpdateSupported)
             {
                 _rootComponentsLatestParameters?.Remove(componentId);
             }
@@ -988,7 +995,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
             _rendererIsDisposed = true;
 
-            if (TestableMetadataUpdate.IsSupported)
+            if (_hotReloadInitialized && HotReloadManager.MetadataUpdateSupported)
             {
                 HotReloadManager.OnDeltaApplied -= RenderRootComponentsOnHotReload;
             }

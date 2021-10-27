@@ -14,7 +14,7 @@ namespace TestServer
     {
         public HotReloadStartup()
         {
-            TestableMetadataUpdate.TestIsSupported = true;
+            HotReloadManager.Default.MetadataUpdateSupported = true;
         }
 
         public void ConfigureServices(IServiceCollection services)
