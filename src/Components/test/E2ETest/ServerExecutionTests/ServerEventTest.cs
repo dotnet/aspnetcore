@@ -19,7 +19,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31195")]
         public override void EventDuringBatchRendering_CanTriggerDOMEvents()
         {
             base.EventDuringBatchRendering_CanTriggerDOMEvents();
