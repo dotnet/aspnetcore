@@ -54,12 +54,109 @@
         <!-- Bundle variables -->
         <Variable Name="BundleNameShort" Value="$(var.BundleNameShort)"/>
         <Variable Name="BundleNameSub" Value="$(var.BundleNameSub)"/>
-        <Variable Name="OPT_NO_ANCM" Value="0" bal:Overridable="yes"/>
-        <Variable Name="OPT_NO_FTS" Value="0" bal:Overridable="yes"/>
-        <Variable Name="OPT_NO_LTS" Value="0" bal:Overridable="yes"/>
-        <Variable Name="OPT_NO_SHAREDFX" Value="0" bal:Overridable="yes"/>
-        <Variable Name="OPT_NO_RUNTIME" Value="0" bal:Overridable="yes"/>
-        <Variable Name="OPT_NO_X86" Value="0" bal:Overridable="yes"/>
+        <Variable Name="OPT_NO_ANCM" bal:Overridable="yes"/>
+        <Variable Name="OPT_NO_FTS" bal:Overridable="yes"/>
+        <Variable Name="OPT_NO_LTS" bal:Overridable="yes"/>
+        <Variable Name="OPT_NO_SHAREDFX" bal:Overridable="yes"/>
+        <Variable Name="OPT_NO_RUNTIME" bal:Overridable="yes"/>
+        <Variable Name="OPT_NO_X86" bal:Overridable="yes"/>
+
+        <!-- Use values from the registry for switches, if the registry values are set & the user hasn't passed any switches from the command line -->
+
+        <util:RegistrySearch Id="opt_no_ancm_should_be_set" 
+                         Condition="NOT OPT_NO_ANCM AND NOT OPT_NO_ANCM=0 AND NOT OPT_NO_FTS AND NOT OPT_NO_FTS=0 AND NOT OPT_NO_LTS AND NOT OPT_NO_LTS=0 AND NOT OPT_NO_SHAREDFX AND NOT OPT_NO_SHAREDFX=0 AND NOT OPT_NO_RUNTIME AND NOT OPT_NO_RUNTIME=0 AND NOT OPT_NO_X86 AND NOT OPT_NO_X86=0"
+                         Root="HKLM" 
+                         Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
+                         Value="OPT_NO_ANCM" 
+                         Result="exists" 
+                         Variable="OPT_NO_ANCM_Should_Be_Set"/>
+
+        <util:RegistrySearch Id="opt_no_fts_should_be_set" 
+                         Condition="NOT OPT_NO_ANCM AND NOT OPT_NO_ANCM=0 AND NOT OPT_NO_FTS AND NOT OPT_NO_FTS=0 AND NOT OPT_NO_LTS AND NOT OPT_NO_LTS=0 AND NOT OPT_NO_SHAREDFX AND NOT OPT_NO_SHAREDFX=0 AND NOT OPT_NO_RUNTIME AND NOT OPT_NO_RUNTIME=0 AND NOT OPT_NO_X86 AND NOT OPT_NO_X86=0"
+                         After="opt_no_ancm_should_be_set"
+                         Root="HKLM" 
+                         Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
+                         Value="OPT_NO_FTS" 
+                         Result="exists" 
+                         Variable="OPT_NO_FTS_Should_Be_Set"/>
+
+        <util:RegistrySearch Id="opt_no_lts_should_be_set" 
+                         Condition="NOT OPT_NO_ANCM AND NOT OPT_NO_ANCM=0 AND NOT OPT_NO_FTS AND NOT OPT_NO_FTS=0 AND NOT OPT_NO_LTS AND NOT OPT_NO_LTS=0 AND NOT OPT_NO_SHAREDFX AND NOT OPT_NO_SHAREDFX=0 AND NOT OPT_NO_RUNTIME AND NOT OPT_NO_RUNTIME=0 AND NOT OPT_NO_X86 AND NOT OPT_NO_X86=0"
+                         After="opt_no_fts_should_be_set"
+                         Root="HKLM" 
+                         Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
+                         Value="OPT_NO_LTS" 
+                         Result="exists" 
+                         Variable="OPT_NO_LTS_Should_Be_Set"/>
+
+        <util:RegistrySearch Id="opt_no_sharedfx_should_be_set" 
+                         Condition="NOT OPT_NO_ANCM AND NOT OPT_NO_ANCM=0 AND NOT OPT_NO_FTS AND NOT OPT_NO_FTS=0 AND NOT OPT_NO_LTS AND NOT OPT_NO_LTS=0 AND NOT OPT_NO_SHAREDFX AND NOT OPT_NO_SHAREDFX=0 AND NOT OPT_NO_RUNTIME AND NOT OPT_NO_RUNTIME=0 AND NOT OPT_NO_X86 AND NOT OPT_NO_X86=0"
+                         After="opt_no_lts_should_be_set"
+                         Root="HKLM" 
+                         Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
+                         Value="OPT_NO_SHAREDFX" 
+                         Result="exists" 
+                         Variable="OPT_NO_SHAREDFX_Should_Be_Set"/>
+
+        <util:RegistrySearch Id="opt_no_runtime_should_be_set" 
+                         Condition="NOT OPT_NO_ANCM AND NOT OPT_NO_ANCM=0 AND NOT OPT_NO_FTS AND NOT OPT_NO_FTS=0 AND NOT OPT_NO_LTS AND NOT OPT_NO_LTS=0 AND NOT OPT_NO_SHAREDFX AND NOT OPT_NO_SHAREDFX=0 AND NOT OPT_NO_RUNTIME AND NOT OPT_NO_RUNTIME=0 AND NOT OPT_NO_X86 AND NOT OPT_NO_X86=0"
+                         After="opt_no_sharedfx_should_be_set"
+                         Root="HKLM" 
+                         Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
+                         Value="OPT_NO_RUNTIME" 
+                         Result="exists" 
+                         Variable="OPT_NO_RUNTIME_Should_Be_Set"/>
+
+        <util:RegistrySearch Id="opt_no_x86_should_be_set" 
+                         Condition="NOT OPT_NO_ANCM AND NOT OPT_NO_ANCM=0 AND NOT OPT_NO_FTS AND NOT OPT_NO_FTS=0 AND NOT OPT_NO_LTS AND NOT OPT_NO_LTS=0 AND NOT OPT_NO_SHAREDFX AND NOT OPT_NO_SHAREDFX=0 AND NOT OPT_NO_RUNTIME AND NOT OPT_NO_RUNTIME=0 AND NOT OPT_NO_X86 AND NOT OPT_NO_X86=0"
+                         After="opt_no_runtime_should_be_set"
+                         Root="HKLM" 
+                         Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
+                         Value="OPT_NO_X86" 
+                         Result="exists" 
+                         Variable="OPT_NO_X86_Should_Be_Set"/>
+
+        <util:RegistrySearch Condition="OPT_NO_ANCM_Should_Be_Set"     
+                         After="opt_no_x86_should_be_set"
+                         Root="HKLM" Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
+                         Value="OPT_NO_ANCM" 
+                         Variable="OPT_NO_ANCM"
+                         Result="value" />
+
+        <util:RegistrySearch Condition="OPT_NO_FTS_Should_Be_Set"     
+                         After="opt_no_x86_should_be_set"
+                         Root="HKLM" Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
+                         Value="OPT_NO_FTS" 
+                         Variable="OPT_NO_FTS"
+                         Result="value" />
+
+        <util:RegistrySearch Condition="OPT_NO_LTS_Should_Be_Set"     
+                         After="opt_no_x86_should_be_set"
+                         Root="HKLM" Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
+                         Value="OPT_NO_LTS" 
+                         Variable="OPT_NO_LTS"
+                         Result="value" />
+
+        <util:RegistrySearch Condition="OPT_NO_SHAREDFX_Should_Be_Set"     
+                         After="opt_no_x86_should_be_set"
+                         Root="HKLM" Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
+                         Value="OPT_NO_SHAREDFX" 
+                         Variable="OPT_NO_SHAREDFX"
+                         Result="value" />
+
+        <util:RegistrySearch Condition="OPT_NO_RUNTIME_Should_Be_Set"     
+                         After="opt_no_x86_should_be_set"
+                         Root="HKLM" Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
+                         Value="OPT_NO_RUNTIME" 
+                         Variable="OPT_NO_RUNTIME"
+                         Result="value" />
+
+        <util:RegistrySearch Condition="OPT_NO_X86_Should_Be_Set"     
+                         After="opt_no_x86_should_be_set"
+                         Root="HKLM" Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
+                         Value="OPT_NO_X86" 
+                         Variable="OPT_NO_X86"
+                         Result="value" />
 
         <!-- These variables control the state of conditional UI text elements. 
              They are disabled by default and enabled based on whether or not we detect that IIS is installed -->
@@ -69,6 +166,14 @@
         <Variable Name="ModifyNoIISState" Value="disable"/>
 
         <Chain ParallelCache="yes">
+            <MsiPackage SourceFile="$(var.HostOptions.TargetPath)">
+                <MsiProperty Name="OPT_NO_ANCM" Value="[OPT_NO_ANCM]"/>
+                <MsiProperty Name="OPT_NO_FTS" Value="[OPT_NO_FTS]"/>
+                <MsiProperty Name="OPT_NO_LTS" Value="[OPT_NO_LTS]"/>
+                <MsiProperty Name="OPT_NO_SHAREDFX" Value="[OPT_NO_SHAREDFX]"/>
+                <MsiProperty Name="OPT_NO_RUNTIME" Value="[OPT_NO_RUNTIME]"/>
+                <MsiProperty Name="OPT_NO_X86" Value="[OPT_NO_X86]"/>
+            </MsiPackage> 
             <PackageGroupRef Id="PG_ANCM" />
             <PackageGroupRef Id="PG_DOTNET_REDIST_LTS_BUNDLE" />
             <!--<PackageGroupRef Id="PG_DOTNET_REDIST_FTS_BUNDLE" />-->

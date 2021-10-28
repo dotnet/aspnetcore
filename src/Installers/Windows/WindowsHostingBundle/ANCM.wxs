@@ -9,14 +9,14 @@
                         Compressed="yes"
                         Vital="yes"
                         Visible="no"
-                        InstallCondition="NOT VersionNT64 AND (VersionNT &gt;= v6.1) AND (IISCoreWebEngineInstalled_x86=1) AND (IISW3SVCInstalled_x86=1) AND (NOT OPT_NO_ANCM)" />
+                        InstallCondition="NOT VersionNT64 AND (VersionNT &gt;= v6.1) AND (IISCoreWebEngineInstalled_x86=1) AND (IISW3SVCInstalled_x86=1) AND (NNOT OPT_NO_ANCM OR OPT_NO_ANCM=&quot;0&quot;)" />
 
             <MsiPackage Id="AspNetCoreModule_x64" SourceFile="$(var.BinPath)aspnetcoremodule_x64_en.msi"
                         Name="aspnetcoremodule_x64_en.msi"
                         Compressed="yes"
                         Vital="yes"
                         Visible="no"
-                        InstallCondition="VersionNT64 AND (VersionNT64 &gt;= v6.1) AND (IISCoreWebEngineInstalled_x64=1) AND (IISW3SVCInstalled_x64=1) AND (NOT OPT_NO_ANCM)" />
+                        InstallCondition="VersionNT64 AND (VersionNT64 &gt;= v6.1) AND (IISCoreWebEngineInstalled_x64=1) AND (IISW3SVCInstalled_x64=1) AND (NOT OPT_NO_ANCM OR OPT_NO_ANCM=&quot;0&quot;)" />
         </PackageGroup>
 
         <util:RegistrySearch Id="IISCoreWebEngineInstalledSearch_x86"

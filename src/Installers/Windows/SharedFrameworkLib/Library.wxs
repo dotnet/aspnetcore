@@ -8,9 +8,9 @@
             <?undef SharedFrameworkInstallCondition?>
             <?endif?>
             <?if $(var.Platform)=x86?>
-            <?define SharedFrameworkInstallCondition=(NOT OPT_NO_SHAREDFX) AND (NOT OPT_NO_X86)?>
+            <?define SharedFrameworkInstallCondition=(NOT OPT_NO_SHAREDFX OR OPT_NO_SHAREDFX="0") AND (NOT OPT_NO_X86)?>
             <?elseif $(var.Platform)=x64?>
-            <?define SharedFrameworkInstallCondition=VersionNT64 AND (NOT OPT_NO_SHAREDFX)?>
+            <?define SharedFrameworkInstallCondition=VersionNT64 AND (NOT OPT_NO_SHAREDFX OR OPT_NO_SHAREDFX="0")?>
             <?endif?>
 
             <?define SourceFile=$(var.BinPath)\aspnetcore-runtime-$(var.PackageVersion)-win-$(var.Platform).msi?>
