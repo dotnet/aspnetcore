@@ -16,6 +16,7 @@
 
   <PropertyGroup>
     <DefineSolutionProperties>false</DefineSolutionProperties>
+    <HostOptionsName>WindowsServerHostingBundleOptions</HostOptionsName>
 
     <!-- Namespace used to generate stable UUID3 GUIDs for MSI ProductCode, etc. DO NOT CHANGE THESE. -->
     <HostingBundleNamespaceGuid>E1FD1271-E0F0-4B8B-B4BE-01F2EBA58F4E</HostingBundleNamespaceGuid>
