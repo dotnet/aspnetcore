@@ -45,9 +45,8 @@ jobs:
         working-directory: ./eng
         run: source ../activate.sh && ./build.sh ${{ env.BuildScriptArgs }}
       - name: Add
-        working-directory: ./test
         run: |
-          source ../activate.sh
+          source activate.sh
           dotnet nuget add source $(pwd)/artifacts/packages/Debug/Shipping/
           dotnet add package Microsoft.AspNetCore.App.Runtime.osx-x64 --version 7.0.0-dev
       - name: Upload
