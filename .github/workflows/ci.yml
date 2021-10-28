@@ -7,6 +7,8 @@ name: MacOS Build and Test Packaging
 on: [push]
 
 env:
+  DOTNET_VERSION: "7.0.0-dev"
+
   BuildNodejsScriptArgs: >
     --build-nodejs
 
@@ -46,7 +48,7 @@ jobs:
         working-directory: ./test
         run: |
           source ../activate.sh
-          dotnet nuget add source artifacts/packages/Debug/Shipping/
+          dotnet nuget add source $(pwd)/artifacts/packages/Debug/Shipping/
           dotnet add package Microsoft.AspNetCore.App.Runtime.osx-x64 --version 7.0.0-dev
       - name: Upload
         uses: actions/upload-artifact@v2
