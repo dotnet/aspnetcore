@@ -15,7 +15,6 @@ env:
     --all
     -p:SkipTestBuild=true
     -p:OnlyPackPlatformSpecificPackages=true
-    -p:AssetManifestFileName=aspnetcore-MacOS_x64.xml
 
 jobs:
   Build-MacOs:
