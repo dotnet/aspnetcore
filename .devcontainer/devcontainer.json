@@ -20,12 +20,15 @@
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
 		"ms-dotnettools.csharp",
-		"EditorConfig.EditorConfig"
+		"EditorConfig.EditorConfig",
+    "k--kato.docomment"
 	],
 
 	"settings": {
 		// Loading projects on demand is better for larger codebases
-		"omnisharp.enableMsBuildLoadProjectsOnDemand": true
+		"omnisharp.enableMsBuildLoadProjectsOnDemand": true,
+    "omnisharp.enableRoslynAnalyzers": true,
+    "omnisharp.enableEditorConfigSupport": true,
 	},
 
 	// Use 'postCreateCommand' to run commands after the container is created.

@@ -142,6 +142,9 @@ The following extensions are recommended when developing in the ASP.NET Core rep
 
 - [EditorConfig](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig)
 
+- [C# XML Documentation Comments](https://marketplace.visualstudio.com/items?itemName=k--kato.docomment)
+
+
 #### WiX (Optional)
 
 If you plan on working with the Windows installers defined in [src/Installers/Windows](../src/Installers/Windows), you will need to install the WiX toolkit from <https://wixtoolset.org/releases/>.

@@ -38,7 +38,7 @@
       }
     },
     {
-      "label": "Run tests",
+      "label": "Run all test projects",
       "type": "shell",
       "command": "./eng/build.sh -test",
       "windows": {
