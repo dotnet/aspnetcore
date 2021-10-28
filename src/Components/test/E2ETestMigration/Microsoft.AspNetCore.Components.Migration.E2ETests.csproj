@@ -11,7 +11,10 @@
 
     <TestTrimmedApps Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TestTrimmedApps>
     <TestTrimmedApps Condition="'$(Configuration)' == 'Release'">true</TestTrimmedApps>
-    
+
+    <!-- Skip the Components E2ETestMigration in CI -->
+    <SkipTests Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</SkipTests>
+
     <BuildInParallel>false</BuildInParallel>
   </PropertyGroup>
 
