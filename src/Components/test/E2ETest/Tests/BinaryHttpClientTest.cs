@@ -46,7 +46,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public override Task InitializeAsync() => base.InitializeAsync(Guid.NewGuid().ToString());
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/33454")]
         public void CanSendAndReceiveBytes()
         {
             IssueRequest("/subdir/api/data");
