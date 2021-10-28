@@ -13,7 +13,6 @@ env:
   BuildScriptArgs: >
     --pack
     --all
-    --no-build-java
     -p:SkipTestBuild=true
     -p:OnlyPackPlatformSpecificPackages=true
     -p:AssetManifestFileName=aspnetcore-MacOS_x64.xml
