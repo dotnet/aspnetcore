@@ -726,6 +726,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             _keepAlive = true;
             _connectionAborted = false;
+            _userTrailers = null;
 
             // Reset Http3 Features
             _currentIHttpMinRequestBodyDataRateFeature = this;

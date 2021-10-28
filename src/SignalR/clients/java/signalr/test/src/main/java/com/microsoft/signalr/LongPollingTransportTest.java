@@ -126,7 +126,6 @@ public class LongPollingTransportTest {
         assertTrue(onReceivedRan.get());
     }
 
-    @Disabled("https://github.com/dotnet/aspnetcore/issues/34563")
     @Test
     public void LongPollingTransportOnReceiveGetsCalled() {
         AtomicInteger requestCount = new AtomicInteger();

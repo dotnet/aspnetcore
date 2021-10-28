@@ -18,6 +18,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             _compiler = new DefaultViewCompiler(applicationPartManager, loggerFactory.CreateLogger<DefaultViewCompiler>());
         }
 
+        internal DefaultViewCompiler Compiler => _compiler;
+
         public IViewCompiler GetCompiler() => _compiler;
     }
 }

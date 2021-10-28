@@ -3,6 +3,7 @@
 
 using System;
 using System.Text;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
@@ -26,7 +27,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(base.GetHashCode(), Type);
+            var combiner = HashCodeCombiner.Start();
+            combiner.Add(base.GetHashCode());
+            combiner.Add(Type);
+
+            return combiner.CombinedHash;
         }
 
         public override string ToString()

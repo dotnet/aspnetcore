@@ -389,6 +389,7 @@ namespace BlazorTemplates.Tests
 
         [Theory]
         [MemberData(nameof(TemplateData))]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/37782")]
         public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_Works(TemplateInstance instance)
             => CreateBuildPublishAsync(instance.Name, args: instance.Arguments, targetFramework: "netstandard2.1");
 

@@ -42,7 +42,6 @@ namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests
 
 
         [ConditionalFact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/28994")]
         public async Task ServerShutsDownWhenMainExitsStress()
         {
             var parameters = Fixture.GetBaseDeploymentParameters();
@@ -67,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests
         }
 
         [ConditionalFact]
-        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
+        [SkipNonHelix("https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task GracefulShutdown_DoesNotCrashProcess()
         {
             var parameters = Fixture.GetBaseDeploymentParameters();

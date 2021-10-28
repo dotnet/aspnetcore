@@ -121,6 +121,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             _keepAlive = true;
             _connectionAborted = false;
+            _userTrailers = null;
 
             // Reset Http2 Features
             _currentIHttpMinRequestBodyDataRateFeature = this;

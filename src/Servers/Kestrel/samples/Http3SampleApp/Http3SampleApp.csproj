@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(KestrelSharedSourceRoot)test\HttpEventSourceListener.cs" LinkBase="shared" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Microsoft.Extensions.Hosting" />

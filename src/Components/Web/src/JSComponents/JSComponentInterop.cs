@@ -28,9 +28,9 @@ namespace Microsoft.AspNetCore.Components.Web.Infrastructure
 
         static JSComponentInterop()
         {
-            if (MetadataUpdater.IsSupported)
+            if (HotReloadManager.Default.MetadataUpdateSupported)
             {
-                HotReloadManager.OnDeltaApplied += () => ParameterTypeCaches.Clear();
+                HotReloadManager.Default.OnDeltaApplied += () => ParameterTypeCaches.Clear();
             }
         }
 

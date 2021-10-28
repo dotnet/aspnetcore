@@ -135,28 +135,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.Equal($"Hello, {interactiveUsername ?? "anonymous"}!", () => Browser.Exists(By.TagName("h1")).Text);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/35449")]
-        public async Task NoHotReloadListenersAreOrdinarilyRegistered()
-        {
-            Navigate("/prerendered/prerendered-transition");
-
-            // Prerendered output shows "not connected"
-            Browser.Equal("not connected", () => Browser.Exists(By.Id("connected-state")).Text);
-
-            // Once connected, output changes
-            BeginInteractivity();
-            Browser.Equal("connected", () => Browser.Exists(By.Id("connected-state")).Text);
-
-            // Once connected, output changes
-            BeginInteractivity();
-            Browser.Equal("connected", () => Browser.Exists(By.Id("connected-state")).Text);
-
-            // Now query the hot reload manager and verify nothing is still wired up by default.
-            var httpClient = new HttpClient { BaseAddress = _serverFixture.RootUri };
-            var hasEventHandlers = await httpClient.GetFromJsonAsync<bool>("/prerendered/ishotreloadsubscribedto");
-            Assert.False(hasEventHandlers);
-        }
-
         private void BeginInteractivity()
         {
             Browser.Exists(By.Id("load-boot-script")).Click();

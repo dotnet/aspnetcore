@@ -30,7 +30,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/33715")]
         public void CanUpdateValuesMatchedByType()
         {
             var currentCount = Browser.Exists(By.Id("current-count"));
@@ -50,7 +49,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/33530")]
         public void CanUpdateValuesMatchedByName()
         {
             var currentFlag1Value = Browser.Exists(By.Id("flag-1"));
@@ -72,7 +70,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34867")]
         public void CanUpdateFixedValuesMatchedByInterface()
         {
             var currentCount = Browser.Exists(By.Id("current-count"));

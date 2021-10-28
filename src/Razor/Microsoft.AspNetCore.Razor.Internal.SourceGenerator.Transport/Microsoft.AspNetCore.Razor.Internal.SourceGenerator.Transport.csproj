@@ -30,7 +30,6 @@
   <ItemGroup>
     <Reference Include="Microsoft.CodeAnalysis.Common" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp" />
-    <Reference Include="Microsoft.Bcl.HashCode" />
   </ItemGroup>
 
 </Project>

@@ -167,7 +167,6 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34072")]
         public void IHttpActivityFeatureIsNotPopulatedWithoutAListener()
         {
             var hostingApplication = CreateApplication();

@@ -6,6 +6,7 @@ using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
+using Microsoft.AspNetCore.Testing;
 
 namespace Http3SampleApp
 {
@@ -17,7 +18,7 @@ namespace Http3SampleApp
                 .ConfigureLogging((_, factory) =>
                 {
                     factory.SetMinimumLevel(LogLevel.Trace);
-                    factory.AddConsole();
+                    factory.AddSimpleConsole(o => o.TimestampFormat = "[HH:mm:ss.fff] ");
                 })
                 .ConfigureWebHost(webHost =>
                 {
@@ -111,7 +112,12 @@ namespace Http3SampleApp
                     .UseStartup<Startup>();
                 });
 
-            hostBuilder.Build().Run();
+            var host = hostBuilder.Build();
+
+            // Listener needs to be configured before host (and HTTP/3 endpoints) start up.
+            using var httpEventSource = new HttpEventSourceListener(host.Services.GetRequiredService<ILoggerFactory>());
+
+            host.Run();
         }
     }
 }

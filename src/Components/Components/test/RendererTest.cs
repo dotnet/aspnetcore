@@ -10,6 +10,7 @@ using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
@@ -4731,6 +4732,53 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             Assert.True(wasOnSyncContext);
+        }
+
+        [Fact]
+        public async Task NoHotReloadListenersAreRegistered_WhenMetadataUpdatesAreNotSupported()
+        {
+            // Arrange
+            await using var renderer = new TestRenderer();
+            var hotReloadManager = new HotReloadManager { MetadataUpdateSupported = false };
+            renderer.HotReloadManager = hotReloadManager;
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenElement(0, "h2");
+                builder.AddContent(1, "some text");
+                builder.CloseElement();
+            });
+
+            // Act
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+            Assert.False(hotReloadManager.IsSubscribedTo);
+
+            await renderer.DisposeAsync();
+        }
+
+        [Fact]
+        public async Task DisposingRenderer_UnsubsribesFromHotReloadManager()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var hotReloadManager = new HotReloadManager { MetadataUpdateSupported = true };
+            renderer.HotReloadManager = hotReloadManager;
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenElement(0, "h2");
+                builder.AddContent(1, "some text");
+                builder.CloseElement();
+            });
+
+            // Act
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+            Assert.True(hotReloadManager.IsSubscribedTo);
+
+            await renderer.DisposeAsync();
+
+            // Assert
+            Assert.False(hotReloadManager.IsSubscribedTo);
         }
 
         private class TestComponentActivator<TResult> : IComponentActivator where TResult : IComponent, new()
