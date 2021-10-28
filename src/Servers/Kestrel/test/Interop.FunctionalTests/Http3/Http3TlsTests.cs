@@ -67,6 +67,8 @@ namespace Interop.FunctionalTests.Http3
         [InlineData(ClientCertificateMode.AllowCertificate)]
         [MsQuicSupported]
         [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/aspnetcore/issues/35800")]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2,
+            SkipReason = "Windows versions newer than 20H2 do not enable TLS 1.1: https://github.com/dotnet/aspnetcore/issues/37761")]
         public async Task ClientCertificate_AllowOrRequire_Available_Accepted(ClientCertificateMode mode)
         {
             var builder = CreateHostBuilder(async context =>
