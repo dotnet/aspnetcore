@@ -99,6 +99,8 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         internal ulong ConnectionId => NativeRequest->ConnectionId;
 
+        internal ulong RawConnectionId => NativeRequest->RawConnectionId;
+
         internal HttpApiTypes.HTTP_VERB VerbId => NativeRequest->Verb;
 
         internal ulong UrlContext => NativeRequest->UrlContext;
