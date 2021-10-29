@@ -60,6 +60,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
         [ConditionalFact]
         [MsQuicSupported]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2,
+            SkipReason = "Windows versions newer than 20H2 do not enable TLS 1.1: https://github.com/dotnet/aspnetcore/issues/37761")]
         public async Task ClientCertificate_Required_Sent_Populated()
         {
             // Arrange
