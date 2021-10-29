@@ -4,7 +4,7 @@ Given the large number of issue, it takes multiple sessions for teams to review 
 This document details the process we use for identifying candidate issues for the next release.
 
 ## Phases
-The process for identifying candidates for the next major release consistes of multiple phases, each one filtering out issues by leaving the min backlog or closing them.
+The process for identifying candidates for the next major release consists of multiple phases. In each phase, we filter issues out of the release by either moving them to the `backlog`, or closing the issue.
 - Filtering & Individual priorization
 - Rough costing
 - Team review & Priority adjustment
