@@ -32,7 +32,7 @@ Each `Priority: 1` issue is then moved to the project board, which will be used 
 At this point we bring to the board only the top prioritiy issues.
 
 ### Capacity Planning
-We usually reserve only 50% of the team capacity for this work. The reason is that we will be getting a lot of incomingfeedback throughout the year and we need to allocate time for handling this feedback throughout the year.
+We usually reserve only 50% of the team capacity for this work. The reason is that we will be getting a lot of incoming feedback throughout the year and we need to allocate time for handling this feedback throughout the year.
 So we calculate the capacity of the team in weeks for the upcoming year and use half of the final number later in this process.
 
 ### Define the cut line
