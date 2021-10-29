@@ -4,7 +4,7 @@
     <Description>Source Generator for ASP.NET Core SignalR Client</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <IncludeBuildOutput>false</IncludeBuildOutput>
-    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <SuppressDependenciesWhenPacking>false</SuppressDependenciesWhenPacking>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
@@ -13,7 +13,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="HubProxyAttributes" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <!-- The source generator includes some attributes to be used by user code to influence the source generated code -->
+    <None Include="$(OutputPath)\HubProxyAttributes.dll" Pack="true" PackagePath="lib/netstandard2.0" Visible="false" />
   </ItemGroup>
 
 </Project>

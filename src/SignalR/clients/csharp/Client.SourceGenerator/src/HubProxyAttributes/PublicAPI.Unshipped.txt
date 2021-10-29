@@ -1,0 +1,4 @@
+Microsoft.AspNetCore.SignalR.Client.HubClientProxyAttribute
+Microsoft.AspNetCore.SignalR.Client.HubClientProxyAttribute.HubClientProxyAttribute() -> void
+Microsoft.AspNetCore.SignalR.Client.HubServerProxyAttribute
+Microsoft.AspNetCore.SignalR.Client.HubServerProxyAttribute.HubServerProxyAttribute() -> void

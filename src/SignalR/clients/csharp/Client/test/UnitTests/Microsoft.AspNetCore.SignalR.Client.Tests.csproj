@@ -21,7 +21,7 @@
     <Reference Include="Microsoft.AspNetCore.TestHost" />
     <Reference Include="Microsoft.AspNetCore.SignalR" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Client.Core" />
-    <Reference Include="Microsoft.AspNetCore.SignalR.Client.SourceGenerator" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Client.SourceGenerator" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
   </ItemGroup>
 
 </Project>
