@@ -45,7 +45,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _contentBoundaryType = BoundaryType.None;
 
             RequestId = requestContext.RequestId;
+            // For HTTP/2 Http.Sys assigns each request a unique connection id for use with API calls, but the RawConnectionId represents the real connection.
             UConnectionId = requestContext.ConnectionId;
+            RawConnectionId = requestContext.RawConnectionId;
             SslStatus = requestContext.SslStatus;
 
             KnownMethod = requestContext.VerbId;
@@ -115,8 +117,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal ulong UConnectionId { get; }
 
+        internal ulong RawConnectionId { get; }
+
         // No ulongs in public APIs...
-        public long ConnectionId => (long)UConnectionId;
+        public long ConnectionId => (long)RawConnectionId;
 
         internal ulong RequestId { get; }
 
