@@ -26,7 +26,7 @@ At this phase engineers apply rough cost estimates to the final list of issues t
 This will be used later during the planning process.
 
 ### Team Review & Priority adjustment
-Now, that all the issues are in the `.NET V planning` milestone, the team reviewes each issues one at a time starting from the highest priority ones (P1).
+Now, that all the issues are in the `.NET V planning` milestone, the team reviews each issue one at a time starting from the highest priority ones (Priority: 1).
 We discuss the issues and agree on the priority at this point. Sometimes we make adjustments to the suggested individual priorities. After discussing each issue the `Priority: X` label is applied to each issue.
 Each `Priority: 1` issue is then moved to the project board, which will be used by each team for tracking the work for the upcoming release throughout the year. The issues start off in the `Triage` column. At this point we bring only the top priority issues to the board.
 
