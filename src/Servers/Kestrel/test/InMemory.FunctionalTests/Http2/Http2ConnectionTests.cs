@@ -240,6 +240,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/37930")]
         public async Task ResponseTrailers_MultipleStreams_Reset()
         {
             IEnumerable<KeyValuePair<string, string>> requestHeaders = new[]
