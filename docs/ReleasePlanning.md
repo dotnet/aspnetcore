@@ -36,6 +36,6 @@ We usually reserve only 50% of the team capacity for this work. The reason is th
 So we calculate the capacity of the team in weeks for the upcoming year and use half of the final number later in this process.
 
 ### Define the cut line
-At this point we have all the candidate issues that we think is worth considering for the upcoming release. This number is quite large, so the teams usually won't have enough capacity to handle all this.
+At this point we have all the candidate issues that we think are worth considering for the upcoming release. This number is quite large, so the teams usually won't have enough capacity to handle all this.
 We start stack ranking issues so the most important work remains on the top of the list. We then draw the cut line and that defines the rough list of things the team will work on during the upcoming release.
 
