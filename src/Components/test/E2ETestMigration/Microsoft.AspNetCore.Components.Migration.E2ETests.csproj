@@ -14,6 +14,7 @@
 
     <!-- Skip the Components E2ETestMigration in CI -->
     <SkipTests Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</SkipTests>
+    <BuildHelixPayload>false</BuildHelixPayload>
 
     <BuildInParallel>false</BuildInParallel>
   </PropertyGroup>
