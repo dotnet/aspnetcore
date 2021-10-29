@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.Components.Routing
     public class RouteTableFactoryTests
     {
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/36888")]
         public void CanCacheRouteTable()
         {
             // Arrange
