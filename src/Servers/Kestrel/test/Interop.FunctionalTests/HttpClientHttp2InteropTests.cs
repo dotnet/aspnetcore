@@ -68,6 +68,7 @@ namespace Interop.FunctionalTests
         }
 
         [Theory]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/37943")]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Echo(string scheme)
         {
