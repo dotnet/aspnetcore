@@ -49,8 +49,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             var leastAvailableFlow = _connectionLevelFlowControl.Available < _streamLevelFlowControl.Available
                 ? _connectionLevelFlowControl : _streamLevelFlowControl;
 
-            // Clamp ~= Math.Clamp from netcoreapp >= 2.0
-            var actual = Clamp(leastAvailableFlow.Available, 0, bytes);
+            // This cast is safe because leastAvailableFlow.Available is an int.
+            var actual = (int)Math.Clamp(leastAvailableFlow.Available, 0, bytes);
 
             // Make sure to advance prior to accessing AvailabilityAwaitable.
             _connectionLevelFlowControl.Advance(actual);
@@ -96,23 +96,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             {
                 _currentConnectionLevelAwaitable.TrySetResult(null);
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int Clamp(int value, int min, long max)
-        {
-            Debug.Assert(min <= max, $"{nameof(Clamp)} called with a min greater than the max.");
-
-            if (value < min)
-            {
-                return min;
-            }
-            else if (value > max)
-            {
-                return (int)max;
-            }
-
-            return value;
         }
     }
 }
