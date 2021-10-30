@@ -496,7 +496,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _connectionTask = CompletePipeOnTaskCompletion();
 
-            await SendPreambleAsync().ConfigureAwait(false);
+            // Lose xUnit's AsyncTestSyncContext so middleware always runs inline for better determinism.
+            await ThreadPoolAwaitable.Instance;
+            await SendPreambleAsync();
             await SendSettingsAsync();
 
             await ExpectAsync(Http2FrameType.SETTINGS,

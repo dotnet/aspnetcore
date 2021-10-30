@@ -40,6 +40,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly TimingPipeFlusher _flusher;
         private readonly DynamicHPackEncoder _hpackEncoder;
 
+        // This is only set to true by tests.
+        private readonly bool _scheduleInline;
+
         private uint _maxFrameSize = Http2PeerSettings.MinAllowedMaxFrameSize;
         private byte[] _headerEncodingBuffer;
         private long _unflushedBytes;
@@ -71,6 +74,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _flusher.Initialize(_outputWriter);
             _outgoingFrame = new Http2Frame();
             _headerEncodingBuffer = new byte[_maxFrameSize];
+
+            _scheduleInline = serviceContext.Scheduler == PipeScheduler.Inline;
 
             _hpackEncoder = new DynamicHPackEncoder(serviceContext.ServerOptions.AllowResponseHeaderCompression);
         }
@@ -501,8 +506,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
             }
 
-            // Ensure that the application continuation isn't executed inline by ProcessWindowUpdateFrameAsync.
-            await ThreadPoolAwaitable.Instance;
+            if (!_scheduleInline)
+            {
+                // Ensure that the application continuation isn't executed inline by ProcessWindowUpdateFrameAsync.
+                await ThreadPoolAwaitable.Instance;
+            }
 
             return flushResult;
         }
