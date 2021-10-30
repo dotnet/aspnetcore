@@ -39,6 +39,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         /// <summary>
         /// The name of the Http.Sys request queue
+        /// The default is `null (Anonymous queue)`.
         /// </summary>
         public string? RequestQueueName
         {
@@ -56,8 +57,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         /// <summary>
-        /// Indicates if this server instance is responsible for creating and configuring the request queue,
-        /// of if it should attach to an existing queue. The default is to create.
+        /// This indicates whether the server is responsible for creating and configuring the request queue, or if it should attach to an existing queue.
+        /// Most existing configuration options do not apply when attaching to an existing queue.
+        /// The default is `RequestQueueMode.Create`.
         /// </summary>
         public RequestQueueMode RequestQueueMode { get; set; }
 
@@ -69,7 +71,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public ClientCertificateMethod ClientCertificateMethod { get; set; } = ClientCertificateMethod.AllowCertificate;
 
         /// <summary>
-        /// Gets or sets the number of concurrent workers draining requests from the Http.sys queue.
+        /// The maximum number of concurrent accepts.
+        /// The default is 5 times the number of processors as returned by <see cref="Environment.ProcessorCount" />.
         /// </summary>
         /// <remarks>
         /// Defaults to 5 times the number of processors as returned by <see cref="Environment.ProcessorCount" />.
@@ -77,16 +80,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public int MaxAccepts { get; set; } = DefaultMaxAccepts;
 
         /// <summary>
-        /// Attempts kernel mode caching for responses with eligible headers. The response may not include
-        /// Set-Cookie, Vary, or Pragma headers. It must include a Cache-Control header with Public and
-        /// either a Shared-Max-Age or Max-Age value, or an Expires header.
+        /// Attempt kernel-mode caching for responses with eligible headers.
+        /// The response may not include Set-Cookie, Vary, or Pragma headers.
+        /// It must include a Cache-Control header that's public and either a shared-max-age or max-age value, or an Expires header.
+        /// The default is `true`.
         /// </summary>
         public bool EnableResponseCaching { get; set; } = true;
 
         /// <summary>
-        /// The url prefixes to register with Http.Sys. These may be modified at any time prior to disposing
-        /// the listener.
-        /// When attached to an existing queue the prefixes are only used to compute PathBase for requests.
+        /// Specify the UrlPrefixCollection to register with HTTP.sys.
+        /// The most useful is UrlPrefixCollection.Add, which is used to add a prefix to the collection.
+        /// These may be modified at any time prior to disposing the listener.
         /// </summary>
         public UrlPrefixCollection UrlPrefixes { get; } = new UrlPrefixCollection();
 
@@ -104,15 +108,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public TimeoutManager Timeouts { get; } = new TimeoutManager();
 
         /// <summary>
-        /// Gets or Sets if response body writes that fail due to client disconnects should throw exceptions or
-        /// complete normally. The default is false.
+        /// Indicate if response body writes that fail due to client disconnects should throw exceptions or complete normally.
+        /// The default is `false (complete normally)`.
         /// </summary>
         public bool ThrowWriteExceptions { get; set; }
 
         /// <summary>
-        /// Gets or sets the maximum number of concurrent connections to accept, -1 for infinite, or null to
-        /// use the machine wide setting from the registry. The default value is null.
-        /// This settings does not apply when attaching to an existing queue.
+        /// The maximum number of concurrent connections to accept. Use -1 for infinite.
+        /// Use null to use the registry's machine-wide setting.
+        /// The default is `null` (machine-wide setting)
         /// </summary>
         public long? MaxConnections
         {
@@ -134,8 +138,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         /// <summary>
-        /// Gets or sets the maximum number of requests that will be queued up in Http.Sys.
-        /// This settings does not apply when attaching to an existing queue.
+        /// The maximum number of requests that can be queued.
+        /// The default is 1000.
         /// </summary>
         public long RequestQueueLimit
         {
@@ -164,6 +168,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// When set to null, the maximum request body size is unlimited.
         /// This limit has no effect on upgraded connections which are always unlimited.
         /// This can be overridden per-request via <see cref="IHttpMaxRequestBodySizeFeature"/>.
+        /// Defaults to 30,000,000 bytes, which is approximately 28.6MB.
         /// </summary>
         /// <remarks>
         /// Defaults to 30,000,000 bytes, which is approximately 28.6MB.
@@ -182,16 +187,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         /// <summary>
-        /// Gets or sets a value that controls whether synchronous IO is allowed for the HttpContext.Request.Body and HttpContext.Response.Body.
+        /// Control whether synchronous input/output is allowed for the HttpContext.Request.Body and HttpContext.Response.Body.
         /// The default is `false`.
         /// </summary>
         public bool AllowSynchronousIO { get; set; }
 
         /// <summary>
-        /// Gets or sets a value that controls how http.sys reacts when rejecting requests due to throttling conditions - like when the request
-        /// queue limit is reached. The default in http.sys is "Basic" which means http.sys is just resetting the TCP connection. IIS uses Limited
-        /// as its default behavior which will result in sending back a 503 - Service Unavailable back to the client.
-        /// This settings does not apply when attaching to an existing queue.
+        /// The HTTP.sys behavior when rejecting requests due to throttling conditions.
+        /// The devault is <see cref="Http503VerbosityLevel"/>.Basic .
         /// </summary>
         public Http503VerbosityLevel Http503Verbosity
         {
