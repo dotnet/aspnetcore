@@ -271,6 +271,8 @@ code .
 > in `~/.vscode-server/server-env-setup`.
 > See <https://code.visualstudio.com/docs/remote/wsl#_advanced-environment-setup-script> for details.
 
+In Visual Studio Code, press `CTRL + SHIFT + P` (`CMD + SHIFT + P` on mac) to open command palette, then search and select for `Run Tasks` option. In task list, there are couple of most used tasks are already defined, in that you can select `Build entire repository` option from it to build the repository. Once you select that option, on next window you need to select configuration type from `Debug` OR `Release`. For development purpose one can go with `Debug` option and for actual testing one can choose `Release` mode as binaries will be optimized in this mode. 
+
 ### Building on command-line
 
 When developing in VS Code, you'll need to use the `build.cmd` or `build.sh` scripts in order to build the project. You can learn more about the command line options available, check out [the section below](#using-dotnet-on-command-line-in-this-repo).
