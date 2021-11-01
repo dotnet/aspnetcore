@@ -63,10 +63,10 @@
 
   <!-- Item group has to be defined here because Helix.props is evaluated before xunit.runner.console.props  -->
   <ItemGroup Condition="$(BuildHelixPayload)">
-    <Content Include="@(HelixContent)" />
-    <Content Include="$(RepoRoot)eng\scripts\Download.ps1" />
-    <Content Include="$(RepoRoot)NuGet.config" />
-    <Content Include="$(RepoRoot)global.json" />
+    <Content Include="@(HelixContent)" Visible="false" />
+    <Content Include="$(RepoRoot)eng\scripts\Download.ps1" Visible="false" />
+    <Content Include="$(RepoRoot)NuGet.config" Visible="false"  />
+    <Content Include="$(RepoRoot)global.json" Visible="false"  />
     <ContentWithTargetPath Include="
         $(RepoRoot)eng\common\pipeline-logging-functions.*;
         $(RepoRoot)eng\common\tools.*">
