@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Analyzers;
 
 public static class TestReferences
 {
-    public static readonly ReferenceAssemblies ReferenceAssemblies = new("some-tfm");
+    public static readonly ReferenceAssemblies EmptyReferenceAssemblies = new("some-tfm");
 
     public static ImmutableArray<MetadataReference> MetadataReferences { get; } = GetMetadataReferences();
 

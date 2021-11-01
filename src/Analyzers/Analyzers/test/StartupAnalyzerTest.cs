@@ -656,7 +656,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
         var test = new StartupCSharpAnalyzerTest(StartupAnalyzer, TestReferences.MetadataReferences)
         {
             TestCode = source,
-            ReferenceAssemblies = TestReferences.ReferenceAssemblies,
+            ReferenceAssemblies = TestReferences.EmptyReferenceAssemblies,
         };
 
         test.ExpectedDiagnostics.AddRange(expected);

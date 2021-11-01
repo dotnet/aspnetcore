@@ -3,7 +3,6 @@
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing.Verifiers;
@@ -15,16 +14,8 @@ internal sealed class StartupCSharpAnalyzerTest : CSharpAnalyzerTest<StartupAnal
     public StartupCSharpAnalyzerTest(StartupAnalyzer analyzer, ImmutableArray<MetadataReference> metadataReferences)
     {
         StartupAnalyzer = analyzer;
-        SolutionTransforms.Add((solution, projectId) =>
-        {
-            var project = solution.GetProject(projectId);
-
-            return project
-                .WithCompilationOptions(((CSharpCompilationOptions)project.CompilationOptions)
-                    .WithOutputKind(OutputKind.WindowsApplication))
-             .WithMetadataReferences(metadataReferences)
-             .Solution;
-        });
+        TestState.OutputKind = OutputKind.WindowsApplication;
+        TestState.AdditionalReferences.AddRange(metadataReferences);
     }
 
     public StartupAnalyzer StartupAnalyzer { get; }
