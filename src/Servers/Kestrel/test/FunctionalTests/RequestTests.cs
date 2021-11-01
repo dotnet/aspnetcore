@@ -29,9 +29,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-#if LIBUV
-namespace Microsoft.AspNetCore.Server.Kestrel.Libuv.FunctionalTests
-#elif SOCKETS
+#if SOCKETS
 namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests
 #else
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
@@ -245,7 +243,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 if (context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel" &&
                     context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Connections" &&
-                    context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" &&
                     context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")
                 {
                     return;
@@ -295,7 +292,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             TestSink.MessageLogged += context =>
             {
                 if (context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel" &&
-                    context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" &&
                     context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")
                 {
                     return;
@@ -356,7 +352,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             TestSink.MessageLogged += context =>
             {
                 if (context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel" &&
-                    context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" &&
                     context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")
                 {
                     return;
@@ -747,8 +742,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             TestSink.MessageLogged += context =>
             {
-                if (context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" &&
-                    context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")
+                if (context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")
                 {
                     return;
                 }

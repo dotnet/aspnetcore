@@ -178,7 +178,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Grpc.Auth" />
     <LatestPackageReference Include="Grpc.Net.Client" />
     <LatestPackageReference Include="Grpc.Tools" />
-    <LatestPackageReference Include="Libuv" />
     <LatestPackageReference Include="MessagePack" />
     <LatestPackageReference Include="MessagePackAnalyzer" />
     <LatestPackageReference Include="Microsoft.Data.SqlClient" />

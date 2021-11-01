@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder to configure.
         /// </param>
         /// <param name="configureOptions">
-        /// A callback to configure Libuv options.
+        /// A callback to configure transport options.
         /// </param>
         /// <returns>
         /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder.

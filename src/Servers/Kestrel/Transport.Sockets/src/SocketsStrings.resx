@@ -117,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="FileHandleEndPointNotSupported" xml:space="preserve">
-    <value>The Socket transport does not support binding to file handles. Consider using the libuv transport instead.</value>
-  </data>
   <data name="OnlyIPEndPointsSupported" xml:space="preserve">
     <value>Only ListenType.IPEndPoint is supported by the Socket Transport. https://go.microsoft.com/fwlink/?linkid=874850</value>
   </data>

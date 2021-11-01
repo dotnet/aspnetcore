@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
                 return Input.WriteAsync(request);
             }
 
-            // Reads response as efficiently as possible (similar to LibuvTransport), but doesn't return anything
+            // Reads response as efficiently as possible, but doesn't return anything
             public async Task ReadResponseAsync(int length)
             {
                 while (length > 0)
