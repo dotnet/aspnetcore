@@ -6,7 +6,7 @@ parameters:
   preSteps: []
   binlogPath: artifacts/log/Debug/Build.binlog
   pool:
-    vmImage: vs2017-win2016
+    vmImage: 'windows-2019'
   condition: ''
   dependsOn: ''
 
