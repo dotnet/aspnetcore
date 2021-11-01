@@ -157,6 +157,8 @@ The following extensions are recommended when developing in the ASP.NET Core rep
 
 - [EditorConfig](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig)
 
+- [C# XML Documentation Comments](https://marketplace.visualstudio.com/items?itemName=k--kato.docomment)
+
 #### WiX (Optional)
 
 If you plan on working with the Windows installers defined in [src/Installers/Windows](../src/Installers/Windows), you will need to install the WiX toolkit from <https://wixtoolset.org/releases/>.
@@ -283,6 +285,8 @@ code .
 > to the process in WSL. You can workaround this by explicitly setting the environment variables
 > in `~/.vscode-server/server-env-setup`.
 > See <https://code.visualstudio.com/docs/remote/wsl#_advanced-environment-setup-script> for details.
+
+In Visual Studio Code, press `CTRL + SHIFT + P` (`CMD + SHIFT + P` on mac) to open command palette, then search and select for `Run Tasks` option. In task list, there are couple of most used tasks are already defined, in that you can select `Build entire repository` option from it to build the repository. Once you select that option, on next window you need to select configuration type from `Debug` OR `Release`. For development purpose one can go with `Debug` option and for actual testing one can choose `Release` mode as binaries will be optimized in this mode. 
 
 ### Building on command-line
 
