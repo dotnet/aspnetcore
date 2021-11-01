@@ -1,12 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 
@@ -22,6 +16,15 @@ public abstract class IISDeployerBase : ApplicationDeployer
         : base(deploymentParameters, loggerFactory)
     {
         IISDeploymentParameters = deploymentParameters;
+    }
+
+    protected abstract string ApplicationHostConfigPath { get; }
+
+    public void ModifyApplicationHostConfig(Action<XElement> action)
+    {
+        var document = XDocument.Load(ApplicationHostConfigPath);
+        action(document.Root);
+        document.Save(ApplicationHostConfigPath);
     }
 
     protected void RunWebConfigActions(string contentRoot)

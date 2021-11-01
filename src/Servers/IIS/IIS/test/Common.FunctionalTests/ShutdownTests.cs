@@ -430,6 +430,26 @@ public class ShutdownTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
+    public async Task AppHostConfigurationChangeIsIgnoredInProcess()
+    {
+        var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
+        deploymentParameters.HandlerSettings["disallowRotationOnConfigChange"] = "true";
+
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        var processBefore = await deploymentResult.HttpClient.GetStringAsync("/ProcessId");
+
+        await deploymentResult.AssertStarts();
+
+        // Just "touching" applicationHost.config should be enough
+        _deployer.ModifyApplicationHostConfig(element => { });
+
+        // Have to retry here to allow ANCM to receive notification and react to it
+        // Verify that worker process does not get restarted with new process id
+        await deploymentResult.HttpClient.RetryRequestAsync("/ProcessId", async r => await r.Content.ReadAsStringAsync() == processBefore);
+    }
+
+    [ConditionalFact]
     [RequiresNewShim]
     public async Task ConfigurationChangeCanBeIgnoredOutOfProcess()
     {
