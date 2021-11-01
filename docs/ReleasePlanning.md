@@ -12,11 +12,9 @@ The process for identifying candidates for the next major release consists of mu
 - Define the cut line
 
 ### Filtering
-At this stage all the issues are distributed to engineers by feature areas.
-The team agrees on some number of issues for each engineer to bring in to the next meeting with individual priority labels assigned  - fl-p1, fl-p2, fl-p3, where `fl` are the first letters of their first and last name.
+At this stage all the issues are distributed to engineers by feature areas. Each engineer reviews all the issues within their feature area, and returns to the next meeting with individual priority labels assigned - fl-p1, fl-p2, fl-p3, where `fl` are their initials.
 
-Each engineer then goes through every single issue in the set they've been assigned to and labels those with individual priority labels.
-All the issues which the engineer thinks is lower than p3 - remains on the backlog. We also agree to approximately balance the distribution of the 3 priroity labels on the issues that will be brough back by each engineer, so that it forces real prioritization excercise.
+All the issues which the engineer believes are lower than `Priority-3` - remain in the backlog. We also agree to approximately balance the distribution of the 3 priority labels on the issues that will be brought back by each engineer, so that it forces real prioritization exercise.
 The issues which engineers think are good candidates and fit in the above listed requirements are moved to the `.NET V Planning` milestone, where `V` is the updcoming version number (7 at the time of this writing) - `.NET 7 Planning`.
 
 ### Rough costing
