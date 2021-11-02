@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// Adds or overwrites the paramter policy with the associated route pattern token.
+        /// Adds or overwrites the parameter policy with the associated route pattern token.
         /// </summary>
         /// <typeparam name="T">The parameter policy type.</typeparam>
         /// <param name="token">The route token used to apply the parameter policy.</param>
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// Adds or overwrites the paramter policy with the associated route pattern token.
+        /// Adds or overwrites the parameter policy with the associated route pattern token.
         /// </summary>
         /// <param name="token">The route token used to apply the parameter policy.</param>
         /// <param name="type">The parameter policy type.</param>
