@@ -628,6 +628,7 @@ namespace Interop.FunctionalTests.Http3
 
         // Verify HTTP/2 and HTTP/3 match behavior
         [ConditionalTheory]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38008")]
         [MsQuicSupported]
         [InlineData(HttpProtocols.Http3)]
         [InlineData(HttpProtocols.Http2)]

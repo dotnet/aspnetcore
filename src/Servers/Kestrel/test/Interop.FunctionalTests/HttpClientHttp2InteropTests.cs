@@ -99,6 +99,7 @@ namespace Interop.FunctionalTests
 
         // Concurrency testing
         [Theory]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/37943")]
         [MemberData(nameof(SupportedSchemes))]
         public async Task MultiplexGet(string scheme)
         {
