@@ -2,7 +2,7 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
     <Product Id="$(var.ProductCode)" Name="$(var.ProductName)" Language="1033" Version="$(var.Version)" 
              Manufacturer="Microsoft Corporation" UpgradeCode="$(var.UpgradeCode)">
-        <Package InstallerVersion="$(var.InstallerVersion)" Compressed="yes" InstallScope="perMachine" />
+        <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
         <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
         <Media Id="1" />
