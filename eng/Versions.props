@@ -267,9 +267,9 @@
     <NewtonsoftJsonBsonPackageVersion>1.0.2</NewtonsoftJsonBsonPackageVersion>
     <NewtonsoftJsonPackageVersion>12.0.2</NewtonsoftJsonPackageVersion>
     <NSwagApiDescriptionClientPackageVersion>13.0.4</NSwagApiDescriptionClientPackageVersion>
-    <SeleniumSupportPackageVersion>4.0.0-rc1</SeleniumSupportPackageVersion>
-    <SeleniumWebDriverChromeDriverPackageVersion>93.0.4577.1500</SeleniumWebDriverChromeDriverPackageVersion>
-    <SeleniumWebDriverPackageVersion>4.0.0-rc1</SeleniumWebDriverPackageVersion>
+    <SeleniumSupportVersion>4.0.0</SeleniumSupportVersion>
+    <SeleniumWebDriverChromeDriverVersion>95.0.4638.1700</SeleniumWebDriverChromeDriverVersion>
+    <SeleniumWebDriverVersion>4.0.0</SeleniumWebDriverVersion>
     <SerilogExtensionsLoggingPackageVersion>1.4.0</SerilogExtensionsLoggingPackageVersion>
     <SerilogSinksFilePackageVersion>4.0.0</SerilogSinksFilePackageVersion>
     <StackExchangeRedisPackageVersion>2.0.593</StackExchangeRedisPackageVersion>
