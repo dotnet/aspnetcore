@@ -12,14 +12,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "chromedriver": "^91.0.0",
+    "chromedriver": "^93.0.0",
     "debug": "^3.1.0",
-    "selenium-webdriver": "^4.0.0-alpha.1",
+    "selenium-webdriver": "^4.0.0-rc-1",
     "yargs": "^11.0.0"
   },
   "devDependencies": {
     "@types/debug": "0.0.30",
-    "@types/selenium-webdriver": "^3.0.8",
+    "@types/selenium-webdriver": "^4.0.15",
     "@types/yargs": "^11.0.0",
     "ts-node": "^5.0.0"
   }
