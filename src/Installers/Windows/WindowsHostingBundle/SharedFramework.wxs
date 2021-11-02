@@ -4,6 +4,7 @@
         <PackageGroup Id="PG_SHAREDFX_REDIST_BUNDLE">
             <RollbackBoundary Id="RB_SHAREDFX_REDIST_BUNDLE" />
 
+            <!-- OPT_NO_SHAREDFX could be unset at this point, which we explicitly treat as 'false' -->
             <ExePackage Id="SharedFxRedist_x64" SourceFile="$(var.OutputPath)$(var.SharedFxRedistInstallerx64)"
                         Name="$(var.SharedFxRedistInstallerx64)"
                         Compressed="yes"
@@ -15,6 +16,7 @@
                         DetectCondition="SharedFxRedistProductVersion_x64 = v$(var.SharedFxInstallerProductVersionx64)">
             </ExePackage>
 
+            <!-- OPT_NO_X86 could be unset at this point, which we explicitly treat as 'false' -->
             <ExePackage Id="SharedFxRedist_x86" SourceFile="$(var.OutputPath)$(var.SharedFxRedistInstallerx86)"
                         Name="$(var.SharedFxRedistInstallerx86)"
                         Compressed="yes"
