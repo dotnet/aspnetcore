@@ -1,23 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.Globalization;
-using System.IO;
 using System.IO.Pipelines;
-using System.Linq;
-using System.Net.Http;
 using System.Net.Http.HPack;
 using System.Reflection;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -32,7 +24,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Moq;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
@@ -158,7 +149,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected readonly RequestDelegate _appReset;
 
         internal TestServiceContext _serviceContext;
-        private Timer _timer;
 
         internal DuplexPipe.DuplexPipePair _pair;
         internal Http2Connection _connection;
@@ -413,7 +403,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         public override void Dispose()
         {
-            _timer?.Dispose();
             _pair.Application?.Input.Complete();
             _pair.Application?.Output.Complete();
             _pair.Transport?.Input.Complete();
@@ -470,6 +459,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             httpConnection.Initialize(_connection);
             _mockTimeoutHandler.Setup(h => h.OnTimeout(It.IsAny<TimeoutReason>()))
                                .Callback<TimeoutReason>(r => httpConnection.OnTimeout(r));
+
+            _timeoutControl.Initialize(_serviceContext.SystemClock.UtcNow.Ticks);
         }
 
         protected async Task InitializeConnectionAsync(RequestDelegate application, int expectedSettingsCount = 3, bool expectedWindowUpdate = true)
@@ -496,7 +487,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _connectionTask = CompletePipeOnTaskCompletion();
 
-            await SendPreambleAsync().ConfigureAwait(false);
+            // Lose xUnit's AsyncTestSyncContext so middleware always runs inline for better determinism.
+            await ThreadPoolAwaitable.Instance;
+            await SendPreambleAsync();
             await SendSettingsAsync();
 
             await ExpectAsync(Http2FrameType.SETTINGS,
@@ -516,25 +509,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withLength: 0,
                 withFlags: (byte)Http2SettingsFrameFlags.ACK,
                 withStreamId: 0);
-        }
-
-        protected void StartHeartbeat()
-        {
-            if (_timer == null)
-            {
-                _timer = new Timer(OnHeartbeat, state: this, dueTime: Heartbeat.Interval, period: Heartbeat.Interval);
-            }
-        }
-
-        private static void OnHeartbeat(object state)
-        {
-            ((IRequestProcessor)((Http2TestBase)state)._connection)?.Tick(default);
-        }
-
-        protected void TriggerTick(DateTimeOffset now)
-        {
-            _serviceContext.MockSystemClock.UtcNow = now;
-            ((IRequestProcessor)_connection)?.Tick(now);
         }
 
         protected Task StartStreamAsync(int streamId, IEnumerable<KeyValuePair<string, string>> headers, bool endStream, bool flushFrame = true)
@@ -1281,6 +1255,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
         }
 
+        protected void TriggerTick(DateTimeOffset? nowOrNull = null)
+        {
+            var now = nowOrNull ?? _serviceContext.MockSystemClock.UtcNow;
+            _serviceContext.MockSystemClock.UtcNow = now;
+            _timeoutControl.Tick(now);
+            ((IRequestProcessor)_connection)?.Tick(now);
+        }
+
         protected void AdvanceClock(TimeSpan timeSpan)
         {
             var clock = _serviceContext.MockSystemClock;
@@ -1288,12 +1270,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             while (clock.UtcNow + Heartbeat.Interval < endTime)
             {
-                clock.UtcNow += Heartbeat.Interval;
-                _timeoutControl.Tick(clock.UtcNow);
+                TriggerTick(clock.UtcNow + Heartbeat.Interval);
             }
 
-            clock.UtcNow = endTime;
-            _timeoutControl.Tick(clock.UtcNow);
+            TriggerTick(endTime);
         }
 
         private static PipeOptions GetInputPipeOptions(ServiceContext serviceContext, MemoryPool<byte> memoryPool, PipeScheduler writerScheduler) => new PipeOptions

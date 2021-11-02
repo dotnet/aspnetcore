@@ -33,6 +33,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private const PseudoHeaderFields _mandatoryRequestPseudoHeaderFields =
             PseudoHeaderFields.Method | PseudoHeaderFields.Path | PseudoHeaderFields.Scheme;
 
+        private const int InitialStreamPoolSize = 5;
+        private const int MaxStreamPoolSize = 100;
+        private const long StreamPoolExpiryTicks = TimeSpan.TicksPerSecond * 5;
+
         private readonly HttpConnectionContext _context;
         private readonly Http2FrameWriter _frameWriter;
         private readonly Pipe _input;
@@ -46,6 +50,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly Http2PeerSettings _clientSettings = new Http2PeerSettings();
 
         private readonly Http2Frame _incomingFrame = new Http2Frame();
+
+        // This is only set to true by tests.
+        private readonly bool _scheduleInline;
 
         private Http2Stream? _currentHeadersStream;
         private RequestHeaderParsingState _requestHeaderParsingState;
@@ -69,14 +76,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         internal readonly Http2KeepAlive? _keepAlive;
         internal readonly Dictionary<int, Http2Stream> _streams = new Dictionary<int, Http2Stream>();
         internal PooledStreamStack<Http2Stream> StreamPool;
-        // Max tracked streams is double max concurrent streams.
-        // If a small MaxConcurrentStreams value is configured then still track at least to 100 streams
-        // to support clients that send a burst of streams while the connection is being established.
-        internal uint MaxTrackedStreams => Math.Max(_serverSettings.MaxConcurrentStreams * 2, 100);
-
-        internal const int InitialStreamPoolSize = 5;
-        internal const int MaxStreamPoolSize = 100;
-        internal const long StreamPoolExpiryTicks = TimeSpan.TicksPerSecond * 5;
 
         public Http2Connection(HttpConnectionContext context)
         {
@@ -132,6 +131,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // Start pool off at a smaller size if the max number of streams is less than the InitialStreamPoolSize
             StreamPool = new PooledStreamStack<Http2Stream>(Math.Min(InitialStreamPoolSize, http2Limits.MaxStreamsPerConnection));
 
+            _scheduleInline = context.ServiceContext.Scheduler == PipeScheduler.Inline;
+
             _inputTask = ReadInputAsync();
         }
 
@@ -146,6 +147,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public KestrelServerLimits Limits => _context.ServiceContext.ServerOptions.Limits;
 
         internal Http2PeerSettings ServerSettings => _serverSettings;
+
+        // Max tracked streams is double max concurrent streams.
+        // If a small MaxConcurrentStreams value is configured then still track at least to 100 streams
+        // to support clients that send a burst of streams while the connection is being established.
+        internal uint MaxTrackedStreams => Math.Max(_serverSettings.MaxConcurrentStreams * 2, 100);
 
         public void OnInputOrOutputCompleted()
         {
@@ -1073,8 +1079,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
 
             KestrelEventSource.Log.RequestQueuedStart(_currentHeadersStream, AspNetCore.Http.HttpProtocol.Http2);
-            // Must not allow app code to block the connection handling loop.
-            ThreadPool.UnsafeQueueUserWorkItem(_currentHeadersStream, preferLocal: false);
+
+            // _scheduleInline is only true in tests
+            if (!_scheduleInline)
+            {
+                // Must not allow app code to block the connection handling loop.
+                ThreadPool.UnsafeQueueUserWorkItem(_currentHeadersStream, preferLocal: false);
+            }
+            else
+            {
+                _currentHeadersStream.Execute();
+            }
         }
 
         private void ResetRequestHeaderParsingState()
