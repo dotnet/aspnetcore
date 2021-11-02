@@ -181,7 +181,12 @@ namespace Microsoft.AspNetCore.Builder
             return newBuilder;
         }
 
-        IApplicationBuilder IApplicationBuilder.Use(Func<RequestDelegate, RequestDelegate> middleware)
+        /// <summary>
+        /// Adds the middleware to the application request pipeline.
+        /// </summary>
+        /// <param name="middleware">The middleware.</param>
+        /// <returns>An instance of <see cref="IApplicationBuilder"/> after the operation has completed.</returns>
+        public IApplicationBuilder Use(Func<RequestDelegate, RequestDelegate> middleware)
         {
             ApplicationBuilder.Use(middleware);
             return this;

@@ -25,6 +25,7 @@ Microsoft.AspNetCore.Builder.WebApplication.Services.get -> System.IServiceProvi
 Microsoft.AspNetCore.Builder.WebApplication.StartAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Builder.WebApplication.StopAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Builder.WebApplication.Urls.get -> System.Collections.Generic.ICollection<string!>!
+Microsoft.AspNetCore.Builder.WebApplication.Use(System.Func<Microsoft.AspNetCore.Http.RequestDelegate!, Microsoft.AspNetCore.Http.RequestDelegate!>! middleware) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 Microsoft.AspNetCore.Builder.WebApplicationBuilder
 Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build() -> Microsoft.AspNetCore.Builder.WebApplication!
 Microsoft.AspNetCore.Builder.WebApplicationBuilder.Configuration.get -> Microsoft.Extensions.Configuration.ConfigurationManager!
