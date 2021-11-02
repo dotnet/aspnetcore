@@ -1835,6 +1835,26 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Single(((IConfigurationRoot)app.Configuration).Providers.OfType<RandomConfigurationProvider>());
         }
 
+        [Fact]
+        public async Task CanUseMiddleware()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            await using var app = builder.Build();
+
+            app.Use(next =>
+            {
+                return context => context.Response.WriteAsync("Hello World");
+            });
+
+            await app.StartAsync();
+
+            var client = app.GetTestClient();
+
+            var response = await client.GetStringAsync("/");
+            Assert.Equal("Hello World", response);
+        }
+
         public class RandomConfigurationSource : IConfigurationSource
         {
             public int ProvidersBuilt { get; set; }
