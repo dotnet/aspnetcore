@@ -67,8 +67,10 @@ namespace Microsoft.AspNetCore.Identity.InMemory
             Assert.Null(transaction3.SetCookie);
         }
 
-        [Fact]
-        public async Task CanCreateMeLoginAndCookieStopsWorkingAfterExpiration()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task CanCreateMeLoginAndCookieStopsWorkingAfterExpiration(bool testCore)
         {
             var clock = new TestClock();
             var server = await CreateServer(services =>
@@ -79,7 +81,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory
                     options.SlidingExpiration = false;
                 });
                 services.AddSingleton<ISystemClock>(clock);
-            });
+            }, testCore: testCore);
 
             var transaction1 = await SendAsync(server, "http://example.com/createMe");
             Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
@@ -108,12 +110,14 @@ namespace Microsoft.AspNetCore.Identity.InMemory
         }
 
         [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task CanCreateMeLoginAndSecurityStampExtendsExpiration(bool rememberMe)
+        [InlineData(true, true)]
+        [InlineData(true, false)]
+        [InlineData(false, true)]
+        [InlineData(false, false)]
+        public async Task CanCreateMeLoginAndSecurityStampExtendsExpiration(bool rememberMe, bool testCore)
         {
             var clock = new TestClock();
-            var server = await CreateServer(services => services.AddSingleton<ISystemClock>(clock));
+            var server = await CreateServer(services => services.AddSingleton<ISystemClock>(clock), testCore: testCore);
 
             var transaction1 = await SendAsync(server, "http://example.com/createMe");
             Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
@@ -153,8 +157,10 @@ namespace Microsoft.AspNetCore.Identity.InMemory
             Assert.Equal("hao", FindClaimValue(transaction6, ClaimTypes.Name));
         }
 
-        [Fact]
-        public async Task CanAccessOldPrincipalDuringSecurityStampReplacement()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task CanAccessOldPrincipalDuringSecurityStampReplacement(bool testCore)
         {
             var clock = new TestClock();
             var server = await CreateServer(services =>
@@ -170,7 +176,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory
                     };
                 });
                 services.AddSingleton<ISystemClock>(clock);
-            });
+            }, testCore: testCore);
 
             var transaction1 = await SendAsync(server, "http://example.com/createMe");
             Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
@@ -204,11 +210,13 @@ namespace Microsoft.AspNetCore.Identity.InMemory
             Assert.Equal("hao", FindClaimValue(transaction6, ClaimTypes.Name));
         }
 
-        [Fact]
-        public async Task TwoFactorRememberCookieVerification()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task TwoFactorRememberCookieVerification(bool testCore)
         {
             var clock = new TestClock();
-            var server = await CreateServer(services => services.AddSingleton<ISystemClock>(clock));
+            var server = await CreateServer(services => services.AddSingleton<ISystemClock>(clock), testCore: testCore);
 
             var transaction1 = await SendAsync(server, "http://example.com/createMe");
             Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
@@ -231,11 +239,13 @@ namespace Microsoft.AspNetCore.Identity.InMemory
             Assert.Equal(HttpStatusCode.OK, transaction4.Response.StatusCode);
         }
 
-        [Fact]
-        public async Task TwoFactorRememberCookieClearedBySecurityStampChange()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task TwoFactorRememberCookieClearedBySecurityStampChange(bool testCore)
         {
             var clock = new TestClock();
-            var server = await CreateServer(services => services.AddSingleton<ISystemClock>(clock));
+            var server = await CreateServer(services => services.AddSingleton<ISystemClock>(clock), testCore: testCore);
 
             var transaction1 = await SendAsync(server, "http://example.com/createMe");
             Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
