@@ -72,6 +72,7 @@ namespace Microsoft.AspNetCore.Routing
         /// </summary>
         public IDictionary<string, Type> ConstraintMap
         {
+            [RequiresUnreferencedCode($"The linker cannot determine what constraints are being added via the ConstraintMap property. Prefer {nameof(RouteOptions)}.{nameof(SetParameterPolicy)} instead.")]
             get
             {
                 return _constraintTypeMap;
@@ -124,7 +125,32 @@ namespace Microsoft.AspNetCore.Routing
             return defaults;
         }
 
-        // This API could be exposed on RouteOptions
+        /// <summary>
+        /// Adds or overwrites the paramter policy with the associated route pattern token.
+        /// </summary>
+        /// <typeparam name="T">The parameter policy type.</typeparam>
+        /// <param name="token">The route token used to apply the parameter policy.</param>
+        public void SetParameterPolicy<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]T>(string token) where T : IParameterPolicy
+        {
+            ConstraintMap[token] = typeof(T);
+        }
+
+        /// <summary>
+        /// Adds or overwrites the paramter policy with the associated route pattern token.
+        /// </summary>
+        /// <param name="token">The route token used to apply the parameter policy.</param>
+        /// <param name="type">The parameter policy type.</param>
+        /// <exception cref="InvalidOperationException">Throws an exception if the type is not an <see cref="IParameterPolicy"/>.</exception>
+        public void SetParameterPolicy(string token, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type)
+        {
+            if (!type.IsAssignableTo(typeof(IParameterPolicy)))
+            {
+                throw new InvalidOperationException($"{type} must implement {typeof(IParameterPolicy)}");
+            }
+
+            ConstraintMap[token] = type;
+        }
+
         private static void AddConstraint<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]TConstraint>(Dictionary<string, Type> constraintMap, string text) where TConstraint : IRouteConstraint
         {
             constraintMap[text] = typeof(TConstraint);

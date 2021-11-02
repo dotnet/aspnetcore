@@ -270,6 +270,46 @@ namespace Microsoft.AspNetCore.Routing.Tests
         }
 
         [Fact]
+        public void ResolveConstraint_SupportsCustomConstraintsUsingNonGenericOverload()
+        {
+            // Arrange
+            var routeOptions = new RouteOptions();
+            routeOptions.SetParameterPolicy("custom", typeof(CustomRouteConstraint));
+            var resolver = GetInlineConstraintResolver(routeOptions);
+
+            // Act
+            var constraint = resolver.ResolveConstraint("custom(argument)");
+
+            // Assert
+            Assert.IsType<CustomRouteConstraint>(constraint);
+        }
+
+        [Fact]
+        public void SetParameterPolicyThrowsIfTypeIsNotIParameterPolicy()
+        {
+            // Arrange
+            var routeOptions = new RouteOptions();
+            var ex = Assert.Throws<InvalidOperationException>(() => routeOptions.SetParameterPolicy("custom", typeof(string)));
+
+            Assert.Equal("System.String must implement Microsoft.AspNetCore.Routing.IParameterPolicy", ex.Message);
+        }
+
+        [Fact]
+        public void ResolveConstraint_SupportsCustomConstraintsUsingGenericOverloads()
+        {
+            // Arrange
+            var routeOptions = new RouteOptions();
+            routeOptions.SetParameterPolicy<CustomRouteConstraint>("custom");
+            var resolver = GetInlineConstraintResolver(routeOptions);
+
+            // Act
+            var constraint = resolver.ResolveConstraint("custom(argument)");
+
+            // Assert
+            Assert.IsType<CustomRouteConstraint>(constraint);
+        }
+
+        [Fact]
         public void ResolveConstraint_CustomConstraintThatDoesNotImplementIRouteConstraint_Throws()
         {
             // Arrange
