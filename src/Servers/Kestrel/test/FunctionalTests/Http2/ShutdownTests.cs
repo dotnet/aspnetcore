@@ -18,9 +18,7 @@ using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
 
-#if LIBUV
-namespace Microsoft.AspNetCore.Server.Kestrel.Libuv.FunctionalTests.Http2
-#elif SOCKETS
+#if SOCKETS
 namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests.Http2
 #else
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2

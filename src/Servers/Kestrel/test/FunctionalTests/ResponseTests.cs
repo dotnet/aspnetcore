@@ -31,9 +31,7 @@ using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 
-#if LIBUV
-namespace Microsoft.AspNetCore.Server.Kestrel.Libuv.FunctionalTests
-#elif SOCKETS
+#if SOCKETS
 namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests
 #else
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
@@ -153,9 +151,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [Theory]
         [MemberData(nameof(ConnectionMiddlewareData))]
-#if LIBUV
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/36931")]
-#endif
         public async Task WriteAfterConnectionCloseNoops(ListenOptions listenOptions)
         {
             var connectionClosed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -275,8 +270,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             TestSink.MessageLogged += context =>
             {
-                if (context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" &&
-                    context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")
+                if (context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")
                 {
                     return;
                 }
@@ -403,8 +397,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 // After the RequestAborted token is tripped, the connection reset should be logged.
                 // On Linux and macOS, the connection close is still sometimes observed as a FIN despite the LingerState.
                 var presShutdownTransportLogs = TestSink.Writes.Where(
-                    w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" ||
-                         w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets");
+                    w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets");
                 var connectionResetLogs = presShutdownTransportLogs.Where(
                     w => w.EventId == connectionResetEventId ||
                          (!TestPlatformHelper.IsWindows && w.EventId == connectionFinEventId));
@@ -419,7 +412,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             Assert.Single(coreLogs.Where(w => w.EventId == connectionStopEventId));
 
             var transportLogs = TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel" ||
-                                                           w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" ||
                                                            w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets");
 
             Assert.Empty(transportLogs.Where(w => w.LogLevel > LogLevel.Debug));
@@ -452,8 +444,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             }
 
-            var transportLogs = TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" ||
-                                                           w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets");
+            var transportLogs = TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets");
 
             // The "Microsoft.AspNetCore.Server.Kestrel" logger may contain info level logs because resetting the connection can cause
             // partial headers to be read leading to a bad request.

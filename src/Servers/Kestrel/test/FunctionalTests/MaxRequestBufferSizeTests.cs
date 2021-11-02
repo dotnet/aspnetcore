@@ -19,9 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Xunit;
 
-#if LIBUV
-namespace Microsoft.AspNetCore.Server.Kestrel.Libuv.FunctionalTests
-#elif SOCKETS
+#if SOCKETS
 namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests
 #else
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests

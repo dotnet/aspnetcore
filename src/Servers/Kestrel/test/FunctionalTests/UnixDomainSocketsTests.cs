@@ -22,9 +22,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
-#if LIBUV
-namespace Microsoft.AspNetCore.Server.Kestrel.Libuv.FunctionalTests
-#elif SOCKETS
+#if SOCKETS
 namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests
 #else
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
@@ -32,11 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class UnixDomainSocketsTest : TestApplicationErrorLoggerLoggedTest
     {
-#if LIBUV
-        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Libuv does not support unix domain sockets on Windows.")]
-#else
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_RS4)]
-#endif
         [ConditionalFact]
         [CollectDump]
         public async Task TestUnixDomainSocket()
@@ -134,12 +128,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-#if LIBUV
-        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Libuv does not support unix domain sockets on Windows.")]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/28067")]
-#else
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_RS4)]
-#endif
         [ConditionalFact]
         [CollectDump]
         public async Task TestUnixDomainSocketWithUrl()
