@@ -28,8 +28,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         public string ClientId { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of scopes to request when signing in. Defaults to "openid" and "profile".
+        /// Gets or sets the list of scopes to request when signing in.
         /// </summary>
+        /// <value>Defautls to <c>openid</c> and <c>profile</c>.</value>
         public IList<string> DefaultScopes { get; } = new List<string> { "openid", "profile" };
 
         /// <summary>
