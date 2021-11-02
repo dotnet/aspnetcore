@@ -4,6 +4,7 @@
         <PackageGroup Id="PG_ANCM">
             <RollbackBoundary Id="RB_ANCM" />
 
+            <!-- OPT_NO_ANCM could be unset at this point, which we explicitly treat as 'false' -->
             <MsiPackage Id="AspNetCoreModuleV2_x86" SourceFile="$(var.AspNetCoreModuleV2_x86.TargetPath)"
                         Name="$(var.AspNetCoreModuleV2_x86.TargetFileName)"
                         Compressed="yes"
@@ -13,6 +14,7 @@
                 <MsiProperty Name="OPT_NO_SHARED_CONFIG_CHECK" Value="[OPT_NO_SHARED_CONFIG_CHECK]" />
             </MsiPackage>
 
+            <!-- OPT_NO_SHARED_CONFIG_CHECK could be unset at this point, which we explicitly treat as 'false' -->
             <MsiPackage Id="AspNetCoreModuleV2_x64" SourceFile="$(var.AspNetCoreModuleV2_x64.TargetPath)"
                         Name="$(var.AspNetCoreModuleV2_x64.TargetFileName)"
                         Compressed="yes"
