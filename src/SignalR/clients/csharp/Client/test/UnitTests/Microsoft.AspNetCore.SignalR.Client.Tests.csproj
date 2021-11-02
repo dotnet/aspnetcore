@@ -22,6 +22,7 @@
     <Reference Include="Microsoft.AspNetCore.SignalR" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Client.Core" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Client.SourceGenerator" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Client.SourceGenerator.HubProxyAttributes" />
   </ItemGroup>
 
 </Project>

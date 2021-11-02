@@ -1714,7 +1714,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DelegationSite", "src\Serve
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.HttpSys.NonHelixTests", "src\Servers\HttpSys\test\NonHelixTests\Microsoft.AspNetCore.Server.HttpSys.NonHelixTests.csproj", "{8EB0B983-8851-4565-B92F-366F1B126E61}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HubProxyAttributes", "src\SignalR\clients\csharp\Client.SourceGenerator\src\HubProxyAttributes\HubProxyAttributes.csproj", "{FF358174-C540-4FDD-BA8A-8B1589FDEE94}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Client.SourceGenerator.HubProxyAttributes", "src\SignalR\clients\csharp\Client.SourceGenerator\src\HubProxyAttributes\Microsoft.AspNetCore.SignalR.Client.SourceGenerator.HubProxyAttributes.csproj", "{FF358174-C540-4FDD-BA8A-8B1589FDEE94}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

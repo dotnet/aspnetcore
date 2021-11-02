@@ -13,13 +13,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="HubProxyAttributes" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Client.SourceGenerator.HubProxyAttributes" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <!-- The source generator includes some attributes to be used by user code to influence the source generated code -->
-    <None Include="$(OutputPath)\HubProxyAttributes.dll" Pack="true" PackagePath="lib/netstandard2.0" Visible="false" />
+    <None Include="$(OutputPath)\Microsoft.AspNetCore.SignalR.Client.SourceGenerator.HubProxyAttributes.dll" Pack="true" PackagePath="lib/netstandard2.0" Visible="false" />
   </ItemGroup>
 
 </Project>

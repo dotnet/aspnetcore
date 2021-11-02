@@ -218,6 +218,7 @@
                           $(RepoRoot)src\Mvc\**\src\*.csproj;
                           $(RepoRoot)src\Azure\**\src\*.csproj;
                           $(RepoRoot)src\SignalR\**\src\*.csproj;
+                          $(RepoRoot)src\SignalR\**\Client.SourceGenerator\**\*.csproj;
                           $(RepoRoot)src\Components\**\src\*.csproj;
                           $(RepoRoot)src\FileProviders\**\src\*.csproj;
                           $(RepoRoot)src\Configuration.KeyPerFile\**\src\*.csproj;

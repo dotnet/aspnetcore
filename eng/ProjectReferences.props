@@ -127,8 +127,6 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" ProjectPath="$(RepoRoot)src\Azure\AzureAppServices.HostingStartup\src\Microsoft.AspNetCore.AzureAppServices.HostingStartup.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.AzureAppServicesIntegration" ProjectPath="$(RepoRoot)src\Azure\AzureAppServicesIntegration\src\Microsoft.AspNetCore.AzureAppServicesIntegration.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Client.Core" ProjectPath="$(RepoRoot)src\SignalR\clients\csharp\Client.Core\src\Microsoft.AspNetCore.SignalR.Client.Core.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Client.SourceGenerator" ProjectPath="$(RepoRoot)src\SignalR\clients\csharp\Client.SourceGenerator\src\gen\Microsoft.AspNetCore.SignalR.Client.SourceGenerator.csproj" />
-    <ProjectReferenceProvider Include="HubProxyAttributes" ProjectPath="$(RepoRoot)src\SignalR\clients\csharp\Client.SourceGenerator\src\HubProxyAttributes\HubProxyAttributes.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Client" ProjectPath="$(RepoRoot)src\SignalR\clients\csharp\Client\src\Microsoft.AspNetCore.SignalR.Client.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Http.Connections.Client" ProjectPath="$(RepoRoot)src\SignalR\clients\csharp\Http.Connections.Client\src\Microsoft.AspNetCore.Http.Connections.Client.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Http.Connections.Common" ProjectPath="$(RepoRoot)src\SignalR\common\Http.Connections.Common\src\Microsoft.AspNetCore.Http.Connections.Common.csproj" />
@@ -141,6 +139,8 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR" ProjectPath="$(RepoRoot)src\SignalR\server\SignalR\src\Microsoft.AspNetCore.SignalR.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Specification.Tests" ProjectPath="$(RepoRoot)src\SignalR\server\Specification.Tests\src\Microsoft.AspNetCore.SignalR.Specification.Tests.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" ProjectPath="$(RepoRoot)src\SignalR\server\StackExchangeRedis\src\Microsoft.AspNetCore.SignalR.StackExchangeRedis.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Client.SourceGenerator" ProjectPath="$(RepoRoot)src\SignalR\clients\csharp\Client.SourceGenerator\src\gen\Microsoft.AspNetCore.SignalR.Client.SourceGenerator.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Client.SourceGenerator.HubProxyAttributes" ProjectPath="$(RepoRoot)src\SignalR\clients\csharp\Client.SourceGenerator\src\HubProxyAttributes\Microsoft.AspNetCore.SignalR.Client.SourceGenerator.HubProxyAttributes.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Authorization" ProjectPath="$(RepoRoot)src\Components\Authorization\src\Microsoft.AspNetCore.Components.Authorization.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components" ProjectPath="$(RepoRoot)src\Components\Components\src\Microsoft.AspNetCore.Components.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Forms" ProjectPath="$(RepoRoot)src\Components\Forms\src\Microsoft.AspNetCore.Components.Forms.csproj" />
