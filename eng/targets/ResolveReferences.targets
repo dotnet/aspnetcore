@@ -149,11 +149,11 @@
 
       <!-- Handle suppressions needed because above Exclude is not aware of references added in .nuspec files. -->
       <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference->WithMetadataValue('InNuspecFile', 'true'))"
-          Condition=" '$(IsServicingBuild)' == 'true' " />
+          Condition=" '$(IsServicingBuild)' == 'true' AND $(ValidateBaseline) " />
 
       <!-- Allow suppressions of any baseline changes in non-servicing builds. -->
       <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference)"
-          Condition=" '$(IsServicingBuild)' != 'true' " />
+          Condition=" '$(IsServicingBuild)' != 'true' OR !$(ValidateBaseline) " />
     </ItemGroup>
 
     <JoinItems Left="@(Reference)" Right="@(LatestPackageReference)" LeftMetadata="*" RightMetadata="Version"
