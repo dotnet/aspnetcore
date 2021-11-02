@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" />
+    <ProjectReference Include="..\HostOptions\HostOptions.wixproj" />
     <WixExtension Include="WixUtilExtension">
       <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
       <Name>WixUtilExtension</Name>
@@ -34,43 +35,6 @@
 
   <ItemGroup>
     <Content Include="thm.xml" />
-<<<<<<< HEAD
-=======
-    <Compile Include="ANCM.wxs" />
-    <Compile Include="Bundle.wxs" />
-    <Compile Include="DotNetCore.wxs" />
-    <Compile Include="SharedFramework.wxs" />
-    <EmbeddedResource Include="thm.wxl" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj">
-      <SetPlatform>Platform=x86</SetPlatform>
-      <Name>AspNetCoreModuleV2_x86</Name>
-      <Project>f9bacb48-3bd7-4ec2-ae31-664e8703ec12</Project>
-      <Private>True</Private>
-      <DoNotHarvest>true</DoNotHarvest>
-    </ProjectReference>
-    <ProjectReference Include="..\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj">
-      <SetPlatform>Platform=x64</SetPlatform>
-      <Name>AspNetCoreModuleV2_x64</Name>
-      <Project>f9bacb48-3bd7-4ec2-ae31-664e8703ec12</Project>
-      <Private>True</Private>
-      <DoNotHarvest>true</DoNotHarvest>
-    </ProjectReference>
-    <ProjectReference Include="..\SharedFrameworkBundle\SharedFrameworkBundle.wixproj">
-      <Private>True</Private>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="..\HostOptions\HostOptions.wixproj">
-      <Name>HostOptions</Name>
-      <Project>20248cd1-c5aa-4f42-ad88-bc260d64deea</Project>
-      <Private>True</Private>
-      <DoNotHarvest>True</DoNotHarvest>
-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
-    </ProjectReference>
->>>>>>> fbda2d0028... Resolve conflicts
   </ItemGroup>
 
   <Import Project="Product.targets" />
