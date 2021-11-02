@@ -46,6 +46,7 @@ namespace Microsoft.Authentication.WebAssembly.Msal.Models
 
         /// <summary>
         /// Gets or sets the login mode that is used when initiating the sign-in flow.
+        /// Defaults to "popup".
         /// </summary>
         public string LoginMode { get; set; } = "popup";
     }
