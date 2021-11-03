@@ -48,6 +48,8 @@ The E2E tests are located in the `tests/E2ETest` folder. The E2E test assets are
 
 Each app server mounts the same `BasicTestApp` application under each scenario (located at `tests/testassets/BasicTestApp`).
 
+These tests are run in the CI as part of the [`aspnetcore-components-e2e`](https://dev.azure.com/dnceng/public/_build?definitionId=1026) pipeline.
+
 #### How to run the E2E Tests
 
 To run the tests for this project, follow these steps (from the root directory):
