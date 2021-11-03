@@ -11,12 +11,13 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "preserve",
+    "jsx": "react",
     "lib": [
       "es2015",
       "dom"
     ],
-    "skipLibCheck": false
+    "skipLibCheck": false,
+    "noFallthroughCasesInSwitch": true
   },
   "include": [
     "src"
