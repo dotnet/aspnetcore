@@ -61,8 +61,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
             // Assert
             Assert.Equal(
                 "Unable to find the required services. Please add all the required services by calling " +
-                "'IServiceCollection.AddAuthorization' inside the call to 'ConfigureServices(...)' " +
-                "in the application startup code.",
+                "'IServiceCollection.AddAuthorization' in the application startup code.",
                 ex.Message);
         }
 
