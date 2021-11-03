@@ -3,21 +3,20 @@
 
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Connections.Features
+namespace Microsoft.AspNetCore.Connections.Features;
+
+/// <summary>
+/// Represents the lifetime of the connection.
+/// </summary>
+public interface IConnectionLifetimeFeature
 {
     /// <summary>
-    /// Represents the lifetime of the connection.
+    /// Gets or sets the <see cref="CancellationToken"/> that is triggered when the connection is closed.
     /// </summary>
-    public interface IConnectionLifetimeFeature
-    {
-        /// <summary>
-        /// Gets or sets the <see cref="CancellationToken"/> that is triggered when the connection is closed.
-        /// </summary>
-        CancellationToken ConnectionClosed { get; set; }
+    CancellationToken ConnectionClosed { get; set; }
 
-        /// <summary>
-        /// Terminates the current connection.
-        /// </summary>
-        void Abort();
-    }
+    /// <summary>
+    /// Terminates the current connection.
+    /// </summary>
+    void Abort();
 }

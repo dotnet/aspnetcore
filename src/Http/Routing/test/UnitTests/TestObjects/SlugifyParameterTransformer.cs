@@ -3,14 +3,13 @@
 
 using System.Text.RegularExpressions;
 
-namespace Microsoft.AspNetCore.Routing.TestObjects
+namespace Microsoft.AspNetCore.Routing.TestObjects;
+
+public class SlugifyParameterTransformer : IOutboundParameterTransformer
 {
-    public class SlugifyParameterTransformer : IOutboundParameterTransformer
+    public string TransformOutbound(object value)
     {
-        public string TransformOutbound(object value)
-        {
-            // Slugify value
-            return value == null ? null : Regex.Replace(value.ToString(), "([a-z])([A-Z])", "$1-$2").ToLowerInvariant();
-        }
+        // Slugify value
+        return value == null ? null : Regex.Replace(value.ToString(), "([a-z])([A-Z])", "$1-$2").ToLowerInvariant();
     }
 }

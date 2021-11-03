@@ -5,12 +5,11 @@ using System;
 using System.Buffers;
 using System.Net.Http;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
-{
-    internal interface IHttpParser<TRequestHandler> where TRequestHandler : IHttpHeadersHandler, IHttpRequestLineHandler
-    {
-        bool ParseRequestLine(TRequestHandler handler, ref SequenceReader<byte> reader);
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
-        bool ParseHeaders(TRequestHandler handler, ref SequenceReader<byte> reader);
-    }
+internal interface IHttpParser<TRequestHandler> where TRequestHandler : IHttpHeadersHandler, IHttpRequestLineHandler
+{
+    bool ParseRequestLine(TRequestHandler handler, ref SequenceReader<byte> reader);
+
+    bool ParseHeaders(TRequestHandler handler, ref SequenceReader<byte> reader);
 }

@@ -4,11 +4,11 @@
 using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace Microsoft.AspNetCore.Mvc
 {

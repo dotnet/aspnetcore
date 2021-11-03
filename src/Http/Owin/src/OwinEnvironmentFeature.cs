@@ -3,14 +3,13 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Owin
+namespace Microsoft.AspNetCore.Owin;
+
+/// <summary>
+/// Default implementation of <see cref="IOwinEnvironmentFeature"/>.
+/// </summary>
+public class OwinEnvironmentFeature : IOwinEnvironmentFeature
 {
-    /// <summary>
-    /// Default implementation of <see cref="IOwinEnvironmentFeature"/>.
-    /// </summary>
-    public class OwinEnvironmentFeature : IOwinEnvironmentFeature
-    {
-        /// <inheritdoc />
-        public IDictionary<string, object> Environment { get; set; }
-    }
+    /// <inheritdoc />
+    public IDictionary<string, object> Environment { get; set; }
 }

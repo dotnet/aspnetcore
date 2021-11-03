@@ -4,17 +4,16 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNetCore.Testing
+namespace Microsoft.AspNetCore.Testing;
+
+public static partial class DumpCollector
 {
-    public static partial class DumpCollector
+    public static void Collect(Process process, string fileName)
     {
-        public static void Collect(Process process, string fileName)
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                Windows.Collect(process, fileName);
-            }
-            // No implementations yet for macOS and Linux
+            Windows.Collect(process, fileName);
         }
+        // No implementations yet for macOS and Linux
     }
 }

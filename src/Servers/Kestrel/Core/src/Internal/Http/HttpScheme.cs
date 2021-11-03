@@ -1,12 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+
+public enum HttpScheme
 {
-    public enum HttpScheme
-    {
-        Unknown = -1,
-        Http = 0,
-        Https = 1
-    }
+    Unknown = -1,
+    Http = 0,
+    Https = 1
 }

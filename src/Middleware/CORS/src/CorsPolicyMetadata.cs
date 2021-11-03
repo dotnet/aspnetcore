@@ -3,25 +3,24 @@
 
 using Microsoft.AspNetCore.Cors.Infrastructure;
 
-namespace Microsoft.AspNetCore.Cors
+namespace Microsoft.AspNetCore.Cors;
+
+/// <summary>
+/// Metadata that provides a CORS policy.
+/// </summary>
+public class CorsPolicyMetadata : ICorsPolicyMetadata
 {
     /// <summary>
-    /// Metadata that provides a CORS policy.
+    /// Creates a new instance of <see cref="CorsPolicyMetadata"/> using the specified policy.
     /// </summary>
-    public class CorsPolicyMetadata : ICorsPolicyMetadata
+    /// <param name="policy">The policy which needs to be applied.</param>
+    public CorsPolicyMetadata(CorsPolicy policy)
     {
-        /// <summary>
-        /// Creates a new instance of <see cref="CorsPolicyMetadata"/> using the specified policy.
-        /// </summary>
-        /// <param name="policy">The policy which needs to be applied.</param>
-        public CorsPolicyMetadata(CorsPolicy policy)
-        {
-            Policy = policy;
-        }
-
-        /// <summary>
-        /// The policy which needs to be applied.
-        /// </summary>
-        public CorsPolicy Policy { get; }
+        Policy = policy;
     }
+
+    /// <summary>
+    /// The policy which needs to be applied.
+    /// </summary>
+    public CorsPolicy Policy { get; }
 }

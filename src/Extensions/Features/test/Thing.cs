@@ -1,13 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Http.Features
+namespace Microsoft.AspNetCore.Http.Features;
+
+public class Thing : IThing
 {
-    public class Thing : IThing
+    public string Hello()
     {
-        public string Hello()
-        {
-            return "World";
-        }
+        return "World";
     }
 }

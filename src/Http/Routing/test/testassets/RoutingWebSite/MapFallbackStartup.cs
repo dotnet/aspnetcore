@@ -5,32 +5,31 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace RoutingWebSite
+namespace RoutingWebSite;
+
+public class MapFallbackStartup
 {
-    public class MapFallbackStartup
+    public void ConfigureServices(IServiceCollection services)
     {
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddRouting();
-        }
+        services.AddRouting();
+    }
 
-        public void Configure(IApplicationBuilder app)
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
         {
-            app.UseRouting();
-            app.UseEndpoints(endpoints =>
+            endpoints.MapFallback("/prefix/{*path:nonfile}", (context) =>
             {
-                endpoints.MapFallback("/prefix/{*path:nonfile}", (context) =>
-                {
-                    return context.Response.WriteAsync("FallbackCustomPattern");
-                });
-
-                endpoints.MapFallback((context) =>
-                {
-                    return context.Response.WriteAsync("FallbackDefaultPattern");
-                });
-
-                endpoints.MapHello("/helloworld", "World");
+                return context.Response.WriteAsync("FallbackCustomPattern");
             });
-        }
+
+            endpoints.MapFallback((context) =>
+            {
+                return context.Response.WriteAsync("FallbackDefaultPattern");
+            });
+
+            endpoints.MapHello("/helloworld", "World");
+        });
     }
 }

@@ -4,10 +4,9 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Hosting
+namespace Microsoft.AspNetCore.Hosting;
+
+internal interface ISupportsUseDefaultServiceProvider
 {
-    internal interface ISupportsUseDefaultServiceProvider
-    {
-        IWebHostBuilder UseDefaultServiceProvider(Action<WebHostBuilderContext, ServiceProviderOptions> configure);
-    }
+    IWebHostBuilder UseDefaultServiceProvider(Action<WebHostBuilderContext, ServiceProviderOptions> configure);
 }

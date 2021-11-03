@@ -4,14 +4,13 @@
 using System;
 using Microsoft.Extensions.Configuration;
 
-namespace Microsoft.AspNetCore.Hosting
+namespace Microsoft.AspNetCore.Hosting;
+
+internal class WebHostUtilities
 {
-    internal class WebHostUtilities
+    public static bool ParseBool(IConfiguration configuration, string key)
     {
-        public static bool ParseBool(IConfiguration configuration, string key)
-        {
-            return string.Equals("true", configuration[key], StringComparison.OrdinalIgnoreCase)
-                || string.Equals("1", configuration[key], StringComparison.OrdinalIgnoreCase);
-        }
+        return string.Equals("true", configuration[key], StringComparison.OrdinalIgnoreCase)
+            || string.Equals("1", configuration[key], StringComparison.OrdinalIgnoreCase);
     }
 }
