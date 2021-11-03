@@ -22,4 +22,9 @@
     <Reference Include="Microsoft.AspNetCore" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)AnalyzerTesting\TestCompilation.cs" LinkBase="AnalyzerTesting" />
+    <Compile Include="$(SharedSourceRoot)AnalyzerTesting\TestReferences.cs" LinkBase="AnalyzerTesting" />
+  </ItemGroup>
+
 </Project>
