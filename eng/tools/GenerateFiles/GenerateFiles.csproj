@@ -13,6 +13,7 @@
   <Target Name="GenerateDirectoryBuildFiles">
     <PropertyGroup>
       <_TemplateProperties>
+        AspNetCorePatchVersion=$(AspNetCorePatchVersion);
         DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
         MicrosoftAspNetCoreAppRefVersion=$(TargetingPackVersion);
         MicrosoftAspNetCoreAppRuntimeVersion=$(SharedFxVersion);
