@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,8 +41,7 @@ namespace Microsoft.AspNetCore.Builder
             {
                 throw new InvalidOperationException(Resources.FormatException_UnableToFindServices(
                     nameof(IServiceCollection),
-                    nameof(PolicyServiceCollectionExtensions.AddAuthorization),
-                    "ConfigureServices(...)"));
+                    nameof(PolicyServiceCollectionExtensions.AddAuthorization)));
             }
         }
     }
