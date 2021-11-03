@@ -39,7 +39,7 @@ To build this specific project from source, follow the instructions [on building
 
 This project contains a collection of unit tests implemented with XUnit and E2E tests implemented using Selenium. In order to run the E2E tests, you will need to have Node installed on your machine.
 
-The E2E tests are located in the `tests/E2ETest` folder. The E2E test assets are located in the `test/testassets` directory, and they consists of a top-level `TestServer` which instantiates different app servers for specific scenarios:
+The E2E tests are located in the `tests/E2ETest` folder. The E2E test assets are located in the `test/testassets` directory, and it contains a top-level `TestServer` which instantiates different app servers for specific scenarios:
 
 - Standalone Blazor WASM
 - Hosted Blazor WASM
