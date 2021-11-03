@@ -535,7 +535,10 @@ namespace Microsoft.AspNetCore.Identity
                 return SignInResult.Success;
             }
             // If the token is incorrect, record the failure which also may cause the user to be locked out
-            await UserManager.AccessFailedAsync(user);
+            if (UserManager.SupportsUserLockout)
+            {
+                await UserManager.AccessFailedAsync(user);
+            }
             return SignInResult.Failed;
         }
 
@@ -573,7 +576,10 @@ namespace Microsoft.AspNetCore.Identity
                 return SignInResult.Success;
             }
             // If the token is incorrect, record the failure which also may cause the user to be locked out
-            await UserManager.AccessFailedAsync(user);
+            if (UserManager.SupportsUserLockout)
+            {
+                await UserManager.AccessFailedAsync(user);
+            }
             return SignInResult.Failed;
         }
 
