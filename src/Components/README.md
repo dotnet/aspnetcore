@@ -70,6 +70,8 @@ source ./activate.sh
 dotnet test ./src/Components/test/E2ETest
 ```
 
+Note, you may wish to filter tests using the `--filter` command (ie. `dotnet test --filter <TEST_NAME> ./src/Components/test/E2ETest`).
+
 Please see the [`Build From Source`](https://github.com/dotnet/aspnetcore/blob/main/docs/BuildFromSource.md) docs for more information on building and testing from source.
 
 #### WebAssembly Trimming
