@@ -10,7 +10,7 @@
                         Compressed="yes"
                         Vital="yes"
                         Visible="no"
-                        InstallCondition="NOT VersionNT64 AND (VersionNT &gt;= v6.1) AND (IISCoreWebEngineInstalled_x86=1) AND (IISW3SVCInstalled_x86=1) AND (NNOT OPT_NO_ANCM OR OPT_NO_ANCM=&quot;0&quot;)" />
+                        InstallCondition="NOT VersionNT64 AND (VersionNT &gt;= v6.1) AND (IISCoreWebEngineInstalled_x86=1) AND (IISW3SVCInstalled_x86=1) AND (NOT OPT_NO_ANCM OR OPT_NO_ANCM=&quot;0&quot;)" />
 
             <!-- OPT_NO_SHARED_CONFIG_CHECK could be unset at this point, which we explicitly treat as 'false' -->
             <MsiPackage Id="AspNetCoreModule_x64" SourceFile="$(var.BinPath)aspnetcoremodule_x64_en.msi"
