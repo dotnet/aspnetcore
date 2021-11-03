@@ -5,9 +5,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "preclean": "yarn install --mutex network",
+    "preclean": "yarn install --mutex network --frozen-lockfile",
     "clean": "node node_modules/rimraf/bin.js ./dist/Debug ./dist/Release",
-    "prebuild": "yarn run clean && yarn install --mutex network",
+    "prebuild": "yarn run clean && yarn install --mutex network --frozen-lockfile",
     "build": "yarn run build:debug && yarn run build:production",
     "build:debug": "cd src && node ../node_modules/webpack-cli/bin/cli.js --mode development --config ./webpack.config.js",
     "build:production": "cd src && node ../node_modules/webpack-cli/bin/cli.js --mode production --config ./webpack.config.js",
