@@ -427,7 +427,6 @@ namespace Microsoft.AspNetCore.Identity.Test
             }
         }
 
-
         [Theory]
         [InlineData(null, true, true)]
         [InlineData("Authenticator", false, true)]
@@ -469,6 +468,39 @@ namespace Microsoft.AspNetCore.Identity.Test
 
             // Assert
             Assert.True(result.Succeeded);
+            manager.Verify();
+            auth.Verify();
+        }
+
+        [Fact]
+        public async Task TwoFactorAuthenticatorSignInFailWithoutLockout()
+        {
+            // Setup
+            var user = new PocoUser { UserName = "Foo" };
+            string providerName = "Authenticator";
+            const string code = "3123";
+            var manager = SetupUserManager(user);
+            manager.Setup(m => m.SupportsUserLockout).Returns(false).Verifiable();
+            manager.Setup(m => m.VerifyTwoFactorTokenAsync(user, providerName ?? TokenOptions.DefaultAuthenticatorProvider, code)).ReturnsAsync(false).Verifiable();
+            manager.Setup(m => m.AccessFailedAsync(user)).Throws(new Exception("Should not get called"));
+
+            var context = new DefaultHttpContext();
+            var auth = MockAuth(context);
+            var helper = SetupSignInManager(manager.Object, context);
+            var twoFactorInfo = new SignInManager<PocoUser>.TwoFactorAuthenticationInfo { UserId = user.Id };
+            if (providerName != null)
+            {
+                helper.Options.Tokens.AuthenticatorTokenProvider = providerName;
+            }
+            var id = helper.StoreTwoFactorInfo(user.Id, null);
+            auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
+                .ReturnsAsync(AuthenticateResult.Success(new AuthenticationTicket(id, null, IdentityConstants.TwoFactorUserIdScheme))).Verifiable();
+
+            // Act
+            var result = await helper.TwoFactorAuthenticatorSignInAsync(code, isPersistent: false, rememberClient: false);
+
+            // Assert
+            Assert.False(result.Succeeded);
             manager.Verify();
             auth.Verify();
         }
