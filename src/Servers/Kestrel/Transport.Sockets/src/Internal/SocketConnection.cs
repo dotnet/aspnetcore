@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                     {
                         if (!result.HasError)
                         {
-                            return false;
+                            return true;
                         }
 
                         if (IsConnectionResetError(result.SocketError!.SocketErrorCode))
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                                 SocketsLog.ConnectionReset(_logger, this);
                             }
 
-                            return true;
+                            return false;
                         }
 
                         if (IsConnectionAbortError(result.SocketError!.SocketErrorCode))
@@ -229,10 +229,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                                 SocketsLog.ConnectionError(_logger, this, error);
                             }
 
-                            return true;
+                            return false;
                         }
 
-                        return false;
+                        return true;
                     }
                 }
             }
