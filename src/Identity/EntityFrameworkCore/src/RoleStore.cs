@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// <summary>Saves the current store.</summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-        private async Task SaveChanges(CancellationToken cancellationToken)
+        protected virtual async Task SaveChanges(CancellationToken cancellationToken)
         {
             if (AutoSaveChanges)
             {
