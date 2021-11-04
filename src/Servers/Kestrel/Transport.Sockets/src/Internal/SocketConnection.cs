@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 
@@ -144,13 +145,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                     if (_waitForData)
                     {
                         // Wait for data before allocating a buffer.
-                        await _receiver.WaitForDataAsync(_socket);
+                        var waitForDataAsyncResult = await _receiver.WaitForDataAsync(_socket);
+
+                        if (ResultCompletion(waitForDataAsyncResult))
+                        {
+                            break;
+                        }
                     }
 
                     // Ensure we have some reasonable amount of buffer space
                     var buffer = Input.GetMemory(MinAllocBufferSize);
 
-                    var bytesReceived = await _receiver.ReceiveAsync(_socket, buffer);
+                    var receiveAsyncResult = await _receiver.ReceiveAsync(_socket, buffer);
+
+                    if (ResultCompletion(receiveAsyncResult))
+                    {
+                        break;
+                    }
+
+                    var bytesReceived = receiveAsyncResult.BytesTransferred;
 
                     if (bytesReceived == 0)
                     {
@@ -182,23 +195,44 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                         // Pipe consumer is shut down, do we stop writing
                         break;
                     }
-                }
-            }
-            catch (SocketException ex) when (IsConnectionResetError(ex.SocketErrorCode))
-            {
-                // This could be ignored if _shutdownReason is already set.
-                error = new ConnectionResetException(ex.Message, ex);
 
-                // There's still a small chance that both DoReceive() and DoSend() can log the same connection reset.
-                // Both logs will have the same ConnectionId. I don't think it's worthwhile to lock just to avoid this.
-                if (!_socketDisposed)
-                {
-                    SocketsLog.ConnectionReset(_logger, this);
+                    bool ResultCompletion(TransferResult result)
+                    {
+                        if (result.HasError && IsConnectionResetError(result.SocketError!.SocketErrorCode))
+                        {
+                            // This could be ignored if _shutdownReason is already set.
+                            var ex = result.SocketError!;
+                            error = new ConnectionResetException(ex.Message, ex);
+
+                            // There's still a small chance that both DoReceive() and DoSend() can log the same connection reset.
+                            // Both logs will have the same ConnectionId. I don't think it's worthwhile to lock just to avoid this.
+                            if (!_socketDisposed)
+                            {
+                                SocketsLog.ConnectionReset(_logger, this);
+                            }
+
+                            return true;
+                        }
+
+                        if (result.HasError && IsConnectionAbortError(result.SocketError!.SocketErrorCode))
+                        {
+                            // This exception should always be ignored because _shutdownReason should be set.
+                            error = result.SocketError!; 
+                            
+                            if (!_socketDisposed)
+                            {
+                                // This is unexpected if the socket hasn't been disposed yet.
+                                SocketsLog.ConnectionError(_logger, this, error);
+                            }
+
+                            return true;
+                        }
+
+                        return false;
+                    }
                 }
             }
-            catch (Exception ex)
-                when ((ex is SocketException socketEx && IsConnectionAbortError(socketEx.SocketErrorCode)) ||
-                       ex is ObjectDisposedException)
+            catch (ObjectDisposedException ex)
             {
                 // This exception should always be ignored because _shutdownReason should be set.
                 error = ex;
@@ -217,7 +251,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             }
             finally
             {
-                // If Shutdown() has already bee called, assume that was the reason ProcessReceives() exited.
+                // If Shutdown() has already been called, assume that was the reason ProcessReceives() exited.
                 Input.Complete(_shutdownReason ?? error);
 
                 FireConnectionClosed();
@@ -246,7 +280,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                     if (!buffer.IsEmpty)
                     {
                         _sender = _socketSenderPool.Rent();
-                        await _sender.SendAsync(_socket, buffer);
+                        var transferResult = await _sender.SendAsync(_socket, buffer);
+
+                        if (transferResult.HasError && IsConnectionResetError(transferResult.SocketError!.SocketErrorCode))
+                        {
+                            var ex = transferResult.SocketError!;
+                            shutdownReason = new ConnectionResetException(ex.Message, ex);
+                            SocketsLog.ConnectionReset(_logger, this);
+
+                            break;
+                        }
+
+                        if (transferResult.HasError && IsConnectionAbortError(transferResult.SocketError!.SocketErrorCode))
+                        {
+                            shutdownReason = transferResult.SocketError!;
+
+                            break;
+                        }
+                        
                         // We don't return to the pool if there was an exception, and
                         // we keep the _sender assigned so that we can dispose it in StartAsync.
                         _socketSenderPool.Return(_sender);
@@ -261,14 +312,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                     }
                 }
             }
-            catch (SocketException ex) when (IsConnectionResetError(ex.SocketErrorCode))
-            {
-                shutdownReason = new ConnectionResetException(ex.Message, ex);
-                SocketsLog.ConnectionReset(_logger, this);
-            }
-            catch (Exception ex)
-                when ((ex is SocketException socketEx && IsConnectionAbortError(socketEx.SocketErrorCode)) ||
-                       ex is ObjectDisposedException)
+            catch (ObjectDisposedException ex)
             {
                 // This should always be ignored since Shutdown() must have already been called by Abort().
                 shutdownReason = ex;

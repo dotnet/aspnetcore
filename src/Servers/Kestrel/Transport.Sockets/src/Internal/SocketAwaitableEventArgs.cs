@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
     // 2. Doesn't do ValueTask validation using the token
     // 3. Doesn't support usage outside of async/await (doesn't try to capture and restore the execution context)
     // 4. Doesn't use cancellation tokens
-    internal class SocketAwaitableEventArgs : SocketAsyncEventArgs, IValueTaskSource<int>
+    internal class SocketAwaitableEventArgs : SocketAsyncEventArgs, IValueTaskSource<TransferResult>
     {
         private static readonly Action<object?> _continuationCompleted = _ => { };
 
@@ -42,21 +42,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             }
         }
 
-        public int GetResult(short token)
+        public TransferResult GetResult(short token)
         {
             _continuation = null;
 
             if (SocketError != SocketError.Success)
             {
-                ThrowSocketException(SocketError);
+                return new TransferResult(CreateException(SocketError));
             }
 
-            return BytesTransferred;
-
-            static void ThrowSocketException(SocketError e)
-            {
-                throw CreateException(e);
-            }
+            return new TransferResult(BytesTransferred);
         }
 
         protected static SocketException CreateException(SocketError e)
@@ -80,6 +75,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 UserToken = null;
                 ThreadPool.UnsafeQueueUserWorkItem(continuation, state, preferLocal: true);
             }
+        }
+    }
+
+    internal readonly struct TransferResult
+    {
+        public readonly SocketException? SocketError;
+
+        public readonly int BytesTransferred;
+
+        public readonly bool HasError;
+
+        public TransferResult(int bytesTransferred)
+        {
+            SocketError = null;
+            BytesTransferred = bytesTransferred;
+            HasError = false;
+        }
+
+        public TransferResult(SocketException exception)
+        {
+            SocketError = exception;
+            BytesTransferred = 0;
+            HasError = true;
         }
     }
 }

@@ -14,38 +14,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         {
         }
 
-        public ValueTask<int> WaitForDataAsync(Socket socket)
+        public ValueTask<TransferResult> WaitForDataAsync(Socket socket)
         {
             SetBuffer(Memory<byte>.Empty);
 
             if (socket.ReceiveAsync(this))
             {
-                return new ValueTask<int>(this, 0);
+                return new ValueTask<TransferResult>(this, 0);
             }
 
             var bytesTransferred = BytesTransferred;
             var error = SocketError;
 
-            return error == SocketError.Success ?
-                new ValueTask<int>(bytesTransferred) :
-               ValueTask.FromException<int>(CreateException(error));
+            return error == SocketError.Success 
+                ? new ValueTask<TransferResult>(new TransferResult(bytesTransferred)) 
+                : new ValueTask<TransferResult>(new TransferResult(CreateException(error)))
+                ;
         }
 
-        public ValueTask<int> ReceiveAsync(Socket socket, Memory<byte> buffer)
+        public ValueTask<TransferResult> ReceiveAsync(Socket socket, Memory<byte> buffer)
         {
             SetBuffer(buffer);
 
             if (socket.ReceiveAsync(this))
             {
-                return new ValueTask<int>(this, 0);
+                return new ValueTask<TransferResult>(this, 0);
             }
 
             var bytesTransferred = BytesTransferred;
             var error = SocketError;
 
-            return error == SocketError.Success ?
-                new ValueTask<int>(bytesTransferred) :
-               ValueTask.FromException<int>(CreateException(error));
+            return error == SocketError.Success 
+                ? new ValueTask<TransferResult>(new TransferResult(bytesTransferred)) 
+                : new ValueTask<TransferResult>(new TransferResult(CreateException(error)))
+                ;
         }
     }
 }
