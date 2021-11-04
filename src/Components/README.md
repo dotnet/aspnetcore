@@ -37,7 +37,7 @@ To build this specific project from source, follow the instructions [on building
 
 ### Test
 
-This project contains a collection of unit tests implemented with XUnit and E2E tests implemented using Selenium. In order to run the E2E tests, you will need to have Node installed on your machine.
+This project contains a collection of unit tests implemented with XUnit and E2E tests implemented using Selenium. In order to run the E2E tests, you will need to have [Node v16](https://nodejs.org/en/) installed on your machine.
 
 The E2E tests are located in the `tests/E2ETest` folder. The E2E test assets are located in the `test/testassets` directory, and it contains a top-level `TestServer` which instantiates different app servers for specific scenarios:
 
@@ -76,7 +76,7 @@ Note, you may wish to filter tests using the `--filter` command (ie. `dotnet tes
 
 Please see the [`Build From Source`](https://github.com/dotnet/aspnetcore/blob/main/docs/BuildFromSource.md) docs for more information on building and testing from source.
 
-#### WebAssembly Trimming
+##### WebAssembly Trimming
 
 By default, WebAssembly E2E tests that run as part of the CI or when run in Release builds run with trimming enabled. It's possible that tests that successfully run locally might fail as part of the CI run due to errors introduced due to trimming. To test this scenario locally, either run the E2E tests in release build or with the `TestTrimmedApps` property set. For e.g.
 
