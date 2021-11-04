@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" />
+    <ProjectReference Include="..\HostOptions\HostOptions.wixproj" />
     <WixExtension Include="WixUtilExtension">
       <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
       <Name>WixUtilExtension</Name>
