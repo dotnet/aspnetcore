@@ -63,58 +63,17 @@
 
         <!-- Use values from the registry for switches, if the registry values are set & the user hasn't passed any switches from the command line -->
 
-        <util:RegistrySearch Id="opt_no_ancm_should_be_set" 
-                         Condition="NOT (OPT_NO_ANCM OR OPT_NO_ANCM=0 OR OPT_NO_FTS OR OPT_NO_FTS=0 OR OPT_NO_LTS OR OPT_NO_LTS=0 OR OPT_NO_SHAREDFX OR OPT_NO_SHAREDFX=0 OR OPT_NO_RUNTIME OR OPT_NO_RUNTIME=0 OR OPT_NO_X86 OR OPT_NO_X86=0)"
-                         Root="HKLM" 
-                         Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
-                         Value="OPT_NO_ANCM" 
-                         Result="exists" 
-                         Variable="OPT_NO_ANCM_Should_Be_Set"/>
+        <?define Options=OPT_NO_ANCM;OPT_NO_FTS;OPT_NO_LTS;OPT_NO_SHAREDFX;OPT_NO_RUNTIME;OPT_NO_X86 ?>
+        <?define RegistrySeachCondition="NOT (OPT_NO_ANCM OR OPT_NO_ANCM=0 OR OPT_NO_FTS OR OPT_NO_FTS=0 OR OPT_NO_LTS OR OPT_NO_LTS=0 OR OPT_NO_SHAREDFX OR OPT_NO_SHAREDFX=0 OR OPT_NO_RUNTIME OR OPT_NO_RUNTIME=0 OR OPT_NO_X86 OR OPT_NO_X86=0)" ?>
 
-        <util:RegistrySearch Id="opt_no_fts_should_be_set" 
-                         Condition="NOT (OPT_NO_ANCM OR OPT_NO_ANCM=0 OR OPT_NO_FTS OR OPT_NO_FTS=0 OR OPT_NO_LTS OR OPT_NO_LTS=0 OR OPT_NO_SHAREDFX OR OPT_NO_SHAREDFX=0 OR OPT_NO_RUNTIME OR OPT_NO_RUNTIME=0 OR OPT_NO_X86 OR OPT_NO_X86=0)"
-                         After="opt_no_ancm_should_be_set"
-                         Root="HKLM" 
-                         Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
-                         Value="OPT_NO_FTS" 
-                         Result="exists" 
-                         Variable="OPT_NO_FTS_Should_Be_Set"/>
-
-        <util:RegistrySearch Id="opt_no_lts_should_be_set" 
-                         Condition="NOT (OPT_NO_ANCM OR OPT_NO_ANCM=0 OR OPT_NO_FTS OR OPT_NO_FTS=0 OR OPT_NO_LTS OR OPT_NO_LTS=0 OR OPT_NO_SHAREDFX OR OPT_NO_SHAREDFX=0 OR OPT_NO_RUNTIME OR OPT_NO_RUNTIME=0 OR OPT_NO_X86 OR OPT_NO_X86=0)"
-                         After="opt_no_fts_should_be_set"
-                         Root="HKLM" 
-                         Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
-                         Value="OPT_NO_LTS" 
-                         Result="exists" 
-                         Variable="OPT_NO_LTS_Should_Be_Set"/>
-
-        <util:RegistrySearch Id="opt_no_sharedfx_should_be_set" 
-                         Condition="NOT (OPT_NO_ANCM OR OPT_NO_ANCM=0 OR OPT_NO_FTS OR OPT_NO_FTS=0 OR OPT_NO_LTS OR OPT_NO_LTS=0 OR OPT_NO_SHAREDFX OR OPT_NO_SHAREDFX=0 OR OPT_NO_RUNTIME OR OPT_NO_RUNTIME=0 OR OPT_NO_X86 OR OPT_NO_X86=0)"
-                         After="opt_no_lts_should_be_set"
-                         Root="HKLM" 
-                         Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
-                         Value="OPT_NO_SHAREDFX" 
-                         Result="exists" 
-                         Variable="OPT_NO_SHAREDFX_Should_Be_Set"/>
-
-        <util:RegistrySearch Id="opt_no_runtime_should_be_set" 
-                         Condition="NOT (OPT_NO_ANCM OR OPT_NO_ANCM=0 OR OPT_NO_FTS OR OPT_NO_FTS=0 OR OPT_NO_LTS OR OPT_NO_LTS=0 OR OPT_NO_SHAREDFX OR OPT_NO_SHAREDFX=0 OR OPT_NO_RUNTIME OR OPT_NO_RUNTIME=0 OR OPT_NO_X86 OR OPT_NO_X86=0)"
-                         After="opt_no_sharedfx_should_be_set"
-                         Root="HKLM" 
-                         Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
-                         Value="OPT_NO_RUNTIME" 
-                         Result="exists" 
-                         Variable="OPT_NO_RUNTIME_Should_Be_Set"/>
-
-        <util:RegistrySearch Id="opt_no_x86_should_be_set" 
-                         Condition="NOT (OPT_NO_ANCM OR OPT_NO_ANCM=0 OR OPT_NO_FTS OR OPT_NO_FTS=0 OR OPT_NO_LTS OR OPT_NO_LTS=0 OR OPT_NO_SHAREDFX OR OPT_NO_SHAREDFX=0 OR OPT_NO_RUNTIME OR OPT_NO_RUNTIME=0 OR OPT_NO_X86 OR OPT_NO_X86=0)"
-                         After="opt_no_runtime_should_be_set"
-                         Root="HKLM" 
-                         Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
-                         Value="OPT_NO_X86" 
-                         Result="exists" 
-                         Variable="OPT_NO_X86_Should_Be_Set"/>
+        <?foreach Option in $(var.Options) ?>
+            <util:RegistrySearch Id="$(var.Option)_should_be_set" 
+                             Condition="$(var.RegistrySeachCondition)"
+                             Root="HKLM" 
+                             Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
+                             Value="$(var.Option)" 
+                             Result="exists" 
+                             Variable="$(var.Option)_Should_Be_Set"/>
 
         <util:RegistrySearch Condition="OPT_NO_ANCM_Should_Be_Set"     
                          After="opt_no_x86_should_be_set"
