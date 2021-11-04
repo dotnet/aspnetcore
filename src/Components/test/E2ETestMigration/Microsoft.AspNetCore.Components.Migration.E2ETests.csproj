@@ -9,11 +9,7 @@
     <!-- This project references the shared framework transitively. Prevent restore errors by setting this flag. -->
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
 
-    <TestTrimmedApps Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TestTrimmedApps>
-    <TestTrimmedApps Condition="'$(Configuration)' == 'Release'">true</TestTrimmedApps>
-
-    <!-- Skip building and running the Components E2ETestMigration in CI -->
-    <ExcludeFromBuild Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</ExcludeFromBuild>
+    <!-- Skip the Components E2ETestMigration in CI -->
     <SkipTests Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</SkipTests>
     <BuildHelixPayload>false</BuildHelixPayload>
 
