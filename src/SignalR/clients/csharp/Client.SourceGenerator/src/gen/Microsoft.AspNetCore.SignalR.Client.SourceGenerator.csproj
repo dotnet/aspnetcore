@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Source Generator for ASP.NET Core SignalR Client</Description>
@@ -13,13 +13,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.SignalR.Client.SourceGenerator.HubProxyAttributes" ReferenceOutputAssembly="false" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Client.SourceGenerator.HubProxyAttributes"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <!-- The source generator includes some attributes to be used by user code to influence the source generated code -->
-    <None Include="$(OutputPath)\Microsoft.AspNetCore.SignalR.Client.SourceGenerator.HubProxyAttributes.dll" Pack="true" PackagePath="lib/netstandard2.0" Visible="false" />
+    <None Include="$(ArtifactsDir)bin\Microsoft.AspNetCore.SignalR.Client.SourceGenerator.HubProxyAttributes\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.SignalR.Client.SourceGenerator.HubProxyAttributes.dll"
+      Pack="true" PackagePath="lib/netstandard2.0" Visible="false" />
   </ItemGroup>
 
 </Project>
