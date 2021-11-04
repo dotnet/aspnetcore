@@ -216,6 +216,7 @@ namespace Microsoft.AspNetCore.Authentication
         private static IAuthenticationService GetAuthenticationService(HttpContext context) =>
             context.RequestServices.GetService<IAuthenticationService>() ??
                 throw new InvalidOperationException(Resources.FormatException_UnableToFindServices(
+                    nameof(IAuthenticationService),
                     nameof(IServiceCollection),
                     "AddAuthentication"));
     }
