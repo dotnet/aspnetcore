@@ -12,7 +12,8 @@
     <TestTrimmedApps Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TestTrimmedApps>
     <TestTrimmedApps Condition="'$(Configuration)' == 'Release'">true</TestTrimmedApps>
 
-    <!-- Skip the Components E2ETestMigration in CI -->
+    <!-- Skip building and running the Components E2ETestMigration in CI -->
+    <ExcludeFromBuild Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</ExcludeFromBuild>
     <SkipTests Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</SkipTests>
     <BuildHelixPayload>false</BuildHelixPayload>
 
