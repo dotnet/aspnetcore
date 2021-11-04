@@ -78,56 +78,14 @@
                              Value="$(var.Option)" 
                              Result="exists" 
                              Variable="$(var.Option)_Should_Be_Set"/>
+
+            <util:RegistrySearch Condition="$(var.Option)_Should_Be_Set"     
+                             After="$(var.Option)_should_be_set"
+                             Root="HKLM" Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
+                             Value="$(var.Option)" 
+                             Variable="$(var.Option)"
+                             Result="value" />
         <?endforeach?>
-
-        <util:RegistrySearch Condition="OPT_NO_ANCM_Should_Be_Set"     
-                         After="OPT_NO_ANCM_should_be_set"
-                         Root="HKLM" Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
-                         Value="OPT_NO_ANCM" 
-                         Variable="OPT_NO_ANCM"
-                         Result="value" />
-
-        <util:RegistrySearch Condition="OPT_NO_FTS_Should_Be_Set"     
-                         After="OPT_NO_FTS_should_be_set"
-                         Root="HKLM" Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
-                         Value="OPT_NO_FTS" 
-                         Variable="OPT_NO_FTS"
-                         Result="value" />
-
-        <util:RegistrySearch Condition="OPT_NO_LTS_Should_Be_Set"     
-                         After="OPT_NO_LTS_should_be_set"
-                         Root="HKLM" Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
-                         Value="OPT_NO_LTS" 
-                         Variable="OPT_NO_LTS"
-                         Result="value" />
-
-        <util:RegistrySearch Condition="OPT_NO_SHAREDFX_Should_Be_Set"     
-                         After="OPT_NO_SHAREDFX_should_be_set"
-                         Root="HKLM" Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
-                         Value="OPT_NO_SHAREDFX" 
-                         Variable="OPT_NO_SHAREDFX"
-                         Result="value" />
-
-        <util:RegistrySearch Condition="OPT_NO_RUNTIME_Should_Be_Set"     
-                         After="OPT_NO_RUNTIME_should_be_set"
-                         Root="HKLM" Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
-                         Value="OPT_NO_RUNTIME" 
-                         Variable="OPT_NO_RUNTIME"
-                         Result="value" />
-
-        <util:RegistrySearch Condition="OPT_NO_X86_Should_Be_Set"     
-                         After="OPT_NO_X86_should_be_set"
-                         Root="HKLM" Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
-                         Value="OPT_NO_X86" 
-                         Variable="OPT_NO_X86"
-                         Result="value" />
-
-        <util:RegistrySearch Condition="OPT_NO_SHARED_CONFIG_CHECK_Should_Be_Set"     
-                         After="OPT_NO_SHARED_CONFIG_CHECK_should_be_set"
-                         Root="HKLM" Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
-                         Value="OPT_NO_SHARED_CONFIG_CHECK" 
-                         Variable="OPT_NO_SHARED_CONFIG_CHECK"
-                         Result="value" />
 
         <!-- These variables control the state of conditional UI text elements.
              They are disabled by default and enabled based on whether or not we detect that IIS is installed -->
