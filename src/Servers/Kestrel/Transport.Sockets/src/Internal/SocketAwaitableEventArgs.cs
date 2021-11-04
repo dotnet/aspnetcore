@@ -1,10 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.IO.Pipelines;
 using System.Net.Sockets;
-using System.Threading;
 using System.Threading.Tasks.Sources;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
@@ -75,29 +73,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 UserToken = null;
                 ThreadPool.UnsafeQueueUserWorkItem(continuation, state, preferLocal: true);
             }
-        }
-    }
-
-    internal readonly struct TransferResult
-    {
-        public readonly SocketException? SocketError;
-
-        public readonly int BytesTransferred;
-
-        public readonly bool HasError;
-
-        public TransferResult(int bytesTransferred)
-        {
-            SocketError = null;
-            BytesTransferred = bytesTransferred;
-            HasError = false;
-        }
-
-        public TransferResult(SocketException exception)
-        {
-            SocketError = exception;
-            BytesTransferred = 0;
-            HasError = true;
         }
     }
 }

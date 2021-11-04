@@ -5,7 +5,6 @@ using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Sockets;
-using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 
@@ -145,9 +144,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                     if (_waitForData)
                     {
                         // Wait for data before allocating a buffer.
-                        var waitForDataAsyncResult = await _receiver.WaitForDataAsync(_socket);
+                        var waitForDataResult = await _receiver.WaitForDataAsync(_socket);
 
-                        if (ResultCompletion(waitForDataAsyncResult))
+                        if (!IsNormalCompletion(waitForDataResult))
                         {
                             break;
                         }
@@ -156,14 +155,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                     // Ensure we have some reasonable amount of buffer space
                     var buffer = Input.GetMemory(MinAllocBufferSize);
 
-                    var receiveAsyncResult = await _receiver.ReceiveAsync(_socket, buffer);
+                    var receiveResult = await _receiver.ReceiveAsync(_socket, buffer);
 
-                    if (ResultCompletion(receiveAsyncResult))
+                    if (!IsNormalCompletion(receiveResult))
                     {
                         break;
                     }
 
-                    var bytesReceived = receiveAsyncResult.BytesTransferred;
+                    var bytesReceived = receiveResult.BytesTransferred;
 
                     if (bytesReceived == 0)
                     {
@@ -196,9 +195,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                         break;
                     }
 
-                    bool ResultCompletion(TransferResult result)
+                    bool IsNormalCompletion(TransferResult result)
                     {
-                        if (result.HasError && IsConnectionResetError(result.SocketError!.SocketErrorCode))
+                        if (!result.HasError)
+                        {
+                            return false;
+                        }
+
+                        if (IsConnectionResetError(result.SocketError!.SocketErrorCode))
                         {
                             // This could be ignored if _shutdownReason is already set.
                             var ex = result.SocketError!;
@@ -214,7 +218,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                             return true;
                         }
 
-                        if (result.HasError && IsConnectionAbortError(result.SocketError!.SocketErrorCode))
+                        if (IsConnectionAbortError(result.SocketError!.SocketErrorCode))
                         {
                             // This exception should always be ignored because _shutdownReason should be set.
                             error = result.SocketError!; 
