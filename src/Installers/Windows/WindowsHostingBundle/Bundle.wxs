@@ -73,9 +73,9 @@
                              Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
                              Value="$(var.Option)" 
                              Result="exists" 
-                             Variable="$(var.Option)_Should_Be_Set"/>
+                             Variable="$(var.Option)_Exists"/>
 
-            <util:RegistrySearch Condition="$(var.Option)_Should_Be_Set"     
+            <util:RegistrySearch Condition="$(var.Option)_Exists"     
                              After="$(var.Option)_should_be_set"
                              Root="HKLM" Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
                              Value="$(var.Option)" 
