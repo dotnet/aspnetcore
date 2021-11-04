@@ -189,10 +189,39 @@ public class InputFormatterTests : IClassFixture<MvcTestFixture<FormatterWebSite
     }
 
     [Fact]
+    public async Task BodyIsRequiredByDefaultFailsWithEmptyBody()
+    {
+        var content = new ByteArrayContent(Array.Empty<byte>());
+        Assert.Null(content.Headers.ContentType);
+        Assert.Equal(0, content.Headers.ContentLength);
+
+        // Act
+        var response = await Client.PostAsync($"Home/{nameof(HomeController.DefaultBody)}", content);
+
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.UnsupportedMediaType);
+    }
+
+    [Fact]
     public async Task OptionalFromBodyWorks()
     {
         // Act
         var response = await Client.PostAsJsonAsync<object>($"Home/{nameof(HomeController.OptionalBody)}", value: null);
+
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task OptionalFromBodyWorksWithEmptyRequest()
+    {
+        // Arrange
+        var content = new ByteArrayContent(Array.Empty<byte>());
+        Assert.Null(content.Headers.ContentType);
+        Assert.Equal(0, content.Headers.ContentLength);
+
+        // Act
+        var response = await Client.PostAsync($"Home/{nameof(HomeController.OptionalBody)}", content);
 
         // Assert
         await response.AssertStatusCodeAsync(HttpStatusCode.OK);
