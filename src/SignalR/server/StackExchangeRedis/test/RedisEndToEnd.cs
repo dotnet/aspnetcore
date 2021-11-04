@@ -93,7 +93,6 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         [ConditionalTheory]
         [SkipIfDockerNotPresent]
         [MemberData(nameof(TransportTypesAndProtocolTypes))]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/37080")]
         public async Task CanSendAndReceiveUserMessagesFromMultipleConnectionsWithSameUser(HttpTransportType transportType, string protocolName)
         {
             using (StartVerifiableLog())
