@@ -60,7 +60,6 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         [ConditionalTheory]
         [SkipIfDockerNotPresent]
         [MemberData(nameof(TransportTypesAndProtocolTypes))]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/33851")]
         public async Task HubConnectionCanSendAndReceiveGroupMessages(HttpTransportType transportType, string protocolName)
         {
             using (StartVerifiableLog())
@@ -122,7 +121,6 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         [ConditionalTheory]
         [SkipIfDockerNotPresent]
         [MemberData(nameof(TransportTypesAndProtocolTypes))]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/33851")]
         public async Task CanSendAndReceiveUserMessagesWhenOneConnectionWithUserDisconnects(HttpTransportType transportType, string protocolName)
         {
             // Regression test:
