@@ -256,3 +256,9 @@ dotnet_diagnostic.IDE0044.severity = suggestion
 
 # CA2016: Forward the 'CancellationToken' parameter to methods that take one
 dotnet_diagnostic.CA2016.severity = suggestion
+
+# Defaults for content in the shared runtime dir
+
+[**/Shared/runtime/**.{cs,vb}]
+# IDE0161: Convert to file-scoped namespace
+dotnet_diagnostic.IDE0161.severity = silent
