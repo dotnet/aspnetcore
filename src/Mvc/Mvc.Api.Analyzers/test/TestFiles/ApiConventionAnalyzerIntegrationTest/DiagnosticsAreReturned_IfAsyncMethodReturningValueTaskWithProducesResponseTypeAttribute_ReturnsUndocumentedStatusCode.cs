@@ -4,20 +4,21 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers;
-
-[ApiController]
-public class DiagnosticsAreReturned_IfAsyncMethodReturningValueTaskWithProducesResponseTypeAttribute_ReturnsUndocumentedStatusCode : ControllerBase
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 {
-    [ProducesResponseType(typeof(string), 404)]
-    public async ValueTask<IActionResult> Method(int id)
+    [ApiController]
+    public class DiagnosticsAreReturned_IfAsyncMethodReturningValueTaskWithProducesResponseTypeAttribute_ReturnsUndocumentedStatusCode : ControllerBase
     {
-        await Task.Yield();
-        if (id == 0)
+        [ProducesResponseType(typeof(string), 404)]
+        public async ValueTask<IActionResult> Method(int id)
         {
-            return NotFound();
-        }
+            await Task.Yield();
+            if (id == 0)
+            {
+                return NotFound();
+            }
 
-        return /*MM*/Ok();
+            return /*MM*/Ok();
+        }
     }
 }

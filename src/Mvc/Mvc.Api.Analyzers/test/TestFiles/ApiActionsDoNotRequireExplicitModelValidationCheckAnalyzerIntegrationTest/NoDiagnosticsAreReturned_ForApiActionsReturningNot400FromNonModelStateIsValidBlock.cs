@@ -1,19 +1,20 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers.TestFiles.ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzerIntegrationTest;
-
-[ApiController]
-[Route("/api/[controller]")]
-public class NoDiagnosticsAreReturned_ForApiActionsReturningNot400FromNonModelStateIsValidBlock : ControllerBase
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers.TestFiles.ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzerIntegrationTest
 {
-    public IActionResult Method(int id)
+    [ApiController]
+    [Route("/api/[controller]")]
+    public class NoDiagnosticsAreReturned_ForApiActionsReturningNot400FromNonModelStateIsValidBlock : ControllerBase
     {
-        if (!ModelState.IsValid)
+        public IActionResult Method(int id)
         {
-            return UnprocessableEntity();
-        }
+            if (!ModelState.IsValid)
+            {
+                return UnprocessableEntity();
+            }
 
-        return Ok();
+            return Ok();
+        }
     }
 }

@@ -4,54 +4,55 @@
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers;
-
-public class Base { }
-
-public class Derived : Base { }
-
-public class TestController
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 {
-    public IActionResult Get(int id) => null;
+    public class Base { }
 
-    public IActionResult Search(string searchTerm, bool sortDescending, int page) => null;
+    public class Derived : Base { }
 
-    public IActionResult SearchEmpty() => null;
-}
+    public class TestController
+    {
+        public IActionResult Get(int id) => null;
 
-public static class TestConvention
-{
-    [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Prefix)]
-    public static void Get(int id) { }
+        public IActionResult Search(string searchTerm, bool sortDescending, int page) => null;
 
-    [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Any)]
-    public static void GetNoArgs() { }
+        public IActionResult SearchEmpty() => null;
+    }
 
-    [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Any)]
-    public static void GetTwoArgs(int id, string name) { }
+    public static class TestConvention
+    {
+        [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Prefix)]
+        public static void Get(int id) { }
 
-    [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Prefix)]
-    public static void Post(Derived model) { }
+        [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Any)]
+        public static void GetNoArgs() { }
 
-    [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Prefix)]
-    public static void GetParameterNotMatching([ApiConventionTypeMatch(ApiConventionTypeMatchBehavior.AssignableFrom)] Derived model) { }
+        [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Any)]
+        public static void GetTwoArgs(int id, string name) { }
 
-    [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Any)]
-    public static void Search(
-        [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Exact)]
+        [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Prefix)]
+        public static void Post(Derived model) { }
+
+        [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Prefix)]
+        public static void GetParameterNotMatching([ApiConventionTypeMatch(ApiConventionTypeMatchBehavior.AssignableFrom)] Derived model) { }
+
+        [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Any)]
+        public static void Search(
+            [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Exact)]
                 string searchTerm,
-        params object[] others)
-    { }
+            params object[] others)
+        { }
 
-    [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Any)]
-    public static void SearchWithParams(params object[] others) { }
+        [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Any)]
+        public static void SearchWithParams(params object[] others) { }
 
-    public static void MethodWithoutMatchBehavior() { }
+        public static void MethodWithoutMatchBehavior() { }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void MethodWithRandomAttributes() { }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void MethodWithRandomAttributes() { }
 
-    public static void MethodParameterWithRandomAttributes([FromRoute] int value) { }
+        public static void MethodParameterWithRandomAttributes([FromRoute] int value) { }
 
-    public static void MethodWithAnyTypeMatchBehaviorParameter([ApiConventionTypeMatch(ApiConventionTypeMatchBehavior.Any)] int value) { }
+        public static void MethodWithAnyTypeMatchBehaviorParameter([ApiConventionTypeMatch(ApiConventionTypeMatchBehavior.Any)] int value) { }
+    }
 }

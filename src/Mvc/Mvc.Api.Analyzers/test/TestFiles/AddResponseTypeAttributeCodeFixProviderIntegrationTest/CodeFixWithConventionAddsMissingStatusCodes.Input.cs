@@ -5,19 +5,20 @@ using Microsoft.AspNetCore.Mvc;
 
 [assembly: ApiConventionType(typeof(DefaultApiConventions))]
 
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._INPUT_;
-
-[ApiController]
-[Route("[controller]/[action]")]
-public class CodeFixWithConventionAddsMissingStatusCodes : ControllerBase
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._INPUT_
 {
-    public ActionResult<string> GetItem(int id)
+    [ApiController]
+    [Route("[controller]/[action]")]
+    public class CodeFixWithConventionAddsMissingStatusCodes : ControllerBase
     {
-        if (id == 0)
+        public ActionResult<string> GetItem(int id)
         {
-            return NotFound();
-        }
+            if (id == 0)
+            {
+                return NotFound();
+            }
 
-        return Accepted("Result");
+            return Accepted("Result");
+        }
     }
 }

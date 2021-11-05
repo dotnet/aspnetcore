@@ -6,38 +6,39 @@ using Microsoft.AspNetCore.Mvc;
 
 [assembly: ApiConventionType(typeof(DefaultApiConventions))]
 
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers;
-
-[ApiController]
-public class NoDiagnosticsAreReturned_ForReturnStatementsInLambdas : ControllerBase
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 {
-    [ProducesResponseType(typeof(string), 200)]
-    [ProducesResponseType(typeof(string), 404)]
-    public IActionResult Put(int id, object model)
+    [ApiController]
+    public class NoDiagnosticsAreReturned_ForReturnStatementsInLambdas : ControllerBase
     {
-        Func<IActionResult> someLambda = () =>
+        [ProducesResponseType(typeof(string), 200)]
+        [ProducesResponseType(typeof(string), 404)]
+        public IActionResult Put(int id, object model)
         {
-            if (id < -1)
+            Func<IActionResult> someLambda = () =>
             {
+                if (id < -1)
+                {
                     // We should not process this.
                     return UnprocessableEntity();
+                }
+
+                return null;
+            };
+
+
+            if (id == 0)
+            {
+                return NotFound();
             }
 
-            return null;
-        };
 
+            if (id == 1)
+            {
+                return someLambda();
+            }
 
-        if (id == 0)
-        {
-            return NotFound();
+            return Ok();
         }
-
-
-        if (id == 1)
-        {
-            return someLambda();
-        }
-
-        return Ok();
     }
 }

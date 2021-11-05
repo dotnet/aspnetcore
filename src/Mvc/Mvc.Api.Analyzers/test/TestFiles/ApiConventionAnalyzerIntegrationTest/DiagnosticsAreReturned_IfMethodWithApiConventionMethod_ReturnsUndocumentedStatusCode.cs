@@ -5,14 +5,15 @@ using Microsoft.AspNetCore.Mvc;
 
 [assembly: ApiConventionType(typeof(DefaultApiConventions))]
 
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers;
-
-[ApiController]
-public class DiagnosticsAreReturned_IfMethodWithApiConventionMethod_ReturnsUndocumentedStatusCode : ControllerBase
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 {
-    [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Post))]
-    public IActionResult Get(int id)
+    [ApiController]
+    public class DiagnosticsAreReturned_IfMethodWithApiConventionMethod_ReturnsUndocumentedStatusCode : ControllerBase
     {
-        return /*MM*/Accepted();
+        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Post))]
+        public IActionResult Get(int id)
+        {
+            return /*MM*/Accepted();
+        }
     }
 }

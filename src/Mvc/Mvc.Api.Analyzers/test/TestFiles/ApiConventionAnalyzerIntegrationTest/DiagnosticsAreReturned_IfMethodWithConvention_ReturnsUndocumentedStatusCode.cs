@@ -6,30 +6,31 @@ using Microsoft.AspNetCore.Mvc.Api.Analyzers;
 
 [assembly: ApiConventionType(typeof(DiagnosticsAreReturned_IfMethodWithConvention_ReturnsUndocumentedStatusCodeConvention))]
 
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers;
-
-[ApiController]
-public class DiagnosticsAreReturned_IfMethodWithConvention_ReturnsUndocumentedStatusCode : ControllerBase
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 {
-    public IActionResult Get(int id)
+    [ApiController]
+    public class DiagnosticsAreReturned_IfMethodWithConvention_ReturnsUndocumentedStatusCode : ControllerBase
     {
-        if (id < 0)
+        public IActionResult Get(int id)
         {
-            return /*MM*/BadRequest();
-        }
+            if (id < 0)
+            {
+                return /*MM*/BadRequest();
+            }
 
-        if (id == 0)
-        {
-            return NotFound();
-        }
+            if (id == 0)
+            {
+                return NotFound();
+            }
 
-        return Ok();
+            return Ok();
+        }
     }
-}
 
-public static class DiagnosticsAreReturned_IfMethodWithConvention_ReturnsUndocumentedStatusCodeConvention
-{
-    [ProducesResponseType(200)]
-    [ProducesResponseType(404)]
-    public static void Get(int id) { }
+    public static class DiagnosticsAreReturned_IfMethodWithConvention_ReturnsUndocumentedStatusCodeConvention
+    {
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        public static void Get(int id) { }
+    }
 }

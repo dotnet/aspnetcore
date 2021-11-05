@@ -3,23 +3,24 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers;
-
-[ApiController]
-public class DiagnosticsAreReturned_IfMethodWithAttribute_ReturnsDerivedType : ControllerBase
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 {
-    [ProducesResponseType(404)]
-    public ActionResult<DiagnosticsAreReturned_IfMethodWithAttribute_ReturnsDerivedTypeBaseModel> Method(int id)
+    [ApiController]
+    public class DiagnosticsAreReturned_IfMethodWithAttribute_ReturnsDerivedType : ControllerBase
     {
-        if (id == 0)
+        [ProducesResponseType(404)]
+        public ActionResult<DiagnosticsAreReturned_IfMethodWithAttribute_ReturnsDerivedTypeBaseModel> Method(int id)
         {
-            return NotFound();
+            if (id == 0)
+            {
+                return NotFound();
+            }
+
+            return /*MM*/new DiagnosticsAreReturned_IfMethodWithAttribute_ReturnsDerivedTypeDerived();
         }
-
-        return /*MM*/new DiagnosticsAreReturned_IfMethodWithAttribute_ReturnsDerivedTypeDerived();
     }
+
+    public class DiagnosticsAreReturned_IfMethodWithAttribute_ReturnsDerivedTypeBaseModel { }
+
+    public class DiagnosticsAreReturned_IfMethodWithAttribute_ReturnsDerivedTypeDerived : DiagnosticsAreReturned_IfMethodWithAttribute_ReturnsDerivedTypeBaseModel { }
 }
-
-public class DiagnosticsAreReturned_IfMethodWithAttribute_ReturnsDerivedTypeBaseModel { }
-
-public class DiagnosticsAreReturned_IfMethodWithAttribute_ReturnsDerivedTypeDerived : DiagnosticsAreReturned_IfMethodWithAttribute_ReturnsDerivedTypeBaseModel { }

@@ -3,21 +3,22 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers;
-
-[ApiController]
-public class DiagnosticsAreReturned_IfMethodWithProducesResponseTypeAttribute_DoesNotReturnDocumentedStatusCode : ControllerBase
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 {
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(404)]
-    public IActionResult /*MM*/Method(int id)
+    [ApiController]
+    public class DiagnosticsAreReturned_IfMethodWithProducesResponseTypeAttribute_DoesNotReturnDocumentedStatusCode : ControllerBase
     {
-        if (id == 0)
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public IActionResult /*MM*/Method(int id)
         {
-            return NotFound();
-        }
+            if (id == 0)
+            {
+                return NotFound();
+            }
 
-        return Ok();
+            return Ok();
+        }
     }
 }

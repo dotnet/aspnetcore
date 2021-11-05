@@ -1,8 +1,9 @@
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._INPUT_;
-
-[ApiController]
-[Route("[controller]/[action]")]
-public class CodeFixWorksOnExpressionBodiedMethodController : ControllerBase
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._INPUT_
 {
-    public IActionResult GetItem() => NotFound();
+    [ApiController]
+    [Route("[controller]/[action]")]
+    public class CodeFixWorksOnExpressionBodiedMethodController : ControllerBase
+    {
+        public IActionResult GetItem() => NotFound();
+    }
 }

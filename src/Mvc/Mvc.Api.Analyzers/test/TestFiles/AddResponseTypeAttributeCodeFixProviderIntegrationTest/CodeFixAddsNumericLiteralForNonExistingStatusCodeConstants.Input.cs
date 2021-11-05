@@ -1,16 +1,17 @@
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._INPUT_;
-
-[ApiController]
-[Route("[controller]/[action]")]
-public class CodeFixAddsNumericLiteralForNonExistingStatusCodeConstantsController : ControllerBase
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._INPUT_
 {
-    public IActionResult GetItem(int id)
+    [ApiController]
+    [Route("[controller]/[action]")]
+    public class CodeFixAddsNumericLiteralForNonExistingStatusCodeConstantsController : ControllerBase
     {
-        if (id == 0)
+        public IActionResult GetItem(int id)
         {
-            return StatusCode(345);
-        }
+            if (id == 0)
+            {
+                return StatusCode(345);
+            }
 
-        return Ok(new object());
+            return Ok(new object());
+        }
     }
 }

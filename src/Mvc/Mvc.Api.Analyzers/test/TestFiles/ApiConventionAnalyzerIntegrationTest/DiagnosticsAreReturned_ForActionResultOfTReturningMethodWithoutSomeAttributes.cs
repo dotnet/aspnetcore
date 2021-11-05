@@ -3,25 +3,26 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers;
-
-[ApiController]
-public class DiagnosticsAreReturned_ForActionResultOfTReturningMethodWithoutSomeAttributes : ControllerBase
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 {
-    [ProducesResponseType(typeof(string), 200)]
-    [ProducesResponseType(typeof(string), 404)]
-    public IActionResult Put(int id, object model)
+    [ApiController]
+    public class DiagnosticsAreReturned_ForActionResultOfTReturningMethodWithoutSomeAttributes : ControllerBase
     {
-        if (id == 0)
+        [ProducesResponseType(typeof(string), 200)]
+        [ProducesResponseType(typeof(string), 404)]
+        public IActionResult Put(int id, object model)
         {
-            return NotFound();
-        }
+            if (id == 0)
+            {
+                return NotFound();
+            }
 
-        if (!ModelState.IsValid)
-        {
-            return /*MM*/UnprocessableEntity();
-        }
+            if (!ModelState.IsValid)
+            {
+                return /*MM*/UnprocessableEntity();
+            }
 
-        return Ok();
+            return Ok();
+        }
     }
 }

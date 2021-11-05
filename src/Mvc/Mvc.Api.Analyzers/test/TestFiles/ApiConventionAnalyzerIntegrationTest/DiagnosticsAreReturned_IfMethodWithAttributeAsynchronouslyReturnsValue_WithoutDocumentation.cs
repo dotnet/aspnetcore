@@ -3,23 +3,24 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers;
-
-[ApiController]
-public class DiagnosticsAreReturned_IfMethodWithAttributeAsynchronouslyReturnsValue_WithoutDocumentation : ControllerBase
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 {
-    [ProducesResponseType(404)]
-    public async Task<ActionResult<DiagnosticsAreReturned_IfMethodWithAttributeAsynchronouslyReturnsValue_WithoutDocumentationModel>> Method(int id)
+    [ApiController]
+    public class DiagnosticsAreReturned_IfMethodWithAttributeAsynchronouslyReturnsValue_WithoutDocumentation : ControllerBase
     {
-        await Task.Yield();
-
-        if (id == 0)
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<DiagnosticsAreReturned_IfMethodWithAttributeAsynchronouslyReturnsValue_WithoutDocumentationModel>> Method(int id)
         {
-            return NotFound();
+            await Task.Yield();
+
+            if (id == 0)
+            {
+                return NotFound();
+            }
+
+            return /*MM*/new DiagnosticsAreReturned_IfMethodWithAttributeAsynchronouslyReturnsValue_WithoutDocumentationModel();
         }
-
-        return /*MM*/new DiagnosticsAreReturned_IfMethodWithAttributeAsynchronouslyReturnsValue_WithoutDocumentationModel();
     }
-}
 
-public class DiagnosticsAreReturned_IfMethodWithAttributeAsynchronouslyReturnsValue_WithoutDocumentationModel { }
+    public class DiagnosticsAreReturned_IfMethodWithAttributeAsynchronouslyReturnsValue_WithoutDocumentationModel { }
+}

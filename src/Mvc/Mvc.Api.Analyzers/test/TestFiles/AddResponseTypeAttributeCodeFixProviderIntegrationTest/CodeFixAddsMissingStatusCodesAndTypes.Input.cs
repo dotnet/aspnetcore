@@ -3,25 +3,26 @@
 
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._INPUT_;
-
-[ApiController]
-[Route("[controller]/[action]")]
-public class CodeFixAddsMissingStatusCodesAndTypes : ControllerBase
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._INPUT_
 {
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public IActionResult GetItem(int id)
+    [ApiController]
+    [Route("[controller]/[action]")]
+    public class CodeFixAddsMissingStatusCodesAndTypes : ControllerBase
     {
-        if (id == 0)
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public IActionResult GetItem(int id)
         {
-            return NotFound();
-        }
+            if (id == 0)
+            {
+                return NotFound();
+            }
 
-        if (id == 1)
-        {
-            return BadRequest(ModelState);
-        }
+            if (id == 1)
+            {
+                return BadRequest(ModelState);
+            }
 
-        return Ok(new object());
+            return Ok(new object());
+        }
     }
 }

@@ -3,20 +3,21 @@
 
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers;
-
-public class Home : PageModel
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 {
-#pragma warning disable MVC1001
-    [ProducesResponseType(302)]
-    public IActionResult OnPost(int id)
+    public class Home : PageModel
     {
-        if (id == 0)
+#pragma warning disable MVC1001
+        [ProducesResponseType(302)]
+        public IActionResult OnPost(int id)
         {
-            return NotFound();
-        }
+            if (id == 0)
+            {
+                return NotFound();
+            }
 
-        return Page();
-    }
+            return Page();
+        }
 #pragma warning restore MVC1001
+    }
 }

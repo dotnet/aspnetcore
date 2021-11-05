@@ -5,24 +5,25 @@ using Microsoft.AspNetCore.Mvc;
 
 [assembly: ApiConventionType(typeof(DefaultApiConventions))]
 
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._INPUT_;
-
-[ApiController]
-[Route("[controller]/[action]")]
-public class CodeFixAddsSuccessStatusCode : ControllerBase
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._INPUT_
 {
-    public ActionResult<object> GetItem(string id)
+    [ApiController]
+    [Route("[controller]/[action]")]
+    public class CodeFixAddsSuccessStatusCode : ControllerBase
     {
-        if (!int.TryParse(id, out var idInt))
+        public ActionResult<object> GetItem(string id)
         {
-            return BadRequest();
-        }
+            if (!int.TryParse(id, out var idInt))
+            {
+                return BadRequest();
+            }
 
-        if (idInt == 0)
-        {
-            return NotFound();
-        }
+            if (idInt == 0)
+            {
+                return NotFound();
+            }
 
-        return Created("url", new object());
+            return Created("url", new object());
+        }
     }
 }

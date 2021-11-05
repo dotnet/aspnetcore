@@ -3,17 +3,18 @@
 
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers.TestFiles.ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzerIntegrationTest;
-
-public class Home : PageModel
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers.TestFiles.ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzerIntegrationTest
 {
-    public IActionResult OnPost(int id)
+    public class Home : PageModel
     {
-        if (!ModelState.IsValid)
+        public IActionResult OnPost(int id)
         {
-            return BadRequest();
-        }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
 
-        return Page();
+            return Page();
+        }
     }
 }

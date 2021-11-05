@@ -1,17 +1,18 @@
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._INPUT_;
-
-[ApiController]
-[Route("[controller]/[action]")]
-public class CodeFixWithConventionMethodAddsMissingStatusCodes : ControllerBase
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._INPUT_
 {
-    [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Find))]
-    public ActionResult<string> GetItem(int id)
+    [ApiController]
+    [Route("[controller]/[action]")]
+    public class CodeFixWithConventionMethodAddsMissingStatusCodes : ControllerBase
     {
-        if (id == 0)
+        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Find))]
+        public ActionResult<string> GetItem(int id)
         {
-            return NotFound();
-        }
+            if (id == 0)
+            {
+                return NotFound();
+            }
 
-        return Accepted("Result");
+            return Accepted("Result");
+        }
     }
 }

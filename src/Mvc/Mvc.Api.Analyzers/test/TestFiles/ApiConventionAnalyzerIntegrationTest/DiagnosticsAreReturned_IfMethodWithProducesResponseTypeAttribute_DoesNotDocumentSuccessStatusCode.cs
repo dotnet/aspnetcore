@@ -3,20 +3,21 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers;
-
-[ApiController]
-public class DiagnosticsAreReturned_IfMethodWithProducesResponseTypeAttribute_DoesNotDocumentSuccessStatusCode : ControllerBase
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 {
-    [ProducesResponseType(200)]
-    [ProducesResponseType(404)]
-    public ActionResult<string> /*MM*/Method(int id)
+    [ApiController]
+    public class DiagnosticsAreReturned_IfMethodWithProducesResponseTypeAttribute_DoesNotDocumentSuccessStatusCode : ControllerBase
     {
-        if (id == 0)
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        public ActionResult<string> /*MM*/Method(int id)
         {
-            return NotFound();
-        }
+            if (id == 0)
+            {
+                return NotFound();
+            }
 
-        throw new NotImplementedException();
+            throw new NotImplementedException();
+        }
     }
 }

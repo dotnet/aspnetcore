@@ -1,21 +1,22 @@
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._OUTPUT_;
-
-[ApiController]
-[Route("[controller]/[action]")]
-public class CodeFixWithConventionMethodAddsMissingStatusCodes : ControllerBase
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._OUTPUT_
 {
-    [ProducesResponseType(StatusCodes.Status202Accepted)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesDefaultResponseType]
-    public ActionResult<string> GetItem(int id)
+    [ApiController]
+    [Route("[controller]/[action]")]
+    public class CodeFixWithConventionMethodAddsMissingStatusCodes : ControllerBase
     {
-        if (id == 0)
+        [ProducesResponseType(StatusCodes.Status202Accepted)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesDefaultResponseType]
+        public ActionResult<string> GetItem(int id)
         {
-            return NotFound();
-        }
+            if (id == 0)
+            {
+                return NotFound();
+            }
 
-        return Accepted("Result");
+            return Accepted("Result");
+        }
     }
 }

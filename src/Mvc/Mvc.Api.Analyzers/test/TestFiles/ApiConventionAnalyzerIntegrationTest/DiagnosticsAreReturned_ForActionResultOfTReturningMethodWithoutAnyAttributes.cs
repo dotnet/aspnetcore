@@ -6,18 +6,19 @@ using Microsoft.AspNetCore.Mvc;
 
 [assembly: ApiConventionType(typeof(DefaultApiConventions))]
 
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers;
-
-[ApiController]
-public class DiagnosticsAreReturned_ForActionResultOfTReturningMethodWithoutAnyAttributes : ControllerBase
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 {
-    public ActionResult<string> Method(Guid? id)
+    [ApiController]
+    public class DiagnosticsAreReturned_ForActionResultOfTReturningMethodWithoutAnyAttributes : ControllerBase
     {
-        if (id == null)
+        public ActionResult<string> Method(Guid? id)
         {
-            return /*MM*/NotFound();
-        }
+            if (id == null)
+            {
+                return /*MM*/NotFound();
+            }
 
-        return "Hello world";
+            return "Hello world";
+        }
     }
 }

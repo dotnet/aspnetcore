@@ -5,36 +5,37 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._OUTPUT_;
-
-[ApiController]
-[Route("[controller]/[action]")]
-public class CodeFixWorksWhenMultipleIdenticalStatusCodesAreInError : ControllerBase
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._OUTPUT_
 {
-    public List<CodeFixWorksWhenMultipleIdenticalStatusCodesAreInErrorModel> Values { get; } =
-        new List<CodeFixWorksWhenMultipleIdenticalStatusCodesAreInErrorModel>();
-
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesDefaultResponseType]
-    public ActionResult<CodeFixWorksWhenMultipleIdenticalStatusCodesAreInErrorModel> GetItem(int id)
+    [ApiController]
+    [Route("[controller]/[action]")]
+    public class CodeFixWorksWhenMultipleIdenticalStatusCodesAreInError : ControllerBase
     {
-        if (id == 0)
-        {
-            return NotFound();
-        }
+        public List<CodeFixWorksWhenMultipleIdenticalStatusCodesAreInErrorModel> Values { get; } = 
+            new List<CodeFixWorksWhenMultipleIdenticalStatusCodesAreInErrorModel>();
 
-        var model = Values.FirstOrDefault(m => m.Id == id);
-        if (model == null)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesDefaultResponseType]
+        public ActionResult<CodeFixWorksWhenMultipleIdenticalStatusCodesAreInErrorModel> GetItem(int id)
         {
-            return NotFound();
-        }
+            if (id == 0)
+            {
+                return NotFound();
+            }
 
-        return model;
+            var model = Values.FirstOrDefault(m => m.Id == id);
+            if (model == null)
+            {
+                return NotFound();
+            }
+
+            return model;
+        }
     }
-}
 
-public class CodeFixWorksWhenMultipleIdenticalStatusCodesAreInErrorModel
-{
-    public int Id { get; set; }
+    public class CodeFixWorksWhenMultipleIdenticalStatusCodesAreInErrorModel
+    {
+        public int Id { get; set; }
+    }
 }

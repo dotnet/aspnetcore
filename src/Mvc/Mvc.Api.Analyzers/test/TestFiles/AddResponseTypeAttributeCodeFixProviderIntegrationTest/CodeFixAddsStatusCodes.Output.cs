@@ -1,21 +1,22 @@
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._OUTPUT_;
-
-[ApiController]
-[Route("[controller]/[action]")]
-public class CodeFixAddsStatusCodesController : ControllerBase
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._OUTPUT_
 {
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesDefaultResponseType]
-    public IActionResult GetItem(int id)
+    [ApiController]
+    [Route("[controller]/[action]")]
+    public class CodeFixAddsStatusCodesController : ControllerBase
     {
-        if (id == 0)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesDefaultResponseType]
+        public IActionResult GetItem(int id)
         {
-            return NotFound();
-        }
+            if (id == 0)
+            {
+                return NotFound();
+            }
 
-        return Ok(new object());
+            return Ok(new object());
+        }
     }
 }

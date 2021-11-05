@@ -3,18 +3,19 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers;
-
-public class NoDiagnosticsAreReturned_ForNonApiController : Controller
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 {
-    [ProducesResponseType(typeof(string), 200)]
-    public IActionResult Method(int id)
+    public class NoDiagnosticsAreReturned_ForNonApiController : Controller
     {
-        if (id == 0)
+        [ProducesResponseType(typeof(string), 200)]
+        public IActionResult Method(int id)
         {
-            return NotFound();
-        }
+            if (id == 0)
+            {
+                return NotFound();
+            }
 
-        return Ok();
+            return Ok();
+        }
     }
 }

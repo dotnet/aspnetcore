@@ -3,51 +3,52 @@
 
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._INPUT_;
-
-[ApiController]
-[Route("[controller]/[action]")]
-public class CodeFixAddsStatusCodesFromObjectInitializerController : ControllerBase
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._INPUT_
 {
-    private const int FieldStatusCode = 201;
-
-    public IActionResult GetItem(int id)
+    [ApiController]
+    [Route("[controller]/[action]")]
+    public class CodeFixAddsStatusCodesFromObjectInitializerController : ControllerBase
     {
-        if (id == 0)
+        private const int FieldStatusCode = 201;
+
+        public IActionResult GetItem(int id)
         {
-            return new ObjectResult(new object())
+            if (id == 0)
             {
-                StatusCode = 422
-            };
-        }
+                return new ObjectResult(new object())
+                {
+                    StatusCode = 422
+                };
+            }
 
-        if (id == 1)
-        {
-            return new ObjectResult(new object())
+            if (id == 1)
             {
-                StatusCode = StatusCodes.Status202Accepted
-            };
-        }
+                return new ObjectResult(new object())
+                {
+                    StatusCode = StatusCodes.Status202Accepted
+                };
+            }
 
-        if (id == 2)
-        {
-            const int localStatusCode = 204;
-
-            return new ObjectResult(new object())
+            if (id == 2)
             {
-                StatusCode = localStatusCode
-            };
-        }
+                const int localStatusCode = 204;
 
-        if (id == 3)
-        {
-            return new ObjectResult(new object())
+                return new ObjectResult(new object())
+                {
+                    StatusCode = localStatusCode
+                };
+            }
+
+            if (id == 3)
             {
-                ContentTypes = { "application/json" },
-                StatusCode = FieldStatusCode
-            };
-        }
+                return new ObjectResult(new object())
+                {
+                    ContentTypes = { "application/json" },
+                    StatusCode = FieldStatusCode
+                };
+            }
 
-        return Ok(new object());
+            return Ok(new object());
+        }
     }
 }

@@ -1,17 +1,18 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers.TestFiles.ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzerIntegrationTest;
-
-public class NoDiagnosticsAreReturned_ForNonApiController : ControllerBase
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers.TestFiles.ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzerIntegrationTest
 {
-    public IActionResult Method(int id)
+    public class NoDiagnosticsAreReturned_ForNonApiController : ControllerBase
     {
-        if (!ModelState.IsValid)
+        public IActionResult Method(int id)
         {
-            return BadRequest();
-        }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
 
-        return Ok();
+            return Ok();
+        }
     }
 }

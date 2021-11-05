@@ -1,25 +1,26 @@
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._INPUT_;
-
-[ProducesErrorResponseType(typeof(CodeFixAddsResponseTypeWhenDifferentErrorModel))]
-[ApiController]
-[Route("[controller]/[action]")]
-public class CodeFixAddsResponseTypeWhenDifferentFromErrorType : ControllerBase
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers._INPUT_
 {
-    public IActionResult GetItem(int id)
+    [ProducesErrorResponseType(typeof(CodeFixAddsResponseTypeWhenDifferentErrorModel))]
+    [ApiController]
+    [Route("[controller]/[action]")]
+    public class CodeFixAddsResponseTypeWhenDifferentFromErrorType : ControllerBase
     {
-        if (id == 0)
+        public IActionResult GetItem(int id)
         {
-            return NotFound(new CodeFixAddsResponseTypeWhenDifferentErrorModel());
-        }
+            if (id == 0)
+            {
+                return NotFound(new CodeFixAddsResponseTypeWhenDifferentErrorModel());
+            }
 
-        if (id == 1)
-        {
-            var validationProblemDetails = new ValidationProblemDetails(ModelState);
-            return BadRequest(validationProblemDetails);
-        }
+            if (id == 1)
+            {
+                var validationProblemDetails = new ValidationProblemDetails(ModelState);
+                return BadRequest(validationProblemDetails);
+            }
 
-        return Ok(new object());
+            return Ok(new object());
+        }
     }
-}
 
-public class CodeFixAddsResponseTypeWhenDifferentErrorModel { }
+    public class CodeFixAddsResponseTypeWhenDifferentErrorModel { }
+}
