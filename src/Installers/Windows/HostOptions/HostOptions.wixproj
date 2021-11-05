@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <Name>$(HostOptionsName)</Name>
+    <OutputName>$(HostOptionsName)</OutputName>
+    <OutputType>Package</OutputType>
+    <ProductNameFolder>Microsoft ASP.NET Core Hosting Bundle Options</ProductNameFolder>
+    <ProductNameShort>AspNetCore.HostOptions</ProductNameShort>
+    <Platform>x86</Platform>
+    <ProjectGuid>20248cd1-c5aa-4f42-ad88-bc260d64deea</ProjectGuid>
+    <IsShipping>true</IsShipping>
+    <SchemaVersion>2.0</SchemaVersion>
+
+    <!-- Namespace used to generate stable UUID3 GUIDs for MSI ProductCode, etc. DO NOT CHANGE THIS. -->
+    <NamespaceGuid>$(HostingBundleNamespaceGuid)</NamespaceGuid>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Product.wxs" />
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+
+  <PropertyGroup>
+    <PackageFileName>dotnet-hosting-options-$(PackageVersion)-win$(TargetExt)</PackageFileName>
+    <ProductName>Microsoft ASP.NET Core $(PackageBrandingVersion) Hosting Bundle Options</ProductName>
+    <DefineConstants>$(DefineConstants);ProductName=$(ProductName)</DefineConstants>
+  </PropertyGroup>
+</Project>
