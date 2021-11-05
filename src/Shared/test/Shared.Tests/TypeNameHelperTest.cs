@@ -297,7 +297,3 @@ public class TypeNameHelperTest
         }
     }
 }
-
-internal class ClassInGlobalNamespace<T>
-{
-}
