@@ -147,6 +147,7 @@ namespace Interop.FunctionalTests
         }
 
         // Concurrency testing
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38087")]
         [Theory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task MultiplexEcho(string scheme)
