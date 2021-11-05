@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -143,8 +144,9 @@ public class BodyModelBinder : IModelBinder
 
         if (formatter == null)
         {
-            if (AllowEmptyBody && httpContext.Request.ContentLength == 0)
+            if (AllowEmptyBody && httpContext.Features.Get<IHttpRequestBodyDetectionFeature>()?.CanHaveBody == false)
             {
+                bindingContext.Result = ModelBindingResult.Success(model: null);
                 return;
             }
 
