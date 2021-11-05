@@ -5,11 +5,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace SecurityWebSite
+namespace SecurityWebSite;
+
+[Authorize("RequireClaimB")]
+public class AuthorizePageViaModel : PageModel
 {
-    [Authorize("RequireClaimB")]
-    public class AuthorizePageViaModel : PageModel
-    {
-        public IActionResult OnGet() => Page();
-    }
+    public IActionResult OnGet() => Page();
 }

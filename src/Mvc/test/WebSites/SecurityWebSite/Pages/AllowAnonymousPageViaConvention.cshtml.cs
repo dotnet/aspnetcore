@@ -5,10 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace SecurityWebSite
+namespace SecurityWebSite;
+
+public class AllowAnonymousPageViaConvention : PageModel
 {
-    public class AllowAnonymousPageViaConvention : PageModel
-    {
-        public IActionResult OnGet() => Page();
-    }
+    public IActionResult OnGet() => Page();
 }

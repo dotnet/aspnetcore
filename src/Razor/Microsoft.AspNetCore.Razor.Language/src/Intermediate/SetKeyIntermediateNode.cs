@@ -3,40 +3,39 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Razor.Language.Intermediate
+namespace Microsoft.AspNetCore.Razor.Language.Intermediate;
+
+public sealed class SetKeyIntermediateNode : IntermediateNode
 {
-    public sealed class SetKeyIntermediateNode : IntermediateNode
+    public SetKeyIntermediateNode(IntermediateToken keyValueToken)
     {
-        public SetKeyIntermediateNode(IntermediateToken keyValueToken)
+        KeyValueToken = keyValueToken ?? throw new ArgumentNullException(nameof(keyValueToken));
+        Source = KeyValueToken.Source;
+    }
+
+    public override IntermediateNodeCollection Children => IntermediateNodeCollection.ReadOnly;
+
+    public IntermediateToken KeyValueToken { get; }
+
+    public override void Accept(IntermediateNodeVisitor visitor)
+    {
+        if (visitor == null)
         {
-            KeyValueToken = keyValueToken ?? throw new ArgumentNullException(nameof(keyValueToken));
-            Source = KeyValueToken.Source;
+            throw new ArgumentNullException(nameof(visitor));
         }
 
-        public override IntermediateNodeCollection Children => IntermediateNodeCollection.ReadOnly;
+        visitor.VisitSetKey(this);
+    }
 
-        public IntermediateToken KeyValueToken { get; }
-
-        public override void Accept(IntermediateNodeVisitor visitor)
+    public override void FormatNode(IntermediateNodeFormatter formatter)
+    {
+        if (formatter == null)
         {
-            if (visitor == null)
-            {
-                throw new ArgumentNullException(nameof(visitor));
-            }
-
-            visitor.VisitSetKey(this);
+            throw new ArgumentNullException(nameof(formatter));
         }
 
-        public override void FormatNode(IntermediateNodeFormatter formatter)
-        {
-            if (formatter == null)
-            {
-                throw new ArgumentNullException(nameof(formatter));
-            }
+        formatter.WriteContent(KeyValueToken.Content);
 
-            formatter.WriteContent(KeyValueToken.Content);
-
-            formatter.WriteProperty(nameof(KeyValueToken), KeyValueToken.Content);
-        }
+        formatter.WriteProperty(nameof(KeyValueToken), KeyValueToken.Content);
     }
 }

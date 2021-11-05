@@ -5,87 +5,86 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
 using static Microsoft.AspNetCore.Razor.Language.Intermediate.IntermediateNodeAssert;
 
-namespace Microsoft.AspNetCore.Razor.Language.Extensions
+namespace Microsoft.AspNetCore.Razor.Language.Extensions;
+
+public class InheritsDirectivePassTest : RazorProjectEngineTestBase
 {
-    public class InheritsDirectivePassTest : RazorProjectEngineTestBase
+    protected override RazorLanguageVersion Version => RazorLanguageVersion.Latest;
+
+    [Fact]
+    public void Execute_SkipsDocumentWithNoClassNode()
     {
-        protected override RazorLanguageVersion Version => RazorLanguageVersion.Latest;
-
-        [Fact]
-        public void Execute_SkipsDocumentWithNoClassNode()
+        // Arrange
+        var engine = CreateEngine();
+        var pass = new InheritsDirectivePass()
         {
-            // Arrange
-            var engine = CreateEngine();
-            var pass = new InheritsDirectivePass()
-            {
-                Engine = engine,
-            };
+            Engine = engine,
+        };
 
-            var sourceDocument = TestRazorSourceDocument.Create("@inherits Hello<World[]>");
-            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+        var sourceDocument = TestRazorSourceDocument.Create("@inherits Hello<World[]>");
+        var codeDocument = RazorCodeDocument.Create(sourceDocument);
 
-            var irDocument = new DocumentIntermediateNode();
-            irDocument.Children.Add(new DirectiveIntermediateNode() { Directive = FunctionsDirective.Directive, });
+        var irDocument = new DocumentIntermediateNode();
+        irDocument.Children.Add(new DirectiveIntermediateNode() { Directive = FunctionsDirective.Directive, });
 
-            // Act
-            pass.Execute(codeDocument, irDocument);
+        // Act
+        pass.Execute(codeDocument, irDocument);
 
-            // Assert
-            Children(
-                irDocument,
-                node => Assert.IsType<DirectiveIntermediateNode>(node));
-        }
+        // Assert
+        Children(
+            irDocument,
+            node => Assert.IsType<DirectiveIntermediateNode>(node));
+    }
 
-        [Fact]
-        public void Execute_Inherits_SetsClassDeclarationBaseType()
+    [Fact]
+    public void Execute_Inherits_SetsClassDeclarationBaseType()
+    {
+        // Arrange
+        var engine = CreateEngine();
+        var pass = new InheritsDirectivePass()
         {
-            // Arrange
-            var engine = CreateEngine();
-            var pass = new InheritsDirectivePass()
-            {
-                Engine = engine,
-            };
+            Engine = engine,
+        };
 
-            var content = "@inherits Hello<World[]>";
-            var sourceDocument = TestRazorSourceDocument.Create(content);
-            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+        var content = "@inherits Hello<World[]>";
+        var sourceDocument = TestRazorSourceDocument.Create(content);
+        var codeDocument = RazorCodeDocument.Create(sourceDocument);
 
-            var irDocument = Lower(codeDocument, engine);
+        var irDocument = Lower(codeDocument, engine);
 
-            // Act
-            pass.Execute(codeDocument, irDocument);
+        // Act
+        pass.Execute(codeDocument, irDocument);
 
-            // Assert
-            Children(
-                irDocument,
-                node => Assert.IsType<NamespaceDeclarationIntermediateNode>(node));
+        // Assert
+        Children(
+            irDocument,
+            node => Assert.IsType<NamespaceDeclarationIntermediateNode>(node));
 
-            var @namespace = irDocument.Children[0];
-            Children(
-                @namespace,
-                node => Assert.IsType<ClassDeclarationIntermediateNode>(node));
+        var @namespace = irDocument.Children[0];
+        Children(
+            @namespace,
+            node => Assert.IsType<ClassDeclarationIntermediateNode>(node));
 
-            var @class = (ClassDeclarationIntermediateNode)@namespace.Children[0];
-            Assert.Equal("Hello<World[]>", @class.BaseType);
-        }
+        var @class = (ClassDeclarationIntermediateNode)@namespace.Children[0];
+        Assert.Equal("Hello<World[]>", @class.BaseType);
+    }
 
-        private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument, RazorEngine engine)
+    private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument, RazorEngine engine)
+    {
+        for (var i = 0; i < engine.Phases.Count; i++)
         {
-            for (var i = 0; i < engine.Phases.Count; i++)
-            {
-                var phase = engine.Phases[i];
-                phase.Execute(codeDocument);
+            var phase = engine.Phases[i];
+            phase.Execute(codeDocument);
 
-                if (phase is IRazorDocumentClassifierPhase)
-                {
-                    break;
-                }
+            if (phase is IRazorDocumentClassifierPhase)
+            {
+                break;
             }
-
-            var irDocument = codeDocument.GetDocumentIntermediateNode();
-            Assert.NotNull(irDocument);
-
-            return irDocument;
         }
+
+        var irDocument = codeDocument.GetDocumentIntermediateNode();
+        Assert.NotNull(irDocument);
+
+        return irDocument;
     }
 }

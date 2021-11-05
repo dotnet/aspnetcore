@@ -3,28 +3,27 @@
 
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+internal class DefaultRazorOptimizationPhase : RazorEnginePhaseBase, IRazorOptimizationPhase
 {
-    internal class DefaultRazorOptimizationPhase : RazorEnginePhaseBase, IRazorOptimizationPhase
+    public IRazorOptimizationPass[] Passes { get; private set; }
+
+    protected override void OnIntialized()
     {
-        public IRazorOptimizationPass[] Passes { get; private set; }
+        Passes = Engine.Features.OfType<IRazorOptimizationPass>().OrderBy(p => p.Order).ToArray();
+    }
 
-        protected override void OnIntialized()
+    protected override void ExecuteCore(RazorCodeDocument codeDocument)
+    {
+        var documentNode = codeDocument.GetDocumentIntermediateNode();
+        ThrowForMissingDocumentDependency(documentNode);
+
+        foreach (var pass in Passes)
         {
-            Passes = Engine.Features.OfType<IRazorOptimizationPass>().OrderBy(p => p.Order).ToArray();
+            pass.Execute(codeDocument, documentNode);
         }
 
-        protected override void ExecuteCore(RazorCodeDocument codeDocument)
-        {
-            var documentNode = codeDocument.GetDocumentIntermediateNode();
-            ThrowForMissingDocumentDependency(documentNode);
-
-            foreach (var pass in Passes)
-            {
-                pass.Execute(codeDocument, documentNode);
-            }
-
-            codeDocument.SetDocumentIntermediateNode(documentNode);
-        }
+        codeDocument.SetDocumentIntermediateNode(documentNode);
     }
 }

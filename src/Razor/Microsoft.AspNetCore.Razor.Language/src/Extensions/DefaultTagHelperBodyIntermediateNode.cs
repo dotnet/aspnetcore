@@ -5,70 +5,69 @@ using System;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-namespace Microsoft.AspNetCore.Razor.Language.Extensions
+namespace Microsoft.AspNetCore.Razor.Language.Extensions;
+
+public sealed class DefaultTagHelperBodyIntermediateNode : ExtensionIntermediateNode
 {
-    public sealed class DefaultTagHelperBodyIntermediateNode : ExtensionIntermediateNode
+    public DefaultTagHelperBodyIntermediateNode()
     {
-        public DefaultTagHelperBodyIntermediateNode()
+    }
+
+    public DefaultTagHelperBodyIntermediateNode(TagHelperBodyIntermediateNode bodyNode)
+    {
+        if (bodyNode == null)
         {
+            throw new ArgumentNullException(nameof(bodyNode));
         }
 
-        public DefaultTagHelperBodyIntermediateNode(TagHelperBodyIntermediateNode bodyNode)
+        Source = bodyNode.Source;
+
+        for (var i = 0; i < bodyNode.Children.Count; i++)
         {
-            if (bodyNode == null)
-            {
-                throw new ArgumentNullException(nameof(bodyNode));
-            }
-
-            Source = bodyNode.Source;
-
-            for (var i = 0; i < bodyNode.Children.Count; i++)
-            {
-                Children.Add(bodyNode.Children[i]);
-            }
-
-            for (var i = 0; i < bodyNode.Diagnostics.Count; i++)
-            {
-                Diagnostics.Add(bodyNode.Diagnostics[i]);
-            }
+            Children.Add(bodyNode.Children[i]);
         }
 
-        public override IntermediateNodeCollection Children { get; } = new IntermediateNodeCollection();
-
-        public TagMode TagMode { get; set; }
-
-        public string TagName { get; set; }
-
-        public override void Accept(IntermediateNodeVisitor visitor)
+        for (var i = 0; i < bodyNode.Diagnostics.Count; i++)
         {
-            if (visitor == null)
-            {
-                throw new ArgumentNullException(nameof(visitor));
-            }
+            Diagnostics.Add(bodyNode.Diagnostics[i]);
+        }
+    }
 
-            AcceptExtensionNode<DefaultTagHelperBodyIntermediateNode>(this, visitor);
+    public override IntermediateNodeCollection Children { get; } = new IntermediateNodeCollection();
+
+    public TagMode TagMode { get; set; }
+
+    public string TagName { get; set; }
+
+    public override void Accept(IntermediateNodeVisitor visitor)
+    {
+        if (visitor == null)
+        {
+            throw new ArgumentNullException(nameof(visitor));
         }
 
-        public override void WriteNode(CodeTarget target, CodeRenderingContext context)
+        AcceptExtensionNode<DefaultTagHelperBodyIntermediateNode>(this, visitor);
+    }
+
+    public override void WriteNode(CodeTarget target, CodeRenderingContext context)
+    {
+        if (target == null)
         {
-            if (target == null)
-            {
-                throw new ArgumentNullException(nameof(target));
-            }
-
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            var extension = target.GetExtension<IDefaultTagHelperTargetExtension>();
-            if (extension == null)
-            {
-                ReportMissingCodeTargetExtension<IDefaultTagHelperTargetExtension>(context);
-                return;
-            }
-
-            extension.WriteTagHelperBody(context, this);
+            throw new ArgumentNullException(nameof(target));
         }
+
+        if (context == null)
+        {
+            throw new ArgumentNullException(nameof(context));
+        }
+
+        var extension = target.GetExtension<IDefaultTagHelperTargetExtension>();
+        if (extension == null)
+        {
+            ReportMissingCodeTargetExtension<IDefaultTagHelperTargetExtension>(context);
+            return;
+        }
+
+        extension.WriteTagHelperBody(context, this);
     }
 }

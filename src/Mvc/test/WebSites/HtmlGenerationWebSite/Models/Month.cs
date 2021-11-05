@@ -3,12 +3,11 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace HtmlGenerationWebSite.Models
+namespace HtmlGenerationWebSite.Models;
+
+public enum Month
 {
-    public enum Month
-    {
-        [Display(Name = "January")]
-        FirstOne,
-        LastOne
-    }
+    [Display(Name = "January")]
+    FirstOne,
+    LastOne
 }

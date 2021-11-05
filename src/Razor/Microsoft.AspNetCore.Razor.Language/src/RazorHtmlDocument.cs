@@ -3,27 +3,26 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+internal abstract class RazorHtmlDocument
 {
-    internal abstract class RazorHtmlDocument
+    public abstract string GeneratedHtml { get; }
+
+    public abstract RazorCodeGenerationOptions Options { get; }
+
+    public static RazorHtmlDocument Create(string generatedHtml, RazorCodeGenerationOptions options)
     {
-        public abstract string GeneratedHtml { get; }
-
-        public abstract RazorCodeGenerationOptions Options { get; }
-
-        public static RazorHtmlDocument Create(string generatedHtml, RazorCodeGenerationOptions options)
+        if (generatedHtml == null)
         {
-            if (generatedHtml == null)
-            {
-                throw new ArgumentNullException(nameof(generatedHtml));
-            }
-
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            return new DefaultRazorHtmlDocument(generatedHtml, options);
+            throw new ArgumentNullException(nameof(generatedHtml));
         }
+
+        if (options == null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
+
+        return new DefaultRazorHtmlDocument(generatedHtml, options);
     }
 }

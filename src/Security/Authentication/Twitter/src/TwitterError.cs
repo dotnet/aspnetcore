@@ -7,11 +7,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Authentication.Twitter
+namespace Microsoft.AspNetCore.Authentication.Twitter;
+
+internal class TwitterError
 {
-    internal class TwitterError
-    {
-        public int Code { get; set; }
-        public string? Message { get; set; }
-    }
+    public int Code { get; set; }
+    public string? Message { get; set; }
 }

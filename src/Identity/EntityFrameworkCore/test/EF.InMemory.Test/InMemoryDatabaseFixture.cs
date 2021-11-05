@@ -4,23 +4,22 @@
 using System;
 using Microsoft.Data.Sqlite;
 
-namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
+namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test;
+
+public class InMemoryDatabaseFixture : IDisposable
 {
-    public class InMemoryDatabaseFixture : IDisposable
+    private readonly SqliteConnection _connection = new SqliteConnection($"DataSource=:memory:");
+
+    public InMemoryDatabaseFixture()
     {
-        private readonly SqliteConnection _connection = new SqliteConnection($"DataSource=:memory:");
+        _connection.Open();
+    }
 
-        public InMemoryDatabaseFixture()
-        {
-            _connection.Open();
-        }
+    public SqliteConnection Connection => _connection;
 
-        public SqliteConnection Connection => _connection;
-
-        public void Dispose()
-        {
-            _connection.Close();
-            _connection.Dispose();
-        }
+    public void Dispose()
+    {
+        _connection.Close();
+        _connection.Dispose();
     }
 }

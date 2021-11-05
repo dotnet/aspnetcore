@@ -4,16 +4,15 @@
 using System;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Internal
+namespace Microsoft.AspNetCore.Internal;
+
+internal interface IFileResultLogger
 {
-    internal interface IFileResultLogger
-    {
-        void IfUnmodifiedSincePreconditionFailed(
-            DateTimeOffset? lastModified,
-            DateTimeOffset? ifUnmodifiedSinceDate);
+    void IfUnmodifiedSincePreconditionFailed(
+        DateTimeOffset? lastModified,
+        DateTimeOffset? ifUnmodifiedSinceDate);
 
-        void IfMatchPreconditionFailed(EntityTagHeaderValue etag);
+    void IfMatchPreconditionFailed(EntityTagHeaderValue etag);
 
-        void NotEnabledForRangeProcessing();
-    }
+    void NotEnabledForRangeProcessing();
 }

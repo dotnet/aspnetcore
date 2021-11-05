@@ -1,10 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace MockHostTypes
+namespace MockHostTypes;
+
+public class HostBuilder : IHostBuilder
 {
-    public class HostBuilder : IHostBuilder
-    {
-        public IHost Build() => new Host();
-    }
+    public IHost Build() => new Host();
 }

@@ -3,12 +3,11 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace HtmlGenerationWebSite.Models
-{
-    public class WeirdModel
-    {
-        public string Field = "Hello, Field World!";
+namespace HtmlGenerationWebSite.Models;
 
-        public static string StaticProperty { get; set; } = "Hello, Static World!";
-    }
+public class WeirdModel
+{
+    public string Field = "Hello, Field World!";
+
+    public static string StaticProperty { get; set; } = "Hello, Static World!";
 }

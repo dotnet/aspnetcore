@@ -3,29 +3,28 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Razor.Language.Components
+namespace Microsoft.AspNetCore.Razor.Language.Components;
+
+internal static class ComponentLayoutDirective
 {
-    internal static class ComponentLayoutDirective
-    {
-        public static readonly DirectiveDescriptor Directive = DirectiveDescriptor.CreateDirective(
-            "layout",
-            DirectiveKind.SingleLine,
-            builder =>
-            {
-                builder.AddTypeToken(ComponentResources.LayoutDirective_TypeToken_Name, ComponentResources.LayoutDirective_TypeToken_Description);
-                builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
-                builder.Description = ComponentResources.LayoutDirective_Description;
-            });
-
-        public static void Register(RazorProjectEngineBuilder builder)
+    public static readonly DirectiveDescriptor Directive = DirectiveDescriptor.CreateDirective(
+        "layout",
+        DirectiveKind.SingleLine,
+        builder =>
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
+            builder.AddTypeToken(ComponentResources.LayoutDirective_TypeToken_Name, ComponentResources.LayoutDirective_TypeToken_Description);
+            builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
+            builder.Description = ComponentResources.LayoutDirective_Description;
+        });
 
-            builder.AddDirective(Directive, FileKinds.Component, FileKinds.ComponentImport);
-            builder.Features.Add(new ComponentLayoutDirectivePass());
+    public static void Register(RazorProjectEngineBuilder builder)
+    {
+        if (builder == null)
+        {
+            throw new ArgumentNullException(nameof(builder));
         }
+
+        builder.AddDirective(Directive, FileKinds.Component, FileKinds.ComponentImport);
+        builder.Features.Add(new ComponentLayoutDirectivePass());
     }
 }

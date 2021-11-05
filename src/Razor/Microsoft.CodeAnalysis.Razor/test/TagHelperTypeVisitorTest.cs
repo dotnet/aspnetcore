@@ -1,118 +1,117 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Razor.TagHelpers;
 using System.Collections.Generic;
-using Xunit;
 using System.Reflection;
+using Microsoft.AspNetCore.Razor.TagHelpers;
+using Xunit;
 
-namespace Microsoft.CodeAnalysis.Razor.Workspaces
+namespace Microsoft.CodeAnalysis.Razor.Workspaces;
+
+public class TagHelperTypeVisitorTest
 {
-    public class TagHelperTypeVisitorTest
+    private static readonly Assembly _assembly = typeof(TagHelperTypeVisitorTest).GetTypeInfo().Assembly;
+
+    private static Compilation Compilation { get; } = TestCompilation.Create(_assembly);
+
+    private static INamedTypeSymbol ITagHelperSymbol { get; } = Compilation.GetTypeByMetadataName(TagHelperTypes.ITagHelper);
+
+    [Fact]
+    public void IsTagHelper_PlainTagHelper_ReturnsTrue()
     {
-        private static readonly Assembly _assembly = typeof(TagHelperTypeVisitorTest).GetTypeInfo().Assembly;
+        // Arrange
+        var testVisitor = new TagHelperTypeVisitor(ITagHelperSymbol, new List<INamedTypeSymbol>());
+        var tagHelperSymbol = Compilation.GetTypeByMetadataName(typeof(Valid_PlainTagHelper).FullName);
 
-        private static Compilation Compilation { get; } = TestCompilation.Create(_assembly);
+        // Act
+        var isTagHelper = testVisitor.IsTagHelper(tagHelperSymbol);
 
-        private static INamedTypeSymbol ITagHelperSymbol { get; } = Compilation.GetTypeByMetadataName(TagHelperTypes.ITagHelper);
-
-        [Fact]
-        public void IsTagHelper_PlainTagHelper_ReturnsTrue()
-        {
-            // Arrange
-            var testVisitor = new TagHelperTypeVisitor(ITagHelperSymbol, new List<INamedTypeSymbol>());
-            var tagHelperSymbol = Compilation.GetTypeByMetadataName(typeof(Valid_PlainTagHelper).FullName);
-
-            // Act
-            var isTagHelper = testVisitor.IsTagHelper(tagHelperSymbol);
-
-            // Assert
-            Assert.True(isTagHelper);
-        }
-
-        [Fact]
-        public void IsTagHelper_InheritedTagHelper_ReturnsTrue()
-        {
-            // Arrange
-            var testVisitor = new TagHelperTypeVisitor(ITagHelperSymbol, new List<INamedTypeSymbol>());
-            var tagHelperSymbol = Compilation.GetTypeByMetadataName(typeof(Valid_InheritedTagHelper).FullName);
-
-            // Act
-            var isTagHelper = testVisitor.IsTagHelper(tagHelperSymbol);
-
-            // Assert
-            Assert.True(isTagHelper);
-        }
-
-        [Fact]
-        public void IsTagHelper_AbstractTagHelper_ReturnsFalse()
-        {
-            // Arrange
-            var testVisitor = new TagHelperTypeVisitor(ITagHelperSymbol, new List<INamedTypeSymbol>());
-            var tagHelperSymbol = Compilation.GetTypeByMetadataName(typeof(Invalid_AbstractTagHelper).FullName);
-
-            // Act
-            var isTagHelper = testVisitor.IsTagHelper(tagHelperSymbol);
-
-            // Assert
-            Assert.False(isTagHelper);
-        }
-
-        [Fact]
-        public void IsTagHelper_GenericTagHelper_ReturnsFalse()
-        {
-            // Arrange
-            var testVisitor = new TagHelperTypeVisitor(ITagHelperSymbol, new List<INamedTypeSymbol>());
-            var tagHelperSymbol = Compilation.GetTypeByMetadataName(typeof(Invalid_GenericTagHelper<>).FullName);
-
-            // Act
-            var isTagHelper = testVisitor.IsTagHelper(tagHelperSymbol);
-
-            // Assert
-            Assert.False(isTagHelper);
-        }
-
-        [Fact]
-        public void IsTagHelper_InternalTagHelper_ReturnsFalse()
-        {
-            // Arrange
-            var testVisitor = new TagHelperTypeVisitor(ITagHelperSymbol, new List<INamedTypeSymbol>());
-            var tagHelperSymbol = Compilation.GetTypeByMetadataName(typeof(Invalid_InternalTagHelper).FullName);
-
-            // Act
-            var isTagHelper = testVisitor.IsTagHelper(tagHelperSymbol);
-
-            // Assert
-            Assert.False(isTagHelper);
-        }
-
-        public class Invalid_NestedPublicTagHelper : TagHelper
-        {
-        }
-
-        public class Valid_NestedPublicViewComponent
-        {
-            public string Invoke(string foo) => null;
-        }
+        // Assert
+        Assert.True(isTagHelper);
     }
 
-    public abstract class Invalid_AbstractTagHelper : TagHelper
+    [Fact]
+    public void IsTagHelper_InheritedTagHelper_ReturnsTrue()
+    {
+        // Arrange
+        var testVisitor = new TagHelperTypeVisitor(ITagHelperSymbol, new List<INamedTypeSymbol>());
+        var tagHelperSymbol = Compilation.GetTypeByMetadataName(typeof(Valid_InheritedTagHelper).FullName);
+
+        // Act
+        var isTagHelper = testVisitor.IsTagHelper(tagHelperSymbol);
+
+        // Assert
+        Assert.True(isTagHelper);
+    }
+
+    [Fact]
+    public void IsTagHelper_AbstractTagHelper_ReturnsFalse()
+    {
+        // Arrange
+        var testVisitor = new TagHelperTypeVisitor(ITagHelperSymbol, new List<INamedTypeSymbol>());
+        var tagHelperSymbol = Compilation.GetTypeByMetadataName(typeof(Invalid_AbstractTagHelper).FullName);
+
+        // Act
+        var isTagHelper = testVisitor.IsTagHelper(tagHelperSymbol);
+
+        // Assert
+        Assert.False(isTagHelper);
+    }
+
+    [Fact]
+    public void IsTagHelper_GenericTagHelper_ReturnsFalse()
+    {
+        // Arrange
+        var testVisitor = new TagHelperTypeVisitor(ITagHelperSymbol, new List<INamedTypeSymbol>());
+        var tagHelperSymbol = Compilation.GetTypeByMetadataName(typeof(Invalid_GenericTagHelper<>).FullName);
+
+        // Act
+        var isTagHelper = testVisitor.IsTagHelper(tagHelperSymbol);
+
+        // Assert
+        Assert.False(isTagHelper);
+    }
+
+    [Fact]
+    public void IsTagHelper_InternalTagHelper_ReturnsFalse()
+    {
+        // Arrange
+        var testVisitor = new TagHelperTypeVisitor(ITagHelperSymbol, new List<INamedTypeSymbol>());
+        var tagHelperSymbol = Compilation.GetTypeByMetadataName(typeof(Invalid_InternalTagHelper).FullName);
+
+        // Act
+        var isTagHelper = testVisitor.IsTagHelper(tagHelperSymbol);
+
+        // Assert
+        Assert.False(isTagHelper);
+    }
+
+    public class Invalid_NestedPublicTagHelper : TagHelper
     {
     }
 
-    public class Invalid_GenericTagHelper<T> : TagHelper
+    public class Valid_NestedPublicViewComponent
     {
+        public string Invoke(string foo) => null;
     }
+}
 
-    internal class Invalid_InternalTagHelper : TagHelper
-    {
-    }
+public abstract class Invalid_AbstractTagHelper : TagHelper
+{
+}
 
-    public class Valid_PlainTagHelper : TagHelper
-    {
-    }
+public class Invalid_GenericTagHelper<T> : TagHelper
+{
+}
 
-    public class Valid_InheritedTagHelper : Valid_PlainTagHelper
-    {
-    }
+internal class Invalid_InternalTagHelper : TagHelper
+{
+}
+
+public class Valid_PlainTagHelper : TagHelper
+{
+}
+
+public class Valid_InheritedTagHelper : Valid_PlainTagHelper
+{
 }

@@ -3,53 +3,52 @@
 
 using System.Globalization;
 
-namespace Microsoft.AspNetCore.Razor.Language.Syntax
+namespace Microsoft.AspNetCore.Razor.Language.Syntax;
+
+internal partial class MarkupTextLiteralSyntax
 {
-    internal partial class MarkupTextLiteralSyntax
+    protected override string GetDebuggerDisplay()
     {
-        protected override string GetDebuggerDisplay()
-        {
-            return string.Format(CultureInfo.InvariantCulture, "{0} [{1}]", base.GetDebuggerDisplay(), this.GetContent());
-        }
+        return string.Format(CultureInfo.InvariantCulture, "{0} [{1}]", base.GetDebuggerDisplay(), this.GetContent());
     }
+}
 
-    internal partial class MarkupEphemeralTextLiteralSyntax
+internal partial class MarkupEphemeralTextLiteralSyntax
+{
+    protected override string GetDebuggerDisplay()
     {
-        protected override string GetDebuggerDisplay()
-        {
-            return string.Format(CultureInfo.InvariantCulture, "{0} [{1}]", base.GetDebuggerDisplay(), this.GetContent());
-        }
+        return string.Format(CultureInfo.InvariantCulture, "{0} [{1}]", base.GetDebuggerDisplay(), this.GetContent());
     }
+}
 
-    internal partial class CSharpStatementLiteralSyntax
+internal partial class CSharpStatementLiteralSyntax
+{
+    protected override string GetDebuggerDisplay()
     {
-        protected override string GetDebuggerDisplay()
-        {
-            return string.Format(CultureInfo.InvariantCulture, "{0} [{1}]", base.GetDebuggerDisplay(), this.GetContent());
-        }
+        return string.Format(CultureInfo.InvariantCulture, "{0} [{1}]", base.GetDebuggerDisplay(), this.GetContent());
     }
+}
 
-    internal partial class CSharpExpressionLiteralSyntax
+internal partial class CSharpExpressionLiteralSyntax
+{
+    protected override string GetDebuggerDisplay()
     {
-        protected override string GetDebuggerDisplay()
-        {
-            return string.Format(CultureInfo.InvariantCulture, "{0} [{1}]", base.GetDebuggerDisplay(), this.GetContent());
-        }
+        return string.Format(CultureInfo.InvariantCulture, "{0} [{1}]", base.GetDebuggerDisplay(), this.GetContent());
     }
+}
 
-    internal partial class CSharpEphemeralTextLiteralSyntax
+internal partial class CSharpEphemeralTextLiteralSyntax
+{
+    protected override string GetDebuggerDisplay()
     {
-        protected override string GetDebuggerDisplay()
-        {
-            return string.Format(CultureInfo.InvariantCulture, "{0} [{1}]", base.GetDebuggerDisplay(), this.GetContent());
-        }
+        return string.Format(CultureInfo.InvariantCulture, "{0} [{1}]", base.GetDebuggerDisplay(), this.GetContent());
     }
+}
 
-    internal partial class UnclassifiedTextLiteralSyntax
+internal partial class UnclassifiedTextLiteralSyntax
+{
+    protected override string GetDebuggerDisplay()
     {
-        protected override string GetDebuggerDisplay()
-        {
-            return string.Format(CultureInfo.InvariantCulture, "{0} [{1}]", base.GetDebuggerDisplay(), this.GetContent());
-        }
+        return string.Format(CultureInfo.InvariantCulture, "{0} [{1}]", base.GetDebuggerDisplay(), this.GetContent());
     }
 }

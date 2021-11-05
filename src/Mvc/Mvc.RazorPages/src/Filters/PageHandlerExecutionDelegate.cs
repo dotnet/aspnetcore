@@ -3,14 +3,13 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Mvc.Filters
-{
-    /// <summary>
-    /// A delegate that asynchronously returns a <see cref="PageHandlerExecutedContext"/> indicating the page or the next
-    /// page filter has executed.
-    /// </summary>
-    /// <returns>
-    /// A <see cref="Task"/> that on completion returns an <see cref="PageHandlerExecutedContext"/>.
-    /// </returns>
-    public delegate Task<PageHandlerExecutedContext> PageHandlerExecutionDelegate();
-}
+namespace Microsoft.AspNetCore.Mvc.Filters;
+
+/// <summary>
+/// A delegate that asynchronously returns a <see cref="PageHandlerExecutedContext"/> indicating the page or the next
+/// page filter has executed.
+/// </summary>
+/// <returns>
+/// A <see cref="Task"/> that on completion returns an <see cref="PageHandlerExecutedContext"/>.
+/// </returns>
+public delegate Task<PageHandlerExecutedContext> PageHandlerExecutionDelegate();

@@ -3,31 +3,30 @@
 
 using System;
 
-namespace Microsoft.Extensions.Localization
+namespace Microsoft.Extensions.Localization;
+
+/// <summary>
+/// Provides the location of resources for an Assembly.
+/// </summary>
+[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false, Inherited = false)]
+public class ResourceLocationAttribute : Attribute
 {
     /// <summary>
-    /// Provides the location of resources for an Assembly.
+    /// Creates a new <see cref="ResourceLocationAttribute"/>.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false, Inherited = false)]
-    public class ResourceLocationAttribute : Attribute
+    /// <param name="resourceLocation">The location of resources for this Assembly.</param>
+    public ResourceLocationAttribute(string resourceLocation)
     {
-        /// <summary>
-        /// Creates a new <see cref="ResourceLocationAttribute"/>.
-        /// </summary>
-        /// <param name="resourceLocation">The location of resources for this Assembly.</param>
-        public ResourceLocationAttribute(string resourceLocation)
+        if (string.IsNullOrEmpty(resourceLocation))
         {
-            if (string.IsNullOrEmpty(resourceLocation))
-            {
-                throw new ArgumentNullException(nameof(resourceLocation));
-            }
-
-            ResourceLocation = resourceLocation;
+            throw new ArgumentNullException(nameof(resourceLocation));
         }
 
-        /// <summary>
-        /// The location of resources for this Assembly.
-        /// </summary>
-        public string ResourceLocation { get; }
+        ResourceLocation = resourceLocation;
     }
+
+    /// <summary>
+    /// The location of resources for this Assembly.
+    /// </summary>
+    public string ResourceLocation { get; }
 }

@@ -3,25 +3,24 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Rewrite
-{
-    internal class Pattern
-    {
-        public IList<PatternSegment> PatternSegments { get; }
-        public Pattern(IList<PatternSegment> patternSegments)
-        {
-            PatternSegments = patternSegments;
-        }
+namespace Microsoft.AspNetCore.Rewrite;
 
-        public string Evaluate(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences)
+internal class Pattern
+{
+    public IList<PatternSegment> PatternSegments { get; }
+    public Pattern(IList<PatternSegment> patternSegments)
+    {
+        PatternSegments = patternSegments;
+    }
+
+    public string Evaluate(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences)
+    {
+        foreach (var pattern in PatternSegments)
         {
-            foreach (var pattern in PatternSegments)
-            {
-                context.Builder.Append(pattern.Evaluate(context, ruleBackReferences, conditionBackReferences));
-            }
-            var retVal = context.Builder.ToString();
-            context.Builder.Clear();
-            return retVal;
+            context.Builder.Append(pattern.Evaluate(context, ruleBackReferences, conditionBackReferences));
         }
+        var retVal = context.Builder.ToString();
+        context.Builder.Clear();
+        return retVal;
     }
 }

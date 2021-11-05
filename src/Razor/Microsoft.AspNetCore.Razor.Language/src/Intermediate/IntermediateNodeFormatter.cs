@@ -3,14 +3,13 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Razor.Language.Intermediate
+namespace Microsoft.AspNetCore.Razor.Language.Intermediate;
+
+public abstract class IntermediateNodeFormatter
 {
-    public abstract class IntermediateNodeFormatter
-    {
-        public abstract void WriteChildren(IntermediateNodeCollection children);
+    public abstract void WriteChildren(IntermediateNodeCollection children);
 
-        public abstract void WriteContent(string content);
+    public abstract void WriteContent(string content);
 
-        public abstract void WriteProperty(string key, string value);
-    }
+    public abstract void WriteProperty(string key, string value);
 }

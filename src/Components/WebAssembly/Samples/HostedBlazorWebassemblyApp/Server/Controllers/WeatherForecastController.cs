@@ -7,25 +7,24 @@ using HostedBlazorWebassemblyApp.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace HostedBlazorWebassemblyApp.Server.Controllers
+namespace HostedBlazorWebassemblyApp.Server.Controllers;
+
+[ApiController]
+[Route("[controller]")]
+public class WeatherForecastController : ControllerBase
 {
-    [ApiController]
-    [Route("[controller]")]
-    public class WeatherForecastController : ControllerBase
+    private readonly IWeatherForecastService _forecastService;
+    private readonly ILogger<WeatherForecastController> _logger;
+
+    public WeatherForecastController(ILogger<WeatherForecastController> logger, IWeatherForecastService forecastService)
     {
-        private readonly IWeatherForecastService _forecastService;
-        private readonly ILogger<WeatherForecastController> _logger;
+        _forecastService = forecastService;
+        _logger = logger;
+    }
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger, IWeatherForecastService forecastService)
-        {
-            _forecastService = forecastService;
-            _logger = logger;
-        }
-
-        [HttpGet]
-        public Task<WeatherForecast[]> Get()
-        {
-            return _forecastService.GetForecastAsync(DateTime.Now);
-        }
+    [HttpGet]
+    public Task<WeatherForecast[]> Get()
+    {
+        return _forecastService.GetForecastAsync(DateTime.Now);
     }
 }

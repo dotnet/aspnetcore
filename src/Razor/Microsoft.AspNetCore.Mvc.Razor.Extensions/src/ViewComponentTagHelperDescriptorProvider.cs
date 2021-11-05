@@ -7,72 +7,71 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
+namespace Microsoft.AspNetCore.Mvc.Razor.Extensions;
+
+public sealed class ViewComponentTagHelperDescriptorProvider : RazorEngineFeatureBase, ITagHelperDescriptorProvider
 {
-    public sealed class ViewComponentTagHelperDescriptorProvider : RazorEngineFeatureBase, ITagHelperDescriptorProvider
+    public int Order { get; set; }
+
+    public void Execute(TagHelperDescriptorProviderContext context)
     {
-        public int Order { get; set; }
-
-        public void Execute(TagHelperDescriptorProviderContext context)
+        if (context == null)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            throw new ArgumentNullException(nameof(context));
+        }
 
-            var compilation = context.GetCompilation();
-            if (compilation == null)
-            {
-                // No compilation, nothing to do.
-                return;
-            }
+        var compilation = context.GetCompilation();
+        if (compilation == null)
+        {
+            // No compilation, nothing to do.
+            return;
+        }
 
-            var vcAttribute = compilation.GetTypeByMetadataName(ViewComponentTypes.ViewComponentAttribute);
-            var nonVCAttribute = compilation.GetTypeByMetadataName(ViewComponentTypes.NonViewComponentAttribute);
-            if (vcAttribute == null || vcAttribute.TypeKind == TypeKind.Error)
-            {
-                // Could not find attributes we care about in the compilation. Nothing to do.
-                return;
-            }
+        var vcAttribute = compilation.GetTypeByMetadataName(ViewComponentTypes.ViewComponentAttribute);
+        var nonVCAttribute = compilation.GetTypeByMetadataName(ViewComponentTypes.NonViewComponentAttribute);
+        if (vcAttribute == null || vcAttribute.TypeKind == TypeKind.Error)
+        {
+            // Could not find attributes we care about in the compilation. Nothing to do.
+            return;
+        }
 
-            var types = new List<INamedTypeSymbol>();
-            var visitor = new ViewComponentTypeVisitor(vcAttribute, nonVCAttribute, types);
+        var types = new List<INamedTypeSymbol>();
+        var visitor = new ViewComponentTypeVisitor(vcAttribute, nonVCAttribute, types);
 
-            var targetAssembly = context.Items.GetTargetAssembly();
-            if (targetAssembly is not null)
+        var targetAssembly = context.Items.GetTargetAssembly();
+        if (targetAssembly is not null)
+        {
+            visitor.Visit(targetAssembly.GlobalNamespace);
+        }
+        else
+        {
+            visitor.Visit(compilation.Assembly.GlobalNamespace);
+            foreach (var reference in compilation.References)
             {
-                visitor.Visit(targetAssembly.GlobalNamespace);
-            }
-            else
-            {
-                visitor.Visit(compilation.Assembly.GlobalNamespace);
-                foreach (var reference in compilation.References)
+                if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assembly)
                 {
-                    if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assembly)
+                    if (IsTagHelperAssembly(assembly))
                     {
-                        if (IsTagHelperAssembly(assembly))
-                        {
-                            visitor.Visit(assembly.GlobalNamespace);
-                        }
+                        visitor.Visit(assembly.GlobalNamespace);
                     }
                 }
             }
+        }
 
-            var factory = new ViewComponentTagHelperDescriptorFactory(compilation);
-            for (var i = 0; i < types.Count; i++)
+        var factory = new ViewComponentTagHelperDescriptorFactory(compilation);
+        for (var i = 0; i < types.Count; i++)
+        {
+            var descriptor = factory.CreateDescriptor(types[i]);
+
+            if (descriptor != null)
             {
-                var descriptor = factory.CreateDescriptor(types[i]);
-
-                if (descriptor != null)
-                {
-                    context.Results.Add(descriptor);
-                }
+                context.Results.Add(descriptor);
             }
         }
+    }
 
-        private bool IsTagHelperAssembly(IAssemblySymbol assembly)
-        {
-            return assembly.Name != null && !assembly.Name.StartsWith("System.", StringComparison.Ordinal);
-        }
+    private bool IsTagHelperAssembly(IAssemblySymbol assembly)
+    {
+        return assembly.Name != null && !assembly.Name.StartsWith("System.", StringComparison.Ordinal);
     }
 }

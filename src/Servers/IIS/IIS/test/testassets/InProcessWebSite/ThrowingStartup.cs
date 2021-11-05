@@ -5,13 +5,12 @@ using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace TestSite
+namespace TestSite;
+
+public class ThrowingStartup
 {
-    public class ThrowingStartup
+    public void Configure(IApplicationBuilder app)
     {
-        public void Configure(IApplicationBuilder app)
-        {
-            throw new InvalidOperationException("From Configure");
-        }
+        throw new InvalidOperationException("From Configure");
     }
 }

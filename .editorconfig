@@ -211,6 +211,9 @@ dotnet_diagnostic.IDE0044.severity = warning
 dotnet_diagnostic.IDE0073.severity = warning
 file_header_template = Licensed to the .NET Foundation under one or more agreements.\nThe .NET Foundation licenses this file to you under the MIT license.
 
+# IDE0161: Convert to file-scoped namespace
+dotnet_diagnostic.IDE0161.severity = warning
+
 [**/{test,samples,perf}/**.{cs,vb}]
 # CA1018: Mark attributes with AttributeUsageAttribute
 dotnet_diagnostic.CA1018.severity = suggestion
@@ -250,7 +253,6 @@ dotnet_diagnostic.CA2008.severity = suggestion
 dotnet_diagnostic.CA2012.severity = suggestion
 # IDE0044: Make field readonly
 dotnet_diagnostic.IDE0044.severity = suggestion
-
 
 # CA2016: Forward the 'CancellationToken' parameter to methods that take one
 dotnet_diagnostic.CA2016.severity = suggestion

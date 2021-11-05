@@ -4,11 +4,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace RazorPagesWebSite.Pages.Filters
+namespace RazorPagesWebSite.Pages.Filters;
+
+[SkipStatusCodePages]
+public class AuthFilterOnPageWithModel : PageModel
 {
-    [SkipStatusCodePages]
-    public class AuthFilterOnPageWithModel : PageModel
-    {
-        public IActionResult OnGet() => Page();
-    }
+    public IActionResult OnGet() => Page();
 }

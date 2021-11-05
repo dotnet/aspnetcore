@@ -5,88 +5,87 @@ using System;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Language.Intermediate
+namespace Microsoft.AspNetCore.Razor.Language.Intermediate;
+
+// These tests cover the methods on ExtensionIntermediateNode that are used to implement visitors
+// that special case an extension node.
+public class ExtensionIntermediateNodeTest
 {
-    // These tests cover the methods on ExtensionIntermediateNode that are used to implement visitors
-    // that special case an extension node.
-    public class ExtensionIntermediateNodeTest
+    [Fact]
+    public void Accept_CallsStandardVisitExtension_ForStandardVisitor()
     {
-        [Fact]
-        public void Accept_CallsStandardVisitExtension_ForStandardVisitor()
+        // Arrange
+        var node = new TestExtensionIntermediateNode();
+        var visitor = new StandardVisitor();
+
+        // Act
+        node.Accept(visitor);
+
+        // Assert
+        Assert.True(visitor.WasStandardMethodCalled);
+        Assert.False(visitor.WasSpecificMethodCalled);
+    }
+
+    [Fact]
+    public void Accept_CallsSpecialVisitExtension_ForSpecialVisitor()
+    {
+        // Arrange
+        var node = new TestExtensionIntermediateNode();
+        var visitor = new SpecialVisitor();
+
+        // Act
+        node.Accept(visitor);
+
+        // Assert
+        Assert.False(visitor.WasStandardMethodCalled);
+        Assert.True(visitor.WasSpecificMethodCalled);
+    }
+
+    private class TestExtensionIntermediateNode : ExtensionIntermediateNode
+    {
+        public override IntermediateNodeCollection Children => IntermediateNodeCollection.ReadOnly;
+
+        public override void Accept(IntermediateNodeVisitor visitor)
         {
-            // Arrange
-            var node = new TestExtensionIntermediateNode();
-            var visitor = new StandardVisitor();
-
-            // Act
-            node.Accept(visitor);
-
-            // Assert
-            Assert.True(visitor.WasStandardMethodCalled);
-            Assert.False(visitor.WasSpecificMethodCalled);
+            // This is the standard visitor boilerplate for an extension node.
+            AcceptExtensionNode<TestExtensionIntermediateNode>(this, visitor);
         }
 
-        [Fact]
-        public void Accept_CallsSpecialVisitExtension_ForSpecialVisitor()
+        public override void WriteNode(CodeTarget target, CodeRenderingContext context)
         {
-            // Arrange
-            var node = new TestExtensionIntermediateNode();
-            var visitor = new SpecialVisitor();
+            throw new NotImplementedException();
+        }
+    }
 
-            // Act
-            node.Accept(visitor);
+    private class StandardVisitor : IntermediateNodeVisitor
+    {
+        public bool WasStandardMethodCalled { get; private set; }
+        public bool WasSpecificMethodCalled { get; private set; }
 
-            // Assert
-            Assert.False(visitor.WasStandardMethodCalled);
-            Assert.True(visitor.WasSpecificMethodCalled);
+        public override void VisitExtension(ExtensionIntermediateNode node)
+        {
+            WasStandardMethodCalled = true;
         }
 
-        private class TestExtensionIntermediateNode : ExtensionIntermediateNode
+        public void VisitExtension(TestExtensionIntermediateNode node)
         {
-            public override IntermediateNodeCollection Children => IntermediateNodeCollection.ReadOnly;
+            WasSpecificMethodCalled = true;
+        }
+    }
 
-            public override void Accept(IntermediateNodeVisitor visitor)
-            {
-                // This is the standard visitor boilerplate for an extension node.
-                AcceptExtensionNode<TestExtensionIntermediateNode>(this, visitor);
-            }
+    private class SpecialVisitor : IntermediateNodeVisitor, IExtensionIntermediateNodeVisitor<TestExtensionIntermediateNode>
+    {
+        public bool WasStandardMethodCalled { get; private set; }
+        public bool WasSpecificMethodCalled { get; private set; }
 
-            public override void WriteNode(CodeTarget target, CodeRenderingContext context)
-            {
-                throw new NotImplementedException();
-            }
+        public override void VisitExtension(ExtensionIntermediateNode node)
+        {
+            WasStandardMethodCalled = true;
         }
 
-        private class StandardVisitor : IntermediateNodeVisitor
+        public void VisitExtension(TestExtensionIntermediateNode node)
         {
-            public bool WasStandardMethodCalled { get; private set; }
-            public bool WasSpecificMethodCalled { get; private set; }
-
-            public override void VisitExtension(ExtensionIntermediateNode node)
-            {
-                WasStandardMethodCalled = true;
-            }
-
-            public void VisitExtension(TestExtensionIntermediateNode node)
-            {
-                WasSpecificMethodCalled = true;
-            }
-        }
-
-        private class SpecialVisitor : IntermediateNodeVisitor, IExtensionIntermediateNodeVisitor<TestExtensionIntermediateNode>
-        {
-            public bool WasStandardMethodCalled { get; private set; }
-            public bool WasSpecificMethodCalled { get; private set; }
-
-            public override void VisitExtension(ExtensionIntermediateNode node)
-            {
-                WasStandardMethodCalled = true;
-            }
-
-            public void VisitExtension(TestExtensionIntermediateNode node)
-            {
-                WasSpecificMethodCalled = true;
-            }
+            WasSpecificMethodCalled = true;
         }
     }
 }

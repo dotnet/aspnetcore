@@ -4,29 +4,28 @@
 using System;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+internal class DefaultRazorParserOptionsFactoryProjectFeature : RazorProjectEngineFeatureBase, IRazorParserOptionsFactoryProjectFeature
 {
-    internal class DefaultRazorParserOptionsFactoryProjectFeature : RazorProjectEngineFeatureBase, IRazorParserOptionsFactoryProjectFeature
+    private IConfigureRazorParserOptionsFeature[] _configureOptions;
+
+    protected override void OnInitialized()
     {
-        private IConfigureRazorParserOptionsFeature[] _configureOptions;
+        _configureOptions = ProjectEngine.EngineFeatures.OfType<IConfigureRazorParserOptionsFeature>().ToArray();
+    }
 
-        protected override void OnInitialized()
+    public RazorParserOptions Create(string fileKind, Action<RazorParserOptionsBuilder> configure)
+    {
+        var builder = new DefaultRazorParserOptionsBuilder(ProjectEngine.Configuration, fileKind);
+        configure?.Invoke(builder);
+
+        for (var i = 0; i < _configureOptions.Length; i++)
         {
-            _configureOptions = ProjectEngine.EngineFeatures.OfType<IConfigureRazorParserOptionsFeature>().ToArray();
+            _configureOptions[i].Configure(builder);
         }
 
-        public RazorParserOptions Create(string fileKind, Action<RazorParserOptionsBuilder> configure)
-        {
-            var builder = new DefaultRazorParserOptionsBuilder(ProjectEngine.Configuration, fileKind);
-            configure?.Invoke(builder);
-
-            for (var i = 0; i < _configureOptions.Length; i++)
-            {
-                _configureOptions[i].Configure(builder);
-            }
-
-            var options = builder.Build();
-            return options;
-        }
+        var options = builder.Build();
+        return options;
     }
 }

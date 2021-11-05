@@ -3,19 +3,18 @@
 
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
+namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests;
+
+public class CompiledCSharpCode
 {
-    public class CompiledCSharpCode
+    public CompiledCSharpCode(Compilation baseCompilation, RazorCodeDocument codeDocument)
     {
-        public CompiledCSharpCode(Compilation baseCompilation, RazorCodeDocument codeDocument)
-        {
-            BaseCompilation = baseCompilation;
-            CodeDocument = codeDocument;
-        }
-
-        // A compilation that can be used *with* this code to compile an assembly
-        public Compilation BaseCompilation { get; set; }
-
-        public RazorCodeDocument CodeDocument { get; set; }
+        BaseCompilation = baseCompilation;
+        CodeDocument = codeDocument;
     }
+
+    // A compilation that can be used *with* this code to compile an assembly
+    public Compilation BaseCompilation { get; set; }
+
+    public RazorCodeDocument CodeDocument { get; set; }
 }

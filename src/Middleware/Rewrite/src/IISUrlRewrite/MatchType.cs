@@ -1,12 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
+namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
+
+internal enum MatchType
 {
-    internal enum MatchType
-    {
-        Pattern,
-        IsFile,
-        IsDirectory
-    }
+    Pattern,
+    IsFile,
+    IsDirectory
 }

@@ -9,31 +9,31 @@ using Microsoft.AspNetCore.Razor.Language.IntegrationTests;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.IntegrationTests
+namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.IntegrationTests;
+
+public class InstrumentationPassIntegrationTest : IntegrationTestBase
 {
-    public class InstrumentationPassIntegrationTest : IntegrationTestBase
+    private static readonly CSharpCompilation DefaultBaseCompilation = MvcShim.BaseCompilation.WithAssemblyName("AppCode");
+
+    public InstrumentationPassIntegrationTest()
+        : base(generateBaselines: null, projectDirectoryHint: "Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X")
     {
-        private static readonly CSharpCompilation DefaultBaseCompilation = MvcShim.BaseCompilation.WithAssemblyName("AppCode");
+        Configuration = RazorConfiguration.Create(
+            RazorLanguageVersion.Version_2_0,
+            "MVC-2.1",
+            new[] { new AssemblyExtension("MVC-2.1", typeof(ExtensionInitializer).Assembly) });
+    }
 
-        public InstrumentationPassIntegrationTest()
-            : base(generateBaselines: null, projectDirectoryHint: "Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X")
+    protected override CSharpCompilation BaseCompilation => DefaultBaseCompilation;
+
+    protected override RazorConfiguration Configuration { get; }
+
+    [Fact]
+    public void BasicTest()
+    {
+        // Arrange
+        var descriptors = new[]
         {
-            Configuration = RazorConfiguration.Create(
-                RazorLanguageVersion.Version_2_0,
-                "MVC-2.1",
-                new[] { new AssemblyExtension("MVC-2.1", typeof(ExtensionInitializer).Assembly) });
-        }
-
-        protected override CSharpCompilation BaseCompilation => DefaultBaseCompilation;
-
-        protected override RazorConfiguration Configuration { get; }
-
-        [Fact]
-        public void BasicTest()
-        {
-            // Arrange
-            var descriptors = new[]
-            {
                 CreateTagHelperDescriptor(
                     tagName: "p",
                     typeName: "PTagHelper",
@@ -59,50 +59,49 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.IntegrationTests
                     })
             };
 
-            var engine = CreateProjectEngine(b =>
-            {
-                b.AddTagHelpers(descriptors);
-                b.Features.Add(new InstrumentationPass());
+        var engine = CreateProjectEngine(b =>
+        {
+            b.AddTagHelpers(descriptors);
+            b.Features.Add(new InstrumentationPass());
 
                 // This test includes templates
                 b.AddTargetExtension(new TemplateTargetExtension());
-            });
+        });
 
-            var projectItem = CreateProjectItemFromFile();
+        var projectItem = CreateProjectItemFromFile();
 
-            // Act
-            var document = engine.Process(projectItem);
+        // Act
+        var document = engine.Process(projectItem);
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
+        // Assert
+        AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
 
-            var csharpDocument = document.GetCSharpDocument();
-            AssertCSharpDocumentMatchesBaseline(csharpDocument);
-            Assert.Empty(csharpDocument.Diagnostics);
-        }
+        var csharpDocument = document.GetCSharpDocument();
+        AssertCSharpDocumentMatchesBaseline(csharpDocument);
+        Assert.Empty(csharpDocument.Diagnostics);
+    }
 
-        private static TagHelperDescriptor CreateTagHelperDescriptor(
-            string tagName,
-            string typeName,
-            string assemblyName,
-            IEnumerable<Action<BoundAttributeDescriptorBuilder>> attributes = null)
+    private static TagHelperDescriptor CreateTagHelperDescriptor(
+        string tagName,
+        string typeName,
+        string assemblyName,
+        IEnumerable<Action<BoundAttributeDescriptorBuilder>> attributes = null)
+    {
+        var builder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
+        builder.TypeName(typeName);
+
+        if (attributes != null)
         {
-            var builder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
-            builder.TypeName(typeName);
-
-            if (attributes != null)
+            foreach (var attributeBuilder in attributes)
             {
-                foreach (var attributeBuilder in attributes)
-                {
-                    builder.BoundAttributeDescriptor(attributeBuilder);
-                }
+                builder.BoundAttributeDescriptor(attributeBuilder);
             }
-
-            builder.TagMatchingRuleDescriptor(ruleBuilder => ruleBuilder.RequireTagName(tagName));
-
-            var descriptor = builder.Build();
-
-            return descriptor;
         }
+
+        builder.TagMatchingRuleDescriptor(ruleBuilder => ruleBuilder.RequireTagName(tagName));
+
+        var descriptor = builder.Build();
+
+        return descriptor;
     }
 }

@@ -3,16 +3,15 @@
 
 using System;
 
-namespace TagHelpersWebSite.Models
+namespace TagHelpersWebSite.Models;
+
+public class WebsiteContext
 {
-    public class WebsiteContext
-    {
-        public Version Version { get; set; }
+    public Version Version { get; set; }
 
-        public int CopyrightYear { get; set; }
+    public int CopyrightYear { get; set; }
 
-        public bool Approved { get; set; }
+    public bool Approved { get; set; }
 
-        public int TagsToShow { get; set; }
-    }
+    public int TagsToShow { get; set; }
 }

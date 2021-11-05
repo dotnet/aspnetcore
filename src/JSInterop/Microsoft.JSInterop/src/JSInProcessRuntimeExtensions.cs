@@ -5,28 +5,27 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.JSInterop.Infrastructure;
 
-namespace Microsoft.JSInterop
+namespace Microsoft.JSInterop;
+
+/// <summary>
+/// Extensions for <see cref="IJSInProcessRuntime"/>.
+/// </summary>
+public static class JSInProcessRuntimeExtensions
 {
     /// <summary>
-    /// Extensions for <see cref="IJSInProcessRuntime"/>.
+    /// Invokes the specified JavaScript function synchronously.
     /// </summary>
-    public static class JSInProcessRuntimeExtensions
+    /// <param name="jsRuntime">The <see cref="IJSInProcessRuntime"/>.</param>
+    /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
+    /// <param name="args">JSON-serializable arguments.</param>
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "The method returns void, so nothing is deserialized.")]
+    public static void InvokeVoid(this IJSInProcessRuntime jsRuntime, string identifier, params object?[]? args)
     {
-        /// <summary>
-        /// Invokes the specified JavaScript function synchronously.
-        /// </summary>
-        /// <param name="jsRuntime">The <see cref="IJSInProcessRuntime"/>.</param>
-        /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
-        /// <param name="args">JSON-serializable arguments.</param>
-        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "The method returns void, so nothing is deserialized.")]
-        public static void InvokeVoid(this IJSInProcessRuntime jsRuntime, string identifier, params object?[]? args)
+        if (jsRuntime == null)
         {
-            if (jsRuntime == null)
-            {
-                throw new ArgumentNullException(nameof(jsRuntime));
-            }
-
-            jsRuntime.Invoke<IJSVoidResult>(identifier, args);
+            throw new ArgumentNullException(nameof(jsRuntime));
         }
+
+        jsRuntime.Invoke<IJSVoidResult>(identifier, args);
     }
 }

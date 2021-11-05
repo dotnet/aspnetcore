@@ -1,32 +1,31 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
+namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+
+/// <summary>
+/// Represents the status of an authentication operation.
+/// </summary>
+public enum RemoteAuthenticationStatus
 {
     /// <summary>
-    /// Represents the status of an authentication operation.
+    /// The application is going to be redirected.
     /// </summary>
-    public enum RemoteAuthenticationStatus
-    {
-        /// <summary>
-        /// The application is going to be redirected.
-        /// </summary>
-        Redirect,
+    Redirect,
 
-        /// <summary>
-        /// The authentication operation completed successfully.
-        /// </summary>
-        Success,
+    /// <summary>
+    /// The authentication operation completed successfully.
+    /// </summary>
+    Success,
 
-        /// <summary>
-        /// There was an error performing the authentication operation.
-        /// </summary>
-        Failure,
+    /// <summary>
+    /// There was an error performing the authentication operation.
+    /// </summary>
+    Failure,
 
-        /// <summary>
-        /// The operation in the current navigation context has completed. This signals that the application running on the
-        /// current browser context is about to be shut down and no other work is required.
-        /// </summary>
-        OperationCompleted,
-    }
+    /// <summary>
+    /// The operation in the current navigation context has completed. This signals that the application running on the
+    /// current browser context is about to be shut down and no other work is required.
+    /// </summary>
+    OperationCompleted,
 }

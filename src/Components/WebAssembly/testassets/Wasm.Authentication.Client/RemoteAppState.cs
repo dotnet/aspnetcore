@@ -7,10 +7,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
-namespace Wasm.Authentication.Client
+namespace Wasm.Authentication.Client;
+
+public class RemoteAppState : RemoteAuthenticationState
 {
-    public class RemoteAppState : RemoteAuthenticationState
-    {
-        public string State { get; set; }
-    }
+    public string State { get; set; }
 }

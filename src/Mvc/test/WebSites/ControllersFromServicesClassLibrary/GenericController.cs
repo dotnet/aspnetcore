@@ -3,14 +3,13 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace ControllersFromServicesClassLibrary
+namespace ControllersFromServicesClassLibrary;
+
+public class GenericController<TController> : Controller
 {
-    public class GenericController<TController> : Controller
+    [HttpGet("/not-discovered/generic")]
+    public IActionResult Index()
     {
-        [HttpGet("/not-discovered/generic")]
-        public IActionResult Index()
-        {
-            return new EmptyResult();
-        }
+        return new EmptyResult();
     }
 }

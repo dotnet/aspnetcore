@@ -6,52 +6,51 @@
 using System;
 using System.Linq.Expressions;
 
-namespace Microsoft.Extensions.Internal
+namespace Microsoft.Extensions.Internal;
+
+internal readonly struct CoercedAwaitableInfo
 {
-    internal readonly struct CoercedAwaitableInfo
+    public AwaitableInfo AwaitableInfo { get; }
+    public Expression CoercerExpression { get; }
+    public Type CoercerResultType { get; }
+    public bool RequiresCoercion => CoercerExpression != null;
+
+    public CoercedAwaitableInfo(AwaitableInfo awaitableInfo)
     {
-        public AwaitableInfo AwaitableInfo { get; }
-        public Expression CoercerExpression { get; }
-        public Type CoercerResultType { get; }
-        public bool RequiresCoercion => CoercerExpression != null;
+        AwaitableInfo = awaitableInfo;
+        CoercerExpression = null;
+        CoercerResultType = null;
+    }
 
-        public CoercedAwaitableInfo(AwaitableInfo awaitableInfo)
+    public CoercedAwaitableInfo(Expression coercerExpression, Type coercerResultType, AwaitableInfo coercedAwaitableInfo)
+    {
+        CoercerExpression = coercerExpression;
+        CoercerResultType = coercerResultType;
+        AwaitableInfo = coercedAwaitableInfo;
+    }
+
+    public static bool IsTypeAwaitable(Type type, out CoercedAwaitableInfo info)
+    {
+        if (AwaitableInfo.IsTypeAwaitable(type, out var directlyAwaitableInfo))
         {
-            AwaitableInfo = awaitableInfo;
-            CoercerExpression = null;
-            CoercerResultType = null;
+            info = new CoercedAwaitableInfo(directlyAwaitableInfo);
+            return true;
         }
 
-        public CoercedAwaitableInfo(Expression coercerExpression, Type coercerResultType, AwaitableInfo coercedAwaitableInfo)
+        // It's not directly awaitable, but maybe we can coerce it.
+        // Currently we support coercing FSharpAsync<T>.
+        if (ObjectMethodExecutorFSharpSupport.TryBuildCoercerFromFSharpAsyncToAwaitable(type,
+            out var coercerExpression,
+            out var coercerResultType))
         {
-            CoercerExpression = coercerExpression;
-            CoercerResultType = coercerResultType;
-            AwaitableInfo = coercedAwaitableInfo;
-        }
-
-        public static bool IsTypeAwaitable(Type type, out CoercedAwaitableInfo info)
-        {
-            if (AwaitableInfo.IsTypeAwaitable(type, out var directlyAwaitableInfo))
+            if (AwaitableInfo.IsTypeAwaitable(coercerResultType, out var coercedAwaitableInfo))
             {
-                info = new CoercedAwaitableInfo(directlyAwaitableInfo);
+                info = new CoercedAwaitableInfo(coercerExpression, coercerResultType, coercedAwaitableInfo);
                 return true;
             }
-
-            // It's not directly awaitable, but maybe we can coerce it.
-            // Currently we support coercing FSharpAsync<T>.
-            if (ObjectMethodExecutorFSharpSupport.TryBuildCoercerFromFSharpAsyncToAwaitable(type,
-                out var coercerExpression,
-                out var coercerResultType))
-            {
-                if (AwaitableInfo.IsTypeAwaitable(coercerResultType, out var coercedAwaitableInfo))
-                {
-                    info = new CoercedAwaitableInfo(coercerExpression, coercerResultType, coercedAwaitableInfo);
-                    return true;
-                }
-            }
-
-            info = default(CoercedAwaitableInfo);
-            return false;
         }
+
+        info = default(CoercedAwaitableInfo);
+        return false;
     }
 }

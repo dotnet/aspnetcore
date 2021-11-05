@@ -4,85 +4,84 @@
 using System;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 
-namespace Microsoft.AspNetCore.Razor.Language.Extensions
+namespace Microsoft.AspNetCore.Razor.Language.Extensions;
+
+internal class MetadataAttributeTargetExtension : IMetadataAttributeTargetExtension
 {
-    internal class MetadataAttributeTargetExtension : IMetadataAttributeTargetExtension
+    public string CompiledItemAttributeName { get; set; } = "global::Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItemAttribute";
+
+    public string SourceChecksumAttributeName { get; set; } = "global::Microsoft.AspNetCore.Razor.Hosting.RazorSourceChecksumAttribute";
+
+    public string CompiledItemMetadataAttributeName { get; set; } = "global::Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItemMetadataAttribute";
+
+
+    public void WriteRazorCompiledItemAttribute(CodeRenderingContext context, RazorCompiledItemAttributeIntermediateNode node)
     {
-        public string CompiledItemAttributeName { get; set; } = "global::Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItemAttribute";
-
-        public string SourceChecksumAttributeName { get; set; } = "global::Microsoft.AspNetCore.Razor.Hosting.RazorSourceChecksumAttribute";
-
-        public string CompiledItemMetadataAttributeName { get; set; } = "global::Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItemMetadataAttribute";
-
-
-        public void WriteRazorCompiledItemAttribute(CodeRenderingContext context, RazorCompiledItemAttributeIntermediateNode node)
+        if (context == null)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (node == null)
-            {
-                throw new ArgumentNullException(nameof(node));
-            }
-
-            // [assembly: global::...RazorCompiledItem(typeof({node.TypeName}), @"{node.Kind}", @"{node.Identifier}")]
-            context.CodeWriter.Write("[assembly: ");
-            context.CodeWriter.Write(CompiledItemAttributeName);
-            context.CodeWriter.Write("(typeof(");
-            context.CodeWriter.Write(node.TypeName);
-            context.CodeWriter.Write("), @\"");
-            context.CodeWriter.Write(node.Kind);
-            context.CodeWriter.Write("\", @\"");
-            context.CodeWriter.Write(node.Identifier);
-            context.CodeWriter.WriteLine("\")]");
+            throw new ArgumentNullException(nameof(context));
         }
 
-        public void WriteRazorCompiledItemMetadataAttribute(CodeRenderingContext context, RazorCompiledItemMetadataAttributeIntermediateNode node)
+        if (node == null)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (node == null)
-            {
-                throw new ArgumentNullException(nameof(node));
-            }
-
-            // [assembly: global::...RazorCompiledItemAttribute(@"{node.Key}", @"{node.Value}")]
-            context.CodeWriter.Write("[");
-            context.CodeWriter.Write(CompiledItemMetadataAttributeName);
-            context.CodeWriter.Write("(");
-            context.CodeWriter.WriteStringLiteral(node.Key);
-            context.CodeWriter.Write(", ");
-            context.CodeWriter.WriteStringLiteral(node.Value);
-            context.CodeWriter.WriteLine(")]");
+            throw new ArgumentNullException(nameof(node));
         }
 
-        public void WriteRazorSourceChecksumAttribute(CodeRenderingContext context, RazorSourceChecksumAttributeIntermediateNode node)
+        // [assembly: global::...RazorCompiledItem(typeof({node.TypeName}), @"{node.Kind}", @"{node.Identifier}")]
+        context.CodeWriter.Write("[assembly: ");
+        context.CodeWriter.Write(CompiledItemAttributeName);
+        context.CodeWriter.Write("(typeof(");
+        context.CodeWriter.Write(node.TypeName);
+        context.CodeWriter.Write("), @\"");
+        context.CodeWriter.Write(node.Kind);
+        context.CodeWriter.Write("\", @\"");
+        context.CodeWriter.Write(node.Identifier);
+        context.CodeWriter.WriteLine("\")]");
+    }
+
+    public void WriteRazorCompiledItemMetadataAttribute(CodeRenderingContext context, RazorCompiledItemMetadataAttributeIntermediateNode node)
+    {
+        if (context == null)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (node == null)
-            {
-                throw new ArgumentNullException(nameof(node));
-            }
-
-            // [global::...RazorSourceChecksum(@"{node.ChecksumAlgorithm}", @"{node.Checksum}", @"{node.Identifier}")]
-            context.CodeWriter.Write("[");
-            context.CodeWriter.Write(SourceChecksumAttributeName);
-            context.CodeWriter.Write("(@\"");
-            context.CodeWriter.Write(node.ChecksumAlgorithm);
-            context.CodeWriter.Write("\", @\"");
-            context.CodeWriter.Write(Checksum.BytesToString(node.Checksum));
-            context.CodeWriter.Write("\", @\"");
-            context.CodeWriter.Write(node.Identifier);
-            context.CodeWriter.WriteLine("\")]");
+            throw new ArgumentNullException(nameof(context));
         }
+
+        if (node == null)
+        {
+            throw new ArgumentNullException(nameof(node));
+        }
+
+        // [assembly: global::...RazorCompiledItemAttribute(@"{node.Key}", @"{node.Value}")]
+        context.CodeWriter.Write("[");
+        context.CodeWriter.Write(CompiledItemMetadataAttributeName);
+        context.CodeWriter.Write("(");
+        context.CodeWriter.WriteStringLiteral(node.Key);
+        context.CodeWriter.Write(", ");
+        context.CodeWriter.WriteStringLiteral(node.Value);
+        context.CodeWriter.WriteLine(")]");
+    }
+
+    public void WriteRazorSourceChecksumAttribute(CodeRenderingContext context, RazorSourceChecksumAttributeIntermediateNode node)
+    {
+        if (context == null)
+        {
+            throw new ArgumentNullException(nameof(context));
+        }
+
+        if (node == null)
+        {
+            throw new ArgumentNullException(nameof(node));
+        }
+
+        // [global::...RazorSourceChecksum(@"{node.ChecksumAlgorithm}", @"{node.Checksum}", @"{node.Identifier}")]
+        context.CodeWriter.Write("[");
+        context.CodeWriter.Write(SourceChecksumAttributeName);
+        context.CodeWriter.Write("(@\"");
+        context.CodeWriter.Write(node.ChecksumAlgorithm);
+        context.CodeWriter.Write("\", @\"");
+        context.CodeWriter.Write(Checksum.BytesToString(node.Checksum));
+        context.CodeWriter.Write("\", @\"");
+        context.CodeWriter.Write(node.Identifier);
+        context.CodeWriter.WriteLine("\")]");
     }
 }

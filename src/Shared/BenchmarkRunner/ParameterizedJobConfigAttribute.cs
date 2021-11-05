@@ -3,13 +3,12 @@
 
 using System;
 
-namespace BenchmarkDotNet.Attributes
+namespace BenchmarkDotNet.Attributes;
+
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Assembly)]
+internal class ParameterizedJobConfigAttribute : AspNetCoreBenchmarkAttribute
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Assembly)]
-    internal class ParameterizedJobConfigAttribute: AspNetCoreBenchmarkAttribute
+    public ParameterizedJobConfigAttribute(Type configType) : base(configType)
     {
-        public ParameterizedJobConfigAttribute(Type configType) : base(configType)
-        {
-        }
     }
 }

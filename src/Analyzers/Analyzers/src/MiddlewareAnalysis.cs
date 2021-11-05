@@ -4,20 +4,19 @@
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.AspNetCore.Analyzers
+namespace Microsoft.AspNetCore.Analyzers;
+
+internal class MiddlewareAnalysis
 {
-    internal class MiddlewareAnalysis
+    public MiddlewareAnalysis(IMethodSymbol configureMethod, ImmutableArray<MiddlewareItem> middleware)
     {
-        public MiddlewareAnalysis(IMethodSymbol configureMethod, ImmutableArray<MiddlewareItem> middleware)
-        {
-            ConfigureMethod = configureMethod;
-            Middleware = middleware;
-        }
-
-        public INamedTypeSymbol StartupType => ConfigureMethod.ContainingType;
-
-        public IMethodSymbol ConfigureMethod { get; }
-
-        public ImmutableArray<MiddlewareItem> Middleware { get; }
+        ConfigureMethod = configureMethod;
+        Middleware = middleware;
     }
+
+    public INamedTypeSymbol StartupType => ConfigureMethod.ContainingType;
+
+    public IMethodSymbol ConfigureMethod { get; }
+
+    public ImmutableArray<MiddlewareItem> Middleware { get; }
 }

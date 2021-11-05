@@ -5,77 +5,76 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+internal class DefaultAllowedChildTagDescriptorBuilder : AllowedChildTagDescriptorBuilder
 {
-    internal class DefaultAllowedChildTagDescriptorBuilder : AllowedChildTagDescriptorBuilder
+    private readonly DefaultTagHelperDescriptorBuilder _parent;
+    private RazorDiagnosticCollection _diagnostics;
+
+    public DefaultAllowedChildTagDescriptorBuilder(DefaultTagHelperDescriptorBuilder parent)
     {
-        private readonly DefaultTagHelperDescriptorBuilder _parent;
-        private RazorDiagnosticCollection _diagnostics;
+        _parent = parent;
+    }
 
-        public DefaultAllowedChildTagDescriptorBuilder(DefaultTagHelperDescriptorBuilder parent)
+    public override string Name { get; set; }
+
+    public override string DisplayName { get; set; }
+
+    public override RazorDiagnosticCollection Diagnostics
+    {
+        get
         {
-            _parent = parent;
+            if (_diagnostics == null)
+            {
+                _diagnostics = new RazorDiagnosticCollection();
+            }
+
+            return _diagnostics;
+        }
+    }
+
+    public AllowedChildTagDescriptor Build()
+    {
+        var diagnostics = Validate();
+        if (_diagnostics != null)
+        {
+            diagnostics ??= new();
+            diagnostics.UnionWith(_diagnostics);
         }
 
-        public override string Name { get; set; }
+        var displayName = DisplayName ?? Name;
+        var descriptor = new DefaultAllowedChildTagDescriptor(
+            Name,
+            displayName,
+            diagnostics?.ToArray() ?? Array.Empty<RazorDiagnostic>());
 
-        public override string DisplayName { get; set; }
+        return descriptor;
+    }
 
-        public override RazorDiagnosticCollection Diagnostics
+    private HashSet<RazorDiagnostic> Validate()
+    {
+        HashSet<RazorDiagnostic> diagnostics = null;
+        if (string.IsNullOrWhiteSpace(Name))
         {
-            get
+            var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidRestrictedChildNullOrWhitespace(_parent.GetDisplayName());
+
+            diagnostics ??= new();
+            diagnostics.Add(diagnostic);
+        }
+        else if (Name != TagHelperMatchingConventions.ElementCatchAllName)
+        {
+            foreach (var character in Name)
             {
-                if (_diagnostics == null)
+                if (char.IsWhiteSpace(character) || HtmlConventions.IsInvalidNonWhitespaceHtmlCharacters(character))
                 {
-                    _diagnostics = new RazorDiagnosticCollection();
-                }
-
-                return _diagnostics;
-            }
-        }
-
-        public AllowedChildTagDescriptor Build()
-        {
-            var diagnostics = Validate();
-            if (_diagnostics != null)
-            {
-                diagnostics ??= new();
-                diagnostics.UnionWith(_diagnostics);
-            }
-
-            var displayName = DisplayName ?? Name;
-            var descriptor = new DefaultAllowedChildTagDescriptor(
-                Name,
-                displayName,
-                diagnostics?.ToArray() ?? Array.Empty<RazorDiagnostic>());
-
-            return descriptor;
-        }
-
-        private HashSet<RazorDiagnostic> Validate()
-        {
-            HashSet<RazorDiagnostic> diagnostics = null;
-            if (string.IsNullOrWhiteSpace(Name))
-            {
-                var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidRestrictedChildNullOrWhitespace(_parent.GetDisplayName());
-
-                diagnostics ??= new();
-                diagnostics.Add(diagnostic);
-            }
-            else if (Name != TagHelperMatchingConventions.ElementCatchAllName)
-            {
-                foreach (var character in Name)
-                {
-                    if (char.IsWhiteSpace(character) || HtmlConventions.IsInvalidNonWhitespaceHtmlCharacters(character))
-                    {
-                        var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidRestrictedChild(_parent.GetDisplayName(), Name, character);
-                        diagnostics ??= new();
-                        diagnostics.Add(diagnostic);
-                    }
+                    var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidRestrictedChild(_parent.GetDisplayName(), Name, character);
+                    diagnostics ??= new();
+                    diagnostics.Add(diagnostic);
                 }
             }
-
-            return diagnostics;
         }
+
+        return diagnostics;
     }
 }

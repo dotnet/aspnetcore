@@ -5,79 +5,78 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Razor.Language.Intermediate
+namespace Microsoft.AspNetCore.Razor.Language.Intermediate;
+
+public static class IntermediateNodeExtensions
 {
-    public static class IntermediateNodeExtensions
+    private static readonly IReadOnlyList<RazorDiagnostic> EmptyDiagnostics = Array.Empty<RazorDiagnostic>();
+
+    public static bool IsImported(this IntermediateNode node)
     {
-        private static readonly IReadOnlyList<RazorDiagnostic> EmptyDiagnostics = Array.Empty<RazorDiagnostic>();
+        return ReferenceEquals(node.Annotations[CommonAnnotations.Imported], CommonAnnotations.Imported);
+    }
 
-        public static bool IsImported(this IntermediateNode node)
+    public static IReadOnlyList<RazorDiagnostic> GetAllDiagnostics(this IntermediateNode node)
+    {
+        if (node == null)
         {
-            return ReferenceEquals(node.Annotations[CommonAnnotations.Imported], CommonAnnotations.Imported);
+            throw new ArgumentNullException(nameof(node));
         }
 
-        public static IReadOnlyList<RazorDiagnostic> GetAllDiagnostics(this IntermediateNode node)
+        HashSet<RazorDiagnostic> diagnostics = null;
+
+        AddAllDiagnostics(node);
+
+        var allOrderedDiagnostics = diagnostics?.OrderBy(diagnostic => diagnostic.Span.AbsoluteIndex);
+
+        return allOrderedDiagnostics?.ToList() ?? EmptyDiagnostics;
+
+        void AddAllDiagnostics(IntermediateNode n)
         {
-            if (node == null)
+            if (n.HasDiagnostics)
             {
-                throw new ArgumentNullException(nameof(node));
+                if (diagnostics == null)
+                {
+                    diagnostics = new HashSet<RazorDiagnostic>();
+                }
+
+                diagnostics.UnionWith(n.Diagnostics);
             }
 
-            HashSet<RazorDiagnostic> diagnostics = null;
-
-            AddAllDiagnostics(node);
-
-            var allOrderedDiagnostics = diagnostics?.OrderBy(diagnostic => diagnostic.Span.AbsoluteIndex);
-
-            return allOrderedDiagnostics?.ToList() ?? EmptyDiagnostics;
-
-            void AddAllDiagnostics(IntermediateNode n)
+            for (var i = 0; i < n.Children.Count; i++)
             {
-                if (n.HasDiagnostics)
-                {
-                    if (diagnostics == null)
-                    {
-                        diagnostics = new HashSet<RazorDiagnostic>();
-                    }
-
-                    diagnostics.UnionWith(n.Diagnostics);
-                }
-
-                for (var i = 0; i < n.Children.Count; i++)
-                {
-                    AddAllDiagnostics(n.Children[i]);
-                }
+                AddAllDiagnostics(n.Children[i]);
             }
         }
+    }
 
-        public static IReadOnlyList<TNode> FindDescendantNodes<TNode>(this IntermediateNode node)
-            where TNode : IntermediateNode
+    public static IReadOnlyList<TNode> FindDescendantNodes<TNode>(this IntermediateNode node)
+        where TNode : IntermediateNode
+    {
+        var visitor = new Visitor<TNode>();
+        visitor.Visit(node);
+
+        if (visitor.Results.Count > 0 && visitor.Results[0] == node)
         {
-            var visitor = new Visitor<TNode>();
-            visitor.Visit(node);
-
-            if (visitor.Results.Count > 0 && visitor.Results[0] == node)
-            {
-                // Don't put the node itself in the results
-                visitor.Results.Remove((TNode)node);
-            }
-
-            return visitor.Results;
+            // Don't put the node itself in the results
+            visitor.Results.Remove((TNode)node);
         }
 
-        private class Visitor<TNode> : IntermediateNodeWalker where TNode : IntermediateNode
+        return visitor.Results;
+    }
+
+    private class Visitor<TNode> : IntermediateNodeWalker where TNode : IntermediateNode
+    {
+        public List<TNode> Results { get; } = new List<TNode>();
+
+        public override void VisitDefault(IntermediateNode node)
         {
-            public List<TNode> Results { get; } = new List<TNode>();
-
-            public override void VisitDefault(IntermediateNode node)
+            if (node is TNode match)
             {
-                if (node is TNode match)
-                {
-                    Results.Add(match);
-                }
-
-                base.VisitDefault(node);
+                Results.Add(match);
             }
+
+            base.VisitDefault(node);
         }
     }
 }

@@ -3,29 +3,28 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Razor.Hosting
+namespace Microsoft.AspNetCore.Razor.Hosting;
+
+/// <summary>
+/// Provides an identifier for a Razor file.
+/// </summary>
+/// <remarks>
+/// This is primarily used to support reloadability during metadata updates and is
+/// only available on .cshtml files.
+/// </remarks>
+public sealed class RazorFileIdentifierAttribute : Attribute
 {
     /// <summary>
-    /// Provides an identifier for a Razor file.
+    /// Initializes a new instance of <see cref="RazorFileIdentifierAttribute"/>.
     /// </summary>
-    /// <remarks>
-    /// This is primarily used to support reloadability during metadata updates and is
-    /// only available on .cshtml files.
-    /// </remarks>
-    public sealed class RazorFileIdentifierAttribute : Attribute
+    /// <param name="identifier">The file identifier.</param>
+    public RazorFileIdentifierAttribute(string identifier)
     {
-        /// <summary>
-        /// Initializes a new instance of <see cref="RazorFileIdentifierAttribute"/>.
-        /// </summary>
-        /// <param name="identifier">The file identifier.</param>
-        public RazorFileIdentifierAttribute(string identifier)
-        {
-            Identifier = identifier;
-        }
-
-        /// <summary>
-        /// Gets the identifier for the file.
-        /// </summary>
-        public string Identifier { get;  }
+        Identifier = identifier;
     }
+
+    /// <summary>
+    /// Gets the identifier for the file.
+    /// </summary>
+    public string Identifier { get; }
 }

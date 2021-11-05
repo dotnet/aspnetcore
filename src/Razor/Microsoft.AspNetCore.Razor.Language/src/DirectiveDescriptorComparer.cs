@@ -6,52 +6,51 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+internal class DirectiveDescriptorComparer : IEqualityComparer<DirectiveDescriptor>
 {
-    internal class DirectiveDescriptorComparer : IEqualityComparer<DirectiveDescriptor>
+    public static readonly DirectiveDescriptorComparer Default = new DirectiveDescriptorComparer();
+
+    protected DirectiveDescriptorComparer()
     {
-        public static readonly DirectiveDescriptorComparer Default = new DirectiveDescriptorComparer();
+    }
 
-        protected DirectiveDescriptorComparer()
+    public bool Equals(DirectiveDescriptor descriptorX, DirectiveDescriptor descriptorY)
+    {
+        if (descriptorX == descriptorY)
         {
+            return true;
         }
 
-        public bool Equals(DirectiveDescriptor descriptorX, DirectiveDescriptor descriptorY)
-        {
-            if (descriptorX == descriptorY)
-            {
-                return true;
-            }
+        return descriptorX != null &&
+            string.Equals(descriptorX.Directive, descriptorY.Directive, StringComparison.Ordinal) &&
+            descriptorX.Kind == descriptorY.Kind &&
+            Enumerable.SequenceEqual(
+                descriptorX.Tokens,
+                descriptorY.Tokens,
+                DirectiveTokenDescriptorComparer.Default);
+    }
 
-            return descriptorX != null &&
-                string.Equals(descriptorX.Directive, descriptorY.Directive, StringComparison.Ordinal) &&
-                descriptorX.Kind == descriptorY.Kind &&
-                Enumerable.SequenceEqual(
-                    descriptorX.Tokens,
-                    descriptorY.Tokens,
-                    DirectiveTokenDescriptorComparer.Default);
+    public int GetHashCode(DirectiveDescriptor descriptor)
+    {
+        if (descriptor == null)
+        {
+            throw new ArgumentNullException(nameof(descriptor));
         }
 
-        public int GetHashCode(DirectiveDescriptor descriptor)
+        var hash = HashCodeCombiner.Start();
+        hash.Add(descriptor.Directive, StringComparer.Ordinal);
+        hash.Add(descriptor.Kind);
+
+        if (descriptor.Tokens != null)
         {
-            if (descriptor == null)
+            for (var i = 0; i < descriptor.Tokens.Count; i++)
             {
-                throw new ArgumentNullException(nameof(descriptor));
+                hash.Add(descriptor.Tokens[i]);
             }
-
-            var hash = HashCodeCombiner.Start();
-            hash.Add(descriptor.Directive, StringComparer.Ordinal);
-            hash.Add(descriptor.Kind);
-
-            if (descriptor.Tokens != null)
-            {
-                for (var i = 0; i < descriptor.Tokens.Count; i++)
-                {
-                    hash.Add(descriptor.Tokens[i]);
-                }
-            }
-
-            return hash.CombinedHash;
         }
+
+        return hash.CombinedHash;
     }
 }

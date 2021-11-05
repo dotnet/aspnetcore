@@ -9,41 +9,40 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 
-namespace LocalizationWebsite
+namespace LocalizationWebsite;
+
+public class StartupContentLanguageHeader
 {
-    public class StartupContentLanguageHeader
+    public void ConfigureServices(IServiceCollection services)
     {
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddLocalization();
-        }
+        services.AddLocalization();
+    }
 
-        public void Configure(
-            IApplicationBuilder app)
+    public void Configure(
+        IApplicationBuilder app)
+    {
+        app.UseRequestLocalization(new RequestLocalizationOptions
         {
-            app.UseRequestLocalization(new RequestLocalizationOptions
-            {
-                DefaultRequestCulture = new RequestCulture("en-US"),
-                SupportedCultures = new List<CultureInfo>()
+            DefaultRequestCulture = new RequestCulture("en-US"),
+            SupportedCultures = new List<CultureInfo>()
                 {
                     new CultureInfo("ar-YE")
                 },
-                SupportedUICultures = new List<CultureInfo>()
+            SupportedUICultures = new List<CultureInfo>()
                 {
                     new CultureInfo("ar-YE")
                 },
-                ApplyCurrentCultureToResponseHeaders = true
-            });
+            ApplyCurrentCultureToResponseHeaders = true
+        });
 
-            app.Run(async (context) =>
-            {
-                var hasContentLanguageHeader = context.Response.Headers.ContainsKey(HeaderNames.ContentLanguage);
-                var contentLanguage = context.Response.Headers.ContentLanguage.ToString();
+        app.Run(async (context) =>
+        {
+            var hasContentLanguageHeader = context.Response.Headers.ContainsKey(HeaderNames.ContentLanguage);
+            var contentLanguage = context.Response.Headers.ContentLanguage.ToString();
 
-                await context.Response.WriteAsync(hasContentLanguageHeader.ToString());
-                await context.Response.WriteAsync(" ");
-                await context.Response.WriteAsync(contentLanguage);
-            });
-        }
+            await context.Response.WriteAsync(hasContentLanguageHeader.ToString());
+            await context.Response.WriteAsync(" ");
+            await context.Response.WriteAsync(contentLanguage);
+        });
     }
 }

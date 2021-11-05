@@ -14,12 +14,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Components.Server
+namespace Microsoft.AspNetCore.Components.Server;
+
+internal interface IServerComponentDeserializer
 {
-    internal interface IServerComponentDeserializer
-    {
-        bool TryDeserializeComponentDescriptorCollection(
-            string serializedComponentRecords,
-            out List<ComponentDescriptor> descriptors);
-    }
+    bool TryDeserializeComponentDescriptorCollection(
+        string serializedComponentRecords,
+        out List<ComponentDescriptor> descriptors);
 }

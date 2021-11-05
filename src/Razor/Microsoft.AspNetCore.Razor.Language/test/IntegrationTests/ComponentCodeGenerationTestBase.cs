@@ -5,32 +5,32 @@ using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Components;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
+namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests;
+
+public abstract class ComponentCodeGenerationTestBase : RazorBaselineIntegrationTestBase
 {
-    public abstract class ComponentCodeGenerationTestBase : RazorBaselineIntegrationTestBase
+    private RazorConfiguration _configuration;
+
+    internal override string FileKind => FileKinds.Component;
+
+    internal override bool UseTwoPhaseCompilation => true;
+
+    internal override RazorConfiguration Configuration => _configuration ?? base.Configuration;
+
+    protected ComponentCodeGenerationTestBase()
+        : base(generateBaselines: null)
     {
-        private RazorConfiguration _configuration;
+    }
 
-        internal override string FileKind => FileKinds.Component;
+    #region Basics
 
-        internal override bool UseTwoPhaseCompilation => true;
+    [Fact]
+    public void SingleLineControlFlowStatements_InCodeDirective()
+    {
+        // Arrange
 
-        internal override RazorConfiguration Configuration => _configuration ?? base.Configuration;
-
-        protected ComponentCodeGenerationTestBase()
-            : base(generateBaselines: null)
-        {
-        }
-
-        #region Basics
-
-        [Fact]
-        public void SingleLineControlFlowStatements_InCodeDirective()
-        {
-            // Arrange
-
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Rendering;
 
 @code {
@@ -43,19 +43,19 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
     }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void SingleLineControlFlowStatements_InCodeBlock()
-        {
-            // Arrange
+    [Fact]
+    public void SingleLineControlFlowStatements_InCodeBlock()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.RenderTree;
 
 @{
@@ -65,16 +65,16 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
     <p>Output: @output</p>
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
-        [Fact]
-        public void ChildComponent_InFunctionsDirective()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
+    [Fact]
+    public void ChildComponent_InFunctionsDirective()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -85,8 +85,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Rendering;
 
 @{ RenderChildComponent(__builder); }
@@ -98,17 +98,17 @@ namespace Test
     }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ChildComponent_InLocalFunction()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_InLocalFunction()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -119,8 +119,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.RenderTree;
 @{
     void RenderChildComponent()
@@ -132,17 +132,17 @@ namespace Test
 @{ RenderChildComponent(); }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ChildComponent_Simple()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_Simple()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -153,21 +153,21 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent />");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ChildComponent_WithParameters()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_WithParameters()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -186,27 +186,27 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent
     IntProperty=""123""
     BoolProperty=""true""
     StringProperty=""My string""
     ObjectProperty=""new SomeType()""/>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ComponentWithTypeParameters()
-        {
-            // Arrange
+    [Fact]
+    public void ComponentWithTypeParameters()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components;
 @typeparam TItem1
 @typeparam TItem2
@@ -224,19 +224,19 @@ namespace Test
     [Parameter] public RenderFragment<TItem2> ChildContent { get; set; }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ComponentWithTypeParameters_WithSemicolon()
-        {
-            // Arrange
+    [Fact]
+    public void ComponentWithTypeParameters_WithSemicolon()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components;
 @typeparam TItem1;
 @typeparam TItem2;
@@ -254,27 +254,27 @@ namespace Test
     [Parameter] public RenderFragment<TItem2> ChildContent { get; set; }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ComponentWithTypeParameterArray()
-        {
-            // Arrange
-            var classes = @"
+    [Fact]
+    public void ComponentWithTypeParameterArray()
+    {
+        // Arrange
+        var classes = @"
 public class Tag
 {
     public string description { get; set; }
 }
 ";
 
-            AdditionalSyntaxTrees.Add(Parse(classes));
+        AdditionalSyntaxTrees.Add(Parse(classes));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components;
 @typeparam TItem
 
@@ -296,13 +296,13 @@ public class Tag
     [Parameter] public RenderFragment<TItem[]> ChildContent { get; set; }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
 
-            AdditionalSyntaxTrees.Add(Parse(generated.CodeDocument.GetCSharpDocument().GeneratedCode));
-            var useGenerated = CompileToCSharp("UseTestComponent.cshtml", @"
+        AdditionalSyntaxTrees.Add(Parse(generated.CodeDocument.GetCSharpDocument().GeneratedCode));
+        var useGenerated = CompileToCSharp("UseTestComponent.cshtml", @"
 @using Test
 <TestComponent Items1=items1 Items2=items2 Items3=items3>
     <p>@context[0].description</p>
@@ -314,26 +314,26 @@ public class Tag
     List<Tag[]> items2 = new List<Tag[]>() { new [] { tag } };
     Tag[] items3() => new [] { tag };
 }");
-            AssertDocumentNodeMatchesBaseline(useGenerated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(useGenerated.CodeDocument);
-            CompileToAssembly(useGenerated);
-        }
+        AssertDocumentNodeMatchesBaseline(useGenerated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(useGenerated.CodeDocument);
+        CompileToAssembly(useGenerated);
+    }
 
-        [Fact]
-        public void ComponentWithTypeParameterValueTuple()
-        {
-            // Arrange
-            var classes = @"
+    [Fact]
+    public void ComponentWithTypeParameterValueTuple()
+    {
+        // Arrange
+        var classes = @"
 public class Tag
 {
     public string description { get; set; }
 }
 ";
 
-            AdditionalSyntaxTrees.Add(Parse(classes));
+        AdditionalSyntaxTrees.Add(Parse(classes));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components;
 @typeparam TItem1
 @typeparam TItem2
@@ -353,13 +353,13 @@ public class Tag
     [Parameter] public RenderFragment<(TItem1, TItem2)> ChildContent { get; set; }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
 
-            AdditionalSyntaxTrees.Add(Parse(generated.CodeDocument.GetCSharpDocument().GeneratedCode));
-            var useGenerated = CompileToCSharp("UseTestComponent.cshtml", @"
+        AdditionalSyntaxTrees.Add(Parse(generated.CodeDocument.GetCSharpDocument().GeneratedCode));
+        var useGenerated = CompileToCSharp("UseTestComponent.cshtml", @"
 @using Test
 <TestComponent Item1=item1 Items2=items2>
     <p>@context</p>
@@ -370,16 +370,16 @@ public class Tag
     static (string, int) item2 = (""Another string"", 42);
     List<(string, int)> items2 = new List<(string, int)>() { item2 };
 }");
-            AssertDocumentNodeMatchesBaseline(useGenerated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(useGenerated.CodeDocument);
-            CompileToAssembly(useGenerated);
-        }
+        AssertDocumentNodeMatchesBaseline(useGenerated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(useGenerated.CodeDocument);
+        CompileToAssembly(useGenerated);
+    }
 
-        [Fact]
-        public void ComponentWithConstrainedTypeParameters()
-        {
-            // Arrange
-            var classes = @"
+    [Fact]
+    public void ComponentWithConstrainedTypeParameters()
+    {
+        // Arrange
+        var classes = @"
 public class Image
 {
     public string url { get; set; }
@@ -403,10 +403,10 @@ public class Tag : ITag
 }
 ";
 
-            AdditionalSyntaxTrees.Add(Parse(classes));
+        AdditionalSyntaxTrees.Add(Parse(classes));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components;
 @typeparam TItem1 where TItem1 : Image
 @typeparam TItem2 where TItem2 : ITag
@@ -429,13 +429,13 @@ public class Tag : ITag
     [Parameter] public RenderFragment<TItem2> ChildContent { get; set; }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
 
-            AdditionalSyntaxTrees.Add(Parse(generated.CodeDocument.GetCSharpDocument().GeneratedCode));
-            var useGenerated = CompileToCSharp("UseTestComponent.cshtml", @"
+        AdditionalSyntaxTrees.Add(Parse(generated.CodeDocument.GetCSharpDocument().GeneratedCode));
+        var useGenerated = CompileToCSharp("UseTestComponent.cshtml", @"
 @using Test
 <TestComponent Item1=@item1 Items2=@items Item3=@item1>
     <p>@context</p>
@@ -447,16 +447,16 @@ public class Tag : ITag
     static Tag tag2 = new Tag() { description = ""Another description.""};
     List<Tag> items = new List<Tag>() { tag1, tag2 };
 }");
-            AssertDocumentNodeMatchesBaseline(useGenerated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(useGenerated.CodeDocument);
-            CompileToAssembly(useGenerated);
-        }
+        AssertDocumentNodeMatchesBaseline(useGenerated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(useGenerated.CodeDocument);
+        CompileToAssembly(useGenerated);
+    }
 
-        [Fact]
-        public void ComponentWithConstrainedTypeParameters_WithSemicolon()
-        {
-            // Arrange
-            var classes = @"
+    [Fact]
+    public void ComponentWithConstrainedTypeParameters_WithSemicolon()
+    {
+        // Arrange
+        var classes = @"
 public class Image
 {
     public string url { get; set; }
@@ -480,10 +480,10 @@ public class Tag : ITag
 }
 ";
 
-            AdditionalSyntaxTrees.Add(Parse(classes));
+        AdditionalSyntaxTrees.Add(Parse(classes));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components;
 @typeparam TItem1 where TItem1 : Image;
 @typeparam TItem2 where TItem2 : ITag;
@@ -506,13 +506,13 @@ public class Tag : ITag
     [Parameter] public RenderFragment<TItem2> ChildContent { get; set; }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
 
-            AdditionalSyntaxTrees.Add(Parse(generated.CodeDocument.GetCSharpDocument().GeneratedCode));
-            var useGenerated = CompileToCSharp("UseTestComponent.cshtml", @"
+        AdditionalSyntaxTrees.Add(Parse(generated.CodeDocument.GetCSharpDocument().GeneratedCode));
+        var useGenerated = CompileToCSharp("UseTestComponent.cshtml", @"
 @using Test
 <TestComponent Item1=@item1 Items2=@items Item3=@item1>
     <p>@context</p>
@@ -524,16 +524,16 @@ public class Tag : ITag
     static Tag tag2 = new Tag() { description = ""Another description.""};
     List<Tag> items = new List<Tag>() { tag1, tag2 };
 }");
-            AssertDocumentNodeMatchesBaseline(useGenerated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(useGenerated.CodeDocument);
-            CompileToAssembly(useGenerated);
-        }
+        AssertDocumentNodeMatchesBaseline(useGenerated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(useGenerated.CodeDocument);
+        CompileToAssembly(useGenerated);
+    }
 
-        [Fact]
-        public void ChildComponent_WithExplicitStringParameter()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_WithExplicitStringParameter()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -546,21 +546,21 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent StringProperty=""@(42.ToString())"" />");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ChildComponent_WithNonPropertyAttributes()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_WithNonPropertyAttributes()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -571,21 +571,21 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent some-attribute=""foo"" another-attribute=""@(43.ToString())""/>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ComponentParameter_TypeMismatch_ReportsDiagnostic()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ComponentParameter_TypeMismatch_ReportsDiagnostic()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -597,113 +597,113 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <CoolnessMeter Coolness=""@(""very-cool"")"" />
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
 
-            var assembly = CompileToAssembly(generated, throwOnFailure: false);
-            // This has some errors
-            Assert.Collection(
-                assembly.Diagnostics.OrderBy(d => d.Id),
-                d => Assert.Equal("CS1503", d.Id));
-        }
+        var assembly = CompileToAssembly(generated, throwOnFailure: false);
+        // This has some errors
+        Assert.Collection(
+            assembly.Diagnostics.OrderBy(d => d.Id),
+            d => Assert.Equal("CS1503", d.Id));
+    }
 
-        [Fact]
-        public void DataDashAttribute_ImplicitExpression()
-        {
-            // Arrange
+    [Fact]
+    public void DataDashAttribute_ImplicitExpression()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @{
   var myValue = ""Expression value"";
 }
 <elem data-abc=""Literal value"" data-def=""@myValue"" />");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void DataDashAttribute_ExplicitExpression()
-        {
-            // Arrange
+    [Fact]
+    public void DataDashAttribute_ExplicitExpression()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @{
   var myValue = ""Expression value"";
 }
 <elem data-abc=""Literal value"" data-def=""@(myValue)"" />");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void MarkupComment_IsNotIncluded()
-        {
-            // Arrange
+    [Fact]
+    public void MarkupComment_IsNotIncluded()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @{
   var myValue = ""Expression value"";
 }
 <div>@myValue <!-- @myValue --> </div>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void OmitsMinimizedAttributeValueParameter()
-        {
-            // Act
-            var generated = CompileToCSharp(@"
+    [Fact]
+    public void OmitsMinimizedAttributeValueParameter()
+    {
+        // Act
+        var generated = CompileToCSharp(@"
 <elem normal-attr=""@(""val"")"" minimized-attr empty-string-atttr=""""></elem>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void IncludesMinimizedAttributeValueParameterBeforeLanguageVersion5()
-        {
-            // Arrange
-            _configuration = RazorConfiguration.Create(
-                RazorLanguageVersion.Version_3_0,
-                base.Configuration.ConfigurationName,
-                base.Configuration.Extensions);
+    [Fact]
+    public void IncludesMinimizedAttributeValueParameterBeforeLanguageVersion5()
+    {
+        // Arrange
+        _configuration = RazorConfiguration.Create(
+            RazorLanguageVersion.Version_3_0,
+            base.Configuration.ConfigurationName,
+            base.Configuration.Extensions);
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <elem normal-attr=""@(""val"")"" minimized-attr empty-string-atttr=""""></elem>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Component_WithFullyQualifiedTagNames()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Component_WithFullyQualifiedTagNames()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -721,22 +721,22 @@ namespace Test2
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent />
 <Test.MyComponent />
 <Test2.MyComponent2 />");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Component_WithNullableActionParameter()
-        {
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Component_WithNullableActionParameter()
+    {
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 namespace Test
@@ -747,22 +747,22 @@ namespace Test
     }
 } 
 "));
-            var generated = CompileToCSharp(@"
+        var generated = CompileToCSharp(@"
 <ComponentWithNullableAction NullableAction=""@NullableAction"" />
 @code {
 	[Parameter]
 	public Action NullableAction { get; set; }
 }            
 ");
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Component_WithNullableRenderFragmentParameter()
-        {
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Component_WithNullableRenderFragmentParameter()
+    {
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 namespace Test
@@ -773,21 +773,21 @@ namespace Test
     }
 } 
 "));
-            var generated = CompileToCSharp(@"
+        var generated = CompileToCSharp(@"
 <ComponentWithNullableRenderFragment Header=""@Header"" />
 @code {
 	[Parameter] public RenderFragment Header { get; set; }
 }            
 ");
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Component_WithEditorRequiredParameter_NoValueSpecified()
-        {
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Component_WithEditorRequiredParameter_NoValueSpecified()
+    {
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 namespace Test
@@ -800,22 +800,22 @@ namespace Test
     }
 }
 "));
-            var generated = CompileToCSharp(@"
+        var generated = CompileToCSharp(@"
 <ComponentWithEditorRequiredParameters />
 ");
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated, throwOnFailure: false);
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated, throwOnFailure: false);
 
-            var diagnostics = Assert.Single(generated.Diagnostics);
-            Assert.Equal(RazorDiagnosticSeverity.Warning, diagnostics.Severity);
-            Assert.Equal("RZ2012", diagnostics.Id);
-        }
+        var diagnostics = Assert.Single(generated.Diagnostics);
+        Assert.Equal(RazorDiagnosticSeverity.Warning, diagnostics.Severity);
+        Assert.Equal("RZ2012", diagnostics.Id);
+    }
 
-        [Fact]
-        public void Component_WithEditorRequiredParameter_ValueSpecified()
-        {
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Component_WithEditorRequiredParameter_ValueSpecified()
+    {
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 namespace Test
@@ -828,20 +828,20 @@ namespace Test
     }
 }
 "));
-            var generated = CompileToCSharp(@"
+        var generated = CompileToCSharp(@"
 <ComponentWithEditorRequiredParameters Property1=""Some Value"" />
 ");
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
 
-            Assert.Empty(generated.Diagnostics);
-        }
+        Assert.Empty(generated.Diagnostics);
+    }
 
-        [Fact]
-        public void Component_WithEditorRequiredParameter_ValuesSpecifiedUsingSplatting()
-        {
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Component_WithEditorRequiredParameter_ValuesSpecifiedUsingSplatting()
+    {
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 namespace Test
@@ -854,20 +854,20 @@ namespace Test
     }
 }
 "));
-            var generated = CompileToCSharp(@"
+        var generated = CompileToCSharp(@"
 <ComponentWithEditorRequiredParameters @attributes=""@(new Dictionary<string, object>())"" />
 ");
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
 
-            Assert.Empty(generated.Diagnostics);
-        }
+        Assert.Empty(generated.Diagnostics);
+    }
 
-        [Fact]
-        public void Component_WithEditorRequiredChildContent_NoValueSpecified()
-        {
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Component_WithEditorRequiredChildContent_NoValueSpecified()
+    {
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 namespace Test
@@ -880,22 +880,22 @@ namespace Test
     }
 }
 "));
-            var generated = CompileToCSharp(@"
+        var generated = CompileToCSharp(@"
 <ComponentWithEditorRequiredChildContent />
 ");
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated, throwOnFailure: false);
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated, throwOnFailure: false);
 
-            var diagnostics = Assert.Single(generated.Diagnostics);
-            Assert.Equal(RazorDiagnosticSeverity.Warning, diagnostics.Severity);
-            Assert.Equal("RZ2012", diagnostics.Id);
-        }
+        var diagnostics = Assert.Single(generated.Diagnostics);
+        Assert.Equal(RazorDiagnosticSeverity.Warning, diagnostics.Severity);
+        Assert.Equal("RZ2012", diagnostics.Id);
+    }
 
-        [Fact]
-        public void Component_WithEditorRequiredChildContent_ValueSpecified_WithoutName()
-        {
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Component_WithEditorRequiredChildContent_ValueSpecified_WithoutName()
+    {
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 namespace Test
@@ -908,23 +908,23 @@ namespace Test
     }
 }
 "));
-            var generated = CompileToCSharp(@"
+        var generated = CompileToCSharp(@"
 <ComponentWithEditorRequiredChildContent>
     <h1>Hello World</h1>
 </ComponentWithEditorRequiredChildContent>
 
 ");
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
 
-            Assert.Empty(generated.Diagnostics);
-        }
+        Assert.Empty(generated.Diagnostics);
+    }
 
-        [Fact]
-        public void Component_WithEditorRequiredChildContent_ValueSpecifiedAsText_WithoutName()
-        {
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Component_WithEditorRequiredChildContent_ValueSpecifiedAsText_WithoutName()
+    {
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 namespace Test
@@ -937,21 +937,21 @@ namespace Test
     }
 }
 "));
-            var generated = CompileToCSharp(@"
+        var generated = CompileToCSharp(@"
 <ComponentWithEditorRequiredChildContent>This is some text</ComponentWithEditorRequiredChildContent>
 
 ");
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
 
-            Assert.Empty(generated.Diagnostics);
-        }
+        Assert.Empty(generated.Diagnostics);
+    }
 
-        [Fact]
-        public void Component_WithEditorRequiredChildContent_ValueSpecified()
-        {
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Component_WithEditorRequiredChildContent_ValueSpecified()
+    {
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 namespace Test
@@ -964,7 +964,7 @@ namespace Test
     }
 }
 "));
-            var generated = CompileToCSharp(@"
+        var generated = CompileToCSharp(@"
 <ComponentWithEditorRequiredChildContent>
     <ChildContent>
         <h1>Hello World</h1>
@@ -972,17 +972,17 @@ namespace Test
 </ComponentWithEditorRequiredChildContent>
 
 ");
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
 
-            Assert.Empty(generated.Diagnostics);
-        }
+        Assert.Empty(generated.Diagnostics);
+    }
 
-        [Fact]
-        public void Component_WithEditorRequiredNamedChildContent_NoValueSpecified()
-        {
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Component_WithEditorRequiredNamedChildContent_NoValueSpecified()
+    {
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 namespace Test
@@ -998,24 +998,24 @@ namespace Test
     }
 }
 "));
-            var generated = CompileToCSharp(@"
+        var generated = CompileToCSharp(@"
 <ComponentWithEditorRequiredChildContent>
 </ComponentWithEditorRequiredChildContent>
 
 ");
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated, throwOnFailure: false);
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated, throwOnFailure: false);
 
-            var diagnostics = Assert.Single(generated.Diagnostics);
-            Assert.Equal(RazorDiagnosticSeverity.Warning, diagnostics.Severity);
-            Assert.Equal("RZ2012", diagnostics.Id);
-        }
+        var diagnostics = Assert.Single(generated.Diagnostics);
+        Assert.Equal(RazorDiagnosticSeverity.Warning, diagnostics.Severity);
+        Assert.Equal("RZ2012", diagnostics.Id);
+    }
 
-        [Fact]
-        public void Component_WithEditorRequiredNamedChildContent_ValueSpecified()
-        {
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Component_WithEditorRequiredNamedChildContent_ValueSpecified()
+    {
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 namespace Test
@@ -1031,27 +1031,27 @@ namespace Test
     }
 }
 "));
-            var generated = CompileToCSharp(@"
+        var generated = CompileToCSharp(@"
 <ComponentWithEditorRequiredChildContent>
     <Found><h1>Here's Johnny!</h1></Found>
 </ComponentWithEditorRequiredChildContent>
 
 ");
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
 
-            Assert.Empty(generated.Diagnostics);
-        }
-        #endregion
+        Assert.Empty(generated.Diagnostics);
+    }
+    #endregion
 
-        #region Bind
+    #region Bind
 
-        [Fact]
-        public void BindToComponent_SpecifiesValue_WithMatchingProperties()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BindToComponent_SpecifiesValue_WithMatchingProperties()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -1067,24 +1067,24 @@ namespace Test
     }
 }"));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent @bind-Value=""ParentValue"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BindToComponent_WithStringAttribute_DoesNotUseStringSyntax()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BindToComponent_WithStringAttribute_DoesNotUseStringSyntax()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -1100,7 +1100,7 @@ namespace Test
     }
 }"));
 
-            AdditionalSyntaxTrees.Add(Parse(@"
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 
 namespace Test
@@ -1112,8 +1112,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <InputText @bind-Value=""person.Name"" />
 
 @functions
@@ -1121,17 +1121,17 @@ namespace Test
     Person person = new Person();
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BindToComponent_TypeChecked_WithMatchingProperties()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BindToComponent_TypeChecked_WithMatchingProperties()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -1147,30 +1147,30 @@ namespace Test
     }
 }"));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent @bind-Value=""ParentValue"" />
 @code {
     public string ParentValue { get; set; } = ""42"";
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
 
-            var assembly = CompileToAssembly(generated, throwOnFailure: false);
-            // This has some errors
-            Assert.Collection(
-                assembly.Diagnostics.OrderBy(d => d.Id),
-                d => Assert.Equal("CS0029", d.Id),
-                d => Assert.Equal("CS1503", d.Id));
-        }
+        var assembly = CompileToAssembly(generated, throwOnFailure: false);
+        // This has some errors
+        Assert.Collection(
+            assembly.Diagnostics.OrderBy(d => d.Id),
+            d => Assert.Equal("CS0029", d.Id),
+            d => Assert.Equal("CS1503", d.Id));
+    }
 
-        [Fact]
-        public void BindToComponent_EventCallback_SpecifiesValue_WithMatchingProperties()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BindToComponent_EventCallback_SpecifiesValue_WithMatchingProperties()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -1186,24 +1186,24 @@ namespace Test
     }
 }"));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent @bind-Value=""ParentValue"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BindToComponent_EventCallback_TypeChecked_WithMatchingProperties()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BindToComponent_EventCallback_TypeChecked_WithMatchingProperties()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -1219,30 +1219,30 @@ namespace Test
     }
 }"));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent @bind-Value=""ParentValue"" />
 @code {
     public string ParentValue { get; set; } = ""42"";
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
 
-            var assembly = CompileToAssembly(generated, throwOnFailure: false);
-            // This has some errors
-            Assert.Collection(
-                assembly.Diagnostics.OrderBy(d => d.Id),
-                d => Assert.Equal("CS1503", d.Id),
-                d => Assert.Equal("CS1503", d.Id));
-        }
+        var assembly = CompileToAssembly(generated, throwOnFailure: false);
+        // This has some errors
+        Assert.Collection(
+            assembly.Diagnostics.OrderBy(d => d.Id),
+            d => Assert.Equal("CS1503", d.Id),
+            d => Assert.Equal("CS1503", d.Id));
+    }
 
-        [Fact]
-        public void BindToComponent_SpecifiesValue_WithoutMatchingProperties()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BindToComponent_SpecifiesValue_WithoutMatchingProperties()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -1253,24 +1253,24 @@ namespace Test
     }
 }"));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent @bind-Value=""ParentValue"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BindToComponent_SpecifiesValueAndChangeEvent_WithMatchingProperties()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BindToComponent_SpecifiesValueAndChangeEvent_WithMatchingProperties()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -1285,24 +1285,24 @@ namespace Test
         public Action<int> OnChanged { get; set; }
     }
 }"));
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent @bind-Value=""ParentValue"" @bind-Value:event=""OnChanged"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BindToComponent_SpecifiesValueAndChangeEvent_WithoutMatchingProperties()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BindToComponent_SpecifiesValueAndChangeEvent_WithoutMatchingProperties()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -1313,23 +1313,23 @@ namespace Test
     }
 }"));
 
-            var generated = CompileToCSharp(@"
+        var generated = CompileToCSharp(@"
 <MyComponent @bind-Value=""ParentValue"" @bind-Value:event=""OnChanged"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BindToComponent_SpecifiesValueAndExpression()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BindToComponent_SpecifiesValueAndExpression()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
@@ -1349,24 +1349,24 @@ namespace Test
     }
 }"));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent @bind-Value=""ParentValue"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BindToComponent_EventCallback_SpecifiesValueAndExpression()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BindToComponent_EventCallback_SpecifiesValueAndExpression()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
@@ -1386,24 +1386,24 @@ namespace Test
     }
 }"));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent @bind-Value=""ParentValue"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BindToComponent_SpecifiesValueAndExpression_TypeChecked()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BindToComponent_SpecifiesValueAndExpression_TypeChecked()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
@@ -1423,26 +1423,26 @@ namespace Test
     }
 }"));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent @bind-Value=""ParentValue"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
 
-            var assembly = CompileToAssembly(generated, throwOnFailure: false);
-            // This has some errors
-            Assert.Collection(
-                assembly.Diagnostics.OrderBy(d => d.Id),
-                d => Assert.Equal("CS0029", d.Id),
-                d => Assert.Equal("CS1662", d.Id));
-        }
+        var assembly = CompileToAssembly(generated, throwOnFailure: false);
+        // This has some errors
+        Assert.Collection(
+            assembly.Diagnostics.OrderBy(d => d.Id),
+            d => Assert.Equal("CS0029", d.Id),
+            d => Assert.Equal("CS1662", d.Id));
+    }
 
-        [Fact]
-        public void BindToComponent_SpecifiesValueAndExpression_Generic()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BindToComponent_SpecifiesValueAndExpression_Generic()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
@@ -1462,24 +1462,24 @@ namespace Test
     }
 }"));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent @bind-SomeParam=""ParentValue"" />
 @code {
     public DateTime ParentValue { get; set; } = DateTime.Now;
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BindToComponent_EventCallback_SpecifiesValueAndExpression_Generic()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BindToComponent_EventCallback_SpecifiesValueAndExpression_Generic()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
@@ -1499,24 +1499,24 @@ namespace Test
     }
 }"));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent @bind-SomeParam=""ParentValue"" />
 @code {
     public DateTime ParentValue { get; set; } = DateTime.Now;
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BindToElement_WritesAttributes()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BindToElement_WritesAttributes()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -1528,24 +1528,24 @@ namespace Test
     }
 }"));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <div @bind=""@ParentValue"" />
 @code {
     public string ParentValue { get; set; } = ""hi"";
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BindToElement_WithoutCloseTag()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BindToElement_WithoutCloseTag()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -1557,8 +1557,8 @@ namespace Test
     }
 }"));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <div>
   <input @bind=""@ParentValue"">
 </div>
@@ -1566,17 +1566,17 @@ namespace Test
     public string ParentValue { get; set; } = ""hi"";
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BindToElement_WithStringAttribute_WritesAttributes()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BindToElement_WithStringAttribute_WritesAttributes()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -1587,24 +1587,24 @@ namespace Test
     {
     }
 }"));
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <div @bind-value=""ParentValue"" />
 @code {
     public string ParentValue { get; set; } = ""hi"";
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BindToElementWithSuffix_WritesAttributes()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BindToElementWithSuffix_WritesAttributes()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -1615,24 +1615,24 @@ namespace Test
     {
     }
 }"));
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <div @bind-value=""@ParentValue"" />
 @code {
     public string ParentValue { get; set; } = ""hi"";
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BindToElementWithSuffix_OverridesEvent()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BindToElementWithSuffix_OverridesEvent()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -1643,24 +1643,24 @@ namespace Test
     {
     }
 }"));
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <div @bind-value=""@ParentValue"" @bind-value:event=""anotherevent"" />
 @code {
     public string ParentValue { get; set; } = ""hi"";
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BindToElement_WithEventAsExpression()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BindToElement_WithEventAsExpression()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -1671,25 +1671,25 @@ namespace Test
     {
     }
 }"));
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @{ var x = ""anotherevent""; }
 <div @bind-value=""@ParentValue"" @bind-value:event=""@x"" />
 @code {
     public string ParentValue { get; set; } = ""hi"";
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BindToElement_WithEventAsExplicitExpression()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BindToElement_WithEventAsExplicitExpression()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -1700,81 +1700,81 @@ namespace Test
     {
     }
 }"));
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @{ var x = ""anotherevent""; }
 <div @bind-value=""@ParentValue"" @bind-value:event=""@(x.ToString())"" />
 @code {
     public string ParentValue { get; set; } = ""hi"";
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BuiltIn_BindToInputWithoutType_WritesAttributes()
-        {
-            // Arrange
+    [Fact]
+    public void BuiltIn_BindToInputWithoutType_WritesAttributes()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <input @bind=""@ParentValue"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BuiltIn_BindToInputWithoutType_IsCaseSensitive()
-        {
-            // Arrange
+    [Fact]
+    public void BuiltIn_BindToInputWithoutType_IsCaseSensitive()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <input @BIND=""@ParentValue"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BuiltIn_BindToInputText_WithFormat_WritesAttributes()
-        {
-            // Arrange
+    [Fact]
+    public void BuiltIn_BindToInputText_WithFormat_WritesAttributes()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <input type=""text"" @bind=""@CurrentDate"" @bind:format=""MM/dd/yyyy""/>
 @code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BuiltIn_BindToInputText_WithFormatFromProperty_WritesAttributes()
-        {
-            // Arrange
+    [Fact]
+    public void BuiltIn_BindToInputText_WithFormatFromProperty_WritesAttributes()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <input type=""text"" @bind=""@CurrentDate"" @bind:format=""@Format""/>
 @code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
@@ -1782,108 +1782,108 @@ namespace Test
     public string Format { get; set; } = ""MM/dd/yyyy"";
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BuiltIn_BindToInputText_WritesAttributes()
-        {
-            // Arrange
+    [Fact]
+    public void BuiltIn_BindToInputText_WritesAttributes()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <input type=""text"" @bind=""@ParentValue"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BuiltIn_BindToInputCheckbox_WritesAttributes()
-        {
-            // Arrange
+    [Fact]
+    public void BuiltIn_BindToInputCheckbox_WritesAttributes()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <input type=""checkbox"" @bind=""@Enabled"" />
 @code {
     public bool Enabled { get; set; }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BindToElementFallback_WritesAttributes()
-        {
-            // Arrange
+    [Fact]
+    public void BindToElementFallback_WritesAttributes()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <input type=""text"" @bind-value=""@ParentValue"" @bind-value:event=""onchange"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BindToElementFallback_WithFormat_WritesAttributes()
-        {
-            // Arrange
+    [Fact]
+    public void BindToElementFallback_WithFormat_WritesAttributes()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <input type=""text"" @bind-value=""@CurrentDate"" @bind-value:event=""onchange"" @bind-value:format=""MM/dd"" />
 @code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BindToElementFallback_WithCulture()
-        {
-            // Arrange
+    [Fact]
+    public void BindToElementFallback_WithCulture()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using System.Globalization
 <div @bind-value=""@ParentValue"" @bind-value:event=""onchange"" @bind-value:culture=""CultureInfo.InvariantCulture"" />
 @code {
     public string ParentValue { get; set; } = ""hi"";
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BindToElementWithCulture()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BindToElementWithCulture()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -1894,25 +1894,25 @@ namespace Test
     {
     }
 }"));
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using System.Globalization
 <div @bind-value=""@ParentValue"" @bind-value:event=""anotherevent"" @bind-value:culture=""CultureInfo.InvariantCulture"" />
 @code {
     public string ParentValue { get; set; } = ""hi"";
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BindToInputElementWithDefaultCulture()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BindToInputElementWithDefaultCulture()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -1924,25 +1924,25 @@ namespace Test
     {
     }
 }"));
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using System.Globalization
 <input type=""custom"" @bind-value=""@ParentValue"" @bind-value:event=""anotherevent"" />
 @code {
     public int ParentValue { get; set; }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BindToInputElementWithDefaultCulture_Override()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BindToInputElementWithDefaultCulture_Override()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -1954,82 +1954,82 @@ namespace Test
     {
     }
 }"));
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using System.Globalization
 <input type=""custom"" @bind-value=""@ParentValue"" @bind-value:event=""anotherevent"" @bind-value:culture=""CultureInfo.CurrentCulture"" />
 @code {
     public int ParentValue { get; set; }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
 
-        [Fact]
-        public void BuiltIn_BindToInputText_CanOverrideEvent()
-        {
-            // Arrange
+    [Fact]
+    public void BuiltIn_BindToInputText_CanOverrideEvent()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
 <input @bind=""@CurrentDate"" @bind:event=""oninput"" @bind:format=""MM/dd"" />
 @code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BuiltIn_BindToInputWithSuffix()
-        {
-            // Arrange
+    [Fact]
+    public void BuiltIn_BindToInputWithSuffix()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
 <input @bind-value=""@CurrentDate"" @bind-value:format=""MM/dd"" />
 @code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BuiltIn_BindToInputWithSuffix_CanOverrideEvent()
-        {
-            // Arrange
+    [Fact]
+    public void BuiltIn_BindToInputWithSuffix_CanOverrideEvent()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <input @bind-value=""@CurrentDate"" @bind-value:event=""oninput"" @bind-value:format=""MM/dd"" />
 @code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BuiltIn_BindToInputWithDefaultFormat()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BuiltIn_BindToInputWithDefaultFormat()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -2041,24 +2041,24 @@ namespace Test
     }
 }"));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <input type=""custom"" @bind=""@CurrentDate"" />
 @code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BuiltIn_BindToInputWithDefaultFormat_Override()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BuiltIn_BindToInputWithDefaultFormat_Override()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -2070,24 +2070,24 @@ namespace Test
     }
 }"));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <input type=""custom"" @bind=""@CurrentDate"" @bind:format=""MM/dd/yyyy""/>
 @code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BuiltIn_BindToInputWithDefaultCultureAndDefaultFormat_Override()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BuiltIn_BindToInputWithDefaultCultureAndDefaultFormat_Override()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -2099,28 +2099,28 @@ namespace Test
     }
 }"));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <input type=""custom"" @bind=""@CurrentDate"" @bind:format=""MM/dd/yyyy""/>
 @code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        #endregion
+    #endregion
 
-        #region Child Content
+    #region Child Content
 
-        [Fact]
-        public void ChildComponent_WithChildContent()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_WithChildContent()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -2136,21 +2136,21 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent MyAttr=""abc"">Some text<some-child a='1'>Nested text</some-child></MyComponent>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ChildComponent_WithGenericChildContent()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_WithGenericChildContent()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -2166,22 +2166,22 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent MyAttr=""abc"">Some text<some-child a='1'>@context.ToLowerInvariant()</some-child></MyComponent>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
 
-        [Fact]
-        public void ChildComponent_WithGenericChildContent_SetsParameterName()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_WithGenericChildContent_SetsParameterName()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -2197,25 +2197,25 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent MyAttr=""abc"">
   <ChildContent Context=""item"">
     Some text<some-child a='1'>@item.ToLowerInvariant()</some-child>
   </ChildContent>
 </MyComponent>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ChildComponent_WithGenericChildContent_SetsParameterNameOnComponent()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_WithGenericChildContent_SetsParameterNameOnComponent()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -2231,25 +2231,25 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent MyAttr=""abc"" Context=""item"">
   <ChildContent>
     Some text<some-child a='1'>@item.ToLowerInvariant()</some-child>
   </ChildContent>
 </MyComponent>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ChildComponent_WithElementOnlyChildContent()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_WithElementOnlyChildContent()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -2262,21 +2262,21 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent><child>hello</child></MyComponent>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ChildComponent_WithExplicitChildContent()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_WithExplicitChildContent()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -2289,21 +2289,21 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent><ChildContent>hello</ChildContent></MyComponent>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ChildComponent_WithExplicitGenericChildContent()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_WithExplicitGenericChildContent()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -2316,21 +2316,21 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent><ChildContent>@context</ChildContent></MyComponent>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void MultipleExplictChildContent()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void MultipleExplictChildContent()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -2346,24 +2346,24 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent>
     <Header>Hi!</Header>
     <Footer>@(""bye!"")</Footer>
 </MyComponent>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BodyAndAttributeChildContent()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BodyAndAttributeChildContent()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -2382,24 +2382,24 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @{ RenderFragment<string> header = (context) => @<div>@context.ToLowerInvariant()</div>; }
 <MyComponent Header=@header>
     Some Content
 </MyComponent>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void BodyAndExplicitChildContent()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void BodyAndExplicitChildContent()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -2418,25 +2418,25 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @{ RenderFragment<string> header = (context) => @<div>@context.ToLowerInvariant()</div>; }
 <MyComponent Header=@header>
   <ChildContent>Some Content</ChildContent>
   <Footer>Bye!</Footer>
 </MyComponent>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void MultipleChildContentMatchingComponentName()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void MultipleChildContentMatchingComponentName()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -2456,29 +2456,29 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent>
   <Header>Hi!</Header>
   <Footer>Bye!</Footer>
 </MyComponent>
 <Header>Hello!</Header>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        #endregion
+    #endregion
 
-        #region Directives
+    #region Directives
 
-        [Fact]
-        public void ChildComponent_WithPageDirective()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_WithPageDirective()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -2489,23 +2489,23 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @page ""/MyPage""
 @page ""/AnotherRoute/{id}""
 <MyComponent />");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Component_WithUsingDirectives()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Component_WithUsingDirectives()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -2523,25 +2523,25 @@ namespace Test2
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @page ""/MyPage""
 @page ""/AnotherRoute/{id}""
 @using Test2
 <MyComponent />
 <MyComponent2 />");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Component_WithUsingDirectives_AmbiguousImport()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Component_WithUsingDirectives_AmbiguousImport()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -2566,34 +2566,34 @@ namespace Test3
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Test2
 @using Test3
 <MyComponent />
 <SomeComponent />");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            var result = CompileToAssembly(generated, throwOnFailure: false);
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        var result = CompileToAssembly(generated, throwOnFailure: false);
 
-            if (DesignTime)
-            {
-                Assert.Collection(result.Diagnostics, d =>
-                {
-                    Assert.Equal("CS0104", d.Id);
-                    Assert.Equal(CodeAnalysis.DiagnosticSeverity.Error, d.Severity);
-                    Assert.Equal("'SomeComponent' is an ambiguous reference between 'Test2.SomeComponent' and 'Test3.SomeComponent'", d.GetMessage());
-                });
-            }
-        }
-
-        [Fact]
-        public void Component_IgnoresStaticAndAliasUsings()
+        if (DesignTime)
         {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+            Assert.Collection(result.Diagnostics, d =>
+            {
+                Assert.Equal("CS0104", d.Id);
+                Assert.Equal(CodeAnalysis.DiagnosticSeverity.Error, d.Severity);
+                Assert.Equal("'SomeComponent' is an ambiguous reference between 'Test2.SomeComponent' and 'Test3.SomeComponent'", d.GetMessage());
+            });
+        }
+    }
+
+    [Fact]
+    public void Component_IgnoresStaticAndAliasUsings()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -2618,24 +2618,24 @@ namespace Test3
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using static Test2.SomeComponent
 @using Foo = Test3
 <MyComponent />
 <SomeComponent /> <!-- Not a component -->", throwOnFailure: false);
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated, throwOnFailure: false);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated, throwOnFailure: false);
+    }
 
-        [Fact]
-        public void ChildContent_FromAnotherNamespace()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildContent_FromAnotherNamespace()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -2658,8 +2658,8 @@ namespace AnotherTest
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using AnotherTest
 
 <HeaderComponent>
@@ -2676,17 +2676,17 @@ namespace AnotherTest
 </AnotherTest.FooterComponent>
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Component_WithNamespaceDirective()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Component_WithNamespaceDirective()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -2709,8 +2709,8 @@ namespace AnotherTest
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Test
 @namespace AnotherTest
 
@@ -2720,17 +2720,17 @@ namespace AnotherTest
 </FooterComponent>
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Component_WithPreserveWhitespaceDirective_True()
-        {
-            // Arrange / Act
-            var generated = CompileToCSharp(@"
+    [Fact]
+    public void Component_WithPreserveWhitespaceDirective_True()
+    {
+        // Arrange / Act
+        var generated = CompileToCSharp(@"
 @preservewhitespace true
 
 <ul>
@@ -2744,17 +2744,17 @@ namespace AnotherTest
 
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Component_WithPreserveWhitespaceDirective_False()
-        {
-            // Arrange / Act
-            var generated = CompileToCSharp(@"
+    [Fact]
+    public void Component_WithPreserveWhitespaceDirective_False()
+    {
+        // Arrange / Act
+        var generated = CompileToCSharp(@"
 @preservewhitespace false
 
 <ul>
@@ -2768,36 +2768,36 @@ namespace AnotherTest
 
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Component_WithPreserveWhitespaceDirective_Invalid()
-        {
-            // Arrange / Act
-            var generated = CompileToCSharp(@"
+    [Fact]
+    public void Component_WithPreserveWhitespaceDirective_Invalid()
+    {
+        // Arrange / Act
+        var generated = CompileToCSharp(@"
 @preservewhitespace someVariable
 @code {
     bool someVariable = false;
 }
 ", throwOnFailure: false);
 
-            // Assert
-            Assert.Collection(generated.Diagnostics, d => { Assert.Equal("RZ1038", d.Id); });
-        }
+        // Assert
+        Assert.Collection(generated.Diagnostics, d => { Assert.Equal("RZ1038", d.Id); });
+    }
 
-        #endregion
+    #endregion
 
-        #region EventCallback
+    #region EventCallback
 
-        [Fact]
-        public void EventCallback_CanPassEventCallback_Explicitly()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void EventCallback_CanPassEventCallback_Explicitly()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -2811,8 +2811,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent OnClick=""@(EventCallback.Factory.Create(this, Increment))""/>
 
 @code {
@@ -2822,17 +2822,17 @@ namespace Test
     }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void EventCallback_CanPassEventCallbackOfT_Explicitly()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void EventCallback_CanPassEventCallbackOfT_Explicitly()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -2847,8 +2847,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
 <MyComponent OnClick=""@(EventCallback.Factory.Create<MouseEventArgs>(this, Increment))""/>
 
@@ -2859,17 +2859,17 @@ namespace Test
     }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void EventCallback_CanPassEventCallback_Implicitly_Action()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void EventCallback_CanPassEventCallback_Implicitly_Action()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -2883,8 +2883,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent OnClick=""@Increment""/>
 
 @code {
@@ -2894,17 +2894,17 @@ namespace Test
     }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void EventCallback_CanPassEventCallback_Implicitly_ActionOfObject()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void EventCallback_CanPassEventCallback_Implicitly_ActionOfObject()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -2918,8 +2918,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent OnClick=""@Increment""/>
 
 @code {
@@ -2929,17 +2929,17 @@ namespace Test
     }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void EventCallback_CanPassEventCallback_Implicitly_FuncOfTask()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void EventCallback_CanPassEventCallback_Implicitly_FuncOfTask()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -2953,8 +2953,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent OnClick=""@Increment""/>
 
 @code {
@@ -2965,17 +2965,17 @@ namespace Test
     }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void EventCallback_CanPassEventCallback_Implicitly_FuncOfobjectTask()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void EventCallback_CanPassEventCallback_Implicitly_FuncOfobjectTask()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -2989,8 +2989,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent OnClick=""@Increment""/>
 
 @code {
@@ -3001,17 +3001,17 @@ namespace Test
     }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void EventCallback_CanPassEventCallbackOfT_Implicitly_Action()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void EventCallback_CanPassEventCallbackOfT_Implicitly_Action()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -3026,8 +3026,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent OnClick=""@Increment""/>
 
 @code {
@@ -3037,17 +3037,17 @@ namespace Test
     }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void EventCallback_CanPassEventCallbackOfT_Implicitly_ActionOfT()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void EventCallback_CanPassEventCallbackOfT_Implicitly_ActionOfT()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -3062,8 +3062,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
 <MyComponent OnClick=""@Increment""/>
 
@@ -3074,17 +3074,17 @@ namespace Test
     }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void EventCallback_CanPassEventCallbackOfT_Implicitly_FuncOfTask()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void EventCallback_CanPassEventCallbackOfT_Implicitly_FuncOfTask()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -3099,8 +3099,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent OnClick=""@Increment""/>
 
 @code {
@@ -3111,17 +3111,17 @@ namespace Test
     }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void EventCallback_CanPassEventCallbackOfT_Implicitly_FuncOfTTask()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void EventCallback_CanPassEventCallbackOfT_Implicitly_FuncOfTTask()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -3136,8 +3136,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
 <MyComponent OnClick=""@Increment""/>
 
@@ -3149,17 +3149,17 @@ namespace Test
     }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void EventCallback_CanPassEventCallbackOfT_Implicitly_TypeMismatch()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void EventCallback_CanPassEventCallbackOfT_Implicitly_TypeMismatch()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -3174,8 +3174,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
 <MyComponent OnClick=""@Increment""/>
 
@@ -3186,26 +3186,26 @@ namespace Test
     }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
 
-            var result = CompileToAssembly(generated, throwOnFailure: false);
+        var result = CompileToAssembly(generated, throwOnFailure: false);
 
-            // Cannot convert from method group to Action - this isn't a great error message, but it's
-            // what the compiler gives us.
-            Assert.Collection(result.Diagnostics, d => { Assert.Equal("CS1503", d.Id); });
-        }
+        // Cannot convert from method group to Action - this isn't a great error message, but it's
+        // what the compiler gives us.
+        Assert.Collection(result.Diagnostics, d => { Assert.Equal("CS1503", d.Id); });
+    }
 
-        #endregion
+    #endregion
 
-        #region Event Handlers
+    #region Event Handlers
 
-        [Fact]
-        public void Component_WithImplicitLambdaEventHandler()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Component_WithImplicitLambdaEventHandler()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -3217,8 +3217,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent @onclick=""() => Increment()""/>
 
 @code {
@@ -3228,17 +3228,17 @@ namespace Test
     }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ChildComponent_WithLambdaEventHandler()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_WithLambdaEventHandler()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -3252,8 +3252,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent OnClick=""@(e => { Increment(); })""/>
 
 @code {
@@ -3263,19 +3263,19 @@ namespace Test
     }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        // Regression test for #954 - we need to allow arbitrary event handler
-        // attributes with weak typing.
-        [Fact]
-        public void ChildComponent_WithWeaklyTypeEventHandler()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    // Regression test for #954 - we need to allow arbitrary event handler
+    // attributes with weak typing.
+    [Fact]
+    public void ChildComponent_WithWeaklyTypeEventHandler()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -3287,8 +3287,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
 <DynamicElement @onclick=""OnClick"" />
 
@@ -3296,17 +3296,17 @@ namespace Test
     private Action<MouseEventArgs> OnClick { get; set; }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ChildComponent_WithExplicitEventHandler()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_WithExplicitEventHandler()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -3320,8 +3320,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent OnClick=""@Increment""/>
 
 @code {
@@ -3331,67 +3331,67 @@ namespace Test
     }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void EventHandler_OnElement_WithString()
-        {
-            // Arrange
+    [Fact]
+    public void EventHandler_OnElement_WithString()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
 <input onclick=""foo"" />");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void EventHandler_OnElement_WithNoArgsLambdaDelegate()
-        {
-            // Arrange
+    [Fact]
+    public void EventHandler_OnElement_WithNoArgsLambdaDelegate()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
 <input @onclick=""() => { }"" />");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void EventHandler_OnElement_WithEventArgsLambdaDelegate()
-        {
-            // Arrange
+    [Fact]
+    public void EventHandler_OnElement_WithEventArgsLambdaDelegate()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
 <input @onclick=""x => { }"" />");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void EventHandler_OnElement_WithNoArgMethodGroup()
-        {
-            // Arrange
+    [Fact]
+    public void EventHandler_OnElement_WithNoArgMethodGroup()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
 <input @onclick=""OnClick"" />
 @code {
@@ -3399,19 +3399,19 @@ namespace Test
     }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void EventHandler_OnElement_WithoutCloseTag()
-        {
-            // Arrange
+    [Fact]
+    public void EventHandler_OnElement_WithoutCloseTag()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
 <div>
   <input @onclick=""OnClick"">
@@ -3421,19 +3421,19 @@ namespace Test
     }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void EventHandler_OnElement_WithEventArgsMethodGroup()
-        {
-            // Arrange
+    [Fact]
+    public void EventHandler_OnElement_WithEventArgsMethodGroup()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
 <input @onclick=""OnClick"" />
 @code {
@@ -3441,19 +3441,19 @@ namespace Test
     }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void EventHandler_OnElement_ArbitraryEventName_WithEventArgsMethodGroup()
-        {
-            // Arrange
+    [Fact]
+    public void EventHandler_OnElement_ArbitraryEventName_WithEventArgsMethodGroup()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
 <input @onclick=""OnClick"" />
 @code {
@@ -3461,19 +3461,19 @@ namespace Test
     }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void AsyncEventHandler_OnElement_Action_MethodGroup()
-        {
-            // Arrange
+    [Fact]
+    public void AsyncEventHandler_OnElement_Action_MethodGroup()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using System.Threading.Tasks
 @using Microsoft.AspNetCore.Components.Web
 <input @onclick=""OnClick"" />
@@ -3484,19 +3484,19 @@ namespace Test
     }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void AsyncEventHandler_OnElement_ActionEventArgs_MethodGroup()
-        {
-            // Arrange
+    [Fact]
+    public void AsyncEventHandler_OnElement_ActionEventArgs_MethodGroup()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using System.Threading.Tasks
 @using Microsoft.AspNetCore.Components.Web
 <input @onclick=""OnClick"" />
@@ -3507,71 +3507,71 @@ namespace Test
     }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void AsyncEventHandler_OnElement_Action_Lambda()
-        {
-            // Arrange
+    [Fact]
+    public void AsyncEventHandler_OnElement_Action_Lambda()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using System.Threading.Tasks
 @using Microsoft.AspNetCore.Components.Web
 <input @onclick=""@(async () => await Task.Delay(10))"" />
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void AsyncEventHandler_OnElement_ActionEventArgs_Lambda()
-        {
-            // Arrange
+    [Fact]
+    public void AsyncEventHandler_OnElement_ActionEventArgs_Lambda()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using System.Threading.Tasks
 @using Microsoft.AspNetCore.Components.Web
 <input @onclick=""@(async (e) => await Task.Delay(10))"" />
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void EventHandler_OnElement_WithLambdaDelegate()
-        {
-            // Arrange
+    [Fact]
+    public void EventHandler_OnElement_WithLambdaDelegate()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
 <input @onclick=""x => { }"" />");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void EventHandler_OnElement_WithDelegate()
-        {
-            // Arrange
+    [Fact]
+    public void EventHandler_OnElement_WithDelegate()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
 <input @onclick=""OnClick"" />
 @code {
@@ -3579,19 +3579,19 @@ namespace Test
     }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void EventHandler_AttributeNameIsCaseSensitive()
-        {
-            // Arrange
+    [Fact]
+    public void EventHandler_AttributeNameIsCaseSensitive()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
 <input @onCLICK=""OnClick"" />
 @code {
@@ -3599,54 +3599,54 @@ namespace Test
     }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void EventHandler_PreventDefault_StopPropagation_Minimized()
-        {
-            // Arrange
+    [Fact]
+    public void EventHandler_PreventDefault_StopPropagation_Minimized()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
 <button @onclick:preventDefault @onclick:stopPropagation>Click Me</button>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void EventHandler_PreventDefault_StopPropagation()
-        {
-            // Arrange
+    [Fact]
+    public void EventHandler_PreventDefault_StopPropagation()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
 <button @onclick=""() => Foo = false"" @onfocus:preventDefault=""true"" @onclick:stopPropagation=""Foo"" @onfocus:stopPropagation=""false"">Click Me</button>
 @code {
     bool Foo { get; set; }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void EventHandler_WithDelegate_PreventDefault()
-        {
-            // Arrange
+    [Fact]
+    public void EventHandler_WithDelegate_PreventDefault()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
 <input @onfocus=""OnFocus"" @onfocus:preventDefault=""ShouldPreventDefault()"" />
 @code {
@@ -3655,37 +3655,37 @@ namespace Test
     bool ShouldPreventDefault() { return false; }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void EventHandler_PreventDefault_Duplicates()
-        {
-            // Arrange
+    [Fact]
+    public void EventHandler_PreventDefault_Duplicates()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
 <input @onclick:preventDefault=""true"" @onclick:preventDefault />");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        #endregion
+    #endregion
 
-        #region Generics
+    #region Generics
 
-        [Fact]
-        public void ChildComponent_Generic()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_Generic()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -3697,21 +3697,21 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent TItem=string Item=""@(""hi"")""/>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ChildComponent_Generic_TypeInference()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_Generic_TypeInference()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -3723,21 +3723,21 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent Item=""@(""hi"")""/>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ChildComponent_Generic_TypeInference_Multiple()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_Generic_TypeInference_Multiple()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -3749,23 +3749,23 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent Item=""@(""hi"")""/>
 <MyComponent Item=""@(""how are you?"")""/>
 <MyComponent Item=""@(""bye!"")""/>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void CascadingGenericInference_Explicit()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void CascadingGenericInference_Explicit()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -3783,21 +3783,21 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <Grid TItem=""DateTime"" Items=""@(Array.Empty<DateTime>())""><Column /><Column /></Grid>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void CascadingGenericInference_ExplicitOverride()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void CascadingGenericInference_ExplicitOverride()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -3815,23 +3815,23 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <Grid TItem=""DateTime"" Items=""@(Array.Empty<DateTime>())""><Column TItem=""System.TimeZoneInfo"" /></Grid>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void CascadingGenericInference_NotCascaded_Explicit()
-        {
-            // The point of this test is to show that, without [CascadingTypeParameter], we don't cascade
+    [Fact]
+    public void CascadingGenericInference_NotCascaded_Explicit()
+    {
+        // The point of this test is to show that, without [CascadingTypeParameter], we don't cascade
 
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -3848,23 +3848,23 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <Grid TItem=""DateTime"" Items=""@(Array.Empty<DateTime>())""><Column /></Grid>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
 
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Same(ComponentDiagnosticFactory.GenericComponentTypeInferenceUnderspecified.Id, diagnostic.Id);
-        }
+        var diagnostic = Assert.Single(generated.Diagnostics);
+        Assert.Same(ComponentDiagnosticFactory.GenericComponentTypeInferenceUnderspecified.Id, diagnostic.Id);
+    }
 
-        [Fact]
-        public void CascadingGenericInference_NotCascaded_Inferred()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void CascadingGenericInference_NotCascaded_Inferred()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -3882,21 +3882,21 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <Grid Items=""@(Array.Empty<DateTime>())""><Column /><Column /></Grid>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void CascadingGenericInference_Partial_CreatesError()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void CascadingGenericInference_Partial_CreatesError()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -3914,26 +3914,26 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <Grid Items=""@(Array.Empty<DateTime>())""><Column TChildOther=""long"" /></Grid>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
 
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Same(ComponentDiagnosticFactory.GenericComponentMissingTypeArgument.Id, diagnostic.Id);
-        }
+        var diagnostic = Assert.Single(generated.Diagnostics);
+        Assert.Same(ComponentDiagnosticFactory.GenericComponentMissingTypeArgument.Id, diagnostic.Id);
+    }
 
-        [Fact]
-        public void CascadingGenericInference_WithSplatAndKey()
-        {
-            // This is an integration test to show that our type inference code doesn't
-            // have bad interactions with some of the other more complicated transformations
+    [Fact]
+    public void CascadingGenericInference_WithSplatAndKey()
+    {
+        // This is an integration test to show that our type inference code doesn't
+        // have bad interactions with some of the other more complicated transformations
 
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components;
 
@@ -3953,24 +3953,24 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @{ var parentKey = new object(); var childKey = new object(); }
 <Grid @key=""@parentKey"" Items=""@(Array.Empty<DateTime>())"">
     <Column @key=""@childKey"" Title=""Hello"" Another=""@DateTime.MinValue"" />
 </Grid>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void CascadingGenericInference_Multilayer()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void CascadingGenericInference_Multilayer()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -3993,21 +3993,21 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <Ancestor Items=""@(Array.Empty<DateTime>())""><Passthrough><Child /></Passthrough></Ancestor>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void CascadingGenericInference_Override_Multilayer()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void CascadingGenericInference_Override_Multilayer()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -4021,8 +4021,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <TreeNode Item=""@DateTime.Now"">
     <TreeNode Item=""@System.Threading.Thread.CurrentThread"">
         <TreeNode>
@@ -4032,20 +4032,20 @@ namespace Test
     <TreeNode />
 </TreeNode>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void CascadingGenericInference_Override()
-        {
-            // This test is to show that, even if an ancestor is trying to cascade its generic types,
-            // a descendant can still override that through inference
+    [Fact]
+    public void CascadingGenericInference_Override()
+    {
+        // This test is to show that, even if an ancestor is trying to cascade its generic types,
+        // a descendant can still override that through inference
 
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -4064,21 +4064,21 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <Grid Items=""@(Array.Empty<DateTime>())""><Column OverrideParam=""@(""Some string"")"" /></Grid>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void CascadingGenericInference_NotCascaded_CreatesError()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void CascadingGenericInference_NotCascaded_CreatesError()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -4095,23 +4095,23 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <Grid Items=""@(Array.Empty<DateTime>())""><Column /></Grid>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
 
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Same(ComponentDiagnosticFactory.GenericComponentTypeInferenceUnderspecified.Id, diagnostic.Id);
-        }
+        var diagnostic = Assert.Single(generated.Diagnostics);
+        Assert.Same(ComponentDiagnosticFactory.GenericComponentTypeInferenceUnderspecified.Id, diagnostic.Id);
+    }
 
-        [Fact]
-        public void CascadingGenericInference_GenericChildContent()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void CascadingGenericInference_GenericChildContent()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -4130,21 +4130,21 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <Grid Items=""@(Array.Empty<DateTime>())""><Column>@context.Year</Column></Grid>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void CascadingGenericInference_GenericLambda()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void CascadingGenericInference_GenericLambda()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -4163,22 +4163,22 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <Grid Items=""@(Array.Empty<DateTime>())""><Column SomeLambda=""@(x => x.Year)"" /></Grid>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void CascadingGenericInference_MultipleTypes()
-        {
+    [Fact]
+    public void CascadingGenericInference_MultipleTypes()
+    {
 
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components;
 
@@ -4201,30 +4201,30 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <Parent Data=""@(new System.Collections.Generic.Dictionary<int, string>())"" Other=""@DateTime.MinValue"">
     <Child ChildOnlyItems=""@(new[] { 'a', 'b', 'c' })"" />
 </Parent>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void CascadingGenericInference_WithUnrelatedType_CreatesError()
-        {
-            // It would succeed if you changed this to Column<TItem, TUnrelated>, or if the Grid took a parameter
-            // whose type included TItem and not TUnrelated. It just doesn't work if the only inference parameters
-            // also include unrelated generic types, because the inference methods we generate don't know what
-            // to do with extra type parameters. It would be nice just to ignore them, but at the very least we
-            // have to rewrite their names to avoid clashes and figure out whether multiple unrelated generic
-            // types with the same name should be rewritten to the same name or unique names.
+    [Fact]
+    public void CascadingGenericInference_WithUnrelatedType_CreatesError()
+    {
+        // It would succeed if you changed this to Column<TItem, TUnrelated>, or if the Grid took a parameter
+        // whose type included TItem and not TUnrelated. It just doesn't work if the only inference parameters
+        // also include unrelated generic types, because the inference methods we generate don't know what
+        // to do with extra type parameters. It would be nice just to ignore them, but at the very least we
+        // have to rewrite their names to avoid clashes and figure out whether multiple unrelated generic
+        // types with the same name should be rewritten to the same name or unique names.
 
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -4243,24 +4243,24 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <Grid Items=""@(new Dictionary<int, string>())""><Column /></Grid>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
 
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Same(ComponentDiagnosticFactory.GenericComponentTypeInferenceUnderspecified.Id, diagnostic.Id);
-        }
+        var diagnostic = Assert.Single(generated.Diagnostics);
+        Assert.Same(ComponentDiagnosticFactory.GenericComponentTypeInferenceUnderspecified.Id, diagnostic.Id);
+    }
 
-        [Fact]
-        public void CascadingGenericInference_CombiningMultipleAncestors()
-        {
+    [Fact]
+    public void CascadingGenericInference_CombiningMultipleAncestors()
+    {
 
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -4285,25 +4285,25 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <ParentOne Value=""@int.MaxValue"">
     <ParentTwo Value=""@(""Hello"")"">
         <Child />
     </ParentTwo>
 </ParentOne>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ChildComponent_GenericWeaklyTypedAttribute()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_GenericWeaklyTypedAttribute()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -4315,21 +4315,21 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent TItem=string Item=""@(""hi"")"" Other=""@(17)""/>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ChildComponent_GenericWeaklyTypedAttribute_TypeInference()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_GenericWeaklyTypedAttribute_TypeInference()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -4341,21 +4341,21 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent Item=""@(""hi"")"" Other=""@(17)""/>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ChildComponent_GenericBind()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_GenericBind()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -4372,24 +4372,24 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent TItem=string @bind-Item=Value/>
 @code {
     string Value;
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ChildComponent_GenericBind_TypeInference()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_GenericBind_TypeInference()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -4406,25 +4406,25 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent @bind-Item=Value/>
 <MyComponent @bind-Item=Value/>
 @code {
     string Value;
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ChildComponent_GenericBindWeaklyTyped()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_GenericBindWeaklyTyped()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -4436,24 +4436,24 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent TItem=string @bind-Item=Value/>
 @code {
     string Value;
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ChildComponent_GenericBindWeaklyTyped_TypeInference()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_GenericBindWeaklyTyped_TypeInference()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -4466,24 +4466,24 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent @bind-Item=Value Value=@(18)/>
 @code {
     string Value;
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ChildComponent_GenericChildContent()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_GenericChildContent()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -4497,23 +4497,23 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent TItem=string Item=""@(""hi"")"">
   <div>@context.ToLower()</div>
 </MyComponent>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ChildComponent_GenericChildContent_TypeInference()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_GenericChildContent_TypeInference()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -4527,23 +4527,23 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent Item=""@(""hi"")"">
   <div>@context.ToLower()</div>
 </MyComponent>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ChildComponent_NonGenericParameterizedChildContent_TypeInference()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_NonGenericParameterizedChildContent_TypeInference()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -4559,24 +4559,24 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent Item=""@(""hi"")"">
   <GenericFragment>@context.ToLower()</GenericFragment>
   <IntFragment>@context</IntFragment>
 </MyComponent>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void GenericComponent_WithFullyQualifiedTagName()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void GenericComponent_WithFullyQualifiedTagName()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -4590,23 +4590,23 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <Test.MyComponent Item=""@(""hi"")"">
   <div>@context.ToLower()</div>
 </Test.MyComponent>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ChildComponent_MultipleGenerics()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_MultipleGenerics()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -4627,8 +4627,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent TItem1=string TItem2=int Item=""@(""hi"")"">
   <ChildContent><div>@context.ToLower()</div></ChildContent>
 <AnotherChildContent Context=""item"">
@@ -4636,17 +4636,17 @@ namespace Test
 </AnotherChildContent>
 </MyComponent>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ChildComponent_MultipleGenerics_TypeInference()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ChildComponent_MultipleGenerics_TypeInference()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components;
 
@@ -4670,8 +4670,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent Item=""@(""hi"")"" Items=@(new List<long>())>
   <ChildContent><div>@context.ToLower()</div></ChildContent>
 <AnotherChildContent Context=""item"">
@@ -4679,17 +4679,17 @@ namespace Test
 </AnotherChildContent>
 </MyComponent>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void NonGenericComponent_WithGenericEventHandler()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void NonGenericComponent_WithGenericEventHandler()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -4704,8 +4704,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent Item=""Hello"" MyEvent=""MyEventHandler"" />
 
 @code {
@@ -4713,17 +4713,17 @@ namespace Test
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void GenericComponent_WithKey()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void GenericComponent_WithKey()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -4735,8 +4735,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent TItem=int Item=""3"" @key=""_someKey"" />
 
 @code {
@@ -4744,17 +4744,17 @@ namespace Test
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void GenericComponent_WithKey_TypeInference()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void GenericComponent_WithKey_TypeInference()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -4766,8 +4766,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent Item=""3"" @key=""_someKey"" />
 
 @code {
@@ -4775,17 +4775,17 @@ namespace Test
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void GenericComponent_WithComponentRef_CreatesDiagnostic()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void GenericComponent_WithComponentRef_CreatesDiagnostic()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -4797,8 +4797,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent TItem=int Item=""3"" @ref=""_my"" />
 
 @code {
@@ -4807,17 +4807,17 @@ namespace Test
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void GenericComponent_WithComponentRef_TypeInference_CreatesDiagnostic()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void GenericComponent_WithComponentRef_TypeInference_CreatesDiagnostic()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -4829,8 +4829,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent Item=""3"" @ref=""_my"" />
 
 @code {
@@ -4839,17 +4839,17 @@ namespace Test
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void GenericComponent_NonGenericParameter_TypeInference()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void GenericComponent_NonGenericParameter_TypeInference()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 using Test.Shared;
 
@@ -4870,8 +4870,8 @@ namespace Test.Shared
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Test.Shared
 <MyComponent Item=""3"" Foo=""@Hello"" />
 
@@ -4880,17 +4880,17 @@ namespace Test.Shared
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void GenericComponent_NonGenericEventCallback_TypeInference()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void GenericComponent_NonGenericEventCallback_TypeInference()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -4904,23 +4904,23 @@ namespace Test
     }
 }
 "));
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Test
 <MyComponent Item=""3"" MyEvent=""x => {}"" />
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void GenericComponent_GenericEventCallback_TypeInference()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void GenericComponent_GenericEventCallback_TypeInference()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -4935,23 +4935,23 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Test
 <MyComponent Item=""3"" MyEvent=""x => {}"" />
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void GenericComponent_NestedGenericEventCallback_TypeInference()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void GenericComponent_NestedGenericEventCallback_TypeInference()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components;
 
@@ -4967,23 +4967,23 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Test
 <MyComponent Item=""3"" MyEvent=""x => {}"" />
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void GenericComponent_GenericEventCallbackWithGenericTypeParameter_TypeInference()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void GenericComponent_GenericEventCallbackWithGenericTypeParameter_TypeInference()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -4998,27 +4998,27 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Test
 <MyComponent Item=""3"" MyEvent=""(int x) => {}"" />
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        #endregion
+    #endregion
 
-        #region Key
+    #region Key
 
-        [Fact]
-        public void Element_WithKey()
-        {
-            // Arrange/Act
-            var generated = CompileToCSharp(@"
+    [Fact]
+    public void Element_WithKey()
+    {
+        // Arrange/Act
+        var generated = CompileToCSharp(@"
 <elem attributebefore=""before"" @key=""someObject"" attributeafter=""after"">Hello</elem>
 
 @code {
@@ -5026,17 +5026,17 @@ namespace Test
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Element_WithKey_AndOtherAttributes()
-        {
-            // Arrange/Act
-            var generated = CompileToCSharp(@"
+    [Fact]
+    public void Element_WithKey_AndOtherAttributes()
+    {
+        // Arrange/Act
+        var generated = CompileToCSharp(@"
 <input type=""text"" data-slider-min=""@Min"" @key=""@someObject"" />
 
 @code {
@@ -5046,17 +5046,17 @@ namespace Test
     }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Component_WithKey()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Component_WithKey()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -5067,8 +5067,8 @@ namespace Test
 }
 "));
 
-            // Arrange/Act
-            var generated = CompileToCSharp(@"
+        // Arrange/Act
+        var generated = CompileToCSharp(@"
 <MyComponent ParamBefore=""before"" @key=""someDate.Day"" ParamAfter=""after"" />
 
 @code {
@@ -5076,17 +5076,17 @@ namespace Test
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Component_WithKey_WithChildContent()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Component_WithKey_WithChildContent()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -5097,24 +5097,24 @@ namespace Test
 }
 "));
 
-            // Arrange/Act
-            var generated = CompileToCSharp(@"
+        // Arrange/Act
+        var generated = CompileToCSharp(@"
 <MyComponent @key=""123 + 456"" SomeProp=""val"">
     Some <el>further</el> content
 </MyComponent>
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Element_WithKey_AttributeNameIsCaseSensitive()
-        {
-            // Arrange/Act
-            var generated = CompileToCSharp(@"
+    [Fact]
+    public void Element_WithKey_AttributeNameIsCaseSensitive()
+    {
+        // Arrange/Act
+        var generated = CompileToCSharp(@"
 <elem attributebefore=""before"" @KEY=""someObject"" attributeafter=""after"">Hello</elem>
 
 @code {
@@ -5122,21 +5122,21 @@ namespace Test
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        #endregion
+    #endregion
 
-        #region Splat
+    #region Splat
 
-        [Fact]
-        public void Element_WithSplat()
-        {
-            // Arrange/Act
-            var generated = CompileToCSharp(@"
+    [Fact]
+    public void Element_WithSplat()
+    {
+        // Arrange/Act
+        var generated = CompileToCSharp(@"
 <elem attributebefore=""before"" @attributes=""someAttributes"" attributeafter=""after"">Hello</elem>
 
 @code {
@@ -5144,17 +5144,17 @@ namespace Test
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Element_WithSplat_ImplicitExpression()
-        {
-            // Arrange/Act
-            var generated = CompileToCSharp(@"
+    [Fact]
+    public void Element_WithSplat_ImplicitExpression()
+    {
+        // Arrange/Act
+        var generated = CompileToCSharp(@"
 <elem attributebefore=""before"" @attributes=""@someAttributes"" attributeafter=""after"">Hello</elem>
 
 @code {
@@ -5162,17 +5162,17 @@ namespace Test
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Element_WithSplat_ExplicitExpression()
-        {
-            // Arrange/Act
-            var generated = CompileToCSharp(@"
+    [Fact]
+    public void Element_WithSplat_ExplicitExpression()
+    {
+        // Arrange/Act
+        var generated = CompileToCSharp(@"
 <elem attributebefore=""before"" @attributes=""@(someAttributes)"" attributeafter=""after"">Hello</elem>
 
 @code {
@@ -5180,17 +5180,17 @@ namespace Test
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Component_WithSplat()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Component_WithSplat()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -5201,8 +5201,8 @@ namespace Test
 }
 "));
 
-            // Arrange/Act
-            var generated = CompileToCSharp(@"
+        // Arrange/Act
+        var generated = CompileToCSharp(@"
 <MyComponent AttributeBefore=""before"" @attributes=""someAttributes"" AttributeAfter=""after"" />
 
 @code {
@@ -5210,17 +5210,17 @@ namespace Test
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Component_WithSplat_ImplicitExpression()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Component_WithSplat_ImplicitExpression()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -5231,8 +5231,8 @@ namespace Test
 }
 "));
 
-            // Arrange/Act
-            var generated = CompileToCSharp(@"
+        // Arrange/Act
+        var generated = CompileToCSharp(@"
 <MyComponent AttributeBefore=""before"" @attributes=""@someAttributes"" AttributeAfter=""after"" />
 
 @code {
@@ -5240,17 +5240,17 @@ namespace Test
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Component_WithSplat_ExplicitExpression()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Component_WithSplat_ExplicitExpression()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -5261,8 +5261,8 @@ namespace Test
 }
 "));
 
-            // Arrange/Act
-            var generated = CompileToCSharp(@"
+        // Arrange/Act
+        var generated = CompileToCSharp(@"
 <MyComponent AttributeBefore=""before"" @attributes=""@(someAttributes)"" AttributeAfter=""after"" />
 
 @code {
@@ -5270,17 +5270,17 @@ namespace Test
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Component_WithSplat_GenericTypeInference()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Component_WithSplat_GenericTypeInference()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -5292,8 +5292,8 @@ namespace Test
 }
 "));
 
-            // Arrange/Act
-            var generated = CompileToCSharp(@"
+        // Arrange/Act
+        var generated = CompileToCSharp(@"
 <MyComponent Value=""18"" @attributes=""@(someAttributes)"" />
 
 @code {
@@ -5301,17 +5301,17 @@ namespace Test
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Element_WithSplat_AttributeNameIsCaseSensitive()
-        {
-            // Arrange/Act
-            var generated = CompileToCSharp(@"
+    [Fact]
+    public void Element_WithSplat_AttributeNameIsCaseSensitive()
+    {
+        // Arrange/Act
+        var generated = CompileToCSharp(@"
 <elem attributebefore=""before"" @ATTributes=""someAttributes"" attributeafter=""after"">Hello</elem>
 
 @code {
@@ -5319,21 +5319,21 @@ namespace Test
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        #endregion
+    #endregion
 
-        #region Ref
+    #region Ref
 
-        [Fact]
-        public void Element_WithRef()
-        {
-            // Arrange/Act
-            var generated = CompileToCSharp(@"
+    [Fact]
+    public void Element_WithRef()
+    {
+        // Arrange/Act
+        var generated = CompileToCSharp(@"
 <elem attributebefore=""before"" @ref=""myElem"" attributeafter=""after"">Hello</elem>
 
 @code {
@@ -5342,17 +5342,17 @@ namespace Test
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Element_WithRef_AndOtherAttributes()
-        {
-            // Arrange/Act
-            var generated = CompileToCSharp(@"
+    [Fact]
+    public void Element_WithRef_AndOtherAttributes()
+    {
+        // Arrange/Act
+        var generated = CompileToCSharp(@"
 <input type=""text"" data-slider-min=""@Min"" @ref=""@_element"" />
 
 @code {
@@ -5363,17 +5363,17 @@ namespace Test
     }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Component_WithRef()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Component_WithRef()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -5384,8 +5384,8 @@ namespace Test
 }
 "));
 
-            // Arrange/Act
-            var generated = CompileToCSharp(@"
+        // Arrange/Act
+        var generated = CompileToCSharp(@"
 <MyComponent ParamBefore=""before"" @ref=""myInstance"" ParamAfter=""after"" />
 
 @code {
@@ -5394,17 +5394,17 @@ namespace Test
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Component_WithRef_WithChildContent()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Component_WithRef_WithChildContent()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -5415,8 +5415,8 @@ namespace Test
 }
 "));
 
-            // Arrange/Act
-            var generated = CompileToCSharp(@"
+        // Arrange/Act
+        var generated = CompileToCSharp(@"
 <MyComponent @ref=""myInstance"" SomeProp=""val"">
     Some <el>further</el> content
 </MyComponent>
@@ -5427,36 +5427,36 @@ namespace Test
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Element_WithRef_AttributeNameIsCaseSensitive()
-        {
-            // Arrange/Act
-            var generated = CompileToCSharp(@"
+    [Fact]
+    public void Element_WithRef_AttributeNameIsCaseSensitive()
+    {
+        // Arrange/Act
+        var generated = CompileToCSharp(@"
 <elem attributebefore=""before"" @rEF=""myElem"" attributeafter=""after"">Hello</elem>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        #endregion
+    #endregion
 
-        #region Templates
+    #region Templates
 
-        [Fact]
-        public void RazorTemplate_InCodeBlock()
-        {
-            // Arrange
+    [Fact]
+    public void RazorTemplate_InCodeBlock()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @{
     RenderFragment<Person> p = (person) => @<div>@person.Name</div>;
 }
@@ -5467,19 +5467,19 @@ namespace Test
     }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void RazorTemplate_InExplicitExpression()
-        {
-            // Arrange
+    [Fact]
+    public void RazorTemplate_InExplicitExpression()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @(RenderPerson((person) => @<div>@person.Name</div>))
 @code {
     class Person
@@ -5490,37 +5490,37 @@ namespace Test
     object RenderPerson(RenderFragment<Person> p) => null;
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void RazorTemplate_NonGeneric_InImplicitExpression()
-        {
-            // Arrange
+    [Fact]
+    public void RazorTemplate_NonGeneric_InImplicitExpression()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @RenderPerson(@<div>HI</div>)
 @code {
     object RenderPerson(RenderFragment p) => null;
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void RazorTemplate_Generic_InImplicitExpression()
-        {
-            // Arrange
+    [Fact]
+    public void RazorTemplate_Generic_InImplicitExpression()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @RenderPerson((person) => @<div>@person.Name</div>)
 @code {
     class Person
@@ -5531,17 +5531,17 @@ namespace Test
     object RenderPerson(RenderFragment<Person> p) => null;
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void RazorTemplate_ContainsComponent()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void RazorTemplate_ContainsComponent()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -5553,8 +5553,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @{
     RenderFragment<Person> p = (person) => @<div><MyComponent Name=""@person.Name""/></div>;
 }
@@ -5565,18 +5565,18 @@ namespace Test
     }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        // Targeted at the logic that assigns 'builder' names
-        [Fact]
-        public void RazorTemplate_FollowedByComponent()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    // Targeted at the logic that assigns 'builder' names
+    [Fact]
+    public void RazorTemplate_FollowedByComponent()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -5588,8 +5588,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @{
     RenderFragment<Person> p = (person) => @<div><MyComponent Name=""@person.Name""/></div>;
 }
@@ -5604,17 +5604,17 @@ namespace Test
     }
 }");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void RazorTemplate_NonGeneric_AsComponentParameter()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void RazorTemplate_NonGeneric_AsComponentParameter()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -5626,23 +5626,23 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @{ RenderFragment template = @<div>Joey</div>; }
 <MyComponent Person=""@template""/>
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void RazorTemplate_Generic_AsComponentParameter()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void RazorTemplate_Generic_AsComponentParameter()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -5659,23 +5659,23 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @{ RenderFragment<Person> template = (person) => @<div>@person.Name</div>; }
 <MyComponent PersonTemplate=""@template""/>
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void RazorTemplate_AsComponentParameter_MixedContent()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void RazorTemplate_AsComponentParameter_MixedContent()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -5693,59 +5693,59 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @{ RenderFragment<Test.Context> template = (context) => @<li>#@context.Index - @context.Item.ToLower()</li>; }
 <MyComponent Template=""@template""/>
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        #endregion
+    #endregion
 
-        #region Whitespace
+    #region Whitespace
 
-        [Fact]
-        public void LeadingWhiteSpace_WithDirective()
-        {
-            // Arrange/Act
-            var generated = CompileToCSharp(@"
+    [Fact]
+    public void LeadingWhiteSpace_WithDirective()
+    {
+        // Arrange/Act
+        var generated = CompileToCSharp(@"
 
 @using System
 
 <h1>Hello</h1>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void LeadingWhiteSpace_WithCSharpExpression()
-        {
-            // Arrange/Act
-            var generated = CompileToCSharp(@"
+    [Fact]
+    public void LeadingWhiteSpace_WithCSharpExpression()
+    {
+        // Arrange/Act
+        var generated = CompileToCSharp(@"
 
 @(""My value"")
 
 <h1>Hello</h1>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void LeadingWhiteSpace_WithComponent()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void LeadingWhiteSpace_WithComponent()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -5757,8 +5757,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <SomeOtherComponent>
     <h1>Child content at @DateTime.Now</h1>
     <p>Very @(""good"")</p>
@@ -5766,51 +5766,51 @@ namespace Test
 
 <h1>Hello</h1>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void TrailingWhiteSpace_WithDirective()
-        {
-            // Arrange/Act
-            var generated = CompileToCSharp(@"
+    [Fact]
+    public void TrailingWhiteSpace_WithDirective()
+    {
+        // Arrange/Act
+        var generated = CompileToCSharp(@"
 <h1>Hello</h1>
 
 @page ""/my/url""
 
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void TrailingWhiteSpace_WithCSharpExpression()
-        {
-            // Arrange/Act
-            var generated = CompileToCSharp(@"
+    [Fact]
+    public void TrailingWhiteSpace_WithCSharpExpression()
+    {
+        // Arrange/Act
+        var generated = CompileToCSharp(@"
 <h1>Hello</h1>
 
 @(""My value"")
 
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void TrailingWhiteSpace_WithComponent()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void TrailingWhiteSpace_WithComponent()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -5821,60 +5821,60 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <h1>Hello</h1>
 
 <SomeOtherComponent />
 
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Whitespace_BetweenElementAndFunctions()
-        {
-            // Arrange
+    [Fact]
+    public void Whitespace_BetweenElementAndFunctions()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
     <elem attr=@Foo />
     @code {
         int Foo = 18;
     }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void WhiteSpace_InsideAttribute_InMarkupBlock()
-        {
-            // Arrange
+    [Fact]
+    public void WhiteSpace_InsideAttribute_InMarkupBlock()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"<div class=""first second"">Hello</div>");
+        // Act
+        var generated = CompileToCSharp(@"<div class=""first second"">Hello</div>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void WhiteSpace_InMarkupInFunctionsBlock()
-        {
-            // Arrange
+    [Fact]
+    public void WhiteSpace_InMarkupInFunctionsBlock()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Rendering
 @code {
     void MyMethod(RenderTreeBuilder __builder)
@@ -5891,19 +5891,19 @@ namespace Test
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void WhiteSpace_WithPreserveWhitespace()
-        {
-            // Arrange
+    [Fact]
+    public void WhiteSpace_WithPreserveWhitespace()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 
 @preservewhitespace true
 
@@ -5917,68 +5917,68 @@ namespace Test
 
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        #endregion
+    #endregion
 
-        #region Legacy 3.1 Whitespace
+    #region Legacy 3.1 Whitespace
 
-        [Fact]
-        public void Legacy_3_1_LeadingWhiteSpace_WithDirective()
-        {
-            // Arrange/Act
-            _configuration = RazorConfiguration.Create(
-                RazorLanguageVersion.Version_3_0,
-                base.Configuration.ConfigurationName,
-                base.Configuration.Extensions);
+    [Fact]
+    public void Legacy_3_1_LeadingWhiteSpace_WithDirective()
+    {
+        // Arrange/Act
+        _configuration = RazorConfiguration.Create(
+            RazorLanguageVersion.Version_3_0,
+            base.Configuration.ConfigurationName,
+            base.Configuration.Extensions);
 
-            var generated = CompileToCSharp(@"
+        var generated = CompileToCSharp(@"
 
 @using System
 
 <h1>Hello</h1>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Legacy_3_1_LeadingWhiteSpace_WithCSharpExpression()
-        {
-            // Arrange/Act
-            _configuration = RazorConfiguration.Create(
-                RazorLanguageVersion.Version_3_0,
-                base.Configuration.ConfigurationName,
-                base.Configuration.Extensions);
+    [Fact]
+    public void Legacy_3_1_LeadingWhiteSpace_WithCSharpExpression()
+    {
+        // Arrange/Act
+        _configuration = RazorConfiguration.Create(
+            RazorLanguageVersion.Version_3_0,
+            base.Configuration.ConfigurationName,
+            base.Configuration.Extensions);
 
-            var generated = CompileToCSharp(@"
+        var generated = CompileToCSharp(@"
 
 @(""My value"")
 
 <h1>Hello</h1>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Legacy_3_1_LeadingWhiteSpace_WithComponent()
-        {
-            // Arrange
-            _configuration = RazorConfiguration.Create(
-                RazorLanguageVersion.Version_3_0,
-                base.Configuration.ConfigurationName,
-                base.Configuration.Extensions);
+    [Fact]
+    public void Legacy_3_1_LeadingWhiteSpace_WithComponent()
+    {
+        // Arrange
+        _configuration = RazorConfiguration.Create(
+            RazorLanguageVersion.Version_3_0,
+            base.Configuration.ConfigurationName,
+            base.Configuration.Extensions);
 
-            AdditionalSyntaxTrees.Add(Parse(@"
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -5990,8 +5990,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <SomeOtherComponent>
     <h1>Child content at @DateTime.Now</h1>
     <p>Very @(""good"")</p>
@@ -5999,66 +5999,66 @@ namespace Test
 
 <h1>Hello</h1>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Legacy_3_1_TrailingWhiteSpace_WithDirective()
-        {
-            // Arrange/Act
-            _configuration = RazorConfiguration.Create(
-                RazorLanguageVersion.Version_3_0,
-                base.Configuration.ConfigurationName,
-                base.Configuration.Extensions);
+    [Fact]
+    public void Legacy_3_1_TrailingWhiteSpace_WithDirective()
+    {
+        // Arrange/Act
+        _configuration = RazorConfiguration.Create(
+            RazorLanguageVersion.Version_3_0,
+            base.Configuration.ConfigurationName,
+            base.Configuration.Extensions);
 
-            var generated = CompileToCSharp(@"
+        var generated = CompileToCSharp(@"
 <h1>Hello</h1>
 
 @page ""/my/url""
 
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Legacy_3_1_TrailingWhiteSpace_WithCSharpExpression()
-        {
-            // Arrange/Act
-            _configuration = RazorConfiguration.Create(
-                RazorLanguageVersion.Version_3_0,
-                base.Configuration.ConfigurationName,
-                base.Configuration.Extensions);
+    [Fact]
+    public void Legacy_3_1_TrailingWhiteSpace_WithCSharpExpression()
+    {
+        // Arrange/Act
+        _configuration = RazorConfiguration.Create(
+            RazorLanguageVersion.Version_3_0,
+            base.Configuration.ConfigurationName,
+            base.Configuration.Extensions);
 
-            var generated = CompileToCSharp(@"
+        var generated = CompileToCSharp(@"
 <h1>Hello</h1>
 
 @(""My value"")
 
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Legacy_3_1_TrailingWhiteSpace_WithComponent()
-        {
-            // Arrange
-            _configuration = RazorConfiguration.Create(
-                RazorLanguageVersion.Version_3_0,
-                base.Configuration.ConfigurationName,
-                base.Configuration.Extensions);
+    [Fact]
+    public void Legacy_3_1_TrailingWhiteSpace_WithComponent()
+    {
+        // Arrange
+        _configuration = RazorConfiguration.Create(
+            RazorLanguageVersion.Version_3_0,
+            base.Configuration.ConfigurationName,
+            base.Configuration.Extensions);
 
-            AdditionalSyntaxTrees.Add(Parse(@"
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -6069,72 +6069,72 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <h1>Hello</h1>
 
 <SomeOtherComponent />
 
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Legacy_3_1_Whitespace_BetweenElementAndFunctions()
-        {
-            // Arrange
-            _configuration = RazorConfiguration.Create(
-                RazorLanguageVersion.Version_3_0,
-                base.Configuration.ConfigurationName,
-                base.Configuration.Extensions);
+    [Fact]
+    public void Legacy_3_1_Whitespace_BetweenElementAndFunctions()
+    {
+        // Arrange
+        _configuration = RazorConfiguration.Create(
+            RazorLanguageVersion.Version_3_0,
+            base.Configuration.ConfigurationName,
+            base.Configuration.Extensions);
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
     <elem attr=@Foo />
     @code {
         int Foo = 18;
     }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Legacy_3_1_WhiteSpace_InsideAttribute_InMarkupBlock()
-        {
-            // Arrange
-            _configuration = RazorConfiguration.Create(
-                RazorLanguageVersion.Version_3_0,
-                base.Configuration.ConfigurationName,
-                base.Configuration.Extensions);
+    [Fact]
+    public void Legacy_3_1_WhiteSpace_InsideAttribute_InMarkupBlock()
+    {
+        // Arrange
+        _configuration = RazorConfiguration.Create(
+            RazorLanguageVersion.Version_3_0,
+            base.Configuration.ConfigurationName,
+            base.Configuration.Extensions);
 
-            // Act
-            var generated = CompileToCSharp(@"<div class=""first second"">Hello</div>");
+        // Act
+        var generated = CompileToCSharp(@"<div class=""first second"">Hello</div>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Legacy_3_1_WhiteSpace_InMarkupInFunctionsBlock()
-        {
-            // Arrange
-            _configuration = RazorConfiguration.Create(
-                RazorLanguageVersion.Version_3_0,
-                base.Configuration.ConfigurationName,
-                base.Configuration.Extensions);
+    [Fact]
+    public void Legacy_3_1_WhiteSpace_InMarkupInFunctionsBlock()
+    {
+        // Arrange
+        _configuration = RazorConfiguration.Create(
+            RazorLanguageVersion.Version_3_0,
+            base.Configuration.ConfigurationName,
+            base.Configuration.Extensions);
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Rendering
 @code {
     void MyMethod(RenderTreeBuilder __builder)
@@ -6151,27 +6151,27 @@ namespace Test
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        #endregion
+    #endregion
 
-        #region Imports
-        [Fact]
-        public void Component_WithImportsFile()
-        {
-            // Arrange
-            var importContent = @"
+    #region Imports
+    [Fact]
+    public void Component_WithImportsFile()
+    {
+        // Arrange
+        var importContent = @"
 @using System.Text
 @using System.Reflection
 @attribute [Serializable]
 ";
-            var importItem = CreateProjectItem("_Imports.razor", importContent, FileKinds.ComponentImport);
-            ImportItems.Add(importItem);
-            AdditionalSyntaxTrees.Add(Parse(@"
+        var importItem = CreateProjectItem("_Imports.razor", importContent, FileKinds.ComponentImport);
+        ImportItems.Add(importItem);
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -6183,22 +6183,22 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <Counter />
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ComponentImports()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void ComponentImports()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 namespace Test
 {
     public class MainLayout : ComponentBase, ILayoutComponent
@@ -6208,8 +6208,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp("_Imports.razor", @"
+        // Act
+        var generated = CompileToCSharp("_Imports.razor", @"
 @using System.Text
 @using System.Reflection
 
@@ -6218,24 +6218,24 @@ namespace Test
 <div>Hello</div>
 ", throwOnFailure: false, fileKind: FileKinds.ComponentImport);
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated, throwOnFailure: false);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated, throwOnFailure: false);
+    }
 
-        [Fact]
-        public void Component_NamespaceDirective_InImports()
-        {
-            // Arrange
-            var importContent = @"
+    [Fact]
+    public void Component_NamespaceDirective_InImports()
+    {
+        // Arrange
+        var importContent = @"
 @using System.Text
 @using System.Reflection
 @namespace New.Test
 ";
-            var importItem = CreateProjectItem("_Imports.razor", importContent, FileKinds.ComponentImport);
-            ImportItems.Add(importItem);
-            AdditionalSyntaxTrees.Add(Parse(@"
+        var importItem = CreateProjectItem("_Imports.razor", importContent, FileKinds.ComponentImport);
+        ImportItems.Add(importItem);
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace New.Test
@@ -6247,29 +6247,29 @@ namespace New.Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <Counter />
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Component_NamespaceDirective_OverrideImports()
-        {
-            // Arrange
-            var importContent = @"
+    [Fact]
+    public void Component_NamespaceDirective_OverrideImports()
+    {
+        // Arrange
+        var importContent = @"
 @using System.Text
 @using System.Reflection
 @namespace Import.Test
 ";
-            var importItem = CreateProjectItem("_Imports.razor", importContent, FileKinds.ComponentImport);
-            ImportItems.Add(importItem);
-            AdditionalSyntaxTrees.Add(Parse(@"
+        var importItem = CreateProjectItem("_Imports.razor", importContent, FileKinds.ComponentImport);
+        ImportItems.Add(importItem);
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace New.Test
@@ -6281,30 +6281,30 @@ namespace New.Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp("Pages/Counter.razor", @"
+        // Act
+        var generated = CompileToCSharp("Pages/Counter.razor", @"
 @namespace New.Test
 <Counter2 />
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Component_PreserveWhitespaceDirective_InImports()
-        {
-            // Arrange
-            var importContent = @"
+    [Fact]
+    public void Component_PreserveWhitespaceDirective_InImports()
+    {
+        // Arrange
+        var importContent = @"
 @preservewhitespace true
 ";
-            var importItem = CreateProjectItem("_Imports.razor", importContent, FileKinds.ComponentImport);
-            ImportItems.Add(importItem);
+        var importItem = CreateProjectItem("_Imports.razor", importContent, FileKinds.ComponentImport);
+        ImportItems.Add(importItem);
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 
 <parent>
     <child> @DateTime.Now </child>
@@ -6312,24 +6312,24 @@ namespace New.Test
 
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Component_PreserveWhitespaceDirective_OverrideImports()
-        {
-            // Arrange
-            var importContent = @"
+    [Fact]
+    public void Component_PreserveWhitespaceDirective_OverrideImports()
+    {
+        // Arrange
+        var importContent = @"
 @preservewhitespace true
 ";
-            var importItem = CreateProjectItem("_Imports.razor", importContent, FileKinds.ComponentImport);
-            ImportItems.Add(importItem);
+        var importItem = CreateProjectItem("_Imports.razor", importContent, FileKinds.ComponentImport);
+        ImportItems.Add(importItem);
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @preservewhitespace false
 
 <parent>
@@ -6338,20 +6338,20 @@ namespace New.Test
 
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        #endregion
+    #endregion
 
-        #region "CSS scoping"
-        [Fact]
-        public void Component_WithCssScope()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    #region "CSS scoping"
+    [Fact]
+    public void Component_WithCssScope()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -6364,9 +6364,9 @@ namespace Test
 }
 "));
 
-            // Act
-            // This test case attempts to use all syntaxes that might interact with auto-generated attributes
-            var generated = CompileToCSharp(@"
+        // Act
+        // This test case attempts to use all syntaxes that might interact with auto-generated attributes
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.AspNetCore.Components.Rendering
 <h1>Element with no attributes</h1>
@@ -6402,99 +6402,99 @@ namespace Test
 }
 ", cssScope: "TestCssScope");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
-        #endregion
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
+    #endregion
 
-        #region Misc
+    #region Misc
 
-        [Fact] // We don't process <!DOCTYPE ...> - we just skip them
-        public void Component_WithDocType()
-        {
-            // Arrange
+    [Fact] // We don't process <!DOCTYPE ...> - we just skip them
+    public void Component_WithDocType()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <!DOCTYPE html>
 <div>
 </div>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void DuplicateMarkupAttributes_IsAnError()
-        {
-            // Arrange
+    [Fact]
+    public void DuplicateMarkupAttributes_IsAnError()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <div>
   <a href=""/cool-url"" style="""" disabled href=""/even-cooler-url"">Learn the ten cool tricks your compiler author will hate!</a>
 </div>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
 
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Same(ComponentDiagnosticFactory.DuplicateMarkupAttribute.Id, diagnostic.Id);
-        }
+        var diagnostic = Assert.Single(generated.Diagnostics);
+        Assert.Same(ComponentDiagnosticFactory.DuplicateMarkupAttribute.Id, diagnostic.Id);
+    }
 
-        [Fact]
-        public void DuplicateMarkupAttributes_IsAnError_EventHandler()
-        {
-            // Arrange
+    [Fact]
+    public void DuplicateMarkupAttributes_IsAnError_EventHandler()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
 <div>
   <a onclick=""test()"" @onclick=""() => {}"">Learn the ten cool tricks your compiler author will hate!</a>
 </div>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
 
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Same(ComponentDiagnosticFactory.DuplicateMarkupAttributeDirective.Id, diagnostic.Id);
-        }
+        var diagnostic = Assert.Single(generated.Diagnostics);
+        Assert.Same(ComponentDiagnosticFactory.DuplicateMarkupAttributeDirective.Id, diagnostic.Id);
+    }
 
-        [Fact]
-        public void DuplicateMarkupAttributes_Multiple_IsAnError()
-        {
-            // Arrange
+    [Fact]
+    public void DuplicateMarkupAttributes_Multiple_IsAnError()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <div>
   <a href=""/cool-url"" style="""" disabled href=""/even-cooler-url"" href>Learn the ten cool tricks your compiler author will hate!</a>
 </div>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
 
-            Assert.All(generated.Diagnostics, d =>
-            {
-                Assert.Same(ComponentDiagnosticFactory.DuplicateMarkupAttribute.Id, d.Id);
-            });
-        }
-
-        [Fact]
-        public void DuplicateMarkupAttributes_IsAnError_BindValue()
+        Assert.All(generated.Diagnostics, d =>
         {
-            // Arrange
+            Assert.Same(ComponentDiagnosticFactory.DuplicateMarkupAttribute.Id, d.Id);
+        });
+    }
 
-            // Act
-            var generated = CompileToCSharp(@"
+    [Fact]
+    public void DuplicateMarkupAttributes_IsAnError_BindValue()
+    {
+        // Arrange
+
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
 <div>
   <input type=""text"" value=""17"" @bind=""@text""></input>
@@ -6505,21 +6505,21 @@ namespace Test
 ");
 
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
 
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Same(ComponentDiagnosticFactory.DuplicateMarkupAttributeDirective.Id, diagnostic.Id);
-        }
+        var diagnostic = Assert.Single(generated.Diagnostics);
+        Assert.Same(ComponentDiagnosticFactory.DuplicateMarkupAttributeDirective.Id, diagnostic.Id);
+    }
 
-        [Fact]
-        public void DuplicateMarkupAttributes_DifferentCasing_IsAnError_BindValue()
-        {
-            // Arrange
+    [Fact]
+    public void DuplicateMarkupAttributes_DifferentCasing_IsAnError_BindValue()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
 <div>
   <input type=""text"" Value=""17"" @bind=""@text""></input>
@@ -6529,21 +6529,21 @@ namespace Test
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
 
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Same(ComponentDiagnosticFactory.DuplicateMarkupAttributeDirective.Id, diagnostic.Id);
-        }
+        var diagnostic = Assert.Single(generated.Diagnostics);
+        Assert.Same(ComponentDiagnosticFactory.DuplicateMarkupAttributeDirective.Id, diagnostic.Id);
+    }
 
-        [Fact]
-        public void DuplicateMarkupAttributes_IsAnError_BindOnInput()
-        {
-            // Arrange
+    [Fact]
+    public void DuplicateMarkupAttributes_IsAnError_BindOnInput()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
 <div>
   <input type=""text"" @bind-value=""@text"" @bind-value:event=""oninput"" @oninput=""() => {}""></input>
@@ -6553,19 +6553,19 @@ namespace Test
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
 
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Same(ComponentDiagnosticFactory.DuplicateMarkupAttributeDirective.Id, diagnostic.Id);
-        }
+        var diagnostic = Assert.Single(generated.Diagnostics);
+        Assert.Same(ComponentDiagnosticFactory.DuplicateMarkupAttributeDirective.Id, diagnostic.Id);
+    }
 
-        [Fact]
-        public void DuplicateComponentParameters_IsAnError()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void DuplicateComponentParameters_IsAnError()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -6577,24 +6577,24 @@ namespace Test
     }
 }
 "));
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent Message=""test"" mESSAGE=""test"" />
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
 
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Same(ComponentDiagnosticFactory.DuplicateComponentParameter.Id, diagnostic.Id);
-        }
+        var diagnostic = Assert.Single(generated.Diagnostics);
+        Assert.Same(ComponentDiagnosticFactory.DuplicateComponentParameter.Id, diagnostic.Id);
+    }
 
-        [Fact]
-        public void DuplicateComponentParameters_IsAnError_Multiple()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void DuplicateComponentParameters_IsAnError_Multiple()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -6606,26 +6606,26 @@ namespace Test
     }
 }
 "));
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent Message=""test"" mESSAGE=""test"" Message=""anotherone"" />
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
 
-            Assert.All(generated.Diagnostics, d =>
-            {
-                Assert.Same(ComponentDiagnosticFactory.DuplicateComponentParameter.Id, d.Id);
-            });
-        }
-
-        [Fact]
-        public void DuplicateComponentParameters_IsAnError_WeaklyTyped()
+        Assert.All(generated.Diagnostics, d =>
         {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+            Assert.Same(ComponentDiagnosticFactory.DuplicateComponentParameter.Id, d.Id);
+        });
+    }
+
+    [Fact]
+    public void DuplicateComponentParameters_IsAnError_WeaklyTyped()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -6637,24 +6637,24 @@ namespace Test
     }
 }
 "));
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent Foo=""test"" foo=""test"" />
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
 
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Same(ComponentDiagnosticFactory.DuplicateComponentParameter.Id, diagnostic.Id);
-        }
+        var diagnostic = Assert.Single(generated.Diagnostics);
+        Assert.Same(ComponentDiagnosticFactory.DuplicateComponentParameter.Id, diagnostic.Id);
+    }
 
-        [Fact]
-        public void DuplicateComponentParameters_IsAnError_BindMessage()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void DuplicateComponentParameters_IsAnError_BindMessage()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
@@ -6669,27 +6669,27 @@ namespace Test
     }
 }
 "));
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent Message=""@message"" @bind-Message=""@message"" />
 @functions {
     string message = ""hi"";
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
 
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Same(ComponentDiagnosticFactory.DuplicateComponentParameterDirective.Id, diagnostic.Id);
-        }
+        var diagnostic = Assert.Single(generated.Diagnostics);
+        Assert.Same(ComponentDiagnosticFactory.DuplicateComponentParameterDirective.Id, diagnostic.Id);
+    }
 
-        [Fact]
-        public void DuplicateComponentParameters_IsAnError_BindMessageChanged()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void DuplicateComponentParameters_IsAnError_BindMessageChanged()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
@@ -6704,27 +6704,27 @@ namespace Test
     }
 }
 "));
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent MessageChanged=""@((s) => {})"" @bind-Message=""@message"" />
 @functions {
     string message = ""hi"";
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
 
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Same(ComponentDiagnosticFactory.DuplicateComponentParameterDirective.Id, diagnostic.Id);
-        }
+        var diagnostic = Assert.Single(generated.Diagnostics);
+        Assert.Same(ComponentDiagnosticFactory.DuplicateComponentParameterDirective.Id, diagnostic.Id);
+    }
 
-        [Fact]
-        public void DuplicateComponentParameters_IsAnError_BindMessageExpression()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void DuplicateComponentParameters_IsAnError_BindMessageExpression()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
@@ -6739,27 +6739,27 @@ namespace Test
     }
 }
 "));
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent @bind-Message=""@message"" MessageExpression=""@((s) => {})"" />
 @functions {
     string message = ""hi"";
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
 
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Same(ComponentDiagnosticFactory.DuplicateComponentParameterDirective.Id, diagnostic.Id);
-        }
+        var diagnostic = Assert.Single(generated.Diagnostics);
+        Assert.Same(ComponentDiagnosticFactory.DuplicateComponentParameterDirective.Id, diagnostic.Id);
+    }
 
-        [Fact]
-        public void ScriptTag_WithErrorSuppressed()
-        {
-            // Arrange/Act
-            var generated = CompileToCSharp(@"
+    [Fact]
+    public void ScriptTag_WithErrorSuppressed()
+    {
+        // Arrange/Act
+        var generated = CompileToCSharp(@"
 <div>
     <script src='some/url.js' anotherattribute suppress-error='BL9992'>
         some text
@@ -6768,17 +6768,17 @@ namespace Test
 </div>
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact] // https://github.com/dotnet/blazor/issues/597
-        public void Regression_597()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact] // https://github.com/dotnet/blazor/issues/597
+    public void Regression_597()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -6790,25 +6790,25 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <Counter @bind-v=""y"" />
 @code {
     string y = null;
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Regression_609()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Regression_609()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -6824,8 +6824,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <User @bind-Name=""@UserName"" @bind-IsActive=""@UserIsActive"" />
 
 @code {
@@ -6834,17 +6834,17 @@ namespace Test
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact] // https://github.com/dotnet/blazor/issues/772
-        public void Regression_772()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact] // https://github.com/dotnet/blazor/issues/772
+    public void Regression_772()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -6856,8 +6856,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @page ""/""
 
 <h1>Hello, world!</h1>
@@ -6867,22 +6867,22 @@ Welcome to your new app.
 <SurveyPrompt Title=""
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
 
-            // This has some errors
-            Assert.Collection(
-                generated.Diagnostics.OrderBy(d => d.Id),
-                d => Assert.Equal("RZ1034", d.Id),
-                d => Assert.Equal("RZ1035", d.Id));
-        }
+        // This has some errors
+        Assert.Collection(
+            generated.Diagnostics.OrderBy(d => d.Id),
+            d => Assert.Equal("RZ1034", d.Id),
+            d => Assert.Equal("RZ1035", d.Id));
+    }
 
-        [Fact] // https://github.com/dotnet/blazor/issues/773
-        public void Regression_773()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact] // https://github.com/dotnet/blazor/issues/773
+    public void Regression_773()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -6894,8 +6894,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @page ""/""
 
 <h1>Hello, world!</h1>
@@ -6905,19 +6905,19 @@ Welcome to your new app.
 <SurveyPrompt Title=""<div>Test!</div>"" />
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Regression_784()
-        {
-            // Arrange
+    [Fact]
+    public void Regression_784()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
 <p @onmouseover=""OnComponentHover"" style=""background: @ParentBgColor;"" />
 @code {
@@ -6929,34 +6929,34 @@ Welcome to your new app.
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void EventHandlerTagHelper_EscapeQuotes()
-        {
-            // Act
-            var generated = CompileToCSharp(@"
+    [Fact]
+    public void EventHandlerTagHelper_EscapeQuotes()
+    {
+        // Act
+        var generated = CompileToCSharp(@"
 <input onfocus='alert(""Test"");' />
 <input onfocus=""alert(""Test"");"" />
 <input onfocus=""alert('Test');"" />
 <p data-options='{direction: ""fromtop"", animation_duration: 25, direction: ""reverse""}'></p>
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Component_TextTagsAreNotRendered()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Component_TextTagsAreNotRendered()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -6968,8 +6968,8 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <Counter />
 @if (true)
 {
@@ -6977,17 +6977,17 @@ namespace Test
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Component_MatchingIsCaseSensitive()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Component_MatchingIsCaseSensitive()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -7000,23 +7000,23 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent />
 <mycomponent />
 <MyComponent intproperty='1' BoolProperty='true' />");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void Component_MultipleComponentsDifferByCase()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Component_MultipleComponentsDifferByCase()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -7033,39 +7033,39 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <MyComponent IntProperty='1' />
 <Mycomponent IntProperty='2' />");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ElementWithUppercaseTagName_CanHideWarningWithBang()
-        {
-            // Arrange & Act
-            var generated = CompileToCSharp(@"
+    [Fact]
+    public void ElementWithUppercaseTagName_CanHideWarningWithBang()
+    {
+        // Arrange & Act
+        var generated = CompileToCSharp(@"
 <!NotAComponent />
 <!DefinitelyNotAComponent></!DefinitelyNotAComponent>");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        #endregion
+    #endregion
 
-        #region LinePragmas
+    #region LinePragmas
 
-        [Fact]
-        public void ProducesEnhancedLinePragmaWhenNecessary()
-        {
-            var generated = CompileToCSharp(@"
+    [Fact]
+    public void ProducesEnhancedLinePragmaWhenNecessary()
+    {
+        var generated = CompileToCSharp(@"
 <h1>Single line statement</h1>
 
 Time: @DateTime.Now
@@ -7085,16 +7085,16 @@ Time: @DateTime.Now
 }
 ");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated);
+    }
 
-        [Fact]
-        public void ProducesStandardLinePragmaForCSharpCode()
-        {
-            var generated = CompileToCSharp(@"
+    [Fact]
+    public void ProducesStandardLinePragmaForCSharpCode()
+    {
+        var generated = CompileToCSharp(@"
 <h1>Conditional statement</h1>
 @for (var i = 0; i < 10; i++)
 {
@@ -7111,16 +7111,16 @@ Time: @DateTime.Now
 }
 ", throwOnFailure: false);
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated, throwOnFailure: false);
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated, throwOnFailure: false);
+    }
 
-        [Fact]
-        public void CanProduceLinePragmasForComponentWithRenderFragment()
-        {
-            var generated = CompileToCSharp(@"
+    [Fact]
+    public void CanProduceLinePragmasForComponentWithRenderFragment()
+    {
+        var generated = CompileToCSharp(@"
 <div class=""row"">
   <a href=""#"" @onclick=Toggle class=""col-12"">@ActionText</a>
   @if (!Collapsed)
@@ -7143,12 +7143,11 @@ Time: @DateTime.Now
   }
 }", throwOnFailure: false);
 
-// Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated, throwOnFailure: false);
-        }
-
-        #endregion
+        // Assert
+        AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+        AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+        CompileToAssembly(generated, throwOnFailure: false);
     }
+
+    #endregion
 }

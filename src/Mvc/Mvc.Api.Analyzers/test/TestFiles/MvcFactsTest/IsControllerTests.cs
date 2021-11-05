@@ -1,47 +1,46 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
-{
-    public interface ITestController { }
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers;
 
-    public abstract class AbstractController : Controller { }
+public interface ITestController { }
 
-    public class DerivedAbstractController : AbstractController { }
+public abstract class AbstractController : Controller { }
 
-    public struct ValueTypeController { }
+public class DerivedAbstractController : AbstractController { }
 
-    public class OpenGenericController<T> : Controller { }
+public struct ValueTypeController { }
 
-    public class PocoType { }
+public class OpenGenericController<T> : Controller { }
 
-    public class DerivedPocoType : PocoType { }
+public class PocoType { }
 
-    public class TypeDerivingFromController : Controller { }
+public class DerivedPocoType : PocoType { }
 
-    public class TypeDerivingFromControllerBase : ControllerBase { }
+public class TypeDerivingFromController : Controller { }
 
-    public abstract class NoControllerAttributeBaseController { }
+public class TypeDerivingFromControllerBase : ControllerBase { }
 
-    public class NoSuffixNoControllerAttribute : NoControllerAttributeBaseController { }
+public abstract class NoControllerAttributeBaseController { }
 
-    public class DerivedGenericController : OpenGenericController<string> { }
+public class NoSuffixNoControllerAttribute : NoControllerAttributeBaseController { }
 
-    public class NoSuffix : Controller { }
+public class DerivedGenericController : OpenGenericController<string> { }
 
-    public class PocoController { }
+public class NoSuffix : Controller { }
 
-    [Controller]
-    public class CustomBase { }
+public class PocoController { }
 
-    [Controller]
-    public class ChildOfCustomBase : CustomBase { }
+[Controller]
+public class CustomBase { }
 
-    [NonController]
-    public class BaseNonController { }
+[Controller]
+public class ChildOfCustomBase : CustomBase { }
 
-    [Controller]
-    public class ControllerAttributeDerivingFromNonController : BaseNonController { }
+[NonController]
+public class BaseNonController { }
 
-    public class BasePocoNonControllerChildController : BaseNonController { }
-}
+[Controller]
+public class ControllerAttributeDerivingFromNonController : BaseNonController { }
+
+public class BasePocoNonControllerChildController : BaseNonController { }

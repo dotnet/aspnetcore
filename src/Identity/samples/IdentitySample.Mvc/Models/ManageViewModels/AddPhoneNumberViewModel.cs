@@ -7,13 +7,12 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace IdentitySample.Models.ManageViewModels
+namespace IdentitySample.Models.ManageViewModels;
+
+public class AddPhoneNumberViewModel
 {
-    public class AddPhoneNumberViewModel
-    {
-        [Required]
-        [Phone]
-        [Display(Name = "Phone number")]
-        public string PhoneNumber { get; set; }
-    }
+    [Required]
+    [Phone]
+    [Display(Name = "Phone number")]
+    public string PhoneNumber { get; set; }
 }

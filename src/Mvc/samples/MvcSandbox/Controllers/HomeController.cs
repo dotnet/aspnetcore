@@ -3,16 +3,15 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace MvcSandbox.Controllers
-{
-    public class HomeController : Controller
-    {
-        [ModelBinder]
-        public string Id { get; set; }
+namespace MvcSandbox.Controllers;
 
-        public IActionResult Index()
-        {
-            return View();
-        }
+public class HomeController : Controller
+{
+    [ModelBinder]
+    public string Id { get; set; }
+
+    public IActionResult Index()
+    {
+        return View();
     }
 }

@@ -5,28 +5,27 @@ using System;
 using System.IO;
 using System.Reflection;
 
-namespace Microsoft.Extensions.Localization
-{
-    /// <summary>
-    /// This API supports infrastructure and is not intended to be used
-    /// directly from your code. This API may change or be removed in future releases.
-    /// </summary>
-    internal class AssemblyWrapper
-    {
-        public AssemblyWrapper(Assembly assembly)
-        {
-            if (assembly == null)
-            {
-                throw new ArgumentNullException(nameof(assembly));
-            }
+namespace Microsoft.Extensions.Localization;
 
-            Assembly = assembly;
+/// <summary>
+/// This API supports infrastructure and is not intended to be used
+/// directly from your code. This API may change or be removed in future releases.
+/// </summary>
+internal class AssemblyWrapper
+{
+    public AssemblyWrapper(Assembly assembly)
+    {
+        if (assembly == null)
+        {
+            throw new ArgumentNullException(nameof(assembly));
         }
 
-        public Assembly Assembly { get; }
-
-        public virtual string FullName => Assembly.FullName!;
-
-        public virtual Stream? GetManifestResourceStream(string name) => Assembly.GetManifestResourceStream(name);
+        Assembly = assembly;
     }
+
+    public Assembly Assembly { get; }
+
+    public virtual string FullName => Assembly.FullName!;
+
+    public virtual Stream? GetManifestResourceStream(string name) => Assembly.GetManifestResourceStream(name);
 }

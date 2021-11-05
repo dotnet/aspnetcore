@@ -3,23 +3,22 @@
 
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Extensions.Caching.SqlServer
+namespace Microsoft.Extensions.Caching.SqlServer;
+
+internal class TestSqlServerCacheOptions : IOptions<SqlServerCacheOptions>
 {
-    internal class TestSqlServerCacheOptions : IOptions<SqlServerCacheOptions>
+    private readonly SqlServerCacheOptions _innerOptions;
+
+    public TestSqlServerCacheOptions(SqlServerCacheOptions innerOptions)
     {
-        private readonly SqlServerCacheOptions _innerOptions;
+        _innerOptions = innerOptions;
+    }
 
-        public TestSqlServerCacheOptions(SqlServerCacheOptions innerOptions)
+    public SqlServerCacheOptions Value
+    {
+        get
         {
-            _innerOptions = innerOptions;
-        }
-
-        public SqlServerCacheOptions Value
-        {
-            get
-            {
-                return _innerOptions;
-            }
+            return _innerOptions;
         }
     }
 }

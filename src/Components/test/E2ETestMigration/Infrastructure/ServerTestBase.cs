@@ -8,36 +8,35 @@ using Microsoft.AspNetCore.Testing;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
+namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
+
+public abstract class ServerTestBase<TServerFixture>
+    : ComponentBrowserTestBase,
+    IClassFixture<TServerFixture>
+    where TServerFixture : ServerFixture
 {
-    public abstract class ServerTestBase<TServerFixture>
-        : ComponentBrowserTestBase,
-        IClassFixture<TServerFixture>
-        where TServerFixture: ServerFixture
+    public string ServerPathBase => "/subdir";
+
+    protected readonly TServerFixture _serverFixture;
+
+    public ServerTestBase(
+        TServerFixture serverFixture,
+        ITestOutputHelper output)
+        : base(output)
     {
-        public string ServerPathBase => "/subdir";
+        _serverFixture = serverFixture;
+        MountUri = _serverFixture.RootUri + "subdir";
+    }
 
-        protected readonly TServerFixture _serverFixture;
+    protected override async Task InitializeCoreAsync(TestContext context)
+    {
+        await base.InitializeCoreAsync(context);
 
-        public ServerTestBase(
-            TServerFixture serverFixture,
-            ITestOutputHelper output)
-            : base(output)
+        if (TestPage != null)
         {
-            _serverFixture = serverFixture;
-            MountUri = _serverFixture.RootUri + "subdir";
-        }
-
-        protected override async Task InitializeCoreAsync(TestContext context)
-        {
-            await base.InitializeCoreAsync(context);
-
-            if (TestPage != null)
-            {
-                // Clear logs - we check these during tests in some cases.
-                // Make sure each test starts clean.
-                await TestPage.EvaluateAsync("console.clear()");
-            }
+            // Clear logs - we check these during tests in some cases.
+            // Make sure each test starts clean.
+            await TestPage.EvaluateAsync("console.clear()");
         }
     }
 }

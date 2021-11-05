@@ -4,14 +4,13 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
+namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
+
+internal sealed class RazorRuntimeCompilationHostingStartup : IHostingStartup
 {
-    internal sealed class RazorRuntimeCompilationHostingStartup : IHostingStartup
+    public void Configure(IWebHostBuilder builder)
     {
-        public void Configure(IWebHostBuilder builder)
-        {
-            // Add Razor services
-            builder.ConfigureServices(services => RazorRuntimeCompilationMvcCoreBuilderExtensions.AddServices(services));
-        }
+        // Add Razor services
+        builder.ConfigureServices(services => RazorRuntimeCompilationMvcCoreBuilderExtensions.AddServices(services));
     }
 }

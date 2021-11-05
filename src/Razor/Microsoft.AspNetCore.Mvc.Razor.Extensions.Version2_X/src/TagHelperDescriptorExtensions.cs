@@ -4,34 +4,33 @@
 using System;
 using Microsoft.AspNetCore.Razor.Language;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
+namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X;
+
+public static class TagHelperDescriptorExtensions
 {
-    public static class TagHelperDescriptorExtensions
+    /// <summary>
+    /// Indicates whether a <see cref="TagHelperDescriptor"/> represents a view component.
+    /// </summary>
+    /// <param name="tagHelper">The <see cref="TagHelperDescriptor"/> to check.</param>
+    /// <returns>Whether a <see cref="TagHelperDescriptor"/> represents a view component.</returns>
+    public static bool IsViewComponentKind(this TagHelperDescriptor tagHelper)
     {
-        /// <summary>
-        /// Indicates whether a <see cref="TagHelperDescriptor"/> represents a view component.
-        /// </summary>
-        /// <param name="tagHelper">The <see cref="TagHelperDescriptor"/> to check.</param>
-        /// <returns>Whether a <see cref="TagHelperDescriptor"/> represents a view component.</returns>
-        public static bool IsViewComponentKind(this TagHelperDescriptor tagHelper)
+        if (tagHelper == null)
         {
-            if (tagHelper == null)
-            {
-                throw new ArgumentNullException(nameof(tagHelper));
-            }
-
-            return string.Equals(ViewComponentTagHelperConventions.Kind, tagHelper.Kind, StringComparison.Ordinal);
+            throw new ArgumentNullException(nameof(tagHelper));
         }
 
-        public static string GetViewComponentName(this TagHelperDescriptor tagHelper)
-        {
-            if (tagHelper == null)
-            {
-                throw new ArgumentNullException(nameof(tagHelper));
-            }
+        return string.Equals(ViewComponentTagHelperConventions.Kind, tagHelper.Kind, StringComparison.Ordinal);
+    }
 
-            tagHelper.Metadata.TryGetValue(ViewComponentTagHelperMetadata.Name, out var result);
-            return result;
+    public static string GetViewComponentName(this TagHelperDescriptor tagHelper)
+    {
+        if (tagHelper == null)
+        {
+            throw new ArgumentNullException(nameof(tagHelper));
         }
+
+        tagHelper.Metadata.TryGetValue(ViewComponentTagHelperMetadata.Name, out var result);
+        return result;
     }
 }

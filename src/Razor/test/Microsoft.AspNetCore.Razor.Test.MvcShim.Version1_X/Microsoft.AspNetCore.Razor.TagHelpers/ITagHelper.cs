@@ -3,14 +3,13 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Razor.TagHelpers
+namespace Microsoft.AspNetCore.Razor.TagHelpers;
+
+public interface ITagHelper
 {
-    public interface ITagHelper
-    {
-        int Order { get; }
+    int Order { get; }
 
-        void Init(TagHelperContext context);
+    void Init(TagHelperContext context);
 
-        Task ProcessAsync(TagHelperContext context, TagHelperOutput output);
-    }
+    Task ProcessAsync(TagHelperContext context, TagHelperOutput output);
 }

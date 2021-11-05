@@ -4,27 +4,26 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace FormatterWebSite
-{
-    public class StartupWithRespectBrowserAcceptHeader
-    {
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddControllers(options =>
-            {
-                options.RespectBrowserAcceptHeader = true;
-            })
-            .AddNewtonsoftJson();
-        }
+namespace FormatterWebSite;
 
-        public void Configure(IApplicationBuilder app)
+public class StartupWithRespectBrowserAcceptHeader
+{
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddControllers(options =>
         {
-            app.UseRouting();
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapDefaultControllerRoute();
-            });
-        }
+            options.RespectBrowserAcceptHeader = true;
+        })
+        .AddNewtonsoftJson();
+    }
+
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapDefaultControllerRoute();
+        });
     }
 }
 

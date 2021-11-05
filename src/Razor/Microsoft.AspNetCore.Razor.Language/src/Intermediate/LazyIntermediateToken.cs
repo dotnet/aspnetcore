@@ -3,25 +3,24 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Razor.Language.Intermediate
+namespace Microsoft.AspNetCore.Razor.Language.Intermediate;
+
+internal class LazyIntermediateToken : IntermediateToken
 {
-    internal class LazyIntermediateToken : IntermediateToken
+    public object FactoryArgument { get; set; }
+    public Func<object, string> ContentFactory { get; set; }
+
+    public override string Content
     {
-        public object FactoryArgument { get; set; }
-        public Func<object, string> ContentFactory { get; set; }
-
-        public override string Content
+        get
         {
-            get
+            if (base.Content == null && ContentFactory != null)
             {
-                if (base.Content == null && ContentFactory != null)
-                {
-                    Content = ContentFactory(FactoryArgument);
-                    ContentFactory = null;
-                }
-
-                return base.Content;
+                Content = ContentFactory(FactoryArgument);
+                ContentFactory = null;
             }
+
+            return base.Content;
         }
     }
 }

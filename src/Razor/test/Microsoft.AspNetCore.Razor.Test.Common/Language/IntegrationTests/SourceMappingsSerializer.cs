@@ -3,45 +3,44 @@
 
 using System.Text;
 
-namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
+namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests;
+
+public static class SourceMappingsSerializer
 {
-    public static class SourceMappingsSerializer
+    public static string Serialize(RazorCSharpDocument csharpDocument, RazorSourceDocument sourceDocument)
     {
-        public static string Serialize(RazorCSharpDocument csharpDocument, RazorSourceDocument sourceDocument)
+        var builder = new StringBuilder();
+        var charBuffer = new char[sourceDocument.Length];
+        sourceDocument.CopyTo(0, charBuffer, 0, sourceDocument.Length);
+        var sourceContent = new string(charBuffer);
+
+        for (var i = 0; i < csharpDocument.SourceMappings.Count; i++)
         {
-            var builder = new StringBuilder();
-            var charBuffer = new char[sourceDocument.Length];
-            sourceDocument.CopyTo(0, charBuffer, 0, sourceDocument.Length);
-            var sourceContent = new string(charBuffer);
+            var sourceMapping = csharpDocument.SourceMappings[i];
 
-            for (var i = 0; i < csharpDocument.SourceMappings.Count; i++)
-            {
-                var sourceMapping = csharpDocument.SourceMappings[i];
+            builder.Append("Source Location: ");
+            AppendMappingLocation(builder, sourceMapping.OriginalSpan, sourceContent);
 
-                builder.Append("Source Location: ");
-                AppendMappingLocation(builder, sourceMapping.OriginalSpan, sourceContent);
+            builder.Append("Generated Location: ");
+            AppendMappingLocation(builder, sourceMapping.GeneratedSpan, csharpDocument.GeneratedCode);
 
-                builder.Append("Generated Location: ");
-                AppendMappingLocation(builder, sourceMapping.GeneratedSpan, csharpDocument.GeneratedCode);
-
-                builder.AppendLine();
-            }
-
-            return builder.ToString();
+            builder.AppendLine();
         }
 
-        private static void AppendMappingLocation(StringBuilder builder, SourceSpan location, string content)
+        return builder.ToString();
+    }
+
+    private static void AppendMappingLocation(StringBuilder builder, SourceSpan location, string content)
+    {
+        builder
+            .AppendLine(location.ToString())
+            .Append("|");
+
+        for (var i = 0; i < location.Length; i++)
         {
-            builder
-                .AppendLine(location.ToString())
-                .Append("|");
-
-            for (var i = 0; i < location.Length; i++)
-            {
-                builder.Append(content[location.AbsoluteIndex + i]);
-            }
-
-            builder.AppendLine("|");
+            builder.Append(content[location.AbsoluteIndex + i]);
         }
+
+        builder.AppendLine("|");
     }
 }

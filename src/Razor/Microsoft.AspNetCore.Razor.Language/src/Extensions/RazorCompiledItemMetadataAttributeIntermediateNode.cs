@@ -5,61 +5,60 @@ using System;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-namespace Microsoft.AspNetCore.Razor.Language.Extensions
+namespace Microsoft.AspNetCore.Razor.Language.Extensions;
+
+/// <summary>
+/// An <see cref="ExtensionIntermediateNode"/> that generates code for <c>RazorCompiledItemMetadataAttribute</c>.
+/// </summary>
+public class RazorCompiledItemMetadataAttributeIntermediateNode : ExtensionIntermediateNode
 {
+    public override IntermediateNodeCollection Children => IntermediateNodeCollection.ReadOnly;
+
     /// <summary>
-    /// An <see cref="ExtensionIntermediateNode"/> that generates code for <c>RazorCompiledItemMetadataAttribute</c>.
+    /// Gets or sets the attribute key.
     /// </summary>
-    public class RazorCompiledItemMetadataAttributeIntermediateNode : ExtensionIntermediateNode
+    public string Key { get; set; }
+
+    /// <summary>
+    /// Gets or sets the attribute value.
+    /// </summary>
+    public string Value { get; set; }
+
+    public override void Accept(IntermediateNodeVisitor visitor)
     {
-        public override IntermediateNodeCollection Children => IntermediateNodeCollection.ReadOnly;
-
-        /// <summary>
-        /// Gets or sets the attribute key.
-        /// </summary>
-        public string Key { get; set; }
-
-        /// <summary>
-        /// Gets or sets the attribute value.
-        /// </summary>
-        public string Value { get; set; }
-
-        public override void Accept(IntermediateNodeVisitor visitor)
+        if (visitor == null)
         {
-            if (visitor == null)
-            {
-                throw new ArgumentNullException(nameof(visitor));
-            }
-
-            AcceptExtensionNode(this, visitor);
+            throw new ArgumentNullException(nameof(visitor));
         }
 
-        public override void WriteNode(CodeTarget target, CodeRenderingContext context)
+        AcceptExtensionNode(this, visitor);
+    }
+
+    public override void WriteNode(CodeTarget target, CodeRenderingContext context)
+    {
+        if (target == null)
         {
-            if (target == null)
-            {
-                throw new ArgumentNullException(nameof(target));
-            }
-
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            var extension = target.GetExtension<IMetadataAttributeTargetExtension>();
-            if (extension == null)
-            {
-                ReportMissingCodeTargetExtension<IMetadataAttributeTargetExtension>(context);
-                return;
-            }
-
-            extension.WriteRazorCompiledItemMetadataAttribute(context, this);
+            throw new ArgumentNullException(nameof(target));
         }
 
-        public override void FormatNode(IntermediateNodeFormatter formatter)
+        if (context == null)
         {
-            formatter.WriteProperty(nameof(Key), Key);
-            formatter.WriteProperty(nameof(Value), Value);
+            throw new ArgumentNullException(nameof(context));
         }
+
+        var extension = target.GetExtension<IMetadataAttributeTargetExtension>();
+        if (extension == null)
+        {
+            ReportMissingCodeTargetExtension<IMetadataAttributeTargetExtension>(context);
+            return;
+        }
+
+        extension.WriteRazorCompiledItemMetadataAttribute(context, this);
+    }
+
+    public override void FormatNode(IntermediateNodeFormatter formatter)
+    {
+        formatter.WriteProperty(nameof(Key), Key);
+        formatter.WriteProperty(nameof(Value), Value);
     }
 }

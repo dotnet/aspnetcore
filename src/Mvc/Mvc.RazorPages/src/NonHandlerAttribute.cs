@@ -3,13 +3,12 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Mvc.RazorPages
+namespace Microsoft.AspNetCore.Mvc.RazorPages;
+
+/// <summary>
+/// Specifies that the targeted method is not a page handler method.
+/// </summary>
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
+public class NonHandlerAttribute : Attribute
 {
-    /// <summary>
-    /// Specifies that the targeted method is not a page handler method.
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public class NonHandlerAttribute : Attribute
-    {
-    }
 }

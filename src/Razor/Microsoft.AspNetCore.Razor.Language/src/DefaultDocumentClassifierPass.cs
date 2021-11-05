@@ -4,45 +4,44 @@
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+internal class DefaultDocumentClassifierPass : DocumentClassifierPassBase
 {
-    internal class DefaultDocumentClassifierPass : DocumentClassifierPassBase
+    public override int Order => DefaultFeatureOrder;
+
+    protected override string DocumentKind => "default";
+
+    protected override bool IsMatch(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
     {
-        public override int Order => DefaultFeatureOrder;
+        return true;
+    }
 
-        protected override string DocumentKind => "default";
-
-        protected override bool IsMatch(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
+    protected override void OnDocumentStructureCreated(
+        RazorCodeDocument codeDocument,
+        NamespaceDeclarationIntermediateNode @namespace,
+        ClassDeclarationIntermediateNode @class,
+        MethodDeclarationIntermediateNode method)
+    {
+        var configuration = Engine.GetFeature<DefaultDocumentClassifierPassFeature>();
+        if (configuration != null)
         {
-            return true;
-        }
-
-        protected override void OnDocumentStructureCreated(
-            RazorCodeDocument codeDocument,
-            NamespaceDeclarationIntermediateNode @namespace,
-            ClassDeclarationIntermediateNode @class,
-            MethodDeclarationIntermediateNode method)
-        {
-            var configuration = Engine.GetFeature<DefaultDocumentClassifierPassFeature>();
-            if (configuration != null)
+            for (var i = 0; i < configuration.ConfigureClass.Count; i++)
             {
-                for (var i = 0; i < configuration.ConfigureClass.Count; i++)
-                {
-                    var configureClass = configuration.ConfigureClass[i];
-                    configureClass(codeDocument, @class);
-                }
+                var configureClass = configuration.ConfigureClass[i];
+                configureClass(codeDocument, @class);
+            }
 
-                for (var i = 0; i < configuration.ConfigureNamespace.Count; i++)
-                {
-                    var configureNamespace = configuration.ConfigureNamespace[i];
-                    configureNamespace(codeDocument, @namespace);
-                }
+            for (var i = 0; i < configuration.ConfigureNamespace.Count; i++)
+            {
+                var configureNamespace = configuration.ConfigureNamespace[i];
+                configureNamespace(codeDocument, @namespace);
+            }
 
-                for (var i = 0; i < configuration.ConfigureMethod.Count; i++)
-                {
-                    var configureMethod = configuration.ConfigureMethod[i];
-                    configureMethod(codeDocument, @method);
-                }
+            for (var i = 0; i < configuration.ConfigureMethod.Count; i++)
+            {
+                var configureMethod = configuration.ConfigureMethod[i];
+                configureMethod(codeDocument, @method);
             }
         }
     }

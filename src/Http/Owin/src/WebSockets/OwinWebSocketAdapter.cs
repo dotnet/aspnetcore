@@ -4,12 +4,15 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Net.WebSockets;
 
 namespace Microsoft.AspNetCore.Owin;
 
+using RawWebSocketReceiveResult = Tuple<int, // type
+    bool, // end of message?
+    int>; // count
 // http://owin.org/extensions/owin-WebSocket-Extension-v0.4.0.htm
 using WebSocketCloseAsync =
     Func<int /* closeStatus */,
@@ -28,9 +31,6 @@ using WebSocketSendAsync =
         bool /* endOfMessage */,
         CancellationToken /* cancel */,
         Task>;
-using RawWebSocketReceiveResult = Tuple<int, // type
-    bool, // end of message?
-    int>; // count
 
 /// <summary>
 /// OWIN WebSocket adapter.

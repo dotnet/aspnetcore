@@ -4,13 +4,12 @@
 using System;
 using System.IO;
 
-namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
+namespace Microsoft.AspNetCore.WebSockets.ConformanceTest;
+
+public class Helpers
 {
-    public class Helpers
+    public static string GetApplicationPath(string projectName)
     {
-        public static string GetApplicationPath(string projectName)
-        {
-            return Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, projectName));
-        }
+        return Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, projectName));
     }
 }

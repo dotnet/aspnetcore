@@ -4,13 +4,12 @@
 using BasicWebSite.Components;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BasicWebSite.Controllers
+namespace BasicWebSite.Controllers;
+
+public class PassThroughController : Controller
 {
-    public class PassThroughController : Controller
+    public IActionResult Index(long value)
     {
-        public IActionResult Index(long value)
-        {
-            return ViewComponent(typeof(PassThroughViewComponent), new { value });
-        }
+        return ViewComponent(typeof(PassThroughViewComponent), new { value });
     }
 }

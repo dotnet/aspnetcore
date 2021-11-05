@@ -4,10 +4,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace RazorPagesWebSite
+namespace RazorPagesWebSite;
+
+[IgnoreAntiforgeryToken]
+public class IgnoreAntiforgeryModel : PageModel
 {
-    [IgnoreAntiforgeryToken]
-    public class IgnoreAntiforgeryModel : PageModel
-    {
-    }
 }

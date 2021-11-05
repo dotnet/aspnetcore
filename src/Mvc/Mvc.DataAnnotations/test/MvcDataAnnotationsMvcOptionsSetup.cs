@@ -9,29 +9,28 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Test
+namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Test;
+
+public class MvcDataAnnotationsMvcOptionsSetupTests
 {
-    public class MvcDataAnnotationsMvcOptionsSetupTests
+    [Fact]
+    public void MvcDataAnnotationsMvcOptionsSetup_ServiceConstructorWithoutIStringLocalizer()
     {
-        [Fact]
-        public void MvcDataAnnotationsMvcOptionsSetup_ServiceConstructorWithoutIStringLocalizer()
-        {
-            // Arrange
-            var services = new ServiceCollection();
+        // Arrange
+        var services = new ServiceCollection();
 
-            services.AddSingleton<IWebHostEnvironment>(Mock.Of<IWebHostEnvironment>());
-            services.AddSingleton<IValidationAttributeAdapterProvider, ValidationAttributeAdapterProvider>();
-            services.AddSingleton<IOptions<MvcDataAnnotationsLocalizationOptions>>(
-                Options.Create(new MvcDataAnnotationsLocalizationOptions()));
-            services.AddSingleton<IConfigureOptions<MvcOptions>, MvcDataAnnotationsMvcOptionsSetup>();
+        services.AddSingleton<IWebHostEnvironment>(Mock.Of<IWebHostEnvironment>());
+        services.AddSingleton<IValidationAttributeAdapterProvider, ValidationAttributeAdapterProvider>();
+        services.AddSingleton<IOptions<MvcDataAnnotationsLocalizationOptions>>(
+            Options.Create(new MvcDataAnnotationsLocalizationOptions()));
+        services.AddSingleton<IConfigureOptions<MvcOptions>, MvcDataAnnotationsMvcOptionsSetup>();
 
-            var serviceProvider = services.BuildServiceProvider();
+        var serviceProvider = services.BuildServiceProvider();
 
-            // Act
-            var optionsSetup = serviceProvider.GetRequiredService<IConfigureOptions<MvcOptions>>();
+        // Act
+        var optionsSetup = serviceProvider.GetRequiredService<IConfigureOptions<MvcOptions>>();
 
-            // Assert
-            Assert.NotNull(optionsSetup);
-        }
+        // Assert
+        Assert.NotNull(optionsSetup);
     }
 }

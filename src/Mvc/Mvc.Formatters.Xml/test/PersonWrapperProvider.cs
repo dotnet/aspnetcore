@@ -3,28 +3,27 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
+namespace Microsoft.AspNetCore.Mvc.Formatters.Xml;
+
+public class PersonWrapperProvider : IWrapperProvider
 {
-    public class PersonWrapperProvider : IWrapperProvider
+    public object Wrap(object obj)
     {
-        public object Wrap(object obj)
+        var person = obj as Person;
+
+        if (person == null)
         {
-            var person = obj as Person;
-
-            if (person == null)
-            {
-                return obj;
-            }
-
-            return new PersonWrapper(person);
+            return obj;
         }
 
-        public Type WrappingType
+        return new PersonWrapper(person);
+    }
+
+    public Type WrappingType
+    {
+        get
         {
-            get
-            {
-                return typeof(PersonWrapper);
-            }
+            return typeof(PersonWrapper);
         }
     }
 }

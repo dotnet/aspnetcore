@@ -5,29 +5,28 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+internal class DefaultRazorCodeDocument : RazorCodeDocument
 {
-    internal class DefaultRazorCodeDocument : RazorCodeDocument
+    public DefaultRazorCodeDocument(
+        RazorSourceDocument source,
+        IEnumerable<RazorSourceDocument> imports)
     {
-        public DefaultRazorCodeDocument(
-            RazorSourceDocument source,
-            IEnumerable<RazorSourceDocument> imports)
+        if (source == null)
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
-
-            Source = source;
-            Imports = imports?.ToArray() ?? RazorSourceDocument.EmptyArray;
-
-            Items = new ItemCollection();
+            throw new ArgumentNullException(nameof(source));
         }
 
-        public override IReadOnlyList<RazorSourceDocument> Imports { get; }
+        Source = source;
+        Imports = imports?.ToArray() ?? RazorSourceDocument.EmptyArray;
 
-        public override ItemCollection Items { get; }
-
-        public override RazorSourceDocument Source { get; }
+        Items = new ItemCollection();
     }
+
+    public override IReadOnlyList<RazorSourceDocument> Imports { get; }
+
+    public override ItemCollection Items { get; }
+
+    public override RazorSourceDocument Source { get; }
 }

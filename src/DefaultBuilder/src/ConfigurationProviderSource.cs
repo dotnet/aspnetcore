@@ -5,95 +5,94 @@ using System.Collections;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Builder
+namespace Microsoft.AspNetCore.Builder;
+
+internal sealed class ConfigurationProviderSource : IConfigurationSource
 {
-    internal sealed class ConfigurationProviderSource : IConfigurationSource
+    private readonly IConfigurationProvider _configurationProvider;
+
+    public ConfigurationProviderSource(IConfigurationProvider configurationProvider)
     {
-        private readonly IConfigurationProvider _configurationProvider;
+        _configurationProvider = configurationProvider;
+    }
 
-        public ConfigurationProviderSource(IConfigurationProvider configurationProvider)
+    public IConfigurationProvider Build(IConfigurationBuilder builder)
+    {
+        return new IgnoreFirstLoadConfigurationProvider(_configurationProvider);
+    }
+
+    // These providers have already been loaded, so no need to reload initially.
+    // Otherwise, providers that cannot be reloaded like StreamConfigurationProviders will fail.
+    private sealed class IgnoreFirstLoadConfigurationProvider : IConfigurationProvider, IEnumerable<IConfigurationProvider>, IDisposable
+    {
+        private readonly IConfigurationProvider _provider;
+
+        private bool _hasIgnoredFirstLoad;
+
+        public IgnoreFirstLoadConfigurationProvider(IConfigurationProvider provider)
         {
-            _configurationProvider = configurationProvider;
+            _provider = provider;
         }
 
-        public IConfigurationProvider Build(IConfigurationBuilder builder)
+        public IEnumerable<string> GetChildKeys(IEnumerable<string> earlierKeys, string? parentPath)
         {
-            return new IgnoreFirstLoadConfigurationProvider(_configurationProvider);
+            return _provider.GetChildKeys(earlierKeys, parentPath);
         }
 
-        // These providers have already been loaded, so no need to reload initially.
-        // Otherwise, providers that cannot be reloaded like StreamConfigurationProviders will fail.
-        private sealed class IgnoreFirstLoadConfigurationProvider : IConfigurationProvider, IEnumerable<IConfigurationProvider>, IDisposable
+        public IChangeToken GetReloadToken()
         {
-            private readonly IConfigurationProvider _provider;
+            return _provider.GetReloadToken();
+        }
 
-            private bool _hasIgnoredFirstLoad;
-
-            public IgnoreFirstLoadConfigurationProvider(IConfigurationProvider provider)
+        public void Load()
+        {
+            if (!_hasIgnoredFirstLoad)
             {
-                _provider = provider;
+                _hasIgnoredFirstLoad = true;
+                return;
             }
 
-            public IEnumerable<string> GetChildKeys(IEnumerable<string> earlierKeys, string? parentPath)
-            {
-                return _provider.GetChildKeys(earlierKeys, parentPath);
-            }
+            _provider.Load();
+        }
 
-            public IChangeToken GetReloadToken()
-            {
-                return _provider.GetReloadToken();
-            }
+        public void Set(string key, string? value)
+        {
+            _provider.Set(key, value);
+        }
 
-            public void Load()
-            {
-                if (!_hasIgnoredFirstLoad)
-                {
-                    _hasIgnoredFirstLoad = true;
-                    return;
-                }
+        public bool TryGet(string key, out string? value)
+        {
+            return _provider.TryGet(key, out value);
+        }
 
-                _provider.Load();
-            }
+        // Provide access to the original IConfigurationProvider via a single-element IEnumerable to code that goes out of its way to look for it.
+        public IEnumerator<IConfigurationProvider> GetEnumerator() => GetUnwrappedEnumerable().GetEnumerator();
 
-            public void Set(string key, string? value)
-            {
-                _provider.Set(key, value);
-            }
+        IEnumerator IEnumerable.GetEnumerator() => GetUnwrappedEnumerable().GetEnumerator();
 
-            public bool TryGet(string key, out string? value)
-            {
-                return _provider.TryGet(key, out value);
-            }
+        public override bool Equals(object? obj)
+        {
+            return _provider.Equals(obj);
+        }
 
-            // Provide access to the original IConfigurationProvider via a single-element IEnumerable to code that goes out of its way to look for it.
-            public IEnumerator<IConfigurationProvider> GetEnumerator() => GetUnwrappedEnumerable().GetEnumerator();
+        public override int GetHashCode()
+        {
+            return _provider.GetHashCode();
+        }
 
-            IEnumerator IEnumerable.GetEnumerator() => GetUnwrappedEnumerable().GetEnumerator();
+        public override string? ToString()
+        {
+            return _provider.ToString();
+        }
 
-            public override bool Equals(object? obj)
-            {
-                return _provider.Equals(obj);
-            }
+        public void Dispose()
+        {
+            (_provider as IDisposable)?.Dispose();
+        }
 
-            public override int GetHashCode()
-            {
-                return _provider.GetHashCode();
-            }
-
-            public override string? ToString()
-            {
-                return _provider.ToString();
-            }
-
-            public void Dispose()
-            {
-                (_provider as IDisposable)?.Dispose();
-            }
-
-            private IEnumerable<IConfigurationProvider> GetUnwrappedEnumerable()
-            {
-                yield return _provider;
-            }
+        private IEnumerable<IConfigurationProvider> GetUnwrappedEnumerable()
+        {
+            yield return _provider;
         }
     }
 }

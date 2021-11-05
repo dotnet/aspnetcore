@@ -6,141 +6,140 @@ using System.IO.Pipelines;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Http.Connections.Tests
+namespace Microsoft.AspNetCore.Http.Connections.Tests;
+
+public class ServerSentEventsTests : VerifiableLoggedTest
 {
-    public class ServerSentEventsTests : VerifiableLoggedTest
+    [Fact]
+    public async Task SSESetsContentType()
     {
-        [Fact]
-        public async Task SSESetsContentType()
+        using (StartVerifiableLog())
         {
-            using (StartVerifiableLog())
-            {
-                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-                var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
-                var context = new DefaultHttpContext();
+            var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+            var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
+            var context = new DefaultHttpContext();
 
-                var sse = new ServerSentEventsServerTransport(connection.Application.Input, connectionId: string.Empty, LoggerFactory);
+            var sse = new ServerSentEventsServerTransport(connection.Application.Input, connectionId: string.Empty, LoggerFactory);
 
-                connection.Transport.Output.Complete();
+            connection.Transport.Output.Complete();
 
-                await sse.ProcessRequestAsync(context, context.RequestAborted);
+            await sse.ProcessRequestAsync(context, context.RequestAborted);
 
-                Assert.Equal("text/event-stream", context.Response.ContentType);
-                Assert.Equal("no-cache,no-store", context.Response.Headers["Cache-Control"]);
-                Assert.Equal("no-cache", context.Response.Headers["Pragma"]);
-            }
+            Assert.Equal("text/event-stream", context.Response.ContentType);
+            Assert.Equal("no-cache,no-store", context.Response.Headers["Cache-Control"]);
+            Assert.Equal("no-cache", context.Response.Headers["Pragma"]);
         }
+    }
 
-        [Fact]
-        public async Task SSETurnsResponseBufferingOff()
+    [Fact]
+    public async Task SSETurnsResponseBufferingOff()
+    {
+        using (StartVerifiableLog())
         {
-            using (StartVerifiableLog())
-            {
-                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-                var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
-                var context = new DefaultHttpContext();
+            var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+            var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
+            var context = new DefaultHttpContext();
 
-                var feature = new HttpBufferingFeature(new MemoryStream());
-                context.Features.Set<IHttpResponseBodyFeature>(feature);
-                var sse = new ServerSentEventsServerTransport(connection.Application.Input, connectionId: connection.ConnectionId, LoggerFactory);
+            var feature = new HttpBufferingFeature(new MemoryStream());
+            context.Features.Set<IHttpResponseBodyFeature>(feature);
+            var sse = new ServerSentEventsServerTransport(connection.Application.Input, connectionId: connection.ConnectionId, LoggerFactory);
 
-                connection.Transport.Output.Complete();
+            connection.Transport.Output.Complete();
 
-                await sse.ProcessRequestAsync(context, context.RequestAborted);
+            await sse.ProcessRequestAsync(context, context.RequestAborted);
 
-                Assert.True(feature.ResponseBufferingDisabled);
-            }
+            Assert.True(feature.ResponseBufferingDisabled);
         }
+    }
 
-        [Fact]
-        public async Task SSEWritesMessages()
+    [Fact]
+    public async Task SSEWritesMessages()
+    {
+        using (StartVerifiableLog())
         {
-            using (StartVerifiableLog())
-            {
-                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, new PipeOptions(readerScheduler: PipeScheduler.Inline));
-                var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
-                var context = new DefaultHttpContext();
+            var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, new PipeOptions(readerScheduler: PipeScheduler.Inline));
+            var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
+            var context = new DefaultHttpContext();
 
-                var ms = new MemoryStream();
-                context.Response.Body = ms;
-                var sse = new ServerSentEventsServerTransport(connection.Application.Input, connectionId: string.Empty, LoggerFactory);
+            var ms = new MemoryStream();
+            context.Response.Body = ms;
+            var sse = new ServerSentEventsServerTransport(connection.Application.Input, connectionId: string.Empty, LoggerFactory);
 
-                var task = sse.ProcessRequestAsync(context, context.RequestAborted);
+            var task = sse.ProcessRequestAsync(context, context.RequestAborted);
 
-                await connection.Transport.Output.WriteAsync(Encoding.ASCII.GetBytes("Hello"));
-                connection.Transport.Output.Complete();
-                await task.DefaultTimeout();
-                Assert.Equal(":\r\ndata: Hello\r\n\r\n", Encoding.ASCII.GetString(ms.ToArray()));
-            }
+            await connection.Transport.Output.WriteAsync(Encoding.ASCII.GetBytes("Hello"));
+            connection.Transport.Output.Complete();
+            await task.DefaultTimeout();
+            Assert.Equal(":\r\ndata: Hello\r\n\r\n", Encoding.ASCII.GetString(ms.ToArray()));
         }
+    }
 
-        [Fact]
-        public async Task SSEWritesVeryLargeMessages()
+    [Fact]
+    public async Task SSEWritesVeryLargeMessages()
+    {
+        using (StartVerifiableLog())
         {
-            using (StartVerifiableLog())
-            {
-                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, new PipeOptions(readerScheduler: PipeScheduler.Inline));
-                var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
-                var context = new DefaultHttpContext();
+            var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, new PipeOptions(readerScheduler: PipeScheduler.Inline));
+            var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
+            var context = new DefaultHttpContext();
 
-                var ms = new MemoryStream();
-                context.Response.Body = ms;
-                var sse = new ServerSentEventsServerTransport(connection.Application.Input, connectionId: string.Empty, LoggerFactory);
+            var ms = new MemoryStream();
+            context.Response.Body = ms;
+            var sse = new ServerSentEventsServerTransport(connection.Application.Input, connectionId: string.Empty, LoggerFactory);
 
-                var task = sse.ProcessRequestAsync(context, context.RequestAborted);
+            var task = sse.ProcessRequestAsync(context, context.RequestAborted);
 
-                string hText = new string('H', 60000);
-                string wText = new string('W', 60000);
+            string hText = new string('H', 60000);
+            string wText = new string('W', 60000);
 
-                await connection.Transport.Output.WriteAsync(Encoding.ASCII.GetBytes(hText + wText));
-                connection.Transport.Output.Complete();
-                await task.DefaultTimeout();
-                Assert.Equal(":\r\ndata: " + hText + wText + "\r\n\r\n", Encoding.ASCII.GetString(ms.ToArray()));
-            }
+            await connection.Transport.Output.WriteAsync(Encoding.ASCII.GetBytes(hText + wText));
+            connection.Transport.Output.Complete();
+            await task.DefaultTimeout();
+            Assert.Equal(":\r\ndata: " + hText + wText + "\r\n\r\n", Encoding.ASCII.GetString(ms.ToArray()));
         }
+    }
 
-        [Theory]
-        [InlineData("Hello World", ":\r\ndata: Hello World\r\n\r\n")]
-        [InlineData("Hello\nWorld", ":\r\ndata: Hello\r\ndata: World\r\n\r\n")]
-        [InlineData("Hello\r\nWorld", ":\r\ndata: Hello\r\ndata: World\r\n\r\n")]
-        public async Task SSEAddsAppropriateFraming(string message, string expected)
+    [Theory]
+    [InlineData("Hello World", ":\r\ndata: Hello World\r\n\r\n")]
+    [InlineData("Hello\nWorld", ":\r\ndata: Hello\r\ndata: World\r\n\r\n")]
+    [InlineData("Hello\r\nWorld", ":\r\ndata: Hello\r\ndata: World\r\n\r\n")]
+    public async Task SSEAddsAppropriateFraming(string message, string expected)
+    {
+        using (StartVerifiableLog())
         {
-            using (StartVerifiableLog())
-            {
-                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-                var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
-                var context = new DefaultHttpContext();
+            var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+            var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
+            var context = new DefaultHttpContext();
 
-                var sse = new ServerSentEventsServerTransport(connection.Application.Input, connectionId: string.Empty, LoggerFactory);
-                var ms = new MemoryStream();
-                context.Response.Body = ms;
+            var sse = new ServerSentEventsServerTransport(connection.Application.Input, connectionId: string.Empty, LoggerFactory);
+            var ms = new MemoryStream();
+            context.Response.Body = ms;
 
-                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes(message));
+            await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes(message));
 
-                connection.Transport.Output.Complete();
+            connection.Transport.Output.Complete();
 
-                await sse.ProcessRequestAsync(context, context.RequestAborted);
+            await sse.ProcessRequestAsync(context, context.RequestAborted);
 
-                Assert.Equal(expected, Encoding.UTF8.GetString(ms.ToArray()));
-            }
+            Assert.Equal(expected, Encoding.UTF8.GetString(ms.ToArray()));
         }
+    }
 
-        private class HttpBufferingFeature : StreamResponseBodyFeature
+    private class HttpBufferingFeature : StreamResponseBodyFeature
+    {
+        public bool ResponseBufferingDisabled { get; set; }
+
+        public HttpBufferingFeature(Stream stream) : base(stream) { }
+
+        public override void DisableBuffering()
         {
-            public bool ResponseBufferingDisabled { get; set; }
-
-            public HttpBufferingFeature(Stream stream) : base(stream) { }
-
-            public override void DisableBuffering()
-            {
-                ResponseBufferingDisabled = true;
-            }
+            ResponseBufferingDisabled = true;
         }
     }
 }

@@ -3,32 +3,31 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Razor.Language.Intermediate
-{
-    internal abstract class IntermediateNodeBuilder
-    {
-        public static IntermediateNodeBuilder Create(IntermediateNode root)
-        {
-            if (root == null)
-            {
-                throw new ArgumentNullException(nameof(root));
-            }
+namespace Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-            var builder = new DefaultRazorIntermediateNodeBuilder();
-            builder.Push(root);
-            return builder;
+internal abstract class IntermediateNodeBuilder
+{
+    public static IntermediateNodeBuilder Create(IntermediateNode root)
+    {
+        if (root == null)
+        {
+            throw new ArgumentNullException(nameof(root));
         }
 
-        public abstract IntermediateNode Current { get; }
-
-        public abstract void Add(IntermediateNode node);
-
-        public abstract void Insert(int index, IntermediateNode node);
-
-        public abstract IntermediateNode Build();
-
-        public abstract void Push(IntermediateNode node);
-
-        public abstract IntermediateNode Pop();
+        var builder = new DefaultRazorIntermediateNodeBuilder();
+        builder.Push(root);
+        return builder;
     }
+
+    public abstract IntermediateNode Current { get; }
+
+    public abstract void Add(IntermediateNode node);
+
+    public abstract void Insert(int index, IntermediateNode node);
+
+    public abstract IntermediateNode Build();
+
+    public abstract void Push(IntermediateNode node);
+
+    public abstract IntermediateNode Pop();
 }

@@ -6,62 +6,61 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 
-namespace Microsoft.AspNetCore.SignalR.Tests
+namespace Microsoft.AspNetCore.SignalR.Tests;
+
+public class VerifyNoErrorsScope : IDisposable
 {
-    public class VerifyNoErrorsScope : IDisposable
+    private readonly IDisposable _wrappedDisposable;
+    private readonly Func<WriteContext, bool> _expectedErrorsFilter;
+    private readonly LogSinkProvider _sink;
+
+    public ILoggerFactory LoggerFactory { get; }
+
+    public IList<LogRecord> GetLogs() => _sink.GetLogs();
+
+    public VerifyNoErrorsScope(ILoggerFactory loggerFactory = null, IDisposable wrappedDisposable = null, Func<WriteContext, bool> expectedErrorsFilter = null)
     {
-        private readonly IDisposable _wrappedDisposable;
-        private readonly Func<WriteContext, bool> _expectedErrorsFilter;
-        private readonly LogSinkProvider _sink;
+        _wrappedDisposable = wrappedDisposable;
+        _expectedErrorsFilter = expectedErrorsFilter;
+        _sink = new LogSinkProvider();
 
-        public ILoggerFactory LoggerFactory { get; }
+        LoggerFactory = loggerFactory ?? new LoggerFactory();
+        LoggerFactory.AddProvider(_sink);
+    }
 
-        public IList<LogRecord> GetLogs() => _sink.GetLogs();
+    public void Dispose()
+    {
+        _wrappedDisposable?.Dispose();
 
-        public VerifyNoErrorsScope(ILoggerFactory loggerFactory = null, IDisposable wrappedDisposable = null, Func<WriteContext, bool> expectedErrorsFilter = null)
+        var results = _sink.GetLogs().Where(w => w.Write.LogLevel >= LogLevel.Error).ToList();
+
+        if (_expectedErrorsFilter != null)
         {
-            _wrappedDisposable = wrappedDisposable;
-            _expectedErrorsFilter = expectedErrorsFilter;
-            _sink = new LogSinkProvider();
-
-            LoggerFactory = loggerFactory ?? new LoggerFactory();
-            LoggerFactory.AddProvider(_sink);
+            results = results.Where(w => !_expectedErrorsFilter(w.Write)).ToList();
         }
 
-        public void Dispose()
+        if (results.Count > 0)
         {
-            _wrappedDisposable?.Dispose();
-
-            var results = _sink.GetLogs().Where(w => w.Write.LogLevel >= LogLevel.Error).ToList();
-
-            if (_expectedErrorsFilter != null)
+            string errorMessage = $"{results.Count} error(s) logged.";
+            errorMessage += Environment.NewLine;
+            errorMessage += string.Join(Environment.NewLine, results.Select(record =>
             {
-                results = results.Where(w => !_expectedErrorsFilter(w.Write)).ToList();
-            }
+                var r = record.Write;
 
-            if (results.Count > 0)
-            {
-                string errorMessage = $"{results.Count} error(s) logged.";
-                errorMessage += Environment.NewLine;
-                errorMessage += string.Join(Environment.NewLine, results.Select(record =>
+                string lineMessage = r.LoggerName + " - " + r.EventId.ToString() + " - " + r.Formatter(r.State, r.Exception);
+                if (r.Exception != null)
                 {
-                    var r = record.Write;
+                    lineMessage += Environment.NewLine;
+                    lineMessage += "===================";
+                    lineMessage += Environment.NewLine;
+                    lineMessage += r.Exception;
+                    lineMessage += Environment.NewLine;
+                    lineMessage += "===================";
+                }
+                return lineMessage;
+            }));
 
-                    string lineMessage = r.LoggerName + " - " + r.EventId.ToString() + " - " + r.Formatter(r.State, r.Exception);
-                    if (r.Exception != null)
-                    {
-                        lineMessage += Environment.NewLine;
-                        lineMessage += "===================";
-                        lineMessage += Environment.NewLine;
-                        lineMessage += r.Exception;
-                        lineMessage += Environment.NewLine;
-                        lineMessage += "===================";
-                    }
-                    return lineMessage;
-                }));
-
-                throw new Exception(errorMessage);
-            }
+            throw new Exception(errorMessage);
         }
     }
 }

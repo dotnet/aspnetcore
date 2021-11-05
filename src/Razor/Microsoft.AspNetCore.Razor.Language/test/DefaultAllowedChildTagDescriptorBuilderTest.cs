@@ -3,22 +3,21 @@
 
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+public class DefaultAllowedChildTagDescriptorBuilderTest
 {
-    public class DefaultAllowedChildTagDescriptorBuilderTest
+    [Fact]
+    public void Build_DisplayNameIsName()
     {
-        [Fact]
-        public void Build_DisplayNameIsName()
-        {
-            // Arrange
-            var builder = new DefaultAllowedChildTagDescriptorBuilder(null);
-            builder.Name = "foo";
+        // Arrange
+        var builder = new DefaultAllowedChildTagDescriptorBuilder(null);
+        builder.Name = "foo";
 
-            // Act
-            var descriptor = builder.Build();
+        // Act
+        var descriptor = builder.Build();
 
-            // Assert
-            Assert.Equal("foo", descriptor.DisplayName);
-        }
+        // Assert
+        Assert.Equal("foo", descriptor.DisplayName);
     }
 }

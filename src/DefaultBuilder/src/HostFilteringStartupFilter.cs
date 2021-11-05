@@ -4,17 +4,16 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 
-namespace Microsoft.AspNetCore
+namespace Microsoft.AspNetCore;
+
+internal sealed class HostFilteringStartupFilter : IStartupFilter
 {
-    internal sealed class HostFilteringStartupFilter : IStartupFilter
+    public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
     {
-        public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+        return app =>
         {
-            return app =>
-            {
-                app.UseHostFiltering();
-                next(app);
-            };
-        }
+            app.UseHostFiltering();
+            next(app);
+        };
     }
 }

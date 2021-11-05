@@ -3,45 +3,44 @@
 
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+public class DefaultRazorCodeDocumentTest
 {
-    public class DefaultRazorCodeDocumentTest
+    [Fact]
+    public void Ctor()
     {
-        [Fact]
-        public void Ctor()
-        {
-            // Arrange
-            var source = TestRazorSourceDocument.Create();
+        // Arrange
+        var source = TestRazorSourceDocument.Create();
 
-            var imports = new RazorSourceDocument[]
-            {
+        var imports = new RazorSourceDocument[]
+        {
                 TestRazorSourceDocument.Create(),
-            };
+        };
 
-            // Act
-            var code = new DefaultRazorCodeDocument(source, imports);
+        // Act
+        var code = new DefaultRazorCodeDocument(source, imports);
 
-            // Assert
-            Assert.Same(source, code.Source);
-            Assert.NotNull(code.Items);
+        // Assert
+        Assert.Same(source, code.Source);
+        Assert.NotNull(code.Items);
 
-            Assert.NotSame(imports, code.Imports);
-            Assert.Collection(imports, d => Assert.Same(imports[0], d));
-        }
+        Assert.NotSame(imports, code.Imports);
+        Assert.Collection(imports, d => Assert.Same(imports[0], d));
+    }
 
-        [Fact]
-        public void Ctor_AllowsNullForImports()
-        {
-            // Arrange
-            var source = TestRazorSourceDocument.Create();
+    [Fact]
+    public void Ctor_AllowsNullForImports()
+    {
+        // Arrange
+        var source = TestRazorSourceDocument.Create();
 
-            // Act
-            var code = new DefaultRazorCodeDocument(source, imports: null);
+        // Act
+        var code = new DefaultRazorCodeDocument(source, imports: null);
 
-            // Assert
-            Assert.Same(source, code.Source);
-            Assert.NotNull(code.Items);
-            Assert.Empty(code.Imports);
-        }
+        // Assert
+        Assert.Same(source, code.Source);
+        Assert.NotNull(code.Items);
+        Assert.Empty(code.Imports);
     }
 }

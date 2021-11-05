@@ -10,23 +10,22 @@ using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Validators;
 
-namespace BenchmarkDotNet.Attributes
+namespace BenchmarkDotNet.Attributes;
+
+internal class DefaultCoreProfileConfig : ManualConfig
 {
-    internal class DefaultCoreProfileConfig : ManualConfig
+    public DefaultCoreProfileConfig()
     {
-        public DefaultCoreProfileConfig()
-        {
-            AddLogger(ConsoleLogger.Default);
-            AddExporter(MarkdownExporter.GitHub);
+        AddLogger(ConsoleLogger.Default);
+        AddExporter(MarkdownExporter.GitHub);
 
-            AddDiagnoser(MemoryDiagnoser.Default);
-            AddColumn(StatisticColumn.OperationsPerSecond);
-            AddColumnProvider(DefaultColumnProviders.Instance);
+        AddDiagnoser(MemoryDiagnoser.Default);
+        AddColumn(StatisticColumn.OperationsPerSecond);
+        AddColumnProvider(DefaultColumnProviders.Instance);
 
-            AddValidator(JitOptimizationsValidator.FailOnError);
+        AddValidator(JitOptimizationsValidator.FailOnError);
 
-            AddJob(Job.InProcess
-                .WithStrategy(RunStrategy.Throughput));
-        }
+        AddJob(Job.InProcess
+            .WithStrategy(RunStrategy.Throughput));
     }
 }

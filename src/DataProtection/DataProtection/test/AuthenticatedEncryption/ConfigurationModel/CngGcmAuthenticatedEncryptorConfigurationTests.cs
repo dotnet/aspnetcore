@@ -4,37 +4,36 @@
 using System;
 using Xunit;
 
-namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel
+namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+
+public class CngGcmAuthenticatedEncryptorConfigurationTests
 {
-    public class CngGcmAuthenticatedEncryptorConfigurationTests
+    [Fact]
+    public void CreateNewDescriptor_CreatesUniqueCorrectlySizedMasterKey()
     {
-        [Fact]
-        public void CreateNewDescriptor_CreatesUniqueCorrectlySizedMasterKey()
-        {
-            // Arrange
-            var configuration = new CngGcmAuthenticatedEncryptorConfiguration();
+        // Arrange
+        var configuration = new CngGcmAuthenticatedEncryptorConfiguration();
 
-            // Act
-            var masterKey1 = ((CngGcmAuthenticatedEncryptorDescriptor)configuration.CreateNewDescriptor()).MasterKey;
-            var masterKey2 = ((CngGcmAuthenticatedEncryptorDescriptor)configuration.CreateNewDescriptor()).MasterKey;
+        // Act
+        var masterKey1 = ((CngGcmAuthenticatedEncryptorDescriptor)configuration.CreateNewDescriptor()).MasterKey;
+        var masterKey2 = ((CngGcmAuthenticatedEncryptorDescriptor)configuration.CreateNewDescriptor()).MasterKey;
 
-            // Assert
-            SecretAssert.NotEqual(masterKey1, masterKey2);
-            SecretAssert.LengthIs(512 /* bits */, masterKey1);
-            SecretAssert.LengthIs(512 /* bits */, masterKey2);
-        }
+        // Assert
+        SecretAssert.NotEqual(masterKey1, masterKey2);
+        SecretAssert.LengthIs(512 /* bits */, masterKey1);
+        SecretAssert.LengthIs(512 /* bits */, masterKey2);
+    }
 
-        [Fact]
-        public void CreateNewDescriptor_PropagatesOptions()
-        {
-            // Arrange
-            var configuration = new CngGcmAuthenticatedEncryptorConfiguration();
+    [Fact]
+    public void CreateNewDescriptor_PropagatesOptions()
+    {
+        // Arrange
+        var configuration = new CngGcmAuthenticatedEncryptorConfiguration();
 
-            // Act
-            var descriptor = (CngGcmAuthenticatedEncryptorDescriptor)configuration.CreateNewDescriptor();
+        // Act
+        var descriptor = (CngGcmAuthenticatedEncryptorDescriptor)configuration.CreateNewDescriptor();
 
-            // Assert
-            Assert.Equal(configuration, descriptor.Configuration);
-        }
+        // Assert
+        Assert.Equal(configuration, descriptor.Configuration);
     }
 }

@@ -12,28 +12,27 @@ using BenchmarkDotNet.Toolchains.CsProj;
 using BenchmarkDotNet.Toolchains.DotNetCli;
 using BenchmarkDotNet.Validators;
 
-namespace BenchmarkDotNet.Attributes
+namespace BenchmarkDotNet.Attributes;
+
+internal class FirstRequestConfig : ManualConfig
 {
-    internal class FirstRequestConfig : ManualConfig
+    public FirstRequestConfig()
     {
-        public FirstRequestConfig()
-        {
-            AddLogger(ConsoleLogger.Default);
-            AddExporter(MarkdownExporter.GitHub);
+        AddLogger(ConsoleLogger.Default);
+        AddExporter(MarkdownExporter.GitHub);
 
-            AddDiagnoser(MemoryDiagnoser.Default);
-            AddColumn(StatisticColumn.OperationsPerSecond);
-            AddColumnProvider(DefaultColumnProviders.Instance);
+        AddDiagnoser(MemoryDiagnoser.Default);
+        AddColumn(StatisticColumn.OperationsPerSecond);
+        AddColumnProvider(DefaultColumnProviders.Instance);
 
-            AddValidator(JitOptimizationsValidator.FailOnError);
+        AddValidator(JitOptimizationsValidator.FailOnError);
 
-            AddJob(Job.Default
-                .WithToolchain(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp21))
-                .WithGcMode(new GcMode { Server = true })
-                .WithIterationCount(10)
-                .WithInvocationCount(1)
-                .WithUnrollFactor(1)
-                .WithStrategy(RunStrategy.ColdStart));
-        }
+        AddJob(Job.Default
+            .WithToolchain(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp21))
+            .WithGcMode(new GcMode { Server = true })
+            .WithIterationCount(10)
+            .WithInvocationCount(1)
+            .WithUnrollFactor(1)
+            .WithStrategy(RunStrategy.ColdStart));
     }
 }

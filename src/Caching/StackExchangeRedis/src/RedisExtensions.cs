@@ -4,34 +4,33 @@
 using System.Threading.Tasks;
 using StackExchange.Redis;
 
-namespace Microsoft.Extensions.Caching.StackExchangeRedis
+namespace Microsoft.Extensions.Caching.StackExchangeRedis;
+
+internal static class RedisExtensions
 {
-    internal static class RedisExtensions
+    internal static RedisValue[] HashMemberGet(this IDatabase cache, string key, params string[] members)
     {
-        internal static RedisValue[] HashMemberGet(this IDatabase cache, string key, params string[] members)
+        // TODO: Error checking?
+        return cache.HashGet(key, GetRedisMembers(members));
+    }
+
+    internal static async Task<RedisValue[]> HashMemberGetAsync(
+        this IDatabase cache,
+        string key,
+        params string[] members)
+    {
+        // TODO: Error checking?
+        return await cache.HashGetAsync(key, GetRedisMembers(members)).ConfigureAwait(false);
+    }
+
+    private static RedisValue[] GetRedisMembers(params string[] members)
+    {
+        var redisMembers = new RedisValue[members.Length];
+        for (int i = 0; i < members.Length; i++)
         {
-            // TODO: Error checking?
-            return cache.HashGet(key, GetRedisMembers(members));
+            redisMembers[i] = (RedisValue)members[i];
         }
 
-        internal static async Task<RedisValue[]> HashMemberGetAsync(
-            this IDatabase cache,
-            string key,
-            params string[] members)
-        {
-            // TODO: Error checking?
-            return await cache.HashGetAsync(key, GetRedisMembers(members)).ConfigureAwait(false);
-        }
-
-        private static RedisValue[] GetRedisMembers(params string[] members)
-        {
-            var redisMembers = new RedisValue[members.Length];
-            for (int i = 0; i < members.Length; i++)
-            {
-                redisMembers[i] = (RedisValue)members[i];
-            }
-
-            return redisMembers;
-        }
+        return redisMembers;
     }
 }

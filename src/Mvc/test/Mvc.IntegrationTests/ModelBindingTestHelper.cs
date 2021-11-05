@@ -18,206 +18,205 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Mvc.IntegrationTests
+namespace Microsoft.AspNetCore.Mvc.IntegrationTests;
+
+public static class ModelBindingTestHelper
 {
-    public static class ModelBindingTestHelper
+    public static ModelBindingTestContext GetTestContext(
+        Action<HttpRequest> updateRequest = null,
+        Action<MvcOptions> updateOptions = null,
+        ControllerActionDescriptor actionDescriptor = null,
+        IModelMetadataProvider metadataProvider = null,
+        MvcOptions mvcOptions = null)
     {
-        public static ModelBindingTestContext GetTestContext(
-            Action<HttpRequest> updateRequest = null,
-            Action<MvcOptions> updateOptions = null,
-            ControllerActionDescriptor actionDescriptor = null,
-            IModelMetadataProvider metadataProvider = null,
-            MvcOptions mvcOptions = null)
+        var httpContext = GetHttpContext(metadataProvider, updateRequest, updateOptions, mvcOptions);
+        var services = httpContext.RequestServices;
+        metadataProvider = metadataProvider ?? services.GetRequiredService<IModelMetadataProvider>();
+        var options = services.GetRequiredService<IOptions<MvcOptions>>();
+
+        var context = new ModelBindingTestContext
         {
-            var httpContext = GetHttpContext(metadataProvider, updateRequest, updateOptions, mvcOptions);
-            var services = httpContext.RequestServices;
-            metadataProvider = metadataProvider ?? services.GetRequiredService<IModelMetadataProvider>();
-            var options = services.GetRequiredService<IOptions<MvcOptions>>();
+            ActionDescriptor = actionDescriptor ?? new ControllerActionDescriptor(),
+            HttpContext = httpContext,
+            MetadataProvider = metadataProvider,
+            MvcOptions = options.Value,
+            RouteData = new RouteData(),
+            ValueProviderFactories = new List<IValueProviderFactory>(options.Value.ValueProviderFactories),
+        };
 
-            var context = new ModelBindingTestContext
-            {
-                ActionDescriptor = actionDescriptor ?? new ControllerActionDescriptor(),
-                HttpContext = httpContext,
-                MetadataProvider = metadataProvider,
-                MvcOptions = options.Value,
-                RouteData = new RouteData(),
-                ValueProviderFactories = new List<IValueProviderFactory>(options.Value.ValueProviderFactories),
-            };
+        return context;
+    }
 
-            return context;
+    public static ParameterBinder GetParameterBinder(
+        MvcOptions options = null,
+        IModelBinderProvider binderProvider = null)
+    {
+        if (options == null)
+        {
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            return GetParameterBinder(metadataProvider, binderProvider);
         }
-
-        public static ParameterBinder GetParameterBinder(
-            MvcOptions options = null,
-            IModelBinderProvider binderProvider = null)
+        else
         {
-            if (options == null)
-            {
-                var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
-                return GetParameterBinder(metadataProvider, binderProvider);
-            }
-            else
-            {
-                var metadataProvider = TestModelMetadataProvider.CreateProvider(options.ModelMetadataDetailsProviders);
-                return GetParameterBinder(metadataProvider, binderProvider, options);
-            }
+            var metadataProvider = TestModelMetadataProvider.CreateProvider(options.ModelMetadataDetailsProviders);
+            return GetParameterBinder(metadataProvider, binderProvider, options);
         }
+    }
 
-        public static ParameterBinder GetParameterBinder(ModelBindingTestContext testContext)
-        {
-            return GetParameterBinder(testContext.HttpContext.RequestServices);
-        }
+    public static ParameterBinder GetParameterBinder(ModelBindingTestContext testContext)
+    {
+        return GetParameterBinder(testContext.HttpContext.RequestServices);
+    }
 
-        public static ParameterBinder GetParameterBinder(IServiceProvider serviceProvider)
-        {
-            var metadataProvider = serviceProvider.GetRequiredService<IModelMetadataProvider>();
-            var options = serviceProvider.GetRequiredService<IOptions<MvcOptions>>();
+    public static ParameterBinder GetParameterBinder(IServiceProvider serviceProvider)
+    {
+        var metadataProvider = serviceProvider.GetRequiredService<IModelMetadataProvider>();
+        var options = serviceProvider.GetRequiredService<IOptions<MvcOptions>>();
 
-            return new ParameterBinder(
-                metadataProvider,
-                new ModelBinderFactory(metadataProvider, options, serviceProvider),
-                new DefaultObjectValidator(
-                    metadataProvider,
-                    new[] { new CompositeModelValidatorProvider(GetModelValidatorProviders(options)) },
-                    options.Value),
-                options,
-                NullLoggerFactory.Instance);
-        }
-
-        public static ParameterBinder GetParameterBinder(
-            IModelMetadataProvider metadataProvider,
-            IModelBinderProvider binderProvider = null,
-            MvcOptions mvcOptions = null,
-            ObjectModelValidator validator = null)
-        {
-            var services = GetServices(metadataProvider, mvcOptions: mvcOptions);
-            var options = services.GetRequiredService<IOptions<MvcOptions>>();
-
-            if (binderProvider != null)
-            {
-                options.Value.ModelBinderProviders.Insert(0, binderProvider);
-            }
-
-            validator ??= new DefaultObjectValidator(
+        return new ParameterBinder(
+            metadataProvider,
+            new ModelBinderFactory(metadataProvider, options, serviceProvider),
+            new DefaultObjectValidator(
                 metadataProvider,
                 new[] { new CompositeModelValidatorProvider(GetModelValidatorProviders(options)) },
-                options.Value);
+                options.Value),
+            options,
+            NullLoggerFactory.Instance);
+    }
 
-            return new ParameterBinder(
-                metadataProvider,
-                new ModelBinderFactory(metadataProvider, options, services),
-                validator,
-                options,
-                NullLoggerFactory.Instance);
+    public static ParameterBinder GetParameterBinder(
+        IModelMetadataProvider metadataProvider,
+        IModelBinderProvider binderProvider = null,
+        MvcOptions mvcOptions = null,
+        ObjectModelValidator validator = null)
+    {
+        var services = GetServices(metadataProvider, mvcOptions: mvcOptions);
+        var options = services.GetRequiredService<IOptions<MvcOptions>>();
+
+        if (binderProvider != null)
+        {
+            options.Value.ModelBinderProviders.Insert(0, binderProvider);
         }
 
-        public static IModelBinderFactory GetModelBinderFactory(
-            IModelMetadataProvider metadataProvider,
-            IServiceProvider services = null)
+        validator ??= new DefaultObjectValidator(
+            metadataProvider,
+            new[] { new CompositeModelValidatorProvider(GetModelValidatorProviders(options)) },
+            options.Value);
+
+        return new ParameterBinder(
+            metadataProvider,
+            new ModelBinderFactory(metadataProvider, options, services),
+            validator,
+            options,
+            NullLoggerFactory.Instance);
+    }
+
+    public static IModelBinderFactory GetModelBinderFactory(
+        IModelMetadataProvider metadataProvider,
+        IServiceProvider services = null)
+    {
+        if (services == null)
         {
-            if (services == null)
-            {
-                services = GetServices(metadataProvider);
-            }
-
-            var options = services.GetRequiredService<IOptions<MvcOptions>>();
-
-            return new ModelBinderFactory(metadataProvider, options, services);
+            services = GetServices(metadataProvider);
         }
 
-        public static IObjectModelValidator GetObjectValidator(
-            IModelMetadataProvider metadataProvider,
-            IOptions<MvcOptions> options = null)
+        var options = services.GetRequiredService<IOptions<MvcOptions>>();
+
+        return new ModelBinderFactory(metadataProvider, options, services);
+    }
+
+    public static IObjectModelValidator GetObjectValidator(
+        IModelMetadataProvider metadataProvider,
+        IOptions<MvcOptions> options = null)
+    {
+        return new DefaultObjectValidator(
+            metadataProvider,
+            GetModelValidatorProviders(options),
+            options?.Value ?? new MvcOptions());
+    }
+
+    private static IList<IModelValidatorProvider> GetModelValidatorProviders(IOptions<MvcOptions> options)
+    {
+        if (options == null)
         {
-            return new DefaultObjectValidator(
-                metadataProvider,
-                GetModelValidatorProviders(options),
-                options?.Value ?? new MvcOptions());
+            return TestModelValidatorProvider.CreateDefaultProvider().ValidatorProviders;
+        }
+        else
+        {
+            return options.Value.ModelValidatorProviders;
+        }
+    }
+
+    private static HttpContext GetHttpContext(
+        IModelMetadataProvider metadataProvider,
+        Action<HttpRequest> updateRequest = null,
+        Action<MvcOptions> updateOptions = null,
+        MvcOptions mvcOptions = null)
+    {
+        var httpContext = new DefaultHttpContext();
+        httpContext.Features.Set<IHttpRequestLifetimeFeature>(new CancellableRequestLifetimeFeature());
+
+        updateRequest?.Invoke(httpContext.Request);
+
+        httpContext.RequestServices = GetServices(metadataProvider, updateOptions, mvcOptions);
+        return httpContext;
+    }
+
+    public static IServiceProvider GetServices(
+        IModelMetadataProvider metadataProvider,
+        Action<MvcOptions> updateOptions = null,
+        MvcOptions mvcOptions = null)
+    {
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton(new ApplicationPartManager());
+        if (metadataProvider != null)
+        {
+            serviceCollection.AddSingleton(metadataProvider);
+        }
+        else if (updateOptions != null || mvcOptions != null)
+        {
+            serviceCollection.AddSingleton(services =>
+            {
+                var optionsAccessor = services.GetRequiredService<IOptions<MvcOptions>>();
+                return TestModelMetadataProvider.CreateProvider(optionsAccessor.Value.ModelMetadataDetailsProviders);
+            });
+        }
+        else
+        {
+            serviceCollection.AddSingleton<IModelMetadataProvider>(services =>
+            {
+                return TestModelMetadataProvider.CreateDefaultProvider();
+            });
         }
 
-        private static IList<IModelValidatorProvider> GetModelValidatorProviders(IOptions<MvcOptions> options)
+        if (mvcOptions != null)
         {
-            if (options == null)
-            {
-                return TestModelValidatorProvider.CreateDefaultProvider().ValidatorProviders;
-            }
-            else
-            {
-                return options.Value.ModelValidatorProviders;
-            }
+            serviceCollection.AddSingleton(Options.Create(mvcOptions));
         }
 
-        private static HttpContext GetHttpContext(
-            IModelMetadataProvider metadataProvider,
-            Action<HttpRequest> updateRequest = null,
-            Action<MvcOptions> updateOptions = null,
-            MvcOptions mvcOptions = null)
+        serviceCollection.AddMvc()
+            .AddNewtonsoftJson();
+        serviceCollection
+            .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
+            .AddTransient<ILogger<DefaultAuthorizationService>, Logger<DefaultAuthorizationService>>();
+
+        if (updateOptions != null)
         {
-            var httpContext = new DefaultHttpContext();
-            httpContext.Features.Set<IHttpRequestLifetimeFeature>(new CancellableRequestLifetimeFeature());
-
-            updateRequest?.Invoke(httpContext.Request);
-
-            httpContext.RequestServices = GetServices(metadataProvider, updateOptions, mvcOptions);
-            return httpContext;
+            serviceCollection.Configure(updateOptions);
         }
 
-        public static IServiceProvider GetServices(
-            IModelMetadataProvider metadataProvider,
-            Action<MvcOptions> updateOptions = null,
-            MvcOptions mvcOptions = null)
+        return serviceCollection.BuildServiceProvider();
+    }
+
+    private class CancellableRequestLifetimeFeature : IHttpRequestLifetimeFeature
+    {
+        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+
+        public CancellationToken RequestAborted { get => _cts.Token; set => throw new NotImplementedException(); }
+
+        public void Abort()
         {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton(new ApplicationPartManager());
-            if (metadataProvider != null)
-            {
-                serviceCollection.AddSingleton(metadataProvider);
-            }
-            else if (updateOptions != null || mvcOptions != null)
-            {
-                serviceCollection.AddSingleton(services =>
-                {
-                    var optionsAccessor = services.GetRequiredService<IOptions<MvcOptions>>();
-                    return TestModelMetadataProvider.CreateProvider(optionsAccessor.Value.ModelMetadataDetailsProviders);
-                });
-            }
-            else
-            {
-                serviceCollection.AddSingleton<IModelMetadataProvider>(services =>
-                {
-                    return TestModelMetadataProvider.CreateDefaultProvider();
-                });
-            }
-
-            if (mvcOptions != null)
-            {
-                serviceCollection.AddSingleton(Options.Create(mvcOptions));
-            }
-
-            serviceCollection.AddMvc()
-                .AddNewtonsoftJson();
-            serviceCollection
-                .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
-                .AddTransient<ILogger<DefaultAuthorizationService>, Logger<DefaultAuthorizationService>>();
-
-            if (updateOptions != null)
-            {
-                serviceCollection.Configure(updateOptions);
-            }
-
-            return serviceCollection.BuildServiceProvider();
-        }
-
-        private class CancellableRequestLifetimeFeature : IHttpRequestLifetimeFeature
-        {
-            private readonly CancellationTokenSource _cts = new CancellationTokenSource();
-
-            public CancellationToken RequestAborted { get => _cts.Token; set => throw new NotImplementedException(); }
-
-            public void Abort()
-            {
-                _cts.Cancel();
-            }
+            _cts.Cancel();
         }
     }
 }

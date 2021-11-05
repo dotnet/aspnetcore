@@ -3,28 +3,27 @@
 
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+internal class DefaultRazorSyntaxTreePhase : RazorEnginePhaseBase, IRazorSyntaxTreePhase
 {
-    internal class DefaultRazorSyntaxTreePhase : RazorEnginePhaseBase, IRazorSyntaxTreePhase
+    public IRazorSyntaxTreePass[] Passes { get; private set; }
+
+    protected override void OnIntialized()
     {
-        public IRazorSyntaxTreePass[] Passes { get; private set; }
+        Passes = Engine.Features.OfType<IRazorSyntaxTreePass>().OrderBy(p => p.Order).ToArray();
+    }
 
-        protected override void OnIntialized()
+    protected override void ExecuteCore(RazorCodeDocument codeDocument)
+    {
+        var syntaxTree = codeDocument.GetSyntaxTree();
+        ThrowForMissingDocumentDependency(syntaxTree);
+
+        foreach (var pass in Passes)
         {
-            Passes = Engine.Features.OfType<IRazorSyntaxTreePass>().OrderBy(p => p.Order).ToArray();
+            syntaxTree = pass.Execute(codeDocument, syntaxTree);
         }
 
-        protected override void ExecuteCore(RazorCodeDocument codeDocument)
-        {
-            var syntaxTree = codeDocument.GetSyntaxTree();
-            ThrowForMissingDocumentDependency(syntaxTree);
-
-            foreach (var pass in Passes)
-            {
-                syntaxTree = pass.Execute(codeDocument, syntaxTree);
-            }
-
-            codeDocument.SetSyntaxTree(syntaxTree);
-        }
+        codeDocument.SetSyntaxTree(syntaxTree);
     }
 }

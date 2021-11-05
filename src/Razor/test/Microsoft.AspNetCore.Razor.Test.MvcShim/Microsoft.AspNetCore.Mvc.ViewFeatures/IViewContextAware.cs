@@ -3,10 +3,9 @@
 
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
+
+public interface IViewContextAware
 {
-    public interface IViewContextAware
-    {
-        void Contextualize(ViewContext viewContext);
-    }
+    void Contextualize(ViewContext viewContext);
 }

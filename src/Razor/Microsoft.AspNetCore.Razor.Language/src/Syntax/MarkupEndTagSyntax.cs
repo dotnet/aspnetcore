@@ -3,70 +3,69 @@
 
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 
-namespace Microsoft.AspNetCore.Razor.Language.Syntax
+namespace Microsoft.AspNetCore.Razor.Language.Syntax;
+
+internal partial class MarkupEndTagSyntax
 {
-    internal partial class MarkupEndTagSyntax
+    public bool IsMarkupTransition
     {
-        public bool IsMarkupTransition
+        get
         {
-            get
+            return ((InternalSyntax.MarkupEndTagSyntax)Green).IsMarkupTransition;
+        }
+    }
+
+    public SyntaxList<RazorSyntaxNode> Children => GetLegacyChildren();
+
+    public string GetTagNameWithOptionalBang()
+    {
+        return Name.IsMissing ? string.Empty : Bang?.Content + Name.Content;
+    }
+
+    private SyntaxList<RazorSyntaxNode> GetLegacyChildren()
+    {
+        // This method returns the children of this end tag in legacy format.
+        // This is needed to generate the same classified spans as the legacy syntax tree.
+        var builder = new SyntaxListBuilder(3);
+        var tokens = SyntaxListBuilder<SyntaxToken>.Create();
+        var context = this.GetSpanContext();
+        if (!OpenAngle.IsMissing)
+        {
+            tokens.Add(OpenAngle);
+        }
+        if (!ForwardSlash.IsMissing)
+        {
+            tokens.Add(ForwardSlash);
+        }
+        if (Bang != null)
+        {
+            // The prefix of an end tag(E.g '|</|!foo>') will have 'Any' accepted characters if a bang exists.
+            var acceptsAnyContext = new SpanContext(context.ChunkGenerator, SpanEditHandler.CreateDefault());
+            acceptsAnyContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Any;
+            builder.Add(SyntaxFactory.MarkupTextLiteral(tokens.Consume()).WithSpanContext(acceptsAnyContext));
+
+            tokens.Add(Bang);
+            var acceptsNoneContext = new SpanContext(context.ChunkGenerator, SpanEditHandler.CreateDefault());
+            acceptsNoneContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
+            builder.Add(SyntaxFactory.RazorMetaCode(tokens.Consume()).WithSpanContext(acceptsNoneContext));
+        }
+        if (!Name.IsMissing)
+        {
+            tokens.Add(Name);
+        }
+        if (MiscAttributeContent?.Children != null && MiscAttributeContent.Children.Count > 0)
+        {
+            foreach (var content in MiscAttributeContent.Children)
             {
-                return ((InternalSyntax.MarkupEndTagSyntax)Green).IsMarkupTransition;
+                tokens.AddRange(((MarkupTextLiteralSyntax)content).LiteralTokens);
             }
         }
-
-        public SyntaxList<RazorSyntaxNode> Children => GetLegacyChildren();
-
-        public string GetTagNameWithOptionalBang()
+        if (!CloseAngle.IsMissing)
         {
-            return Name.IsMissing ? string.Empty : Bang?.Content + Name.Content;
+            tokens.Add(CloseAngle);
         }
+        builder.Add(SyntaxFactory.MarkupTextLiteral(tokens.Consume()).WithSpanContext(context));
 
-        private SyntaxList<RazorSyntaxNode> GetLegacyChildren()
-        {
-            // This method returns the children of this end tag in legacy format.
-            // This is needed to generate the same classified spans as the legacy syntax tree.
-            var builder = new SyntaxListBuilder(3);
-            var tokens = SyntaxListBuilder<SyntaxToken>.Create();
-            var context = this.GetSpanContext();
-            if (!OpenAngle.IsMissing)
-            {
-                tokens.Add(OpenAngle);
-            }
-            if (!ForwardSlash.IsMissing)
-            {
-                tokens.Add(ForwardSlash);
-            }
-            if (Bang != null)
-            {
-                // The prefix of an end tag(E.g '|</|!foo>') will have 'Any' accepted characters if a bang exists.
-                var acceptsAnyContext = new SpanContext(context.ChunkGenerator, SpanEditHandler.CreateDefault());
-                acceptsAnyContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Any;
-                builder.Add(SyntaxFactory.MarkupTextLiteral(tokens.Consume()).WithSpanContext(acceptsAnyContext));
-
-                tokens.Add(Bang);
-                var acceptsNoneContext = new SpanContext(context.ChunkGenerator, SpanEditHandler.CreateDefault());
-                acceptsNoneContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
-                builder.Add(SyntaxFactory.RazorMetaCode(tokens.Consume()).WithSpanContext(acceptsNoneContext));
-            }
-            if (!Name.IsMissing)
-            {
-                tokens.Add(Name);
-            }
-            if (MiscAttributeContent?.Children != null && MiscAttributeContent.Children.Count > 0)
-            {
-                foreach (var content in MiscAttributeContent.Children)
-                {
-                    tokens.AddRange(((MarkupTextLiteralSyntax)content).LiteralTokens);
-                }
-            }
-            if (!CloseAngle.IsMissing)
-            {
-                tokens.Add(CloseAngle);
-            }
-            builder.Add(SyntaxFactory.MarkupTextLiteral(tokens.Consume()).WithSpanContext(context));
-
-            return new SyntaxList<RazorSyntaxNode>(builder.ToListNode().CreateRed(this, Position));
-        }
+        return new SyntaxList<RazorSyntaxNode>(builder.ToListNode().CreateRed(this, Position));
     }
 }

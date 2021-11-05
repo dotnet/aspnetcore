@@ -4,45 +4,45 @@
 using System;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-namespace Microsoft.AspNetCore.Razor.Language.Extensions
+namespace Microsoft.AspNetCore.Razor.Language.Extensions;
+
+internal sealed class EliminateMethodBodyPass : IntermediateNodePassBase, IRazorOptimizationPass
 {
-    internal sealed class EliminateMethodBodyPass : IntermediateNodePassBase, IRazorOptimizationPass
+    // Run late in the optimization phase
+    public override int Order => int.MaxValue;
+
+    protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
     {
-        // Run late in the optimization phase
-        public override int Order => int.MaxValue;
-
-        protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
+        if (codeDocument == null)
         {
-            if (codeDocument == null)
-            {
-                throw new ArgumentNullException(nameof(codeDocument));
-            }
+            throw new ArgumentNullException(nameof(codeDocument));
+        }
 
-            if (documentNode == null)
-            {
-                throw new ArgumentNullException(nameof(documentNode));
-            }
+        if (documentNode == null)
+        {
+            throw new ArgumentNullException(nameof(documentNode));
+        }
 
-            var codeGenerationOptions = codeDocument.GetCodeGenerationOptions();
-            if (codeGenerationOptions == null || !codeGenerationOptions.SuppressPrimaryMethodBody)
-            {
-                return;
-            }
+        var codeGenerationOptions = codeDocument.GetCodeGenerationOptions();
+        if (codeGenerationOptions == null || !codeGenerationOptions.SuppressPrimaryMethodBody)
+        {
+            return;
+        }
 
-            var method = documentNode.FindPrimaryMethod();
-            if (method == null)
-            {
-                return;
-            }
+        var method = documentNode.FindPrimaryMethod();
+        if (method == null)
+        {
+            return;
+        }
 
-            method.Children.Clear();
+        method.Children.Clear();
 
-            // After we clear all of the method body there might be some unused fields, which can be
-            // blocking if compiling with warnings as errors. Suppress this warning so that it doesn't
-            // get annoying in VS.
-            documentNode.Children.Insert(documentNode.Children.IndexOf(documentNode.FindPrimaryNamespace()), new CSharpCodeIntermediateNode()
-            {
-                Children =
+        // After we clear all of the method body there might be some unused fields, which can be
+        // blocking if compiling with warnings as errors. Suppress this warning so that it doesn't
+        // get annoying in VS.
+        documentNode.Children.Insert(documentNode.Children.IndexOf(documentNode.FindPrimaryNamespace()), new CSharpCodeIntermediateNode()
+        {
+            Children =
                 {
                     // Field is assigned but never used
                     new IntermediateToken()
@@ -65,7 +65,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                         Kind = TokenKind.CSharp,
                     },
                 },
-            });
-        }
+        });
     }
 }
