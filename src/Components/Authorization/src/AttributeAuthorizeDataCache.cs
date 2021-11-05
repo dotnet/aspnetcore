@@ -30,10 +30,13 @@ namespace Microsoft.AspNetCore.Components.Authorization
             List<IAuthorizeData>? authorizeDatas = null;
             for (var i = 0; i < allAttributes.Length; i++)
             {
+                /*
+                Disabling this functionality to check that E2E tests catch the bug
                 if (allAttributes[i] is IAllowAnonymous)
                 {
                     return null;
                 }
+                */
 
                 if (allAttributes[i] is IAuthorizeData authorizeData)
                 {
