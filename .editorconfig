@@ -72,7 +72,7 @@ end_of_line = lf
 [*.{razor,cshtml}]
 charset = utf-8-bom
 
-[src/*.{cs,vb}]
+[*.{cs,vb}]
 # CA1018: Mark attributes with AttributeUsageAttribute
 dotnet_diagnostic.CA1018.severity = warning
 
