@@ -5,26 +5,24 @@ using System.Net.Sockets;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    internal readonly struct TransferResult
+    internal readonly struct SocketOperationResult
     {
         public readonly SocketException? SocketError;
 
         public readonly int BytesTransferred;
 
-        public readonly bool HasError;
+        public readonly bool HasError => SocketError != null;
 
-        public TransferResult(int bytesTransferred)
+        public SocketOperationResult(int bytesTransferred)
         {
             SocketError = null;
             BytesTransferred = bytesTransferred;
-            HasError = false;
         }
 
-        public TransferResult(SocketException exception)
+        public SocketOperationResult(SocketException exception)
         {
             SocketError = exception;
             BytesTransferred = 0;
-            HasError = true;
         }
     }
 }
