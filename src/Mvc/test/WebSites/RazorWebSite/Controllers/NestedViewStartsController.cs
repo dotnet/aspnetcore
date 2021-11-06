@@ -3,13 +3,12 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace RazorWebSite.Controllers
+namespace RazorWebSite.Controllers;
+
+public class NestedViewStartsController : Controller
 {
-    public class NestedViewStartsController : Controller
+    public IActionResult Index()
     {
-        public IActionResult Index()
-        {
-            return View("NestedViewStarts/Index");
-        }
+        return View("NestedViewStarts/Index");
     }
 }

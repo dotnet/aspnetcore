@@ -3,33 +3,32 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace RazorWebSite
+namespace RazorWebSite;
+
+public class DirectivesController : Controller
 {
-    public class DirectivesController : Controller
+    public IActionResult ViewInheritsInjectAndUsingsFromViewImports()
     {
-        public IActionResult ViewInheritsInjectAndUsingsFromViewImports()
-        {
-            return View(new Person { Name = "Person1" });
-        }
+        return View(new Person { Name = "Person1" });
+    }
 
-        public IActionResult ViewInheritsBasePageFromViewImports()
-        {
-            return View("/Views/Directives/Scoped/ViewInheritsBasePageFromViewImports.cshtml",
-                        new Person { Name = "Person2" });
-        }
+    public IActionResult ViewInheritsBasePageFromViewImports()
+    {
+        return View("/Views/Directives/Scoped/ViewInheritsBasePageFromViewImports.cshtml",
+                    new Person { Name = "Person2" });
+    }
 
-        public IActionResult ViewReplacesTModelTokenFromInheritedBasePages()
+    public IActionResult ViewReplacesTModelTokenFromInheritedBasePages()
+    {
+        var model = new Person
         {
-            var model = new Person
+            Name = "Bob",
+            Address = new Address
             {
-                Name = "Bob",
-                Address = new Address
-                {
-                    ZipCode = "98052"
-                }
-            };
+                ZipCode = "98052"
+            }
+        };
 
-            return View("/Views/InheritingInherits/Index.cshtml", model);
-        }
+        return View("/Views/InheritingInherits/Index.cshtml", model);
     }
 }

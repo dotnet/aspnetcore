@@ -12,298 +12,297 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
+namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests;
+
+public class TestHub : Hub
 {
-    public class TestHub : Hub
+    public string HelloWorld() => TestHubMethodsImpl.HelloWorld();
+
+    public string Echo(string message) => TestHubMethodsImpl.Echo(message);
+
+    public ChannelReader<int> Stream(int count) => TestHubMethodsImpl.Stream(count);
+
+    public ChannelReader<int> StreamException() => TestHubMethodsImpl.StreamException();
+
+    public ChannelReader<string> StreamBroken() => TestHubMethodsImpl.StreamBroken();
+
+    public async Task CallEcho(string message)
     {
-        public string HelloWorld() => TestHubMethodsImpl.HelloWorld();
+        await Clients.Client(Context.ConnectionId).SendAsync("Echo", message);
+    }
 
-        public string Echo(string message) => TestHubMethodsImpl.Echo(message);
+    public async Task CallHandlerThatDoesntExist()
+    {
+        await Clients.Client(Context.ConnectionId).SendAsync("NoClientHandler");
+    }
 
-        public ChannelReader<int> Stream(int count) => TestHubMethodsImpl.Stream(count);
+    public string GetCallerConnectionId()
+    {
+        return Context.ConnectionId;
+    }
 
-        public ChannelReader<int> StreamException() => TestHubMethodsImpl.StreamException();
+    public ChannelReader<string> StreamEcho(ChannelReader<string> source) => TestHubMethodsImpl.StreamEcho(source);
 
-        public ChannelReader<string> StreamBroken() => TestHubMethodsImpl.StreamBroken();
+    public ChannelReader<int> StreamEchoInt(ChannelReader<int> source) => TestHubMethodsImpl.StreamEchoInt(source);
 
-        public async Task CallEcho(string message)
+    public IAsyncEnumerable<int> StreamIAsyncConsumer(IAsyncEnumerable<int> source) => source;
+
+    public string GetUserIdentifier()
+    {
+        return Context.UserIdentifier;
+    }
+
+    public IEnumerable<string> GetHeaderValues(string[] headerNames)
+    {
+        var context = Context.GetHttpContext();
+
+        if (context == null)
         {
-            await Clients.Client(Context.ConnectionId).SendAsync("Echo", message);
+            throw new InvalidOperationException("Unable to get HttpContext from request.");
         }
 
-        public async Task CallHandlerThatDoesntExist()
+        var headers = context.Request.Headers;
+
+        if (headers == null)
         {
-            await Clients.Client(Context.ConnectionId).SendAsync("NoClientHandler");
+            throw new InvalidOperationException("Unable to get headers from context.");
         }
 
-        public string GetCallerConnectionId()
+        return headerNames.Select(h => (string)headers[h]);
+    }
+
+    public string GetCookieValue(string cookieName)
+    {
+        return Context.GetHttpContext().Request.Cookies[cookieName];
+    }
+
+    public object[] GetIHttpConnectionFeatureProperties()
+    {
+        var feature = Context.Features.Get<IHttpConnectionFeature>();
+
+        object[] result =
         {
-            return Context.ConnectionId;
-        }
-
-        public ChannelReader<string> StreamEcho(ChannelReader<string> source) => TestHubMethodsImpl.StreamEcho(source);
-
-        public ChannelReader<int> StreamEchoInt(ChannelReader<int> source) => TestHubMethodsImpl.StreamEchoInt(source);
-
-        public IAsyncEnumerable<int> StreamIAsyncConsumer(IAsyncEnumerable<int> source) => source;
-
-        public string GetUserIdentifier()
-        {
-            return Context.UserIdentifier;
-        }
-
-        public IEnumerable<string> GetHeaderValues(string[] headerNames)
-        {
-            var context = Context.GetHttpContext();
-
-            if (context == null)
-            {
-                throw new InvalidOperationException("Unable to get HttpContext from request.");
-            }
-
-            var headers = context.Request.Headers;
-
-            if (headers == null)
-            {
-                throw new InvalidOperationException("Unable to get headers from context.");
-            }
-
-            return headerNames.Select(h => (string)headers[h]);
-        }
-
-        public string GetCookieValue(string cookieName)
-        {
-            return Context.GetHttpContext().Request.Cookies[cookieName];
-        }
-
-        public object[] GetIHttpConnectionFeatureProperties()
-        {
-            var feature = Context.Features.Get<IHttpConnectionFeature>();
-
-            object[] result =
-            {
                 feature.LocalPort,
                 feature.RemotePort,
                 feature.LocalIpAddress.ToString(),
                 feature.RemoteIpAddress.ToString()
             };
 
-            return result;
+        return result;
+    }
+
+    public string GetActiveTransportName()
+    {
+        return Context.Features.Get<IHttpTransportFeature>().TransportType.ToString();
+    }
+
+    public async Task CallWithUnserializableObject()
+    {
+        await Clients.All.SendAsync("Foo", Unserializable.Create());
+    }
+
+    public Unserializable GetUnserializableObject()
+    {
+        return Unserializable.Create();
+    }
+
+    public class Unserializable
+    {
+        public Unserializable Child { get; private set; }
+
+        private Unserializable()
+        {
         }
 
-        public string GetActiveTransportName()
+        internal static Unserializable Create()
         {
-            return Context.Features.Get<IHttpTransportFeature>().TransportType.ToString();
+            // Loops throw off every serializer ;).
+            var o = new Unserializable();
+            o.Child = o;
+            return o;
         }
+    }
+}
 
-        public async Task CallWithUnserializableObject()
+public class DynamicTestHub : DynamicHub
+{
+    public string HelloWorld() => TestHubMethodsImpl.HelloWorld();
+
+    public string Echo(string message) => TestHubMethodsImpl.Echo(message);
+
+    public ChannelReader<int> Stream(int count) => TestHubMethodsImpl.Stream(count);
+
+    public ChannelReader<int> StreamException() => TestHubMethodsImpl.StreamException();
+
+    public ChannelReader<string> StreamBroken() => TestHubMethodsImpl.StreamBroken();
+
+    public async Task CallEcho(string message)
+    {
+        await Clients.Client(Context.ConnectionId).Echo(message);
+    }
+
+    public async Task CallHandlerThatDoesntExist()
+    {
+        await Clients.Client(Context.ConnectionId).NoClientHandler();
+    }
+
+    public string GetCallerConnectionId()
+    {
+        return Context.ConnectionId;
+    }
+
+    public ChannelReader<string> StreamEcho(ChannelReader<string> source) => TestHubMethodsImpl.StreamEcho(source);
+
+    public ChannelReader<int> StreamEchoInt(ChannelReader<int> source) => TestHubMethodsImpl.StreamEchoInt(source);
+
+    public IAsyncEnumerable<int> StreamIAsyncConsumer(IAsyncEnumerable<int> source) => source;
+}
+
+public class TestHubT : Hub<ITestHub>
+{
+    public string HelloWorld() => TestHubMethodsImpl.HelloWorld();
+
+    public string Echo(string message) => TestHubMethodsImpl.Echo(message);
+
+    public ChannelReader<int> Stream(int count) => TestHubMethodsImpl.Stream(count);
+
+    public ChannelReader<int> StreamException() => TestHubMethodsImpl.StreamException();
+
+    public ChannelReader<string> StreamBroken() => TestHubMethodsImpl.StreamBroken();
+
+    public async Task CallEcho(string message)
+    {
+        await Clients.Client(Context.ConnectionId).Echo(message);
+    }
+
+    public async Task CallHandlerThatDoesntExist()
+    {
+        await Clients.Client(Context.ConnectionId).NoClientHandler();
+    }
+
+    public string GetCallerConnectionId()
+    {
+        return Context.ConnectionId;
+    }
+
+    public ChannelReader<string> StreamEcho(ChannelReader<string> source) => TestHubMethodsImpl.StreamEcho(source);
+
+    public ChannelReader<int> StreamEchoInt(ChannelReader<int> source) => TestHubMethodsImpl.StreamEchoInt(source);
+
+    public IAsyncEnumerable<int> StreamIAsyncConsumer(IAsyncEnumerable<int> source) => source;
+}
+
+internal static class TestHubMethodsImpl
+{
+    public static string HelloWorld()
+    {
+        return "Hello World!";
+    }
+
+    public static string Echo(string message)
+    {
+        return message;
+    }
+
+    public static ChannelReader<int> Stream(int count)
+    {
+        var channel = Channel.CreateUnbounded<int>();
+
+        Task.Run(async () =>
         {
-            await Clients.All.SendAsync("Foo", Unserializable.Create());
-        }
-
-        public Unserializable GetUnserializableObject()
-        {
-            return Unserializable.Create();
-        }
-
-        public class Unserializable
-        {
-            public Unserializable Child { get; private set; }
-
-            private Unserializable()
+            for (var i = 0; i < count; i++)
             {
+                await channel.Writer.WriteAsync(i);
+                await Task.Delay(20);
             }
 
-            internal static Unserializable Create()
+            channel.Writer.TryComplete();
+        });
+
+        return channel.Reader;
+    }
+
+    public static ChannelReader<int> StreamException()
+    {
+        throw new InvalidOperationException("Error occurred while streaming.");
+    }
+
+    public static ChannelReader<string> StreamBroken() => null;
+
+    public static ChannelReader<string> StreamEcho(ChannelReader<string> source)
+    {
+        var output = Channel.CreateUnbounded<string>();
+        _ = Task.Run(async () =>
+        {
+            try
             {
-                // Loops throw off every serializer ;).
-                var o = new Unserializable();
-                o.Child = o;
-                return o;
+                while (await source.WaitToReadAsync())
+                {
+                    while (source.TryRead(out var item))
+                    {
+                        await output.Writer.WriteAsync(item);
+                    }
+                }
             }
-        }
-    }
-
-    public class DynamicTestHub : DynamicHub
-    {
-        public string HelloWorld() => TestHubMethodsImpl.HelloWorld();
-
-        public string Echo(string message) => TestHubMethodsImpl.Echo(message);
-
-        public ChannelReader<int> Stream(int count) => TestHubMethodsImpl.Stream(count);
-
-        public ChannelReader<int> StreamException() => TestHubMethodsImpl.StreamException();
-
-        public ChannelReader<string> StreamBroken() => TestHubMethodsImpl.StreamBroken();
-
-        public async Task CallEcho(string message)
-        {
-            await Clients.Client(Context.ConnectionId).Echo(message);
-        }
-
-        public async Task CallHandlerThatDoesntExist()
-        {
-            await Clients.Client(Context.ConnectionId).NoClientHandler();
-        }
-
-        public string GetCallerConnectionId()
-        {
-            return Context.ConnectionId;
-        }
-
-        public ChannelReader<string> StreamEcho(ChannelReader<string> source) => TestHubMethodsImpl.StreamEcho(source);
-
-        public ChannelReader<int> StreamEchoInt(ChannelReader<int> source) => TestHubMethodsImpl.StreamEchoInt(source);
-
-        public IAsyncEnumerable<int> StreamIAsyncConsumer(IAsyncEnumerable<int> source) => source;
-    }
-
-    public class TestHubT : Hub<ITestHub>
-    {
-        public string HelloWorld() => TestHubMethodsImpl.HelloWorld();
-
-        public string Echo(string message) => TestHubMethodsImpl.Echo(message);
-
-        public ChannelReader<int> Stream(int count) => TestHubMethodsImpl.Stream(count);
-
-        public ChannelReader<int> StreamException() => TestHubMethodsImpl.StreamException();
-
-        public ChannelReader<string> StreamBroken() => TestHubMethodsImpl.StreamBroken();
-
-        public async Task CallEcho(string message)
-        {
-            await Clients.Client(Context.ConnectionId).Echo(message);
-        }
-
-        public async Task CallHandlerThatDoesntExist()
-        {
-            await Clients.Client(Context.ConnectionId).NoClientHandler();
-        }
-
-        public string GetCallerConnectionId()
-        {
-            return Context.ConnectionId;
-        }
-
-        public ChannelReader<string> StreamEcho(ChannelReader<string> source) => TestHubMethodsImpl.StreamEcho(source);
-
-        public ChannelReader<int> StreamEchoInt(ChannelReader<int> source) => TestHubMethodsImpl.StreamEchoInt(source);
-
-        public IAsyncEnumerable<int> StreamIAsyncConsumer(IAsyncEnumerable<int> source) => source;
-    }
-
-    internal static class TestHubMethodsImpl
-    {
-        public static string HelloWorld()
-        {
-            return "Hello World!";
-        }
-
-        public static string Echo(string message)
-        {
-            return message;
-        }
-
-        public static ChannelReader<int> Stream(int count)
-        {
-            var channel = Channel.CreateUnbounded<int>();
-
-            Task.Run(async () =>
+            finally
             {
-                for (var i = 0; i < count; i++)
-                {
-                    await channel.Writer.WriteAsync(i);
-                    await Task.Delay(20);
-                }
+                output.Writer.TryComplete();
+            }
+        });
 
-                channel.Writer.TryComplete();
-            });
+        return output.Reader;
+    }
 
-            return channel.Reader;
-        }
-
-        public static ChannelReader<int> StreamException()
+    public static ChannelReader<int> StreamEchoInt(ChannelReader<int> source)
+    {
+        var output = Channel.CreateUnbounded<int>();
+        _ = Task.Run(async () =>
         {
-            throw new InvalidOperationException("Error occurred while streaming.");
-        }
-
-        public static ChannelReader<string> StreamBroken() => null;
-
-        public static ChannelReader<string> StreamEcho(ChannelReader<string> source)
-        {
-            var output = Channel.CreateUnbounded<string>();
-            _ = Task.Run(async () =>
+            try
             {
-                try
+                while (await source.WaitToReadAsync())
                 {
-                    while (await source.WaitToReadAsync())
+                    while (source.TryRead(out var item))
                     {
-                        while (source.TryRead(out var item))
-                        {
-                            await output.Writer.WriteAsync(item);
-                        }
+                        await output.Writer.WriteAsync(item);
                     }
                 }
-                finally
-                {
-                    output.Writer.TryComplete();
-                }
-            });
-
-            return output.Reader;
-        }
-
-        public static ChannelReader<int> StreamEchoInt(ChannelReader<int> source)
-        {
-            var output = Channel.CreateUnbounded<int>();
-            _ = Task.Run(async () =>
+            }
+            finally
             {
-                try
-                {
-                    while (await source.WaitToReadAsync())
-                    {
-                        while (source.TryRead(out var item))
-                        {
-                            await output.Writer.WriteAsync(item);
-                        }
-                    }
-                }
-                finally
-                {
-                    output.Writer.TryComplete();
-                }
-            });
+                output.Writer.TryComplete();
+            }
+        });
 
-            return output.Reader;
-        }
+        return output.Reader;
     }
+}
 
-    public interface ITestHub
+public interface ITestHub
+{
+    Task Echo(string message);
+    Task Send(string message);
+    Task NoClientHandler();
+}
+
+public class VersionHub : Hub
+{
+    public string Echo(string message) => message;
+
+    public Task NewProtocolMethodServer()
     {
-        Task Echo(string message);
-        Task Send(string message);
-        Task NoClientHandler();
+        return Clients.Caller.SendAsync("NewProtocolMethodClient");
     }
+}
 
-    public class VersionHub : Hub
-    {
-        public string Echo(string message) => message;
+[Authorize(JwtBearerDefaults.AuthenticationScheme)]
+public class HubWithAuthorization : Hub
+{
+    public string Echo(string message) => TestHubMethodsImpl.Echo(message);
+}
 
-        public Task NewProtocolMethodServer()
-        {
-            return Clients.Caller.SendAsync("NewProtocolMethodClient");
-        }
-    }
-
-    [Authorize(JwtBearerDefaults.AuthenticationScheme)]
-    public class HubWithAuthorization : Hub
-    {
-        public string Echo(string message) => TestHubMethodsImpl.Echo(message);
-    }
-
-    // Authorization is added via endpoint routing in Startup
-    public class HubWithAuthorization2 : Hub
-    {
-        public string Echo(string message) => TestHubMethodsImpl.Echo(message);
-    }
+// Authorization is added via endpoint routing in Startup
+public class HubWithAuthorization2 : Hub
+{
+    public string Echo(string message) => TestHubMethodsImpl.Echo(message);
 }

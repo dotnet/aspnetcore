@@ -3,14 +3,13 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+
+[Flags]
+internal enum ConnectionOptions
 {
-    [Flags]
-    internal enum ConnectionOptions
-    {
-        None = 0,
-        Close = 1,
-        KeepAlive = 2,
-        Upgrade = 4
-    }
+    None = 0,
+    Close = 1,
+    KeepAlive = 2,
+    Upgrade = 4
 }

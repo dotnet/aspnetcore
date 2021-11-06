@@ -1,10 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Server.HttpSys
+namespace Microsoft.AspNetCore.Server.HttpSys;
+
+internal interface IRequestContextFactory
 {
-    internal interface IRequestContextFactory
-    {
-        RequestContext CreateRequestContext(uint? bufferSize, ulong requestId);
-    }
+    RequestContext CreateRequestContext(uint? bufferSize, ulong requestId);
 }

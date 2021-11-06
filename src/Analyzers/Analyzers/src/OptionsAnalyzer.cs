@@ -7,38 +7,37 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
-namespace Microsoft.AspNetCore.Analyzers
+namespace Microsoft.AspNetCore.Analyzers;
+
+internal class OptionsAnalyzer
 {
-    internal class OptionsAnalyzer
+    private readonly StartupAnalysisBuilder _context;
+
+    public OptionsAnalyzer(StartupAnalysisBuilder context)
     {
-        private readonly StartupAnalysisBuilder _context;
+        _context = context;
+    }
 
-        public OptionsAnalyzer(StartupAnalysisBuilder context)
+    public void AnalyzeConfigureServices(OperationBlockStartAnalysisContext context)
+    {
+        var configureServicesMethod = (IMethodSymbol)context.OwningSymbol;
+        var options = ImmutableArray.CreateBuilder<OptionsItem>();
+        context.RegisterOperationAction(context =>
         {
-            _context = context;
-        }
+            if (context.Operation is ISimpleAssignmentOperation operation &&
+                operation.Value.ConstantValue.HasValue &&
+                operation.Target is IPropertyReferenceOperation property &&
+                property.Property?.ContainingType?.Name != null &&
+                property.Property.ContainingType.Name.EndsWith("Options", StringComparison.Ordinal))
+            {
+                options.Add(new OptionsItem(property.Property, operation.Value.ConstantValue.Value));
+            }
 
-        public void AnalyzeConfigureServices(OperationBlockStartAnalysisContext context)
+        }, OperationKind.SimpleAssignment);
+
+        context.RegisterOperationBlockEndAction(context =>
         {
-            var configureServicesMethod = (IMethodSymbol)context.OwningSymbol;
-            var options = ImmutableArray.CreateBuilder<OptionsItem>();
-            context.RegisterOperationAction(context =>
-            {
-                if (context.Operation is ISimpleAssignmentOperation operation &&
-                    operation.Value.ConstantValue.HasValue &&
-                    operation.Target is IPropertyReferenceOperation property &&
-                    property.Property?.ContainingType?.Name != null &&
-                    property.Property.ContainingType.Name.EndsWith("Options", StringComparison.Ordinal))
-                {
-                    options.Add(new OptionsItem(property.Property, operation.Value.ConstantValue.Value));
-                }
-
-            }, OperationKind.SimpleAssignment);
-
-            context.RegisterOperationBlockEndAction(context =>
-            {
-                _context.ReportAnalysis(new OptionsAnalysis(configureServicesMethod, options.ToImmutable()));
-            });
-        }
+            _context.ReportAnalysis(new OptionsAnalysis(configureServicesMethod, options.ToImmutable()));
+        });
     }
 }

@@ -3,20 +3,19 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace BasicWebSite
+namespace BasicWebSite;
+
+public class RequestIdViewComponent : ViewComponent
 {
-    public class RequestIdViewComponent : ViewComponent
+    public RequestIdViewComponent(RequestIdService requestIdService)
     {
-        public RequestIdViewComponent(RequestIdService requestIdService)
-        {
-            RequestIdService = requestIdService;
-        }
+        RequestIdService = requestIdService;
+    }
 
-        private RequestIdService RequestIdService { get; }
+    private RequestIdService RequestIdService { get; }
 
-        public IViewComponentResult Invoke()
-        {
-            return Content(RequestIdService.RequestId);
-        }
+    public IViewComponentResult Invoke()
+    {
+        return Content(RequestIdService.RequestId);
     }
 }

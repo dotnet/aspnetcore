@@ -7,16 +7,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
-namespace SimpleWebSite.Controllers
+namespace SimpleWebSite.Controllers;
+
+public class HomeController
 {
-    public class HomeController
+    public IDictionary<string, string> Index()
     {
-        public IDictionary<string, string> Index()
-        {
-            return new Dictionary<string, string> {
+        return new Dictionary<string, string> {
                 {"first", "wall" },
                 {"second", "floor" }
             };
-        }
     }
 }

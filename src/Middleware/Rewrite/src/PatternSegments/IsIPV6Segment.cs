@@ -3,17 +3,16 @@
 
 using System.Net.Sockets;
 
-namespace Microsoft.AspNetCore.Rewrite.PatternSegments
+namespace Microsoft.AspNetCore.Rewrite.PatternSegments;
+
+internal class IsIPV6Segment : PatternSegment
 {
-    internal class IsIPV6Segment : PatternSegment
+    public override string? Evaluate(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences)
     {
-        public override string? Evaluate(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences)
+        if (context.HttpContext.Connection.RemoteIpAddress == null)
         {
-            if (context.HttpContext.Connection.RemoteIpAddress == null)
-            {
-                return "off";
-            }
-            return context.HttpContext.Connection.RemoteIpAddress.AddressFamily == AddressFamily.InterNetworkV6 ? "on" : "off";
+            return "off";
         }
+        return context.HttpContext.Connection.RemoteIpAddress.AddressFamily == AddressFamily.InterNetworkV6 ? "on" : "off";
     }
 }

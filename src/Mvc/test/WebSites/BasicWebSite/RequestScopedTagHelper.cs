@@ -3,20 +3,19 @@
 
 using Microsoft.AspNetCore.Razor.TagHelpers;
 
-namespace BasicWebSite
+namespace BasicWebSite;
+
+public class RequestScopedTagHelper : TagHelper
 {
-    public class RequestScopedTagHelper : TagHelper
+    public RequestScopedTagHelper(RequestIdService service)
     {
-        public RequestScopedTagHelper(RequestIdService service)
-        {
-            RequestIdService = service;
-        }
+        RequestIdService = service;
+    }
 
-        public RequestIdService RequestIdService { get; }
+    public RequestIdService RequestIdService { get; }
 
-        public override void Process(TagHelperContext context, TagHelperOutput output)
-        {
-            output.Content.SetContent(RequestIdService.RequestId);
-        }
+    public override void Process(TagHelperContext context, TagHelperOutput output)
+    {
+        output.Content.SetContent(RequestIdService.RequestId);
     }
 }

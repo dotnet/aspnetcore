@@ -5,25 +5,24 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace BasicWebSite
+namespace BasicWebSite;
+
+public class StartupWithSystemTextJson
 {
-    public class StartupWithSystemTextJson
+    public void ConfigureServices(IServiceCollection services)
     {
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services
-                .AddMvc();
+        services
+            .AddMvc();
 
-            services.AddSingleton<ContactsRepository>();
-        }
+        services.AddSingleton<ContactsRepository>();
+    }
 
-        public void Configure(IApplicationBuilder app)
-        {
-            app.UseDeveloperExceptionPage();
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseDeveloperExceptionPage();
 
-            app.UseRouting();
+        app.UseRouting();
 
-            app.UseEndpoints((endpoints) => endpoints.MapDefaultControllerRoute());
-        }
+        app.UseEndpoints((endpoints) => endpoints.MapDefaultControllerRoute());
     }
 }

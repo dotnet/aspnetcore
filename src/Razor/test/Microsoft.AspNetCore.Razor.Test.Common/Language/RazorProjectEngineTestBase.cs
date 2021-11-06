@@ -3,32 +3,31 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+public abstract class RazorProjectEngineTestBase
 {
-    public abstract class RazorProjectEngineTestBase
+    protected abstract RazorLanguageVersion Version { get; }
+
+    protected virtual void ConfigureProjectEngine(RazorProjectEngineBuilder builder)
     {
-        protected abstract RazorLanguageVersion Version { get; }
+    }
 
-        protected virtual void ConfigureProjectEngine(RazorProjectEngineBuilder builder)
+    protected RazorEngine CreateEngine() => CreateProjectEngine().Engine;
+
+    protected RazorProjectEngine CreateProjectEngine()
+    {
+        var configuration = RazorConfiguration.Create(Version, "test", Array.Empty<RazorExtension>());
+        return RazorProjectEngine.Create(configuration, RazorProjectFileSystem.Empty, ConfigureProjectEngine);
+    }
+
+    protected RazorProjectEngine CreateProjectEngine(Action<RazorProjectEngineBuilder> configure)
+    {
+        var configuration = RazorConfiguration.Create(Version, "test", Array.Empty<RazorExtension>());
+        return RazorProjectEngine.Create(configuration, RazorProjectFileSystem.Empty, b =>
         {
-        }
-
-        protected RazorEngine CreateEngine() => CreateProjectEngine().Engine;
-
-        protected RazorProjectEngine CreateProjectEngine()
-        {
-            var configuration = RazorConfiguration.Create(Version, "test", Array.Empty<RazorExtension>());
-            return RazorProjectEngine.Create(configuration, RazorProjectFileSystem.Empty, ConfigureProjectEngine);
-        }
-
-        protected RazorProjectEngine CreateProjectEngine(Action<RazorProjectEngineBuilder> configure)
-        {
-            var configuration = RazorConfiguration.Create(Version, "test", Array.Empty<RazorExtension>());
-            return RazorProjectEngine.Create(configuration, RazorProjectFileSystem.Empty, b =>
-            {
-                ConfigureProjectEngine(b);
-                configure?.Invoke(b);
-            });
-        }
+            ConfigureProjectEngine(b);
+            configure?.Invoke(b);
+        });
     }
 }

@@ -7,13 +7,12 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
+
+public class RoutingEndpointRoutingWithoutRazorPagesTests : RoutingWithoutRazorPagesTestsBase<BasicWebSite.Startup>
 {
-    public class RoutingEndpointRoutingWithoutRazorPagesTests : RoutingWithoutRazorPagesTestsBase<BasicWebSite.Startup>
+    public RoutingEndpointRoutingWithoutRazorPagesTests(MvcTestFixture<BasicWebSite.Startup> fixture)
+        : base(fixture)
     {
-        public RoutingEndpointRoutingWithoutRazorPagesTests(MvcTestFixture<BasicWebSite.Startup> fixture)
-            : base(fixture)
-        {
-        }
     }
 }

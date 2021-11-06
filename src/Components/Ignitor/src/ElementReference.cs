@@ -5,25 +5,24 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Ignitor
+namespace Ignitor;
+
+/// <summary>
+/// Represents a reference to a rendered element.
+/// </summary>
+public readonly struct ElementReference
 {
     /// <summary>
-    /// Represents a reference to a rendered element.
+    /// Gets a unique identifier for <see cref="ElementReference" />.
     /// </summary>
-    public readonly struct ElementReference
-    {
-        /// <summary>
-        /// Gets a unique identifier for <see cref="ElementReference" />.
-        /// </summary>
-        /// <remarks>
-        /// The Id is unique at least within the scope of a given user/circuit.
-        /// This property is public to support Json serialization and should not be used by user code.
-        /// </remarks>
-        public string Id { get; }
+    /// <remarks>
+    /// The Id is unique at least within the scope of a given user/circuit.
+    /// This property is public to support Json serialization and should not be used by user code.
+    /// </remarks>
+    public string Id { get; }
 
-        public ElementReference(string id)
-        {
-            Id = id;
-        }
+    public ElementReference(string id)
+    {
+        Id = id;
     }
 }

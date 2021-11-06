@@ -7,42 +7,41 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 
-namespace RepoTasks
+namespace RepoTasks;
+
+internal static partial class FileUtilities
 {
-    internal static partial class FileUtilities
+    private static readonly HashSet<string> s_assemblyExtensions = new HashSet<string>(
+        new[] { ".dll", ".exe", ".winmd" },
+        StringComparer.OrdinalIgnoreCase);
+
+    public static Version GetFileVersion(string sourcePath)
     {
-        private static readonly HashSet<string> s_assemblyExtensions = new HashSet<string>(
-            new[] { ".dll", ".exe", ".winmd" },
-            StringComparer.OrdinalIgnoreCase);
+        var fvi = FileVersionInfo.GetVersionInfo(sourcePath);
 
-        public static Version GetFileVersion(string sourcePath)
+        if (fvi != null)
         {
-            var fvi = FileVersionInfo.GetVersionInfo(sourcePath);
+            return new Version(fvi.FileMajorPart, fvi.FileMinorPart, fvi.FileBuildPart, fvi.FilePrivatePart);
+        }
 
-            if (fvi != null)
-            {
-                return new Version(fvi.FileMajorPart, fvi.FileMinorPart, fvi.FileBuildPart, fvi.FilePrivatePart);
-            }
+        return null;
+    }
 
+    public static AssemblyName GetAssemblyName(string path)
+    {
+        if (!s_assemblyExtensions.Contains(Path.GetExtension(path)))
+        {
             return null;
         }
 
-        public static AssemblyName GetAssemblyName(string path)
+        try
         {
-            if (!s_assemblyExtensions.Contains(Path.GetExtension(path)))
-            {
-                return null;
-            }
-
-            try
-            {
-                return AssemblyName.GetAssemblyName(path);
-            }
-            catch (BadImageFormatException)
-            {
-                // Not a valid assembly.
-                return null;
-            }
+            return AssemblyName.GetAssemblyName(path);
+        }
+        catch (BadImageFormatException)
+        {
+            // Not a valid assembly.
+            return null;
         }
     }
 }

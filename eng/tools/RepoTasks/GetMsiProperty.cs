@@ -7,34 +7,33 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.Deployment.WindowsInstaller.Package;
 
-namespace RepoTasks
+namespace RepoTasks;
+
+public class GetMsiProperty : Microsoft.Build.Utilities.Task
 {
-    public class GetMsiProperty : Microsoft.Build.Utilities.Task
+    [Required]
+    public string InstallPackage { get; set; }
+
+    [Required]
+    public string Property { get; set; }
+
+    [Output]
+    public string Value { get; set; }
+
+    public override bool Execute()
     {
-        [Required]
-        public string InstallPackage { get; set; }
-
-        [Required]
-        public string Property { get; set; }
-
-        [Output]
-        public string Value { get; set; }
-
-        public override bool Execute()
+        try
         {
-            try
+            using (var package = new InstallPackage(InstallPackage, 0))
             {
-                using (var package = new InstallPackage(InstallPackage, 0))
-                {
-                    Value = package.Property[Property];
-                }
+                Value = package.Property[Property];
             }
-            catch (Exception exception)
-            {
-                Log.LogErrorFromException(exception);
-            }
-            return !Log.HasLoggedErrors;
         }
+        catch (Exception exception)
+        {
+            Log.LogErrorFromException(exception);
+        }
+        return !Log.HasLoggedErrors;
     }
 }
 #endif

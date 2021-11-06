@@ -3,44 +3,43 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Razor.Language.Syntax
+namespace Microsoft.AspNetCore.Razor.Language.Syntax;
+
+internal sealed partial class MarkupMinimizedTagHelperDirectiveAttributeSyntax
 {
-    internal sealed partial class MarkupMinimizedTagHelperDirectiveAttributeSyntax
+    private static readonly string TagHelperAttributeInfoKey = typeof(TagHelperAttributeInfo).Name;
+
+    public TagHelperAttributeInfo TagHelperAttributeInfo
     {
-        private static readonly string TagHelperAttributeInfoKey = typeof(TagHelperAttributeInfo).Name;
-
-        public TagHelperAttributeInfo TagHelperAttributeInfo
+        get
         {
-            get
-            {
-                var tagHelperAttributeInfo = this.GetAnnotationValue(TagHelperAttributeInfoKey) as TagHelperAttributeInfo;
-                return tagHelperAttributeInfo;
-            }
+            var tagHelperAttributeInfo = this.GetAnnotationValue(TagHelperAttributeInfoKey) as TagHelperAttributeInfo;
+            return tagHelperAttributeInfo;
         }
+    }
 
-        public string FullName
+    public string FullName
+    {
+        get
         {
-            get
-            {
-                var fullName = string.Concat(
-                    Transition.GetContent(),
-                    Name.GetContent(),
-                    Colon?.GetContent() ?? string.Empty,
-                    ParameterName?.GetContent() ?? string.Empty);
-                return fullName;
-            }
+            var fullName = string.Concat(
+                Transition.GetContent(),
+                Name.GetContent(),
+                Colon?.GetContent() ?? string.Empty,
+                ParameterName?.GetContent() ?? string.Empty);
+            return fullName;
         }
+    }
 
-        public MarkupMinimizedTagHelperDirectiveAttributeSyntax WithTagHelperAttributeInfo(TagHelperAttributeInfo info)
-        {
-            var annotations = new List<SyntaxAnnotation>(GetAnnotations())
+    public MarkupMinimizedTagHelperDirectiveAttributeSyntax WithTagHelperAttributeInfo(TagHelperAttributeInfo info)
+    {
+        var annotations = new List<SyntaxAnnotation>(GetAnnotations())
             {
                 new SyntaxAnnotation(TagHelperAttributeInfoKey, info)
             };
 
-            var newGreen = Green.WithAnnotationsGreen(annotations.ToArray());
+        var newGreen = Green.WithAnnotationsGreen(annotations.ToArray());
 
-            return (MarkupMinimizedTagHelperDirectiveAttributeSyntax)newGreen.CreateRed(Parent, Position);
-        }
+        return (MarkupMinimizedTagHelperDirectiveAttributeSyntax)newGreen.CreateRed(Parent, Position);
     }
 }

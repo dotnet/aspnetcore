@@ -3,12 +3,11 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.StaticFiles
+namespace Microsoft.AspNetCore.StaticFiles;
+
+internal static class Constants
 {
-    internal static class Constants
-    {
-        internal const string ServerCapabilitiesKey = "server.Capabilities";
-        internal const string SendFileVersionKey = "sendfile.Version";
-        internal const string SendFileVersion = "1.0";
-    }
+    internal const string ServerCapabilitiesKey = "server.Capabilities";
+    internal const string SendFileVersionKey = "sendfile.Version";
+    internal const string SendFileVersion = "1.0";
 }

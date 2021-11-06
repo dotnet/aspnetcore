@@ -4,18 +4,17 @@
 using Microsoft.AspNetCore.Http;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc
-{
-    public class BadRequestResultTests
-    {
-        [Fact]
-        public void BadRequestResult_InitializesStatusCode()
-        {
-            // Arrange & act
-            var badRequest = new BadRequestResult();
+namespace Microsoft.AspNetCore.Mvc;
 
-            // Assert
-            Assert.Equal(StatusCodes.Status400BadRequest, badRequest.StatusCode);
-        }
+public class BadRequestResultTests
+{
+    [Fact]
+    public void BadRequestResult_InitializesStatusCode()
+    {
+        // Arrange & act
+        var badRequest = new BadRequestResult();
+
+        // Assert
+        Assert.Equal(StatusCodes.Status400BadRequest, badRequest.StatusCode);
     }
 }

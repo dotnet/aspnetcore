@@ -4,11 +4,10 @@
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace RazorSyntaxGenerator
+namespace RazorSyntaxGenerator;
+
+public class Comment
 {
-    public class Comment
-    {
-        [XmlAnyElement]
-        public XmlElement[] Body;
-    }
+    [XmlAnyElement]
+    public XmlElement[] Body;
 }

@@ -3,14 +3,13 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace MvcSample.Web.Components
+namespace MvcSample.Web.Components;
+
+public class ComponentWithLayout : ViewComponent
 {
-    public class ComponentWithLayout : ViewComponent
+    public IViewComponentResult Invoke()
     {
-        public IViewComponentResult Invoke()
-        {
-            ViewData["Title"] = "ViewComponent With Title";
-            return View();
-        }
+        ViewData["Title"] = "ViewComponent With Title";
+        return View();
     }
 }

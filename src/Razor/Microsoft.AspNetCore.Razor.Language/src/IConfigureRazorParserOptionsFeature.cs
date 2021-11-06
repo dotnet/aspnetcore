@@ -1,12 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Razor.Language
-{
-    public interface IConfigureRazorParserOptionsFeature : IRazorEngineFeature
-    {
-        int Order { get; }
+namespace Microsoft.AspNetCore.Razor.Language;
 
-        void Configure(RazorParserOptionsBuilder options);
-    }
+public interface IConfigureRazorParserOptionsFeature : IRazorEngineFeature
+{
+    int Order { get; }
+
+    void Configure(RazorParserOptionsBuilder options);
 }

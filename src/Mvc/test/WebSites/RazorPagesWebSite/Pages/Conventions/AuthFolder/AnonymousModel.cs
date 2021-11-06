@@ -4,13 +4,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace RazorPagesWebSite
+namespace RazorPagesWebSite;
+
+[AllowAnonymous]
+public class AnonymousModel : PageModel
 {
-    [AllowAnonymous]
-    public class AnonymousModel : PageModel
+    public void OnGet()
     {
-        public void OnGet()
-        {
-        }
     }
 }

@@ -3,15 +3,14 @@
 
 using System.Diagnostics;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+
+internal sealed class DebuggerWrapper : IDebugger
 {
-    internal sealed class DebuggerWrapper : IDebugger
-    {
-        private DebuggerWrapper()
-        { }
+    private DebuggerWrapper()
+    { }
 
-        public static IDebugger Singleton { get; } = new DebuggerWrapper();
+    public static IDebugger Singleton { get; } = new DebuggerWrapper();
 
-        public bool IsAttached => Debugger.IsAttached;
-    }
+    public bool IsAttached => Debugger.IsAttached;
 }

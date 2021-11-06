@@ -30,20 +30,19 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 
-namespace Microsoft.AspNetCore.Mvc.Microbenchmarks
-{
-    public class HelperPerformanceBenchmark : RuntimePerformanceBenchmarkBase
-    {
-        public HelperPerformanceBenchmark() : base(
-            "~/Views/HelperTyped.cshtml",
-            "~/Views/HelperDynamic.cshtml",
-            "~/Views/HelperPartialSync.cshtml",
-            "~/Views/HelperPartialAsync.cshtml",
-            "~/Views/HelperExtensions.cshtml",
-            "~/Views/HelperPartialTagHelper.cshtml")
-        {
-        }
+namespace Microsoft.AspNetCore.Mvc.Microbenchmarks;
 
-        protected override object Model => Random.Shared.Next().ToString(CultureInfo.InvariantCulture);
+public class HelperPerformanceBenchmark : RuntimePerformanceBenchmarkBase
+{
+    public HelperPerformanceBenchmark() : base(
+        "~/Views/HelperTyped.cshtml",
+        "~/Views/HelperDynamic.cshtml",
+        "~/Views/HelperPartialSync.cshtml",
+        "~/Views/HelperPartialAsync.cshtml",
+        "~/Views/HelperExtensions.cshtml",
+        "~/Views/HelperPartialTagHelper.cshtml")
+    {
     }
+
+    protected override object Model => Random.Shared.Next().ToString(CultureInfo.InvariantCulture);
 }

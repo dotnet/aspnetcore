@@ -4,37 +4,36 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
+namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration;
+
+internal class TagHelperRenderingContext
 {
-    internal class TagHelperRenderingContext
+    private Dictionary<string, string> _renderedBoundAttributes;
+    private HashSet<string> _verifiedPropertyDictionaries;
+
+    public Dictionary<string, string> RenderedBoundAttributes
     {
-        private Dictionary<string, string> _renderedBoundAttributes;
-        private HashSet<string> _verifiedPropertyDictionaries;
-
-        public Dictionary<string, string> RenderedBoundAttributes
+        get
         {
-            get
+            if (_renderedBoundAttributes == null)
             {
-                if (_renderedBoundAttributes == null)
-                {
-                    _renderedBoundAttributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                }
-
-                return _renderedBoundAttributes;
+                _renderedBoundAttributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             }
+
+            return _renderedBoundAttributes;
         }
+    }
 
-        public HashSet<string> VerifiedPropertyDictionaries
+    public HashSet<string> VerifiedPropertyDictionaries
+    {
+        get
         {
-            get
+            if (_verifiedPropertyDictionaries == null)
             {
-                if (_verifiedPropertyDictionaries == null)
-                {
-                    _verifiedPropertyDictionaries = new HashSet<string>(StringComparer.Ordinal);
-                }
-
-                return _verifiedPropertyDictionaries;
+                _verifiedPropertyDictionaries = new HashSet<string>(StringComparer.Ordinal);
             }
+
+            return _verifiedPropertyDictionaries;
         }
     }
 }

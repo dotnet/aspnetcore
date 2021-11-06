@@ -3,25 +3,24 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+public class TestTagHelperFeature : RazorEngineFeatureBase, ITagHelperFeature
 {
-    public class TestTagHelperFeature : RazorEngineFeatureBase, ITagHelperFeature
+    public TestTagHelperFeature()
     {
-        public TestTagHelperFeature()
-        {
-            TagHelpers = new List<TagHelperDescriptor>();
-        }
+        TagHelpers = new List<TagHelperDescriptor>();
+    }
 
-        public TestTagHelperFeature(IEnumerable<TagHelperDescriptor> tagHelpers)
-        {
-            TagHelpers = new List<TagHelperDescriptor>(tagHelpers);
-        }
+    public TestTagHelperFeature(IEnumerable<TagHelperDescriptor> tagHelpers)
+    {
+        TagHelpers = new List<TagHelperDescriptor>(tagHelpers);
+    }
 
-        public List<TagHelperDescriptor> TagHelpers { get; }
+    public List<TagHelperDescriptor> TagHelpers { get; }
 
-        public IReadOnlyList<TagHelperDescriptor> GetDescriptors()
-        {
-            return TagHelpers.ToArray();
-        }
+    public IReadOnlyList<TagHelperDescriptor> GetDescriptors()
+    {
+        return TagHelpers.ToArray();
     }
 }

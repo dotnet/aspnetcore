@@ -3,22 +3,21 @@
 
 using System.Collections;
 
-namespace Wasm.Prerendered.Server
-{
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            BuildWebHost(args).Run();
-        }
+namespace Wasm.Prerendered.Server;
 
-        public static IHost BuildWebHost(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStaticWebAssets();
-                    webBuilder.UseStartup<Startup>();
-                })
-                .Build();
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        BuildWebHost(args).Run();
     }
+
+    public static IHost BuildWebHost(string[] args) =>
+        Host.CreateDefaultBuilder(args)
+            .ConfigureWebHostDefaults(webBuilder =>
+            {
+                webBuilder.UseStaticWebAssets();
+                webBuilder.UseStartup<Startup>();
+            })
+            .Build();
 }

@@ -3,36 +3,35 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace ApiExplorerWebSite
+namespace ApiExplorerWebSite;
+
+[Route("ApiExplorerResponseContentType/[Action]")]
+public class ApiExplorerResponseContentTypeController : Controller
 {
-    [Route("ApiExplorerResponseContentType/[Action]")]
-    public class ApiExplorerResponseContentTypeController : Controller
+    [HttpGet]
+    public Product Unset()
     {
-        [HttpGet]
-        public Product Unset()
-        {
-            return null;
-        }
+        return null;
+    }
 
-        [HttpGet]
-        [Produces("application/json", "text/json")]
-        public Product Specific()
-        {
-            return null;
-        }
+    [HttpGet]
+    [Produces("application/json", "text/json")]
+    public Product Specific()
+    {
+        return null;
+    }
 
-        [HttpGet]
-        [Produces("application/hal+custom", "application/hal+json")]
-        public Product WildcardMatch()
-        {
-            return null;
-        }
+    [HttpGet]
+    [Produces("application/hal+custom", "application/hal+json")]
+    public Product WildcardMatch()
+    {
+        return null;
+    }
 
-        [HttpGet]
-        [Produces("application/custom", "text/hal+bson")]
-        public Product NoMatch()
-        {
-            return null;
-        }
+    [HttpGet]
+    [Produces("application/custom", "text/hal+bson")]
+    public Product NoMatch()
+    {
+        return null;
     }
 }

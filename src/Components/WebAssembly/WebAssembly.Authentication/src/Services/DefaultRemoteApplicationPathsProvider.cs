@@ -3,17 +3,16 @@
 
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
+namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+
+internal class DefaultRemoteApplicationPathsProvider<TProviderOptions> : IRemoteAuthenticationPathsProvider where TProviderOptions : class, new()
 {
-    internal class DefaultRemoteApplicationPathsProvider<TProviderOptions> : IRemoteAuthenticationPathsProvider where TProviderOptions : class, new()
+    private readonly IOptions<RemoteAuthenticationOptions<TProviderOptions>> _options;
+
+    public DefaultRemoteApplicationPathsProvider(IOptionsSnapshot<RemoteAuthenticationOptions<TProviderOptions>> options)
     {
-        private readonly IOptions<RemoteAuthenticationOptions<TProviderOptions>> _options;
-
-        public DefaultRemoteApplicationPathsProvider(IOptionsSnapshot<RemoteAuthenticationOptions<TProviderOptions>> options)
-        {
-            _options = options;
-        }
-
-        public RemoteAuthenticationApplicationPathsOptions ApplicationPaths => _options.Value.AuthenticationPaths;
+        _options = options;
     }
+
+    public RemoteAuthenticationApplicationPathsOptions ApplicationPaths => _options.Value.AuthenticationPaths;
 }

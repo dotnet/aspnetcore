@@ -6,24 +6,24 @@ using System.Linq;
 using Xunit;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
+namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests;
+
+// Similar to design time code generation tests, but goes a character at a time.
+// Don't add many of these since they are slow - instead add features to existing
+// tests here, and use these as smoke tests, not for detailed regression testing.
+public class ComponentTypingTest : RazorIntegrationTestBase
 {
-    // Similar to design time code generation tests, but goes a character at a time.
-    // Don't add many of these since they are slow - instead add features to existing
-    // tests here, and use these as smoke tests, not for detailed regression testing.
-    public class ComponentTypingTest : RazorIntegrationTestBase
+    internal override bool DesignTime => true;
+
+    internal override string FileKind => FileKinds.Component;
+
+    internal override bool UseTwoPhaseCompilation => true;
+
+    [Fact]
+    public void DoSomeTyping()
     {
-        internal override bool DesignTime => true;
-
-        internal override string FileKind => FileKinds.Component;
-
-        internal override bool UseTwoPhaseCompilation => true;
-
-        [Fact]
-        public void DoSomeTyping()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -42,7 +42,7 @@ namespace Test
     }
 }
 "));
-            var text = @"
+        var text = @"
 <div>
   <MyComponent bind-Value=""myValue"" AnotherValue=""hi""/>
   <input type=""text"" bind=""@this.ModelState.Bind(x => x)"" />
@@ -57,47 +57,47 @@ namespace Test
     Test.ModelState ModelState { get; set; }
 }";
 
-            for (var i = 0; i <= text.Length; i++)
+        for (var i = 0; i <= text.Length; i++)
+        {
+            try
             {
-                try
-                {
-                    CompileToCSharp(text.Substring(0, i), throwOnFailure: false);
-                }
-                catch (Exception ex)
-                {
-                    throw new XunitException($@"
+                CompileToCSharp(text.Substring(0, i), throwOnFailure: false);
+            }
+            catch (Exception ex)
+            {
+                throw new XunitException($@"
 Code generation failed on iteration {i} with source text:
 {text.Substring(0, i)}
 
 Exception:
 {ex}
 ");
-                }
             }
         }
+    }
 
-        [Fact] // Regression test for #1068
-        public void Regression_1068()
-        {
-            // Arrange
+    [Fact] // Regression test for #1068
+    public void Regression_1068()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"
+        // Act
+        var generated = CompileToCSharp(@"
 <input type=""text"" bind="" />
 @functions {
     Test.ModelState ModelState { get; set; }
 }
 ", throwOnFailure: false);
 
-            // Assert
-        }
+        // Assert
+    }
 
-        [Fact]
-        public void MalformedAttributeContent()
-        {
-            // Act
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void MalformedAttributeContent()
+    {
+        // Act
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
 
@@ -116,7 +116,7 @@ namespace Test
     }
 }
 "));
-            var generated = CompileToCSharp(@"
+        var generated = CompileToCSharp(@"
   <MyComponent Value=10 Something=@for
 
   <button disabled=@form.IsSubmitting type=""submit"" class=""btn btn-primary mt-3 mr-3 has-spinner @(form.IsSubmitting ? ""active"" :"""")"" onclick=@(async () => await SaveAsync(false))>
@@ -124,7 +124,6 @@ namespace Test
     Test.ModelState ModelState { get; set; }
 }", throwOnFailure: false);
 
-            // Assert - does not throw
-        }
+        // Assert - does not throw
     }
 }

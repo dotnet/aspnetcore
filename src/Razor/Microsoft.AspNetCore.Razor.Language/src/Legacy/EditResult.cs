@@ -3,17 +3,16 @@
 
 using Microsoft.AspNetCore.Razor.Language.Syntax;
 
-namespace Microsoft.AspNetCore.Razor.Language.Legacy
-{
-    internal class EditResult
-    {
-        public EditResult(PartialParseResultInternal result, SyntaxNode editedNode)
-        {
-            Result = result;
-            EditedNode = editedNode;
-        }
+namespace Microsoft.AspNetCore.Razor.Language.Legacy;
 
-        public PartialParseResultInternal Result { get; set; }
-        public SyntaxNode EditedNode { get; set; }
+internal class EditResult
+{
+    public EditResult(PartialParseResultInternal result, SyntaxNode editedNode)
+    {
+        Result = result;
+        EditedNode = editedNode;
     }
+
+    public PartialParseResultInternal Result { get; set; }
+    public SyntaxNode EditedNode { get; set; }
 }

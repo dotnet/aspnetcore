@@ -3,13 +3,12 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace BasicWebSite.Controllers
+namespace BasicWebSite.Controllers;
+
+public class UsersController : Controller
 {
-    public class UsersController : Controller
+    public IActionResult Index()
     {
-        public IActionResult Index()
-        {
-            return Content("Users.Index");
-        }
+        return Content("Users.Index");
     }
 }

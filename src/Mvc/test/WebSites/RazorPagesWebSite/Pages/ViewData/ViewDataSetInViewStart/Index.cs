@@ -4,11 +4,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace RazorPagesWebSite.ViewDataSetInViewStart
+namespace RazorPagesWebSite.ViewDataSetInViewStart;
+
+public class Index : PageModel
 {
-    public class Index : PageModel
-    {
-        [ViewData]
-        public string ValueFromPageModel => "Value from Page Model";
-    }
+    [ViewData]
+    public string ValueFromPageModel => "Value from Page Model";
 }

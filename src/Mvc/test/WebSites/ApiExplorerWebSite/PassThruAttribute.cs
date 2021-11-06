@@ -3,10 +3,9 @@
 
 using System;
 
-namespace ApiExplorerWebSite
+namespace ApiExplorerWebSite;
+
+[AttributeUsage(AttributeTargets.Method)]
+public class PassThruAttribute : Attribute
 {
-    [AttributeUsage(AttributeTargets.Method)]
-    public class PassThruAttribute : Attribute
-    {
-    }
 }

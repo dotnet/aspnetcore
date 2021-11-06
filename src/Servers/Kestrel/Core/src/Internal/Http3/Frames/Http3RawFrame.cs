@@ -3,19 +3,18 @@
 
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
-namespace System.Net.Http
+namespace System.Net.Http;
+
+internal partial class Http3RawFrame
 {
-    internal partial class Http3RawFrame
+    public long Length { get; set; }
+
+    public Http3FrameType Type { get; internal set; }
+
+    public string FormattedType => Http3Formatting.ToFormattedType(Type);
+
+    public override string ToString()
     {
-        public long Length { get; set; }
-
-        public Http3FrameType Type { get; internal set; }
-
-        public string FormattedType => Http3Formatting.ToFormattedType(Type);
-
-        public override string ToString()
-        {
-            return $"{FormattedType} Length: {Length}";
-        }
+        return $"{FormattedType} Length: {Length}";
     }
 }

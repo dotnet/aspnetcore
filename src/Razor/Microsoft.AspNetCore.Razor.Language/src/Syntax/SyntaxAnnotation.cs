@@ -5,90 +5,89 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 
-namespace Microsoft.AspNetCore.Razor.Language.Syntax
+namespace Microsoft.AspNetCore.Razor.Language.Syntax;
+
+/// <summary>
+/// A SyntaxAnnotation is used to annotate syntax elements with additional information.
+///
+/// Since syntax elements are immutable, annotating them requires creating new instances of them
+/// with the annotations attached.
+/// </summary>
+[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+internal sealed class SyntaxAnnotation : IEquatable<SyntaxAnnotation>
 {
-    /// <summary>
-    /// A SyntaxAnnotation is used to annotate syntax elements with additional information.
-    ///
-    /// Since syntax elements are immutable, annotating them requires creating new instances of them
-    /// with the annotations attached.
-    /// </summary>
-    [DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-    internal sealed class SyntaxAnnotation : IEquatable<SyntaxAnnotation>
+    // use a value identity instead of object identity so a deserialized instance matches the original instance.
+    private readonly long _id;
+    private static long s_nextId;
+
+    // use a value identity instead of object identity so a deserialized instance matches the original instance.
+    public string Kind { get; }
+    public object Data { get; }
+
+    public SyntaxAnnotation()
     {
-        // use a value identity instead of object identity so a deserialized instance matches the original instance.
-        private readonly long _id;
-        private static long s_nextId;
+        _id = System.Threading.Interlocked.Increment(ref s_nextId);
+    }
 
-        // use a value identity instead of object identity so a deserialized instance matches the original instance.
-        public string Kind { get; }
-        public object Data { get; }
+    public SyntaxAnnotation(string kind)
+        : this()
+    {
+        Kind = kind;
+    }
 
-        public SyntaxAnnotation()
+    public SyntaxAnnotation(string kind, object data)
+        : this(kind)
+    {
+        Data = data;
+    }
+
+    private string GetDebuggerDisplay()
+    {
+        return string.Format(CultureInfo.InvariantCulture, "Annotation: Kind='{0}' Data='{1}'", this.Kind ?? "", this.Data ?? "");
+    }
+
+    public bool Equals(SyntaxAnnotation other)
+    {
+        return (object)other != null && _id == other._id;
+    }
+
+    public static bool operator ==(SyntaxAnnotation left, SyntaxAnnotation right)
+    {
+        if ((object)left == (object)right)
         {
-            _id = System.Threading.Interlocked.Increment(ref s_nextId);
+            return true;
         }
 
-        public SyntaxAnnotation(string kind)
-            : this()
+        if ((object)left == null || (object)right == null)
         {
-            Kind = kind;
+            return false;
         }
 
-        public SyntaxAnnotation(string kind, object data)
-            : this(kind)
+        return left.Equals(right);
+    }
+
+    public static bool operator !=(SyntaxAnnotation left, SyntaxAnnotation right)
+    {
+        if ((object)left == (object)right)
         {
-            Data = data;
+            return false;
         }
 
-        private string GetDebuggerDisplay()
+        if ((object)left == null || (object)right == null)
         {
-            return string.Format(CultureInfo.InvariantCulture, "Annotation: Kind='{0}' Data='{1}'", this.Kind ?? "", this.Data ?? "");
+            return true;
         }
 
-        public bool Equals(SyntaxAnnotation other)
-        {
-            return (object)other != null && _id == other._id;
-        }
+        return !left.Equals(right);
+    }
 
-        public static bool operator ==(SyntaxAnnotation left, SyntaxAnnotation right)
-        {
-            if ((object)left == (object)right)
-            {
-                return true;
-            }
+    public override bool Equals(object obj)
+    {
+        return Equals(obj as SyntaxAnnotation);
+    }
 
-            if ((object)left == null || (object)right == null)
-            {
-                return false;
-            }
-
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(SyntaxAnnotation left, SyntaxAnnotation right)
-        {
-            if ((object)left == (object)right)
-            {
-                return false;
-            }
-
-            if ((object)left == null || (object)right == null)
-            {
-                return true;
-            }
-
-            return !left.Equals(right);
-        }
-
-        public override bool Equals(object obj)
-        {
-            return Equals(obj as SyntaxAnnotation);
-        }
-
-        public override int GetHashCode()
-        {
-            return _id.GetHashCode();
-        }
+    public override int GetHashCode()
+    {
+        return _id.GetHashCode();
     }
 }

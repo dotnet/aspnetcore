@@ -3,31 +3,30 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Razor.Language.Syntax
+namespace Microsoft.AspNetCore.Razor.Language.Syntax;
+
+internal sealed partial class MarkupTagHelperElementSyntax
 {
-    internal sealed partial class MarkupTagHelperElementSyntax
+    private static readonly string TagHelperInfoKey = typeof(TagHelperInfo).Name;
+
+    public TagHelperInfo TagHelperInfo
     {
-        private static readonly string TagHelperInfoKey = typeof(TagHelperInfo).Name;
-
-        public TagHelperInfo TagHelperInfo
+        get
         {
-            get
-            {
-                var tagHelperInfo = this.GetAnnotationValue(TagHelperInfoKey) as TagHelperInfo;
-                return tagHelperInfo;
-            }
+            var tagHelperInfo = this.GetAnnotationValue(TagHelperInfoKey) as TagHelperInfo;
+            return tagHelperInfo;
         }
+    }
 
-        public MarkupTagHelperElementSyntax WithTagHelperInfo(TagHelperInfo info)
-        {
-            var annotations = new List<SyntaxAnnotation>(GetAnnotations())
+    public MarkupTagHelperElementSyntax WithTagHelperInfo(TagHelperInfo info)
+    {
+        var annotations = new List<SyntaxAnnotation>(GetAnnotations())
             {
                 new SyntaxAnnotation(TagHelperInfoKey, info)
             };
 
-            var newGreen = Green.WithAnnotationsGreen(annotations.ToArray());
+        var newGreen = Green.WithAnnotationsGreen(annotations.ToArray());
 
-            return (MarkupTagHelperElementSyntax)newGreen.CreateRed(Parent, Position);
-        }
+        return (MarkupTagHelperElementSyntax)newGreen.CreateRed(Parent, Position);
     }
 }

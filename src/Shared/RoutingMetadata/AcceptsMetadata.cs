@@ -6,55 +6,54 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Http.Metadata
+namespace Microsoft.AspNetCore.Http.Metadata;
+
+/// <summary>
+/// Metadata that specifies the supported request content types.
+/// </summary>
+internal sealed class AcceptsMetadata : IAcceptsMetadata
 {
     /// <summary>
-    /// Metadata that specifies the supported request content types.
+    /// Creates a new instance of <see cref="AcceptsMetadata"/>.
     /// </summary>
-    internal sealed class AcceptsMetadata : IAcceptsMetadata
+    public AcceptsMetadata(string[] contentTypes)
     {
-        /// <summary>
-        /// Creates a new instance of <see cref="AcceptsMetadata"/>.
-        /// </summary>
-        public AcceptsMetadata(string[] contentTypes)
+        if (contentTypes == null)
         {
-            if (contentTypes == null)
-            {
-                throw new ArgumentNullException(nameof(contentTypes));
-            }
-
-            ContentTypes = contentTypes;
+            throw new ArgumentNullException(nameof(contentTypes));
         }
 
-        /// <summary>
-        /// Creates a new instance of <see cref="AcceptsMetadata"/> with a type.
-        /// </summary>
-        public AcceptsMetadata(Type? type, bool isOptional, string[] contentTypes)
-        {
-            RequestType = type ?? throw new ArgumentNullException(nameof(type));
-
-            if (contentTypes == null)
-            {
-                throw new ArgumentNullException(nameof(contentTypes));
-            }
-
-            ContentTypes = contentTypes;
-            IsOptional = isOptional;
-        }
-
-        /// <summary>
-        /// Gets the supported request content types. 
-        /// </summary>
-        public IReadOnlyList<string> ContentTypes { get; }
-
-        /// <summary>
-        /// Gets the type being read from the request. 
-        /// </summary>
-        public Type? RequestType { get; }
-
-        /// <summary>
-        /// Gets a value that determines if the request body is optional.
-        /// </summary>
-        public bool IsOptional { get; }
+        ContentTypes = contentTypes;
     }
+
+    /// <summary>
+    /// Creates a new instance of <see cref="AcceptsMetadata"/> with a type.
+    /// </summary>
+    public AcceptsMetadata(Type? type, bool isOptional, string[] contentTypes)
+    {
+        RequestType = type ?? throw new ArgumentNullException(nameof(type));
+
+        if (contentTypes == null)
+        {
+            throw new ArgumentNullException(nameof(contentTypes));
+        }
+
+        ContentTypes = contentTypes;
+        IsOptional = isOptional;
+    }
+
+    /// <summary>
+    /// Gets the supported request content types. 
+    /// </summary>
+    public IReadOnlyList<string> ContentTypes { get; }
+
+    /// <summary>
+    /// Gets the type being read from the request. 
+    /// </summary>
+    public Type? RequestType { get; }
+
+    /// <summary>
+    /// Gets a value that determines if the request body is optional.
+    /// </summary>
+    public bool IsOptional { get; }
 }

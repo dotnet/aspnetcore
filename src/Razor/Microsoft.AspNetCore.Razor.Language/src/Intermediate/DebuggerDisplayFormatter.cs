@@ -3,19 +3,18 @@
 
 using System.IO;
 
-namespace Microsoft.AspNetCore.Razor.Language.Intermediate
-{
-    internal class DebuggerDisplayFormatter : IntermediateNodeFormatterBase
-    {
-        public DebuggerDisplayFormatter()
-        {
-            Writer = new StringWriter();
-            ContentMode = FormatterContentMode.PreferContent;
-        }
+namespace Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-        public override string ToString()
-        {
-            return Writer.ToString();
-        }
+internal class DebuggerDisplayFormatter : IntermediateNodeFormatterBase
+{
+    public DebuggerDisplayFormatter()
+    {
+        Writer = new StringWriter();
+        ContentMode = FormatterContentMode.PreferContent;
+    }
+
+    public override string ToString()
+    {
+        return Writer.ToString();
     }
 }

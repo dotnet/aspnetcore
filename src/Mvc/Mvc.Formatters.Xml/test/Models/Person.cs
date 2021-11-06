@@ -3,12 +3,11 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
-{
-    public class Person
-    {
-        public int Id { get; set; }
+namespace Microsoft.AspNetCore.Mvc.Formatters.Xml;
 
-        public string Name { get; set; }
-    }
+public class Person
+{
+    public int Id { get; set; }
+
+    public string Name { get; set; }
 }

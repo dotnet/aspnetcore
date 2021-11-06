@@ -7,12 +7,11 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace IdentitySample.Models.AccountViewModels
+namespace IdentitySample.Models.AccountViewModels;
+
+public class ExternalLoginConfirmationViewModel
 {
-    public class ExternalLoginConfirmationViewModel
-    {
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; }
-    }
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; }
 }

@@ -5,11 +5,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace RazorPagesWebSite
+namespace RazorPagesWebSite;
+
+[Authorize]
+public class ModelWithAuthFilter : PageModel
 {
-    [Authorize]
-    public class ModelWithAuthFilter : PageModel
-    {
-        public IActionResult OnGet() => Page();
-    }
+    public IActionResult OnGet() => Page();
 }

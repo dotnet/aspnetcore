@@ -3,21 +3,20 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace ApiExplorerWebSite
-{
-    [ApiExplorerSettings(IgnoreApi = true)]
-    [Route("ApiExplorerVisibilitySetExplicitly")]
-    public class ApiExplorerVisibilitySetExplicitlyController : Controller
-    {
-        [ApiExplorerSettings(IgnoreApi = false)]
-        [HttpGet("Enabled")]
-        public void Enabled()
-        {
-        }
+namespace ApiExplorerWebSite;
 
-        [HttpGet("Disabled")]
-        public void Disabled()
-        {
-        }
+[ApiExplorerSettings(IgnoreApi = true)]
+[Route("ApiExplorerVisibilitySetExplicitly")]
+public class ApiExplorerVisibilitySetExplicitlyController : Controller
+{
+    [ApiExplorerSettings(IgnoreApi = false)]
+    [HttpGet("Enabled")]
+    public void Enabled()
+    {
+    }
+
+    [HttpGet("Disabled")]
+    public void Disabled()
+    {
     }
 }

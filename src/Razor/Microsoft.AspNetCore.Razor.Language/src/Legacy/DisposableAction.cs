@@ -3,30 +3,29 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Razor.Language.Legacy
+namespace Microsoft.AspNetCore.Razor.Language.Legacy;
+
+internal class DisposableAction : IDisposable
 {
-    internal class DisposableAction : IDisposable
+    private readonly Action _action;
+    private bool _invoked;
+
+    public DisposableAction(Action action)
     {
-        private readonly Action _action;
-        private bool _invoked;
-
-        public DisposableAction(Action action)
+        if (action == null)
         {
-            if (action == null)
-            {
-                throw new ArgumentNullException(nameof(action));
-            }
-
-            _action = action;
+            throw new ArgumentNullException(nameof(action));
         }
 
-        public void Dispose()
+        _action = action;
+    }
+
+    public void Dispose()
+    {
+        if (!_invoked)
         {
-            if (!_invoked)
-            {
-                _action();
-                _invoked = true;
-            }
+            _action();
+            _invoked = true;
         }
     }
 }

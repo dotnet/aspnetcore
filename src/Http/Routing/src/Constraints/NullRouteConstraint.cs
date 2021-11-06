@@ -3,19 +3,18 @@
 
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Routing.Constraints
+namespace Microsoft.AspNetCore.Routing.Constraints;
+
+internal class NullRouteConstraint : IRouteConstraint
 {
-    internal class NullRouteConstraint : IRouteConstraint
+    public static readonly NullRouteConstraint Instance = new NullRouteConstraint();
+
+    private NullRouteConstraint()
     {
-        public static readonly NullRouteConstraint Instance = new NullRouteConstraint();
+    }
 
-        private NullRouteConstraint()
-        {
-        }
-
-        public bool Match(HttpContext? httpContext, IRouter? route, string routeKey, RouteValueDictionary values, RouteDirection routeDirection)
-        {
-            return true;
-        }
+    public bool Match(HttpContext? httpContext, IRouter? route, string routeKey, RouteValueDictionary values, RouteDirection routeDirection)
+    {
+        return true;
     }
 }

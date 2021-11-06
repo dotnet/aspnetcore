@@ -2,16 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
-namespace Identity.DefaultUI.WebSite
+namespace Identity.DefaultUI.WebSite;
+
+/// <summary>
+/// Provides version hash for a specified file.
+/// </summary>
+internal class FileVersionProvider : IFileVersionProvider
 {
-    /// <summary>
-    /// Provides version hash for a specified file.
-    /// </summary>
-    internal class FileVersionProvider : IFileVersionProvider
-    {
-        public string AddFileVersionToPath(PathString requestPathBase, string path) => path;
-    }
+    public string AddFileVersionToPath(PathString requestPathBase, string path) => path;
 }

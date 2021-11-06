@@ -4,120 +4,119 @@
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Language.Extensions
+namespace Microsoft.AspNetCore.Razor.Language.Extensions;
+
+public class MetadataAttributeTargetExtensionTest
 {
-    public class MetadataAttributeTargetExtensionTest
+    [Fact]
+    public void WriteRazorCompiledItemAttribute_RendersCorrectly()
     {
-        [Fact]
-        public void WriteRazorCompiledItemAttribute_RendersCorrectly()
+        // Arrange
+        var extension = new MetadataAttributeTargetExtension()
         {
-            // Arrange
-            var extension = new MetadataAttributeTargetExtension()
-            {
-                CompiledItemAttributeName = "global::TestItem",
-            };
-            var context = TestCodeRenderingContext.CreateRuntime();
+            CompiledItemAttributeName = "global::TestItem",
+        };
+        var context = TestCodeRenderingContext.CreateRuntime();
 
-            var node = new RazorCompiledItemAttributeIntermediateNode()
-            {
-                TypeName = "Foo.Bar",
-                Kind = "test",
-                Identifier = "Foo/Bar",
-            };
+        var node = new RazorCompiledItemAttributeIntermediateNode()
+        {
+            TypeName = "Foo.Bar",
+            Kind = "test",
+            Identifier = "Foo/Bar",
+        };
 
-            // Act
-            extension.WriteRazorCompiledItemAttribute(context, node);
+        // Act
+        extension.WriteRazorCompiledItemAttribute(context, node);
 
-            // Assert
-            var csharp = context.CodeWriter.GenerateCode();
-            Assert.Equal(
+        // Assert
+        var csharp = context.CodeWriter.GenerateCode();
+        Assert.Equal(
 @"[assembly: global::TestItem(typeof(Foo.Bar), @""test"", @""Foo/Bar"")]
 ",
-                csharp,
-                ignoreLineEndingDifferences: true);
-        }
+            csharp,
+            ignoreLineEndingDifferences: true);
+    }
 
-        [Fact]
-        public void WriteRazorSourceChecksumAttribute_RendersCorrectly()
+    [Fact]
+    public void WriteRazorSourceChecksumAttribute_RendersCorrectly()
+    {
+        // Arrange
+        var extension = new MetadataAttributeTargetExtension()
         {
-            // Arrange
-            var extension = new MetadataAttributeTargetExtension()
-            {
-                SourceChecksumAttributeName = "global::TestChecksum",
-            };
-            var context = TestCodeRenderingContext.CreateRuntime();
+            SourceChecksumAttributeName = "global::TestChecksum",
+        };
+        var context = TestCodeRenderingContext.CreateRuntime();
 
-            var node = new RazorSourceChecksumAttributeIntermediateNode()
-            {
-                ChecksumAlgorithm = "SHA1",
-                Checksum = new byte[] { (byte)'t', (byte)'e', (byte)'s', (byte)'t', },
-                Identifier = "Foo/Bar",
-            };
+        var node = new RazorSourceChecksumAttributeIntermediateNode()
+        {
+            ChecksumAlgorithm = "SHA1",
+            Checksum = new byte[] { (byte)'t', (byte)'e', (byte)'s', (byte)'t', },
+            Identifier = "Foo/Bar",
+        };
 
-            // Act
-            extension.WriteRazorSourceChecksumAttribute(context, node);
+        // Act
+        extension.WriteRazorSourceChecksumAttribute(context, node);
 
-            // Assert
-            var csharp = context.CodeWriter.GenerateCode();
-            Assert.Equal(
+        // Assert
+        var csharp = context.CodeWriter.GenerateCode();
+        Assert.Equal(
 @"[global::TestChecksum(@""SHA1"", @""74657374"", @""Foo/Bar"")]
 ",
-                csharp,
-                ignoreLineEndingDifferences: true);
-        }
+            csharp,
+            ignoreLineEndingDifferences: true);
+    }
 
-        [Fact]
-        public void WriteRazorCompiledItemAttributeMetadata_RendersCorrectly()
+    [Fact]
+    public void WriteRazorCompiledItemAttributeMetadata_RendersCorrectly()
+    {
+        // Arrange
+        var extension = new MetadataAttributeTargetExtension()
         {
-            // Arrange
-            var extension = new MetadataAttributeTargetExtension()
-            {
-                CompiledItemMetadataAttributeName = "global::TestItemMetadata",
-            };
-            var context = TestCodeRenderingContext.CreateRuntime();
+            CompiledItemMetadataAttributeName = "global::TestItemMetadata",
+        };
+        var context = TestCodeRenderingContext.CreateRuntime();
 
-            var node = new RazorCompiledItemMetadataAttributeIntermediateNode
-            {
-                Key = "key",
-                Value = "value",
-            };
+        var node = new RazorCompiledItemMetadataAttributeIntermediateNode
+        {
+            Key = "key",
+            Value = "value",
+        };
 
-            // Act
-            extension.WriteRazorCompiledItemMetadataAttribute(context, node);
+        // Act
+        extension.WriteRazorCompiledItemMetadataAttribute(context, node);
 
-            // Assert
-            var csharp = context.CodeWriter.GenerateCode().Trim();
-            Assert.Equal(
+        // Assert
+        var csharp = context.CodeWriter.GenerateCode().Trim();
+        Assert.Equal(
 "[global::TestItemMetadata(\"key\", \"value\")]",
-                csharp,
-                ignoreLineEndingDifferences: true);
-        }
+            csharp,
+            ignoreLineEndingDifferences: true);
+    }
 
-        [Fact]
-        public void WriteRazorCompiledItemAttributeMetadata_EscapesKeysAndValuesCorrectly()
+    [Fact]
+    public void WriteRazorCompiledItemAttributeMetadata_EscapesKeysAndValuesCorrectly()
+    {
+        // Arrange
+        var extension = new MetadataAttributeTargetExtension()
         {
-            // Arrange
-            var extension = new MetadataAttributeTargetExtension()
-            {
-                CompiledItemMetadataAttributeName = "global::TestItemMetadata",
-            };
-            var context = TestCodeRenderingContext.CreateRuntime();
+            CompiledItemMetadataAttributeName = "global::TestItemMetadata",
+        };
+        var context = TestCodeRenderingContext.CreateRuntime();
 
-            var node = new RazorCompiledItemMetadataAttributeIntermediateNode
-            {
-                Key = "\"test\" key",
-                Value = @"""test"" value",
-            };
+        var node = new RazorCompiledItemMetadataAttributeIntermediateNode
+        {
+            Key = "\"test\" key",
+            Value = @"""test"" value",
+        };
 
-            // Act
-            extension.WriteRazorCompiledItemMetadataAttribute(context, node);
+        // Act
+        extension.WriteRazorCompiledItemMetadataAttribute(context, node);
 
-            // Assert
-            var csharp = context.CodeWriter.GenerateCode().Trim();
-            Assert.Equal(
+        // Assert
+        var csharp = context.CodeWriter.GenerateCode().Trim();
+        Assert.Equal(
 "[global::TestItemMetadata(\"\\\"test\\\" key\", \"\\\"test\\\" value\")]",
-                csharp,
-                ignoreLineEndingDifferences: true);
-        }
+            csharp,
+            ignoreLineEndingDifferences: true);
     }
 }

@@ -3,13 +3,12 @@
 
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 
-namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
+
+public static class DeployerSelector
 {
-    public static class DeployerSelector
-    {
-        public static ServerType ServerType => ServerType.IIS;
-        public static bool IsNewShimTest => false;
-        public static bool HasNewShim => false;
-        public static bool HasNewHandler => true;
-    }
+    public static ServerType ServerType => ServerType.IIS;
+    public static bool IsNewShimTest => false;
+    public static bool HasNewShim => false;
+    public static bool HasNewHandler => true;
 }

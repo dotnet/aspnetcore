@@ -14,48 +14,47 @@ using PlaywrightSharp;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.E2ETest.Tests
+namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
+
+public class DownloadAnchorTest
+    : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
 {
-    public class DownloadAnchorTest
-        : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
+    public DownloadAnchorTest(
+        ToggleExecutionModeServerFixture<Program> serverFixture,
+        ITestOutputHelper output)
+        : base(serverFixture, output)
     {
-        public DownloadAnchorTest(
-            ToggleExecutionModeServerFixture<Program> serverFixture,
-            ITestOutputHelper output)
-            : base(serverFixture, output)
-        {            
-        }
+    }
 
-        protected override Type TestComponent { get; } = typeof(TestRouter);
+    protected override Type TestComponent { get; } = typeof(TestRouter);
 
-        [QuarantinedTest("New experimental test that need bake time.")]
-        [ConditionalTheory]
-        [InlineData(BrowserKind.Chromium)]
-        [InlineData(BrowserKind.Firefox)]
-        // NOTE: BrowserKind argument must be first
-        public async Task DownloadFileFromAnchor(BrowserKind browserKind)
+    [QuarantinedTest("New experimental test that need bake time.")]
+    [ConditionalTheory]
+    [InlineData(BrowserKind.Chromium)]
+    [InlineData(BrowserKind.Firefox)]
+    // NOTE: BrowserKind argument must be first
+    public async Task DownloadFileFromAnchor(BrowserKind browserKind)
+    {
+        if (ShouldSkip(browserKind))
         {
-            if (ShouldSkip(browserKind)) 
-            {
-                return;
-            }
-
-            // Arrange
-            var initialUrl = TestPage.Url;
-            var downloadTask = TestPage.WaitForEventAsync(PageEvent.Download);
-
-            // Act
-            await Task.WhenAll(
-                downloadTask,
-                TestPage.ClickAsync("a[download]"));
-
-            // Assert URL should still be same as before click
-            Assert.Equal(initialUrl, TestPage.Url);
-
-            // Assert that the resource was downloaded            
-            var download = downloadTask.Result.Download;
-            Assert.Equal($"{_serverFixture.RootUri}subdir/images/blazor_logo_1000x.png", download.Url);
-            Assert.Equal("blazor_logo_1000x.png", download.SuggestedFilename);
+            return;
         }
+
+        // Arrange
+        var initialUrl = TestPage.Url;
+        var downloadTask = TestPage.WaitForEventAsync(PageEvent.Download);
+
+        // Act
+        await Task.WhenAll(
+            downloadTask,
+            TestPage.ClickAsync("a[download]"));
+
+        // Assert URL should still be same as before click
+        Assert.Equal(initialUrl, TestPage.Url);
+
+        // Assert that the resource was downloaded            
+        var download = downloadTask.Result.Download;
+        Assert.Equal($"{_serverFixture.RootUri}subdir/images/blazor_logo_1000x.png", download.Url);
+        Assert.Equal("blazor_logo_1000x.png", download.SuggestedFilename);
     }
 }

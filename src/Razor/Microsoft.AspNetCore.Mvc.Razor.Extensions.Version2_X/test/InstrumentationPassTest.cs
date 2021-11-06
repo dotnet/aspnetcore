@@ -6,343 +6,342 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
 using static Microsoft.AspNetCore.Razor.Language.Intermediate.IntermediateNodeAssert;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
+namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X;
+
+public class InstrumentationPassTest
 {
-    public class InstrumentationPassTest
+    [Fact]
+    public void InstrumentationPass_NoOps_ForDesignTime()
     {
-        [Fact]
-        public void InstrumentationPass_NoOps_ForDesignTime()
+        // Arrange
+        var document = new DocumentIntermediateNode()
         {
-            // Arrange
-            var document = new DocumentIntermediateNode()
-            {
-                Options = RazorCodeGenerationOptions.CreateDesignTimeDefault(),
-            };
+            Options = RazorCodeGenerationOptions.CreateDesignTimeDefault(),
+        };
 
-            var builder = IntermediateNodeBuilder.Create(document);
-            builder.Push(new HtmlContentIntermediateNode());
-            builder.Add(new IntermediateToken()
-            {
-                Content = "Hi",
-                Kind = TokenKind.Html,
-            });
-            builder.Pop();
-
-            var pass = new InstrumentationPass()
-            {
-                Engine = RazorProjectEngine.CreateEmpty().Engine,
-            };
-
-            // Act
-            pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
-
-            // Assert
-            Children(
-                document,
-                n => IntermediateNodeAssert.Html("Hi", n));
-        }
-
-        [Fact]
-        public void InstrumentationPass_InstrumentsHtml()
+        var builder = IntermediateNodeBuilder.Create(document);
+        builder.Push(new HtmlContentIntermediateNode());
+        builder.Add(new IntermediateToken()
         {
-            // Arrange
-            var document = new DocumentIntermediateNode()
-            {
-                Options = RazorCodeGenerationOptions.CreateDefault(),
-            };
+            Content = "Hi",
+            Kind = TokenKind.Html,
+        });
+        builder.Pop();
 
-            var builder = IntermediateNodeBuilder.Create(document);
-
-            builder.Push(new HtmlContentIntermediateNode()
-            {
-                Source = CreateSource(1),
-            });
-            builder.Add(new IntermediateToken()
-            {
-                Content = "Hi",
-                Kind = TokenKind.Html,
-                Source = CreateSource(1)
-            });
-            builder.Pop();
-
-            var pass = new InstrumentationPass()
-            {
-                Engine = RazorProjectEngine.CreateEmpty().Engine,
-            };
-
-            // Act
-            pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
-
-            // Assert
-            Children(
-                document,
-                n => BeginInstrumentation("1, 1, true", n),
-                n => IntermediateNodeAssert.Html("Hi", n),
-                n => EndInstrumentation(n));
-        }
-
-        [Fact]
-        public void InstrumentationPass_SkipsHtml_WithoutLocation()
+        var pass = new InstrumentationPass()
         {
-            // Arrange
-            var document = new DocumentIntermediateNode()
-            {
-                Options = RazorCodeGenerationOptions.CreateDefault(),
-            };
+            Engine = RazorProjectEngine.CreateEmpty().Engine,
+        };
 
-            var builder = IntermediateNodeBuilder.Create(document);
-            builder.Push(new HtmlContentIntermediateNode());
-            builder.Add(new IntermediateToken()
-            {
-                Content = "Hi",
-                Kind = TokenKind.Html,
-            });
-            builder.Pop();
+        // Act
+        pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
 
-            var pass = new InstrumentationPass()
-            {
-                Engine = RazorProjectEngine.CreateEmpty().Engine,
-            };
+        // Assert
+        Children(
+            document,
+            n => IntermediateNodeAssert.Html("Hi", n));
+    }
 
-            // Act
-            pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
-
-            // Assert
-            Children(
-                document,
-                n => IntermediateNodeAssert.Html("Hi", n));
-        }
-
-        [Fact]
-        public void InstrumentationPass_InstrumentsCSharpExpression()
+    [Fact]
+    public void InstrumentationPass_InstrumentsHtml()
+    {
+        // Arrange
+        var document = new DocumentIntermediateNode()
         {
-            // Arrange
-            var document = new DocumentIntermediateNode()
-            {
-                Options = RazorCodeGenerationOptions.CreateDefault(),
-            };
+            Options = RazorCodeGenerationOptions.CreateDefault(),
+        };
 
-            var builder = IntermediateNodeBuilder.Create(document);
-            builder.Push(new CSharpExpressionIntermediateNode()
-            {
-                Source = CreateSource(2),
-            });
-            builder.Add(new IntermediateToken()
-            {
-                Content = "Hi",
-                Kind = TokenKind.CSharp,
-            });
+        var builder = IntermediateNodeBuilder.Create(document);
 
-            var pass = new InstrumentationPass()
-            {
-                Engine = RazorProjectEngine.CreateEmpty().Engine,
-            };
-
-            // Act
-            pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
-
-            // Assert
-            Children(
-                document,
-                n => BeginInstrumentation("2, 2, false", n),
-                n => CSharpExpression("Hi", n),
-                n => EndInstrumentation(n));
-        }
-
-        [Fact]
-        public void InstrumentationPass_SkipsCSharpExpression_WithoutLocation()
+        builder.Push(new HtmlContentIntermediateNode()
         {
-            // Arrange
-            var document = new DocumentIntermediateNode()
-            {
-                Options = RazorCodeGenerationOptions.CreateDefault(),
-            };
-
-            var builder = IntermediateNodeBuilder.Create(document);
-            builder.Push(new CSharpExpressionIntermediateNode());
-            builder.Add(new IntermediateToken()
-            {
-                Content = "Hi",
-                Kind = TokenKind.CSharp,
-            });
-
-            var pass = new InstrumentationPass()
-            {
-                Engine = RazorProjectEngine.CreateEmpty().Engine,
-            };
-
-            // Act
-            pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
-
-            // Assert
-            Children(
-                document,
-                n => CSharpExpression("Hi", n));
-        }
-
-        [Fact]
-        public void InstrumentationPass_SkipsCSharpExpression_InsideTagHelperAttribute()
+            Source = CreateSource(1),
+        });
+        builder.Add(new IntermediateToken()
         {
-            // Arrange
-            var document = new DocumentIntermediateNode()
-            {
-                Options = RazorCodeGenerationOptions.CreateDefault(),
-            };
+            Content = "Hi",
+            Kind = TokenKind.Html,
+            Source = CreateSource(1)
+        });
+        builder.Pop();
 
-            var builder = IntermediateNodeBuilder.Create(document);
-            builder.Push(new TagHelperIntermediateNode());
-
-            builder.Push(new TagHelperHtmlAttributeIntermediateNode());
-
-            builder.Push(new CSharpExpressionIntermediateNode()
-            {
-                Source = CreateSource(5)
-            });
-
-            builder.Add(new IntermediateToken()
-            {
-                Content = "Hi",
-                Kind = TokenKind.CSharp,
-            });
-
-            var pass = new InstrumentationPass()
-            {
-                Engine = RazorProjectEngine.CreateEmpty().Engine,
-            };
-
-            // Act
-            pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
-
-            // Assert
-            Children(
-                document,
-                n =>
-                {
-                    Assert.IsType<TagHelperIntermediateNode>(n);
-                    Children(
-                        n,
-                        c =>
-                        {
-                            Assert.IsType<TagHelperHtmlAttributeIntermediateNode>(c);
-                            Children(
-                                c,
-                                s => CSharpExpression("Hi", s));
-                        });
-                });
-        }
-
-        [Fact]
-        public void InstrumentationPass_SkipsCSharpExpression_InsideTagHelperProperty()
+        var pass = new InstrumentationPass()
         {
-            // Arrange
-            var document = new DocumentIntermediateNode()
-            {
-                Options = RazorCodeGenerationOptions.CreateDefault(),
-            };
+            Engine = RazorProjectEngine.CreateEmpty().Engine,
+        };
 
-            var builder = IntermediateNodeBuilder.Create(document);
-            builder.Push(new TagHelperIntermediateNode());
+        // Act
+        pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
 
-            builder.Push(new TagHelperPropertyIntermediateNode());
+        // Assert
+        Children(
+            document,
+            n => BeginInstrumentation("1, 1, true", n),
+            n => IntermediateNodeAssert.Html("Hi", n),
+            n => EndInstrumentation(n));
+    }
 
-            builder.Push(new CSharpExpressionIntermediateNode()
-            {
-                Source = CreateSource(5)
-            });
-
-            builder.Add(new IntermediateToken()
-            {
-                Content = "Hi",
-                Kind = TokenKind.CSharp,
-            });
-
-            var pass = new InstrumentationPass()
-            {
-                Engine = RazorProjectEngine.CreateEmpty().Engine,
-            };
-
-            // Act
-            pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
-
-            // Assert
-            Children(
-                document,
-                n =>
-                {
-                    Assert.IsType<TagHelperIntermediateNode>(n);
-                    Children(
-                        n,
-                        c =>
-                        {
-                            Assert.IsType<TagHelperPropertyIntermediateNode>(c);
-                            Children(
-                                c,
-                                s => CSharpExpression("Hi", s));
-                        });
-                });
-        }
-
-        [Fact]
-        public void InstrumentationPass_InstrumentsTagHelper()
+    [Fact]
+    public void InstrumentationPass_SkipsHtml_WithoutLocation()
+    {
+        // Arrange
+        var document = new DocumentIntermediateNode()
         {
-            // Arrange
-            var document = new DocumentIntermediateNode()
-            {
-                Options = RazorCodeGenerationOptions.CreateDefault(),
-            };
+            Options = RazorCodeGenerationOptions.CreateDefault(),
+        };
 
-            var builder = IntermediateNodeBuilder.Create(document);
-            builder.Add(new TagHelperIntermediateNode()
+        var builder = IntermediateNodeBuilder.Create(document);
+        builder.Push(new HtmlContentIntermediateNode());
+        builder.Add(new IntermediateToken()
+        {
+            Content = "Hi",
+            Kind = TokenKind.Html,
+        });
+        builder.Pop();
+
+        var pass = new InstrumentationPass()
+        {
+            Engine = RazorProjectEngine.CreateEmpty().Engine,
+        };
+
+        // Act
+        pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
+
+        // Assert
+        Children(
+            document,
+            n => IntermediateNodeAssert.Html("Hi", n));
+    }
+
+    [Fact]
+    public void InstrumentationPass_InstrumentsCSharpExpression()
+    {
+        // Arrange
+        var document = new DocumentIntermediateNode()
+        {
+            Options = RazorCodeGenerationOptions.CreateDefault(),
+        };
+
+        var builder = IntermediateNodeBuilder.Create(document);
+        builder.Push(new CSharpExpressionIntermediateNode()
+        {
+            Source = CreateSource(2),
+        });
+        builder.Add(new IntermediateToken()
+        {
+            Content = "Hi",
+            Kind = TokenKind.CSharp,
+        });
+
+        var pass = new InstrumentationPass()
+        {
+            Engine = RazorProjectEngine.CreateEmpty().Engine,
+        };
+
+        // Act
+        pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
+
+        // Assert
+        Children(
+            document,
+            n => BeginInstrumentation("2, 2, false", n),
+            n => CSharpExpression("Hi", n),
+            n => EndInstrumentation(n));
+    }
+
+    [Fact]
+    public void InstrumentationPass_SkipsCSharpExpression_WithoutLocation()
+    {
+        // Arrange
+        var document = new DocumentIntermediateNode()
+        {
+            Options = RazorCodeGenerationOptions.CreateDefault(),
+        };
+
+        var builder = IntermediateNodeBuilder.Create(document);
+        builder.Push(new CSharpExpressionIntermediateNode());
+        builder.Add(new IntermediateToken()
+        {
+            Content = "Hi",
+            Kind = TokenKind.CSharp,
+        });
+
+        var pass = new InstrumentationPass()
+        {
+            Engine = RazorProjectEngine.CreateEmpty().Engine,
+        };
+
+        // Act
+        pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
+
+        // Assert
+        Children(
+            document,
+            n => CSharpExpression("Hi", n));
+    }
+
+    [Fact]
+    public void InstrumentationPass_SkipsCSharpExpression_InsideTagHelperAttribute()
+    {
+        // Arrange
+        var document = new DocumentIntermediateNode()
+        {
+            Options = RazorCodeGenerationOptions.CreateDefault(),
+        };
+
+        var builder = IntermediateNodeBuilder.Create(document);
+        builder.Push(new TagHelperIntermediateNode());
+
+        builder.Push(new TagHelperHtmlAttributeIntermediateNode());
+
+        builder.Push(new CSharpExpressionIntermediateNode()
+        {
+            Source = CreateSource(5)
+        });
+
+        builder.Add(new IntermediateToken()
+        {
+            Content = "Hi",
+            Kind = TokenKind.CSharp,
+        });
+
+        var pass = new InstrumentationPass()
+        {
+            Engine = RazorProjectEngine.CreateEmpty().Engine,
+        };
+
+        // Act
+        pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
+
+        // Assert
+        Children(
+            document,
+            n =>
             {
-                Source = CreateSource(3),
+                Assert.IsType<TagHelperIntermediateNode>(n);
+                Children(
+                    n,
+                    c =>
+                    {
+                        Assert.IsType<TagHelperHtmlAttributeIntermediateNode>(c);
+                        Children(
+                            c,
+                            s => CSharpExpression("Hi", s));
+                    });
             });
+    }
 
-            var pass = new InstrumentationPass()
-            {
-                Engine = RazorProjectEngine.CreateEmpty().Engine,
-            };
-
-            // Act
-            pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
-
-            // Assert
-            Children(
-                document,
-                n => BeginInstrumentation("3, 3, false", n),
-                n => Assert.IsType<TagHelperIntermediateNode>(n),
-                n => EndInstrumentation(n));
-        }
-
-        [Fact]
-        public void InstrumentationPass_SkipsTagHelper_WithoutLocation()
+    [Fact]
+    public void InstrumentationPass_SkipsCSharpExpression_InsideTagHelperProperty()
+    {
+        // Arrange
+        var document = new DocumentIntermediateNode()
         {
-            // Arrange
-            var document = new DocumentIntermediateNode()
-            {
-                Options = RazorCodeGenerationOptions.CreateDefault(),
-            };
+            Options = RazorCodeGenerationOptions.CreateDefault(),
+        };
 
-            var builder = IntermediateNodeBuilder.Create(document);
-            builder.Push(new TagHelperIntermediateNode());
+        var builder = IntermediateNodeBuilder.Create(document);
+        builder.Push(new TagHelperIntermediateNode());
 
-            var pass = new InstrumentationPass()
-            {
-                Engine = RazorProjectEngine.CreateEmpty().Engine,
-            };
+        builder.Push(new TagHelperPropertyIntermediateNode());
 
-            // Act
-            pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
-
-            // Assert
-            Children(
-                document,
-                n => Assert.IsType<TagHelperIntermediateNode>(n));
-        }
-
-        private SourceSpan CreateSource(int number)
+        builder.Push(new CSharpExpressionIntermediateNode()
         {
-            // The actual source span doesn't really matter, we just want to see the values used.
-            return new SourceSpan(new SourceLocation(number, number, number), number);
-        }
+            Source = CreateSource(5)
+        });
+
+        builder.Add(new IntermediateToken()
+        {
+            Content = "Hi",
+            Kind = TokenKind.CSharp,
+        });
+
+        var pass = new InstrumentationPass()
+        {
+            Engine = RazorProjectEngine.CreateEmpty().Engine,
+        };
+
+        // Act
+        pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
+
+        // Assert
+        Children(
+            document,
+            n =>
+            {
+                Assert.IsType<TagHelperIntermediateNode>(n);
+                Children(
+                    n,
+                    c =>
+                    {
+                        Assert.IsType<TagHelperPropertyIntermediateNode>(c);
+                        Children(
+                            c,
+                            s => CSharpExpression("Hi", s));
+                    });
+            });
+    }
+
+    [Fact]
+    public void InstrumentationPass_InstrumentsTagHelper()
+    {
+        // Arrange
+        var document = new DocumentIntermediateNode()
+        {
+            Options = RazorCodeGenerationOptions.CreateDefault(),
+        };
+
+        var builder = IntermediateNodeBuilder.Create(document);
+        builder.Add(new TagHelperIntermediateNode()
+        {
+            Source = CreateSource(3),
+        });
+
+        var pass = new InstrumentationPass()
+        {
+            Engine = RazorProjectEngine.CreateEmpty().Engine,
+        };
+
+        // Act
+        pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
+
+        // Assert
+        Children(
+            document,
+            n => BeginInstrumentation("3, 3, false", n),
+            n => Assert.IsType<TagHelperIntermediateNode>(n),
+            n => EndInstrumentation(n));
+    }
+
+    [Fact]
+    public void InstrumentationPass_SkipsTagHelper_WithoutLocation()
+    {
+        // Arrange
+        var document = new DocumentIntermediateNode()
+        {
+            Options = RazorCodeGenerationOptions.CreateDefault(),
+        };
+
+        var builder = IntermediateNodeBuilder.Create(document);
+        builder.Push(new TagHelperIntermediateNode());
+
+        var pass = new InstrumentationPass()
+        {
+            Engine = RazorProjectEngine.CreateEmpty().Engine,
+        };
+
+        // Act
+        pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
+
+        // Assert
+        Children(
+            document,
+            n => Assert.IsType<TagHelperIntermediateNode>(n));
+    }
+
+    private SourceSpan CreateSource(int number)
+    {
+        // The actual source span doesn't really matter, we just want to see the values used.
+        return new SourceSpan(new SourceLocation(number, number, number), number);
     }
 }

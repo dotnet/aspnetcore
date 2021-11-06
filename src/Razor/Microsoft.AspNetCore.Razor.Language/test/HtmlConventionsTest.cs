@@ -3,15 +3,15 @@
 
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+public class HtmlConventionsTest
 {
-    public class HtmlConventionsTest
+    public static TheoryData HtmlConversionData
     {
-        public static TheoryData HtmlConversionData
+        get
         {
-            get
-            {
-                return new TheoryData<string, string>
+            return new TheoryData<string, string>
                 {
                     { "SomeThing", "some-thing" },
                     { "someOtherThing", "some-other-thing" },
@@ -22,18 +22,17 @@ namespace Microsoft.AspNetCore.Razor.Language
                     { "ONE1TWO2THREE3", "one1two2three3" },
                     { "First_Second_ThirdHi", "first_second_third-hi" }
                 };
-            }
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(HtmlConversionData))]
-        public void ToHtmlCase_ReturnsExpectedConversions(string input, string expectedOutput)
-        {
-            // Arrange, Act
-            var output = HtmlConventions.ToHtmlCase(input);
+    [Theory]
+    [MemberData(nameof(HtmlConversionData))]
+    public void ToHtmlCase_ReturnsExpectedConversions(string input, string expectedOutput)
+    {
+        // Arrange, Act
+        var output = HtmlConventions.ToHtmlCase(input);
 
-            // Assert
-            Assert.Equal(output, expectedOutput);
-        }
+        // Assert
+        Assert.Equal(output, expectedOutput);
     }
 }

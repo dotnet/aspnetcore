@@ -3,26 +3,25 @@
 
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
+
+internal class ControllerSaveTempDataPropertyFilter : SaveTempDataPropertyFilterBase, IActionFilter
 {
-    internal class ControllerSaveTempDataPropertyFilter : SaveTempDataPropertyFilterBase, IActionFilter
+    public ControllerSaveTempDataPropertyFilter(ITempDataDictionaryFactory factory)
+        : base(factory)
     {
-        public ControllerSaveTempDataPropertyFilter(ITempDataDictionaryFactory factory)
-            : base(factory)
-        {
-        }
+    }
 
-        public void OnActionExecuted(ActionExecutedContext context)
-        {
-        }
+    public void OnActionExecuted(ActionExecutedContext context)
+    {
+    }
 
-        /// <inheritdoc />
-        public void OnActionExecuting(ActionExecutingContext context)
-        {
-            Subject = context.Controller;
-            var tempData = _tempDataFactory.GetTempData(context.HttpContext);
+    /// <inheritdoc />
+    public void OnActionExecuting(ActionExecutingContext context)
+    {
+        Subject = context.Controller;
+        var tempData = _tempDataFactory.GetTempData(context.HttpContext);
 
-            SetPropertyValues(tempData);
-        }
+        SetPropertyValues(tempData);
     }
 }

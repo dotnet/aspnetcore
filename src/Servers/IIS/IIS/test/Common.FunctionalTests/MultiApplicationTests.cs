@@ -16,142 +16,141 @@ using Xunit;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 #if IISEXPRESS_FUNCTIONALS
-namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests;
 #elif NEWHANDLER_FUNCTIONALS
-namespace Microsoft.AspNetCore.Server.IIS.NewHandler.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.NewHandler.FunctionalTests;
 #elif NEWSHIM_FUNCTIONALS
-namespace Microsoft.AspNetCore.Server.IIS.NewShim.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.NewShim.FunctionalTests;
 #endif
 
 #else
-namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 #endif
+
+[Collection(PublishedSitesCollection.Name)]
+public class MultiApplicationTests : IISFunctionalTestBase
 {
-    [Collection(PublishedSitesCollection.Name)]
-    public class MultiApplicationTests : IISFunctionalTestBase
+    private PublishedApplication _publishedApplication;
+    private PublishedApplication _rootApplication;
+
+    public MultiApplicationTests(PublishedSitesFixture fixture) : base(fixture)
     {
-        private PublishedApplication _publishedApplication;
-        private PublishedApplication _rootApplication;
+    }
 
-        public MultiApplicationTests(PublishedSitesFixture fixture) : base(fixture)
+    [ConditionalFact]
+    public async Task RunsTwoOutOfProcessApps()
+    {
+        var parameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+        parameters.ServerConfigActionList.Add(DuplicateApplication);
+        var result = await DeployAsync(parameters);
+        var id1 = await result.HttpClient.GetStringAsync("/app1/ProcessId");
+        var id2 = await result.HttpClient.GetStringAsync("/app2/ProcessId");
+        Assert.NotEqual(id2, id1);
+    }
+
+    [ConditionalFact]
+    [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
+    public async Task FailsAndLogsWhenRunningTwoInProcessApps()
+    {
+        var parameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
+        parameters.ServerConfigActionList.Add(DuplicateApplication);
+
+        var result = await DeployAsync(parameters);
+        var result1 = await result.HttpClient.GetAsync("/app1/HelloWorld");
+        var result2 = await result.HttpClient.GetAsync("/app2/HelloWorld");
+        Assert.Equal(200, (int)result1.StatusCode);
+        Assert.Equal(500, (int)result2.StatusCode);
+        StopServer();
+
+        if (DeployerSelector.HasNewShim)
         {
+            Assert.Contains("500.35", await result2.Content.ReadAsStringAsync());
         }
 
-        [ConditionalFact]
-        public async Task RunsTwoOutOfProcessApps()
+        EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.OnlyOneAppPerAppPool(), Logger);
+    }
+
+    [ConditionalTheory]
+    [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
+    [InlineData(HostingModel.OutOfProcess)]
+    [InlineData(HostingModel.InProcess)]
+    public async Task FailsAndLogsEventLogForMixedHostingModel(HostingModel firstApp)
+    {
+        var parameters = Fixture.GetBaseDeploymentParameters(firstApp);
+        parameters.ServerConfigActionList.Add(DuplicateApplication);
+        var result = await DeployAsync(parameters);
+
+        // Modify hosting model of other app to be the opposite
+        var otherApp = firstApp == HostingModel.InProcess ? HostingModel.OutOfProcess : HostingModel.InProcess;
+        SetHostingModel(_publishedApplication.Path, otherApp);
+
+        var result1 = await result.HttpClient.GetAsync("/app1/HelloWorld");
+        var result2 = await result.HttpClient.GetAsync("/app2/HelloWorld");
+        Assert.Equal(200, (int)result1.StatusCode);
+        Assert.Equal(500, (int)result2.StatusCode);
+        StopServer();
+
+        if (DeployerSelector.HasNewShim)
         {
-            var parameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
-            parameters.ServerConfigActionList.Add(DuplicateApplication);
-            var result = await DeployAsync(parameters);
-            var id1 = await result.HttpClient.GetStringAsync("/app1/ProcessId");
-            var id2 = await result.HttpClient.GetStringAsync("/app2/ProcessId");
-            Assert.NotEqual(id2, id1);
+            Assert.Contains("500.34", await result2.Content.ReadAsStringAsync());
         }
 
-        [ConditionalFact]
-        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
-        public async Task FailsAndLogsWhenRunningTwoInProcessApps()
-        {
-            var parameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
-            parameters.ServerConfigActionList.Add(DuplicateApplication);
+        EventLogHelpers.VerifyEventLogEvent(result, "Mixed hosting model is not supported.", Logger);
+    }
 
-            var result = await DeployAsync(parameters);
-            var result1 = await result.HttpClient.GetAsync("/app1/HelloWorld");
-            var result2 = await result.HttpClient.GetAsync("/app2/HelloWorld");
-            Assert.Equal(200, (int)result1.StatusCode);
-            Assert.Equal(500, (int)result2.StatusCode);
-            StopServer();
+    private void SetHostingModel(string directory, HostingModel model)
+    {
+        var webConfigLocation = GetWebConfigLocation(directory);
+        XDocument webConfig = XDocument.Load(webConfigLocation);
+        webConfig.Root
+            .Descendants("system.webServer")
+            .Single()
+            .GetOrAdd("aspNetCore")
+            .SetAttributeValue("hostingModel", model.ToString());
+        webConfig.Save(webConfigLocation);
+    }
 
-            if (DeployerSelector.HasNewShim)
-            {
-                Assert.Contains("500.35", await result2.Content.ReadAsStringAsync());
-            }
+    private void DuplicateApplication(XElement config, string contentRoot)
+    {
+        var siteElement = config
+            .RequiredElement("system.applicationHost")
+            .RequiredElement("sites")
+            .RequiredElement("site");
 
-            EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.OnlyOneAppPerAppPool(), Logger);
-        }
+        var application = siteElement
+            .RequiredElement("application");
 
-        [ConditionalTheory]
-        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
-        [InlineData(HostingModel.OutOfProcess)]
-        [InlineData(HostingModel.InProcess)]
-        public async Task FailsAndLogsEventLogForMixedHostingModel(HostingModel firstApp)
-        {
-            var parameters = Fixture.GetBaseDeploymentParameters(firstApp);
-            parameters.ServerConfigActionList.Add(DuplicateApplication);
-            var result = await DeployAsync(parameters);
+        application.SetAttributeValue("path", "/app1");
 
-            // Modify hosting model of other app to be the opposite
-            var otherApp = firstApp == HostingModel.InProcess ? HostingModel.OutOfProcess : HostingModel.InProcess;
-            SetHostingModel(_publishedApplication.Path, otherApp);
+        var source = new DirectoryInfo(contentRoot);
 
-            var result1 = await result.HttpClient.GetAsync("/app1/HelloWorld");
-            var result2 = await result.HttpClient.GetAsync("/app2/HelloWorld");
-            Assert.Equal(200, (int)result1.StatusCode);
-            Assert.Equal(500, (int)result2.StatusCode);
-            StopServer();
+        var destination = new DirectoryInfo(contentRoot + "anotherApp");
+        destination.Create();
+        Helpers.CopyFiles(source, destination, Logger);
 
-            if (DeployerSelector.HasNewShim)
-            {
-                Assert.Contains("500.34", await result2.Content.ReadAsStringAsync());
-            }
+        _publishedApplication = new PublishedApplication(destination.FullName, Logger);
 
-            EventLogHelpers.VerifyEventLogEvent(result, "Mixed hosting model is not supported.", Logger);
-        }
+        var newApplication = new XElement(application);
+        newApplication.SetAttributeValue("path", "/app2");
+        newApplication.RequiredElement("virtualDirectory")
+            .SetAttributeValue("physicalPath", destination.FullName);
 
-        private void SetHostingModel(string directory, HostingModel model)
-        {
-            var webConfigLocation = GetWebConfigLocation(directory);
-            XDocument webConfig = XDocument.Load(webConfigLocation);
-            webConfig.Root
-                .Descendants("system.webServer")
-                .Single()
-                .GetOrAdd("aspNetCore")
-                .SetAttributeValue("hostingModel", model.ToString());
-            webConfig.Save(webConfigLocation);
-        }
+        siteElement.Add(newApplication);
 
-        private void DuplicateApplication(XElement config, string contentRoot)
-        {
-            var siteElement = config
-                .RequiredElement("system.applicationHost")
-                .RequiredElement("sites")
-                .RequiredElement("site");
+        // IIS Express requires root application to exist
 
-            var application = siteElement
-                .RequiredElement("application");
+        _rootApplication = new PublishedApplication(Helpers.CreateEmptyApplication(config, contentRoot), Logger);
+    }
 
-            application.SetAttributeValue("path", "/app1");
+    private static string GetWebConfigLocation(string siteRoot)
+    {
+        return Path.Combine(siteRoot, "web.config");
+    }
 
-            var source = new DirectoryInfo(contentRoot);
-
-            var destination = new DirectoryInfo(contentRoot + "anotherApp");
-            destination.Create();
-            Helpers.CopyFiles(source, destination, Logger);
-
-            _publishedApplication = new PublishedApplication(destination.FullName, Logger);
-
-            var newApplication = new XElement(application);
-            newApplication.SetAttributeValue("path", "/app2");
-            newApplication.RequiredElement("virtualDirectory")
-                .SetAttributeValue("physicalPath", destination.FullName);
-
-            siteElement.Add(newApplication);
-
-            // IIS Express requires root application to exist
-
-            _rootApplication = new PublishedApplication(Helpers.CreateEmptyApplication(config, contentRoot), Logger);
-        }
-
-        private static string GetWebConfigLocation(string siteRoot)
-        {
-            return Path.Combine(siteRoot, "web.config");
-        }
-
-        public override void Dispose()
-        {
-            base.Dispose();
-            _rootApplication.Dispose();
-            _publishedApplication.Dispose();
-        }
+    public override void Dispose()
+    {
+        base.Dispose();
+        _rootApplication.Dispose();
+        _publishedApplication.Dispose();
     }
 }

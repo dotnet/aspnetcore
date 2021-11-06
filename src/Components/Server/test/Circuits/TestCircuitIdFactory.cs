@@ -3,13 +3,12 @@
 
 using Microsoft.AspNetCore.DataProtection;
 
-namespace Microsoft.AspNetCore.Components.Server.Circuits
+namespace Microsoft.AspNetCore.Components.Server.Circuits;
+
+internal class TestCircuitIdFactory
 {
-    internal class TestCircuitIdFactory
+    public static CircuitIdFactory CreateTestFactory()
     {
-        public static CircuitIdFactory CreateTestFactory()
-        {
-            return new CircuitIdFactory(new EphemeralDataProtectionProvider());
-        }
+        return new CircuitIdFactory(new EphemeralDataProtectionProvider());
     }
 }

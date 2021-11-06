@@ -5,54 +5,53 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 
-namespace Microsoft.AspNetCore.Razor.Language.Components
+namespace Microsoft.AspNetCore.Razor.Language.Components;
+
+internal class ComponentCodeTarget : CodeTarget
 {
-    internal class ComponentCodeTarget : CodeTarget
+    private readonly RazorCodeGenerationOptions _options;
+
+    public ComponentCodeTarget(RazorCodeGenerationOptions options, IEnumerable<ICodeTargetExtension> extensions)
     {
-        private readonly RazorCodeGenerationOptions _options;
+        _options = options;
 
-        public ComponentCodeTarget(RazorCodeGenerationOptions options, IEnumerable<ICodeTargetExtension> extensions)
+        // Components provide some built-in target extensions that don't apply to
+        // legacy documents.
+        Extensions = new[] { new ComponentTemplateTargetExtension(), }.Concat(extensions).ToArray();
+    }
+
+    public ICodeTargetExtension[] Extensions { get; }
+
+    public override IntermediateNodeWriter CreateNodeWriter()
+    {
+        return _options.DesignTime ? (IntermediateNodeWriter)new ComponentDesignTimeNodeWriter() : new ComponentRuntimeNodeWriter();
+    }
+
+    public override TExtension GetExtension<TExtension>()
+    {
+        for (var i = 0; i < Extensions.Length; i++)
         {
-            _options = options;
-
-            // Components provide some built-in target extensions that don't apply to
-            // legacy documents.
-            Extensions = new[] { new ComponentTemplateTargetExtension(), }.Concat(extensions).ToArray();
-        }
-
-        public ICodeTargetExtension[] Extensions { get; }
-
-        public override IntermediateNodeWriter CreateNodeWriter()
-        {
-            return _options.DesignTime ? (IntermediateNodeWriter)new ComponentDesignTimeNodeWriter() : new ComponentRuntimeNodeWriter();
-        }
-
-        public override TExtension GetExtension<TExtension>()
-        {
-            for (var i = 0; i < Extensions.Length; i++)
+            var match = Extensions[i] as TExtension;
+            if (match != null)
             {
-                var match = Extensions[i] as TExtension;
-                if (match != null)
-                {
-                    return match;
-                }
+                return match;
             }
-
-            return null;
         }
 
-        public override bool HasExtension<TExtension>()
+        return null;
+    }
+
+    public override bool HasExtension<TExtension>()
+    {
+        for (var i = 0; i < Extensions.Length; i++)
         {
-            for (var i = 0; i < Extensions.Length; i++)
+            var match = Extensions[i] as TExtension;
+            if (match != null)
             {
-                var match = Extensions[i] as TExtension;
-                if (match != null)
-                {
-                    return true;
-                }
+                return true;
             }
-
-            return false;
         }
+
+        return false;
     }
 }

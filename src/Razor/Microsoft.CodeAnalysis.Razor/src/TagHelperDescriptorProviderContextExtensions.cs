@@ -4,28 +4,27 @@
 using System;
 using Microsoft.AspNetCore.Razor.Language;
 
-namespace Microsoft.CodeAnalysis.Razor
+namespace Microsoft.CodeAnalysis.Razor;
+
+public static class TagHelperDescriptorProviderContextExtensions
 {
-    public static class TagHelperDescriptorProviderContextExtensions
+    public static Compilation GetCompilation(this TagHelperDescriptorProviderContext context)
     {
-        public static Compilation GetCompilation(this TagHelperDescriptorProviderContext context)
+        if (context == null)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return (Compilation)context.Items[typeof(Compilation)];
+            throw new ArgumentNullException(nameof(context));
         }
 
-        public static void SetCompilation(this TagHelperDescriptorProviderContext context, Compilation compilation)
-        {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+        return (Compilation)context.Items[typeof(Compilation)];
+    }
 
-            context.Items[typeof(Compilation)] = compilation;
+    public static void SetCompilation(this TagHelperDescriptorProviderContext context, Compilation compilation)
+    {
+        if (context == null)
+        {
+            throw new ArgumentNullException(nameof(context));
         }
+
+        context.Items[typeof(Compilation)] = compilation;
     }
 }

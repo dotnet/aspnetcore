@@ -7,77 +7,77 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.AspNetCore.Razor.Language.Legacy
+namespace Microsoft.AspNetCore.Razor.Language.Legacy;
+
+internal static class ParserHelpers
 {
-    internal static class ParserHelpers
+    public static bool IsNewLine(char value)
     {
-        public static bool IsNewLine(char value)
+        switch (value)
         {
-            switch (value)
-            {
-                case '\r': // Carriage return
-                case '\n': // Linefeed
-                case '\u0085': // Next Line
-                case '\u2028': // Line separator
-                case '\u2029': // Paragraph separator
-                    return true;
-            }
-
-            return false;
+            case '\r': // Carriage return
+            case '\n': // Linefeed
+            case '\u0085': // Next Line
+            case '\u2028': // Line separator
+            case '\u2029': // Paragraph separator
+                return true;
         }
 
-        public static bool IsNewLine(string value)
+        return false;
+    }
+
+    public static bool IsNewLine(string value)
+    {
+        // We want to handle both LF and CRLF regardless of the platform.
+        // We explicitly check for CRLF and IsNewLine() should return true for LF.
+        return (value.Length == 1 && (IsNewLine(value[0]))) ||
+               (string.Equals(value, "\r\n", StringComparison.Ordinal));
+    }
+
+    public static bool IsIdentifier(string value)
+    {
+        return IsIdentifier(value, requireIdentifierStart: true);
+    }
+
+    public static bool IsIdentifier(string value, bool requireIdentifierStart)
+    {
+        IEnumerable<char> identifierPart = value;
+        if (requireIdentifierStart)
         {
-            // We want to handle both LF and CRLF regardless of the platform.
-            // We explicitly check for CRLF and IsNewLine() should return true for LF.
-            return (value.Length == 1 && (IsNewLine(value[0]))) ||
-                   (string.Equals(value, "\r\n", StringComparison.Ordinal));
+            identifierPart = identifierPart.Skip(1);
         }
+        return (!requireIdentifierStart || IsIdentifierStart(value[0])) && identifierPart.All(IsIdentifierPart);
+    }
 
-        public static bool IsIdentifier(string value)
-        {
-            return IsIdentifier(value, requireIdentifierStart: true);
-        }
+    public static bool IsIdentifierStart(char value)
+    {
+        return value == '_' || IsLetter(value);
+    }
 
-        public static bool IsIdentifier(string value, bool requireIdentifierStart)
-        {
-            IEnumerable<char> identifierPart = value;
-            if (requireIdentifierStart)
-            {
-                identifierPart = identifierPart.Skip(1);
-            }
-            return (!requireIdentifierStart || IsIdentifierStart(value[0])) && identifierPart.All(IsIdentifierPart);
-        }
+    public static bool IsIdentifierPart(char value)
+    {
+        return IsLetter(value) ||
+            IsDecimalDigit(value) ||
+            (CharUnicodeInfo.GetUnicodeCategory(value) is UnicodeCategory.Format or UnicodeCategory.SpacingCombiningMark or UnicodeCategory.NonSpacingMark or UnicodeCategory.ConnectorPunctuation);
+    }
 
-        public static bool IsIdentifierStart(char value)
-        {
-            return value == '_' || IsLetter(value);
-        }
+    public static bool IsWhitespace(char value)
+    {
+        return value == ' ' ||
+               value == '\f' ||
+               value == '\t' ||
+               value == '\u000B' || // Vertical Tab
+               char.IsSeparator(value); ;
+    }
 
-        public static bool IsIdentifierPart(char value)
-        {
-            return IsLetter(value) ||
-                IsDecimalDigit(value) ||
-                (CharUnicodeInfo.GetUnicodeCategory(value) is UnicodeCategory.Format or UnicodeCategory.SpacingCombiningMark or UnicodeCategory.NonSpacingMark or UnicodeCategory.ConnectorPunctuation);
-        }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsLetter(char value) => char.IsLetter(value);
 
-        public static bool IsWhitespace(char value)
-        {
-            return value == ' ' ||
-                   value == '\f' ||
-                   value == '\t' ||
-                   value == '\u000B' || // Vertical Tab
-                   char.IsSeparator(value);;
-        }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsDecimalDigit(char value) => char.IsDigit(value);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsLetter(char value) => char.IsLetter(value);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsDecimalDigit(char value) => char.IsDigit(value);
-
-        // From http://dev.w3.org/html5/spec/Overview.html#elements-0
-        public static readonly HashSet<string> VoidElements = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    // From http://dev.w3.org/html5/spec/Overview.html#elements-0
+    public static readonly HashSet<string> VoidElements = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "area",
             "base",
@@ -97,10 +97,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             "wbr"
         };
 
-        #region HtmlEntities
+    #region HtmlEntities
 
-        // From https://www.w3.org/TR/html5/syntax.html#named-character-references
-        public static readonly Dictionary<string, string> NamedHtmlEntities = new Dictionary<string, string>()
+    // From https://www.w3.org/TR/html5/syntax.html#named-character-references
+    public static readonly Dictionary<string, string> NamedHtmlEntities = new Dictionary<string, string>()
         {
             { "&Aacute;", "\u00C1" },
             { "&Aacute", "\u00C1" },
@@ -2335,7 +2335,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             { "&zwnj;", "\u200C" },
         };
 
-        public static readonly Dictionary<int, string> HtmlEntityCodePoints = new Dictionary<int, string>()
+    public static readonly Dictionary<int, string> HtmlEntityCodePoints = new Dictionary<int, string>()
         {
             { 193, "\u00C1" },
             { 225, "\u00E1" },
@@ -3785,6 +3785,5 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             { 8204, "\u200C" },
         };
 
-        #endregion
-    }
+    #endregion
 }

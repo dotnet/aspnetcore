@@ -5,13 +5,12 @@ using System;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Microsoft.CodeAnalysis.Razor
+namespace Microsoft.CodeAnalysis.Razor;
+
+internal static class TextChangeExtensions
 {
-    internal static class TextChangeExtensions
+    public static SourceChange AsSourceChange(this TextChange textChange)
     {
-        public static SourceChange AsSourceChange(this TextChange textChange)
-        {
-            return new SourceChange(textChange.Span.AsSourceSpan(), textChange.NewText);
-        }
+        return new SourceChange(textChange.Span.AsSourceSpan(), textChange.NewText);
     }
 }

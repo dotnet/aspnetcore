@@ -6,31 +6,30 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Templates.Test.Helpers
+namespace Templates.Test.Helpers;
+
+public class ProcessLock
 {
-    public class ProcessLock
+    public static readonly ProcessLock DotNetNewLock = new ProcessLock("dotnet-new");
+    public static readonly ProcessLock NodeLock = new ProcessLock("node");
+
+    public ProcessLock(string name)
     {
-        public static readonly ProcessLock DotNetNewLock = new ProcessLock("dotnet-new");
-        public static readonly ProcessLock NodeLock = new ProcessLock("node");
+        Name = name;
+        Semaphore = new SemaphoreSlim(1);
+    }
 
-        public ProcessLock(string name)
-        {
-            Name = name;
-            Semaphore = new SemaphoreSlim(1);
-        }
+    public string Name { get; }
+    private SemaphoreSlim Semaphore { get; }
 
-        public string Name { get; }
-        private SemaphoreSlim Semaphore { get; }
+    public async Task WaitAsync(TimeSpan? timeout = null)
+    {
+        timeout ??= TimeSpan.FromMinutes(20);
+        Assert.True(await Semaphore.WaitAsync(timeout.Value), $"Unable to acquire process lock for process {Name}");
+    }
 
-        public async Task WaitAsync(TimeSpan? timeout = null)
-        {
-            timeout ??= TimeSpan.FromMinutes(20);
-            Assert.True(await Semaphore.WaitAsync(timeout.Value), $"Unable to acquire process lock for process {Name}");
-        }
-
-        public void Release()
-        {
-            Semaphore.Release();
-        }
+    public void Release()
+    {
+        Semaphore.Release();
     }
 }

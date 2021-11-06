@@ -3,11 +3,11 @@
 
 using System.Collections.Immutable;
 using System.Globalization;
-using Microsoft.AspNetCore.Analyzers.RouteHandlers.Fixers;
 using Microsoft.AspNetCore.Analyzer.Testing;
+using Microsoft.AspNetCore.Analyzers.RouteHandlers.Fixers;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Testing.Verifiers;

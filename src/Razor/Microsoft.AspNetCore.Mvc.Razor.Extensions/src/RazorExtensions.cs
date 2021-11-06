@@ -9,48 +9,47 @@ using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Razor;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
+namespace Microsoft.AspNetCore.Mvc.Razor.Extensions;
+
+public static class RazorExtensions
 {
-    public static class RazorExtensions
+    public static void Register(RazorProjectEngineBuilder builder)
     {
-        public static void Register(RazorProjectEngineBuilder builder)
+        if (builder == null)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
+            throw new ArgumentNullException(nameof(builder));
+        }
 
-            InjectDirective.Register(builder);
-            ModelDirective.Register(builder);
-            PageDirective.Register(builder);
+        InjectDirective.Register(builder);
+        ModelDirective.Register(builder);
+        PageDirective.Register(builder);
 
-            SectionDirective.Register(builder);
+        SectionDirective.Register(builder);
 
-            builder.Features.Add(new DefaultTagHelperDescriptorProvider());
-            builder.Features.Add(new ViewComponentTagHelperDescriptorProvider());
+        builder.Features.Add(new DefaultTagHelperDescriptorProvider());
+        builder.Features.Add(new ViewComponentTagHelperDescriptorProvider());
 
-            builder.AddTargetExtension(new ViewComponentTagHelperTargetExtension());
-            builder.AddTargetExtension(new TemplateTargetExtension()
-            {
-                TemplateTypeName = "global::Microsoft.AspNetCore.Mvc.Razor.HelperResult",
-            });
+        builder.AddTargetExtension(new ViewComponentTagHelperTargetExtension());
+        builder.AddTargetExtension(new TemplateTargetExtension()
+        {
+            TemplateTypeName = "global::Microsoft.AspNetCore.Mvc.Razor.HelperResult",
+        });
 
-            builder.Features.Add(new ModelExpressionPass());
-            builder.Features.Add(new PagesPropertyInjectionPass());
-            builder.Features.Add(new ViewComponentTagHelperPass());
+        builder.Features.Add(new ModelExpressionPass());
+        builder.Features.Add(new PagesPropertyInjectionPass());
+        builder.Features.Add(new ViewComponentTagHelperPass());
 
-            builder.Features.Add(new RazorPageDocumentClassifierPass(builder.Configuration.UseConsolidatedMvcViews));
-            builder.Features.Add(new MvcViewDocumentClassifierPass(builder.Configuration.UseConsolidatedMvcViews));
+        builder.Features.Add(new RazorPageDocumentClassifierPass(builder.Configuration.UseConsolidatedMvcViews));
+        builder.Features.Add(new MvcViewDocumentClassifierPass(builder.Configuration.UseConsolidatedMvcViews));
 
-            builder.Features.Add(new MvcImportProjectFeature());
+        builder.Features.Add(new MvcImportProjectFeature());
 
-            // The default C# language version for what this Razor configuration supports.
-            builder.SetCSharpLanguageVersion(LanguageVersion.CSharp8);
+        // The default C# language version for what this Razor configuration supports.
+        builder.SetCSharpLanguageVersion(LanguageVersion.CSharp8);
 
-            if (builder.Configuration.LanguageVersion.CompareTo(RazorLanguageVersion.Version_6_0) >= 0)
-            {
-                 builder.Features.Add(new CreateNewOnMetadataUpdateAttributePass());
-            }
+        if (builder.Configuration.LanguageVersion.CompareTo(RazorLanguageVersion.Version_6_0) >= 0)
+        {
+            builder.Features.Add(new CreateNewOnMetadataUpdateAttributePass());
         }
     }
 }

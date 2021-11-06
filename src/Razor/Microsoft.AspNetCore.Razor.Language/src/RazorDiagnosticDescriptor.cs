@@ -4,71 +4,70 @@
 using System;
 using System.Diagnostics;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+[DebuggerDisplay("{" + nameof(DebuggerToString) + "(),nq}")]
+public sealed class RazorDiagnosticDescriptor : IEquatable<RazorDiagnosticDescriptor>
 {
-    [DebuggerDisplay("{" + nameof(DebuggerToString) + "(),nq}")]
-    public sealed class RazorDiagnosticDescriptor : IEquatable<RazorDiagnosticDescriptor>
+    private readonly Func<string> _messageFormat;
+
+    public RazorDiagnosticDescriptor(
+        string id,
+        Func<string> messageFormat,
+        RazorDiagnosticSeverity severity)
     {
-        private readonly Func<string> _messageFormat;
-
-        public RazorDiagnosticDescriptor(
-            string id,
-            Func<string> messageFormat,
-            RazorDiagnosticSeverity severity)
+        if (string.IsNullOrEmpty(id))
         {
-            if (string.IsNullOrEmpty(id))
-            {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(id));
-            }
-
-            if (messageFormat == null)
-            {
-                throw new ArgumentNullException(nameof(messageFormat));
-            }
-
-            Id = id;
-            _messageFormat = messageFormat;
-            Severity = severity;
+            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(id));
         }
 
-        public string Id { get; }
-
-        public RazorDiagnosticSeverity Severity { get; }
-
-        public string GetMessageFormat()
+        if (messageFormat == null)
         {
-            var message = _messageFormat();
-            if (string.IsNullOrEmpty(message))
-            {
-                return Resources.FormatRazorDiagnosticDescriptor_DefaultError(Id);
-            }
-
-            return message;
+            throw new ArgumentNullException(nameof(messageFormat));
         }
 
-        public override bool Equals(object obj)
+        Id = id;
+        _messageFormat = messageFormat;
+        Severity = severity;
+    }
+
+    public string Id { get; }
+
+    public RazorDiagnosticSeverity Severity { get; }
+
+    public string GetMessageFormat()
+    {
+        var message = _messageFormat();
+        if (string.IsNullOrEmpty(message))
         {
-            return Equals(obj as RazorDiagnosticDescriptor);
+            return Resources.FormatRazorDiagnosticDescriptor_DefaultError(Id);
         }
 
-        public bool Equals(RazorDiagnosticDescriptor other)
-        {
-            if (other == null)
-            {
-                return false;
-            }
+        return message;
+    }
 
-            return string.Equals(Id, other.Id, StringComparison.Ordinal);
+    public override bool Equals(object obj)
+    {
+        return Equals(obj as RazorDiagnosticDescriptor);
+    }
+
+    public bool Equals(RazorDiagnosticDescriptor other)
+    {
+        if (other == null)
+        {
+            return false;
         }
 
-        public override int GetHashCode()
-        {
-            return StringComparer.Ordinal.GetHashCode(Id);
-        }
+        return string.Equals(Id, other.Id, StringComparison.Ordinal);
+    }
 
-        private string DebuggerToString()
-        {
-            return $@"Error ""{Id}"": ""{GetMessageFormat()}""";
-        }
+    public override int GetHashCode()
+    {
+        return StringComparer.Ordinal.GetHashCode(Id);
+    }
+
+    private string DebuggerToString()
+    {
+        return $@"Error ""{Id}"": ""{GetMessageFormat()}""";
     }
 }

@@ -6,14 +6,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Wasm.Authentication.Client
+namespace Wasm.Authentication.Client;
+
+public class StateService
 {
-    public class StateService
-    {
-        private string _state;
+    private string _state;
 
-        public string GetCurrentState() => _state ??= Guid.NewGuid().ToString();
+    public string GetCurrentState() => _state ??= Guid.NewGuid().ToString();
 
-        public void RestoreCurrentState(string state) => _state = state;
-    }
+    public void RestoreCurrentState(string state) => _state = state;
 }

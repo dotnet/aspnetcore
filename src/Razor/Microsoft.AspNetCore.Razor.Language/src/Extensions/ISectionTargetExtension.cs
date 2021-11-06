@@ -3,10 +3,9 @@
 
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 
-namespace Microsoft.AspNetCore.Razor.Language.Extensions
+namespace Microsoft.AspNetCore.Razor.Language.Extensions;
+
+public interface ISectionTargetExtension : ICodeTargetExtension
 {
-    public interface ISectionTargetExtension : ICodeTargetExtension
-    {
-        void WriteSection(CodeRenderingContext context, SectionIntermediateNode node);
-    }
+    void WriteSection(CodeRenderingContext context, SectionIntermediateNode node);
 }

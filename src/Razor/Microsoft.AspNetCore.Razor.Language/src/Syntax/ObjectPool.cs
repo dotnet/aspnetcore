@@ -20,45 +20,45 @@ using System.Runtime.CompilerServices;
 // #define DETECT_LEAKS  //for now always enable DETECT_LEAKS in debug.
 // #endif
 
-namespace Microsoft.AspNetCore.Razor.Language.Syntax
+namespace Microsoft.AspNetCore.Razor.Language.Syntax;
+
+/// <summary>
+/// Generic implementation of object pooling pattern with predefined pool size limit. The main
+/// purpose is that limited number of frequently used objects can be kept in the pool for
+/// further recycling.
+///
+/// Notes:
+/// 1) it is not the goal to keep all returned objects. Pool is not meant for storage. If there
+///    is no space in the pool, extra returned objects will be dropped.
+///
+/// 2) it is implied that if object was obtained from a pool, the caller will return it back in
+///    a relatively short time. Keeping checked out objects for long durations is ok, but
+///    reduces usefulness of pooling. Just new up your own.
+///
+/// Not returning objects to the pool in not detrimental to the pool's work, but is a bad practice.
+/// Rationale:
+///    If there is no intent for reusing the object, do not use pool - just use "new".
+/// </summary>
+internal class ObjectPool<T> where T : class
 {
-    /// <summary>
-    /// Generic implementation of object pooling pattern with predefined pool size limit. The main
-    /// purpose is that limited number of frequently used objects can be kept in the pool for
-    /// further recycling.
-    ///
-    /// Notes:
-    /// 1) it is not the goal to keep all returned objects. Pool is not meant for storage. If there
-    ///    is no space in the pool, extra returned objects will be dropped.
-    ///
-    /// 2) it is implied that if object was obtained from a pool, the caller will return it back in
-    ///    a relatively short time. Keeping checked out objects for long durations is ok, but
-    ///    reduces usefulness of pooling. Just new up your own.
-    ///
-    /// Not returning objects to the pool in not detrimental to the pool's work, but is a bad practice.
-    /// Rationale:
-    ///    If there is no intent for reusing the object, do not use pool - just use "new".
-    /// </summary>
-    internal class ObjectPool<T> where T : class
+    private struct Element
     {
-        private struct Element
-        {
-            internal T Value;
-        }
+        internal T Value;
+    }
 
-        /// <remarks>
-        /// Not using <see cref="T:System.Func{T}"/> because this file is linked into the (debugger) Formatter,
-        /// which does not have that type (since it compiles against .NET 2.0).
-        /// </remarks>
-        internal delegate T Factory();
+    /// <remarks>
+    /// Not using <see cref="T:System.Func{T}"/> because this file is linked into the (debugger) Formatter,
+    /// which does not have that type (since it compiles against .NET 2.0).
+    /// </remarks>
+    internal delegate T Factory();
 
-        // storage for the pool objects.
-        private readonly Element[] _items;
+    // storage for the pool objects.
+    private readonly Element[] _items;
 
-        // factory is stored for the lifetime of the pool. We will call this only when pool needs to
-        // expand. compared to "new T()", Func gives more flexibility to implementers and faster
-        // than "new T()".
-        private readonly Factory _factory;
+    // factory is stored for the lifetime of the pool. We will call this only when pool needs to
+    // expand. compared to "new T()", Func gives more flexibility to implementers and faster
+    // than "new T()".
+    private readonly Factory _factory;
 
 #if DETECT_LEAKS
         private static readonly ConditionalWeakTable<T, LeakTracker> leakTrackers = new ConditionalWeakTable<T, LeakTracker>();
@@ -105,52 +105,52 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         }
 #endif
 
-        internal ObjectPool(Factory factory)
-            : this(factory, Environment.ProcessorCount * 2)
-        { }
+    internal ObjectPool(Factory factory)
+        : this(factory, Environment.ProcessorCount * 2)
+    { }
 
-        internal ObjectPool(Factory factory, int size)
+    internal ObjectPool(Factory factory, int size)
+    {
+        _factory = factory;
+        _items = new Element[size];
+    }
+
+    private T CreateInstance()
+    {
+        var inst = _factory();
+        return inst;
+    }
+
+    /// <summary>
+    /// Produces an instance.
+    /// </summary>
+    /// <remarks>
+    /// Search strategy is a simple linear probing which is chosen for it cache-friendliness.
+    /// Note that Free will try to store recycled objects close to the start thus statistically
+    /// reducing how far we will typically search.
+    /// </remarks>
+    internal T Allocate()
+    {
+        var items = _items;
+        T inst;
+
+        for (var i = 0; i < items.Length; i++)
         {
-            _factory = factory;
-            _items = new Element[size];
-        }
-
-        private T CreateInstance()
-        {
-            var inst = _factory();
-            return inst;
-        }
-
-        /// <summary>
-        /// Produces an instance.
-        /// </summary>
-        /// <remarks>
-        /// Search strategy is a simple linear probing which is chosen for it cache-friendliness.
-        /// Note that Free will try to store recycled objects close to the start thus statistically
-        /// reducing how far we will typically search.
-        /// </remarks>
-        internal T Allocate()
-        {
-            var items = _items;
-            T inst;
-
-            for (var i = 0; i < items.Length; i++)
+            // Note that the read is optimistically not synchronized. That is intentional.
+            // We will interlock only when we have a candidate. in a worst case we may miss some
+            // recently returned objects. Not a big deal.
+            inst = items[i].Value;
+            if (inst != null)
             {
-                // Note that the read is optimistically not synchronized. That is intentional.
-                // We will interlock only when we have a candidate. in a worst case we may miss some
-                // recently returned objects. Not a big deal.
-                inst = items[i].Value;
-                if (inst != null)
+                if (inst == Interlocked.CompareExchange(ref items[i].Value, null, inst))
                 {
-                    if (inst == Interlocked.CompareExchange(ref items[i].Value, null, inst))
-                    {
-                        goto gotInstance;
-                    }
+                    goto gotInstance;
                 }
             }
+        }
 
-            inst = CreateInstance();
-            gotInstance:
+        inst = CreateInstance();
+    gotInstance:
 
 #if DETECT_LEAKS
             var tracker = new LeakTracker();
@@ -162,47 +162,47 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 #endif
 #endif
 
-            return inst;
-        }
+        return inst;
+    }
 
-        /// <summary>
-        /// Returns objects to the pool.
-        /// </summary>
-        /// <remarks>
-        /// Search strategy is a simple linear probing which is chosen for it cache-friendliness.
-        /// Note that Free will try to store recycled objects close to the start thus statistically
-        /// reducing how far we will typically search in Allocate.
-        /// </remarks>
-        internal void Free(T obj)
+    /// <summary>
+    /// Returns objects to the pool.
+    /// </summary>
+    /// <remarks>
+    /// Search strategy is a simple linear probing which is chosen for it cache-friendliness.
+    /// Note that Free will try to store recycled objects close to the start thus statistically
+    /// reducing how far we will typically search in Allocate.
+    /// </remarks>
+    internal void Free(T obj)
+    {
+        Validate(obj);
+        ForgetTrackedObject(obj);
+
+        var items = _items;
+        for (var i = 0; i < items.Length; i++)
         {
-            Validate(obj);
-            ForgetTrackedObject(obj);
-
-            var items = _items;
-            for (var i = 0; i < items.Length; i++)
+            if (items[i].Value == null)
             {
-                if (items[i].Value == null)
-                {
-                    // Intentionally not using interlocked here.
-                    // In a worst case scenario two objects may be stored into same slot.
-                    // It is very unlikely to happen and will only mean that one of the objects will get collected.
-                    items[i].Value = obj;
-                    break;
-                }
+                // Intentionally not using interlocked here.
+                // In a worst case scenario two objects may be stored into same slot.
+                // It is very unlikely to happen and will only mean that one of the objects will get collected.
+                items[i].Value = obj;
+                break;
             }
         }
+    }
 
-        /// <summary>
-        /// Removes an object from leak tracking.
-        ///
-        /// This is called when an object is returned to the pool.  It may also be explicitly
-        /// called if an object allocated from the pool is intentionally not being returned
-        /// to the pool.  This can be of use with pooled arrays if the consumer wants to
-        /// return a larger array to the pool than was originally allocated.
-        /// </summary>
-        [Conditional("DEBUG")]
-        internal void ForgetTrackedObject(T old, T replacement = null)
-        {
+    /// <summary>
+    /// Removes an object from leak tracking.
+    ///
+    /// This is called when an object is returned to the pool.  It may also be explicitly
+    /// called if an object allocated from the pool is intentionally not being returned
+    /// to the pool.  This can be of use with pooled arrays if the consumer wants to
+    /// return a larger array to the pool than was originally allocated.
+    /// </summary>
+    [Conditional("DEBUG")]
+    internal void ForgetTrackedObject(T old, T replacement = null)
+    {
 #if DETECT_LEAKS
             LeakTracker tracker;
             if (leakTrackers.TryGetValue(old, out tracker))
@@ -225,24 +225,23 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
                 leakTrackers.Add(replacement, tracker);
             }
 #endif
-        }
+    }
 
-        [Conditional("DEBUG")]
-        private void Validate(object obj)
+    [Conditional("DEBUG")]
+    private void Validate(object obj)
+    {
+        Debug.Assert(obj != null, "freeing null?");
+
+        var items = _items;
+        for (var i = 0; i < items.Length; i++)
         {
-            Debug.Assert(obj != null, "freeing null?");
-
-            var items = _items;
-            for (var i = 0; i < items.Length; i++)
+            var value = items[i].Value;
+            if (value == null)
             {
-                var value = items[i].Value;
-                if (value == null)
-                {
-                    return;
-                }
-
-                Debug.Assert(value != obj, "freeing twice?");
+                return;
             }
+
+            Debug.Assert(value != obj, "freeing twice?");
         }
     }
 }

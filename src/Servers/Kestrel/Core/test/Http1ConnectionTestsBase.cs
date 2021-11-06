@@ -13,62 +13,61 @@ using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
+
+public class Http1ConnectionTestsBase : LoggedTest, IDisposable
 {
-    public class Http1ConnectionTestsBase : LoggedTest, IDisposable
+    internal IDuplexPipe _transport;
+    internal IDuplexPipe _application;
+    internal TestHttp1Connection _http1Connection;
+    internal ServiceContext _serviceContext;
+    internal HttpConnectionContext _http1ConnectionContext;
+    internal MemoryPool<byte> _pipelineFactory;
+    internal SequencePosition _consumed;
+    internal SequencePosition _examined;
+    internal Mock<ITimeoutControl> _timeoutControl;
+
+    public override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        internal IDuplexPipe _transport;
-        internal IDuplexPipe _application;
-        internal TestHttp1Connection _http1Connection;
-        internal ServiceContext _serviceContext;
-        internal HttpConnectionContext _http1ConnectionContext;
-        internal MemoryPool<byte> _pipelineFactory;
-        internal SequencePosition _consumed;
-        internal SequencePosition _examined;
-        internal Mock<ITimeoutControl> _timeoutControl;
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
 
-        public override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+        _pipelineFactory = PinnedBlockMemoryPoolFactory.Create();
+        var options = new PipeOptions(_pipelineFactory, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
+        var pair = DuplexPipe.CreateConnectionPair(options, options);
+
+        _transport = pair.Transport;
+        _application = pair.Application;
+
+        var connectionFeatures = new FeatureCollection();
+        connectionFeatures.Set(Mock.Of<IConnectionLifetimeFeature>());
+
+        _serviceContext = new TestServiceContext(LoggerFactory)
         {
-            base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+            Scheduler = PipeScheduler.Inline
+        };
 
-            _pipelineFactory = PinnedBlockMemoryPoolFactory.Create();
-            var options = new PipeOptions(_pipelineFactory, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
-            var pair = DuplexPipe.CreateConnectionPair(options, options);
+        _timeoutControl = new Mock<ITimeoutControl>();
+        _http1ConnectionContext = TestContextFactory.CreateHttpConnectionContext(
+            serviceContext: _serviceContext,
+            connectionContext: Mock.Of<ConnectionContext>(),
+            transport: pair.Transport,
+            timeoutControl: _timeoutControl.Object,
+            memoryPool: _pipelineFactory,
+            connectionFeatures: connectionFeatures);
 
-            _transport = pair.Transport;
-            _application = pair.Application;
+        _http1Connection = new TestHttp1Connection(_http1ConnectionContext);
+    }
 
-            var connectionFeatures = new FeatureCollection();
-            connectionFeatures.Set(Mock.Of<IConnectionLifetimeFeature>());
+    void IDisposable.Dispose()
+    {
+        base.Dispose();
 
-            _serviceContext = new TestServiceContext(LoggerFactory)
-            {
-                Scheduler = PipeScheduler.Inline
-            };
+        _transport.Input.Complete();
+        _transport.Output.Complete();
 
-            _timeoutControl = new Mock<ITimeoutControl>();
-            _http1ConnectionContext = TestContextFactory.CreateHttpConnectionContext(
-                serviceContext: _serviceContext,
-                connectionContext: Mock.Of<ConnectionContext>(),
-                transport: pair.Transport,
-                timeoutControl: _timeoutControl.Object,
-                memoryPool: _pipelineFactory,
-                connectionFeatures: connectionFeatures);
+        _application.Input.Complete();
+        _application.Output.Complete();
 
-            _http1Connection = new TestHttp1Connection(_http1ConnectionContext);
-        }
-
-        void IDisposable.Dispose()
-        {
-            base.Dispose();
-
-            _transport.Input.Complete();
-            _transport.Output.Complete();
-
-            _application.Input.Complete();
-            _application.Output.Complete();
-
-            _pipelineFactory.Dispose();
-        }
+        _pipelineFactory.Dispose();
     }
 }

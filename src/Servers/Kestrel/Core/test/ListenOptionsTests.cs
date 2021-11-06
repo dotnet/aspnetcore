@@ -8,51 +8,50 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
+
+public class ListenOptionsTests
 {
-    public class ListenOptionsTests
+    [Fact]
+    public void ProtocolsDefault()
     {
-        [Fact]
-        public void ProtocolsDefault()
+        var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
+        Assert.Equal(HttpProtocols.Http1AndHttp2, listenOptions.Protocols);
+    }
+
+    [Fact]
+    public void LocalHostListenOptionsClonesConnectionMiddleware()
+    {
+        var localhostListenOptions = new LocalhostListenOptions(1004);
+        var serviceProvider = new ServiceCollection().BuildServiceProvider();
+        localhostListenOptions.KestrelServerOptions = new KestrelServerOptions
         {
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
-            Assert.Equal(HttpProtocols.Http1AndHttp2, listenOptions.Protocols);
-        }
-
-        [Fact]
-        public void LocalHostListenOptionsClonesConnectionMiddleware()
+            ApplicationServices = serviceProvider
+        };
+        var middlewareRan = false;
+        localhostListenOptions.Use(next =>
         {
-            var localhostListenOptions = new LocalhostListenOptions(1004);
-            var serviceProvider = new ServiceCollection().BuildServiceProvider();
-            localhostListenOptions.KestrelServerOptions = new KestrelServerOptions
-            {
-                ApplicationServices = serviceProvider
-            };
-            var middlewareRan = false;
-            localhostListenOptions.Use(next =>
-            {
-                middlewareRan = true;
-                return context => Task.CompletedTask;
-            });
+            middlewareRan = true;
+            return context => Task.CompletedTask;
+        });
 
-            var clone = localhostListenOptions.Clone(IPAddress.IPv6Loopback);
-            var app = clone.Build();
+        var clone = localhostListenOptions.Clone(IPAddress.IPv6Loopback);
+        var app = clone.Build();
 
-            // Execute the delegate
-            app(null);
+        // Execute the delegate
+        app(null);
 
-            Assert.True(middlewareRan);
-            Assert.NotNull(clone.KestrelServerOptions);
-            Assert.NotNull(serviceProvider);
-            Assert.Same(serviceProvider, clone.ApplicationServices);
-        }
+        Assert.True(middlewareRan);
+        Assert.NotNull(clone.KestrelServerOptions);
+        Assert.NotNull(serviceProvider);
+        Assert.Same(serviceProvider, clone.ApplicationServices);
+    }
 
-        [Fact]
-        public void ListenOptionsSupportsAnyEndPoint()
-        {
-            var listenOptions = new ListenOptions(new UriEndPoint(new Uri("http://127.0.0.1:5555")));
-            Assert.IsType<UriEndPoint>(listenOptions.EndPoint);
-            Assert.Equal("http://127.0.0.1:5555/", ((UriEndPoint)listenOptions.EndPoint).Uri.ToString());
-        }
+    [Fact]
+    public void ListenOptionsSupportsAnyEndPoint()
+    {
+        var listenOptions = new ListenOptions(new UriEndPoint(new Uri("http://127.0.0.1:5555")));
+        Assert.IsType<UriEndPoint>(listenOptions.EndPoint);
+        Assert.Equal("http://127.0.0.1:5555/", ((UriEndPoint)listenOptions.EndPoint).Uri.ToString());
     }
 }

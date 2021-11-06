@@ -4,19 +4,18 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 
-namespace TagHelpersWebSite
-{
-    public class CopyrightViewComponent : ViewComponent
-    {
-        public IViewComponentResult Invoke(string website, int year)
-        {
-            var dict = new Dictionary<string, object>
-            {
-                ["website"] = website,
-                ["year"] = year
-            };
+namespace TagHelpersWebSite;
 
-            return View(dict);
-        }
+public class CopyrightViewComponent : ViewComponent
+{
+    public IViewComponentResult Invoke(string website, int year)
+    {
+        var dict = new Dictionary<string, object>
+        {
+            ["website"] = website,
+            ["year"] = year
+        };
+
+        return View(dict);
     }
 }

@@ -3,69 +3,68 @@
 
 using System.Diagnostics;
 
-namespace Microsoft.AspNetCore.Razor.Language.Intermediate
+namespace Microsoft.AspNetCore.Razor.Language.Intermediate;
+
+[DebuggerDisplay("{DebuggerToString(),nq}")]
+public abstract class IntermediateNode
 {
-    [DebuggerDisplay("{DebuggerToString(),nq}")]
-    public abstract class IntermediateNode
+    private ItemCollection _annotations;
+    private RazorDiagnosticCollection _diagnostics;
+
+    public ItemCollection Annotations
     {
-        private ItemCollection _annotations;
-        private RazorDiagnosticCollection _diagnostics;
-
-        public ItemCollection Annotations
+        get
         {
-            get
+            if (_annotations == null)
             {
-                if (_annotations == null)
-                {
-                    _annotations = new ItemCollection();
-                }
-
-                return _annotations;
+                _annotations = new ItemCollection();
             }
+
+            return _annotations;
         }
+    }
 
-        public abstract IntermediateNodeCollection Children { get; }
+    public abstract IntermediateNodeCollection Children { get; }
 
-        public RazorDiagnosticCollection Diagnostics
+    public RazorDiagnosticCollection Diagnostics
+    {
+        get
         {
-            get
+            if (_diagnostics == null)
             {
-                if (_diagnostics == null)
-                {
-                    _diagnostics = new RazorDiagnosticCollection();
-                }
-
-                return _diagnostics;
+                _diagnostics = new RazorDiagnosticCollection();
             }
+
+            return _diagnostics;
         }
+    }
 
-        public bool HasDiagnostics => _diagnostics != null && _diagnostics.Count > 0;
+    public bool HasDiagnostics => _diagnostics != null && _diagnostics.Count > 0;
 
-        public SourceSpan? Source { get; set; }
+    public SourceSpan? Source { get; set; }
 
-        public abstract void Accept(IntermediateNodeVisitor visitor);
+    public abstract void Accept(IntermediateNodeVisitor visitor);
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Collapsed)]
-        private string Tree
-        {
-            get
-            {
-                var formatter = new DebuggerDisplayFormatter();
-                formatter.FormatTree(this);
-                return formatter.ToString();
-            }
-        }
-
-        private string DebuggerToString()
+    [DebuggerBrowsable(DebuggerBrowsableState.Collapsed)]
+    private string Tree
+    {
+        get
         {
             var formatter = new DebuggerDisplayFormatter();
-            formatter.FormatNode(this);
+            formatter.FormatTree(this);
             return formatter.ToString();
         }
+    }
+
+    private string DebuggerToString()
+    {
+        var formatter = new DebuggerDisplayFormatter();
+        formatter.FormatNode(this);
+        return formatter.ToString();
+    }
 
 
-        public virtual void FormatNode(IntermediateNodeFormatter formatter)
-        {
-        }
+    public virtual void FormatNode(IntermediateNodeFormatter formatter)
+    {
     }
 }

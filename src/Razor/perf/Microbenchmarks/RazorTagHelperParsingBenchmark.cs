@@ -11,75 +11,74 @@ using Microsoft.CodeAnalysis.Razor.Serialization;
 using Newtonsoft.Json;
 using static Microsoft.AspNetCore.Razor.Language.DefaultRazorTagHelperBinderPhase;
 
-namespace Microsoft.AspNetCore.Razor.Microbenchmarks
+namespace Microsoft.AspNetCore.Razor.Microbenchmarks;
+
+public class RazorTagHelperParsingBenchmark
 {
-    public class RazorTagHelperParsingBenchmark
+    public RazorTagHelperParsingBenchmark()
     {
-        public RazorTagHelperParsingBenchmark()
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current != null && !File.Exists(Path.Combine(current.FullName, "taghelpers.json")))
         {
-            var current = new DirectoryInfo(AppContext.BaseDirectory);
-            while (current != null && !File.Exists(Path.Combine(current.FullName, "taghelpers.json")))
+            current = current.Parent;
+        }
+
+        var root = current;
+
+        var tagHelpers = ReadTagHelpers(Path.Combine(root.FullName, "taghelpers.json"));
+        var tagHelperFeature = new StaticTagHelperFeature(tagHelpers);
+
+        var blazorServerTagHelpersFilePath = Path.Combine(root.FullName, "BlazorServerTagHelpers.razor");
+
+        var fileSystem = RazorProjectFileSystem.Create(root.FullName);
+        ProjectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem,
+            b =>
             {
-                current = current.Parent;
-            }
+                RazorExtensions.Register(b);
+                b.Features.Add(tagHelperFeature);
+            });
+        BlazorServerTagHelpersDemoFile = fileSystem.GetItem(Path.Combine(blazorServerTagHelpersFilePath), FileKinds.Component);
 
-            var root = current;
+        ComponentDirectiveVisitor = new ComponentDirectiveVisitor(blazorServerTagHelpersFilePath, tagHelpers, currentNamespace: null);
+        var codeDocument = ProjectEngine.ProcessDesignTime(BlazorServerTagHelpersDemoFile);
+        SyntaxTree = codeDocument.GetSyntaxTree();
+    }
 
-            var tagHelpers = ReadTagHelpers(Path.Combine(root.FullName, "taghelpers.json"));
-            var tagHelperFeature = new StaticTagHelperFeature(tagHelpers);
+    private RazorProjectEngine ProjectEngine { get; }
+    private RazorProjectItem BlazorServerTagHelpersDemoFile { get; }
+    private ComponentDirectiveVisitor ComponentDirectiveVisitor { get; }
+    private RazorSyntaxTree SyntaxTree { get; }
 
-            var blazorServerTagHelpersFilePath = Path.Combine(root.FullName, "BlazorServerTagHelpers.razor");
+    [Benchmark(Description = "TagHelper Design Time Processing")]
+    public void TagHelper_ProcessDesignTime()
+    {
+        _ = ProjectEngine.ProcessDesignTime(BlazorServerTagHelpersDemoFile);
+    }
 
-            var fileSystem = RazorProjectFileSystem.Create(root.FullName);
-            ProjectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem,
-                b =>
-                {
-                    RazorExtensions.Register(b);
-                    b.Features.Add(tagHelperFeature);
-                });
-            BlazorServerTagHelpersDemoFile = fileSystem.GetItem(Path.Combine(blazorServerTagHelpersFilePath), FileKinds.Component);
+    [Benchmark(Description = "Component Directive Parsing")]
+    public void TagHelper_ComponentDirectiveVisitor()
+    {
+        ComponentDirectiveVisitor.Visit(SyntaxTree);
+    }
 
-            ComponentDirectiveVisitor = new ComponentDirectiveVisitor(blazorServerTagHelpersFilePath, tagHelpers, currentNamespace: null);
-            var codeDocument = ProjectEngine.ProcessDesignTime(BlazorServerTagHelpersDemoFile);
-            SyntaxTree = codeDocument.GetSyntaxTree();
-        }
+    private static IReadOnlyList<TagHelperDescriptor> ReadTagHelpers(string filePath)
+    {
+        var serializer = new JsonSerializer();
+        serializer.Converters.Add(new RazorDiagnosticJsonConverter());
+        serializer.Converters.Add(new TagHelperDescriptorJsonConverter());
 
-        private RazorProjectEngine ProjectEngine { get; }
-        private RazorProjectItem BlazorServerTagHelpersDemoFile { get; }
-        private ComponentDirectiveVisitor ComponentDirectiveVisitor { get; }
-        private RazorSyntaxTree SyntaxTree { get; }
-
-        [Benchmark(Description = "TagHelper Design Time Processing")]
-        public void TagHelper_ProcessDesignTime()
+        using (var reader = new JsonTextReader(File.OpenText(filePath)))
         {
-            _ = ProjectEngine.ProcessDesignTime(BlazorServerTagHelpersDemoFile);
+            return serializer.Deserialize<IReadOnlyList<TagHelperDescriptor>>(reader);
         }
+    }
 
-        [Benchmark(Description = "Component Directive Parsing")]
-        public void TagHelper_ComponentDirectiveVisitor()
-        {
-            ComponentDirectiveVisitor.Visit(SyntaxTree);
-        }
+    private sealed class StaticTagHelperFeature : RazorEngineFeatureBase, ITagHelperFeature
+    {
+        public StaticTagHelperFeature(IReadOnlyList<TagHelperDescriptor> descriptors) => Descriptors = descriptors;
 
-        private static IReadOnlyList<TagHelperDescriptor> ReadTagHelpers(string filePath)
-        {
-            var serializer = new JsonSerializer();
-            serializer.Converters.Add(new RazorDiagnosticJsonConverter());
-            serializer.Converters.Add(new TagHelperDescriptorJsonConverter());
+        public IReadOnlyList<TagHelperDescriptor> Descriptors { get; }
 
-            using (var reader = new JsonTextReader(File.OpenText(filePath)))
-            {
-                return serializer.Deserialize<IReadOnlyList<TagHelperDescriptor>>(reader);
-            }
-        }
-
-        private sealed class StaticTagHelperFeature : RazorEngineFeatureBase, ITagHelperFeature
-        {
-            public StaticTagHelperFeature(IReadOnlyList<TagHelperDescriptor> descriptors) => Descriptors = descriptors;
-
-            public IReadOnlyList<TagHelperDescriptor> Descriptors { get; }
-
-            public IReadOnlyList<TagHelperDescriptor> GetDescriptors() => Descriptors;
-        }
+        public IReadOnlyList<TagHelperDescriptor> GetDescriptors() => Descriptors;
     }
 }

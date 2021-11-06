@@ -3,13 +3,12 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Testing
+namespace Microsoft.AspNetCore.Testing;
+
+[Flags]
+public enum OperatingSystems
 {
-    [Flags]
-    public enum OperatingSystems
-    {
-        Linux = 1,
-        MacOSX = 2,
-        Windows = 4,
-    }
+    Linux = 1,
+    MacOSX = 2,
+    Windows = 4,
 }

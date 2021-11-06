@@ -4,11 +4,10 @@
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
-namespace Wasm.Authentication.Client
+namespace Wasm.Authentication.Client;
+
+public class OidcAccount : RemoteUserAccount
 {
-    public class OidcAccount : RemoteUserAccount
-    {
-        [JsonPropertyName("amr")]
-        public string[] AuthenticationMethod { get; set; }
-    }
+    [JsonPropertyName("amr")]
+    public string[] AuthenticationMethod { get; set; }
 }

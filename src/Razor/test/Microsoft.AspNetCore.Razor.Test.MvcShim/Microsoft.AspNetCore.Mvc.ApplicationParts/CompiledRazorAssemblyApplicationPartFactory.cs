@@ -2,9 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
-namespace Microsoft.AspNetCore.Mvc.ApplicationParts
+namespace Microsoft.AspNetCore.Mvc.ApplicationParts;
+
+public class CompiledRazorAssemblyApplicationPartFactory
 {
-    public class CompiledRazorAssemblyApplicationPartFactory
-    {
-    }
 }

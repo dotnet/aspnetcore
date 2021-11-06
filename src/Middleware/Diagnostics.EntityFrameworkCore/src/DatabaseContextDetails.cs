@@ -4,21 +4,20 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
-{
-    internal class DatabaseContextDetails
-    {
-        public Type Type { get; }
-        public bool DatabaseExists { get; }
-        public bool PendingModelChanges { get; }
-        public IEnumerable<string> PendingMigrations { get; }
+namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
 
-        public DatabaseContextDetails(Type type, bool databaseExists, bool pendingModelChanges, IEnumerable<string> pendingMigrations)
-        {
-            Type = type;
-            DatabaseExists = databaseExists;
-            PendingModelChanges = pendingModelChanges;
-            PendingMigrations = pendingMigrations;
-        }
+internal class DatabaseContextDetails
+{
+    public Type Type { get; }
+    public bool DatabaseExists { get; }
+    public bool PendingModelChanges { get; }
+    public IEnumerable<string> PendingMigrations { get; }
+
+    public DatabaseContextDetails(Type type, bool databaseExists, bool pendingModelChanges, IEnumerable<string> pendingMigrations)
+    {
+        Type = type;
+        DatabaseExists = databaseExists;
+        PendingModelChanges = pendingModelChanges;
+        PendingMigrations = pendingMigrations;
     }
 }

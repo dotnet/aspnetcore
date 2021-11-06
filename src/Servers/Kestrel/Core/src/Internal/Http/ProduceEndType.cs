@@ -1,12 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+
+internal enum ProduceEndType
 {
-    internal enum ProduceEndType
-    {
-        SocketShutdown,
-        SocketDisconnect,
-        ConnectionKeepAlive,
-    }
+    SocketShutdown,
+    SocketDisconnect,
+    ConnectionKeepAlive,
 }

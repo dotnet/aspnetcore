@@ -3,49 +3,49 @@
 
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
+namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests;
+
+public class ComponentTemplateIntegrationTest : RazorIntegrationTestBase
 {
-    public class ComponentTemplateIntegrationTest : RazorIntegrationTestBase
+    internal override string FileKind => FileKinds.Component;
+
+    internal override bool UseTwoPhaseCompilation => true;
+
+    // Razor doesn't parse this as a template, we don't need much special handling for
+    // it because it will just be invalid in general.
+    [Fact]
+    public void Template_ImplicitExpressionInMarkupAttribute_CreatesDiagnostic()
     {
-        internal override string FileKind => FileKinds.Component;
+        // Arrange
 
-        internal override bool UseTwoPhaseCompilation => true;
+        // Act
+        var generated = CompileToCSharp(@"<div attr=""@<div></div>"" />", throwOnFailure: false);
 
-        // Razor doesn't parse this as a template, we don't need much special handling for
-        // it because it will just be invalid in general.
-        [Fact]
-        public void Template_ImplicitExpressionInMarkupAttribute_CreatesDiagnostic()
-        {
-            // Arrange
+        // Assert
+        var diagnostic = Assert.Single(generated.Diagnostics);
+        Assert.Equal("RZ1005", diagnostic.Id);
+    }
 
-            // Act
-            var generated = CompileToCSharp(@"<div attr=""@<div></div>"" />", throwOnFailure: false);
+    [Fact]
+    public void Template_ExplicitExpressionInMarkupAttribute_CreatesDiagnostic()
+    {
+        // Arrange
 
-            // Assert
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Equal("RZ1005", diagnostic.Id);
-        }
+        // Act
+        var generated = CompileToCSharp(@"<div attr=""@(@<div></div>)"" />");
 
-        [Fact]
-        public void Template_ExplicitExpressionInMarkupAttribute_CreatesDiagnostic()
-        {
-            // Arrange
+        // Assert
+        var diagnostic = Assert.Single(generated.Diagnostics);
+        Assert.Equal("RZ9994", diagnostic.Id);
+    }
 
-            // Act
-            var generated = CompileToCSharp(@"<div attr=""@(@<div></div>)"" />");
-
-            // Assert
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Equal("RZ9994", diagnostic.Id);
-        }
-
-        // Razor doesn't parse this as a template, we don't need much special handling for
-        // it because it will just be invalid in general.
-        [Fact]
-        public void Template_ImplicitExpressionInComponentAttribute_CreatesDiagnostic()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    // Razor doesn't parse this as a template, we don't need much special handling for
+    // it because it will just be invalid in general.
+    [Fact]
+    public void Template_ImplicitExpressionInComponentAttribute_CreatesDiagnostic()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -56,21 +56,21 @@ namespace Test
 }
 "));
 
-            // Act
-            var generated = CompileToCSharp(@"<MyComponent attr=""@<div></div>"" />", throwOnFailure: false);
+        // Act
+        var generated = CompileToCSharp(@"<MyComponent attr=""@<div></div>"" />", throwOnFailure: false);
 
-            // Assert
-            Assert.Collection(
-                generated.Diagnostics,
-                d => Assert.Equal("RZ9986", d.Id),
-                d => Assert.Equal("RZ1005", d.Id));
-        }
+        // Assert
+        Assert.Collection(
+            generated.Diagnostics,
+            d => Assert.Equal("RZ9986", d.Id),
+            d => Assert.Equal("RZ1005", d.Id));
+    }
 
-        [Fact]
-        public void Template_ExplicitExpressionInComponentAttribute_CreatesDiagnostic()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
+    [Fact]
+    public void Template_ExplicitExpressionInComponentAttribute_CreatesDiagnostic()
+    {
+        // Arrange
+        AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -80,52 +80,51 @@ namespace Test
     }
 }
 "));
-            // Act
-            var generated = CompileToCSharp(@"<MyComponent attr=""@(@<div></div>)"" />");
+        // Act
+        var generated = CompileToCSharp(@"<MyComponent attr=""@(@<div></div>)"" />");
 
-            // Assert
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Equal("RZ9994", diagnostic.Id);
-        }
+        // Assert
+        var diagnostic = Assert.Single(generated.Diagnostics);
+        Assert.Equal("RZ9994", diagnostic.Id);
+    }
 
-        [Fact]
-        public void Template_ExplicitExpressionInRef_CreatesDiagnostic()
-        {
-            // Arrange
+    [Fact]
+    public void Template_ExplicitExpressionInRef_CreatesDiagnostic()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"<div ref=""@(@<div></div>)"" />");
+        // Act
+        var generated = CompileToCSharp(@"<div ref=""@(@<div></div>)"" />");
 
-            // Assert
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Equal("RZ9994", diagnostic.Id);
-        }
+        // Assert
+        var diagnostic = Assert.Single(generated.Diagnostics);
+        Assert.Equal("RZ9994", diagnostic.Id);
+    }
 
 
-        [Fact]
-        public void Template_ExplicitExpressionInBind_CreatesDiagnostic()
-        {
-            // Arrange
+    [Fact]
+    public void Template_ExplicitExpressionInBind_CreatesDiagnostic()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"<input type=""text"" bind=""@(@<div></div>)"" />");
+        // Act
+        var generated = CompileToCSharp(@"<input type=""text"" bind=""@(@<div></div>)"" />");
 
-            // Assert
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Equal("RZ9994", diagnostic.Id);
-        }
+        // Assert
+        var diagnostic = Assert.Single(generated.Diagnostics);
+        Assert.Equal("RZ9994", diagnostic.Id);
+    }
 
-        [Fact]
-        public void Template_ExplicitExpressionInEventHandler_CreatesDiagnostic()
-        {
-            // Arrange
+    [Fact]
+    public void Template_ExplicitExpressionInEventHandler_CreatesDiagnostic()
+    {
+        // Arrange
 
-            // Act
-            var generated = CompileToCSharp(@"<input type=""text"" onchange=""@(@<div></div>)"" />");
+        // Act
+        var generated = CompileToCSharp(@"<input type=""text"" onchange=""@(@<div></div>)"" />");
 
-            // Assert
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Equal("RZ9994", diagnostic.Id);
-        }
+        // Assert
+        var diagnostic = Assert.Single(generated.Diagnostics);
+        Assert.Equal("RZ9994", diagnostic.Id);
     }
 }

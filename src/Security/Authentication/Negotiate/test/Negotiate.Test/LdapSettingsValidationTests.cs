@@ -4,31 +4,30 @@
 using System;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Authentication.Negotiate.Test
+namespace Microsoft.AspNetCore.Authentication.Negotiate.Test;
+
+public class LdapSettingsValidationTests
 {
-    public class LdapSettingsValidationTests
+    [Fact]
+    public void EnabledWithoutDomainThrows()
     {
-        [Fact]
-        public void EnabledWithoutDomainThrows()
+        var settings = new LdapSettings
         {
-            var settings = new LdapSettings
-            {
-                EnableLdapClaimResolution = true
-            };
+            EnableLdapClaimResolution = true
+        };
 
-            Assert.Throws<ArgumentException>(() => settings.Validate());
-        }
+        Assert.Throws<ArgumentException>(() => settings.Validate());
+    }
 
-        [Fact]
-        public void AccountPasswordWithoutAccountNameThrows()
+    [Fact]
+    public void AccountPasswordWithoutAccountNameThrows()
+    {
+        var settings = new LdapSettings
         {
-            var settings = new LdapSettings
-            {
-                EnableLdapClaimResolution = true,
-                MachineAccountPassword = "Passw0rd"
-            };
+            EnableLdapClaimResolution = true,
+            MachineAccountPassword = "Passw0rd"
+        };
 
-            Assert.Throws<ArgumentException>(() => settings.Validate());
-        }
+        Assert.Throws<ArgumentException>(() => settings.Validate());
     }
 }

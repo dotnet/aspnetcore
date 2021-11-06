@@ -3,16 +3,15 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Mvc.ApplicationModels
+namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
+
+/// <summary>
+/// An interface which is used to represent something with properties.
+/// </summary>
+public interface IPropertyModel
 {
     /// <summary>
-    /// An interface which is used to represent something with properties.
+    /// The properties.
     /// </summary>
-    public interface IPropertyModel
-    {
-        /// <summary>
-        /// The properties.
-        /// </summary>
-        IDictionary<object, object?> Properties { get; }
-    }
+    IDictionary<object, object?> Properties { get; }
 }

@@ -5,38 +5,38 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
+namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests;
+
+public class TagHelpersIntegrationTest : IntegrationTestBase
 {
-    public class TagHelpersIntegrationTest : IntegrationTestBase
+    [Fact]
+    public void SimpleTagHelpers()
     {
-        [Fact]
-        public void SimpleTagHelpers()
+        // Arrange
+        var descriptors = new[]
         {
-            // Arrange
-            var descriptors = new[]
-            {
                 CreateTagHelperDescriptor(
                     tagName: "input",
                     typeName: "InputTagHelper",
                     assemblyName: "TestAssembly")
             };
 
-            var projectEngine = CreateProjectEngine(builder => builder.AddTagHelpers(descriptors));
-            var projectItem = CreateProjectItemFromFile();
+        var projectEngine = CreateProjectEngine(builder => builder.AddTagHelpers(descriptors));
+        var projectItem = CreateProjectItemFromFile();
 
-            // Act
-            var codeDocument = projectEngine.Process(projectItem);
+        // Act
+        var codeDocument = projectEngine.Process(projectItem);
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
+    }
 
-        [Fact]
-        public void TagHelpersWithBoundAttributes()
+    [Fact]
+    public void TagHelpersWithBoundAttributes()
+    {
+        // Arrange
+        var descriptors = new[]
         {
-            // Arrange
-            var descriptors = new[]
-            {
                 CreateTagHelperDescriptor(
                     tagName: "input",
                     typeName: "InputTagHelper",
@@ -50,22 +50,22 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                     })
             };
 
-            var projectEngine = CreateProjectEngine(builder => builder.AddTagHelpers(descriptors));
-            var projectItem = CreateProjectItemFromFile();
+        var projectEngine = CreateProjectEngine(builder => builder.AddTagHelpers(descriptors));
+        var projectItem = CreateProjectItemFromFile();
 
-            // Act
-            var codeDocument = projectEngine.Process(projectItem);
+        // Act
+        var codeDocument = projectEngine.Process(projectItem);
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
+    }
 
-        [Fact]
-        public void NestedTagHelpers()
+    [Fact]
+    public void NestedTagHelpers()
+    {
+        // Arrange
+        var descriptors = new[]
         {
-            // Arrange
-            var descriptors = new[]
-            {
                 CreateTagHelperDescriptor(
                     tagName: "p",
                     typeName: "PTagHelper",
@@ -87,40 +87,39 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                     })
             };
 
-            var projectEngine = CreateProjectEngine(builder => builder.AddTagHelpers(descriptors));
-            var projectItem = CreateProjectItemFromFile();
+        var projectEngine = CreateProjectEngine(builder => builder.AddTagHelpers(descriptors));
+        var projectItem = CreateProjectItemFromFile();
 
-            // Act
-            var codeDocument = projectEngine.Process(projectItem);
+        // Act
+        var codeDocument = projectEngine.Process(projectItem);
 
-            // Assert
-            var syntaxTree = codeDocument.GetSyntaxTree();
-            var irTree = codeDocument.GetDocumentIntermediateNode();
-            AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
-        }
+        // Assert
+        var syntaxTree = codeDocument.GetSyntaxTree();
+        var irTree = codeDocument.GetDocumentIntermediateNode();
+        AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
+    }
 
-        private static TagHelperDescriptor CreateTagHelperDescriptor(
-            string tagName,
-            string typeName,
-            string assemblyName,
-            IEnumerable<Action<BoundAttributeDescriptorBuilder>> attributes = null)
+    private static TagHelperDescriptor CreateTagHelperDescriptor(
+        string tagName,
+        string typeName,
+        string assemblyName,
+        IEnumerable<Action<BoundAttributeDescriptorBuilder>> attributes = null)
+    {
+        var builder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
+        builder.TypeName(typeName);
+
+        if (attributes != null)
         {
-            var builder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
-            builder.TypeName(typeName);
-
-            if (attributes != null)
+            foreach (var attributeBuilder in attributes)
             {
-                foreach (var attributeBuilder in attributes)
-                {
-                    builder.BoundAttributeDescriptor(attributeBuilder);
-                }
+                builder.BoundAttributeDescriptor(attributeBuilder);
             }
-
-            builder.TagMatchingRuleDescriptor(ruleBuilder => ruleBuilder.RequireTagName(tagName));
-
-            var descriptor = builder.Build();
-
-            return descriptor;
         }
+
+        builder.TagMatchingRuleDescriptor(ruleBuilder => ruleBuilder.RequireTagName(tagName));
+
+        var descriptor = builder.Build();
+
+        return descriptor;
     }
 }

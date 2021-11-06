@@ -3,17 +3,16 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Mvc.Abstractions
+namespace Microsoft.AspNetCore.Mvc.Abstractions;
+
+/// <summary>
+/// A context for <see cref="IActionDescriptorProvider"/>.
+/// </summary>
+public class ActionDescriptorProviderContext
 {
     /// <summary>
-    /// A context for <see cref="IActionDescriptorProvider"/>.
+    /// Gets the <see cref="IList{T}" /> of <see cref="ActionDescriptor"/> instances of <see cref="IActionDescriptorProvider"/>
+    /// can populate.
     /// </summary>
-    public class ActionDescriptorProviderContext
-    {
-        /// <summary>
-        /// Gets the <see cref="IList{T}" /> of <see cref="ActionDescriptor"/> instances of <see cref="IActionDescriptorProvider"/>
-        /// can populate.
-        /// </summary>
-        public IList<ActionDescriptor> Results { get; } = new List<ActionDescriptor>();
-    }
+    public IList<ActionDescriptor> Results { get; } = new List<ActionDescriptor>();
 }

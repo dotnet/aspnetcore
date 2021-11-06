@@ -5,39 +5,38 @@ using System;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Testing;
 
-namespace Microsoft.AspNetCore.DataProtection
-{
-    [AttributeUsage(AttributeTargets.Method)]
-    public class X509StoreIsAvailableAttribute : Attribute, ITestCondition
-    {
-        public X509StoreIsAvailableAttribute(StoreName name, StoreLocation location)
-        {
-            Name = name;
-            Location = location;
-        }
+namespace Microsoft.AspNetCore.DataProtection;
 
-        public bool IsMet
+[AttributeUsage(AttributeTargets.Method)]
+public class X509StoreIsAvailableAttribute : Attribute, ITestCondition
+{
+    public X509StoreIsAvailableAttribute(StoreName name, StoreLocation location)
+    {
+        Name = name;
+        Location = location;
+    }
+
+    public bool IsMet
+    {
+        get
         {
-            get
+            try
             {
-                try
+                using (var store = new X509Store(Name, Location))
                 {
-                    using (var store = new X509Store(Name, Location))
-                    {
-                        store.Open(OpenFlags.ReadWrite);
-                        return true;
-                    }
-                }
-                catch
-                {
-                    return false;
+                    store.Open(OpenFlags.ReadWrite);
+                    return true;
                 }
             }
+            catch
+            {
+                return false;
+            }
         }
-
-        public string SkipReason => $"Skipping because the X509Store({Name}/{Location}) is not available on this machine.";
-
-        public StoreName Name { get; }
-        public StoreLocation Location { get; }
     }
+
+    public string SkipReason => $"Skipping because the X509Store({Name}/{Location}) is not available on this machine.";
+
+    public StoreName Name { get; }
+    public StoreLocation Location { get; }
 }

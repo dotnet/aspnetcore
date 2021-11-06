@@ -5,35 +5,34 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.ApplicationModels
+namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
+
+public class InvalidModelStateFilterConventionTest
 {
-    public class InvalidModelStateFilterConventionTest
+    [Fact]
+    public void Apply_AddsFilter()
     {
-        [Fact]
-        public void Apply_AddsFilter()
-        {
-            // Arrange
-            var action = GetActionModel();
-            var convention = GetConvention();
+        // Arrange
+        var action = GetActionModel();
+        var convention = GetConvention();
 
-            // Act
-            convention.Apply(action);
+        // Act
+        convention.Apply(action);
 
-            // Assert
-            Assert.Single(action.Filters.OfType<ModelStateInvalidFilterFactory>());
-        }
+        // Assert
+        Assert.Single(action.Filters.OfType<ModelStateInvalidFilterFactory>());
+    }
 
 
-        private static ActionModel GetActionModel()
-        {
-            var action = new ActionModel(typeof(object).GetMethods()[0], new object[0]);
+    private static ActionModel GetActionModel()
+    {
+        var action = new ActionModel(typeof(object).GetMethods()[0], new object[0]);
 
-            return action;
-        }
+        return action;
+    }
 
-        private InvalidModelStateFilterConvention GetConvention()
-        {
-            return new InvalidModelStateFilterConvention();
-        }
+    private InvalidModelStateFilterConvention GetConvention()
+    {
+        return new InvalidModelStateFilterConvention();
     }
 }

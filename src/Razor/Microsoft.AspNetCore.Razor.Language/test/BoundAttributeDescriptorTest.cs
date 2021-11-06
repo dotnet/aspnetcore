@@ -3,34 +3,33 @@
 
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Language.Test
+namespace Microsoft.AspNetCore.Razor.Language.Test;
+
+public class BoundAttributeDescriptorTest
 {
-    public class BoundAttributeDescriptorTest
+    [Fact]
+    public void BoundAttributeDescriptor_HashChangesWithType()
     {
-        [Fact]
-        public void BoundAttributeDescriptor_HashChangesWithType()
-        {
-            var expectedPropertyName = "PropertyName";
+        var expectedPropertyName = "PropertyName";
 
-            var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "TestTagHelper", "Test");
-            _ = tagHelperBuilder.TypeName("TestTagHelper");
+        var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "TestTagHelper", "Test");
+        _ = tagHelperBuilder.TypeName("TestTagHelper");
 
-            var intBuilder = new DefaultBoundAttributeDescriptorBuilder(tagHelperBuilder, TagHelperConventions.DefaultKind);
-            _ = intBuilder
-                .Name("test")
-                .PropertyName(expectedPropertyName)
-                .TypeName(typeof(int).FullName);
+        var intBuilder = new DefaultBoundAttributeDescriptorBuilder(tagHelperBuilder, TagHelperConventions.DefaultKind);
+        _ = intBuilder
+            .Name("test")
+            .PropertyName(expectedPropertyName)
+            .TypeName(typeof(int).FullName);
 
-            var intDescriptor = intBuilder.Build();
+        var intDescriptor = intBuilder.Build();
 
-            var stringBuilder = new DefaultBoundAttributeDescriptorBuilder(tagHelperBuilder, TagHelperConventions.DefaultKind);
-            _ = stringBuilder
-                .Name("test")
-                .PropertyName(expectedPropertyName)
-                .TypeName(typeof(string).FullName);
-            var stringDescriptor = stringBuilder.Build();
+        var stringBuilder = new DefaultBoundAttributeDescriptorBuilder(tagHelperBuilder, TagHelperConventions.DefaultKind);
+        _ = stringBuilder
+            .Name("test")
+            .PropertyName(expectedPropertyName)
+            .TypeName(typeof(string).FullName);
+        var stringDescriptor = stringBuilder.Build();
 
-            Assert.NotEqual(intDescriptor.GetHashCode(), stringDescriptor.GetHashCode());
-        }
+        Assert.NotEqual(intDescriptor.GetHashCode(), stringDescriptor.GetHashCode());
     }
 }

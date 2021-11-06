@@ -3,14 +3,13 @@
 
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.ResponseCaching
+namespace Microsoft.AspNetCore.ResponseCaching;
+
+internal class CachedVaryByRules : IResponseCacheEntry
 {
-    internal class CachedVaryByRules : IResponseCacheEntry
-    {
-        public string VaryByKeyPrefix { get; set; } = default!;
+    public string VaryByKeyPrefix { get; set; } = default!;
 
-        public StringValues Headers { get; set; }
+    public StringValues Headers { get; set; }
 
-        public StringValues QueryKeys { get; set; }
-    }
+    public StringValues QueryKeys { get; set; }
 }

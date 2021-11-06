@@ -3,15 +3,14 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace BasicWebSite
+namespace BasicWebSite;
+
+[NonController]
+public class SqlDataController
 {
-    [NonController]
-    public class SqlDataController
+    public int TruncateAllDbRecords()
     {
-        public int TruncateAllDbRecords()
-        {
-            // Return no. of tables truncated
-            return 7;
-        }
+        // Return no. of tables truncated
+        return 7;
     }
 }

@@ -5,18 +5,17 @@ using Duende.IdentityServer.Configuration;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
+namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
+
+internal class AspNetConventionsConfigureOptions : IConfigureOptions<IdentityServerOptions>
 {
-    internal class AspNetConventionsConfigureOptions : IConfigureOptions<IdentityServerOptions>
+    public void Configure(IdentityServerOptions options)
     {
-        public void Configure(IdentityServerOptions options)
-        {
-            options.Events.RaiseErrorEvents = true;
-            options.Events.RaiseInformationEvents = true;
-            options.Events.RaiseFailureEvents = true;
-            options.Events.RaiseSuccessEvents = true;
-            options.Authentication.CookieAuthenticationScheme = IdentityConstants.ApplicationScheme;
-            options.UserInteraction.ErrorUrl = "/Home";
-        }
+        options.Events.RaiseErrorEvents = true;
+        options.Events.RaiseInformationEvents = true;
+        options.Events.RaiseFailureEvents = true;
+        options.Events.RaiseSuccessEvents = true;
+        options.Authentication.CookieAuthenticationScheme = IdentityConstants.ApplicationScheme;
+        options.UserInteraction.ErrorUrl = "/Home";
     }
 }

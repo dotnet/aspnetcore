@@ -3,14 +3,13 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace XmlFormattersWebSite
-{
-    public class Address
-    {
-        [Required]
-        public string State { get; set; }
+namespace XmlFormattersWebSite;
 
-        [Required]
-        public int Zipcode { get; set; }
-    }
+public class Address
+{
+    [Required]
+    public string State { get; set; }
+
+    [Required]
+    public int Zipcode { get; set; }
 }

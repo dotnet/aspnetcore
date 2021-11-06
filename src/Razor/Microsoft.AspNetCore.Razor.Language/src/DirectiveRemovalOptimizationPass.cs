@@ -4,37 +4,36 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+internal class DirectiveRemovalOptimizationPass : IntermediateNodePassBase, IRazorOptimizationPass
 {
-    internal class DirectiveRemovalOptimizationPass : IntermediateNodePassBase, IRazorOptimizationPass
+    public override int Order => DefaultFeatureOrder + 50;
+
+    protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
     {
-        public override int Order => DefaultFeatureOrder + 50;
+        var visitor = new Visitor();
+        visitor.VisitDocument(documentNode);
 
-        protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
+        foreach (var nodeReference in visitor.DirectiveNodes)
         {
-            var visitor = new Visitor();
-            visitor.VisitDocument(documentNode);
-
-            foreach (var nodeReference in visitor.DirectiveNodes)
+            // Lift the diagnostics in the directive node up to the document node.
+            for (var i = 0; i < nodeReference.Node.Diagnostics.Count; i++)
             {
-                // Lift the diagnostics in the directive node up to the document node.
-                for (var i = 0; i < nodeReference.Node.Diagnostics.Count; i++)
-                {
-                    documentNode.Diagnostics.Add(nodeReference.Node.Diagnostics[i]);
-                }
-
-                nodeReference.Remove();
+                documentNode.Diagnostics.Add(nodeReference.Node.Diagnostics[i]);
             }
+
+            nodeReference.Remove();
         }
+    }
 
-        private class Visitor : IntermediateNodeWalker
+    private class Visitor : IntermediateNodeWalker
+    {
+        public IList<IntermediateNodeReference> DirectiveNodes { get; } = new List<IntermediateNodeReference>();
+
+        public override void VisitDirective(DirectiveIntermediateNode node)
         {
-            public IList<IntermediateNodeReference> DirectiveNodes { get; } = new List<IntermediateNodeReference>();
-
-            public override void VisitDirective(DirectiveIntermediateNode node)
-            {
-                DirectiveNodes.Add(new IntermediateNodeReference(Parent, node));
-            }
+            DirectiveNodes.Add(new IntermediateNodeReference(Parent, node));
         }
     }
 }

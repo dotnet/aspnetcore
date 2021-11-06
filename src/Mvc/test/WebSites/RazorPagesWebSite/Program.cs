@@ -4,23 +4,22 @@
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
 
-namespace RazorPagesWebSite
+namespace RazorPagesWebSite;
+
+public class Program
 {
-    public class Program
+    public static void Main(string[] args)
     {
-        public static void Main(string[] args)
-        {
-            var host = CreateWebHostBuilder(args)
-                .Build();
+        var host = CreateWebHostBuilder(args)
+            .Build();
 
-            host.Run();
-        }
-
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            new WebHostBuilder()
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseStartup<StartupWithBasePath>();
+        host.Run();
     }
+
+    public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+        new WebHostBuilder()
+            .UseKestrel()
+            .UseContentRoot(Directory.GetCurrentDirectory())
+            .UseIISIntegration()
+            .UseStartup<StartupWithBasePath>();
 }
