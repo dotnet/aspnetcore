@@ -608,31 +608,17 @@ public static partial class RequestDelegateFactory
                     boundValues[i] = await binders[i](httpContext);
                 }
 
-                var bodyValue = defaultBodyValue;
-                var feature = httpContext.Features.Get<IHttpRequestBodyDetectionFeature>();
-                if (feature?.CanHaveBody == true)
+                (var bodyValue, var successful) = await TryReadBodyAsync(
+                    parameterTypeName,
+                    parameterName,
+                    bodyType,
+                    defaultBodyValue,
+                    httpContext,
+                    factoryContext.ThrowOnBadRequest);
+
+                if (!successful)
                 {
-                    if (!httpContext.Request.HasJsonContentType())
-                    {
-                        Log.UnexpectedJsonContentType(httpContext, httpContext.Request.ContentType, factoryContext.ThrowOnBadRequest);
-                        httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
-                        return;
-                    }
-                    try
-                    {
-                        bodyValue = await httpContext.Request.ReadFromJsonAsync(bodyType);
-                    }
-                    catch (IOException ex)
-                    {
-                        Log.RequestBodyIOException(httpContext, ex);
-                        return;
-                    }
-                    catch (JsonException ex)
-                    {
-                        Log.InvalidJsonRequestBody(httpContext, parameterTypeName, parameterName, ex, factoryContext.ThrowOnBadRequest);
-                        httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                        return;
-                    }
+                    return;
                 }
 
                 await continuation(target, httpContext, bodyValue, boundValues);
@@ -646,34 +632,60 @@ public static partial class RequestDelegateFactory
 
             return async (target, httpContext) =>
             {
-                var bodyValue = defaultBodyValue;
-                var feature = httpContext.Features.Get<IHttpRequestBodyDetectionFeature>();
-                if (feature?.CanHaveBody == true)
+                (var bodyValue, var successful) = await TryReadBodyAsync(
+                    parameterTypeName,
+                    parameterName,
+                    bodyType,
+                    defaultBodyValue,
+                    httpContext,
+                    factoryContext.ThrowOnBadRequest);
+
+                if (!successful)
                 {
-                    if (!httpContext.Request.HasJsonContentType())
-                    {
-                        Log.UnexpectedJsonContentType(httpContext, httpContext.Request.ContentType, factoryContext.ThrowOnBadRequest);
-                        httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
-                        return;
-                    }
-                    try
-                    {
-                        bodyValue = await httpContext.Request.ReadFromJsonAsync(bodyType);
-                    }
-                    catch (IOException ex)
-                    {
-                        Log.RequestBodyIOException(httpContext, ex);
-                        return;
-                    }
-                    catch (JsonException ex)
-                    {
-                        Log.InvalidJsonRequestBody(httpContext, parameterTypeName, parameterName, ex, factoryContext.ThrowOnBadRequest);
-                        httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                        return;
-                    }
+                    return;
                 }
+
                 await continuation(target, httpContext, bodyValue);
             };
+        }
+
+        static async Task<(object? FormValue, bool Successful)> TryReadBodyAsync(
+            string parameterTypeName,
+            string parameterName,
+            Type bodyType,
+            object? defaultBodyValue,
+            HttpContext httpContext,
+            bool throwOnBadRequest)
+        {
+            var bodyValue = defaultBodyValue;
+            var feature = httpContext.Features.Get<IHttpRequestBodyDetectionFeature>();
+
+            if (feature?.CanHaveBody == true)
+            {
+                if (!httpContext.Request.HasJsonContentType())
+                {
+                    Log.UnexpectedJsonContentType(httpContext, httpContext.Request.ContentType, throwOnBadRequest);
+                    httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
+                    return (null, false);
+                }
+                try
+                {
+                    bodyValue = await httpContext.Request.ReadFromJsonAsync(bodyType);
+                }
+                catch (IOException ex)
+                {
+                    Log.RequestBodyIOException(httpContext, ex);
+                    return (null, false);
+                }
+                catch (JsonException ex)
+                {
+                    Log.InvalidJsonRequestBody(httpContext, parameterTypeName, parameterName, ex, throwOnBadRequest);
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    return (null, false);
+                }
+            }
+
+            return (bodyValue, true);
         }
     }
 
@@ -708,31 +720,15 @@ public static partial class RequestDelegateFactory
                     boundValues[i] = await binders[i](httpContext);
                 }
 
-                object? formValue = null;
-                var feature = httpContext.Features.Get<IHttpRequestBodyDetectionFeature>();
-                if (feature?.CanHaveBody == true)
+                (var formValue, var successful) = await TryReadFormAsync(
+                    parameterTypeName,
+                    parameterName,
+                    httpContext,
+                    factoryContext.ThrowOnBadRequest);
+
+                if (!successful)
                 {
-                    if (!httpContext.Request.HasFormContentType)
-                    {
-                        Log.UnexpectedFormContentType(httpContext, httpContext.Request.ContentType, factoryContext.ThrowOnBadRequest);
-                        httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
-                        return;
-                    }
-                    try
-                    {
-                        formValue = await httpContext.Request.ReadFormAsync();
-                    }
-                    catch (IOException ex)
-                    {
-                        Log.RequestBodyIOException(httpContext, ex);
-                        return;
-                    }
-                    catch (InvalidDataException ex)
-                    {
-                        Log.InvalidFormRequestBody(httpContext, parameterTypeName, parameterName, ex, factoryContext.ThrowOnBadRequest);
-                        httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                        return;
-                    }
+                    return;
                 }
 
                 await continuation(target, httpContext, formValue, boundValues);
@@ -746,34 +742,56 @@ public static partial class RequestDelegateFactory
 
             return async (target, httpContext) =>
             {
-                object? formValue = null;
-                var feature = httpContext.Features.Get<IHttpRequestBodyDetectionFeature>();
-                if (feature?.CanHaveBody == true)
+                (var formValue, var successful) = await TryReadFormAsync(
+                    parameterTypeName,
+                    parameterName,
+                    httpContext,
+                    factoryContext.ThrowOnBadRequest);
+
+                if (!successful)
                 {
-                    if (!httpContext.Request.HasFormContentType)
-                    {
-                        Log.UnexpectedFormContentType(httpContext, httpContext.Request.ContentType, factoryContext.ThrowOnBadRequest);
-                        httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
-                        return;
-                    }
-                    try
-                    {
-                        formValue = await httpContext.Request.ReadFormAsync();
-                    }
-                    catch (IOException ex)
-                    {
-                        Log.RequestBodyIOException(httpContext, ex);
-                        return;
-                    }
-                    catch (InvalidDataException ex)
-                    {
-                        Log.InvalidFormRequestBody(httpContext, parameterTypeName, parameterName, ex, factoryContext.ThrowOnBadRequest);
-                        httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                        return;
-                    }
+                    return;
                 }
+
                 await continuation(target, httpContext, formValue);
             };
+        }
+
+        static async Task<(object? FormValue, bool Successful)> TryReadFormAsync(
+            string parameterTypeName,
+            string parameterName,
+            HttpContext httpContext,
+            bool throwOnBadRequest)
+        {
+            object? formValue = null;
+            var feature = httpContext.Features.Get<IHttpRequestBodyDetectionFeature>();
+
+            if (feature?.CanHaveBody == true)
+            {
+                if (!httpContext.Request.HasFormContentType)
+                {
+                    Log.UnexpectedFormContentType(httpContext, httpContext.Request.ContentType, throwOnBadRequest);
+                    httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
+                    return (null, false);
+                }
+                try
+                {
+                    formValue = await httpContext.Request.ReadFormAsync();
+                }
+                catch (IOException ex)
+                {
+                    Log.RequestBodyIOException(httpContext, ex);
+                    return (null, false);
+                }
+                catch (InvalidDataException ex)
+                {
+                    Log.InvalidFormRequestBody(httpContext, parameterTypeName, parameterName, ex, throwOnBadRequest);
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    return (null, false);
+                }
+            }
+
+            return (formValue, true);
         }
     }
 
