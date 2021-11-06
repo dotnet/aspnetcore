@@ -199,7 +199,7 @@ public static partial class RequestDelegateFactory
             throw new InvalidOperationException(errorMessage);
         }
         if (factoryContext.JsonRequestBodyParameter is not null &&
-            factoryContext.FormRequestBodyParameter is not null)
+            factoryContext.FirstFormRequestBodyParameter is not null)
         {
             var errorMessage = BuildErrorMessageForFormAndJsonBodyParameters(factoryContext);
             throw new InvalidOperationException(errorMessage);
@@ -679,7 +679,7 @@ public static partial class RequestDelegateFactory
         Expression responseWritingMethodCall,
         FactoryContext factoryContext)
     {
-        Debug.Assert(factoryContext.FormRequestBodyParameter is not null, "factoryContext.FormRequestBodyParameter is null for a form body.");
+        Debug.Assert(factoryContext.FirstFormRequestBodyParameter is not null, "factoryContext.FirstFormRequestBodyParameter is null for a form body.");
 
         if (factoryContext.ParameterBinders.Count > 0)
         {
@@ -734,10 +734,12 @@ public static partial class RequestDelegateFactory
             HttpContext httpContext,
             FactoryContext factoryContext)
         {
-            Debug.Assert(factoryContext.FormRequestBodyParameter is not null, "TryReadFormAsync() should not be called if there are no form parameters.");
+            Debug.Assert(factoryContext.FirstFormRequestBodyParameter is not null, "TryReadFormAsync() should not be called if there are no form parameters.");
 
-            var parameterTypeName = TypeNameHelper.GetTypeDisplayName(factoryContext.FormRequestBodyParameter.ParameterType, fullName: false);
-            var parameterName = factoryContext.FormRequestBodyParameter.Name;
+            // If there are multiple parameters associated with the form, just use the name of
+            // the first one to report the failure to bind the parameter if reading the form fails.
+            var parameterTypeName = TypeNameHelper.GetTypeDisplayName(factoryContext.FirstFormRequestBodyParameter.ParameterType, fullName: false);
+            var parameterName = factoryContext.FirstFormRequestBodyParameter.Name;
 
             Debug.Assert(parameterName is not null, "CreateArgument() should throw if parameter.Name is null.");
 
@@ -1040,7 +1042,11 @@ public static partial class RequestDelegateFactory
         ParameterInfo parameter,
         FactoryContext factoryContext)
     {
-        factoryContext.FormRequestBodyParameter = parameter;
+        if (factoryContext.FirstFormRequestBodyParameter is null)
+        {
+            factoryContext.FirstFormRequestBodyParameter = parameter;
+        }
+
         factoryContext.TrackedParameters.Add(parameter.Name!, RequestDelegateFactoryConstants.FormFileParameter);
 
         // Do not duplicate the metadata if there are multiple form parameters
@@ -1060,7 +1066,11 @@ public static partial class RequestDelegateFactory
         FactoryContext factoryContext,
         string trackedParameterSource)
     {
-        factoryContext.FormRequestBodyParameter = parameter;
+        if (factoryContext.FirstFormRequestBodyParameter is null)
+        {
+            factoryContext.FirstFormRequestBodyParameter = parameter;
+        }
+
         factoryContext.TrackedParameters.Add(key, trackedParameterSource);
 
         // Do not duplicate the metadata if there are multiple form parameters
@@ -1383,7 +1393,7 @@ public static partial class RequestDelegateFactory
         public NullabilityInfoContext NullabilityContext { get; } = new();
 
         public bool ReadForm { get; set; }
-        public ParameterInfo? FormRequestBodyParameter { get; set; }
+        public ParameterInfo? FirstFormRequestBodyParameter { get; set; }
     }
 
     private static class RequestDelegateFactoryConstants
