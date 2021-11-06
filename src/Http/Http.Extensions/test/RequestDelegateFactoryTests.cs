@@ -3327,6 +3327,48 @@ public class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
+    public async Task RequestDelegatePopulatesFromMultipleRequiredIFormFileParameters()
+    {
+        IFormFile? file1Argument = null;
+        IFormFile? file2Argument = null;
+
+        void TestAction(IFormFile file1, IFormFile file2)
+        {
+            file1Argument = file1;
+            file2Argument = file2;
+        }
+
+        var fileContent1 = new StringContent("hello", Encoding.UTF8, "application/octet-stream");
+        var fileContent2 = new StringContent("there", Encoding.UTF8, "application/octet-stream");
+        var form = new MultipartFormDataContent("some-boundary");
+        form.Add(fileContent1, "file1", "file1.txt");
+        form.Add(fileContent2, "file2", "file2.txt");
+
+        var stream = new MemoryStream();
+        await form.CopyToAsync(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Type"] = "multipart/form-data;boundary=some-boundary";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.Request.Form.Files["file1"], file1Argument);
+        Assert.Equal("file1.txt", file1Argument!.FileName);
+        Assert.Equal("file1", file1Argument.Name);
+
+        Assert.Equal(httpContext.Request.Form.Files["file2"], file2Argument);
+        Assert.Equal("file2.txt", file2Argument!.FileName);
+        Assert.Equal("file2", file2Argument.Name);
+    }
+
+    [Fact]
     public async Task RequestDelegatePopulatesFromOptionalMissingIFormFileParameter()
     {
         IFormFile? file1Argument = null;
