@@ -1588,10 +1588,8 @@ public static partial class RequestDelegateFactory
         errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}| {"Source",-30}"));
         errorMessage.AppendLine("---------------------------------------------------------------------------------");
 
-        foreach (var kv in factoryContext.TrackedParameters)
-        {
-            errorMessage.AppendLine(FormattableString.Invariant($"{kv.Key,-19} | {kv.Value,-15}"));
-        }
+        FormatTrackedParameters(factoryContext, errorMessage);
+
         errorMessage.AppendLine().AppendLine();
         errorMessage.AppendLine("Did you mean to register the \"UNKNOWN\" parameters as a Service?")
             .AppendLine();
@@ -1607,10 +1605,8 @@ public static partial class RequestDelegateFactory
         errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}| {"Source",-30}"));
         errorMessage.AppendLine("---------------------------------------------------------------------------------");
 
-        foreach (var kv in factoryContext.TrackedParameters)
-        {
-            errorMessage.AppendLine(FormattableString.Invariant($"{kv.Key,-19} | {kv.Value,-15}"));
-        }
+        FormatTrackedParameters(factoryContext, errorMessage);
+
         errorMessage.AppendLine().AppendLine();
         errorMessage.AppendLine("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromService] or [FromBody] attribute?")
             .AppendLine();
@@ -1626,10 +1622,16 @@ public static partial class RequestDelegateFactory
         errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}| {"Source",-30}"));
         errorMessage.AppendLine("---------------------------------------------------------------------------------");
 
+        FormatTrackedParameters(factoryContext, errorMessage);
+
+        return errorMessage.ToString();
+    }
+
+    private static void FormatTrackedParameters(FactoryContext factoryContext, StringBuilder errorMessage)
+    {
         foreach (var kv in factoryContext.TrackedParameters)
         {
             errorMessage.AppendLine(FormattableString.Invariant($"{kv.Key,-19} | {kv.Value,-15}"));
         }
-        return errorMessage.ToString();
     }
 }
