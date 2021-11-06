@@ -3204,19 +3204,23 @@ public class RequestDelegateFactoryTests : LoggedTest
     [Fact]
     public void BuildRequestDelegateThrowsInvalidOperationExceptionBodyAndFormFileParameters()
     {
-        void TestFormAndJson(IFormFile value1, Todo value2) { }
-        void TestFormCollectionAndJson(IFormFileCollection value1, Todo value2) { }
-        void TestFormAndJsonWithAttribute(IFormFile value1, [FromBody] int value2) { }
-        void TestJsonAndForm(Todo value1, IFormFile value2) { }
-        void TestJsonAndFormCollection(Todo value1, IFormFileCollection value2) { }
-        void TestJsonAndFormWithAttribute(Todo value1, [FromFormFile] IFormFile value2) { }
+        void TestFormFileAndJson(IFormFile value1, Todo value2) { }
+        void TestFormFilesAndJson(IFormFile value1, IFormFile value2, Todo value3) { }
+        void TestFormFileCollectionAndJson(IFormFileCollection value1, Todo value2) { }
+        void TestFormFileAndJsonWithAttribute(IFormFile value1, [FromBody] int value2) { }
+        void TestJsonAndFormFile(Todo value1, IFormFile value2) { }
+        void TestJsonAndFormFiles(Todo value1, IFormFile value2, IFormFile value3) { }
+        void TestJsonAndFormFileCollection(Todo value1, IFormFileCollection value2) { }
+        void TestJsonAndFormFileWithAttribute(Todo value1, [FromFormFile] IFormFile value2) { }
 
-        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestFormAndJson));
-        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestFormAndJsonWithAttribute));
-        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestFormCollectionAndJson));
-        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestJsonAndForm));
-        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestJsonAndFormCollection));
-        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestJsonAndFormWithAttribute));
+        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestFormFileAndJson));
+        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestFormFilesAndJson));
+        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestFormFileAndJsonWithAttribute));
+        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestFormFileCollectionAndJson));
+        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestJsonAndFormFile));
+        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestJsonAndFormFiles));
+        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestJsonAndFormFileCollection));
+        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestJsonAndFormFileWithAttribute));
     }
 
     [Fact]
