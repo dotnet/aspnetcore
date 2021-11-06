@@ -114,17 +114,27 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
         var acceptsMetadata = routeEndpoint.Metadata.GetMetadata<IAcceptsMetadata>();
         if (acceptsMetadata is not null)
         {
-            var acceptsRequestType = acceptsMetadata.RequestType;
-            var isOptional = acceptsMetadata.IsOptional;
-            var parameterDescription = new ApiParameterDescription
+            // Do not add an implicit body parameter description if a parameter already
+            // exists for something derived from the body's content, such as a form file.
+            var alreadyHasAnyBodyParameter = apiDescription.ParameterDescriptions.Any(x =>
+                x.Source == BindingSource.Body ||
+                x.Source == BindingSource.Form ||
+                x.Source == BindingSource.FormFile);
+
+            if (!alreadyHasAnyBodyParameter)
             {
-                Name = acceptsRequestType is not null ? acceptsRequestType.Name : typeof(void).Name,
-                ModelMetadata = CreateModelMetadata(acceptsRequestType ?? typeof(void)),
-                Source = BindingSource.Body,
-                Type = acceptsRequestType ?? typeof(void),
-                IsRequired = !isOptional,
-            };
-            apiDescription.ParameterDescriptions.Add(parameterDescription);
+                var acceptsRequestType = acceptsMetadata.RequestType;
+                var isOptional = acceptsMetadata.IsOptional;
+                var parameterDescription = new ApiParameterDescription
+                {
+                    Name = acceptsRequestType is not null ? acceptsRequestType.Name : typeof(void).Name,
+                    ModelMetadata = CreateModelMetadata(acceptsRequestType ?? typeof(void)),
+                    Source = BindingSource.Body,
+                    Type = acceptsRequestType ?? typeof(void),
+                    IsRequired = !isOptional,
+                };
+                apiDescription.ParameterDescriptions.Add(parameterDescription);
+            }
 
             var supportedRequestFormats = apiDescription.SupportedRequestFormats;
 
@@ -239,12 +249,17 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
         {
             return (BindingSource.Body, parameter.Name ?? string.Empty, fromBodyAttribute.AllowEmpty, parameter.ParameterType);
         }
+        else if (attributes.OfType<IFromFileMetadata>().FirstOrDefault() is { } formFileAttribute)
+        {
+            return (BindingSource.FormFile, formFileAttribute.Name ?? parameter.Name ?? string.Empty, false, parameter.ParameterType);
+        }
         else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)) ||
                  parameter.ParameterType == typeof(HttpContext) ||
                  parameter.ParameterType == typeof(HttpRequest) ||
                  parameter.ParameterType == typeof(HttpResponse) ||
                  parameter.ParameterType == typeof(ClaimsPrincipal) ||
                  parameter.ParameterType == typeof(CancellationToken) ||
+                 parameter.ParameterType == typeof(IFormFileCollection) ||
                  ParameterBindingMethodCache.HasBindAsyncMethod(parameter) ||
                  _serviceProviderIsService?.IsService(parameter.ParameterType) == true)
         {
@@ -264,6 +279,10 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
             {
                 return (BindingSource.Query, parameter.Name ?? string.Empty, false, displayType);
             }
+        }
+        else if (parameter.ParameterType == typeof(IFormFile))
+        {
+            return (BindingSource.FormFile, parameter.Name ?? string.Empty, false, parameter.ParameterType);
         }
         else
         {

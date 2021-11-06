@@ -14,6 +14,8 @@ Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata.IsOptional.get -> bool
 Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata.RequestType.get -> System.Type?
 Microsoft.AspNetCore.Http.Metadata.IFromBodyMetadata
 Microsoft.AspNetCore.Http.Metadata.IFromBodyMetadata.AllowEmpty.get -> bool
+Microsoft.AspNetCore.Http.Metadata.IFromFileMetadata
+Microsoft.AspNetCore.Http.Metadata.IFromFileMetadata.Name.get -> string?
 Microsoft.AspNetCore.Http.Metadata.IFromHeaderMetadata
 Microsoft.AspNetCore.Http.Metadata.IFromHeaderMetadata.Name.get -> string?
 Microsoft.AspNetCore.Http.Metadata.IFromQueryMetadata

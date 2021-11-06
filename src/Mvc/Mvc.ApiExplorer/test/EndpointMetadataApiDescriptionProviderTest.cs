@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -783,10 +784,6 @@ public class EndpointMetadataApiDescriptionProviderTest
         Assert.Equal("application/json", defaultRequestFormat.MediaType);
     }
 
-#nullable restore
-
-#nullable enable
-
     [Fact]
     public void HandleDefaultIAcceptsMetadataForOptionalBodyParameter()
     {
@@ -821,10 +818,6 @@ public class EndpointMetadataApiDescriptionProviderTest
         Assert.Equal("application/json", defaultRequestFormat.MediaType);
     }
 
-#nullable restore
-
-#nullable enable
-
     [Fact]
     public void HandleIAcceptsMetadataWithConsumesAttributeAndInferredOptionalFromBodyType()
     {
@@ -857,6 +850,185 @@ public class EndpointMetadataApiDescriptionProviderTest
         var requestFormats = context.Results.SelectMany(r => r.SupportedRequestFormats);
         var defaultRequestFormat = requestFormats.Single();
         Assert.Equal("application/xml", defaultRequestFormat.MediaType);
+    }
+
+    [Fact]
+    public void HandleDefaultIAcceptsMetadataForRequiredFormFileParameter()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var serviceProvider = services.BuildServiceProvider();
+        var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        builder.MapPost("/file/upload", (IFormFile formFile) => "");
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        // Act
+        provider.OnProvidersExecuting(context);
+        provider.OnProvidersExecuted(context);
+
+        // Assert
+        var parameterDescriptions = context.Results.SelectMany(r => r.ParameterDescriptions);
+        var bodyParameterDescription = parameterDescriptions.Single();
+        Assert.Equal(typeof(IFormFile), bodyParameterDescription.Type);
+        Assert.Equal("formFile", bodyParameterDescription.Name);
+        Assert.True(bodyParameterDescription.IsRequired);
+
+        // Assert
+        var requestFormats = context.Results.SelectMany(r => r.SupportedRequestFormats);
+        var defaultRequestFormat = requestFormats.Single();
+        Assert.Equal("multipart/form-data", defaultRequestFormat.MediaType);
+        Assert.Null(defaultRequestFormat.Formatter);
+    }
+
+    [Fact]
+    public void HandleDefaultIAcceptsMetadataForOptionalFormFileParameter()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var serviceProvider = services.BuildServiceProvider();
+        var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        builder.MapPost("/file/upload", (IFormFile? inferredFormFile) => "");
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        // Act
+        provider.OnProvidersExecuting(context);
+        provider.OnProvidersExecuted(context);
+
+        // Assert
+        var parameterDescriptions = context.Results.SelectMany(r => r.ParameterDescriptions);
+        var bodyParameterDescription = parameterDescriptions.Single();
+        Assert.Equal(typeof(IFormFile), bodyParameterDescription.Type);
+        Assert.Equal("inferredFormFile", bodyParameterDescription.Name);
+        Assert.False(bodyParameterDescription.IsRequired);
+
+        // Assert
+        var requestFormats = context.Results.SelectMany(r => r.SupportedRequestFormats);
+        var defaultRequestFormat = requestFormats.Single();
+        Assert.Equal("multipart/form-data", defaultRequestFormat.MediaType);
+        Assert.Null(defaultRequestFormat.Formatter);
+    }
+
+    [Fact]
+    public void AddsMultipartFormDataResponseFormatWhenFormFileSpecified()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var serviceProvider = services.BuildServiceProvider();
+        var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        builder.MapPost("/file/upload", (IFormFile file) => Results.NoContent());
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        // Act
+        provider.OnProvidersExecuting(context);
+        provider.OnProvidersExecuted(context);
+
+        // Assert
+        var parameterDescriptions = context.Results.SelectMany(r => r.ParameterDescriptions);
+        var bodyParameterDescription = parameterDescriptions.Single();
+        Assert.Equal(typeof(IFormFile), bodyParameterDescription.Type);
+        Assert.Equal("file", bodyParameterDescription.Name);
+        Assert.True(bodyParameterDescription.IsRequired);
+
+        // Assert
+        var requestFormats = context.Results.SelectMany(r => r.SupportedRequestFormats);
+        var defaultRequestFormat = requestFormats.Single();
+        Assert.Equal("multipart/form-data", defaultRequestFormat.MediaType);
+        Assert.Null(defaultRequestFormat.Formatter);
+    }
+
+    [Fact]
+    public void HasMultipleRequestFormatsWhenFormFileSpecifiedWithConsumedAttribute()
+    {
+        var apiDescription = GetApiDescription(
+            [Consumes("application/custom0", "application/custom1")]
+            (IFormFile file) => Results.NoContent());
+
+        Assert.Equal(2, apiDescription.SupportedRequestFormats.Count);
+
+        var requestFormat0 = apiDescription.SupportedRequestFormats[0];
+        Assert.Equal("application/custom0", requestFormat0.MediaType);
+        Assert.Null(requestFormat0.Formatter);
+
+        var requestFormat1 = apiDescription.SupportedRequestFormats[1];
+        Assert.Equal("application/custom1", requestFormat1.MediaType);
+        Assert.Null(requestFormat1.Formatter);
+    }
+
+    [Fact]
+    public void TestIsRequiredFromFormFile()
+    {
+        var apiDescription0 = GetApiDescription((IFormFile fromFile) => { });
+        var apiDescription1 = GetApiDescription((IFormFile? fromFile) => { });
+        Assert.Equal(1, apiDescription0.ParameterDescriptions.Count);
+        Assert.Equal(1, apiDescription1.ParameterDescriptions.Count);
+
+        var fromFileParam0 = apiDescription0.ParameterDescriptions[0];
+        Assert.Equal(typeof(IFormFile), fromFileParam0.Type);
+        Assert.Equal(typeof(IFormFile), fromFileParam0.ModelMetadata.ModelType);
+        Assert.Equal(BindingSource.FormFile, fromFileParam0.Source);
+        Assert.True(fromFileParam0.IsRequired);
+
+        var fromFileParam1 = apiDescription1.ParameterDescriptions[0];
+        Assert.Equal(typeof(IFormFile), fromFileParam1.Type);
+        Assert.Equal(typeof(IFormFile), fromFileParam1.ModelMetadata.ModelType);
+        Assert.Equal(BindingSource.FormFile, fromFileParam1.Source);
+        Assert.False(fromFileParam1.IsRequired);
+    }
+
+    [Fact]
+    public void AddsFromFormParameterAsFormFile()
+    {
+        static void AssertFormFileParameter(ApiDescription apiDescription, Type expectedType, string expectedName)
+        {
+            var param = Assert.Single(apiDescription.ParameterDescriptions);
+            Assert.Equal(expectedType, param.Type);
+            Assert.Equal(expectedType, param.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.FormFile, param.Source);
+            Assert.Equal(expectedName, param.Name);
+        }
+
+        AssertFormFileParameter(GetApiDescription((IFormFile file) => { }), typeof(IFormFile), "file");
+        AssertFormFileParameter(GetApiDescription(([FromFile(Name = "file_name")] IFormFile file) => { }), typeof(IFormFile), "file_name");
+    }
+
+    [Fact]
+    public void AddsMultipartFormDataResponseFormatWhenFormFileCollectionSpecified()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var serviceProvider = services.BuildServiceProvider();
+        var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        builder.MapPost("/file/upload", (IFormFileCollection files) => Results.NoContent());
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        // Act
+        provider.OnProvidersExecuting(context);
+        provider.OnProvidersExecuted(context);
+
+        // Assert
+        var parameterDescriptions = context.Results.SelectMany(r => r.ParameterDescriptions);
+        var bodyParameterDescription = parameterDescriptions.Single();
+        Assert.Equal(typeof(IFormFileCollection), bodyParameterDescription.Type);
+        Assert.Equal(typeof(IFormFileCollection).Name, bodyParameterDescription.Name);
+        Assert.True(bodyParameterDescription.IsRequired);
+
+        // Assert
+        var requestFormats = context.Results.SelectMany(r => r.SupportedRequestFormats);
+        var defaultRequestFormat = requestFormats.Single();
+        Assert.Equal("multipart/form-data", defaultRequestFormat.MediaType);
+        Assert.Null(defaultRequestFormat.Formatter);
     }
 
 #nullable restore
@@ -928,6 +1100,12 @@ public class EndpointMetadataApiDescriptionProviderTest
             constraint => Assert.IsType<MaxLengthRouteConstraint>(constraint));
     }
 
+    // TODO Can remove this when there's an agreed concrete implementation of IFromFileMetadata
+    private sealed class FromFileAttribute : Attribute, IFromFileMetadata
+    {
+        public string Name { get; set; }
+    }
+
     private static IEnumerable<string> GetSortedMediaTypes(ApiResponseType apiResponseType)
     {
         return apiResponseType.ApiResponseFormats
@@ -969,7 +1147,6 @@ public class EndpointMetadataApiDescriptionProviderTest
 
     private static TestEndpointRouteBuilder CreateBuilder() =>
         new TestEndpointRouteBuilder(new ApplicationBuilder(new TestServiceProvider()));
-
 
     private static ApiDescription GetApiDescription(Delegate action, string pattern = null, string displayName = null) =>
         Assert.Single(GetApiDescriptions(action, pattern, displayName: displayName));
