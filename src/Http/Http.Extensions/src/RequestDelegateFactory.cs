@@ -806,8 +806,7 @@ public static partial class RequestDelegateFactory
         var parameterNameConstant = Expression.Constant(parameter.Name);
         var sourceConstant = Expression.Constant(source);
 
-        if (parameter.ParameterType == typeof(string) ||
-            parameter.ParameterType == typeof(IFormFileCollection))
+        if (parameter.ParameterType == typeof(string))
         {
             return BindParameterFromExpression(parameter, valueExpression, factoryContext, source);
         }
