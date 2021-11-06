@@ -100,7 +100,6 @@ public class ErrorBoundaryTest : ServerTestBase<ToggleExecutionModeServerFixture
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34870")]
     public void CanHandleErrorsInlineInErrorBoundaryContent()
     {
         var container = Browser.Exists(By.Id("inline-error-test"));
