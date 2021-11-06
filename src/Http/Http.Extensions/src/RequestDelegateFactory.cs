@@ -750,7 +750,7 @@ public static partial class RequestDelegateFactory
             {
                 if (!httpContext.Request.HasFormContentType)
                 {
-                    Log.UnexpectedFormContentType(httpContext, httpContext.Request.ContentType, factoryContext.ThrowOnBadRequest);
+                    Log.UnexpectedNonFormContentType(httpContext, httpContext.Request.ContentType, factoryContext.ThrowOnBadRequest);
                     httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
                     return (null, false);
                 }
@@ -1513,7 +1513,7 @@ public static partial class RequestDelegateFactory
         [LoggerMessage(6, LogLevel.Debug, UnexpectedJsonContentTypeLogMessage, EventName = "UnexpectedContentType")]
         private static partial void UnexpectedJsonContentType(ILogger logger, string contentType);
 
-        public static void UnexpectedFormContentType(HttpContext httpContext, string? contentType, bool shouldThrow)
+        public static void UnexpectedNonFormContentType(HttpContext httpContext, string? contentType, bool shouldThrow)
         {
             if (shouldThrow)
             {
@@ -1521,11 +1521,11 @@ public static partial class RequestDelegateFactory
                 throw new BadHttpRequestException(message, StatusCodes.Status415UnsupportedMediaType);
             }
 
-            UnexpectedFormContentType(GetLogger(httpContext), contentType ?? "(none)");
+            UnexpectedNonFormContentType(GetLogger(httpContext), contentType ?? "(none)");
         }
 
-        [LoggerMessage(7, LogLevel.Debug, UnexpectedFormContentTypeLogMessage, EventName = "UnexpectedContentType")]
-        private static partial void UnexpectedFormContentType(ILogger logger, string contentType);
+        [LoggerMessage(7, LogLevel.Debug, UnexpectedFormContentTypeLogMessage, EventName = "UnexpectedNonFormContentType")]
+        private static partial void UnexpectedNonFormContentType(ILogger logger, string contentType);
 
         public static void InvalidFormRequestBody(HttpContext httpContext, string parameterTypeName, string parameterName, Exception exception, bool shouldThrow)
         {
