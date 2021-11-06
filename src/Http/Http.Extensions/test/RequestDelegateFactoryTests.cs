@@ -3446,6 +3446,62 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("my_file", fileArgument.Name);
     }
 
+    [Fact]
+    public async Task RequestDelegatePopulatesFromIFormFileAndBoundParameter()
+    {
+        IFormFile? fileArgument = null;
+        TraceIdentifier traceIdArgument = default;
+
+        void TestAction(IFormFile? file, TraceIdentifier traceId)
+        {
+            fileArgument = file;
+            traceIdArgument = traceId;
+        }
+
+        var fileContent = new StringContent("hello", Encoding.UTF8, "application/octet-stream");
+        var form = new MultipartFormDataContent("some-boundary");
+        form.Add(fileContent, "file", "file.txt");
+
+        var stream = new MemoryStream();
+        await form.CopyToAsync(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Type"] = "multipart/form-data;boundary=some-boundary";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+        httpContext.TraceIdentifier = "my-trace-id";
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.Request.Form.Files["file"], fileArgument);
+        Assert.Equal("file.txt", fileArgument!.FileName);
+        Assert.Equal("file", fileArgument.Name);
+
+        Assert.Equal("my-trace-id", traceIdArgument.Id);
+    }
+
+    private readonly struct TraceIdentifier
+    {
+        private TraceIdentifier(string id)
+        {
+            Id = id;
+        }
+
+        public string Id { get; }
+
+        public static implicit operator string(TraceIdentifier value) => value.Id;
+
+        public static ValueTask<TraceIdentifier> BindAsync(HttpContext context)
+        {
+            return ValueTask.FromResult(new TraceIdentifier(context.TraceIdentifier));
+        }
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]

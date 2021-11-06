@@ -712,7 +712,7 @@ public static partial class RequestDelegateFactory
                 var feature = httpContext.Features.Get<IHttpRequestBodyDetectionFeature>();
                 if (feature?.CanHaveBody == true)
                 {
-                    if (!httpContext.Request.HasJsonContentType())
+                    if (!httpContext.Request.HasFormContentType)
                     {
                         Log.UnexpectedFormContentType(httpContext, httpContext.Request.ContentType, factoryContext.ThrowOnBadRequest);
                         httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
