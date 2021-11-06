@@ -3,24 +3,23 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Routing
+namespace Microsoft.AspNetCore.Routing;
+
+internal class NullRouter : IRouter
 {
-    internal class NullRouter : IRouter
+    public static readonly NullRouter Instance = new NullRouter();
+
+    private NullRouter()
     {
-        public static readonly NullRouter Instance = new NullRouter();
+    }
 
-        private NullRouter()
-        {
-        }
+    public VirtualPathData? GetVirtualPath(VirtualPathContext context)
+    {
+        return null;
+    }
 
-        public VirtualPathData? GetVirtualPath(VirtualPathContext context)
-        {
-            return null;
-        }
-
-        public Task RouteAsync(RouteContext context)
-        {
-            return Task.CompletedTask;
-        }
+    public Task RouteAsync(RouteContext context)
+    {
+        return Task.CompletedTask;
     }
 }

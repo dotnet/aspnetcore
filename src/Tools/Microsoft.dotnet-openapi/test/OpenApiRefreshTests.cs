@@ -4,95 +4,94 @@
 using Microsoft.DotNet.OpenApi.Tests;
 using Xunit.Abstractions;
 
-namespace Microsoft.DotNet.OpenApi.Refresh.Tests
+namespace Microsoft.DotNet.OpenApi.Refresh.Tests;
+
+public class OpenApiRefreshTests : OpenApiTestBase
 {
-    public class OpenApiRefreshTests : OpenApiTestBase
+    public OpenApiRefreshTests(ITestOutputHelper output) : base(output) { }
+
+    [Fact]
+    public async Task OpenApi_Refresh_Basic()
     {
-        public OpenApiRefreshTests(ITestOutputHelper output) : base(output) { }
+        CreateBasicProject(withOpenApi: false);
 
-        [Fact]
-        public async Task OpenApi_Refresh_Basic()
-        {
-            CreateBasicProject(withOpenApi: false);
+        // Add <OpenApiReference/> to the project. Ignore initial filename.json content.
+        var app = GetApplication();
+        var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl });
 
-            // Add <OpenApiReference/> to the project. Ignore initial filename.json content.
-            var app = GetApplication();
-            var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl });
+        AssertNoErrors(run);
 
-            AssertNoErrors(run);
+        // File will grow after the refresh.
+        var expectedJsonPath = Path.Combine(_tempDir.Root, "filename.json");
+        await File.WriteAllTextAsync(expectedJsonPath, "trash");
 
-            // File will grow after the refresh.
-            var expectedJsonPath = Path.Combine(_tempDir.Root, "filename.json");
-            await File.WriteAllTextAsync(expectedJsonPath, "trash");
+        var firstWriteTime = File.GetLastWriteTime(expectedJsonPath);
 
-            var firstWriteTime = File.GetLastWriteTime(expectedJsonPath);
+        await Task.Delay(TimeSpan.FromSeconds(1));
 
-            await Task.Delay(TimeSpan.FromSeconds(1));
+        app = GetApplication();
+        run = app.Execute(new[] { "refresh", FakeOpenApiUrl });
 
-            app = GetApplication();
-            run = app.Execute(new[] { "refresh", FakeOpenApiUrl });
+        AssertNoErrors(run);
 
-            AssertNoErrors(run);
+        var secondWriteTime = File.GetLastWriteTime(expectedJsonPath);
+        Assert.True(firstWriteTime < secondWriteTime, $"File wasn't updated! {firstWriteTime} {secondWriteTime}");
+        Assert.Equal(Content, await File.ReadAllTextAsync(expectedJsonPath), ignoreLineEndingDifferences: true);
+    }
 
-            var secondWriteTime = File.GetLastWriteTime(expectedJsonPath);
-            Assert.True(firstWriteTime < secondWriteTime, $"File wasn't updated! {firstWriteTime} {secondWriteTime}");
-            Assert.Equal(Content, await File.ReadAllTextAsync(expectedJsonPath), ignoreLineEndingDifferences: true);
-        }
+    // Regression test for #35767 scenario.
+    [Fact]
+    public async Task OpenApi_Refresh_MuchShorterFile()
+    {
+        CreateBasicProject(withOpenApi: false);
 
-        // Regression test for #35767 scenario.
-        [Fact]
-        public async Task OpenApi_Refresh_MuchShorterFile()
-        {
-            CreateBasicProject(withOpenApi: false);
+        // Add <OpenApiReference/> to the project. Ignore initial filename.json content.
+        var app = GetApplication();
+        var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl });
 
-            // Add <OpenApiReference/> to the project. Ignore initial filename.json content.
-            var app = GetApplication();
-            var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl });
+        AssertNoErrors(run);
 
-            AssertNoErrors(run);
+        // File will shrink after the refresh.
+        var expectedJsonPath = Path.Combine(_tempDir.Root, "filename.json");
+        await File.WriteAllTextAsync(expectedJsonPath, PackageUrlContent);
 
-            // File will shrink after the refresh.
-            var expectedJsonPath = Path.Combine(_tempDir.Root, "filename.json");
-            await File.WriteAllTextAsync(expectedJsonPath, PackageUrlContent);
+        var firstWriteTime = File.GetLastWriteTime(expectedJsonPath);
 
-            var firstWriteTime = File.GetLastWriteTime(expectedJsonPath);
+        await Task.Delay(TimeSpan.FromSeconds(1));
 
-            await Task.Delay(TimeSpan.FromSeconds(1));
+        app = GetApplication();
+        run = app.Execute(new[] { "refresh", FakeOpenApiUrl });
 
-            app = GetApplication();
-            run = app.Execute(new[] { "refresh", FakeOpenApiUrl });
+        AssertNoErrors(run);
 
-            AssertNoErrors(run);
+        var secondWriteTime = File.GetLastWriteTime(expectedJsonPath);
+        Assert.True(firstWriteTime < secondWriteTime, $"File wasn't updated! {firstWriteTime} {secondWriteTime}");
+        Assert.Equal(Content, await File.ReadAllTextAsync(expectedJsonPath), ignoreLineEndingDifferences: true);
+    }
 
-            var secondWriteTime = File.GetLastWriteTime(expectedJsonPath);
-            Assert.True(firstWriteTime < secondWriteTime, $"File wasn't updated! {firstWriteTime} {secondWriteTime}");
-            Assert.Equal(Content, await File.ReadAllTextAsync(expectedJsonPath), ignoreLineEndingDifferences: true);
-        }
+    [Fact]
+    public async Task OpenApi_Refresh_UnchangedFile()
+    {
+        CreateBasicProject(withOpenApi: false);
 
-        [Fact]
-        public async Task OpenApi_Refresh_UnchangedFile()
-        {
-            CreateBasicProject(withOpenApi: false);
+        // Add <OpenApiReference/> to the project and write the filename.json file.
+        var app = GetApplication();
+        var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl });
 
-            // Add <OpenApiReference/> to the project and write the filename.json file.
-            var app = GetApplication();
-            var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl });
+        AssertNoErrors(run);
 
-            AssertNoErrors(run);
+        var expectedJsonPath = Path.Combine(_tempDir.Root, "filename.json");
+        var firstWriteTime = File.GetLastWriteTime(expectedJsonPath);
 
-            var expectedJsonPath = Path.Combine(_tempDir.Root, "filename.json");
-            var firstWriteTime = File.GetLastWriteTime(expectedJsonPath);
+        await Task.Delay(TimeSpan.FromSeconds(1));
 
-            await Task.Delay(TimeSpan.FromSeconds(1));
+        app = GetApplication();
+        run = app.Execute(new[] { "refresh", FakeOpenApiUrl });
 
-            app = GetApplication();
-            run = app.Execute(new[] { "refresh", FakeOpenApiUrl });
+        AssertNoErrors(run);
 
-            AssertNoErrors(run);
-
-            var secondWriteTime = File.GetLastWriteTime(expectedJsonPath);
-            Assert.Equal(firstWriteTime, secondWriteTime);
-            Assert.Equal(Content, await File.ReadAllTextAsync(expectedJsonPath));
-        }
+        var secondWriteTime = File.GetLastWriteTime(expectedJsonPath);
+        Assert.Equal(firstWriteTime, secondWriteTime);
+        Assert.Equal(Content, await File.ReadAllTextAsync(expectedJsonPath));
     }
 }

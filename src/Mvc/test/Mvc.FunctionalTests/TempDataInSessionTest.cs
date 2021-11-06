@@ -4,15 +4,14 @@
 using System.Net.Http;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.FunctionalTests
-{
-    public class TempDataInSessionTest : TempDataTestBase, IClassFixture<MvcTestFixture<BasicWebSite.StartupWithSessionTempDataProvider>>
-    {
-        public TempDataInSessionTest(MvcTestFixture<BasicWebSite.StartupWithSessionTempDataProvider> fixture)
-        {
-            Client = fixture.CreateDefaultClient();
-        }
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-        protected override HttpClient Client { get; }
+public class TempDataInSessionTest : TempDataTestBase, IClassFixture<MvcTestFixture<BasicWebSite.StartupWithSessionTempDataProvider>>
+{
+    public TempDataInSessionTest(MvcTestFixture<BasicWebSite.StartupWithSessionTempDataProvider> fixture)
+    {
+        Client = fixture.CreateDefaultClient();
     }
+
+    protected override HttpClient Client { get; }
 }

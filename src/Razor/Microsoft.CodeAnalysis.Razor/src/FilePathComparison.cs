@@ -4,27 +4,26 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.CodeAnalysis.Razor
+namespace Microsoft.CodeAnalysis.Razor;
+
+internal static class FilePathComparison
 {
-    internal static class FilePathComparison
+    private static StringComparison? _instance;
+
+    public static StringComparison Instance
     {
-        private static StringComparison? _instance;
-
-        public static StringComparison Instance
+        get
         {
-            get
+            if (_instance == null && RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                if (_instance == null && RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    _instance = StringComparison.Ordinal;
-                }
-                else if (_instance == null)
-                {
-                    _instance = StringComparison.OrdinalIgnoreCase;
-                }
-
-                return _instance.Value;
+                _instance = StringComparison.Ordinal;
             }
+            else if (_instance == null)
+            {
+                _instance = StringComparison.OrdinalIgnoreCase;
+            }
+
+            return _instance.Value;
         }
     }
 }

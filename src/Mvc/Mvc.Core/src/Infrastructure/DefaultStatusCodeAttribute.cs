@@ -5,29 +5,28 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Mvc.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.Infrastructure;
+
+/// <summary>
+/// Specifies the default status code associated with an <see cref="ActionResult"/>.
+/// </summary>
+/// <remarks>
+/// This attribute is informational only and does not have any runtime effects.
+/// </remarks>
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+public sealed class DefaultStatusCodeAttribute : Attribute
 {
     /// <summary>
-    /// Specifies the default status code associated with an <see cref="ActionResult"/>.
+    /// Initializes a new instance of <see cref="DefaultStatusCodeAttribute"/>.
     /// </summary>
-    /// <remarks>
-    /// This attribute is informational only and does not have any runtime effects.
-    /// </remarks>
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-    public sealed class DefaultStatusCodeAttribute : Attribute
+    /// <param name="statusCode">The default status code.</param>
+    public DefaultStatusCodeAttribute(int statusCode)
     {
-        /// <summary>
-        /// Initializes a new instance of <see cref="DefaultStatusCodeAttribute"/>.
-        /// </summary>
-        /// <param name="statusCode">The default status code.</param>
-        public DefaultStatusCodeAttribute(int statusCode)
-        {
-            StatusCode = statusCode;
-        }
-
-        /// <summary>
-        /// Gets the default status code.
-        /// </summary>
-        public int StatusCode { get; }
+        StatusCode = statusCode;
     }
+
+    /// <summary>
+    /// Gets the default status code.
+    /// </summary>
+    public int StatusCode { get; }
 }

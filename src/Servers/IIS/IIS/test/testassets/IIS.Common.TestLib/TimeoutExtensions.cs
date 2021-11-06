@@ -6,11 +6,9 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
 
-namespace Microsoft.AspNetCore.Server.IntegrationTesting
-{
+namespace Microsoft.AspNetCore.Server.IntegrationTesting;
 
-    public static class TimeoutExtensions
-    {
-        public static TimeSpan DefaultTimeoutValue = TimeSpan.FromSeconds(300);
-    }
+public static class TimeoutExtensions
+{
+    public static TimeSpan DefaultTimeoutValue = TimeSpan.FromSeconds(300);
 }

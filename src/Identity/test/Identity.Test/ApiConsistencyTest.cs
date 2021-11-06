@@ -4,10 +4,9 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 
-namespace Microsoft.AspNetCore.Identity.Test
+namespace Microsoft.AspNetCore.Identity.Test;
+
+public class ApiConsistencyTest : ApiConsistencyTestBase
 {
-    public class ApiConsistencyTest : ApiConsistencyTestBase
-    {
-        protected override Assembly TargetAssembly => typeof(IdentityOptions).Assembly;
-    }
+    protected override Assembly TargetAssembly => typeof(IdentityOptions).Assembly;
 }

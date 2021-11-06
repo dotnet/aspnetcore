@@ -4,27 +4,26 @@
 using System;
 using System.Net;
 
-namespace Microsoft.AspNetCore.Connections
+namespace Microsoft.AspNetCore.Connections;
+
+/// <summary>
+/// An <see cref="EndPoint"/> defined by a <see cref="System.Uri"/>.
+/// </summary>
+public class UriEndPoint : EndPoint
 {
     /// <summary>
-    /// An <see cref="EndPoint"/> defined by a <see cref="System.Uri"/>.
+    /// Initializes a new instance of the <see cref="UriEndPoint"/> class.
     /// </summary>
-    public class UriEndPoint : EndPoint
+    /// <param name="uri">The <see cref="System.Uri"/> defining the <see cref="EndPoint"/>.</param>
+    public UriEndPoint(Uri uri)
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UriEndPoint"/> class.
-        /// </summary>
-        /// <param name="uri">The <see cref="System.Uri"/> defining the <see cref="EndPoint"/>.</param>
-        public UriEndPoint(Uri uri)
-        {
-            Uri = uri ?? throw new ArgumentNullException(nameof(uri));
-        }
-
-        /// <summary>
-        /// The <see cref="System.Uri"/> defining the <see cref="EndPoint"/>.
-        /// </summary>
-        public Uri Uri { get; }
-
-        public override string ToString() => Uri.ToString();
+        Uri = uri ?? throw new ArgumentNullException(nameof(uri));
     }
+
+    /// <summary>
+    /// The <see cref="System.Uri"/> defining the <see cref="EndPoint"/>.
+    /// </summary>
+    public Uri Uri { get; }
+
+    public override string ToString() => Uri.ToString();
 }

@@ -5,76 +5,75 @@ using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Language.Extensions
+namespace Microsoft.AspNetCore.Razor.Language.Extensions;
+
+public class SectionTargetExtensionTest
 {
-    public class SectionTargetExtensionTest
+    [Fact]
+    public void WriteSection_WritesSectionCode()
     {
-        [Fact]
-        public void WriteSection_WritesSectionCode()
+        // Arrange
+        var node = new SectionIntermediateNode()
         {
-            // Arrange
-            var node = new SectionIntermediateNode()
-            {
-                Children =
+            Children =
                 {
                     new CSharpExpressionIntermediateNode(),
                 },
-                SectionName = "MySection"
-            };
+            SectionName = "MySection"
+        };
 
-            var extension = new SectionTargetExtension()
-            {
-                SectionMethodName = "CreateSection"
-            };
+        var extension = new SectionTargetExtension()
+        {
+            SectionMethodName = "CreateSection"
+        };
 
-            var context = TestCodeRenderingContext.CreateRuntime();
+        var context = TestCodeRenderingContext.CreateRuntime();
 
-            // Act
-            extension.WriteSection(context, node);
+        // Act
+        extension.WriteSection(context, node);
 
-            // Assert
-            var expected = @"CreateSection(""MySection"", async() => {
+        // Assert
+        var expected = @"CreateSection(""MySection"", async() => {
     Render Children
 }
 );
 ";
 
-            var output = context.CodeWriter.GenerateCode();
-            Assert.Equal(expected, output);
-        }
+        var output = context.CodeWriter.GenerateCode();
+        Assert.Equal(expected, output);
+    }
 
-        [Fact]
-        public void WriteSection_WritesSectionCode_DesignTime()
+    [Fact]
+    public void WriteSection_WritesSectionCode_DesignTime()
+    {
+        // Arrange
+        var node = new SectionIntermediateNode()
         {
-            // Arrange
-            var node = new SectionIntermediateNode()
-            {
-                Children =
+            Children =
                 {
                     new CSharpExpressionIntermediateNode(),
                 },
-                SectionName = "MySection"
-            };
+            SectionName = "MySection"
+        };
 
-            var extension = new SectionTargetExtension()
-            {
-                SectionMethodName = "CreateSection"
-            };
+        var extension = new SectionTargetExtension()
+        {
+            SectionMethodName = "CreateSection"
+        };
 
-            var context = TestCodeRenderingContext.CreateDesignTime();
+        var context = TestCodeRenderingContext.CreateDesignTime();
 
-            // Act
-            extension.WriteSection(context, node);
+        // Act
+        extension.WriteSection(context, node);
 
-            // Assert
-            var expected = @"CreateSection(""MySection"", async(__razor_section_writer) => {
+        // Assert
+        var expected = @"CreateSection(""MySection"", async(__razor_section_writer) => {
     Render Children
 }
 );
 ";
 
-            var output = context.CodeWriter.GenerateCode();
-            Assert.Equal(expected, output);
-        }
+        var output = context.CodeWriter.GenerateCode();
+        Assert.Equal(expected, output);
     }
 }

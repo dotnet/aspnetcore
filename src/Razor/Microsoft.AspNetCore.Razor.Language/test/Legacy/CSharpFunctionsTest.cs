@@ -4,16 +4,16 @@
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Language.Legacy
+namespace Microsoft.AspNetCore.Razor.Language.Legacy;
+
+public class CSharpFunctionsTest : ParserTestBase
 {
-    public class CSharpFunctionsTest : ParserTestBase
+    [Fact]
+    public void Functions_SingleLineControlFlowStatement_Error()
     {
-        [Fact]
-        public void Functions_SingleLineControlFlowStatement_Error()
-        {
-            ParseDocumentTest(
-                RazorLanguageVersion.Version_3_0,
-                @"
+        ParseDocumentTest(
+            RazorLanguageVersion.Version_3_0,
+            @"
 @functions {
     string GetAnnouncmentText(string message)
     {
@@ -30,14 +30,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     }
 }
 ", new[] { FunctionsDirective.Directive, }, designTime: false);
-        }
+    }
 
-        [Fact]
-        public void Functions_SingleLineControlFlowStatement()
-        {
-            ParseDocumentTest(
-                RazorLanguageVersion.Version_3_0,
-                @"
+    [Fact]
+    public void Functions_SingleLineControlFlowStatement()
+    {
+        ParseDocumentTest(
+            RazorLanguageVersion.Version_3_0,
+            @"
 @functions {
     string GetAnnouncmentText(string message)
     {
@@ -45,14 +45,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     }
 }
 ", new[] { FunctionsDirective.Directive, }, designTime: false);
-        }
+    }
 
-        [Fact]
-        public void MarkupInFunctionsBlock_DoesNotParseWhenNotSupported()
-        {
-            ParseDocumentTest(
-                RazorLanguageVersion.Version_2_1,
-                @"
+    [Fact]
+    public void MarkupInFunctionsBlock_DoesNotParseWhenNotSupported()
+    {
+        ParseDocumentTest(
+            RazorLanguageVersion.Version_2_1,
+            @"
 @functions {
     void Announcment(string message)
     {
@@ -60,14 +60,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     }
 }
 ", new[] { FunctionsDirective.Directive, }, designTime: false);
-        }
+    }
 
-        [Fact]
-        public void MarkupInFunctionsBlock_ParsesMarkupInsideMethod()
-        {
-            ParseDocumentTest(
-                RazorLanguageVersion.Version_3_0,
-                @"
+    [Fact]
+    public void MarkupInFunctionsBlock_ParsesMarkupInsideMethod()
+    {
+        ParseDocumentTest(
+            RazorLanguageVersion.Version_3_0,
+            @"
 @functions {
     void Announcment(string message)
     {
@@ -75,51 +75,51 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     }
 }
 ", new[] { FunctionsDirective.Directive, }, designTime: false);
-        }
+    }
 
-        // This will parse correctly in Razor, but will generate invalid C#.
-        [Fact]
-        public void MarkupInFunctionsBlock_ParsesMarkupWithExpressionsMethod()
-        {
-            ParseDocumentTest(
-                RazorLanguageVersion.Version_3_0,
-                @"
+    // This will parse correctly in Razor, but will generate invalid C#.
+    [Fact]
+    public void MarkupInFunctionsBlock_ParsesMarkupWithExpressionsMethod()
+    {
+        ParseDocumentTest(
+            RazorLanguageVersion.Version_3_0,
+            @"
 @functions {
     void Announcment(string message) => <h3>@message</h3>
 }
 ", new[] { FunctionsDirective.Directive, }, designTime: false);
-        }
+    }
 
-        [Fact]
-        public void MarkupInFunctionsBlock_DoesNotParseMarkupInString()
-        {
-            ParseDocumentTest(
-                RazorLanguageVersion.Version_3_0,
-                @"
+    [Fact]
+    public void MarkupInFunctionsBlock_DoesNotParseMarkupInString()
+    {
+        ParseDocumentTest(
+            RazorLanguageVersion.Version_3_0,
+            @"
 @functions {
     void Announcment(string message) => ""<h3>@message</h3>"";
 }
 ", new[] { FunctionsDirective.Directive, }, designTime: false);
-        }
+    }
 
-        [Fact]
-        public void MarkupInFunctionsBlock_DoesNotParseMarkupInVerbatimString()
-        {
-            ParseDocumentTest(
-                RazorLanguageVersion.Version_3_0,
-                @"
+    [Fact]
+    public void MarkupInFunctionsBlock_DoesNotParseMarkupInVerbatimString()
+    {
+        ParseDocumentTest(
+            RazorLanguageVersion.Version_3_0,
+            @"
 @functions {
     void Announcment(string message) => @""<h3>@message</h3>"";
 }
 ", new[] { FunctionsDirective.Directive, }, designTime: false);
-        }
+    }
 
-        [Fact]
-        public void MarkupInFunctionsBlock_CanContainCurlyBraces()
-        {
-            ParseDocumentTest(
-                RazorLanguageVersion.Version_3_0,
-                @"
+    [Fact]
+    public void MarkupInFunctionsBlock_CanContainCurlyBraces()
+    {
+        ParseDocumentTest(
+            RazorLanguageVersion.Version_3_0,
+            @"
 @functions {
     void Announcment(string message)
     {
@@ -132,14 +132,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     }
 }
 ", new[] { FunctionsDirective.Directive, }, designTime: false);
-        }
+    }
 
-        [Fact]
-        public void MarkupInFunctionsBlock_MarkupCanContainTemplate()
-        {
-            ParseDocumentTest(
-                RazorLanguageVersion.Version_3_0,
-                @"
+    [Fact]
+    public void MarkupInFunctionsBlock_MarkupCanContainTemplate()
+    {
+        ParseDocumentTest(
+            RazorLanguageVersion.Version_3_0,
+            @"
 @functions {
     void Announcment(string message)
     {
@@ -152,14 +152,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     }
 }
 ", new[] { FunctionsDirective.Directive, }, designTime: false);
-        }
+    }
 
-        [Fact]
-        public void ReservedKeywordsInFunctionsBlock_WithMarkup()
-        {
-            ParseDocumentTest(
-                RazorLanguageVersion.Version_3_0,
-                @"
+    [Fact]
+    public void ReservedKeywordsInFunctionsBlock_WithMarkup()
+    {
+        ParseDocumentTest(
+            RazorLanguageVersion.Version_3_0,
+            @"
 @functions {
     class Person
     {
@@ -170,6 +170,5 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     }
 }
 ", new[] { FunctionsDirective.Directive, }, designTime: false);
-        }
     }
 }

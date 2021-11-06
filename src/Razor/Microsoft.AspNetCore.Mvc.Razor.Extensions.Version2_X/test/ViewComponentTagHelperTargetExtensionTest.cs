@@ -5,40 +5,40 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
+namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X;
+
+public class ViewComponentTagHelperTargetExtensionTest
 {
-    public class ViewComponentTagHelperTargetExtensionTest
+    [Fact]
+    public void WriteViewComponentTagHelper_GeneratesViewComponentTagHelper()
     {
-        [Fact]
-        public void WriteViewComponentTagHelper_GeneratesViewComponentTagHelper()
+        // Arrange
+        var tagHelper = TagHelperDescriptorBuilder
+            .Create(ViewComponentTagHelperConventions.Kind, "TestTagHelper", "TestAssembly")
+            .TypeName("__Generated__TagCloudViewComponentTagHelper")
+            .BoundAttributeDescriptor(attribute => attribute
+                .Name("Foo")
+                .TypeName("System.Int32")
+                .PropertyName("Foo"))
+            .TagMatchingRuleDescriptor(rule => rule.RequireTagName("tagcloud"))
+            .AddMetadata(ViewComponentTagHelperMetadata.Name, "TagCloud")
+            .Build();
+
+        var extension = new ViewComponentTagHelperTargetExtension();
+        var context = TestCodeRenderingContext.CreateRuntime();
+        var node = new ViewComponentTagHelperIntermediateNode()
         {
-            // Arrange
-            var tagHelper = TagHelperDescriptorBuilder
-                .Create(ViewComponentTagHelperConventions.Kind, "TestTagHelper", "TestAssembly")
-                .TypeName("__Generated__TagCloudViewComponentTagHelper")
-                .BoundAttributeDescriptor(attribute => attribute
-                    .Name("Foo")
-                    .TypeName("System.Int32")
-                    .PropertyName("Foo"))
-                .TagMatchingRuleDescriptor(rule => rule.RequireTagName("tagcloud"))
-                .AddMetadata(ViewComponentTagHelperMetadata.Name, "TagCloud")
-                .Build();
+            ClassName = "__Generated__TagCloudViewComponentTagHelper",
+            TagHelper = tagHelper
+        };
 
-            var extension = new ViewComponentTagHelperTargetExtension();
-            var context = TestCodeRenderingContext.CreateRuntime();
-            var node = new ViewComponentTagHelperIntermediateNode()
-            {
-                ClassName = "__Generated__TagCloudViewComponentTagHelper",
-                TagHelper = tagHelper
-            };
+        // Act
+        extension.WriteViewComponentTagHelper(context, node);
 
-            // Act
-            extension.WriteViewComponentTagHelper(context, node);
-
-            // Assert
-            var csharp = context.CodeWriter.GenerateCode();
-            Assert.Equal(
-                @"[Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute(""tagcloud"")]
+        // Assert
+        var csharp = context.CodeWriter.GenerateCode();
+        Assert.Equal(
+            @"[Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute(""tagcloud"")]
 public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper
 {
     private readonly global::Microsoft.AspNetCore.Mvc.IViewComponentHelper _helper = null;
@@ -58,41 +58,41 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
     }
 }
 ",
-                csharp,
-                ignoreLineEndingDifferences: true);
-        }
+            csharp,
+            ignoreLineEndingDifferences: true);
+    }
 
-        [Fact]
-        public void WriteViewComponentTagHelper_GeneratesViewComponentTagHelper_WithIndexer()
+    [Fact]
+    public void WriteViewComponentTagHelper_GeneratesViewComponentTagHelper_WithIndexer()
+    {
+        // Arrange
+        var tagHelper = TagHelperDescriptorBuilder
+            .Create(ViewComponentTagHelperConventions.Kind, "TestTagHelper", "TestAssembly")
+            .TypeName("__Generated__TagCloudViewComponentTagHelper")
+            .BoundAttributeDescriptor(attribute => attribute
+                .Name("Foo")
+                .TypeName("System.Collections.Generic.Dictionary<System.String, System.Int32>")
+                .PropertyName("Tags")
+                .AsDictionaryAttribute("foo-", "System.Int32"))
+            .TagMatchingRuleDescriptor(rule => rule.RequireTagName("tagcloud"))
+            .AddMetadata(ViewComponentTagHelperMetadata.Name, "TagCloud")
+            .Build();
+
+        var extension = new ViewComponentTagHelperTargetExtension();
+        var context = TestCodeRenderingContext.CreateRuntime();
+        var node = new ViewComponentTagHelperIntermediateNode()
         {
-            // Arrange
-            var tagHelper = TagHelperDescriptorBuilder
-                .Create(ViewComponentTagHelperConventions.Kind, "TestTagHelper", "TestAssembly")
-                .TypeName("__Generated__TagCloudViewComponentTagHelper")
-                .BoundAttributeDescriptor(attribute => attribute
-                    .Name("Foo")
-                    .TypeName("System.Collections.Generic.Dictionary<System.String, System.Int32>")
-                    .PropertyName("Tags")
-                    .AsDictionaryAttribute("foo-", "System.Int32"))
-                .TagMatchingRuleDescriptor(rule => rule.RequireTagName("tagcloud"))
-                .AddMetadata(ViewComponentTagHelperMetadata.Name, "TagCloud")
-                .Build();
+            ClassName = "__Generated__TagCloudViewComponentTagHelper",
+            TagHelper = tagHelper
+        };
 
-            var extension = new ViewComponentTagHelperTargetExtension();
-            var context = TestCodeRenderingContext.CreateRuntime();
-            var node = new ViewComponentTagHelperIntermediateNode()
-            {
-                ClassName = "__Generated__TagCloudViewComponentTagHelper",
-                TagHelper = tagHelper
-            };
+        // Act
+        extension.WriteViewComponentTagHelper(context, node);
 
-            // Act
-            extension.WriteViewComponentTagHelper(context, node);
-
-            // Assert
-            var csharp = context.CodeWriter.GenerateCode();
-            Assert.Equal(
-                @"[Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute(""tagcloud"")]
+        // Assert
+        var csharp = context.CodeWriter.GenerateCode();
+        Assert.Equal(
+            @"[Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute(""tagcloud"")]
 public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper
 {
     private readonly global::Microsoft.AspNetCore.Mvc.IViewComponentHelper _helper = null;
@@ -113,8 +113,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
     }
 }
 ",
-                csharp,
-                ignoreLineEndingDifferences: true);
-        }
+            csharp,
+            ignoreLineEndingDifferences: true);
     }
 }

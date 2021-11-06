@@ -3,14 +3,13 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace ApplicationModelWebSite.Controllers
+namespace ApplicationModelWebSite.Controllers;
+
+public class LicenseController : Controller
 {
-    public class LicenseController : Controller
+    [HttpGet("License/GetLicense")]
+    public string GetLicense()
     {
-        [HttpGet("License/GetLicense")]
-        public string GetLicense()
-        {
-            return ControllerContext.ActionDescriptor.Properties["license"].ToString();
-        }
+        return ControllerContext.ActionDescriptor.Properties["license"].ToString();
     }
 }

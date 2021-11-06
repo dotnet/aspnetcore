@@ -3,13 +3,12 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Cryptography.Cng
+namespace Microsoft.AspNetCore.Cryptography.Cng;
+
+// from bcrypt.h
+[Flags]
+internal enum BCryptGenRandomFlags
 {
-    // from bcrypt.h
-    [Flags]
-    internal enum BCryptGenRandomFlags
-    {
-        BCRYPT_RNG_USE_ENTROPY_IN_BUFFER = 0x00000001,
-        BCRYPT_USE_SYSTEM_PREFERRED_RNG = 0x00000002,
-    }
+    BCRYPT_RNG_USE_ENTROPY_IN_BUFFER = 0x00000001,
+    BCRYPT_USE_SYSTEM_PREFERRED_RNG = 0x00000002,
 }

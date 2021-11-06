@@ -3,10 +3,9 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+internal interface IRazorParserOptionsFactoryProjectFeature : IRazorProjectEngineFeature
 {
-    internal interface IRazorParserOptionsFactoryProjectFeature : IRazorProjectEngineFeature
-    {
-        RazorParserOptions Create(string fileKind, Action<RazorParserOptionsBuilder> configure);
-    }
+    RazorParserOptions Create(string fileKind, Action<RazorParserOptionsBuilder> configure);
 }

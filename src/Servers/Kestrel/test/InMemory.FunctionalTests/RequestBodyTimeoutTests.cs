@@ -13,23 +13,23 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
+namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
+
+public class RequestBodyTimeoutTests : LoggedTest
 {
-    public class RequestBodyTimeoutTests : LoggedTest
+    [Fact]
+    public async Task RequestTimesOutWhenRequestBodyNotReceivedAtSpecifiedMinimumRate()
     {
-        [Fact]
-        public async Task RequestTimesOutWhenRequestBodyNotReceivedAtSpecifiedMinimumRate()
+        var gracePeriod = TimeSpan.FromSeconds(5);
+        var serviceContext = new TestServiceContext(LoggerFactory);
+        var heartbeatManager = new HeartbeatManager(serviceContext.ConnectionManager);
+
+        var appRunningEvent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        await using (var server = new TestServer(context =>
         {
-            var gracePeriod = TimeSpan.FromSeconds(5);
-            var serviceContext = new TestServiceContext(LoggerFactory);
-            var heartbeatManager = new HeartbeatManager(serviceContext.ConnectionManager);
-
-            var appRunningEvent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
-            await using (var server = new TestServer(context =>
-            {
-                context.Features.Get<IHttpMinRequestBodyDataRateFeature>().MinDataRate =
-                    new MinDataRate(bytesPerSecond: 1, gracePeriod: gracePeriod);
+            context.Features.Get<IHttpMinRequestBodyDataRateFeature>().MinDataRate =
+                new MinDataRate(bytesPerSecond: 1, gracePeriod: gracePeriod);
 
                 // The server must call Request.Body.ReadAsync() *before* the test sets systemClock.UtcNow (which is triggered by the
                 // server calling appRunningEvent.SetResult(null)).  If systemClock.UtcNow is set first, it's possible for the test to fail
@@ -55,156 +55,155 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 //     return context.Request.Body.ReadAsync(new byte[1], 0, 1);
 
                 var readTask = context.Request.Body.ReadAsync(new byte[1], 0, 1);
-                appRunningEvent.SetResult();
-                return readTask;
-            }, serviceContext))
+            appRunningEvent.SetResult();
+            return readTask;
+        }, serviceContext))
+        {
+            using (var connection = server.CreateConnection())
             {
-                using (var connection = server.CreateConnection())
+                await connection.Send(
+                    "POST / HTTP/1.1",
+                    "Host:",
+                    "Content-Length: 1",
+                    "",
+                    "");
+
+                await appRunningEvent.Task.DefaultTimeout();
+
+                // Advance the clock gracePeriod + TimeSpan.FromSeconds(1)
+                for (var i = 0; i < 6; i++)
                 {
-                    await connection.Send(
-                        "POST / HTTP/1.1",
-                        "Host:",
-                        "Content-Length: 1",
-                        "",
-                        "");
-
-                    await appRunningEvent.Task.DefaultTimeout();
-
-                    // Advance the clock gracePeriod + TimeSpan.FromSeconds(1)
-                    for (var i = 0; i < 6; i++)
-                    {
-                        serviceContext.MockSystemClock.UtcNow += TimeSpan.FromSeconds(1);
-                        heartbeatManager.OnHeartbeat(serviceContext.SystemClock.UtcNow);
-                    }
-
-                    await connection.Receive(
-                        "HTTP/1.1 408 Request Timeout",
-                        "");
-                    await connection.ReceiveEnd(
-                        "Content-Length: 0",
-                        "Connection: close",
-                        $"Date: {serviceContext.DateHeaderValue}",
-                        "",
-                        "");
+                    serviceContext.MockSystemClock.UtcNow += TimeSpan.FromSeconds(1);
+                    heartbeatManager.OnHeartbeat(serviceContext.SystemClock.UtcNow);
                 }
+
+                await connection.Receive(
+                    "HTTP/1.1 408 Request Timeout",
+                    "");
+                await connection.ReceiveEnd(
+                    "Content-Length: 0",
+                    "Connection: close",
+                    $"Date: {serviceContext.DateHeaderValue}",
+                    "",
+                    "");
+            }
+        }
+    }
+
+    [Fact]
+    public async Task RequestTimesOutWhenNotDrainedWithinDrainTimeoutPeriod()
+    {
+        // This test requires a real clock since we can't control when the drain timeout is set
+        var serviceContext = new TestServiceContext(LoggerFactory);
+        serviceContext.InitializeHeartbeat();
+
+        // Ensure there's still a constant date header value.
+        var clock = new MockSystemClock();
+        var date = new DateHeaderValueManager();
+        date.OnHeartbeat(clock.UtcNow);
+        serviceContext.DateHeaderValueManager = date;
+
+        var appRunningEvent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        await using (var server = new TestServer(context =>
+        {
+            context.Features.Get<IHttpMinRequestBodyDataRateFeature>().MinDataRate = null;
+
+            appRunningEvent.SetResult();
+            return Task.CompletedTask;
+        }, serviceContext))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "POST / HTTP/1.1",
+                    "Host:",
+                    "Content-Length: 1",
+                    "",
+                    "");
+
+                await appRunningEvent.Task.DefaultTimeout();
+
+                // Disconnects after response completes due to the timeout
+                await connection.ReceiveEnd(
+                    "HTTP/1.1 200 OK",
+                    "Content-Length: 0",
+                    $"Date: {serviceContext.DateHeaderValue}",
+                    "",
+                    "");
             }
         }
 
-        [Fact]
-        public async Task RequestTimesOutWhenNotDrainedWithinDrainTimeoutPeriod()
+        Assert.Contains(TestSink.Writes, w => w.EventId.Id == 32 && w.LogLevel == LogLevel.Information);
+        Assert.Contains(TestSink.Writes, w => w.EventId.Id == 33 && w.LogLevel == LogLevel.Information);
+    }
+
+    [Fact]
+    public async Task ConnectionClosedEvenIfAppSwallowsException()
+    {
+        var gracePeriod = TimeSpan.FromSeconds(5);
+        var serviceContext = new TestServiceContext(LoggerFactory);
+        var heartbeatManager = new HeartbeatManager(serviceContext.ConnectionManager);
+
+        var appRunningTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var exceptionSwallowedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        await using (var server = new TestServer(async context =>
         {
-            // This test requires a real clock since we can't control when the drain timeout is set
-            var serviceContext = new TestServiceContext(LoggerFactory);
-            serviceContext.InitializeHeartbeat();
-
-            // Ensure there's still a constant date header value.
-            var clock = new MockSystemClock();
-            var date = new DateHeaderValueManager();
-            date.OnHeartbeat(clock.UtcNow);
-            serviceContext.DateHeaderValueManager = date;
-
-            var appRunningEvent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
-            await using (var server = new TestServer(context =>
-            {
-                context.Features.Get<IHttpMinRequestBodyDataRateFeature>().MinDataRate = null;
-
-                appRunningEvent.SetResult();
-                return Task.CompletedTask;
-            }, serviceContext))
-            {
-                using (var connection = server.CreateConnection())
-                {
-                    await connection.Send(
-                        "POST / HTTP/1.1",
-                        "Host:",
-                        "Content-Length: 1",
-                        "",
-                        "");
-
-                    await appRunningEvent.Task.DefaultTimeout();
-
-                    // Disconnects after response completes due to the timeout
-                    await connection.ReceiveEnd(
-                        "HTTP/1.1 200 OK",
-                        "Content-Length: 0",
-                        $"Date: {serviceContext.DateHeaderValue}",
-                        "",
-                        "");
-                }
-            }
-
-            Assert.Contains(TestSink.Writes, w => w.EventId.Id == 32 && w.LogLevel == LogLevel.Information);
-            Assert.Contains(TestSink.Writes, w => w.EventId.Id == 33 && w.LogLevel == LogLevel.Information);
-        }
-
-        [Fact]
-        public async Task ConnectionClosedEvenIfAppSwallowsException()
-        {
-            var gracePeriod = TimeSpan.FromSeconds(5);
-            var serviceContext = new TestServiceContext(LoggerFactory);
-            var heartbeatManager = new HeartbeatManager(serviceContext.ConnectionManager);
-
-            var appRunningTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            var exceptionSwallowedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
-            await using (var server = new TestServer(async context =>
-            {
-                context.Features.Get<IHttpMinRequestBodyDataRateFeature>().MinDataRate =
-                    new MinDataRate(bytesPerSecond: 1, gracePeriod: gracePeriod);
+            context.Features.Get<IHttpMinRequestBodyDataRateFeature>().MinDataRate =
+                new MinDataRate(bytesPerSecond: 1, gracePeriod: gracePeriod);
 
                 // See comment in RequestTimesOutWhenRequestBodyNotReceivedAtSpecifiedMinimumRate for
                 // why we call ReadAsync before setting the appRunningEvent.
                 var readTask = context.Request.Body.ReadAsync(new byte[1], 0, 1);
-                appRunningTcs.SetResult();
+            appRunningTcs.SetResult();
 
-                try
-                {
-                    await readTask;
-                }
-                catch (Microsoft.AspNetCore.Http.BadHttpRequestException ex) when (ex.StatusCode == 408)
-                {
-                    exceptionSwallowedTcs.SetResult();
-                }
-                catch (Exception ex)
-                {
-                    exceptionSwallowedTcs.SetException(ex);
-                }
-
-                var response = "hello, world";
-                context.Response.ContentLength = response.Length;
-                await context.Response.WriteAsync("hello, world");
-            }, serviceContext))
+            try
             {
-                using (var connection = server.CreateConnection())
+                await readTask;
+            }
+            catch (Microsoft.AspNetCore.Http.BadHttpRequestException ex) when (ex.StatusCode == 408)
+            {
+                exceptionSwallowedTcs.SetResult();
+            }
+            catch (Exception ex)
+            {
+                exceptionSwallowedTcs.SetException(ex);
+            }
+
+            var response = "hello, world";
+            context.Response.ContentLength = response.Length;
+            await context.Response.WriteAsync("hello, world");
+        }, serviceContext))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "POST / HTTP/1.1",
+                    "Host:",
+                    "Content-Length: 1",
+                    "",
+                    "");
+
+                await appRunningTcs.Task.DefaultTimeout();
+
+                // Advance the clock gracePeriod + TimeSpan.FromSeconds(1)
+                for (var i = 0; i < 6; i++)
                 {
-                    await connection.Send(
-                        "POST / HTTP/1.1",
-                        "Host:",
-                        "Content-Length: 1",
-                        "",
-                        "");
-
-                    await appRunningTcs.Task.DefaultTimeout();
-
-                    // Advance the clock gracePeriod + TimeSpan.FromSeconds(1)
-                    for (var i = 0; i < 6; i++)
-                    {
-                        serviceContext.MockSystemClock.UtcNow += TimeSpan.FromSeconds(1);
-                        heartbeatManager.OnHeartbeat(serviceContext.SystemClock.UtcNow);
-                    }
-
-                    await exceptionSwallowedTcs.Task.DefaultTimeout();
-
-                    await connection.Receive(
-                        "HTTP/1.1 200 OK",
-                        "");
-                    await connection.ReceiveEnd(
-                        "Content-Length: 12",
-                        $"Date: {serviceContext.DateHeaderValue}",
-                        "",
-                        "hello, world");
+                    serviceContext.MockSystemClock.UtcNow += TimeSpan.FromSeconds(1);
+                    heartbeatManager.OnHeartbeat(serviceContext.SystemClock.UtcNow);
                 }
+
+                await exceptionSwallowedTcs.Task.DefaultTimeout();
+
+                await connection.Receive(
+                    "HTTP/1.1 200 OK",
+                    "");
+                await connection.ReceiveEnd(
+                    "Content-Length: 12",
+                    $"Date: {serviceContext.DateHeaderValue}",
+                    "",
+                    "hello, world");
             }
         }
     }

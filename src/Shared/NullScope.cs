@@ -3,22 +3,21 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Internal
+namespace Microsoft.AspNetCore.Internal;
+
+/// <summary>
+/// An empty scope without any logic
+/// </summary>
+internal class NullScope : IDisposable
 {
-    /// <summary>
-    /// An empty scope without any logic
-    /// </summary>
-    internal class NullScope : IDisposable
+    public static NullScope Instance { get; } = new NullScope();
+
+    private NullScope()
     {
-        public static NullScope Instance { get; } = new NullScope();
+    }
 
-        private NullScope()
-        {
-        }
-
-        /// <inheritdoc />
-        public void Dispose()
-        {
-        }
+    /// <inheritdoc />
+    public void Dispose()
+    {
     }
 }

@@ -5,26 +5,25 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
-namespace BasicTestApp.ServerReliability
+namespace BasicTestApp.ServerReliability;
+
+public class ThrowingDisposeComponent : IComponent, IDisposable
 {
-    public class ThrowingDisposeComponent : IComponent, IDisposable
+    public void Attach(RenderHandle renderHandle)
     {
-        public void Attach(RenderHandle renderHandle)
+        renderHandle.Render(builder =>
         {
-            renderHandle.Render(builder =>
-            {
                 // Do nothing.
             });
-        }
+    }
 
-        public void Dispose()
-        {
-            throw new InvalidTimeZoneException();
-        }
+    public void Dispose()
+    {
+        throw new InvalidTimeZoneException();
+    }
 
-        public Task SetParametersAsync(ParameterView parameters)
-        {
-            return Task.CompletedTask;
-        }
+    public Task SetParametersAsync(ParameterView parameters)
+    {
+        return Task.CompletedTask;
     }
 }

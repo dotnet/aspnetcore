@@ -3,16 +3,15 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Components
+namespace Microsoft.AspNetCore.Components;
+
+/// <summary>
+/// Supplies information about an change event that is being raised.
+/// </summary>
+public class ChangeEventArgs : EventArgs
 {
     /// <summary>
-    /// Supplies information about an change event that is being raised.
+    /// Gets or sets the new value.
     /// </summary>
-    public class ChangeEventArgs : EventArgs
-    {
-        /// <summary>
-        /// Gets or sets the new value.
-        /// </summary>
-        public object? Value { get; set; }
-    }
+    public object? Value { get; set; }
 }

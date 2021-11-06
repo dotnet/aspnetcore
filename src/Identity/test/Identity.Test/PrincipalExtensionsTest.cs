@@ -5,28 +5,27 @@ using System;
 using System.Security.Claims;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Identity.Test
+namespace Microsoft.AspNetCore.Identity.Test;
+
+public class ClaimsIdentityExtensionsTest
 {
-    public class ClaimsIdentityExtensionsTest
+    public const string ExternalAuthenticationScheme = "TestExternalAuth";
+
+    [Fact]
+    public void IdentityExtensionsFindFirstValueNullIfUnknownTest()
     {
-        public const string ExternalAuthenticationScheme = "TestExternalAuth";
+        var id = CreateTestExternalIdentity();
+        Assert.Null(id.FindFirstValue("bogus"));
+    }
 
-        [Fact]
-        public void IdentityExtensionsFindFirstValueNullIfUnknownTest()
-        {
-            var id = CreateTestExternalIdentity();
-            Assert.Null(id.FindFirstValue("bogus"));
-        }
-
-        private static ClaimsPrincipal CreateTestExternalIdentity()
-        {
-            return new ClaimsPrincipal(new ClaimsIdentity(
-                new[]
-                {
+    private static ClaimsPrincipal CreateTestExternalIdentity()
+    {
+        return new ClaimsPrincipal(new ClaimsIdentity(
+            new[]
+            {
                     new Claim(ClaimTypes.NameIdentifier, "NameIdentifier", null, ExternalAuthenticationScheme),
                     new Claim(ClaimTypes.Name, "Name")
-                },
-                ExternalAuthenticationScheme));
-        }
+            },
+            ExternalAuthenticationScheme));
     }
 }

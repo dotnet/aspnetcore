@@ -3,14 +3,13 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace RazorWebSite.Components
+namespace RazorWebSite.Components;
+
+[ViewComponent(Name = "InheritingViewComponent")]
+public class InheritingViewComponent : ViewComponent
 {
-    [ViewComponent(Name = "InheritingViewComponent")]
-    public class InheritingViewComponent : ViewComponent
+    public IViewComponentResult Invoke(Address address)
     {
-        public IViewComponentResult Invoke(Address address)
-        {
-            return View("/Views/InheritingInherits/_ViewComponent.cshtml", address);
-        }
+        return View("/Views/InheritingInherits/_ViewComponent.cshtml", address);
     }
 }

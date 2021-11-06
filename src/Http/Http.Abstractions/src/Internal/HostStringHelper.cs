@@ -1,15 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Http
+namespace Microsoft.AspNetCore.Http;
+
+internal class HostStringHelper
 {
-    internal class HostStringHelper
-    {
-        // Allowed Characters:
-        // A-Z, a-z, 0-9, .,
-        // -, %, [, ], :
-        // Above for IPV6
-        private static readonly bool[] SafeHostStringChars = {
+    // Allowed Characters:
+    // A-Z, a-z, 0-9, .,
+    // -, %, [, ], :
+    // Above for IPV6
+    private static readonly bool[] SafeHostStringChars = {
             false, false, false, false, false, false, false, false,     // 0x00 - 0x07
             false, false, false, false, false, false, false, false,     // 0x08 - 0x0F
             false, false, false, false, false, false, false, false,     // 0x10 - 0x17
@@ -28,9 +28,8 @@ namespace Microsoft.AspNetCore.Http
             true,  true,  true,  false, false, false, false, false,     // 0x78 - 0x7F
         };
 
-        public static bool IsSafeHostStringChar(char c)
-        {
-            return c < SafeHostStringChars.Length && SafeHostStringChars[c];
-        }
+    public static bool IsSafeHostStringChar(char c)
+    {
+        return c < SafeHostStringChars.Length && SafeHostStringChars[c];
     }
 }

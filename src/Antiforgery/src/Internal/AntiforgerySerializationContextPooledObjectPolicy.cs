@@ -3,20 +3,19 @@
 
 using Microsoft.Extensions.ObjectPool;
 
-namespace Microsoft.AspNetCore.Antiforgery
+namespace Microsoft.AspNetCore.Antiforgery;
+
+internal class AntiforgerySerializationContextPooledObjectPolicy : IPooledObjectPolicy<AntiforgerySerializationContext>
 {
-    internal class AntiforgerySerializationContextPooledObjectPolicy : IPooledObjectPolicy<AntiforgerySerializationContext>
+    public AntiforgerySerializationContext Create()
     {
-        public AntiforgerySerializationContext Create()
-        {
-            return new AntiforgerySerializationContext();
-        }
+        return new AntiforgerySerializationContext();
+    }
 
-        public bool Return(AntiforgerySerializationContext obj)
-        {
-            obj.Reset();
+    public bool Return(AntiforgerySerializationContext obj)
+    {
+        obj.Reset();
 
-            return true;
-        }
+        return true;
     }
 }

@@ -3,16 +3,15 @@
 
 #nullable enable
 
-namespace Microsoft.AspNetCore.Routing
+namespace Microsoft.AspNetCore.Routing;
+
+/// <summary>
+/// A feature interface for routing functionality.
+/// </summary>
+public interface IRoutingFeature
 {
     /// <summary>
-    /// A feature interface for routing functionality.
+    /// Gets or sets the <see cref="Routing.RouteData"/> associated with the current request.
     /// </summary>
-    public interface IRoutingFeature
-    {
-        /// <summary>
-        /// Gets or sets the <see cref="Routing.RouteData"/> associated with the current request.
-        /// </summary>
-        RouteData? RouteData { get; set; }
-    }
+    RouteData? RouteData { get; set; }
 }

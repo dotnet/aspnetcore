@@ -7,39 +7,38 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
+namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
+
+public class DiagnosticMemoryPoolFactory
 {
-    public class DiagnosticMemoryPoolFactory
+    private readonly bool _allowLateReturn;
+
+    private readonly bool _rentTracking;
+
+    private readonly List<DiagnosticMemoryPool> _pools;
+
+    public DiagnosticMemoryPoolFactory(bool allowLateReturn = false, bool rentTracking = false)
     {
-        private readonly bool _allowLateReturn;
+        _allowLateReturn = allowLateReturn;
+        _rentTracking = rentTracking;
+        _pools = new List<DiagnosticMemoryPool>();
+    }
 
-        private readonly bool _rentTracking;
-
-        private readonly List<DiagnosticMemoryPool> _pools;
-
-        public DiagnosticMemoryPoolFactory(bool allowLateReturn = false, bool rentTracking = false)
+    public MemoryPool<byte> Create()
+    {
+        lock (_pools)
         {
-            _allowLateReturn = allowLateReturn;
-            _rentTracking = rentTracking;
-            _pools = new List<DiagnosticMemoryPool>();
+            var pool = new DiagnosticMemoryPool(new PinnedBlockMemoryPool(), _allowLateReturn, _rentTracking);
+            _pools.Add(pool);
+            return pool;
         }
+    }
 
-        public MemoryPool<byte> Create()
+    public Task WhenAllBlocksReturned(TimeSpan span)
+    {
+        lock (_pools)
         {
-            lock (_pools)
-            {
-                var pool = new DiagnosticMemoryPool(new PinnedBlockMemoryPool(), _allowLateReturn, _rentTracking);
-                _pools.Add(pool);
-                return pool;
-            }
-        }
-
-        public Task WhenAllBlocksReturned(TimeSpan span)
-        {
-            lock (_pools)
-            {
-                return Task.WhenAll(_pools.Select(p=>p.WhenAllBlocksReturnedAsync(span)));
-            }
+            return Task.WhenAll(_pools.Select(p => p.WhenAllBlocksReturnedAsync(span)));
         }
     }
 }

@@ -7,39 +7,38 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace FilesWebSite
+namespace FilesWebSite;
+
+public class Startup
 {
-    public class Startup
+    // Set up application services
+    public void ConfigureServices(IServiceCollection services)
     {
-        // Set up application services
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddControllers()
-                .AddNewtonsoftJson();
-        }
-
-        public void Configure(IApplicationBuilder app)
-        {
-            app.UseRouting();
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapDefaultControllerRoute();
-            });
-        }
-
-        public static void Main(string[] args)
-        {
-            var host = CreateWebHostBuilder(args)
-                .Build();
-
-            host.Run();
-        }
-
-        public static IWebHostBuilder CreateWebHostBuilder(string [] args) =>
-            new WebHostBuilder()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<Startup>()
-                .UseKestrel()
-                .UseIISIntegration();
+        services.AddControllers()
+            .AddNewtonsoftJson();
     }
+
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapDefaultControllerRoute();
+        });
+    }
+
+    public static void Main(string[] args)
+    {
+        var host = CreateWebHostBuilder(args)
+            .Build();
+
+        host.Run();
+    }
+
+    public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+        new WebHostBuilder()
+            .UseContentRoot(Directory.GetCurrentDirectory())
+            .UseStartup<Startup>()
+            .UseKestrel()
+            .UseIISIntegration();
 }

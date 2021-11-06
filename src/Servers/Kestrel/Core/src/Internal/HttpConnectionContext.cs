@@ -8,23 +8,22 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
-{
-    internal class HttpConnectionContext : BaseHttpConnectionContext
-    {
-        public HttpConnectionContext(
-            string connectionId,
-            HttpProtocols protocols,
-            AltSvcHeader? altSvcHeader,
-            BaseConnectionContext connectionContext,
-            ServiceContext serviceContext,
-            IFeatureCollection connectionFeatures,
-            MemoryPool<byte> memoryPool,
-            IPEndPoint? localEndPoint,
-            IPEndPoint? remoteEndPoint) : base(connectionId, protocols, altSvcHeader, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
-        {
-        }
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
-        public IDuplexPipe Transport { get; set; } = default!;
+internal class HttpConnectionContext : BaseHttpConnectionContext
+{
+    public HttpConnectionContext(
+        string connectionId,
+        HttpProtocols protocols,
+        AltSvcHeader? altSvcHeader,
+        BaseConnectionContext connectionContext,
+        ServiceContext serviceContext,
+        IFeatureCollection connectionFeatures,
+        MemoryPool<byte> memoryPool,
+        IPEndPoint? localEndPoint,
+        IPEndPoint? remoteEndPoint) : base(connectionId, protocols, altSvcHeader, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
+    {
     }
+
+    public IDuplexPipe Transport { get; set; } = default!;
 }

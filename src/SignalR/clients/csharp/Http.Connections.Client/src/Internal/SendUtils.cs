@@ -11,164 +11,163 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
+namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
+
+internal static class SendUtils
 {
-    internal static class SendUtils
+    public static async Task SendMessages(Uri sendUrl, IDuplexPipe application, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken = default)
     {
-        public static async Task SendMessages(Uri sendUrl, IDuplexPipe application, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken = default)
+        Log.SendStarted(logger);
+
+        try
         {
-            Log.SendStarted(logger);
-
-            try
+            while (true)
             {
-                while (true)
+                var result = await application.Input.ReadAsync(cancellationToken);
+                var buffer = result.Buffer;
+
+                try
                 {
-                    var result = await application.Input.ReadAsync(cancellationToken);
-                    var buffer = result.Buffer;
-
-                    try
+                    if (result.IsCanceled)
                     {
-                        if (result.IsCanceled)
-                        {
-                            Log.SendCanceled(logger);
-                            break;
-                        }
-
-                        if (!buffer.IsEmpty)
-                        {
-                            Log.SendingMessages(logger, buffer.Length, sendUrl);
-
-                            // Send them in a single post
-                            var request = new HttpRequestMessage(HttpMethod.Post, sendUrl);
-                            // Corefx changed the default version and High Sierra curlhandler tries to upgrade request
-                            request.Version = new Version(1, 1);
-
-                            request.Content = new ReadOnlySequenceContent(buffer);
-
-                            // ResponseHeadersRead instructs SendAsync to return once headers are read
-                            // rather than buffer the entire response. This gives a small perf boost.
-                            // Note that it is important to dispose of the response when doing this to
-                            // avoid leaving the connection open.
-                            using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
-                            {
-                                response.EnsureSuccessStatusCode();
-                            }
-
-                            Log.SentSuccessfully(logger);
-                        }
-                        else if (result.IsCompleted)
-                        {
-                            break;
-                        }
-                        else
-                        {
-                            Log.NoMessages(logger);
-                        }
+                        Log.SendCanceled(logger);
+                        break;
                     }
-                    finally
+
+                    if (!buffer.IsEmpty)
                     {
-                        application.Input.AdvanceTo(buffer.End);
+                        Log.SendingMessages(logger, buffer.Length, sendUrl);
+
+                        // Send them in a single post
+                        var request = new HttpRequestMessage(HttpMethod.Post, sendUrl);
+                        // Corefx changed the default version and High Sierra curlhandler tries to upgrade request
+                        request.Version = new Version(1, 1);
+
+                        request.Content = new ReadOnlySequenceContent(buffer);
+
+                        // ResponseHeadersRead instructs SendAsync to return once headers are read
+                        // rather than buffer the entire response. This gives a small perf boost.
+                        // Note that it is important to dispose of the response when doing this to
+                        // avoid leaving the connection open.
+                        using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
+                        {
+                            response.EnsureSuccessStatusCode();
+                        }
+
+                        Log.SentSuccessfully(logger);
+                    }
+                    else if (result.IsCompleted)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        Log.NoMessages(logger);
                     }
                 }
-            }
-            catch (OperationCanceledException)
-            {
-                Log.SendCanceled(logger);
-            }
-            catch (Exception ex)
-            {
-                Log.ErrorSending(logger, sendUrl, ex);
-                throw;
-            }
-            finally
-            {
-                application.Input.Complete();
-            }
-
-            Log.SendStopped(logger);
-        }
-
-        private class ReadOnlySequenceContent : HttpContent
-        {
-            private readonly ReadOnlySequence<byte> _buffer;
-
-            public ReadOnlySequenceContent(in ReadOnlySequence<byte> buffer)
-            {
-                _buffer = buffer;
-            }
-
-            protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context)
-            {
-                return stream.WriteAsync(_buffer).AsTask();
-            }
-
-            protected override bool TryComputeLength(out long length)
-            {
-                length = _buffer.Length;
-                return true;
+                finally
+                {
+                    application.Input.AdvanceTo(buffer.End);
+                }
             }
         }
-
-        private static class Log
+        catch (OperationCanceledException)
         {
-            private static readonly Action<ILogger, Exception?> _sendStarted =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(100, "SendStarted"), "Starting the send loop.");
+            Log.SendCanceled(logger);
+        }
+        catch (Exception ex)
+        {
+            Log.ErrorSending(logger, sendUrl, ex);
+            throw;
+        }
+        finally
+        {
+            application.Input.Complete();
+        }
 
-            private static readonly Action<ILogger, Exception?> _sendStopped =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(101, "SendStopped"), "Send loop stopped.");
+        Log.SendStopped(logger);
+    }
 
-            private static readonly Action<ILogger, Exception?> _sendCanceled =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(102, "SendCanceled"), "Send loop canceled.");
+    private class ReadOnlySequenceContent : HttpContent
+    {
+        private readonly ReadOnlySequence<byte> _buffer;
 
-            private static readonly Action<ILogger, long, Uri, Exception?> _sendingMessages =
-                LoggerMessage.Define<long, Uri>(LogLevel.Debug, new EventId(103, "SendingMessages"), "Sending {Count} bytes to the server using url: {Url}.");
+        public ReadOnlySequenceContent(in ReadOnlySequence<byte> buffer)
+        {
+            _buffer = buffer;
+        }
 
-            private static readonly Action<ILogger, Exception?> _sentSuccessfully =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(104, "SentSuccessfully"), "Message(s) sent successfully.");
+        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context)
+        {
+            return stream.WriteAsync(_buffer).AsTask();
+        }
 
-            private static readonly Action<ILogger, Exception?> _noMessages =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(105, "NoMessages"), "No messages in batch to send.");
+        protected override bool TryComputeLength(out long length)
+        {
+            length = _buffer.Length;
+            return true;
+        }
+    }
 
-            private static readonly Action<ILogger, Uri, Exception> _errorSending =
-                LoggerMessage.Define<Uri>(LogLevel.Error, new EventId(106, "ErrorSending"), "Error while sending to '{Url}'.");
+    private static class Log
+    {
+        private static readonly Action<ILogger, Exception?> _sendStarted =
+            LoggerMessage.Define(LogLevel.Debug, new EventId(100, "SendStarted"), "Starting the send loop.");
 
-            // When adding a new log message make sure to check with LongPollingTransport and ServerSentEventsTransport that share these logs to not have conflicting EventIds
-            // We start the IDs at 100 to make it easy to avoid conflicting IDs
+        private static readonly Action<ILogger, Exception?> _sendStopped =
+            LoggerMessage.Define(LogLevel.Debug, new EventId(101, "SendStopped"), "Send loop stopped.");
 
-            public static void SendStarted(ILogger logger)
-            {
-                _sendStarted(logger, null);
-            }
+        private static readonly Action<ILogger, Exception?> _sendCanceled =
+            LoggerMessage.Define(LogLevel.Debug, new EventId(102, "SendCanceled"), "Send loop canceled.");
 
-            public static void SendCanceled(ILogger logger)
-            {
-                _sendCanceled(logger, null);
-            }
+        private static readonly Action<ILogger, long, Uri, Exception?> _sendingMessages =
+            LoggerMessage.Define<long, Uri>(LogLevel.Debug, new EventId(103, "SendingMessages"), "Sending {Count} bytes to the server using url: {Url}.");
 
-            public static void SendStopped(ILogger logger)
-            {
-                _sendStopped(logger, null);
-            }
+        private static readonly Action<ILogger, Exception?> _sentSuccessfully =
+            LoggerMessage.Define(LogLevel.Debug, new EventId(104, "SentSuccessfully"), "Message(s) sent successfully.");
 
-            public static void SendingMessages(ILogger logger, long count, Uri url)
-            {
-                _sendingMessages(logger, count, url, null);
-            }
+        private static readonly Action<ILogger, Exception?> _noMessages =
+            LoggerMessage.Define(LogLevel.Debug, new EventId(105, "NoMessages"), "No messages in batch to send.");
 
-            public static void SentSuccessfully(ILogger logger)
-            {
-                _sentSuccessfully(logger, null);
-            }
+        private static readonly Action<ILogger, Uri, Exception> _errorSending =
+            LoggerMessage.Define<Uri>(LogLevel.Error, new EventId(106, "ErrorSending"), "Error while sending to '{Url}'.");
 
-            public static void NoMessages(ILogger logger)
-            {
-                _noMessages(logger, null);
-            }
+        // When adding a new log message make sure to check with LongPollingTransport and ServerSentEventsTransport that share these logs to not have conflicting EventIds
+        // We start the IDs at 100 to make it easy to avoid conflicting IDs
 
-            public static void ErrorSending(ILogger logger, Uri url, Exception exception)
-            {
-                _errorSending(logger, url, exception);
-            }
+        public static void SendStarted(ILogger logger)
+        {
+            _sendStarted(logger, null);
+        }
+
+        public static void SendCanceled(ILogger logger)
+        {
+            _sendCanceled(logger, null);
+        }
+
+        public static void SendStopped(ILogger logger)
+        {
+            _sendStopped(logger, null);
+        }
+
+        public static void SendingMessages(ILogger logger, long count, Uri url)
+        {
+            _sendingMessages(logger, count, url, null);
+        }
+
+        public static void SentSuccessfully(ILogger logger)
+        {
+            _sentSuccessfully(logger, null);
+        }
+
+        public static void NoMessages(ILogger logger)
+        {
+            _noMessages(logger, null);
+        }
+
+        public static void ErrorSending(ILogger logger, Uri url, Exception exception)
+        {
+            _errorSending(logger, url, exception);
         }
     }
 }

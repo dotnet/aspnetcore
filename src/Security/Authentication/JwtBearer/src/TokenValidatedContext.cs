@@ -4,26 +4,25 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Microsoft.AspNetCore.Authentication.JwtBearer
+namespace Microsoft.AspNetCore.Authentication.JwtBearer;
+
+/// <summary>
+/// A context for <see cref="JwtBearerEvents.OnTokenValidated"/>.
+/// </summary>
+public class TokenValidatedContext : ResultContext<JwtBearerOptions>
 {
     /// <summary>
-    /// A context for <see cref="JwtBearerEvents.OnTokenValidated"/>.
+    /// Initializes a new instance of <see cref="TokenValidatedContext"/>.
     /// </summary>
-    public class TokenValidatedContext : ResultContext<JwtBearerOptions>
-    {
-        /// <summary>
-        /// Initializes a new instance of <see cref="TokenValidatedContext"/>.
-        /// </summary>
-        /// <inheritdoc />
-        public TokenValidatedContext(
-            HttpContext context,
-            AuthenticationScheme scheme,
-            JwtBearerOptions options)
-            : base(context, scheme, options) { }
+    /// <inheritdoc />
+    public TokenValidatedContext(
+        HttpContext context,
+        AuthenticationScheme scheme,
+        JwtBearerOptions options)
+        : base(context, scheme, options) { }
 
-        /// <summary>
-        /// Gets or sets the validated security token.
-        /// </summary>
-        public SecurityToken SecurityToken { get; set; } = default!;
-    }
+    /// <summary>
+    /// Gets or sets the validated security token.
+    /// </summary>
+    public SecurityToken SecurityToken { get; set; } = default!;
 }

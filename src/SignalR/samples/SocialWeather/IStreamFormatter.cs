@@ -4,11 +4,10 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace SocialWeather
+namespace SocialWeather;
+
+public interface IStreamFormatter<T>
 {
-    public interface IStreamFormatter<T>
-    {
-        Task<T> ReadAsync(Stream stream);
-        Task WriteAsync(T value, Stream stream);
-    }
+    Task<T> ReadAsync(Stream stream);
+    Task WriteAsync(T value, Stream stream);
 }

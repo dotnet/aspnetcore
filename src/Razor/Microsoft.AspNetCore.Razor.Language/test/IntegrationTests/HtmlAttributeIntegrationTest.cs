@@ -3,34 +3,33 @@
 
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
+namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests;
+
+public class HtmlAttributeIntegrationTest : IntegrationTestBase
 {
-    public class HtmlAttributeIntegrationTest : IntegrationTestBase
+    [Fact]
+    public void HtmlWithDataDashAttribute()
     {
-        [Fact]
-        public void HtmlWithDataDashAttribute()
-        {
-            // Arrange
-            var projectItem = CreateProjectItemFromFile();
+        // Arrange
+        var projectItem = CreateProjectItemFromFile();
 
-            // Act
-            var compiled = CompileToCSharp(projectItem);
+        // Act
+        var compiled = CompileToCSharp(projectItem);
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+    }
 
-        [Fact]
-        public void HtmlWithConditionalAttribute()
-        {
-            // Arrange
-            var projectItem = CreateProjectItemFromFile();
+    [Fact]
+    public void HtmlWithConditionalAttribute()
+    {
+        // Arrange
+        var projectItem = CreateProjectItemFromFile();
 
-            // Act
-            var compiled = CompileToCSharp(projectItem);
+        // Act
+        var compiled = CompileToCSharp(projectItem);
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
-        }
+        // Assert
+        AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
     }
 }

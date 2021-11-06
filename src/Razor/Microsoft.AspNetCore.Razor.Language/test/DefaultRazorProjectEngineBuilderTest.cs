@@ -5,61 +5,60 @@ using System.Linq;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+public class DefaultRazorProjectEngineBuilderTest
 {
-    public class DefaultRazorProjectEngineBuilderTest
+    [Fact]
+    public void Build_AddsFeaturesToRazorEngine()
     {
-        [Fact]
-        public void Build_AddsFeaturesToRazorEngine()
-        {
-            // Arrange
-            var builder = new DefaultRazorProjectEngineBuilder(RazorConfiguration.Default, Mock.Of<RazorProjectFileSystem>());
-            builder.Features.Add(Mock.Of<IRazorEngineFeature>());
-            builder.Features.Add(Mock.Of<IRazorEngineFeature>());
-            builder.Features.Add(Mock.Of<IRazorProjectEngineFeature>());
+        // Arrange
+        var builder = new DefaultRazorProjectEngineBuilder(RazorConfiguration.Default, Mock.Of<RazorProjectFileSystem>());
+        builder.Features.Add(Mock.Of<IRazorEngineFeature>());
+        builder.Features.Add(Mock.Of<IRazorEngineFeature>());
+        builder.Features.Add(Mock.Of<IRazorProjectEngineFeature>());
 
-            var features = builder.Features.ToArray();
+        var features = builder.Features.ToArray();
 
-            // Act
-            var projectEngine = builder.Build();
+        // Act
+        var projectEngine = builder.Build();
 
-            // Assert
-            Assert.Collection(projectEngine.Engine.Features,
-                feature => Assert.Same(features[0], feature),
-                feature => Assert.Same(features[1], feature));
-        }
+        // Assert
+        Assert.Collection(projectEngine.Engine.Features,
+            feature => Assert.Same(features[0], feature),
+            feature => Assert.Same(features[1], feature));
+    }
 
-        [Fact]
-        public void Build_AddsPhasesToRazorEngine()
-        {
-            // Arrange
-            var builder = new DefaultRazorProjectEngineBuilder(RazorConfiguration.Default, Mock.Of<RazorProjectFileSystem>());
-            builder.Phases.Add(Mock.Of<IRazorEnginePhase>());
-            builder.Phases.Add(Mock.Of<IRazorEnginePhase>());
+    [Fact]
+    public void Build_AddsPhasesToRazorEngine()
+    {
+        // Arrange
+        var builder = new DefaultRazorProjectEngineBuilder(RazorConfiguration.Default, Mock.Of<RazorProjectFileSystem>());
+        builder.Phases.Add(Mock.Of<IRazorEnginePhase>());
+        builder.Phases.Add(Mock.Of<IRazorEnginePhase>());
 
-            var phases = builder.Phases.ToArray();
+        var phases = builder.Phases.ToArray();
 
-            // Act
-            var projectEngine = builder.Build();
+        // Act
+        var projectEngine = builder.Build();
 
-            // Assert
-            Assert.Collection(projectEngine.Engine.Phases,
-                phase => Assert.Same(phases[0], phase),
-                phase => Assert.Same(phases[1], phase));
-        }
+        // Assert
+        Assert.Collection(projectEngine.Engine.Phases,
+            phase => Assert.Same(phases[0], phase),
+            phase => Assert.Same(phases[1], phase));
+    }
 
-        [Fact]
-        public void Build_CreatesProjectEngineWithFileSystem()
-        {
-            // Arrange
-            var fileSystem = Mock.Of<RazorProjectFileSystem>();
-            var builder = new DefaultRazorProjectEngineBuilder(RazorConfiguration.Default, fileSystem);
+    [Fact]
+    public void Build_CreatesProjectEngineWithFileSystem()
+    {
+        // Arrange
+        var fileSystem = Mock.Of<RazorProjectFileSystem>();
+        var builder = new DefaultRazorProjectEngineBuilder(RazorConfiguration.Default, fileSystem);
 
-            // Act
-            var projectEngine = builder.Build();
+        // Act
+        var projectEngine = builder.Build();
 
-            // Assert
-            Assert.Same(fileSystem, projectEngine.FileSystem);
-        }
+        // Assert
+        Assert.Same(fileSystem, projectEngine.FileSystem);
     }
 }

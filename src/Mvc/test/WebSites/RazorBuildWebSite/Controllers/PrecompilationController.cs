@@ -3,13 +3,12 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace RazorBuildWebSite.Controllers
+namespace RazorBuildWebSite.Controllers;
+
+public class PrecompilationController : Controller
 {
-    public class PrecompilationController : Controller
+    public new ActionResult View()
     {
-        public new ActionResult View()
-        {
-            return base.View();
-        }
+        return base.View();
     }
 }

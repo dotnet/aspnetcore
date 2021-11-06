@@ -10,14 +10,13 @@
 // is a fairly tedious processes. Until this becomes a broader problem, we'll shim new framework types
 // that need to be referenced in tests.
 
-namespace System.Runtime.CompilerServices
+namespace System.Runtime.CompilerServices;
+
+/// <summary>
+/// Indicates a type should be replaced rather than updated when applying metadata updates.
+/// </summary>
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]
+public sealed class CreateNewOnMetadataUpdateAttribute : Attribute
 {
-    /// <summary>
-    /// Indicates a type should be replaced rather than updated when applying metadata updates.
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]
-    public sealed class CreateNewOnMetadataUpdateAttribute : Attribute
-    {
-    }
 }
 #endif

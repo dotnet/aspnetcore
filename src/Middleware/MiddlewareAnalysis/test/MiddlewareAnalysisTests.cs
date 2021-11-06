@@ -11,52 +11,51 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Xunit;
 
-namespace Microsoft.AspNetCore.MiddlewareAnalysis
+namespace Microsoft.AspNetCore.MiddlewareAnalysis;
+
+public class MiddlewareAnalysisTests
 {
-    public class MiddlewareAnalysisTests
+    [Fact]
+    public async Task ExceptionWrittenToDiagnostics()
     {
-        [Fact]
-        public async Task ExceptionWrittenToDiagnostics()
-        {
-            DiagnosticListener diagnosticListener = null;
+        DiagnosticListener diagnosticListener = null;
 
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
                 {
-                    webHostBuilder
-                    .UseTestServer()
-                    .Configure(app =>
+                    diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
+
+                    app.UseDeveloperExceptionPage();
+                    app.Run(context =>
                     {
-                        diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
+                        throw new Exception("Test exception");
+                    });
+                })
+                .ConfigureServices(services => services.AddMiddlewareAnalysis());
+            }).Build();
 
-                        app.UseDeveloperExceptionPage();
-                        app.Run(context =>
-                        {
-                            throw new Exception("Test exception");
-                        });
-                    })
-                    .ConfigureServices(services => services.AddMiddlewareAnalysis());
-                }).Build();
+        await host.StartAsync();
 
-            await host.StartAsync();
+        var server = host.GetTestServer();
 
-            var server = host.GetTestServer();
+        var listener = new TestDiagnosticListener();
+        diagnosticListener.SubscribeWithAdapter(listener);
 
-            var listener = new TestDiagnosticListener();
-            diagnosticListener.SubscribeWithAdapter(listener);
+        await server.CreateClient().GetAsync(string.Empty);
 
-            await server.CreateClient().GetAsync(string.Empty);
-
-            // "Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware",
-            // "Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareAnalysisTests.+<>c"
-            Assert.Equal(2, listener.MiddlewareStarting.Count);
-            Assert.Equal("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareAnalysisTests+<>c", listener.MiddlewareStarting[1]);
-            // reversed "RunInlineMiddleware"
-            Assert.Equal(1, listener.MiddlewareException.Count);
-            Assert.Equal("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareAnalysisTests+<>c", listener.MiddlewareException[0]);
-            // reversed "Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware"
-            Assert.Equal(1, listener.MiddlewareFinished.Count);
-            Assert.Equal("Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware", listener.MiddlewareFinished[0]);
-        }
+        // "Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware",
+        // "Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareAnalysisTests.+<>c"
+        Assert.Equal(2, listener.MiddlewareStarting.Count);
+        Assert.Equal("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareAnalysisTests+<>c", listener.MiddlewareStarting[1]);
+        // reversed "RunInlineMiddleware"
+        Assert.Equal(1, listener.MiddlewareException.Count);
+        Assert.Equal("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareAnalysisTests+<>c", listener.MiddlewareException[0]);
+        // reversed "Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware"
+        Assert.Equal(1, listener.MiddlewareFinished.Count);
+        Assert.Equal("Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware", listener.MiddlewareFinished[0]);
     }
 }

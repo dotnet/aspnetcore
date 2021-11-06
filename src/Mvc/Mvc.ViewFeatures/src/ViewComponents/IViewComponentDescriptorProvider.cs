@@ -3,17 +3,16 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Mvc.ViewComponents
+namespace Microsoft.AspNetCore.Mvc.ViewComponents;
+
+/// <summary>
+/// Discovers the view components in the application.
+/// </summary>
+public interface IViewComponentDescriptorProvider
 {
     /// <summary>
-    /// Discovers the view components in the application.
+    /// Gets the set of <see cref="ViewComponentDescriptor"/>.
     /// </summary>
-    public interface IViewComponentDescriptorProvider
-    {
-        /// <summary>
-        /// Gets the set of <see cref="ViewComponentDescriptor"/>.
-        /// </summary>
-        /// <returns>A list of <see cref="ViewComponentDescriptor"/>.</returns>
-        IEnumerable<ViewComponentDescriptor> GetViewComponents();
-    }
+    /// <returns>A list of <see cref="ViewComponentDescriptor"/>.</returns>
+    IEnumerable<ViewComponentDescriptor> GetViewComponents();
 }

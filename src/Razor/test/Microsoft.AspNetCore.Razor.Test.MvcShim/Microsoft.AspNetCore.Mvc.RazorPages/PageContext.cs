@@ -3,10 +3,9 @@
 
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace Microsoft.AspNetCore.Mvc.RazorPages
+namespace Microsoft.AspNetCore.Mvc.RazorPages;
+
+public class PageContext : ViewContext
 {
-    public class PageContext : ViewContext
-    {
-        public Page Page { get; set; }
-    }
+    public Page Page { get; set; }
 }

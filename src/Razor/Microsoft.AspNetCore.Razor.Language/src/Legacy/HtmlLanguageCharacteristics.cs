@@ -5,124 +5,123 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
 
-namespace Microsoft.AspNetCore.Razor.Language.Legacy
+namespace Microsoft.AspNetCore.Razor.Language.Legacy;
+
+internal class HtmlLanguageCharacteristics : LanguageCharacteristics<HtmlTokenizer>
 {
-    internal class HtmlLanguageCharacteristics : LanguageCharacteristics<HtmlTokenizer>
+    private static readonly HtmlLanguageCharacteristics _instance = new HtmlLanguageCharacteristics();
+
+    protected HtmlLanguageCharacteristics()
     {
-        private static readonly HtmlLanguageCharacteristics _instance = new HtmlLanguageCharacteristics();
+    }
 
-        protected HtmlLanguageCharacteristics()
-        {
-        }
+    public static HtmlLanguageCharacteristics Instance
+    {
+        get { return _instance; }
+    }
 
-        public static HtmlLanguageCharacteristics Instance
+    public override string GetSample(SyntaxKind type)
+    {
+        switch (type)
         {
-            get { return _instance; }
+            case SyntaxKind.Text:
+                return Resources.HtmlToken_Text;
+            case SyntaxKind.Whitespace:
+                return Resources.HtmlToken_WhiteSpace;
+            case SyntaxKind.NewLine:
+                return Resources.HtmlToken_NewLine;
+            case SyntaxKind.OpenAngle:
+                return "<";
+            case SyntaxKind.Bang:
+                return "!";
+            case SyntaxKind.ForwardSlash:
+                return "/";
+            case SyntaxKind.QuestionMark:
+                return "?";
+            case SyntaxKind.DoubleHyphen:
+                return "--";
+            case SyntaxKind.LeftBracket:
+                return "[";
+            case SyntaxKind.CloseAngle:
+                return ">";
+            case SyntaxKind.RightBracket:
+                return "]";
+            case SyntaxKind.Equals:
+                return "=";
+            case SyntaxKind.DoubleQuote:
+                return "\"";
+            case SyntaxKind.SingleQuote:
+                return "'";
+            case SyntaxKind.Transition:
+                return "@";
+            case SyntaxKind.Colon:
+                return ":";
+            case SyntaxKind.RazorCommentLiteral:
+                return Resources.HtmlToken_RazorComment;
+            case SyntaxKind.RazorCommentStar:
+                return "*";
+            case SyntaxKind.RazorCommentTransition:
+                return "@";
+            default:
+                return Resources.Token_Unknown;
         }
+    }
 
-        public override string GetSample(SyntaxKind type)
-        {
-            switch (type)
-            {
-                case SyntaxKind.Text:
-                    return Resources.HtmlToken_Text;
-                case SyntaxKind.Whitespace:
-                    return Resources.HtmlToken_WhiteSpace;
-                case SyntaxKind.NewLine:
-                    return Resources.HtmlToken_NewLine;
-                case SyntaxKind.OpenAngle:
-                    return "<";
-                case SyntaxKind.Bang:
-                    return "!";
-                case SyntaxKind.ForwardSlash:
-                    return "/";
-                case SyntaxKind.QuestionMark:
-                    return "?";
-                case SyntaxKind.DoubleHyphen:
-                    return "--";
-                case SyntaxKind.LeftBracket:
-                    return "[";
-                case SyntaxKind.CloseAngle:
-                    return ">";
-                case SyntaxKind.RightBracket:
-                    return "]";
-                case SyntaxKind.Equals:
-                    return "=";
-                case SyntaxKind.DoubleQuote:
-                    return "\"";
-                case SyntaxKind.SingleQuote:
-                    return "'";
-                case SyntaxKind.Transition:
-                    return "@";
-                case SyntaxKind.Colon:
-                    return ":";
-                case SyntaxKind.RazorCommentLiteral:
-                    return Resources.HtmlToken_RazorComment;
-                case SyntaxKind.RazorCommentStar:
-                    return "*";
-                case SyntaxKind.RazorCommentTransition:
-                    return "@";
-                default:
-                    return Resources.Token_Unknown;
-            }
-        }
+    public override HtmlTokenizer CreateTokenizer(ITextDocument source)
+    {
+        return new HtmlTokenizer(source);
+    }
 
-        public override HtmlTokenizer CreateTokenizer(ITextDocument source)
+    public override SyntaxKind FlipBracket(SyntaxKind bracket)
+    {
+        switch (bracket)
         {
-            return new HtmlTokenizer(source);
+            case SyntaxKind.LeftBracket:
+                return SyntaxKind.RightBracket;
+            case SyntaxKind.OpenAngle:
+                return SyntaxKind.CloseAngle;
+            case SyntaxKind.RightBracket:
+                return SyntaxKind.LeftBracket;
+            case SyntaxKind.CloseAngle:
+                return SyntaxKind.OpenAngle;
+            default:
+                Debug.Fail("FlipBracket must be called with a bracket character");
+                return SyntaxKind.Marker;
         }
+    }
 
-        public override SyntaxKind FlipBracket(SyntaxKind bracket)
-        {
-            switch (bracket)
-            {
-                case SyntaxKind.LeftBracket:
-                    return SyntaxKind.RightBracket;
-                case SyntaxKind.OpenAngle:
-                    return SyntaxKind.CloseAngle;
-                case SyntaxKind.RightBracket:
-                    return SyntaxKind.LeftBracket;
-                case SyntaxKind.CloseAngle:
-                    return SyntaxKind.OpenAngle;
-                default:
-                    Debug.Fail("FlipBracket must be called with a bracket character");
-                    return SyntaxKind.Marker;
-            }
-        }
+    public override SyntaxToken CreateMarkerToken()
+    {
+        return SyntaxFactory.Token(SyntaxKind.Marker, string.Empty);
+    }
 
-        public override SyntaxToken CreateMarkerToken()
+    public override SyntaxKind GetKnownTokenType(KnownTokenType type)
+    {
+        switch (type)
         {
-            return SyntaxFactory.Token(SyntaxKind.Marker, string.Empty);
+            case KnownTokenType.CommentStart:
+                return SyntaxKind.RazorCommentTransition;
+            case KnownTokenType.CommentStar:
+                return SyntaxKind.RazorCommentStar;
+            case KnownTokenType.CommentBody:
+                return SyntaxKind.RazorCommentLiteral;
+            case KnownTokenType.Identifier:
+                return SyntaxKind.Text;
+            case KnownTokenType.Keyword:
+                return SyntaxKind.Text;
+            case KnownTokenType.NewLine:
+                return SyntaxKind.NewLine;
+            case KnownTokenType.Transition:
+                return SyntaxKind.Transition;
+            case KnownTokenType.Whitespace:
+                return SyntaxKind.Whitespace;
+            default:
+                return SyntaxKind.Marker;
         }
+    }
 
-        public override SyntaxKind GetKnownTokenType(KnownTokenType type)
-        {
-            switch (type)
-            {
-                case KnownTokenType.CommentStart:
-                    return SyntaxKind.RazorCommentTransition;
-                case KnownTokenType.CommentStar:
-                    return SyntaxKind.RazorCommentStar;
-                case KnownTokenType.CommentBody:
-                    return SyntaxKind.RazorCommentLiteral;
-                case KnownTokenType.Identifier:
-                    return SyntaxKind.Text;
-                case KnownTokenType.Keyword:
-                    return SyntaxKind.Text;
-                case KnownTokenType.NewLine:
-                    return SyntaxKind.NewLine;
-                case KnownTokenType.Transition:
-                    return SyntaxKind.Transition;
-                case KnownTokenType.Whitespace:
-                    return SyntaxKind.Whitespace;
-                default:
-                    return SyntaxKind.Marker;
-            }
-        }
-
-        protected override SyntaxToken CreateToken(string content, SyntaxKind kind, RazorDiagnostic [] errors)
-        {
-            return SyntaxFactory.Token(kind, content, errors);
-        }
+    protected override SyntaxToken CreateToken(string content, SyntaxKind kind, RazorDiagnostic[] errors)
+    {
+        return SyntaxFactory.Token(kind, content, errors);
     }
 }

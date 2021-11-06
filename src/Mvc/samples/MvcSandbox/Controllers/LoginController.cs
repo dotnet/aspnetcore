@@ -3,14 +3,13 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace MvcSandbox.Controllers
+namespace MvcSandbox.Controllers;
+
+[Route("[controller]/[action]")]
+public class LoginController : Controller
 {
-    [Route("[controller]/[action]")]
-    public class LoginController : Controller
+    public IActionResult Index()
     {
-        public IActionResult Index()
-        {
-            return View();
-        }
+        return View();
     }
 }

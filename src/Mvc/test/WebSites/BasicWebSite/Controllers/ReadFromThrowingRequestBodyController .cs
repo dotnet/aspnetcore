@@ -4,30 +4,29 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BasicWebSite.Controllers
+namespace BasicWebSite.Controllers;
+
+public class ReadFromThrowingRequestBodyController : Controller
 {
-    public class ReadFromThrowingRequestBodyController : Controller
+    [ValidateAntiForgeryToken]
+    [HttpPost]
+    public IActionResult AppliesAntiforgeryValidation() => Ok();
+
+    [HttpPost]
+    public IActionResult ReadForm(Person person, IFormFile form)
     {
-        [ValidateAntiForgeryToken]
-        [HttpPost]
-        public IActionResult AppliesAntiforgeryValidation() => Ok();
-
-        [HttpPost]
-        public IActionResult ReadForm(Person person, IFormFile form)
+        if (!ModelState.IsValid)
         {
-            if (!ModelState.IsValid)
-            {
-                return ValidationProblem();
-            }
-
-            return Ok();
+            return ValidationProblem();
         }
 
-        public class Person
-        {
-            public string Name { get; set; }
+        return Ok();
+    }
 
-            public int Age { get; set; }
-        }
+    public class Person
+    {
+        public string Name { get; set; }
+
+        public int Age { get; set; }
     }
 }

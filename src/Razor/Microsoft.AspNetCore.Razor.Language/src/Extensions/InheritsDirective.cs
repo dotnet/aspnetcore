@@ -4,43 +4,42 @@
 using System;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 
-namespace Microsoft.AspNetCore.Razor.Language.Extensions
+namespace Microsoft.AspNetCore.Razor.Language.Extensions;
+
+public static class InheritsDirective
 {
-    public static class InheritsDirective
+    public static readonly DirectiveDescriptor Directive = DirectiveDescriptor.CreateDirective(
+        SyntaxConstants.CSharp.InheritsKeyword,
+        DirectiveKind.SingleLine,
+        builder =>
+        {
+            builder.AddTypeToken(Resources.InheritsDirective_TypeToken_Name, Resources.InheritsDirective_TypeToken_Description);
+            builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
+            builder.Description = Resources.InheritsDirective_Description;
+        });
+
+    public static void Register(RazorProjectEngineBuilder builder)
     {
-        public static readonly DirectiveDescriptor Directive = DirectiveDescriptor.CreateDirective(
-            SyntaxConstants.CSharp.InheritsKeyword,
-            DirectiveKind.SingleLine,
-            builder =>
-            {
-                builder.AddTypeToken(Resources.InheritsDirective_TypeToken_Name, Resources.InheritsDirective_TypeToken_Description);
-                builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
-                builder.Description = Resources.InheritsDirective_Description;
-            });
-
-        public static void Register(RazorProjectEngineBuilder builder)
+        if (builder == null)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.AddDirective(Directive, FileKinds.Legacy, FileKinds.Component, FileKinds.ComponentImport);
-            builder.Features.Add(new InheritsDirectivePass());
+            throw new ArgumentNullException(nameof(builder));
         }
 
-        #region Obsolete
-        [Obsolete("This method is obsolete and will be removed in a future version.")]
-        public static void Register(IRazorEngineBuilder builder)
-        {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.AddDirective(Directive);
-            builder.Features.Add(new InheritsDirectivePass());
-        }
-        #endregion
+        builder.AddDirective(Directive, FileKinds.Legacy, FileKinds.Component, FileKinds.ComponentImport);
+        builder.Features.Add(new InheritsDirectivePass());
     }
+
+    #region Obsolete
+    [Obsolete("This method is obsolete and will be removed in a future version.")]
+    public static void Register(IRazorEngineBuilder builder)
+    {
+        if (builder == null)
+        {
+            throw new ArgumentNullException(nameof(builder));
+        }
+
+        builder.AddDirective(Directive);
+        builder.Features.Add(new InheritsDirectivePass());
+    }
+    #endregion
 }

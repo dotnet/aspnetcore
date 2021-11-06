@@ -9,41 +9,40 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace ConcurrencyLimiterSample
-{
-    public class Startup
-    {
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddStackPolicy(options =>
-            {
-                options.MaxConcurrentRequests = 2;
-                options.RequestQueueLimit = 25;
-            });
-        }
+namespace ConcurrencyLimiterSample;
 
-        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
+public class Startup
+{
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddStackPolicy(options =>
         {
-            app.UseConcurrencyLimiter();
-            app.Run(async context =>
-            {
-                Task.Delay(100).Wait(); // 100ms sync-over-async
+            options.MaxConcurrentRequests = 2;
+            options.RequestQueueLimit = 25;
+        });
+    }
+
+    public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
+    {
+        app.UseConcurrencyLimiter();
+        app.Run(async context =>
+        {
+            Task.Delay(100).Wait(); // 100ms sync-over-async
 
                 await context.Response.WriteAsync("Hello World!");
-            });
-        }
+        });
+    }
 
-        public static Task Main(string[] args)
-        {
-            return new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
-                {
-                    webHostBuilder
-                    .UseKestrel()
-                    .UseStartup<Startup>();
-                })
-                .Build()
-                .RunAsync();
-        }
+    public static Task Main(string[] args)
+    {
+        return new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseKestrel()
+                .UseStartup<Startup>();
+            })
+            .Build()
+            .RunAsync();
     }
 }

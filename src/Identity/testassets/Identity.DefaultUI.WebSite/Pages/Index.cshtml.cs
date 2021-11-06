@@ -4,13 +4,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Identity.DefaultUI.WebSite.Pages
+namespace Identity.DefaultUI.WebSite.Pages;
+
+[AllowAnonymous]
+public class IndexModel : PageModel
 {
-    [AllowAnonymous]
-    public class IndexModel : PageModel
+    public void OnGet()
     {
-        public void OnGet()
-        {
-        }
     }
 }

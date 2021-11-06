@@ -7,43 +7,42 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
-namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
+namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+
+// Although this is not used for anything meaningful related to Blazor yet, it
+// will be used later when there's a mechanism for publishing standalone Blazor
+// apps as a set of purely static files and we need E2E testing on the result.
+
+public class StaticSiteServerFixture : WebHostServerFixture
 {
-    // Although this is not used for anything meaningful related to Blazor yet, it
-    // will be used later when there's a mechanism for publishing standalone Blazor
-    // apps as a set of purely static files and we need E2E testing on the result.
+    public string SampleSiteName { get; set; }
 
-    public class StaticSiteServerFixture : WebHostServerFixture
+    protected override IHost CreateWebHost()
     {
-        public string SampleSiteName { get; set; }
-
-        protected override IHost CreateWebHost()
+        if (string.IsNullOrEmpty(SampleSiteName))
         {
-            if (string.IsNullOrEmpty(SampleSiteName))
-            {
-                throw new InvalidOperationException($"No value was provided for {nameof(SampleSiteName)}");
-            }
-
-            var sampleSitePath = FindSampleOrTestSitePath(SampleSiteName);
-
-            var host = "127.0.0.1";
-
-            return new HostBuilder()
-                .ConfigureWebHost(webHostBuilder => webHostBuilder
-                    .UseKestrel()
-                    .UseContentRoot(sampleSitePath)
-                    .UseWebRoot(string.Empty)
-                    .UseStartup<StaticSiteStartup>()
-                    .UseUrls($"http://{host}:0"))
-                .Build();
+            throw new InvalidOperationException($"No value was provided for {nameof(SampleSiteName)}");
         }
 
-        private class StaticSiteStartup
+        var sampleSitePath = FindSampleOrTestSitePath(SampleSiteName);
+
+        var host = "127.0.0.1";
+
+        return new HostBuilder()
+            .ConfigureWebHost(webHostBuilder => webHostBuilder
+                .UseKestrel()
+                .UseContentRoot(sampleSitePath)
+                .UseWebRoot(string.Empty)
+                .UseStartup<StaticSiteStartup>()
+                .UseUrls($"http://{host}:0"))
+            .Build();
+    }
+
+    private class StaticSiteStartup
+    {
+        public void Configure(IApplicationBuilder app)
         {
-            public void Configure(IApplicationBuilder app)
-            {
-                app.UseFileServer();
-            }
+            app.UseFileServer();
         }
     }
 }

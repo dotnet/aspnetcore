@@ -3,15 +3,14 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Connections
+namespace Microsoft.AspNetCore.Connections;
+
+/// <summary>
+/// Represents the possible transfer formats.
+/// </summary>
+[Flags]
+public enum TransferFormat
 {
-    /// <summary>
-    /// Represents the possible transfer formats.
-    /// </summary>
-    [Flags]
-    public enum TransferFormat
-    {
-        Binary = 0x01,
-        Text = 0x02
-    }
+    Binary = 0x01,
+    Text = 0x02
 }

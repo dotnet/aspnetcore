@@ -3,10 +3,9 @@
 
 using System;
 
-namespace MockHostTypes
+namespace MockHostTypes;
+
+public class ServiceProvider : IServiceProvider
 {
-    public class ServiceProvider : IServiceProvider
-    {
-        public object GetService(Type serviceType) => null;
-    }
+    public object GetService(Type serviceType) => null;
 }

@@ -4,28 +4,27 @@
 using System;
 using System.Security.Cryptography;
 
-namespace Microsoft.AspNetCore.DataProtection.Managed
+namespace Microsoft.AspNetCore.DataProtection.Managed;
+
+internal sealed unsafe class ManagedGenRandomImpl : IManagedGenRandom
 {
-    internal sealed unsafe class ManagedGenRandomImpl : IManagedGenRandom
-    {
 #if NETSTANDARD2_0 || NETFRAMEWORK
-        private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
+    private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
 #endif
-        public static readonly ManagedGenRandomImpl Instance = new ManagedGenRandomImpl();
+    public static readonly ManagedGenRandomImpl Instance = new ManagedGenRandomImpl();
 
-        private ManagedGenRandomImpl()
-        {
-        }
+    private ManagedGenRandomImpl()
+    {
+    }
 
-        public byte[] GenRandom(int numBytes)
-        {
-            var bytes = new byte[numBytes];
+    public byte[] GenRandom(int numBytes)
+    {
+        var bytes = new byte[numBytes];
 #if NETSTANDARD2_0 || NETFRAMEWORK
-            _rng.GetBytes(bytes);
+        _rng.GetBytes(bytes);
 #else
             RandomNumberGenerator.Fill(bytes);
 #endif
-            return bytes;
-        }
+        return bytes;
     }
 }

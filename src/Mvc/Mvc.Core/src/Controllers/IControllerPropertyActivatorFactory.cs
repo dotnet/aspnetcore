@@ -3,12 +3,11 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Mvc.Controllers
-{
-    internal interface IControllerPropertyActivator
-    {
-        void Activate(ControllerContext context, object controller);
+namespace Microsoft.AspNetCore.Mvc.Controllers;
 
-        Action<ControllerContext, object> GetActivatorDelegate(ControllerActionDescriptor actionDescriptor);
-    }
+internal interface IControllerPropertyActivator
+{
+    void Activate(ControllerContext context, object controller);
+
+    Action<ControllerContext, object> GetActivatorDelegate(ControllerActionDescriptor actionDescriptor);
 }

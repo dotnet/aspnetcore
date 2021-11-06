@@ -3,16 +3,15 @@
 
 using Microsoft.AspNetCore.Testing;
 
-namespace Interop.FunctionalTests
+namespace Interop.FunctionalTests;
+
+internal static class Utilities
 {
-    internal static class Utilities
+    internal static bool CurrentPlatformSupportsHTTP2OverTls()
     {
-        internal static bool CurrentPlatformSupportsHTTP2OverTls()
-        {
-            return // "Missing Windows ALPN support: https://en.wikipedia.org/wiki/Application-Layer_Protocol_Negotiation#Support" or missing compatible ciphers (Win8.1)
-                new MinimumOSVersionAttribute(OperatingSystems.Windows, WindowsVersions.Win10).IsMet
-                // "Missing SslStream ALPN support: https://github.com/dotnet/runtime/issues/27727"
-                && new OSSkipConditionAttribute(OperatingSystems.MacOSX).IsMet;
-        }
+        return // "Missing Windows ALPN support: https://en.wikipedia.org/wiki/Application-Layer_Protocol_Negotiation#Support" or missing compatible ciphers (Win8.1)
+            new MinimumOSVersionAttribute(OperatingSystems.Windows, WindowsVersions.Win10).IsMet
+            // "Missing SslStream ALPN support: https://github.com/dotnet/runtime/issues/27727"
+            && new OSSkipConditionAttribute(OperatingSystems.MacOSX).IsMet;
     }
 }

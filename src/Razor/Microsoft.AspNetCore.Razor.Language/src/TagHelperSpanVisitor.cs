@@ -5,27 +5,26 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+internal class TagHelperSpanVisitor : SyntaxWalker
 {
-    internal class TagHelperSpanVisitor : SyntaxWalker
+    private readonly RazorSourceDocument _source;
+    private readonly List<TagHelperSpanInternal> _spans;
+
+    public TagHelperSpanVisitor(RazorSourceDocument source)
     {
-        private readonly RazorSourceDocument _source;
-        private readonly List<TagHelperSpanInternal> _spans;
+        _source = source;
+        _spans = new List<TagHelperSpanInternal>();
+    }
 
-        public TagHelperSpanVisitor(RazorSourceDocument source)
-        {
-            _source = source;
-            _spans = new List<TagHelperSpanInternal>();
-        }
+    public IReadOnlyList<TagHelperSpanInternal> TagHelperSpans => _spans;
 
-        public IReadOnlyList<TagHelperSpanInternal> TagHelperSpans => _spans;
+    public override void VisitMarkupTagHelperElement(MarkupTagHelperElementSyntax node)
+    {
+        var span = new TagHelperSpanInternal(node.GetSourceSpan(_source), node.TagHelperInfo.BindingResult);
+        _spans.Add(span);
 
-        public override void VisitMarkupTagHelperElement(MarkupTagHelperElementSyntax node)
-        {
-            var span = new TagHelperSpanInternal(node.GetSourceSpan(_source), node.TagHelperInfo.BindingResult);
-            _spans.Add(span);
-
-            base.VisitMarkupTagHelperElement(node);
-        }
+        base.VisitMarkupTagHelperElement(node);
     }
 }

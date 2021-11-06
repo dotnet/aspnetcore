@@ -4,26 +4,25 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.Extensions.CommandLineUtils
-{
-    internal class CommandArgument
-    {
-        public CommandArgument()
-        {
-            Values = new List<string>();
-        }
+namespace Microsoft.Extensions.CommandLineUtils;
 
-        public string Name { get; set; }
-        public bool ShowInHelpText { get; set; } = true;
-        public string Description { get; set; }
-        public List<string> Values { get; private set; }
-        public bool MultipleValues { get; set; }
-        public string Value
+internal class CommandArgument
+{
+    public CommandArgument()
+    {
+        Values = new List<string>();
+    }
+
+    public string Name { get; set; }
+    public bool ShowInHelpText { get; set; } = true;
+    public string Description { get; set; }
+    public List<string> Values { get; private set; }
+    public bool MultipleValues { get; set; }
+    public string Value
+    {
+        get
         {
-            get
-            {
-                return Values.FirstOrDefault();
-            }
+            return Values.FirstOrDefault();
         }
     }
 }

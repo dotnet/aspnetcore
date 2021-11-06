@@ -4,12 +4,11 @@
 using System;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
+namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
+
+internal class MockSystemClock : ISystemClock
 {
-    internal class MockSystemClock : ISystemClock
-    {
-        public DateTimeOffset UtcNow { get; }
-        public long UtcNowTicks { get; }
-        public DateTimeOffset UtcNowUnsynchronized { get; }
-    }
+    public DateTimeOffset UtcNow { get; }
+    public long UtcNowTicks { get; }
+    public DateTimeOffset UtcNowUnsynchronized { get; }
 }

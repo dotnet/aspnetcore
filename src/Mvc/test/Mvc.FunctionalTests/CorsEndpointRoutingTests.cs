@@ -1,13 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
+
+public class CorsEndpointRoutingTests : CorsTestsBase<CorsWebSite.Startup>
 {
-    public class CorsEndpointRoutingTests : CorsTestsBase<CorsWebSite.Startup>
+    public CorsEndpointRoutingTests(MvcTestFixture<CorsWebSite.Startup> fixture)
+        : base(fixture)
     {
-        public CorsEndpointRoutingTests(MvcTestFixture<CorsWebSite.Startup> fixture)
-            : base(fixture)
-        {
-        }
     }
 }

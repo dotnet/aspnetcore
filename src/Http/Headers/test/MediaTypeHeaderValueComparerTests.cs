@@ -5,15 +5,15 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
-namespace Microsoft.Net.Http.Headers
+namespace Microsoft.Net.Http.Headers;
+
+public class MediaTypeHeaderValueComparerTests
 {
-    public class MediaTypeHeaderValueComparerTests
+    public static IEnumerable<object[]> SortValues
     {
-        public static IEnumerable<object[]> SortValues
+        get
         {
-            get
-            {
-                yield return new object[] {
+            yield return new object[] {
                     new string[]
                         {
                             "application/*",
@@ -57,19 +57,18 @@ namespace Microsoft.Net.Http.Headers
                             "text/plain;q=0",
                         }
                 };
-            }
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(SortValues))]
-        public void SortMediaTypeHeaderValuesByQFactor_SortsCorrectly(IEnumerable<string> unsorted, IEnumerable<string> expectedSorted)
-        {
-            var unsortedValues = MediaTypeHeaderValue.ParseList(unsorted.ToList());
-            var expectedSortedValues = MediaTypeHeaderValue.ParseList(expectedSorted.ToList());
+    [Theory]
+    [MemberData(nameof(SortValues))]
+    public void SortMediaTypeHeaderValuesByQFactor_SortsCorrectly(IEnumerable<string> unsorted, IEnumerable<string> expectedSorted)
+    {
+        var unsortedValues = MediaTypeHeaderValue.ParseList(unsorted.ToList());
+        var expectedSortedValues = MediaTypeHeaderValue.ParseList(expectedSorted.ToList());
 
-            var actualSorted = unsortedValues.OrderByDescending(m => m, MediaTypeHeaderValueComparer.QualityComparer).ToList();
+        var actualSorted = unsortedValues.OrderByDescending(m => m, MediaTypeHeaderValueComparer.QualityComparer).ToList();
 
-            Assert.Equal(expectedSortedValues, actualSorted);
-        }
+        Assert.Equal(expectedSortedValues, actualSorted);
     }
 }

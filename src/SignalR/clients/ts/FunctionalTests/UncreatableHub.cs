@@ -3,12 +3,11 @@
 
 using Microsoft.AspNetCore.SignalR;
 
-namespace FunctionalTests
+namespace FunctionalTests;
+
+public class UncreatableHub : Hub
 {
-    public class UncreatableHub: Hub
+    public UncreatableHub(object obj)
     {
-        public UncreatableHub(object obj)
-        {
-        }
     }
 }

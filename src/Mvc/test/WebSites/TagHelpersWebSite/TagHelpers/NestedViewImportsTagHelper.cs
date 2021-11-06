@@ -3,14 +3,13 @@
 
 using Microsoft.AspNetCore.Razor.TagHelpers;
 
-namespace TagHelpersWebSite.TagHelpers
+namespace TagHelpersWebSite.TagHelpers;
+
+[HtmlTargetElement("nested")]
+public class NestedViewImportsTagHelper : TagHelper
 {
-    [HtmlTargetElement("nested")]
-    public class NestedViewImportsTagHelper : TagHelper
+    public override void Process(TagHelperContext context, TagHelperOutput output)
     {
-        public override void Process(TagHelperContext context, TagHelperOutput output)
-        {
-            output.Content.AppendHtml("nested-content");
-        }
+        output.Content.AppendHtml("nested-content");
     }
 }

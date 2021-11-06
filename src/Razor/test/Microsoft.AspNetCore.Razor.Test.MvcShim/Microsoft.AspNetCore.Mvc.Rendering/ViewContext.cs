@@ -3,10 +3,9 @@
 
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
-namespace Microsoft.AspNetCore.Mvc.Rendering
+namespace Microsoft.AspNetCore.Mvc.Rendering;
+
+public class ViewContext
 {
-    public class ViewContext
-    {
-        public ViewDataDictionary ViewData { get; set; }
-    }
+    public ViewDataDictionary ViewData { get; set; }
 }

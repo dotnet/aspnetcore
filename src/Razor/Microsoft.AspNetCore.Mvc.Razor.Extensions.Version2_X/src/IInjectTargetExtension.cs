@@ -3,10 +3,9 @@
 
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
+namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X;
+
+public interface IInjectTargetExtension : ICodeTargetExtension
 {
-    public interface IInjectTargetExtension : ICodeTargetExtension
-    {
-        void WriteInjectProperty(CodeRenderingContext context, InjectIntermediateNode node);
-    }
+    void WriteInjectProperty(CodeRenderingContext context, InjectIntermediateNode node);
 }

@@ -5,35 +5,34 @@ using System;
 using System.IO;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 
-namespace ServerComparison.FunctionalTests
+namespace ServerComparison.FunctionalTests;
+
+public class Helpers
 {
-    public class Helpers
+    public static string GetApplicationPath()
     {
-        public static string GetApplicationPath()
-        {
-            var applicationBasePath = AppContext.BaseDirectory;
+        var applicationBasePath = AppContext.BaseDirectory;
 
-            var directoryInfo = new DirectoryInfo(applicationBasePath);
-            do
+        var directoryInfo = new DirectoryInfo(applicationBasePath);
+        do
+        {
+            var solutionFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, "FunctionalTests.slnf"));
+            if (solutionFileInfo.Exists)
             {
-                var solutionFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, "FunctionalTests.slnf"));
-                if (solutionFileInfo.Exists)
-                {
-                    return Path.GetFullPath(Path.Combine(directoryInfo.FullName, "..", "..","testassets", "ServerComparison.TestSites"));
-                }
-
-                directoryInfo = directoryInfo.Parent;
+                return Path.GetFullPath(Path.Combine(directoryInfo.FullName, "..", "..", "testassets", "ServerComparison.TestSites"));
             }
-            while (directoryInfo.Parent != null);
 
-            throw new Exception($"Solution root could not be found using {applicationBasePath}");
+            directoryInfo = directoryInfo.Parent;
         }
+        while (directoryInfo.Parent != null);
 
-        public static string GetNginxConfigContent(string nginxConfig)
-        {
-            var applicationBasePath = AppContext.BaseDirectory;
-            var content = File.ReadAllText(Path.Combine(applicationBasePath, nginxConfig));
-            return content;
-        }
+        throw new Exception($"Solution root could not be found using {applicationBasePath}");
+    }
+
+    public static string GetNginxConfigContent(string nginxConfig)
+    {
+        var applicationBasePath = AppContext.BaseDirectory;
+        var content = File.ReadAllText(Path.Combine(applicationBasePath, nginxConfig));
+        return content;
     }
 }

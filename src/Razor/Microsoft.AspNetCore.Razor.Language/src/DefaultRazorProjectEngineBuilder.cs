@@ -5,56 +5,55 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+internal class DefaultRazorProjectEngineBuilder : RazorProjectEngineBuilder
 {
-    internal class DefaultRazorProjectEngineBuilder : RazorProjectEngineBuilder
+    public DefaultRazorProjectEngineBuilder(RazorConfiguration configuration, RazorProjectFileSystem fileSystem)
     {
-        public DefaultRazorProjectEngineBuilder(RazorConfiguration configuration, RazorProjectFileSystem fileSystem)
+        if (fileSystem == null)
         {
-            if (fileSystem == null)
-            {
-                throw new ArgumentNullException(nameof(fileSystem));
-            }
-
-            Configuration = configuration;
-            FileSystem = fileSystem;
-            Features = new List<IRazorFeature>();
-            Phases = new List<IRazorEnginePhase>();
+            throw new ArgumentNullException(nameof(fileSystem));
         }
 
-        public override RazorConfiguration Configuration { get; }
+        Configuration = configuration;
+        FileSystem = fileSystem;
+        Features = new List<IRazorFeature>();
+        Phases = new List<IRazorEnginePhase>();
+    }
 
-        public override RazorProjectFileSystem FileSystem { get; }
+    public override RazorConfiguration Configuration { get; }
 
-        public override ICollection<IRazorFeature> Features { get; }
+    public override RazorProjectFileSystem FileSystem { get; }
 
-        public override IList<IRazorEnginePhase> Phases { get; }
+    public override ICollection<IRazorFeature> Features { get; }
 
-        public override RazorProjectEngine Build()
-        {
+    public override IList<IRazorEnginePhase> Phases { get; }
+
+    public override RazorProjectEngine Build()
+    {
 #pragma warning disable CS0618 // Type or member is obsolete
-            var engine = RazorEngine.CreateEmpty(ConfigureRazorEngine);
+        var engine = RazorEngine.CreateEmpty(ConfigureRazorEngine);
 #pragma warning restore CS0618 // Type or member is obsolete
-            var projectFeatures = Features.OfType<IRazorProjectEngineFeature>().ToArray();
-            var projectEngine = new DefaultRazorProjectEngine(Configuration, engine, FileSystem, projectFeatures);
+        var projectFeatures = Features.OfType<IRazorProjectEngineFeature>().ToArray();
+        var projectEngine = new DefaultRazorProjectEngine(Configuration, engine, FileSystem, projectFeatures);
 
-            return projectEngine;
+        return projectEngine;
+    }
+
+#pragma warning disable CS0618 // Type or member is obsolete
+    private void ConfigureRazorEngine(IRazorEngineBuilder engineBuilder)
+#pragma warning disable CS0618 // Type or member is obsolete
+    {
+        var engineFeatures = Features.OfType<IRazorEngineFeature>();
+        foreach (var engineFeature in engineFeatures)
+        {
+            engineBuilder.Features.Add(engineFeature);
         }
 
-#pragma warning disable CS0618 // Type or member is obsolete
-        private void ConfigureRazorEngine(IRazorEngineBuilder engineBuilder)
-#pragma warning disable CS0618 // Type or member is obsolete
+        for (var i = 0; i < Phases.Count; i++)
         {
-            var engineFeatures = Features.OfType<IRazorEngineFeature>();
-            foreach (var engineFeature in engineFeatures)
-            {
-                engineBuilder.Features.Add(engineFeature);
-            }
-
-            for (var i = 0; i < Phases.Count; i++)
-            {
-                engineBuilder.Phases.Add(Phases[i]);
-            }
+            engineBuilder.Phases.Add(Phases[i]);
         }
     }
 }

@@ -6,20 +6,19 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.WebEncoders.Testing;
 
-namespace Microsoft.AspNetCore.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
+
+public class MvcEncodedTestFixture<TStartup> : MvcTestFixture<TStartup>
+    where TStartup : class
 {
-    public class MvcEncodedTestFixture<TStartup> : MvcTestFixture<TStartup>
-        where TStartup : class
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        base.ConfigureWebHost(builder);
+        builder.ConfigureServices(services =>
         {
-            base.ConfigureWebHost(builder);
-            builder.ConfigureServices(services =>
-            {
-                services.TryAddTransient<HtmlEncoder, HtmlTestEncoder>();
-                services.TryAddTransient<JavaScriptEncoder, JavaScriptTestEncoder>();
-                services.TryAddTransient<UrlEncoder, UrlTestEncoder>();
-            });
-        }
+            services.TryAddTransient<HtmlEncoder, HtmlTestEncoder>();
+            services.TryAddTransient<JavaScriptEncoder, JavaScriptTestEncoder>();
+            services.TryAddTransient<UrlEncoder, UrlTestEncoder>();
+        });
     }
 }

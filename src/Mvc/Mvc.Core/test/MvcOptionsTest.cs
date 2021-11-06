@@ -4,19 +4,18 @@
 using System;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc
-{
-    public class MvcOptionsTest
-    {
-        [Fact]
-        public void MaxValidationError_ThrowsIfValueIsOutOfRange()
-        {
-            // Arrange
-            var options = new MvcOptions();
+namespace Microsoft.AspNetCore.Mvc;
 
-            // Act & Assert
-            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => options.MaxModelValidationErrors = -1);
-            Assert.Equal("value", ex.ParamName);
-        }
+public class MvcOptionsTest
+{
+    [Fact]
+    public void MaxValidationError_ThrowsIfValueIsOutOfRange()
+    {
+        // Arrange
+        var options = new MvcOptions();
+
+        // Act & Assert
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(() => options.MaxModelValidationErrors = -1);
+        Assert.Equal("value", ex.ParamName);
     }
 }

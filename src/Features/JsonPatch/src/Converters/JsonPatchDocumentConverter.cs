@@ -8,69 +8,68 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
-namespace Microsoft.AspNetCore.JsonPatch.Converters
+namespace Microsoft.AspNetCore.JsonPatch.Converters;
+
+public class JsonPatchDocumentConverter : JsonConverter
 {
-    public class JsonPatchDocumentConverter : JsonConverter
+    internal static DefaultContractResolver DefaultContractResolver { get; } = new();
+
+    public override bool CanConvert(Type objectType)
     {
-        internal static DefaultContractResolver DefaultContractResolver { get; } = new();
+        return true;
+    }
 
-        public override bool CanConvert(Type objectType)
+    public override object ReadJson(JsonReader reader, Type objectType, object existingValue,
+        JsonSerializer serializer)
+    {
+        if (objectType != typeof(JsonPatchDocument))
         {
-            return true;
+            throw new ArgumentException(Resources.FormatParameterMustMatchType(nameof(objectType), "JsonPatchDocument"), nameof(objectType));
         }
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue,
-            JsonSerializer serializer)
+        try
         {
-            if (objectType != typeof(JsonPatchDocument))
+            if (reader.TokenType == JsonToken.Null)
             {
-                throw new ArgumentException(Resources.FormatParameterMustMatchType(nameof(objectType), "JsonPatchDocument"), nameof(objectType));
+                return null;
             }
 
-            try
-            {
-                if (reader.TokenType == JsonToken.Null)
-                {
-                    return null;
-                }
+            // load jObject
+            var jObject = JArray.Load(reader);
 
-                // load jObject
-                var jObject = JArray.Load(reader);
+            // Create target object for Json => list of operations
+            var targetOperations = new List<Operation>();
 
-                // Create target object for Json => list of operations
-                var targetOperations = new List<Operation>();
+            // Create a new reader for this jObject, and set all properties
+            // to match the original reader.
+            var jObjectReader = jObject.CreateReader();
+            jObjectReader.Culture = reader.Culture;
+            jObjectReader.DateParseHandling = reader.DateParseHandling;
+            jObjectReader.DateTimeZoneHandling = reader.DateTimeZoneHandling;
+            jObjectReader.FloatParseHandling = reader.FloatParseHandling;
 
-                // Create a new reader for this jObject, and set all properties
-                // to match the original reader.
-                var jObjectReader = jObject.CreateReader();
-                jObjectReader.Culture = reader.Culture;
-                jObjectReader.DateParseHandling = reader.DateParseHandling;
-                jObjectReader.DateTimeZoneHandling = reader.DateTimeZoneHandling;
-                jObjectReader.FloatParseHandling = reader.FloatParseHandling;
+            // Populate the object properties
+            serializer.Populate(jObjectReader, targetOperations);
 
-                // Populate the object properties
-                serializer.Populate(jObjectReader, targetOperations);
+            // container target: the JsonPatchDocument.
+            var container = new JsonPatchDocument(targetOperations, DefaultContractResolver);
 
-                // container target: the JsonPatchDocument.
-                var container = new JsonPatchDocument(targetOperations, DefaultContractResolver);
-
-                return container;
-            }
-            catch (Exception ex)
-            {
-                throw new JsonSerializationException(Resources.InvalidJsonPatchDocument, ex);
-            }
+            return container;
         }
-
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        catch (Exception ex)
         {
-            if (value is IJsonPatchDocument jsonPatchDoc)
-            {
-                var lst = jsonPatchDoc.GetOperations();
+            throw new JsonSerializationException(Resources.InvalidJsonPatchDocument, ex);
+        }
+    }
 
-                // write out the operations, no envelope
-                serializer.Serialize(writer, lst);
-            }
+    public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+    {
+        if (value is IJsonPatchDocument jsonPatchDoc)
+        {
+            var lst = jsonPatchDoc.GetOperations();
+
+            // write out the operations, no envelope
+            serializer.Serialize(writer, lst);
         }
     }
 }

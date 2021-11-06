@@ -4,25 +4,24 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
-namespace HostedInAspNet.Server
-{
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            BuildWebHost(args).Run();
-        }
+namespace HostedInAspNet.Server;
 
-        public static IHost BuildWebHost(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-            .ConfigureWebHostDefaults(webHostBuilder =>
-            {
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        BuildWebHost(args).Run();
+    }
+
+    public static IHost BuildWebHost(string[] args) =>
+        Host.CreateDefaultBuilder(args)
+        .ConfigureWebHostDefaults(webHostBuilder =>
+        {
                 // We require this line because we run in Production environment
                 // and static web assets are only on by default during development.
                 webHostBuilder.UseStaticWebAssets();
 
-                webHostBuilder.UseStartup<Startup>();
-            })
-            .Build();
-    }
+            webHostBuilder.UseStartup<Startup>();
+        })
+        .Build();
 }

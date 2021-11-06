@@ -7,34 +7,34 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Security
+namespace Microsoft.AspNetCore.Security;
+
+public class ChunkingCookieManagerBenchmark
 {
-    public class ChunkingCookieManagerBenchmark
+    private ChunkingCookieManager _chunkingCookieManager;
+    private HttpContext _httpContext;
+    private CookieOptions _cookieOptions;
+    private string _stringToAdd;
+
+    [GlobalSetup]
+    public void GlobalSetup()
     {
-        private ChunkingCookieManager _chunkingCookieManager;
-        private HttpContext _httpContext;
-        private CookieOptions _cookieOptions;
-        private string _stringToAdd;
-
-        [GlobalSetup]
-        public void GlobalSetup()
+        _chunkingCookieManager = new ChunkingCookieManager()
         {
-            _chunkingCookieManager = new ChunkingCookieManager()
-            {
-                ChunkSize = 86
-            };
+            ChunkSize = 86
+        };
 
-            _httpContext = new DefaultHttpContext();
+        _httpContext = new DefaultHttpContext();
 
-            _cookieOptions = new CookieOptions()
-            {
-                Domain = "foo.com",
-                Path = "/",
-                Secure = true
-            };
+        _cookieOptions = new CookieOptions()
+        {
+            Domain = "foo.com",
+            Path = "/",
+            Secure = true
+        };
 
-            _httpContext.Request.Headers["Cookie"] = new[]
-            {
+        _httpContext.Request.Headers["Cookie"] = new[]
+        {
                 "TestCookie=chunks-7",
                 "TestCookieC1=abcdefghi",
                 "TestCookieC2=jklmnopqr",
@@ -45,22 +45,21 @@ namespace Microsoft.AspNetCore.Security
                 "TestCookieC7=STUVWXYZ"
             };
 
-            _stringToAdd = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        }
+        _stringToAdd = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    }
 
 
-        [Benchmark]
-        public void AppendCookies()
-        {
-            _chunkingCookieManager.AppendResponseCookie(_httpContext, "TestCookie1", _stringToAdd, _cookieOptions);
-            _httpContext.Response.Headers[HeaderNames.SetCookie] = StringValues.Empty;
-        }
+    [Benchmark]
+    public void AppendCookies()
+    {
+        _chunkingCookieManager.AppendResponseCookie(_httpContext, "TestCookie1", _stringToAdd, _cookieOptions);
+        _httpContext.Response.Headers[HeaderNames.SetCookie] = StringValues.Empty;
+    }
 
-        [Benchmark]
-        public void DeleteCookies()
-        {
-            _chunkingCookieManager.DeleteCookie(_httpContext, "TestCookie", _cookieOptions);
-            _httpContext.Response.Headers[HeaderNames.SetCookie] = StringValues.Empty;
-        }
+    [Benchmark]
+    public void DeleteCookies()
+    {
+        _chunkingCookieManager.DeleteCookie(_httpContext, "TestCookie", _cookieOptions);
+        _httpContext.Response.Headers[HeaderNames.SetCookie] = StringValues.Empty;
     }
 }

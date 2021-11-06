@@ -3,17 +3,16 @@
 
 using System.IO.Pipelines;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
-{
-    internal class MockDuplexPipe : IDuplexPipe
-    {
-        public MockDuplexPipe(PipeReader input, PipeWriter output)
-        {
-            Input = input;
-            Output = output;
-        }
+namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
 
-        public PipeReader Input { get; }
-        public PipeWriter Output { get; }
+internal class MockDuplexPipe : IDuplexPipe
+{
+    public MockDuplexPipe(PipeReader input, PipeWriter output)
+    {
+        Input = input;
+        Output = output;
     }
+
+    public PipeReader Input { get; }
+    public PipeWriter Output { get; }
 }

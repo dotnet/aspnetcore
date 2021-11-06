@@ -3,39 +3,38 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.SignalR.Client.Internal
+namespace Microsoft.AspNetCore.SignalR.Client.Internal;
+
+internal class DefaultRetryPolicy : IRetryPolicy
 {
-    internal class DefaultRetryPolicy : IRetryPolicy
+    internal static TimeSpan?[] DEFAULT_RETRY_DELAYS_IN_MILLISECONDS = new TimeSpan?[]
     {
-        internal static TimeSpan?[] DEFAULT_RETRY_DELAYS_IN_MILLISECONDS = new TimeSpan?[]
-        {
             TimeSpan.Zero,
             TimeSpan.FromSeconds(2),
             TimeSpan.FromSeconds(10),
             TimeSpan.FromSeconds(30),
             null,
-        };
+    };
 
-        private readonly TimeSpan?[] _retryDelays;
+    private readonly TimeSpan?[] _retryDelays;
 
-        public DefaultRetryPolicy()
+    public DefaultRetryPolicy()
+    {
+        _retryDelays = DEFAULT_RETRY_DELAYS_IN_MILLISECONDS;
+    }
+
+    public DefaultRetryPolicy(TimeSpan[] retryDelays)
+    {
+        _retryDelays = new TimeSpan?[retryDelays.Length + 1];
+
+        for (int i = 0; i < retryDelays.Length; i++)
         {
-            _retryDelays = DEFAULT_RETRY_DELAYS_IN_MILLISECONDS;
+            _retryDelays[i] = retryDelays[i];
         }
+    }
 
-        public DefaultRetryPolicy(TimeSpan[] retryDelays)
-        {
-            _retryDelays = new TimeSpan?[retryDelays.Length + 1];
-
-            for (int i = 0; i < retryDelays.Length; i++)
-            {
-                _retryDelays[i] = retryDelays[i];
-            }
-        }
-
-        public TimeSpan? NextRetryDelay(RetryContext retryContext)
-        {
-            return _retryDelays[retryContext.PreviousRetryCount];
-        }
+    public TimeSpan? NextRetryDelay(RetryContext retryContext)
+    {
+        return _retryDelays[retryContext.PreviousRetryCount];
     }
 }

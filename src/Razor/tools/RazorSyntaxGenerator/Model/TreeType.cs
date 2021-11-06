@@ -3,20 +3,19 @@
 
 using System.Xml.Serialization;
 
-namespace RazorSyntaxGenerator
+namespace RazorSyntaxGenerator;
+
+public class TreeType
 {
-    public class TreeType
-    {
-        [XmlAttribute]
-        public string Name;
+    [XmlAttribute]
+    public string Name;
 
-        [XmlAttribute]
-        public string Base;
+    [XmlAttribute]
+    public string Base;
 
-        [XmlElement]
-        public Comment TypeComment;
+    [XmlElement]
+    public Comment TypeComment;
 
-        [XmlElement]
-        public Comment FactoryComment;
-    }
+    [XmlElement]
+    public Comment FactoryComment;
 }

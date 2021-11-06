@@ -3,15 +3,14 @@
 
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Identity.DefaultUI.WebSite.Pages
-{
-    public class ContactModel : PageModel
-    {
-        public string Message { get; set; }
+namespace Identity.DefaultUI.WebSite.Pages;
 
-        public void OnGet()
-        {
-            Message = "Your contact page.";
-        }
+public class ContactModel : PageModel
+{
+    public string Message { get; set; }
+
+    public void OnGet()
+    {
+        Message = "Your contact page.";
     }
 }

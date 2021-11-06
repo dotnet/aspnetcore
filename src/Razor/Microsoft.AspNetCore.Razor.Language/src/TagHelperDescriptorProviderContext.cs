@@ -4,45 +4,44 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+public abstract class TagHelperDescriptorProviderContext
 {
-    public abstract class TagHelperDescriptorProviderContext
+    public virtual bool ExcludeHidden { get; set; }
+
+    public virtual bool IncludeDocumentation { get; set; }
+
+    public abstract ItemCollection Items { get; }
+
+    public abstract ICollection<TagHelperDescriptor> Results { get; }
+
+    public static TagHelperDescriptorProviderContext Create()
     {
-        public virtual bool ExcludeHidden { get; set; }
+        return new DefaultContext(new List<TagHelperDescriptor>());
+    }
 
-        public virtual bool IncludeDocumentation { get; set; }
-
-        public abstract ItemCollection Items { get; }
-
-        public abstract ICollection<TagHelperDescriptor> Results { get; }
-
-        public static TagHelperDescriptorProviderContext Create()
+    public static TagHelperDescriptorProviderContext Create(ICollection<TagHelperDescriptor> results)
+    {
+        if (results == null)
         {
-            return new DefaultContext(new List<TagHelperDescriptor>());
+            throw new ArgumentNullException(nameof(results));
         }
 
-        public static TagHelperDescriptorProviderContext Create(ICollection<TagHelperDescriptor> results)
-        {
-            if (results == null)
-            {
-                throw new ArgumentNullException(nameof(results));
-            }
+        return new DefaultContext(results);
+    }
 
-            return new DefaultContext(results);
+    private class DefaultContext : TagHelperDescriptorProviderContext
+    {
+        public DefaultContext(ICollection<TagHelperDescriptor> results)
+        {
+            Results = results;
+
+            Items = new ItemCollection();
         }
 
-        private class DefaultContext : TagHelperDescriptorProviderContext
-        {
-            public DefaultContext(ICollection<TagHelperDescriptor> results)
-            {
-                Results = results;
+        public override ItemCollection Items { get; }
 
-                Items = new ItemCollection();
-            }
-
-            public override ItemCollection Items { get; }
-
-            public override ICollection<TagHelperDescriptor> Results { get; }
-        }
+        public override ICollection<TagHelperDescriptor> Results { get; }
     }
 }

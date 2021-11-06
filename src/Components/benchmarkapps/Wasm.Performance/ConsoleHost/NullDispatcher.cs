@@ -5,26 +5,25 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
-namespace Wasm.Performance.ConsoleHost
+namespace Wasm.Performance.ConsoleHost;
+
+internal class NullDispatcher : Dispatcher
 {
-    internal class NullDispatcher : Dispatcher
+    public override bool CheckAccess()
+        => true;
+
+    public override Task InvokeAsync(Action workItem)
     {
-        public override bool CheckAccess()
-            => true;
-
-        public override Task InvokeAsync(Action workItem)
-        {
-            workItem();
-            return Task.CompletedTask;
-        }
-
-        public override Task InvokeAsync(Func<Task> workItem)
-            => workItem();
-
-        public override Task<TResult> InvokeAsync<TResult>(Func<TResult> workItem)
-            => Task.FromResult(workItem());
-
-        public override Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> workItem)
-            => workItem();
+        workItem();
+        return Task.CompletedTask;
     }
+
+    public override Task InvokeAsync(Func<Task> workItem)
+        => workItem();
+
+    public override Task<TResult> InvokeAsync<TResult>(Func<TResult> workItem)
+        => Task.FromResult(workItem());
+
+    public override Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> workItem)
+        => workItem();
 }

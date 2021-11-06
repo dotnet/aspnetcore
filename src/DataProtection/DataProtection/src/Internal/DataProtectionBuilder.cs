@@ -4,27 +4,26 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.DataProtection.Internal
+namespace Microsoft.AspNetCore.DataProtection.Internal;
+
+/// <summary>
+/// Default implementation of <see cref="IDataProtectionBuilder"/>.
+/// </summary>
+internal class DataProtectionBuilder : IDataProtectionBuilder
 {
     /// <summary>
-    /// Default implementation of <see cref="IDataProtectionBuilder"/>.
+    /// Creates a new configuration object linked to a <see cref="IServiceCollection"/>.
     /// </summary>
-    internal class DataProtectionBuilder : IDataProtectionBuilder
+    public DataProtectionBuilder(IServiceCollection services)
     {
-        /// <summary>
-        /// Creates a new configuration object linked to a <see cref="IServiceCollection"/>.
-        /// </summary>
-        public DataProtectionBuilder(IServiceCollection services)
+        if (services == null)
         {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-
-            Services = services;
+            throw new ArgumentNullException(nameof(services));
         }
 
-        /// <inheritdoc />
-        public IServiceCollection Services { get; }
+        Services = services;
     }
+
+    /// <inheritdoc />
+    public IServiceCollection Services { get; }
 }

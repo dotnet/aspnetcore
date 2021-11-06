@@ -3,16 +3,15 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Rewrite
-{
-    internal class DelegateRule : IRule
-    {
-        private readonly Action<RewriteContext> _onApplyRule;
+namespace Microsoft.AspNetCore.Rewrite;
 
-        public DelegateRule(Action<RewriteContext> onApplyRule)
-        {
-            _onApplyRule = onApplyRule;
-        }
-        public void ApplyRule(RewriteContext context) => _onApplyRule(context);
+internal class DelegateRule : IRule
+{
+    private readonly Action<RewriteContext> _onApplyRule;
+
+    public DelegateRule(Action<RewriteContext> onApplyRule)
+    {
+        _onApplyRule = onApplyRule;
     }
+    public void ApplyRule(RewriteContext context) => _onApplyRule(context);
 }

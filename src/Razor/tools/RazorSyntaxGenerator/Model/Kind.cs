@@ -3,11 +3,10 @@
 
 using System.Xml.Serialization;
 
-namespace RazorSyntaxGenerator
+namespace RazorSyntaxGenerator;
+
+public class Kind
 {
-    public class Kind
-    {
-        [XmlAttribute]
-        public string Name;
-    }
+    [XmlAttribute]
+    public string Name;
 }

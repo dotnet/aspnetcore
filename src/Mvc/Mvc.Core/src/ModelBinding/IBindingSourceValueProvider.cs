@@ -3,25 +3,24 @@
 
 #nullable enable
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding;
+
+/// <summary>
+/// A value provider which can filter its contents based on <see cref="BindingSource"/>.
+/// </summary>
+/// <remarks>
+/// Value providers are by-default included. If a model does not specify a <see cref="BindingSource"/>
+/// then all value providers are valid.
+/// </remarks>
+public interface IBindingSourceValueProvider : IValueProvider
 {
     /// <summary>
-    /// A value provider which can filter its contents based on <see cref="BindingSource"/>.
+    /// Filters the value provider based on <paramref name="bindingSource"/>.
     /// </summary>
-    /// <remarks>
-    /// Value providers are by-default included. If a model does not specify a <see cref="BindingSource"/>
-    /// then all value providers are valid.
-    /// </remarks>
-    public interface IBindingSourceValueProvider : IValueProvider
-    {
-        /// <summary>
-        /// Filters the value provider based on <paramref name="bindingSource"/>.
-        /// </summary>
-        /// <param name="bindingSource">The <see cref="BindingSource"/> associated with a model.</param>
-        /// <returns>
-        /// The filtered value provider, or <c>null</c> if the value provider does not match
-        /// <paramref name="bindingSource"/>.
-        /// </returns>
-        IValueProvider? Filter(BindingSource bindingSource);
-    }
+    /// <param name="bindingSource">The <see cref="BindingSource"/> associated with a model.</param>
+    /// <returns>
+    /// The filtered value provider, or <c>null</c> if the value provider does not match
+    /// <paramref name="bindingSource"/>.
+    /// </returns>
+    IValueProvider? Filter(BindingSource bindingSource);
 }

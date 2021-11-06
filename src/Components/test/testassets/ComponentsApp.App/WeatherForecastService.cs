@@ -4,10 +4,9 @@
 using System;
 using System.Threading.Tasks;
 
-namespace ComponentsApp
+namespace ComponentsApp;
+
+public abstract class WeatherForecastService
 {
-    public abstract class WeatherForecastService
-    {
-        public abstract Task<WeatherForecast[]> GetForecastAsync(DateTime startDate);
-    }
+    public abstract Task<WeatherForecast[]> GetForecastAsync(DateTime startDate);
 }

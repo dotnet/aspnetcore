@@ -14,49 +14,47 @@ using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Hosting;
 using Xunit;
-
-using KestrelHttpVersion = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion;
 using KestrelHttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
+using KestrelHttpVersion = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests
+namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests;
+
+public class SocketTransportTests : LoggedTestBase
 {
-    public class SocketTransportTests : LoggedTestBase
+    [Fact]
+    public async Task SocketTransportExposesSocketsFeature()
     {
-        [Fact]
-        public async Task SocketTransportExposesSocketsFeature()
-        {
-            var builder = TransportSelector.GetHostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
-                {
-                    webHostBuilder
-                        .UseKestrel()
-                        .UseUrls("http://127.0.0.1:0")
-                        .Configure(app =>
+        var builder = TransportSelector.GetHostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseKestrel()
+                    .UseUrls("http://127.0.0.1:0")
+                    .Configure(app =>
+                    {
+                        app.Run(context =>
                         {
-                            app.Run(context =>
-                            {
-                                var socket = context.Features.Get<IConnectionSocketFeature>().Socket;
-                                Assert.NotNull(socket);
-                                Assert.Equal(ProtocolType.Tcp, socket.ProtocolType);
-                                var ip = (IPEndPoint)socket.RemoteEndPoint;
-                                Assert.Equal(ip.Address, context.Connection.RemoteIpAddress);
-                                Assert.Equal(ip.Port, context.Connection.RemotePort);
+                            var socket = context.Features.Get<IConnectionSocketFeature>().Socket;
+                            Assert.NotNull(socket);
+                            Assert.Equal(ProtocolType.Tcp, socket.ProtocolType);
+                            var ip = (IPEndPoint)socket.RemoteEndPoint;
+                            Assert.Equal(ip.Address, context.Connection.RemoteIpAddress);
+                            Assert.Equal(ip.Port, context.Connection.RemotePort);
 
-                                return Task.CompletedTask;
-                            });
+                            return Task.CompletedTask;
                         });
-                })
-                .ConfigureServices(AddTestLogging);
+                    });
+            })
+            .ConfigureServices(AddTestLogging);
 
-            using var host = builder.Build();
-            using var client = new HttpClient();
+        using var host = builder.Build();
+        using var client = new HttpClient();
 
-            await host.StartAsync();
+        await host.StartAsync();
 
-            var response = await client.GetAsync($"http://127.0.0.1:{host.GetPort()}/");
-            response.EnsureSuccessStatusCode();
+        var response = await client.GetAsync($"http://127.0.0.1:{host.GetPort()}/");
+        response.EnsureSuccessStatusCode();
 
-            await host.StopAsync();
-        }
+        await host.StopAsync();
     }
 }

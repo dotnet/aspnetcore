@@ -4,206 +4,205 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Razor.Language.Intermediate
+namespace Microsoft.AspNetCore.Razor.Language.Intermediate;
+
+public struct IntermediateNodeReference
 {
-    public struct IntermediateNodeReference
+    public IntermediateNodeReference(IntermediateNode parent, IntermediateNode node)
     {
-        public IntermediateNodeReference(IntermediateNode parent, IntermediateNode node)
+        if (parent == null)
         {
-            if (parent == null)
-            {
-                throw new ArgumentNullException(nameof(parent));
-            }
-
-            if (node == null)
-            {
-                throw new ArgumentNullException(nameof(node));
-            }
-
-            Parent = parent;
-            Node = node;
+            throw new ArgumentNullException(nameof(parent));
         }
 
-        public void Deconstruct(out IntermediateNode parent, out IntermediateNode node)
+        if (node == null)
         {
-            parent = Parent;
-            node = Node;
+            throw new ArgumentNullException(nameof(node));
         }
 
-        public IntermediateNode Node { get; }
+        Parent = parent;
+        Node = node;
+    }
 
-        public IntermediateNode Parent { get; }
+    public void Deconstruct(out IntermediateNode parent, out IntermediateNode node)
+    {
+        parent = Parent;
+        node = Node;
+    }
 
-        public IntermediateNodeReference InsertAfter(IntermediateNode node)
+    public IntermediateNode Node { get; }
+
+    public IntermediateNode Parent { get; }
+
+    public IntermediateNodeReference InsertAfter(IntermediateNode node)
+    {
+        if (node == null)
         {
-            if (node == null)
-            {
-                throw new ArgumentNullException(nameof(node));
-            }
-
-            if (Parent == null)
-            {
-                throw new InvalidOperationException(Resources.IntermediateNodeReference_NotInitialized);
-            }
-
-            if (Parent.Children.IsReadOnly)
-            {
-                throw new InvalidOperationException(Resources.FormatIntermediateNodeReference_CollectionIsReadOnly(Parent));
-            }
-
-            var index = Parent.Children.IndexOf(Node);
-            if (index == -1)
-            {
-                throw new InvalidOperationException(Resources.FormatIntermediateNodeReference_NodeNotFound(
-                    Node,
-                    Parent));
-            }
-
-            Parent.Children.Insert(index + 1, node);
-            return new IntermediateNodeReference(Parent, node);
+            throw new ArgumentNullException(nameof(node));
         }
 
-        public void InsertAfter(IEnumerable<IntermediateNode> nodes)
+        if (Parent == null)
         {
-            if (nodes == null)
-            {
-                throw new ArgumentNullException(nameof(nodes));
-            }
-
-            if (Parent == null)
-            {
-                throw new InvalidOperationException(Resources.IntermediateNodeReference_NotInitialized);
-            }
-
-            if (Parent.Children.IsReadOnly)
-            {
-                throw new InvalidOperationException(Resources.FormatIntermediateNodeReference_CollectionIsReadOnly(Parent));
-            }
-
-            var index = Parent.Children.IndexOf(Node);
-            if (index == -1)
-            {
-                throw new InvalidOperationException(Resources.FormatIntermediateNodeReference_NodeNotFound(
-                    Node,
-                    Parent));
-            }
-
-            foreach (var node in nodes)
-            {
-                Parent.Children.Insert(++index, node);
-            }
+            throw new InvalidOperationException(Resources.IntermediateNodeReference_NotInitialized);
         }
 
-        public IntermediateNodeReference InsertBefore(IntermediateNode node)
+        if (Parent.Children.IsReadOnly)
         {
-            if (node == null)
-            {
-                throw new ArgumentNullException(nameof(node));
-            }
-
-            if (Parent == null)
-            {
-                throw new InvalidOperationException(Resources.IntermediateNodeReference_NotInitialized);
-            }
-
-            if (Parent.Children.IsReadOnly)
-            {
-                throw new InvalidOperationException(Resources.FormatIntermediateNodeReference_CollectionIsReadOnly(Parent));
-            }
-
-            var index = Parent.Children.IndexOf(Node);
-            if (index == -1)
-            {
-                throw new InvalidOperationException(Resources.FormatIntermediateNodeReference_NodeNotFound(
-                    Node,
-                    Parent));
-            }
-
-            Parent.Children.Insert(index, node);
-            return new IntermediateNodeReference(Parent, node);
+            throw new InvalidOperationException(Resources.FormatIntermediateNodeReference_CollectionIsReadOnly(Parent));
         }
 
-        public void InsertBefore(IEnumerable<IntermediateNode> nodes)
+        var index = Parent.Children.IndexOf(Node);
+        if (index == -1)
         {
-            if (nodes == null)
-            {
-                throw new ArgumentNullException(nameof(nodes));
-            }
-
-            if (Parent == null)
-            {
-                throw new InvalidOperationException(Resources.IntermediateNodeReference_NotInitialized);
-            }
-
-            if (Parent.Children.IsReadOnly)
-            {
-                throw new InvalidOperationException(Resources.FormatIntermediateNodeReference_CollectionIsReadOnly(Parent));
-            }
-
-            var index = Parent.Children.IndexOf(Node);
-            if (index == -1)
-            {
-                throw new InvalidOperationException(Resources.FormatIntermediateNodeReference_NodeNotFound(
-                    Node,
-                    Parent));
-            }
-
-            foreach (var node in nodes)
-            {
-                Parent.Children.Insert(index++, node);
-            }
+            throw new InvalidOperationException(Resources.FormatIntermediateNodeReference_NodeNotFound(
+                Node,
+                Parent));
         }
 
-        public void Remove()
+        Parent.Children.Insert(index + 1, node);
+        return new IntermediateNodeReference(Parent, node);
+    }
+
+    public void InsertAfter(IEnumerable<IntermediateNode> nodes)
+    {
+        if (nodes == null)
         {
-            if (Parent == null)
-            {
-                throw new InvalidOperationException(Resources.IntermediateNodeReference_NotInitialized);
-            }
-
-            if (Parent.Children.IsReadOnly)
-            {
-                throw new InvalidOperationException(Resources.FormatIntermediateNodeReference_CollectionIsReadOnly(Parent));
-            }
-
-            var index = Parent.Children.IndexOf(Node);
-            if (index == -1)
-            {
-                throw new InvalidOperationException(Resources.FormatIntermediateNodeReference_NodeNotFound(
-                    Node,
-                    Parent));
-            }
-
-            Parent.Children.RemoveAt(index);
+            throw new ArgumentNullException(nameof(nodes));
         }
 
-        public IntermediateNodeReference Replace(IntermediateNode node)
+        if (Parent == null)
         {
-            if (node == null)
-            {
-                throw new ArgumentNullException(nameof(node));
-            }
-
-            if (Parent == null)
-            {
-                throw new InvalidOperationException(Resources.IntermediateNodeReference_NotInitialized);
-            }
-
-            if (Parent.Children.IsReadOnly)
-            {
-                throw new InvalidOperationException(Resources.FormatIntermediateNodeReference_CollectionIsReadOnly(Parent));
-            }
-
-            var index = Parent.Children.IndexOf(Node);
-            if (index == -1)
-            {
-                throw new InvalidOperationException(Resources.FormatIntermediateNodeReference_NodeNotFound(
-                    Node,
-                    Parent));
-            }
-
-            Parent.Children[index] = node;
-            return new IntermediateNodeReference(Parent, node);
+            throw new InvalidOperationException(Resources.IntermediateNodeReference_NotInitialized);
         }
+
+        if (Parent.Children.IsReadOnly)
+        {
+            throw new InvalidOperationException(Resources.FormatIntermediateNodeReference_CollectionIsReadOnly(Parent));
+        }
+
+        var index = Parent.Children.IndexOf(Node);
+        if (index == -1)
+        {
+            throw new InvalidOperationException(Resources.FormatIntermediateNodeReference_NodeNotFound(
+                Node,
+                Parent));
+        }
+
+        foreach (var node in nodes)
+        {
+            Parent.Children.Insert(++index, node);
+        }
+    }
+
+    public IntermediateNodeReference InsertBefore(IntermediateNode node)
+    {
+        if (node == null)
+        {
+            throw new ArgumentNullException(nameof(node));
+        }
+
+        if (Parent == null)
+        {
+            throw new InvalidOperationException(Resources.IntermediateNodeReference_NotInitialized);
+        }
+
+        if (Parent.Children.IsReadOnly)
+        {
+            throw new InvalidOperationException(Resources.FormatIntermediateNodeReference_CollectionIsReadOnly(Parent));
+        }
+
+        var index = Parent.Children.IndexOf(Node);
+        if (index == -1)
+        {
+            throw new InvalidOperationException(Resources.FormatIntermediateNodeReference_NodeNotFound(
+                Node,
+                Parent));
+        }
+
+        Parent.Children.Insert(index, node);
+        return new IntermediateNodeReference(Parent, node);
+    }
+
+    public void InsertBefore(IEnumerable<IntermediateNode> nodes)
+    {
+        if (nodes == null)
+        {
+            throw new ArgumentNullException(nameof(nodes));
+        }
+
+        if (Parent == null)
+        {
+            throw new InvalidOperationException(Resources.IntermediateNodeReference_NotInitialized);
+        }
+
+        if (Parent.Children.IsReadOnly)
+        {
+            throw new InvalidOperationException(Resources.FormatIntermediateNodeReference_CollectionIsReadOnly(Parent));
+        }
+
+        var index = Parent.Children.IndexOf(Node);
+        if (index == -1)
+        {
+            throw new InvalidOperationException(Resources.FormatIntermediateNodeReference_NodeNotFound(
+                Node,
+                Parent));
+        }
+
+        foreach (var node in nodes)
+        {
+            Parent.Children.Insert(index++, node);
+        }
+    }
+
+    public void Remove()
+    {
+        if (Parent == null)
+        {
+            throw new InvalidOperationException(Resources.IntermediateNodeReference_NotInitialized);
+        }
+
+        if (Parent.Children.IsReadOnly)
+        {
+            throw new InvalidOperationException(Resources.FormatIntermediateNodeReference_CollectionIsReadOnly(Parent));
+        }
+
+        var index = Parent.Children.IndexOf(Node);
+        if (index == -1)
+        {
+            throw new InvalidOperationException(Resources.FormatIntermediateNodeReference_NodeNotFound(
+                Node,
+                Parent));
+        }
+
+        Parent.Children.RemoveAt(index);
+    }
+
+    public IntermediateNodeReference Replace(IntermediateNode node)
+    {
+        if (node == null)
+        {
+            throw new ArgumentNullException(nameof(node));
+        }
+
+        if (Parent == null)
+        {
+            throw new InvalidOperationException(Resources.IntermediateNodeReference_NotInitialized);
+        }
+
+        if (Parent.Children.IsReadOnly)
+        {
+            throw new InvalidOperationException(Resources.FormatIntermediateNodeReference_CollectionIsReadOnly(Parent));
+        }
+
+        var index = Parent.Children.IndexOf(Node);
+        if (index == -1)
+        {
+            throw new InvalidOperationException(Resources.FormatIntermediateNodeReference_NodeNotFound(
+                Node,
+                Parent));
+        }
+
+        Parent.Children[index] = node;
+        return new IntermediateNodeReference(Parent, node);
     }
 }

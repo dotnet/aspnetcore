@@ -4,16 +4,16 @@
 using System;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+public class TagHelperMatchingConventionsTest
 {
-    public class TagHelperMatchingConventionsTest
+    public static TheoryData RequiredAttributeDescriptorData
     {
-        public static TheoryData RequiredAttributeDescriptorData
+        get
         {
-            get
-            {
-                // requiredAttributeDescriptor, attributeName, attributeValue, expectedResult
-                return new TheoryData<Action<RequiredAttributeDescriptorBuilder>, string, string, bool>
+            // requiredAttributeDescriptor, attributeName, attributeValue, expectedResult
+            return new TheoryData<Action<RequiredAttributeDescriptorBuilder>, string, string, bool>
                 {
                     {
                         builder => builder.Name("key"),
@@ -128,31 +128,30 @@ namespace Microsoft.AspNetCore.Razor.Language
                         false
                     },
                 };
-            }
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(RequiredAttributeDescriptorData))]
-        public void Matches_ReturnsExpectedResult(
-            Action<RequiredAttributeDescriptorBuilder> configure,
-            string attributeName,
-            string attributeValue,
-            bool expectedResult)
-        {
-            // Arrange
-            var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "TestTagHelper", "Test");
-            var tagMatchingRuleBuilder = new DefaultTagMatchingRuleDescriptorBuilder(tagHelperBuilder);
-            var builder = new DefaultRequiredAttributeDescriptorBuilder(tagMatchingRuleBuilder);
+    [Theory]
+    [MemberData(nameof(RequiredAttributeDescriptorData))]
+    public void Matches_ReturnsExpectedResult(
+        Action<RequiredAttributeDescriptorBuilder> configure,
+        string attributeName,
+        string attributeValue,
+        bool expectedResult)
+    {
+        // Arrange
+        var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "TestTagHelper", "Test");
+        var tagMatchingRuleBuilder = new DefaultTagMatchingRuleDescriptorBuilder(tagHelperBuilder);
+        var builder = new DefaultRequiredAttributeDescriptorBuilder(tagMatchingRuleBuilder);
 
-            configure(builder);
+        configure(builder);
 
-            var requiredAttibute = builder.Build();
+        var requiredAttibute = builder.Build();
 
-            // Act
-            var result = TagHelperMatchingConventions.SatisfiesRequiredAttribute(attributeName, attributeValue, requiredAttibute);
+        // Act
+        var result = TagHelperMatchingConventions.SatisfiesRequiredAttribute(attributeName, attributeValue, requiredAttibute);
 
-            // Assert
-            Assert.Equal(expectedResult, result);
-        }
+        // Assert
+        Assert.Equal(expectedResult, result);
     }
 }

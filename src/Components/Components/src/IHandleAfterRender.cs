@@ -3,17 +3,16 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Components
+namespace Microsoft.AspNetCore.Components;
+
+/// <summary>
+/// Interface implemented by components that receive notification that they have been rendered.
+/// </summary>
+public interface IHandleAfterRender
 {
     /// <summary>
-    /// Interface implemented by components that receive notification that they have been rendered.
+    /// Notifies the component that it has been rendered.
     /// </summary>
-    public interface IHandleAfterRender
-    {
-        /// <summary>
-        /// Notifies the component that it has been rendered.
-        /// </summary>
-        /// <returns>A <see cref="Task"/> that represents the asynchronous event handling operation.</returns>
-        Task OnAfterRenderAsync();
-    }
+    /// <returns>A <see cref="Task"/> that represents the asynchronous event handling operation.</returns>
+    Task OnAfterRenderAsync();
 }

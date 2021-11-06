@@ -3,15 +3,15 @@
 
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.AspNetCore.Analyzers
+namespace Microsoft.AspNetCore.Analyzers;
+
+public class CompilationFeatureDetectorTest
 {
-    public class CompilationFeatureDetectorTest
+    [Fact]
+    public async Task DetectFeaturesAsync_FindsNoFeatures()
     {
-        [Fact]
-        public async Task DetectFeaturesAsync_FindsNoFeatures()
-        {
-            // Arrange
-            var source = @"
+        // Arrange
+        var source = @"
 using Microsoft.AspNetCore.Builder;
 
 namespace Microsoft.AspNetCore.Analyzers.TestFiles.CompilationFeatureDetectorTest
@@ -29,23 +29,23 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.CompilationFeatureDetectorTes
         }
     }
 }";
-            var compilation = TestCompilation.Create(source);
-            var symbols = new StartupSymbols(compilation);
+        var compilation = TestCompilation.Create(source);
+        var symbols = new StartupSymbols(compilation);
 
-            var type = (INamedTypeSymbol)compilation.GetSymbolsWithName("StartupWithNoFeatures").Single();
-            Assert.True(StartupFacts.IsStartupClass(symbols, type));
+        var type = (INamedTypeSymbol)compilation.GetSymbolsWithName("StartupWithNoFeatures").Single();
+        Assert.True(StartupFacts.IsStartupClass(symbols, type));
 
-            // Act
-            var features = await CompilationFeatureDetector.DetectFeaturesAsync(compilation);
+        // Act
+        var features = await CompilationFeatureDetector.DetectFeaturesAsync(compilation);
 
-            // Assert
-            Assert.Empty(features);
-        }
+        // Assert
+        Assert.Empty(features);
+    }
 
-        [Fact]
-        public async Task DetectFeatureAsync_StartupWithMapHub_FindsSignalR()
-        {
-            var source = @"
+    [Fact]
+    public async Task DetectFeatureAsync_StartupWithMapHub_FindsSignalR()
+    {
+        var source = @"
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.SignalR;
 
@@ -69,24 +69,24 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.CompilationFeatureDetectorTes
     }
 }
 ";
-            var compilation = TestCompilation.Create(source);
-            var symbols = new StartupSymbols(compilation);
+        var compilation = TestCompilation.Create(source);
+        var symbols = new StartupSymbols(compilation);
 
-            var type = (INamedTypeSymbol)compilation.GetSymbolsWithName("StartupWithMapHub").Single();
-            Assert.True(StartupFacts.IsStartupClass(symbols, type));
+        var type = (INamedTypeSymbol)compilation.GetSymbolsWithName("StartupWithMapHub").Single();
+        Assert.True(StartupFacts.IsStartupClass(symbols, type));
 
-            // Act
-            var features = await CompilationFeatureDetector.DetectFeaturesAsync(compilation);
+        // Act
+        var features = await CompilationFeatureDetector.DetectFeaturesAsync(compilation);
 
-            // Assert
-            Assert.Collection(features, f => Assert.Equal(WellKnownFeatures.SignalR, f));
+        // Assert
+        Assert.Collection(features, f => Assert.Equal(WellKnownFeatures.SignalR, f));
 
-        }
+    }
 
-        [Fact]
-        public async Task DetectFeatureAsync_StartupWithMapBlazorHub_FindsSignalR()
-        {
-            var source = @"
+    [Fact]
+    public async Task DetectFeatureAsync_StartupWithMapBlazorHub_FindsSignalR()
+    {
+        var source = @"
 using Microsoft.AspNetCore.Builder;
 
 namespace Microsoft.AspNetCore.Analyzers.TestFiles.CompilationFeatureDetectorTest
@@ -109,18 +109,17 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.CompilationFeatureDetectorTes
     }
 }
 ";
-            var compilation = TestCompilation.Create(source);
-            var symbols = new StartupSymbols(compilation);
+        var compilation = TestCompilation.Create(source);
+        var symbols = new StartupSymbols(compilation);
 
-            var type = (INamedTypeSymbol)compilation.GetSymbolsWithName("StartupWithMapBlazorHub").Single();
-            Assert.True(StartupFacts.IsStartupClass(symbols, type));
+        var type = (INamedTypeSymbol)compilation.GetSymbolsWithName("StartupWithMapBlazorHub").Single();
+        Assert.True(StartupFacts.IsStartupClass(symbols, type));
 
-            // Act
-            var features = await CompilationFeatureDetector.DetectFeaturesAsync(compilation);
+        // Act
+        var features = await CompilationFeatureDetector.DetectFeaturesAsync(compilation);
 
-            // Assert
-            Assert.Collection(features, f => Assert.Equal(WellKnownFeatures.SignalR, f));
+        // Assert
+        Assert.Collection(features, f => Assert.Equal(WellKnownFeatures.SignalR, f));
 
-        }
     }
 }

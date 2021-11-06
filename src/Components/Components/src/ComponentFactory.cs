@@ -9,90 +9,89 @@ using System.Reflection;
 using Microsoft.AspNetCore.Components.Reflection;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
-namespace Microsoft.AspNetCore.Components
+namespace Microsoft.AspNetCore.Components;
+
+internal sealed class ComponentFactory
 {
-    internal sealed class ComponentFactory
+    private const BindingFlags _injectablePropertyBindingFlags
+        = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+    private readonly ConcurrentDictionary<Type, Action<IServiceProvider, IComponent>> _cachedInitializers = new();
+
+    private readonly IComponentActivator _componentActivator;
+
+    public ComponentFactory(IComponentActivator componentActivator)
     {
-        private const BindingFlags _injectablePropertyBindingFlags
-            = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+        _componentActivator = componentActivator ?? throw new ArgumentNullException(nameof(componentActivator));
+    }
 
-        private readonly ConcurrentDictionary<Type, Action<IServiceProvider, IComponent>> _cachedInitializers = new();
+    public void ClearCache() => _cachedInitializers.Clear();
 
-        private readonly IComponentActivator _componentActivator;
-
-        public ComponentFactory(IComponentActivator componentActivator)
+    public IComponent InstantiateComponent(IServiceProvider serviceProvider, [DynamicallyAccessedMembers(Component)] Type componentType)
+    {
+        var component = _componentActivator.CreateInstance(componentType);
+        if (component is null)
         {
-            _componentActivator = componentActivator ?? throw new ArgumentNullException(nameof(componentActivator));
+            // The default activator will never do this, but an externally-supplied one might
+            throw new InvalidOperationException($"The component activator returned a null value for a component of type {componentType.FullName}.");
         }
 
-        public void ClearCache() => _cachedInitializers.Clear();
+        PerformPropertyInjection(serviceProvider, component);
+        return component;
+    }
 
-        public IComponent InstantiateComponent(IServiceProvider serviceProvider, [DynamicallyAccessedMembers(Component)] Type componentType)
+    private void PerformPropertyInjection(IServiceProvider serviceProvider, IComponent instance)
+    {
+        // This is thread-safe because _cachedInitializers is a ConcurrentDictionary.
+        // We might generate the initializer more than once for a given type, but would
+        // still produce the correct result.
+        var instanceType = instance.GetType();
+        if (!_cachedInitializers.TryGetValue(instanceType, out var initializer))
         {
-            var component = _componentActivator.CreateInstance(componentType);
-            if (component is null)
+            initializer = CreateInitializer(instanceType);
+            _cachedInitializers.TryAdd(instanceType, initializer);
+        }
+
+        initializer(serviceProvider, instance);
+    }
+
+    private Action<IServiceProvider, IComponent> CreateInitializer([DynamicallyAccessedMembers(Component)] Type type)
+    {
+        // Do all the reflection up front
+        List<(string name, Type propertyType, PropertySetter setter)>? injectables = null;
+        foreach (var property in MemberAssignment.GetPropertiesIncludingInherited(type, _injectablePropertyBindingFlags))
+        {
+            if (!property.IsDefined(typeof(InjectAttribute)))
             {
-                // The default activator will never do this, but an externally-supplied one might
-                throw new InvalidOperationException($"The component activator returned a null value for a component of type {componentType.FullName}.");
+                continue;
             }
 
-            PerformPropertyInjection(serviceProvider, component);
-            return component;
+            injectables ??= new();
+            injectables.Add((property.Name, property.PropertyType, new PropertySetter(type, property)));
         }
 
-        private void PerformPropertyInjection(IServiceProvider serviceProvider, IComponent instance)
+        if (injectables is null)
         {
-            // This is thread-safe because _cachedInitializers is a ConcurrentDictionary.
-            // We might generate the initializer more than once for a given type, but would
-            // still produce the correct result.
-            var instanceType = instance.GetType();
-            if (!_cachedInitializers.TryGetValue(instanceType, out var initializer))
-            {
-                initializer = CreateInitializer(instanceType);
-                _cachedInitializers.TryAdd(instanceType, initializer);
-            }
-
-            initializer(serviceProvider, instance);
+            return static (_, _) => { };
         }
 
-        private Action<IServiceProvider, IComponent> CreateInitializer([DynamicallyAccessedMembers(Component)] Type type)
+        return Initialize;
+
+        // Return an action whose closure can write all the injected properties
+        // without any further reflection calls (just typecasts)
+        void Initialize(IServiceProvider serviceProvider, IComponent component)
         {
-            // Do all the reflection up front
-            List<(string name, Type propertyType, PropertySetter setter)>? injectables = null;
-            foreach (var property in MemberAssignment.GetPropertiesIncludingInherited(type, _injectablePropertyBindingFlags))
+            foreach (var (propertyName, propertyType, setter) in injectables)
             {
-                if (!property.IsDefined(typeof(InjectAttribute)))
+                var serviceInstance = serviceProvider.GetService(propertyType);
+                if (serviceInstance == null)
                 {
-                    continue;
+                    throw new InvalidOperationException($"Cannot provide a value for property " +
+                        $"'{propertyName}' on type '{type.FullName}'. There is no " +
+                        $"registered service of type '{propertyType}'.");
                 }
 
-                injectables ??= new();
-                injectables.Add((property.Name, property.PropertyType, new PropertySetter(type, property)));
-            }
-
-            if (injectables is null)
-            {
-                return static (_, _) => { };
-            }
-
-            return Initialize;
-
-            // Return an action whose closure can write all the injected properties
-            // without any further reflection calls (just typecasts)
-            void Initialize(IServiceProvider serviceProvider, IComponent component)
-            {
-                foreach (var (propertyName, propertyType, setter) in injectables)
-                {
-                    var serviceInstance = serviceProvider.GetService(propertyType);
-                    if (serviceInstance == null)
-                    {
-                        throw new InvalidOperationException($"Cannot provide a value for property " +
-                            $"'{propertyName}' on type '{type.FullName}'. There is no " +
-                            $"registered service of type '{propertyType}'.");
-                    }
-
-                    setter.SetValue(component, serviceInstance);
-                }
+                setter.SetValue(component, serviceInstance);
             }
         }
     }

@@ -5,52 +5,51 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+/// <summary>
+/// The binding information for Tag Helpers resulted to a <see cref="RazorCodeDocument"/>. Represents the
+/// Tag Helper information after processing by directives.
+/// </summary>
+public abstract class TagHelperDocumentContext
 {
-    /// <summary>
-    /// The binding information for Tag Helpers resulted to a <see cref="RazorCodeDocument"/>. Represents the
-    /// Tag Helper information after processing by directives.
-    /// </summary>
-    public abstract class TagHelperDocumentContext
+    public static TagHelperDocumentContext Create(string prefix, IEnumerable<TagHelperDescriptor> tagHelpers)
     {
-        public static TagHelperDocumentContext Create(string prefix, IEnumerable<TagHelperDescriptor> tagHelpers)
+        if (tagHelpers == null)
         {
-            if (tagHelpers == null)
-            {
-                throw new ArgumentNullException(nameof(tagHelpers));
-            }
-
-            return new DefaultTagHelperDocumentContext(prefix, tagHelpers.ToArray());
+            throw new ArgumentNullException(nameof(tagHelpers));
         }
 
-        internal static TagHelperDocumentContext Create(string prefix, IReadOnlyList<TagHelperDescriptor> tagHelpers)
-        {
-            if (tagHelpers == null)
-            {
-                throw new ArgumentNullException(nameof(tagHelpers));
-            }
+        return new DefaultTagHelperDocumentContext(prefix, tagHelpers.ToArray());
+    }
 
-            return new DefaultTagHelperDocumentContext(prefix, tagHelpers);
+    internal static TagHelperDocumentContext Create(string prefix, IReadOnlyList<TagHelperDescriptor> tagHelpers)
+    {
+        if (tagHelpers == null)
+        {
+            throw new ArgumentNullException(nameof(tagHelpers));
         }
 
-        public abstract string Prefix { get; }
+        return new DefaultTagHelperDocumentContext(prefix, tagHelpers);
+    }
 
-        public abstract IReadOnlyList<TagHelperDescriptor> TagHelpers { get; }
+    public abstract string Prefix { get; }
 
-        private class DefaultTagHelperDocumentContext : TagHelperDocumentContext
+    public abstract IReadOnlyList<TagHelperDescriptor> TagHelpers { get; }
+
+    private class DefaultTagHelperDocumentContext : TagHelperDocumentContext
+    {
+        private readonly string _prefix;
+        private readonly IReadOnlyList<TagHelperDescriptor> _tagHelpers;
+
+        public DefaultTagHelperDocumentContext(string prefix, IReadOnlyList<TagHelperDescriptor> tagHelpers)
         {
-            private readonly string _prefix;
-            private readonly IReadOnlyList<TagHelperDescriptor> _tagHelpers;
-
-            public DefaultTagHelperDocumentContext(string prefix, IReadOnlyList<TagHelperDescriptor> tagHelpers)
-            {
-                _prefix = prefix;
-                _tagHelpers = tagHelpers;
-            }
-
-            public override string Prefix => _prefix;
-
-            public override IReadOnlyList<TagHelperDescriptor> TagHelpers => _tagHelpers;
+            _prefix = prefix;
+            _tagHelpers = tagHelpers;
         }
+
+        public override string Prefix => _prefix;
+
+        public override IReadOnlyList<TagHelperDescriptor> TagHelpers => _tagHelpers;
     }
 }

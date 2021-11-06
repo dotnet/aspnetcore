@@ -3,14 +3,13 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace ControllersFromServicesClassLibrary
+namespace ControllersFromServicesClassLibrary;
+
+[NonController]
+public class ClientUIStubController
 {
-    [NonController]
-    public class ClientUIStubController
+    public object GetClientContent(int id)
     {
-        public object GetClientContent(int id)
-        {
-            return new object();
-        }
+        return new object();
     }
 }

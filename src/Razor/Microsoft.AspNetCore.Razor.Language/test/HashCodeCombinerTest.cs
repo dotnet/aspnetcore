@@ -3,37 +3,36 @@
 
 using Xunit;
 
-namespace Microsoft.Extensions.Internal
+namespace Microsoft.Extensions.Internal;
+
+public class HashCodeCombinerTest
 {
-    public class HashCodeCombinerTest
+    [Fact]
+    public void GivenTheSameInputs_ItProducesTheSameOutput()
     {
-        [Fact]
-        public void GivenTheSameInputs_ItProducesTheSameOutput()
-        {
-            var hashCode1 = HashCodeCombiner.Start();
-            var hashCode2 = HashCodeCombiner.Start();
+        var hashCode1 = HashCodeCombiner.Start();
+        var hashCode2 = HashCodeCombiner.Start();
 
-            hashCode1.Add(42);
-            hashCode1.Add("foo");
-            hashCode2.Add(42);
-            hashCode2.Add("foo");
+        hashCode1.Add(42);
+        hashCode1.Add("foo");
+        hashCode2.Add(42);
+        hashCode2.Add("foo");
 
-            Assert.Equal(hashCode1.CombinedHash, hashCode2.CombinedHash);
-        }
+        Assert.Equal(hashCode1.CombinedHash, hashCode2.CombinedHash);
+    }
 
-        [Fact]
-        public void HashCode_Is_OrderSensitive()
-        {
-            var hashCode1 = HashCodeCombiner.Start();
-            var hashCode2 = HashCodeCombiner.Start();
+    [Fact]
+    public void HashCode_Is_OrderSensitive()
+    {
+        var hashCode1 = HashCodeCombiner.Start();
+        var hashCode2 = HashCodeCombiner.Start();
 
-            hashCode1.Add(42);
-            hashCode1.Add("foo");
+        hashCode1.Add(42);
+        hashCode1.Add("foo");
 
-            hashCode2.Add("foo");
-            hashCode2.Add(42);
+        hashCode2.Add("foo");
+        hashCode2.Add(42);
 
-            Assert.NotEqual(hashCode1.CombinedHash, hashCode2.CombinedHash);
-        }
+        Assert.NotEqual(hashCode1.CombinedHash, hashCode2.CombinedHash);
     }
 }

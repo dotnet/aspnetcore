@@ -3,70 +3,69 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+public static class TestTagMatchingRuleDescriptorBuilderExtensions
 {
-    public static class TestTagMatchingRuleDescriptorBuilderExtensions
+    public static TagMatchingRuleDescriptorBuilder RequireTagName(this TagMatchingRuleDescriptorBuilder builder, string tagName)
     {
-        public static TagMatchingRuleDescriptorBuilder RequireTagName(this TagMatchingRuleDescriptorBuilder builder, string tagName)
+        if (builder == null)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.TagName = tagName;
-
-            return builder;
+            throw new ArgumentNullException(nameof(builder));
         }
 
-        public static TagMatchingRuleDescriptorBuilder RequireParentTag(this TagMatchingRuleDescriptorBuilder builder, string parentTag)
+        builder.TagName = tagName;
+
+        return builder;
+    }
+
+    public static TagMatchingRuleDescriptorBuilder RequireParentTag(this TagMatchingRuleDescriptorBuilder builder, string parentTag)
+    {
+        if (builder == null)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.ParentTag = parentTag;
-
-            return builder;
+            throw new ArgumentNullException(nameof(builder));
         }
 
-        public static TagMatchingRuleDescriptorBuilder RequireTagStructure(this TagMatchingRuleDescriptorBuilder builder, TagStructure tagStructure)
+        builder.ParentTag = parentTag;
+
+        return builder;
+    }
+
+    public static TagMatchingRuleDescriptorBuilder RequireTagStructure(this TagMatchingRuleDescriptorBuilder builder, TagStructure tagStructure)
+    {
+        if (builder == null)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.TagStructure = tagStructure;
-
-            return builder;
+            throw new ArgumentNullException(nameof(builder));
         }
 
-        public static TagMatchingRuleDescriptorBuilder AddDiagnostic(this TagMatchingRuleDescriptorBuilder builder, RazorDiagnostic diagnostic)
+        builder.TagStructure = tagStructure;
+
+        return builder;
+    }
+
+    public static TagMatchingRuleDescriptorBuilder AddDiagnostic(this TagMatchingRuleDescriptorBuilder builder, RazorDiagnostic diagnostic)
+    {
+        if (builder == null)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.Diagnostics.Add(diagnostic);
-
-            return builder;
+            throw new ArgumentNullException(nameof(builder));
         }
 
-        public static TagMatchingRuleDescriptorBuilder RequireAttributeDescriptor(
-            this TagMatchingRuleDescriptorBuilder builder,
-            Action<RequiredAttributeDescriptorBuilder> configure)
+        builder.Diagnostics.Add(diagnostic);
+
+        return builder;
+    }
+
+    public static TagMatchingRuleDescriptorBuilder RequireAttributeDescriptor(
+        this TagMatchingRuleDescriptorBuilder builder,
+        Action<RequiredAttributeDescriptorBuilder> configure)
+    {
+        if (builder == null)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.Attribute(configure);
-
-            return builder;
+            throw new ArgumentNullException(nameof(builder));
         }
+
+        builder.Attribute(configure);
+
+        return builder;
     }
 }

@@ -3,14 +3,13 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace RazorPagesWebSite
+namespace RazorPagesWebSite;
+
+public class RedirectController : Controller
 {
-    public class RedirectController : Controller
+    [HttpGet("/RedirectToPage")]
+    public IActionResult RedirectToPageAction()
     {
-        [HttpGet("/RedirectToPage")]
-        public IActionResult RedirectToPageAction()
-        {
-            return RedirectToPage("/RedirectToController", new { param = 17 });
-        }
+        return RedirectToPage("/RedirectToController", new { param = 17 });
     }
 }

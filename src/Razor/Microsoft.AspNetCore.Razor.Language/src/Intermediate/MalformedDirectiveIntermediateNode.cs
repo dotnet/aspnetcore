@@ -4,29 +4,28 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Razor.Language.Intermediate
+namespace Microsoft.AspNetCore.Razor.Language.Intermediate;
+
+public sealed class MalformedDirectiveIntermediateNode : IntermediateNode
 {
-    public sealed class MalformedDirectiveIntermediateNode : IntermediateNode
+    public override IntermediateNodeCollection Children { get; } = new IntermediateNodeCollection();
+
+    public string DirectiveName { get; set; }
+
+    public IEnumerable<DirectiveTokenIntermediateNode> Tokens => Children.OfType<DirectiveTokenIntermediateNode>();
+
+    public DirectiveDescriptor Directive { get; set; }
+
+    public override void Accept(IntermediateNodeVisitor visitor)
     {
-        public override IntermediateNodeCollection Children { get; } = new IntermediateNodeCollection();
+        visitor.VisitMalformedDirective(this);
+    }
 
-        public string DirectiveName { get; set; }
+    public override void FormatNode(IntermediateNodeFormatter formatter)
+    {
+        formatter.WriteContent(DirectiveName);
 
-        public IEnumerable<DirectiveTokenIntermediateNode> Tokens => Children.OfType<DirectiveTokenIntermediateNode>();
-
-        public DirectiveDescriptor Directive { get; set; }
-
-        public override void Accept(IntermediateNodeVisitor visitor)
-        {
-            visitor.VisitMalformedDirective(this);
-        }
-
-        public override void FormatNode(IntermediateNodeFormatter formatter)
-        {
-            formatter.WriteContent(DirectiveName);
-
-            formatter.WriteProperty(nameof(Directive), Directive?.DisplayName);
-            formatter.WriteProperty(nameof(DirectiveName), DirectiveName);
-        }
+        formatter.WriteProperty(nameof(Directive), Directive?.DisplayName);
+        formatter.WriteProperty(nameof(DirectiveName), DirectiveName);
     }
 }

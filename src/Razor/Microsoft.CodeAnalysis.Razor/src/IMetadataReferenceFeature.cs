@@ -4,10 +4,9 @@
 using Microsoft.AspNetCore.Razor.Language;
 using System.Collections.Generic;
 
-namespace Microsoft.CodeAnalysis.Razor
+namespace Microsoft.CodeAnalysis.Razor;
+
+public interface IMetadataReferenceFeature : IRazorEngineFeature
 {
-    public interface IMetadataReferenceFeature : IRazorEngineFeature
-    {
-        IReadOnlyList<MetadataReference> References { get; }
-    }
+    IReadOnlyList<MetadataReference> References { get; }
 }

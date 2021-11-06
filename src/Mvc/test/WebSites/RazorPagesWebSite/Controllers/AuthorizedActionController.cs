@@ -4,12 +4,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace RazorPagesWebSite.Controllers
+namespace RazorPagesWebSite.Controllers;
+
+[Route("[controller]/[action]")]
+[Authorize]
+public class AuthorizedActionController : Controller
 {
-    [Route("[controller]/[action]")]
-    [Authorize]
-    public class AuthorizedActionController : Controller
-    {
-        public IActionResult Index() => Ok();
-    }
+    public IActionResult Index() => Ok();
 }

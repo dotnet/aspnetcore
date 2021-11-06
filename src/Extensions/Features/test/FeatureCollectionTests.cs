@@ -3,46 +3,45 @@
 
 using Xunit;
 
-namespace Microsoft.AspNetCore.Http.Features
+namespace Microsoft.AspNetCore.Http.Features;
+
+public class FeatureCollectionTests
 {
-    public class FeatureCollectionTests
+    [Fact]
+    public void AddedInterfaceIsReturned()
     {
-        [Fact]
-        public void AddedInterfaceIsReturned()
-        {
-            var interfaces = new FeatureCollection();
-            var thing = new Thing();
+        var interfaces = new FeatureCollection();
+        var thing = new Thing();
 
-            interfaces[typeof(IThing)] = thing;
+        interfaces[typeof(IThing)] = thing;
 
-            var thing2 = interfaces[typeof(IThing)];
-            Assert.Equal(thing2, thing);
-        }
+        var thing2 = interfaces[typeof(IThing)];
+        Assert.Equal(thing2, thing);
+    }
 
-        [Fact]
-        public void IndexerAlsoAddsItems()
-        {
-            var interfaces = new FeatureCollection();
-            var thing = new Thing();
+    [Fact]
+    public void IndexerAlsoAddsItems()
+    {
+        var interfaces = new FeatureCollection();
+        var thing = new Thing();
 
-            interfaces[typeof(IThing)] = thing;
+        interfaces[typeof(IThing)] = thing;
 
-            Assert.Equal(interfaces[typeof(IThing)], thing);
-        }
+        Assert.Equal(interfaces[typeof(IThing)], thing);
+    }
 
-        [Fact]
-        public void SetNullValueRemoves()
-        {
-            var interfaces = new FeatureCollection();
-            var thing = new Thing();
+    [Fact]
+    public void SetNullValueRemoves()
+    {
+        var interfaces = new FeatureCollection();
+        var thing = new Thing();
 
-            interfaces[typeof(IThing)] = thing;
-            Assert.Equal(interfaces[typeof(IThing)], thing);
+        interfaces[typeof(IThing)] = thing;
+        Assert.Equal(interfaces[typeof(IThing)], thing);
 
-            interfaces[typeof(IThing)] = null;
+        interfaces[typeof(IThing)] = null;
 
-            var thing2 = interfaces[typeof(IThing)];
-            Assert.Null(thing2);
-        }
+        var thing2 = interfaces[typeof(IThing)];
+        Assert.Null(thing2);
     }
 }

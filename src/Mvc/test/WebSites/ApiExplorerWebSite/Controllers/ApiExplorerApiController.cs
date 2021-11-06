@@ -6,33 +6,32 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 
-namespace ApiExplorerWebSite
+namespace ApiExplorerWebSite;
+
+[Route("ApiExplorerApiController/[action]")]
+[ApiController]
+[EndpointGroupName("GroupNameOnController")]
+public class ApiExplorerApiController : Controller
 {
-    [Route("ApiExplorerApiController/[action]")]
-    [ApiController]
-    [EndpointGroupName("GroupNameOnController")]
-    public class ApiExplorerApiController : Controller
+    public IActionResult ActionWithoutParameters() => Ok();
+
+    [EndpointGroupName("GroupNameOnAction")]
+    public void ActionWithSomeParameters(object input)
     {
-        public IActionResult ActionWithoutParameters() => Ok();
-
-        [EndpointGroupName("GroupNameOnAction")]
-        public void ActionWithSomeParameters(object input)
-        {
-        }
-
-        public void ActionWithIdParameter(int id, string name)
-        {
-        }
-
-        public void ActionWithIdSuffixParameter(int personId, string personName)
-        {
-        }
-
-        public void ActionWithFormFileCollectionParameter(IFormFileCollection formFile)
-        {
-        }
-
-        [Produces("application/pdf", Type = typeof(Stream))]
-        public IActionResult ProducesWithUnsupportedContentType() => null;
     }
+
+    public void ActionWithIdParameter(int id, string name)
+    {
+    }
+
+    public void ActionWithIdSuffixParameter(int personId, string personName)
+    {
+    }
+
+    public void ActionWithFormFileCollectionParameter(IFormFileCollection formFile)
+    {
+    }
+
+    [Produces("application/pdf", Type = typeof(Stream))]
+    public IActionResult ProducesWithUnsupportedContentType() => null;
 }

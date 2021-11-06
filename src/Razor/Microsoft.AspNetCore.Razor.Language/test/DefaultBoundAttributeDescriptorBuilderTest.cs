@@ -3,45 +3,44 @@
 
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+public class DefaultBoundAttributeDescriptorBuilderTest
 {
-    public class DefaultBoundAttributeDescriptorBuilderTest
+    [Fact]
+    public void DisplayName_SetsDescriptorsDisplayName()
     {
-        [Fact]
-        public void DisplayName_SetsDescriptorsDisplayName()
-        {
-            // Arrange
-            var expectedDisplayName = "ExpectedDisplayName";
+        // Arrange
+        var expectedDisplayName = "ExpectedDisplayName";
 
-            var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "TestTagHelper", "Test");
+        var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "TestTagHelper", "Test");
 
-            var builder = new DefaultBoundAttributeDescriptorBuilder(tagHelperBuilder, TagHelperConventions.DefaultKind);
-            builder.DisplayName(expectedDisplayName);
+        var builder = new DefaultBoundAttributeDescriptorBuilder(tagHelperBuilder, TagHelperConventions.DefaultKind);
+        builder.DisplayName(expectedDisplayName);
 
-            // Act
-            var descriptor = builder.Build();
+        // Act
+        var descriptor = builder.Build();
 
-            // Assert
-            Assert.Equal(expectedDisplayName, descriptor.DisplayName);
-        }
+        // Assert
+        Assert.Equal(expectedDisplayName, descriptor.DisplayName);
+    }
 
-        [Fact]
-        public void DisplayName_DefaultsToPropertyLookingDisplayName()
-        {
-            // Arrange
-            var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "TestTagHelper", "Test");
-            tagHelperBuilder.TypeName("TestTagHelper");
+    [Fact]
+    public void DisplayName_DefaultsToPropertyLookingDisplayName()
+    {
+        // Arrange
+        var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "TestTagHelper", "Test");
+        tagHelperBuilder.TypeName("TestTagHelper");
 
-            var builder = new DefaultBoundAttributeDescriptorBuilder(tagHelperBuilder, TagHelperConventions.DefaultKind);
-            builder
-                .TypeName(typeof(int).FullName)
-                .PropertyName("SomeProperty");
+        var builder = new DefaultBoundAttributeDescriptorBuilder(tagHelperBuilder, TagHelperConventions.DefaultKind);
+        builder
+            .TypeName(typeof(int).FullName)
+            .PropertyName("SomeProperty");
 
-            // Act
-            var descriptor = builder.Build();
+        // Act
+        var descriptor = builder.Build();
 
-            // Assert
-            Assert.Equal("int TestTagHelper.SomeProperty", descriptor.DisplayName);
-        }
+        // Assert
+        Assert.Equal("int TestTagHelper.SomeProperty", descriptor.DisplayName);
     }
 }

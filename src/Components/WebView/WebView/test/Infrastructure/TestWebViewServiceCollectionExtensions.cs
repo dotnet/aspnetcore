@@ -3,14 +3,13 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Components.WebView
+namespace Microsoft.AspNetCore.Components.WebView;
+
+public static class TestWebViewServiceCollectionExtensions
 {
-    public static class TestWebViewServiceCollectionExtensions
+    public static IServiceCollection AddTestBlazorWebView(this IServiceCollection services)
     {
-        public static IServiceCollection AddTestBlazorWebView(this IServiceCollection services)
-        {
-            services.AddBlazorWebView();
-            return services;
-        }
+        services.AddBlazorWebView();
+        return services;
     }
 }
