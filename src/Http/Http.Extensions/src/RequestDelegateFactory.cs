@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -754,6 +755,9 @@ public static partial class RequestDelegateFactory
                     httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
                     return (null, false);
                 }
+
+                ThrowIfRequestIsAuthenticated(httpContext);
+
                 try
                 {
                     formValue = await httpContext.Request.ReadFormAsync();
@@ -772,6 +776,33 @@ public static partial class RequestDelegateFactory
             }
 
             return (formValue, true);
+        }
+
+        static void ThrowIfRequestIsAuthenticated(HttpContext httpContext)
+        {
+            if (httpContext.Connection.ClientCertificate is not null)
+            {
+                throw new BadHttpRequestException(
+                    "Support for binding parameters from an HTTP request's form is not currently supported " +
+                    "if the request is associated with a client certificate. Use of an HTTP request form is " +
+                    "not currently secure for HTTP requests in scenarios which require authentication.");
+            }
+
+            if (!StringValues.IsNullOrEmpty(httpContext.Request.Headers.Authorization))
+            {
+                throw new BadHttpRequestException(
+                    "Support for binding parameters from an HTTP request's form is not currently supported " +
+                    "if the request contains an \"Authorization\" HTTP request header. Use of an HTTP request form is " +
+                    "not currently secure for HTTP requests in scenarios which require authentication.");
+            }
+
+            if (!StringValues.IsNullOrEmpty(httpContext.Request.Headers.Cookie))
+            {
+                throw new BadHttpRequestException(
+                    "Support for binding parameters from an HTTP request's form is not currently supported " +
+                    "if the request contains a \"Cookie\" HTTP request header. Use of an HTTP request form is " +
+                    "not currently secure for HTTP requests in scenarios which require authentication.");
+            }
         }
     }
 
