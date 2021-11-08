@@ -32,8 +32,8 @@ public static class WebHostBuilderKestrelExtensions
         hostBuilder.UseQuic();
         return hostBuilder.ConfigureServices(services =>
         {
-                // Don't override an already-configured transport
-                services.TryAddSingleton<IConnectionListenerFactory, SocketTransportFactory>();
+            // Don't override an already-configured transport
+            services.TryAddSingleton<IConnectionListenerFactory, SocketTransportFactory>();
 
             services.AddTransient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>();
             services.AddSingleton<IServer, KestrelServerImpl>();
@@ -73,13 +73,11 @@ public static class WebHostBuilderKestrelExtensions
     {
         return hostBuilder.ConfigureServices(services =>
         {
-            return hostBuilder.ConfigureServices(services =>
-            {
-                services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>());
-                services.Configure(options);
-            });
+            services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>());
+            services.Configure(options);
+        });
     }
-                                             
+
     /// <summary>
     /// Configures Kestrel options but does not register an IServer. See <see cref="UseKestrel(IWebHostBuilder)"/>.
     /// </summary>
@@ -99,18 +97,10 @@ public static class WebHostBuilderKestrelExtensions
 
         return hostBuilder.ConfigureServices((context, services) =>
         {
+            services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>());
             services.Configure<KestrelServerOptions>(options =>
             {
-                throw new ArgumentNullException(nameof(configureOptions));
-            }
-
-            return hostBuilder.ConfigureServices((context, services) =>
-            {
-                services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>());
-                services.Configure<KestrelServerOptions>(options =>
-                {
-                    configureOptions(context, options);
-                });
+                configureOptions(context, options);
             });
         });
     }
