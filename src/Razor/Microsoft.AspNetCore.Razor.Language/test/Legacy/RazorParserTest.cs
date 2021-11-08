@@ -3,26 +3,26 @@
 
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Language.Legacy
+namespace Microsoft.AspNetCore.Razor.Language.Legacy;
+
+public class RazorParserTest
 {
-    public class RazorParserTest
+    [Fact]
+    public void CanParseStuff()
     {
-        [Fact]
-        public void CanParseStuff()
-        {
-            var parser = new RazorParser();
-            var sourceDocument = TestRazorSourceDocument.CreateResource("TestFiles/Source/BasicMarkup.cshtml", GetType());
-            var output = parser.Parse(sourceDocument);
+        var parser = new RazorParser();
+        var sourceDocument = TestRazorSourceDocument.CreateResource("TestFiles/Source/BasicMarkup.cshtml", GetType());
+        var output = parser.Parse(sourceDocument);
 
-            Assert.NotNull(output);
-        }
+        Assert.NotNull(output);
+    }
 
-        [Fact]
-        public void ParseMethodCallsParseDocumentOnMarkupParserAndReturnsResults()
-        {
-            // Arrange
-            var parser = new RazorParser();
-            var expected =
+    [Fact]
+    public void ParseMethodCallsParseDocumentOnMarkupParserAndReturnsResults()
+    {
+        // Arrange
+        var parser = new RazorParser();
+        var expected =
 @"RazorDocument - [0..12)::12 - [foo @bar baz]
     MarkupBlock - [0..12)::12
         MarkupTextLiteral - [0..4)::4 - [foo ] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -41,12 +41,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Text;[baz];
 ";
 
-            // Act
-            var syntaxTree = parser.Parse(TestRazorSourceDocument.Create("foo @bar baz"));
+        // Act
+        var syntaxTree = parser.Parse(TestRazorSourceDocument.Create("foo @bar baz"));
 
-            // Assert
-            var actual = SyntaxNodeSerializer.Serialize(syntaxTree.Root);
-            Assert.Equal(expected, actual);
-        }
+        // Assert
+        var actual = SyntaxNodeSerializer.Serialize(syntaxTree.Root);
+        Assert.Equal(expected, actual);
     }
 }

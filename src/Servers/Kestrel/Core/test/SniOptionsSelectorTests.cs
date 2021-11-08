@@ -19,16 +19,16 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
-{
-    public class SniOptionsSelectorTests
-    {
-        private static readonly X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
-        [Fact]
-        public void PrefersExactMatchOverWildcardPrefixOverWildcardOnly()
-        {
-            var sniDictionary = new Dictionary<string, SniConfig>
+public class SniOptionsSelectorTests
+{
+    private static readonly X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
+
+    [Fact]
+    public void PrefersExactMatchOverWildcardPrefixOverWildcardOnly()
+    {
+        var sniDictionary = new Dictionary<string, SniConfig>
             {
                 {
                     "www.example.org",
@@ -62,40 +62,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
             };
 
-            var mockCertificateConfigLoader = new MockCertificateConfigLoader();
-            var pathDictionary = mockCertificateConfigLoader.CertToPathDictionary;
+        var mockCertificateConfigLoader = new MockCertificateConfigLoader();
+        var pathDictionary = mockCertificateConfigLoader.CertToPathDictionary;
 
-            var sniOptionsSelector = new SniOptionsSelector(
-                "TestEndpointName",
-                sniDictionary,
-                mockCertificateConfigLoader,
-                fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
-                fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-                logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+        var sniOptionsSelector = new SniOptionsSelector(
+            "TestEndpointName",
+            sniDictionary,
+            mockCertificateConfigLoader,
+            fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
+            fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
+            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
-            var (wwwSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
-            Assert.Equal("Exact", pathDictionary[wwwSubdomainOptions.ServerCertificate]);
+        var (wwwSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
+        Assert.Equal("Exact", pathDictionary[wwwSubdomainOptions.ServerCertificate]);
 
-            var (baSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "b.a.example.org");
-            Assert.Equal("WildcardPrefix", pathDictionary[baSubdomainOptions.ServerCertificate]);
+        var (baSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "b.a.example.org");
+        Assert.Equal("WildcardPrefix", pathDictionary[baSubdomainOptions.ServerCertificate]);
 
-            var (aSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "a.example.org");
-            Assert.Equal("WildcardPrefix", pathDictionary[aSubdomainOptions.ServerCertificate]);
+        var (aSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "a.example.org");
+        Assert.Equal("WildcardPrefix", pathDictionary[aSubdomainOptions.ServerCertificate]);
 
-            // "*.example.org" is preferred over "*", but "*.example.org" doesn't match "example.org".
-            // REVIEW: Are we OK with "example.org" matching "*" instead of "*.example.org"? It feels annoying to me to have to configure example.org twice.
-            // Unfortunately, the alternative would have "a.example.org" match "*.a.example.org" before "*.example.org", and that just seems wrong.
-            var (noSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "example.org");
-            Assert.Equal("WildcardOnly", pathDictionary[noSubdomainOptions.ServerCertificate]);
+        // "*.example.org" is preferred over "*", but "*.example.org" doesn't match "example.org".
+        // REVIEW: Are we OK with "example.org" matching "*" instead of "*.example.org"? It feels annoying to me to have to configure example.org twice.
+        // Unfortunately, the alternative would have "a.example.org" match "*.a.example.org" before "*.example.org", and that just seems wrong.
+        var (noSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "example.org");
+        Assert.Equal("WildcardOnly", pathDictionary[noSubdomainOptions.ServerCertificate]);
 
-            var (anotherTldOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "dot.net");
-            Assert.Equal("WildcardOnly", pathDictionary[anotherTldOptions.ServerCertificate]);
-        }
+        var (anotherTldOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "dot.net");
+        Assert.Equal("WildcardOnly", pathDictionary[anotherTldOptions.ServerCertificate]);
+    }
 
-        [Fact]
-        public void PerfersLongerWildcardPrefixOverShorterWildcardPrefix()
-        {
-            var sniDictionary = new Dictionary<string, SniConfig>
+    [Fact]
+    public void PerfersLongerWildcardPrefixOverShorterWildcardPrefix()
+    {
+        var sniDictionary = new Dictionary<string, SniConfig>
             {
                 {
                     "*.a.example.org",
@@ -119,29 +119,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
             };
 
-            var mockCertificateConfigLoader = new MockCertificateConfigLoader();
-            var pathDictionary = mockCertificateConfigLoader.CertToPathDictionary;
+        var mockCertificateConfigLoader = new MockCertificateConfigLoader();
+        var pathDictionary = mockCertificateConfigLoader.CertToPathDictionary;
 
-            var sniOptionsSelector = new SniOptionsSelector(
-                "TestEndpointName",
-                sniDictionary,
-                mockCertificateConfigLoader,
-                fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
-                fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-                logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+        var sniOptionsSelector = new SniOptionsSelector(
+            "TestEndpointName",
+            sniDictionary,
+            mockCertificateConfigLoader,
+            fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
+            fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
+            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
-            var (baSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "b.a.example.org");
-            Assert.Equal("Long", pathDictionary[baSubdomainOptions.ServerCertificate]);
+        var (baSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "b.a.example.org");
+        Assert.Equal("Long", pathDictionary[baSubdomainOptions.ServerCertificate]);
 
-            // "*.a.example.org" is preferred over "*.example.org", but "a.example.org" doesn't match "*.a.example.org".
-            var (aSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "a.example.org");
-            Assert.Equal("Short", pathDictionary[aSubdomainOptions.ServerCertificate]);
-        }
+        // "*.a.example.org" is preferred over "*.example.org", but "a.example.org" doesn't match "*.a.example.org".
+        var (aSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "a.example.org");
+        Assert.Equal("Short", pathDictionary[aSubdomainOptions.ServerCertificate]);
+    }
 
-        [Fact]
-        public void ServerNameMatchingIsCaseInsensitive()
-        {
-            var sniDictionary = new Dictionary<string, SniConfig>
+    [Fact]
+    public void ServerNameMatchingIsCaseInsensitive()
+    {
+        var sniDictionary = new Dictionary<string, SniConfig>
             {
                 {
                     "Www.Example.Org",
@@ -165,49 +165,49 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
             };
 
-            var mockCertificateConfigLoader = new MockCertificateConfigLoader();
-            var pathDictionary = mockCertificateConfigLoader.CertToPathDictionary;
+        var mockCertificateConfigLoader = new MockCertificateConfigLoader();
+        var pathDictionary = mockCertificateConfigLoader.CertToPathDictionary;
 
-            var sniOptionsSelector = new SniOptionsSelector(
-                "TestEndpointName",
-                sniDictionary,
-                mockCertificateConfigLoader,
-                fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
-                fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-                logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+        var sniOptionsSelector = new SniOptionsSelector(
+            "TestEndpointName",
+            sniDictionary,
+            mockCertificateConfigLoader,
+            fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
+            fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
+            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
-            var (wwwSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "wWw.eXample.oRg");
-            Assert.Equal("Exact", pathDictionary[wwwSubdomainOptions.ServerCertificate]);
+        var (wwwSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "wWw.eXample.oRg");
+        Assert.Equal("Exact", pathDictionary[wwwSubdomainOptions.ServerCertificate]);
 
-            var (baSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "B.a.eXample.oRg");
-            Assert.Equal("WildcardPrefix", pathDictionary[baSubdomainOptions.ServerCertificate]);
+        var (baSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "B.a.eXample.oRg");
+        Assert.Equal("WildcardPrefix", pathDictionary[baSubdomainOptions.ServerCertificate]);
 
-            var (aSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "A.eXample.oRg");
-            Assert.Equal("WildcardPrefix", pathDictionary[aSubdomainOptions.ServerCertificate]);
-        }
+        var (aSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "A.eXample.oRg");
+        Assert.Equal("WildcardPrefix", pathDictionary[aSubdomainOptions.ServerCertificate]);
+    }
 
-        [Fact]
-        public void GetOptionsThrowsAnAuthenticationExceptionIfThereIsNoMatchingSniSection()
-        {
-            var sniOptionsSelector = new SniOptionsSelector(
-                "TestEndpointName",
-                new Dictionary<string, SniConfig>(),
-                new MockCertificateConfigLoader(),
-                fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
-                fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-                logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+    [Fact]
+    public void GetOptionsThrowsAnAuthenticationExceptionIfThereIsNoMatchingSniSection()
+    {
+        var sniOptionsSelector = new SniOptionsSelector(
+            "TestEndpointName",
+            new Dictionary<string, SniConfig>(),
+            new MockCertificateConfigLoader(),
+            fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
+            fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
+            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
-            var authExWithServerName = Assert.Throws<AuthenticationException>(() => sniOptionsSelector.GetOptions(new MockConnectionContext(), "example.org"));
-            Assert.Equal(CoreStrings.FormatSniNotConfiguredForServerName("example.org", "TestEndpointName"), authExWithServerName.Message);
+        var authExWithServerName = Assert.Throws<AuthenticationException>(() => sniOptionsSelector.GetOptions(new MockConnectionContext(), "example.org"));
+        Assert.Equal(CoreStrings.FormatSniNotConfiguredForServerName("example.org", "TestEndpointName"), authExWithServerName.Message);
 
-            var authExWithoutServerName = Assert.Throws<AuthenticationException>(() => sniOptionsSelector.GetOptions(new MockConnectionContext(), null));
-            Assert.Equal(CoreStrings.FormatSniNotConfiguredToAllowNoServerName("TestEndpointName"), authExWithoutServerName.Message);
-        }
+        var authExWithoutServerName = Assert.Throws<AuthenticationException>(() => sniOptionsSelector.GetOptions(new MockConnectionContext(), null));
+        Assert.Equal(CoreStrings.FormatSniNotConfiguredToAllowNoServerName("TestEndpointName"), authExWithoutServerName.Message);
+    }
 
-        [Fact]
-        public void WildcardOnlyMatchesNullServerNameDueToNoAlpn()
-        {
-            var sniDictionary = new Dictionary<string, SniConfig>
+    [Fact]
+    public void WildcardOnlyMatchesNullServerNameDueToNoAlpn()
+    {
+        var sniDictionary = new Dictionary<string, SniConfig>
             {
                 {
                     "*",
@@ -221,25 +221,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
             };
 
-            var mockCertificateConfigLoader = new MockCertificateConfigLoader();
-            var pathDictionary = mockCertificateConfigLoader.CertToPathDictionary;
+        var mockCertificateConfigLoader = new MockCertificateConfigLoader();
+        var pathDictionary = mockCertificateConfigLoader.CertToPathDictionary;
 
-            var sniOptionsSelector = new SniOptionsSelector(
-                "TestEndpointName",
-                sniDictionary,
-                mockCertificateConfigLoader,
-                fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
-                fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-                logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+        var sniOptionsSelector = new SniOptionsSelector(
+            "TestEndpointName",
+            sniDictionary,
+            mockCertificateConfigLoader,
+            fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
+            fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
+            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
-            var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), null);
-            Assert.Equal("WildcardOnly", pathDictionary[options.ServerCertificate]);
-        }
+        var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), null);
+        Assert.Equal("WildcardOnly", pathDictionary[options.ServerCertificate]);
+    }
 
-        [Fact]
-        public void CachesSslServerAuthenticationOptions()
-        {
-            var sniDictionary = new Dictionary<string, SniConfig>
+    [Fact]
+    public void CachesSslServerAuthenticationOptions()
+    {
+        var sniDictionary = new Dictionary<string, SniConfig>
             {
                 {
                     "www.example.org",
@@ -250,23 +250,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
             };
 
-            var sniOptionsSelector = new SniOptionsSelector(
-                "TestEndpointName",
-                sniDictionary,
-                new MockCertificateConfigLoader(),
-                fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
-                fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-                logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+        var sniOptionsSelector = new SniOptionsSelector(
+            "TestEndpointName",
+            sniDictionary,
+            new MockCertificateConfigLoader(),
+            fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
+            fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
+            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
-            var (options1, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
-            var (options2, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
-            Assert.Same(options1, options2);
-        }
+        var (options1, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
+        var (options2, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
+        Assert.Same(options1, options2);
+    }
 
-        [Fact]
-        public void ClonesSslServerAuthenticationOptionsIfAnOnAuthenticateCallbackIsDefined()
-        {
-            var sniDictionary = new Dictionary<string, SniConfig>
+    [Fact]
+    public void ClonesSslServerAuthenticationOptionsIfAnOnAuthenticateCallbackIsDefined()
+    {
+        var sniDictionary = new Dictionary<string, SniConfig>
             {
                 {
                     "www.example.org",
@@ -277,37 +277,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
             };
 
-            SslServerAuthenticationOptions lastSeenSslOptions = null;
+        SslServerAuthenticationOptions lastSeenSslOptions = null;
 
-            var fallbackOptions = new HttpsConnectionAdapterOptions
-            {
-                OnAuthenticate = (context, sslOptions) =>
-                {
-                    lastSeenSslOptions = sslOptions;
-                }
-            };
-
-            var sniOptionsSelector = new SniOptionsSelector(
-                "TestEndpointName",
-                sniDictionary,
-                new MockCertificateConfigLoader(),
-                fallbackOptions,
-                fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-                logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
-
-            var (options1, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
-            Assert.Same(lastSeenSslOptions, options1);
-
-            var (options2, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
-            Assert.Same(lastSeenSslOptions, options2);
-
-            Assert.NotSame(options1, options2);
-        }
-
-        [Fact]
-        public void ClonesSslServerAuthenticationOptionsIfTheFallbackServerCertificateSelectorIsUsed()
+        var fallbackOptions = new HttpsConnectionAdapterOptions
         {
-            var sniDictionary = new Dictionary<string, SniConfig>
+            OnAuthenticate = (context, sslOptions) =>
+            {
+                lastSeenSslOptions = sslOptions;
+            }
+        };
+
+        var sniOptionsSelector = new SniOptionsSelector(
+            "TestEndpointName",
+            sniDictionary,
+            new MockCertificateConfigLoader(),
+            fallbackOptions,
+            fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
+            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+
+        var (options1, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
+        Assert.Same(lastSeenSslOptions, options1);
+
+        var (options2, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
+        Assert.Same(lastSeenSslOptions, options2);
+
+        Assert.NotSame(options1, options2);
+    }
+
+    [Fact]
+    public void ClonesSslServerAuthenticationOptionsIfTheFallbackServerCertificateSelectorIsUsed()
+    {
+        var sniDictionary = new Dictionary<string, SniConfig>
             {
                 {
                     "selector.example.org",
@@ -322,117 +322,117 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
             };
 
-            var selectorCertificate = _x509Certificate2;
+        var selectorCertificate = _x509Certificate2;
 
-            var fallbackOptions = new HttpsConnectionAdapterOptions
-            {
-                ServerCertificate = new X509Certificate2(Array.Empty<byte>()),
-                ServerCertificateSelector = (context, serverName) => selectorCertificate
-            };
-
-            var sniOptionsSelector = new SniOptionsSelector(
-                "TestEndpointName",
-                sniDictionary,
-                new MockCertificateConfigLoader(),
-                fallbackOptions,
-                fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-                logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
-
-            var (selectorOptions1, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "selector.example.org");
-            Assert.Same(selectorCertificate, selectorOptions1.ServerCertificate);
-
-            var (selectorOptions2, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "selector.example.org");
-            Assert.Same(selectorCertificate, selectorOptions2.ServerCertificate);
-
-            // The SslServerAuthenticationOptions were cloned because the cert came from the ServerCertificateSelector fallback.
-            Assert.NotSame(selectorOptions1, selectorOptions2);
-
-            var (configOptions1, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "config.example.org");
-            Assert.NotSame(selectorCertificate, configOptions1.ServerCertificate);
-
-            var (configOptions2, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "config.example.org");
-            Assert.NotSame(selectorCertificate, configOptions2.ServerCertificate);
-
-            // The SslServerAuthenticationOptions don't need to be cloned if a static cert is defined in config for the given server name.
-            Assert.Same(configOptions1, configOptions2);
-        }
-
-        [Fact]
-        public void ConstructorThrowsInvalidOperationExceptionIfNoCertificateDefiniedInConfigOrFallback()
+        var fallbackOptions = new HttpsConnectionAdapterOptions
         {
-            var sniDictionary = new Dictionary<string, SniConfig>
+            ServerCertificate = new X509Certificate2(Array.Empty<byte>()),
+            ServerCertificateSelector = (context, serverName) => selectorCertificate
+        };
+
+        var sniOptionsSelector = new SniOptionsSelector(
+            "TestEndpointName",
+            sniDictionary,
+            new MockCertificateConfigLoader(),
+            fallbackOptions,
+            fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
+            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+
+        var (selectorOptions1, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "selector.example.org");
+        Assert.Same(selectorCertificate, selectorOptions1.ServerCertificate);
+
+        var (selectorOptions2, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "selector.example.org");
+        Assert.Same(selectorCertificate, selectorOptions2.ServerCertificate);
+
+        // The SslServerAuthenticationOptions were cloned because the cert came from the ServerCertificateSelector fallback.
+        Assert.NotSame(selectorOptions1, selectorOptions2);
+
+        var (configOptions1, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "config.example.org");
+        Assert.NotSame(selectorCertificate, configOptions1.ServerCertificate);
+
+        var (configOptions2, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "config.example.org");
+        Assert.NotSame(selectorCertificate, configOptions2.ServerCertificate);
+
+        // The SslServerAuthenticationOptions don't need to be cloned if a static cert is defined in config for the given server name.
+        Assert.Same(configOptions1, configOptions2);
+    }
+
+    [Fact]
+    public void ConstructorThrowsInvalidOperationExceptionIfNoCertificateDefiniedInConfigOrFallback()
+    {
+        var sniDictionary = new Dictionary<string, SniConfig>
             {
                 { "www.example.org", new SniConfig() }
             };
 
-            var ex = Assert.Throws<InvalidOperationException>(
-                () => new SniOptionsSelector(
-                    "TestEndpointName",
-                    sniDictionary,
-                    new MockCertificateConfigLoader(),
-                    fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
-                    fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-                    logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>()));
-
-            Assert.Equal(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound, ex.Message);
-        }
-
-        [Fact]
-        public void FallsBackToHttpsConnectionAdapterCertificate()
-        {
-            var sniDictionary = new Dictionary<string, SniConfig>
-            {
-                { "www.example.org", new SniConfig() }
-            };
-            var fallbackOptions = new HttpsConnectionAdapterOptions
-            {
-                ServerCertificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword")
-            };
-
-            var sniOptionsSelector = new SniOptionsSelector(
+        var ex = Assert.Throws<InvalidOperationException>(
+            () => new SniOptionsSelector(
                 "TestEndpointName",
                 sniDictionary,
                 new MockCertificateConfigLoader(),
-                fallbackOptions,
+                fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
                 fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-                logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+                logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>()));
 
-            var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
-            Assert.Same(fallbackOptions.ServerCertificate, options.ServerCertificate);
-        }
+        Assert.Equal(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound, ex.Message);
+    }
 
-        [Fact]
-        public void FallsBackToHttpsConnectionAdapterServerCertificateSelectorOverServerCertificate()
+    [Fact]
+    public void FallsBackToHttpsConnectionAdapterCertificate()
+    {
+        var sniDictionary = new Dictionary<string, SniConfig>
+            {
+                { "www.example.org", new SniConfig() }
+            };
+        var fallbackOptions = new HttpsConnectionAdapterOptions
         {
-            var sniDictionary = new Dictionary<string, SniConfig>
+            ServerCertificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword")
+        };
+
+        var sniOptionsSelector = new SniOptionsSelector(
+            "TestEndpointName",
+            sniDictionary,
+            new MockCertificateConfigLoader(),
+            fallbackOptions,
+            fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
+            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+
+        var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
+        Assert.Same(fallbackOptions.ServerCertificate, options.ServerCertificate);
+    }
+
+    [Fact]
+    public void FallsBackToHttpsConnectionAdapterServerCertificateSelectorOverServerCertificate()
+    {
+        var sniDictionary = new Dictionary<string, SniConfig>
             {
                 { "www.example.org", new SniConfig() }
             };
 
-            var selectorCertificate = _x509Certificate2;
+        var selectorCertificate = _x509Certificate2;
 
-            var fallbackOptions = new HttpsConnectionAdapterOptions
-            {
-                ServerCertificate = new X509Certificate2(Array.Empty<byte>()),
-                ServerCertificateSelector = (context, serverName) => selectorCertificate
-            };
-
-            var sniOptionsSelector = new SniOptionsSelector(
-                "TestEndpointName",
-                sniDictionary,
-                new MockCertificateConfigLoader(),
-                fallbackOptions,
-                fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-                logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
-
-            var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
-            Assert.Same(selectorCertificate, options.ServerCertificate);
-        }
-
-        [Fact]
-        public void PrefersHttpProtocolsDefinedInSniConfig()
+        var fallbackOptions = new HttpsConnectionAdapterOptions
         {
-            var sniDictionary = new Dictionary<string, SniConfig>
+            ServerCertificate = new X509Certificate2(Array.Empty<byte>()),
+            ServerCertificateSelector = (context, serverName) => selectorCertificate
+        };
+
+        var sniOptionsSelector = new SniOptionsSelector(
+            "TestEndpointName",
+            sniDictionary,
+            new MockCertificateConfigLoader(),
+            fallbackOptions,
+            fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
+            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+
+        var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
+        Assert.Same(selectorCertificate, options.ServerCertificate);
+    }
+
+    [Fact]
+    public void PrefersHttpProtocolsDefinedInSniConfig()
+    {
+        var sniDictionary = new Dictionary<string, SniConfig>
             {
                 {
                     "www.example.org",
@@ -444,26 +444,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
             };
 
-            var sniOptionsSelector = new SniOptionsSelector(
-                "TestEndpointName",
-                sniDictionary,
-                new MockCertificateConfigLoader(),
-                new HttpsConnectionAdapterOptions(),
-                fallbackHttpProtocols: HttpProtocols.Http1,
-                logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+        var sniOptionsSelector = new SniOptionsSelector(
+            "TestEndpointName",
+            sniDictionary,
+            new MockCertificateConfigLoader(),
+            new HttpsConnectionAdapterOptions(),
+            fallbackHttpProtocols: HttpProtocols.Http1,
+            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
-            var mockConnectionContext = new MockConnectionContext();
-            sniOptionsSelector.GetOptions(mockConnectionContext, "www.example.org");
+        var mockConnectionContext = new MockConnectionContext();
+        sniOptionsSelector.GetOptions(mockConnectionContext, "www.example.org");
 
-            var httpProtocolsFeature = mockConnectionContext.Features.Get<HttpProtocolsFeature>();
-            Assert.NotNull(httpProtocolsFeature);
-            Assert.Equal(HttpProtocols.None, httpProtocolsFeature.HttpProtocols);
-        }
+        var httpProtocolsFeature = mockConnectionContext.Features.Get<HttpProtocolsFeature>();
+        Assert.NotNull(httpProtocolsFeature);
+        Assert.Equal(HttpProtocols.None, httpProtocolsFeature.HttpProtocols);
+    }
 
-        [Fact]
-        public void ConfiguresAlpnBasedOnConfiguredHttpProtocols()
-        {
-            var sniDictionary = new Dictionary<string, SniConfig>
+    [Fact]
+    public void ConfiguresAlpnBasedOnConfiguredHttpProtocols()
+    {
+        var sniDictionary = new Dictionary<string, SniConfig>
             {
                 {
                     "www.example.org",
@@ -477,26 +477,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
             };
 
-            var sniOptionsSelector = new SniOptionsSelector(
-                "TestEndpointName",
-                sniDictionary,
-                new MockCertificateConfigLoader(),
-                new HttpsConnectionAdapterOptions(),
-                fallbackHttpProtocols: HttpProtocols.None,
-                logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+        var sniOptionsSelector = new SniOptionsSelector(
+            "TestEndpointName",
+            sniDictionary,
+            new MockCertificateConfigLoader(),
+            new HttpsConnectionAdapterOptions(),
+            fallbackHttpProtocols: HttpProtocols.None,
+            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
-            var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
-            var alpnList = options.ApplicationProtocols;
+        var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
+        var alpnList = options.ApplicationProtocols;
 
-            Assert.NotNull(alpnList);
-            var protocol = Assert.Single(alpnList);
-            Assert.Equal(SslApplicationProtocol.Http11, protocol);
-        }
+        Assert.NotNull(alpnList);
+        var protocol = Assert.Single(alpnList);
+        Assert.Equal(SslApplicationProtocol.Http11, protocol);
+    }
 
-        [Fact]
-        public void FallsBackToFallbackHttpProtocols()
-        {
-            var sniDictionary = new Dictionary<string, SniConfig>
+    [Fact]
+    public void FallsBackToFallbackHttpProtocols()
+    {
+        var sniDictionary = new Dictionary<string, SniConfig>
             {
                 {
                     "www.example.org",
@@ -507,26 +507,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
             };
 
-            var sniOptionsSelector = new SniOptionsSelector(
-                "TestEndpointName",
-                sniDictionary,
-                new MockCertificateConfigLoader(),
-                new HttpsConnectionAdapterOptions(),
-                fallbackHttpProtocols: HttpProtocols.Http1,
-                logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+        var sniOptionsSelector = new SniOptionsSelector(
+            "TestEndpointName",
+            sniDictionary,
+            new MockCertificateConfigLoader(),
+            new HttpsConnectionAdapterOptions(),
+            fallbackHttpProtocols: HttpProtocols.Http1,
+            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
-            var mockConnectionContext = new MockConnectionContext();
-            sniOptionsSelector.GetOptions(mockConnectionContext, "www.example.org");
+        var mockConnectionContext = new MockConnectionContext();
+        sniOptionsSelector.GetOptions(mockConnectionContext, "www.example.org");
 
-            var httpProtocolsFeature = mockConnectionContext.Features.Get<HttpProtocolsFeature>();
-            Assert.NotNull(httpProtocolsFeature);
-            Assert.Equal(HttpProtocols.Http1, httpProtocolsFeature.HttpProtocols);
-        }
+        var httpProtocolsFeature = mockConnectionContext.Features.Get<HttpProtocolsFeature>();
+        Assert.NotNull(httpProtocolsFeature);
+        Assert.Equal(HttpProtocols.Http1, httpProtocolsFeature.HttpProtocols);
+    }
 
-        [Fact]
-        public void PrefersSslProtocolsDefinedInSniConfig()
-        {
-            var sniDictionary = new Dictionary<string, SniConfig>
+    [Fact]
+    public void PrefersSslProtocolsDefinedInSniConfig()
+    {
+        var sniDictionary = new Dictionary<string, SniConfig>
             {
                 {
                     "www.example.org",
@@ -538,25 +538,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
             };
 
-            var sniOptionsSelector = new SniOptionsSelector(
-                "TestEndpointName",
-                sniDictionary,
-                new MockCertificateConfigLoader(),
-                new HttpsConnectionAdapterOptions
-                {
-                    SslProtocols = SslProtocols.Tls13
-                },
-                fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-                logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+        var sniOptionsSelector = new SniOptionsSelector(
+            "TestEndpointName",
+            sniDictionary,
+            new MockCertificateConfigLoader(),
+            new HttpsConnectionAdapterOptions
+            {
+                SslProtocols = SslProtocols.Tls13
+            },
+            fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
+            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
-            var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
-            Assert.Equal(SslProtocols.Tls13 | SslProtocols.Tls11, options.EnabledSslProtocols);
-        }
+        var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
+        Assert.Equal(SslProtocols.Tls13 | SslProtocols.Tls11, options.EnabledSslProtocols);
+    }
 
-        [Fact]
-        public void FallsBackToFallbackSslProtocols()
-        {
-            var sniDictionary = new Dictionary<string, SniConfig>
+    [Fact]
+    public void FallsBackToFallbackSslProtocols()
+    {
+        var sniDictionary = new Dictionary<string, SniConfig>
             {
                 {
                     "www.example.org",
@@ -567,26 +567,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
             };
 
-            var sniOptionsSelector = new SniOptionsSelector(
-                "TestEndpointName",
-                sniDictionary,
-                new MockCertificateConfigLoader(),
-                new HttpsConnectionAdapterOptions
-                {
-                    SslProtocols = SslProtocols.Tls13
-                },
-                fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-                logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+        var sniOptionsSelector = new SniOptionsSelector(
+            "TestEndpointName",
+            sniDictionary,
+            new MockCertificateConfigLoader(),
+            new HttpsConnectionAdapterOptions
+            {
+                SslProtocols = SslProtocols.Tls13
+            },
+            fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
+            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
-            var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
-            Assert.Equal(SslProtocols.Tls13, options.EnabledSslProtocols);
-        }
+        var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
+        Assert.Equal(SslProtocols.Tls13, options.EnabledSslProtocols);
+    }
 
 
-        [Fact]
-        public void PrefersClientCertificateModeDefinedInSniConfig()
-        {
-            var sniDictionary = new Dictionary<string, SniConfig>
+    [Fact]
+    public void PrefersClientCertificateModeDefinedInSniConfig()
+    {
+        var sniDictionary = new Dictionary<string, SniConfig>
             {
                 {
                     "www.example.org",
@@ -598,31 +598,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
             };
 
-            var sniOptionsSelector = new SniOptionsSelector(
-                "TestEndpointName",
-                sniDictionary,
-                new MockCertificateConfigLoader(),
-                new HttpsConnectionAdapterOptions
-                {
-                    ClientCertificateMode = ClientCertificateMode.AllowCertificate
-                },
-                fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-                logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+        var sniOptionsSelector = new SniOptionsSelector(
+            "TestEndpointName",
+            sniDictionary,
+            new MockCertificateConfigLoader(),
+            new HttpsConnectionAdapterOptions
+            {
+                ClientCertificateMode = ClientCertificateMode.AllowCertificate
+            },
+            fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
+            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
-            var (options, certMode) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
+        var (options, certMode) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
 
-            Assert.Equal(ClientCertificateMode.DelayCertificate, certMode);
-            Assert.False(options.ClientCertificateRequired);
+        Assert.Equal(ClientCertificateMode.DelayCertificate, certMode);
+        Assert.False(options.ClientCertificateRequired);
 
-            Assert.NotNull(options.RemoteCertificateValidationCallback);
-            // The RemoteCertificateValidationCallback should first check if the certificate is null and return true since it's optional.
-            Assert.True(options.RemoteCertificateValidationCallback(sender: null, certificate: null, chain: null, SslPolicyErrors.None));
-        }
+        Assert.NotNull(options.RemoteCertificateValidationCallback);
+        // The RemoteCertificateValidationCallback should first check if the certificate is null and return true since it's optional.
+        Assert.True(options.RemoteCertificateValidationCallback(sender: null, certificate: null, chain: null, SslPolicyErrors.None));
+    }
 
-        [Fact]
-        public void FallsBackToFallbackClientCertificateMode()
-        {
-            var sniDictionary = new Dictionary<string, SniConfig>
+    [Fact]
+    public void FallsBackToFallbackClientCertificateMode()
+    {
+        var sniDictionary = new Dictionary<string, SniConfig>
             {
                 {
                     "www.example.org",
@@ -633,146 +633,145 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
             };
 
-            var sniOptionsSelector = new SniOptionsSelector(
-                "TestEndpointName",
-                sniDictionary,
-                new MockCertificateConfigLoader(),
-                new HttpsConnectionAdapterOptions
-                {
-                    ClientCertificateMode = ClientCertificateMode.AllowCertificate
-                },
-                fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
-                logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
-
-            var (options, certMode) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
-
-            Assert.Equal(ClientCertificateMode.AllowCertificate, certMode);
-            // Despite the confusing name, ClientCertificateRequired being true simply requests a certificate from the client, but doesn't require it.
-            Assert.True(options.ClientCertificateRequired);
-
-            Assert.NotNull(options.RemoteCertificateValidationCallback);
-            // The RemoteCertificateValidationCallback should see we're in the AllowCertificate mode and return true.
-            Assert.True(options.RemoteCertificateValidationCallback(sender: null, certificate: null, chain: null, SslPolicyErrors.None));
-        }
-
-        [Fact]
-        public void CloneSslOptionsClonesAllProperties()
-        {
-            var propertyNames = typeof(SslServerAuthenticationOptions).GetProperties().Select(property => property.Name).ToList();
-
-            CipherSuitesPolicy cipherSuitesPolicy = null;
-
-            if (!OperatingSystem.IsWindows())
+        var sniOptionsSelector = new SniOptionsSelector(
+            "TestEndpointName",
+            sniDictionary,
+            new MockCertificateConfigLoader(),
+            new HttpsConnectionAdapterOptions
             {
-                try
-                {
-                    // The CipherSuitesPolicy ctor throws a PlatformNotSupportedException on Windows.
-                    cipherSuitesPolicy = new CipherSuitesPolicy(new[] { TlsCipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 });
-                }
-                catch (PlatformNotSupportedException)
-                {
-                    // The CipherSuitesPolicy ctor throws a PlatformNotSupportedException on Ubuntu 16.04.
-                    // I don't know exactly which other distros/versions throw PNEs, but it isn't super relevant to this test,
-                    // so let's just swallow this exception.
-                }
+                ClientCertificateMode = ClientCertificateMode.AllowCertificate
+            },
+            fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
+            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+
+        var (options, certMode) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
+
+        Assert.Equal(ClientCertificateMode.AllowCertificate, certMode);
+        // Despite the confusing name, ClientCertificateRequired being true simply requests a certificate from the client, but doesn't require it.
+        Assert.True(options.ClientCertificateRequired);
+
+        Assert.NotNull(options.RemoteCertificateValidationCallback);
+        // The RemoteCertificateValidationCallback should see we're in the AllowCertificate mode and return true.
+        Assert.True(options.RemoteCertificateValidationCallback(sender: null, certificate: null, chain: null, SslPolicyErrors.None));
+    }
+
+    [Fact]
+    public void CloneSslOptionsClonesAllProperties()
+    {
+        var propertyNames = typeof(SslServerAuthenticationOptions).GetProperties().Select(property => property.Name).ToList();
+
+        CipherSuitesPolicy cipherSuitesPolicy = null;
+
+        if (!OperatingSystem.IsWindows())
+        {
+            try
+            {
+                // The CipherSuitesPolicy ctor throws a PlatformNotSupportedException on Windows.
+                cipherSuitesPolicy = new CipherSuitesPolicy(new[] { TlsCipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 });
             }
-
-            // Set options properties to non-default values to verify they're copied.
-            var options = new SslServerAuthenticationOptions
+            catch (PlatformNotSupportedException)
             {
-                // Defaults to true
-                AllowRenegotiation = false,
-                // Defaults to null
-                ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http2 },
-                // Defaults to X509RevocationMode.NoCheck
-                CertificateRevocationCheckMode = X509RevocationMode.Offline,
-                // Defaults to null
-                CipherSuitesPolicy = cipherSuitesPolicy,
-                // Defaults to false
-                ClientCertificateRequired = true,
-                // Defaults to SslProtocols.None
-                EnabledSslProtocols = SslProtocols.Tls13 | SslProtocols.Tls11,
-                // Defaults to EncryptionPolicy.RequireEncryption
-                EncryptionPolicy = EncryptionPolicy.NoEncryption,
-                // Defaults to null
-                RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true,
-                // Defaults to null
-                ServerCertificate = new X509Certificate2(Array.Empty<byte>()),
-                // Defaults to null
-                ServerCertificateContext = SslStreamCertificateContext.Create(_x509Certificate2, additionalCertificates: null, offline: true),
-                // Defaults to null
-                ServerCertificateSelectionCallback = (sender, serverName) => null,
-            };
-
-            var clonedOptions = SniOptionsSelector.CloneSslOptions(options);
-
-            Assert.NotSame(options, clonedOptions);
-
-            Assert.Equal(options.AllowRenegotiation, clonedOptions.AllowRenegotiation);
-            Assert.True(propertyNames.Remove(nameof(options.AllowRenegotiation)));
-
-            // Ensure the List<SslApplicationProtocol> is also cloned since it could be modified by a user callback.
-            Assert.NotSame(options.ApplicationProtocols, clonedOptions.ApplicationProtocols);
-            Assert.Equal(Assert.Single(options.ApplicationProtocols), Assert.Single(clonedOptions.ApplicationProtocols));
-            Assert.True(propertyNames.Remove(nameof(options.ApplicationProtocols)));
-
-            Assert.Equal(options.CertificateRevocationCheckMode, clonedOptions.CertificateRevocationCheckMode);
-            Assert.True(propertyNames.Remove(nameof(options.CertificateRevocationCheckMode)));
-
-            Assert.Same(options.CipherSuitesPolicy, clonedOptions.CipherSuitesPolicy);
-            Assert.True(propertyNames.Remove(nameof(options.CipherSuitesPolicy)));
-
-            Assert.Equal(options.ClientCertificateRequired, clonedOptions.ClientCertificateRequired);
-            Assert.True(propertyNames.Remove(nameof(options.ClientCertificateRequired)));
-
-            Assert.Equal(options.EnabledSslProtocols, clonedOptions.EnabledSslProtocols);
-            Assert.True(propertyNames.Remove(nameof(options.EnabledSslProtocols)));
-
-            Assert.Equal(options.EncryptionPolicy, clonedOptions.EncryptionPolicy);
-            Assert.True(propertyNames.Remove(nameof(options.EncryptionPolicy)));
-
-            Assert.Same(options.RemoteCertificateValidationCallback, clonedOptions.RemoteCertificateValidationCallback);
-            Assert.True(propertyNames.Remove(nameof(options.RemoteCertificateValidationCallback)));
-
-            // Technically the ServerCertificate could be reset/reimported, but I'm hoping this is uncommon. Trying to clone the certificate and/or context seems risky.
-            Assert.Same(options.ServerCertificate, clonedOptions.ServerCertificate);
-            Assert.True(propertyNames.Remove(nameof(options.ServerCertificate)));
-
-            Assert.Same(options.ServerCertificateContext, clonedOptions.ServerCertificateContext);
-            Assert.True(propertyNames.Remove(nameof(options.ServerCertificateContext)));
-
-            Assert.Same(options.ServerCertificateSelectionCallback, clonedOptions.ServerCertificateSelectionCallback);
-            Assert.True(propertyNames.Remove(nameof(options.ServerCertificateSelectionCallback)));
-
-            // Ensure we've checked every property. When new properties get added, we'll have to update this test along with the CloneSslOptions implementation.
-            Assert.Empty(propertyNames);
-        }
-
-        private class MockCertificateConfigLoader : ICertificateConfigLoader
-        {
-            public Dictionary<object, string> CertToPathDictionary { get; } = new Dictionary<object, string>(ReferenceEqualityComparer.Instance);
-
-            public bool IsTestMock => true;
-
-            public X509Certificate2 LoadCertificate(CertificateConfig certInfo, string endpointName)
-            {
-                if (certInfo is null)
-                {
-                    return null;
-                }
-
-                var cert = TestResources.GetTestCertificate();
-                CertToPathDictionary.Add(cert, certInfo.Path);
-                return cert;
+                // The CipherSuitesPolicy ctor throws a PlatformNotSupportedException on Ubuntu 16.04.
+                // I don't know exactly which other distros/versions throw PNEs, but it isn't super relevant to this test,
+                // so let's just swallow this exception.
             }
         }
 
-        private class MockConnectionContext : ConnectionContext
+        // Set options properties to non-default values to verify they're copied.
+        var options = new SslServerAuthenticationOptions
         {
-            public override IDuplexPipe Transport { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-            public override string ConnectionId { get; set; } = "MockConnectionId";
-            public override IFeatureCollection Features { get; } = new FeatureCollection();
-            public override IDictionary<object, object> Items { get; set; } = new Dictionary<object, object>();
+            // Defaults to true
+            AllowRenegotiation = false,
+            // Defaults to null
+            ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http2 },
+            // Defaults to X509RevocationMode.NoCheck
+            CertificateRevocationCheckMode = X509RevocationMode.Offline,
+            // Defaults to null
+            CipherSuitesPolicy = cipherSuitesPolicy,
+            // Defaults to false
+            ClientCertificateRequired = true,
+            // Defaults to SslProtocols.None
+            EnabledSslProtocols = SslProtocols.Tls13 | SslProtocols.Tls11,
+            // Defaults to EncryptionPolicy.RequireEncryption
+            EncryptionPolicy = EncryptionPolicy.NoEncryption,
+            // Defaults to null
+            RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true,
+            // Defaults to null
+            ServerCertificate = new X509Certificate2(Array.Empty<byte>()),
+            // Defaults to null
+            ServerCertificateContext = SslStreamCertificateContext.Create(_x509Certificate2, additionalCertificates: null, offline: true),
+            // Defaults to null
+            ServerCertificateSelectionCallback = (sender, serverName) => null,
+        };
+
+        var clonedOptions = SniOptionsSelector.CloneSslOptions(options);
+
+        Assert.NotSame(options, clonedOptions);
+
+        Assert.Equal(options.AllowRenegotiation, clonedOptions.AllowRenegotiation);
+        Assert.True(propertyNames.Remove(nameof(options.AllowRenegotiation)));
+
+        // Ensure the List<SslApplicationProtocol> is also cloned since it could be modified by a user callback.
+        Assert.NotSame(options.ApplicationProtocols, clonedOptions.ApplicationProtocols);
+        Assert.Equal(Assert.Single(options.ApplicationProtocols), Assert.Single(clonedOptions.ApplicationProtocols));
+        Assert.True(propertyNames.Remove(nameof(options.ApplicationProtocols)));
+
+        Assert.Equal(options.CertificateRevocationCheckMode, clonedOptions.CertificateRevocationCheckMode);
+        Assert.True(propertyNames.Remove(nameof(options.CertificateRevocationCheckMode)));
+
+        Assert.Same(options.CipherSuitesPolicy, clonedOptions.CipherSuitesPolicy);
+        Assert.True(propertyNames.Remove(nameof(options.CipherSuitesPolicy)));
+
+        Assert.Equal(options.ClientCertificateRequired, clonedOptions.ClientCertificateRequired);
+        Assert.True(propertyNames.Remove(nameof(options.ClientCertificateRequired)));
+
+        Assert.Equal(options.EnabledSslProtocols, clonedOptions.EnabledSslProtocols);
+        Assert.True(propertyNames.Remove(nameof(options.EnabledSslProtocols)));
+
+        Assert.Equal(options.EncryptionPolicy, clonedOptions.EncryptionPolicy);
+        Assert.True(propertyNames.Remove(nameof(options.EncryptionPolicy)));
+
+        Assert.Same(options.RemoteCertificateValidationCallback, clonedOptions.RemoteCertificateValidationCallback);
+        Assert.True(propertyNames.Remove(nameof(options.RemoteCertificateValidationCallback)));
+
+        // Technically the ServerCertificate could be reset/reimported, but I'm hoping this is uncommon. Trying to clone the certificate and/or context seems risky.
+        Assert.Same(options.ServerCertificate, clonedOptions.ServerCertificate);
+        Assert.True(propertyNames.Remove(nameof(options.ServerCertificate)));
+
+        Assert.Same(options.ServerCertificateContext, clonedOptions.ServerCertificateContext);
+        Assert.True(propertyNames.Remove(nameof(options.ServerCertificateContext)));
+
+        Assert.Same(options.ServerCertificateSelectionCallback, clonedOptions.ServerCertificateSelectionCallback);
+        Assert.True(propertyNames.Remove(nameof(options.ServerCertificateSelectionCallback)));
+
+        // Ensure we've checked every property. When new properties get added, we'll have to update this test along with the CloneSslOptions implementation.
+        Assert.Empty(propertyNames);
+    }
+
+    private class MockCertificateConfigLoader : ICertificateConfigLoader
+    {
+        public Dictionary<object, string> CertToPathDictionary { get; } = new Dictionary<object, string>(ReferenceEqualityComparer.Instance);
+
+        public bool IsTestMock => true;
+
+        public X509Certificate2 LoadCertificate(CertificateConfig certInfo, string endpointName)
+        {
+            if (certInfo is null)
+            {
+                return null;
+            }
+
+            var cert = TestResources.GetTestCertificate();
+            CertToPathDictionary.Add(cert, certInfo.Path);
+            return cert;
         }
+    }
+
+    private class MockConnectionContext : ConnectionContext
+    {
+        public override IDuplexPipe Transport { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public override string ConnectionId { get; set; } = "MockConnectionId";
+        public override IFeatureCollection Features { get; } = new FeatureCollection();
+        public override IDictionary<object, object> Items { get; set; } = new Dictionary<object, object>();
     }
 }

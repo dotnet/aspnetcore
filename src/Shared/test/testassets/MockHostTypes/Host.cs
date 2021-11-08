@@ -3,10 +3,9 @@
 
 using System;
 
-namespace MockHostTypes
+namespace MockHostTypes;
+
+public class Host : IHost
 {
-    public class Host : IHost
-    {
-        public IServiceProvider Services { get; } = new ServiceProvider();
-    }
+    public IServiceProvider Services { get; } = new ServiceProvider();
 }

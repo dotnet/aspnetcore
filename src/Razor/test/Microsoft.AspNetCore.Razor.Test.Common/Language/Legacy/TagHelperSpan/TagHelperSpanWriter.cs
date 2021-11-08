@@ -3,60 +3,59 @@
 
 using System.IO;
 
-namespace Microsoft.AspNetCore.Razor.Language.Legacy
+namespace Microsoft.AspNetCore.Razor.Language.Legacy;
+
+internal class TagHelperSpanWriter
 {
-    internal class TagHelperSpanWriter
+    private readonly RazorSyntaxTree _syntaxTree;
+    private readonly TextWriter _writer;
+
+    public TagHelperSpanWriter(TextWriter writer, RazorSyntaxTree syntaxTree)
     {
-        private readonly RazorSyntaxTree _syntaxTree;
-        private readonly TextWriter _writer;
+        _writer = writer;
+        _syntaxTree = syntaxTree;
+    }
 
-        public TagHelperSpanWriter(TextWriter writer, RazorSyntaxTree syntaxTree)
+    public virtual void Visit()
+    {
+        var tagHelperSpans = _syntaxTree.GetTagHelperSpans();
+        foreach (var span in tagHelperSpans)
         {
-            _writer = writer;
-            _syntaxTree = syntaxTree;
+            VisitTagHelperSpan(span);
+            WriteNewLine();
         }
+    }
 
-        public virtual void Visit()
+    public virtual void VisitTagHelperSpan(TagHelperSpanInternal span)
+    {
+        WriteTagHelperSpan(span);
+    }
+
+    protected void WriteTagHelperSpan(TagHelperSpanInternal span)
+    {
+        Write($"TagHelper span at {span.Span}");
+        foreach (var tagHelper in span.TagHelpers)
         {
-            var tagHelperSpans = _syntaxTree.GetTagHelperSpans();
-            foreach (var span in tagHelperSpans)
-            {
-                VisitTagHelperSpan(span);
-                WriteNewLine();
-            }
-        }
+            WriteSeparator();
 
-        public virtual void VisitTagHelperSpan(TagHelperSpanInternal span)
-        {
-            WriteTagHelperSpan(span);
+            // Get the type name without the namespace.
+            var typeName = tagHelper.Name.Substring(tagHelper.Name.LastIndexOf('.') + 1);
+            Write(typeName);
         }
+    }
 
-        protected void WriteTagHelperSpan(TagHelperSpanInternal span)
-        {
-            Write($"TagHelper span at {span.Span}");
-            foreach (var tagHelper in span.TagHelpers)
-            {
-                WriteSeparator();
+    protected void WriteSeparator()
+    {
+        Write(" - ");
+    }
 
-                // Get the type name without the namespace.
-                var typeName = tagHelper.Name.Substring(tagHelper.Name.LastIndexOf('.') + 1);
-                Write(typeName);
-            }
-        }
+    protected void WriteNewLine()
+    {
+        _writer.WriteLine();
+    }
 
-        protected void WriteSeparator()
-        {
-            Write(" - ");
-        }
-
-        protected void WriteNewLine()
-        {
-            _writer.WriteLine();
-        }
-
-        protected void Write(object value)
-        {
-            _writer.Write(value);
-        }
+    protected void Write(object value)
+    {
+        _writer.Write(value);
     }
 }

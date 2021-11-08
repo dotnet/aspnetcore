@@ -5,16 +5,15 @@ using System;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
-namespace FormatterWebSite.Models
+namespace FormatterWebSite.Models;
+
+public class BookModelWithNoValidation
 {
-    public class BookModelWithNoValidation
-    {
-        public Guid Id { get; set; }
+    public Guid Id { get; set; }
 
-        public string Title { get; set; }
+    public string Title { get; set; }
 
-        [JsonRequired]
-        [DataMember(IsRequired = true)]
-        public string ISBN { get; set; }
-    }
+    [JsonRequired]
+    [DataMember(IsRequired = true)]
+    public string ISBN { get; set; }
 }

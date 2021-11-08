@@ -3,38 +3,38 @@
 
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-namespace Microsoft.AspNetCore.Razor.Language.Extensions
+namespace Microsoft.AspNetCore.Razor.Language.Extensions;
+
+internal class DesignTimeDirectivePass : IntermediateNodePassBase, IRazorDirectiveClassifierPass
 {
-    internal class DesignTimeDirectivePass : IntermediateNodePassBase, IRazorDirectiveClassifierPass
+    internal const string DesignTimeVariable = "__o";
+
+    // This needs to run after other directive classifiers. Any DirectiveToken that is not removed
+    // by the previous classifiers will have auto-generated design time support.
+    public override int Order => DefaultFeatureOrder;
+
+    protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
     {
-        internal const string DesignTimeVariable = "__o";
-
-        // This needs to run after other directive classifiers. Any DirectiveToken that is not removed
-        // by the previous classifiers will have auto-generated design time support.
-        public override int Order => DefaultFeatureOrder;
-
-        protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
+        // Only supports design time. This pass rewrites directives so they will have the right design time
+        // behavior and would break things if it ran for runtime.
+        if (!documentNode.Options.DesignTime)
         {
-            // Only supports design time. This pass rewrites directives so they will have the right design time
-            // behavior and would break things if it ran for runtime.
-            if (!documentNode.Options.DesignTime)
-            {
-                return;
-            }
-
-            var walker = new DesignTimeHelperWalker();
-            walker.VisitDocument(documentNode);
+            return;
         }
 
-        internal class DesignTimeHelperWalker : IntermediateNodeWalker
-        {
-            private DesignTimeDirectiveIntermediateNode _directiveNode;
+        var walker = new DesignTimeHelperWalker();
+        walker.VisitDocument(documentNode);
+    }
 
-            public override void VisitClassDeclaration(ClassDeclarationIntermediateNode node)
+    internal class DesignTimeHelperWalker : IntermediateNodeWalker
+    {
+        private DesignTimeDirectiveIntermediateNode _directiveNode;
+
+        public override void VisitClassDeclaration(ClassDeclarationIntermediateNode node)
+        {
+            node.Children.Insert(0, new CSharpCodeIntermediateNode()
             {
-                node.Children.Insert(0, new CSharpCodeIntermediateNode()
-                {
-                    Children =
+                Children =
                     {
                         new IntermediateToken()
                         {
@@ -42,10 +42,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                             Content = "#pragma warning disable 0414",
                         }
                     }
-                });
-                node.Children.Insert(1, new CSharpCodeIntermediateNode()
-                {
-                    Children =
+            });
+            node.Children.Insert(1, new CSharpCodeIntermediateNode()
+            {
+                Children =
                     {
                         new IntermediateToken()
                         {
@@ -53,10 +53,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                             Content = $"private static {typeof(object).FullName} {DesignTimeVariable} = null;",
                         }
                     }
-                });
-                node.Children.Insert(2, new CSharpCodeIntermediateNode()
-                {
-                    Children =
+            });
+            node.Children.Insert(2, new CSharpCodeIntermediateNode()
+            {
+                Children =
                     {
                         new IntermediateToken()
                         {
@@ -64,19 +64,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                             Content = "#pragma warning restore 0414",
                         }
                     }
-                });
+            });
 
-                _directiveNode = new DesignTimeDirectiveIntermediateNode();
+            _directiveNode = new DesignTimeDirectiveIntermediateNode();
 
-                VisitDefault(node);
+            VisitDefault(node);
 
-                node.Children.Insert(0, _directiveNode);
-            }
+            node.Children.Insert(0, _directiveNode);
+        }
 
-            public override void VisitDirectiveToken(DirectiveTokenIntermediateNode node)
-            {
-                _directiveNode.Children.Add(node);
-            }
+        public override void VisitDirectiveToken(DirectiveTokenIntermediateNode node)
+        {
+            _directiveNode.Children.Add(node);
         }
     }
 }

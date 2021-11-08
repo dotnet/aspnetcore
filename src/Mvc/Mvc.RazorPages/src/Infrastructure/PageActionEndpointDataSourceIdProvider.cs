@@ -3,15 +3,14 @@
 
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
-{
-    internal class PageActionEndpointDataSourceIdProvider
-    {
-        private int _nextId = 1;
+namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
-        internal int CreateId()
-        {
-            return Interlocked.Increment(ref _nextId);
-        }
+internal class PageActionEndpointDataSourceIdProvider
+{
+    private int _nextId = 1;
+
+    internal int CreateId()
+    {
+        return Interlocked.Increment(ref _nextId);
     }
 }

@@ -3,33 +3,32 @@
 
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 
-namespace Microsoft.AspNetCore.Razor.Language.Extensions
+namespace Microsoft.AspNetCore.Razor.Language.Extensions;
+
+public sealed class TemplateTargetExtension : ITemplateTargetExtension
 {
-    public sealed class TemplateTargetExtension : ITemplateTargetExtension
+    public static readonly string DefaultTemplateTypeName = "Template";
+
+    public string TemplateTypeName { get; set; } = DefaultTemplateTypeName;
+
+    public void WriteTemplate(CodeRenderingContext context, TemplateIntermediateNode node)
     {
-        public static readonly string DefaultTemplateTypeName = "Template";
+        const string ItemParameterName = "item";
+        const string TemplateWriterName = "__razor_template_writer";
 
-        public string TemplateTypeName { get; set; } = DefaultTemplateTypeName;
+        context.CodeWriter
+            .Write(ItemParameterName).Write(" => ")
+            .WriteStartNewObject(TemplateTypeName);
 
-        public void WriteTemplate(CodeRenderingContext context, TemplateIntermediateNode node)
+        using (context.CodeWriter.BuildAsyncLambda(TemplateWriterName))
         {
-            const string ItemParameterName = "item";
-            const string TemplateWriterName = "__razor_template_writer";
+            context.NodeWriter.BeginWriterScope(context, TemplateWriterName);
 
-            context.CodeWriter
-                .Write(ItemParameterName).Write(" => ")
-                .WriteStartNewObject(TemplateTypeName);
+            context.RenderChildren(node);
 
-            using (context.CodeWriter.BuildAsyncLambda(TemplateWriterName))
-            {
-                context.NodeWriter.BeginWriterScope(context, TemplateWriterName);
-
-                context.RenderChildren(node);
-
-                context.NodeWriter.EndWriterScope(context);
-            }
-
-            context.CodeWriter.WriteEndMethodInvocation(endLine: false);
+            context.NodeWriter.EndWriterScope(context);
         }
+
+        context.CodeWriter.WriteEndMethodInvocation(endLine: false);
     }
 }

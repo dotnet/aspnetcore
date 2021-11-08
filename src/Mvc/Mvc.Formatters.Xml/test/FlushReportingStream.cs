@@ -7,26 +7,25 @@ using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 
-namespace Microsoft.AspNetCore.Mvc
+namespace Microsoft.AspNetCore.Mvc;
+
+public static class FlushReportingStream
 {
-    public static class FlushReportingStream
+    public static Stream GetThrowingStream()
     {
-        public static Stream GetThrowingStream()
+        return new NonFlushingStream();
+    }
+
+    private class NonFlushingStream : MemoryStream
+    {
+        public override void Flush()
         {
-            return new NonFlushingStream();
+            throw new InvalidOperationException("Flush should not have been called.");
         }
 
-        private class NonFlushingStream : MemoryStream
+        public override Task FlushAsync(CancellationToken cancellationToken)
         {
-            public override void Flush()
-            {
-                throw new InvalidOperationException("Flush should not have been called.");
-            }
-
-            public override Task FlushAsync(CancellationToken cancellationToken)
-            {
-                throw new InvalidOperationException("FlushAsync should not have been called.");
-            }
+            throw new InvalidOperationException("FlushAsync should not have been called.");
         }
     }
 }

@@ -4,21 +4,20 @@
 using System;
 using System.Threading;
 
-namespace Microsoft.AspNetCore.SignalR.Tests
+namespace Microsoft.AspNetCore.SignalR.Tests;
+
+internal class CancellationDisposable : IDisposable
 {
-    internal class CancellationDisposable : IDisposable
+    private readonly CancellationTokenSource _cts;
+
+    public CancellationDisposable(CancellationTokenSource cts)
     {
-        private readonly CancellationTokenSource _cts;
+        _cts = cts;
+    }
 
-        public CancellationDisposable(CancellationTokenSource cts)
-        {
-            _cts = cts;
-        }
-
-        public void Dispose()
-        {
-            _cts.Cancel();
-            _cts.Dispose();
-        }
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
     }
 }

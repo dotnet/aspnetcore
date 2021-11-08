@@ -3,14 +3,13 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace ControllersFromServicesClassLibrary
+namespace ControllersFromServicesClassLibrary;
+
+public class Inventory : ResourcesController
 {
-    public class Inventory : ResourcesController
+    [HttpGet]
+    public IActionResult Get()
     {
-        [HttpGet]
-        public IActionResult Get()
-        {
-            return new ContentResult { Content = "4" };
-        }
+        return new ContentResult { Content = "4" };
     }
 }

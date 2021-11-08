@@ -3,18 +3,17 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.AspNetCore.Internal
-{
-    internal static class LinkerFlags
-    {
-        /// <summary>
-        /// Flags for a member that is JSON (de)serialized.
-        /// </summary>
-        public const DynamicallyAccessedMemberTypes JsonSerialized = DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties;
+namespace Microsoft.AspNetCore.Internal;
 
-        /// <summary>
-        /// Flags for a component
-        /// </summary>
-        public const DynamicallyAccessedMemberTypes Component = DynamicallyAccessedMemberTypes.All;
-    }
+internal static class LinkerFlags
+{
+    /// <summary>
+    /// Flags for a member that is JSON (de)serialized.
+    /// </summary>
+    public const DynamicallyAccessedMemberTypes JsonSerialized = DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties;
+
+    /// <summary>
+    /// Flags for a component
+    /// </summary>
+    public const DynamicallyAccessedMemberTypes Component = DynamicallyAccessedMemberTypes.All;
 }

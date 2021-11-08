@@ -3,13 +3,12 @@
 
 using Microsoft.AspNetCore.Razor.Language;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
+namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X;
+
+internal class ExtensionInitializer : RazorExtensionInitializer
 {
-    internal class ExtensionInitializer : RazorExtensionInitializer
+    public override void Initialize(RazorProjectEngineBuilder builder)
     {
-        public override void Initialize(RazorProjectEngineBuilder builder)
-        {
-            RazorExtensions.Register(builder);
-        }
+        RazorExtensions.Register(builder);
     }
 }

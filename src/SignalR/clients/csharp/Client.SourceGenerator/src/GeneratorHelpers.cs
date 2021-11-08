@@ -5,27 +5,26 @@ using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
+namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator;
+
+internal static class GeneratorHelpers
 {
-    internal static class GeneratorHelpers
+    public static string GetAccessibilityString(Accessibility accessibility)
     {
-        public static string GetAccessibilityString(Accessibility accessibility)
+        switch (accessibility)
         {
-            switch (accessibility)
-            {
-                case Accessibility.Private:
-                    return "private";
-                case Accessibility.ProtectedAndInternal:
-                    return "protected internal";
-                case Accessibility.Protected:
-                    return "protected";
-                case Accessibility.Internal:
-                    return "internal";
-                case Accessibility.Public:
-                    return "public";
-                default:
-                    return null;
-            }
+            case Accessibility.Private:
+                return "private";
+            case Accessibility.ProtectedAndInternal:
+                return "protected internal";
+            case Accessibility.Protected:
+                return "protected";
+            case Accessibility.Internal:
+                return "internal";
+            case Accessibility.Public:
+                return "public";
+            default:
+                return null;
         }
     }
 }

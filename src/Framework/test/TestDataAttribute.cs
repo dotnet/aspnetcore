@@ -3,18 +3,17 @@
 
 using System;
 
-namespace Microsoft.AspNetCore
-{
-    [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-    internal class TestDataAttribute : Attribute
-    {
-        public TestDataAttribute(string key, string value)
-        {
-            Key = key;
-            Value = value;
-        }
+namespace Microsoft.AspNetCore;
 
-        public string Key { get; }
-        public string Value { get; }
+[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
+internal class TestDataAttribute : Attribute
+{
+    public TestDataAttribute(string key, string value)
+    {
+        Key = key;
+        Value = value;
     }
+
+    public string Key { get; }
+    public string Value { get; }
 }

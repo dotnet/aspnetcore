@@ -4,47 +4,46 @@
 using System;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
 
-namespace Microsoft.AspNetCore.Razor.Language.Legacy
+namespace Microsoft.AspNetCore.Razor.Language.Legacy;
+
+internal class RazorParser
 {
-    internal class RazorParser
+    public RazorParser()
+        : this(RazorParserOptions.CreateDefault())
     {
-        public RazorParser()
-            : this(RazorParserOptions.CreateDefault())
+    }
+
+    public RazorParser(RazorParserOptions options)
+    {
+        if (options == null)
         {
+            throw new ArgumentNullException(nameof(options));
         }
 
-        public RazorParser(RazorParserOptions options)
-        {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
+        Options = options;
+    }
 
-            Options = options;
+    public RazorParserOptions Options { get; }
+
+    public virtual RazorSyntaxTree Parse(RazorSourceDocument source)
+    {
+        if (source == null)
+        {
+            throw new ArgumentNullException(nameof(source));
         }
 
-        public RazorParserOptions Options { get; }
+        var context = new ParserContext(source, Options);
+        var codeParser = new CSharpCodeParser(Options.Directives, context);
+        var markupParser = new HtmlMarkupParser(context);
 
-        public virtual RazorSyntaxTree Parse(RazorSourceDocument source)
-        {
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
+        codeParser.HtmlParser = markupParser;
+        markupParser.CodeParser = codeParser;
 
-            var context = new ParserContext(source, Options);
-            var codeParser = new CSharpCodeParser(Options.Directives, context);
-            var markupParser = new HtmlMarkupParser(context);
+        var diagnostics = context.ErrorSink.Errors;
 
-            codeParser.HtmlParser = markupParser;
-            markupParser.CodeParser = codeParser;
+        var root = markupParser.ParseDocument().CreateRed();
 
-            var diagnostics = context.ErrorSink.Errors;
-
-            var root = markupParser.ParseDocument().CreateRed();
-
-            var syntaxTree = RazorSyntaxTree.Create(root, source, diagnostics, Options);
-            return syntaxTree;
-        }
+        var syntaxTree = RazorSyntaxTree.Create(root, source, diagnostics, Options);
+        return syntaxTree;
     }
 }

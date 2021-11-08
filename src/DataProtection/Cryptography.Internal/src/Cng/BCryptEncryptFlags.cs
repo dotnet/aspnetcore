@@ -3,11 +3,10 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Cryptography.Cng
+namespace Microsoft.AspNetCore.Cryptography.Cng;
+
+[Flags]
+internal enum BCryptEncryptFlags
 {
-    [Flags]
-    internal enum BCryptEncryptFlags
-    {
-        BCRYPT_BLOCK_PADDING = 0x00000001,
-    }
+    BCRYPT_BLOCK_PADDING = 0x00000001,
 }

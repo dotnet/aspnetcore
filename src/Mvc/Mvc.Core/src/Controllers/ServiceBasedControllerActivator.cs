@@ -4,30 +4,29 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Mvc.Controllers
+namespace Microsoft.AspNetCore.Mvc.Controllers;
+
+/// <summary>
+/// A <see cref="IControllerActivator"/> that retrieves controllers as services from the request's
+/// <see cref="IServiceProvider"/>.
+/// </summary>
+public class ServiceBasedControllerActivator : IControllerActivator
 {
-    /// <summary>
-    /// A <see cref="IControllerActivator"/> that retrieves controllers as services from the request's
-    /// <see cref="IServiceProvider"/>.
-    /// </summary>
-    public class ServiceBasedControllerActivator : IControllerActivator
+    /// <inheritdoc />
+    public object Create(ControllerContext actionContext)
     {
-        /// <inheritdoc />
-        public object Create(ControllerContext actionContext)
+        if (actionContext == null)
         {
-            if (actionContext == null)
-            {
-                throw new ArgumentNullException(nameof(actionContext));
-            }
-
-            var controllerType = actionContext.ActionDescriptor.ControllerTypeInfo.AsType();
-
-            return actionContext.HttpContext.RequestServices.GetRequiredService(controllerType);
+            throw new ArgumentNullException(nameof(actionContext));
         }
 
-        /// <inheritdoc />
-        public virtual void Release(ControllerContext context, object controller)
-        {
-        }
+        var controllerType = actionContext.ActionDescriptor.ControllerTypeInfo.AsType();
+
+        return actionContext.HttpContext.RequestServices.GetRequiredService(controllerType);
+    }
+
+    /// <inheritdoc />
+    public virtual void Release(ControllerContext context, object controller)
+    {
     }
 }

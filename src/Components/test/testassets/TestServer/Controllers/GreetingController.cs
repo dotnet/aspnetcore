@@ -3,12 +3,11 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace TestServer.Controllers
+namespace TestServer.Controllers;
+
+[Route("api/[controller]/[action]")]
+public class GreetingController : Controller
 {
-    [Route("api/[controller]/[action]")]
-    public class GreetingController : Controller
-    {
-        [HttpGet]
-        public string SayHello() => "Hello";
-    }
+    [HttpGet]
+    public string SayHello() => "Hello";
 }

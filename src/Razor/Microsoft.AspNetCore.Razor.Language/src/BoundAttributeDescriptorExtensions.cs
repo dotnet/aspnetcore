@@ -4,84 +4,83 @@
 using System;
 using Microsoft.AspNetCore.Razor.Language.Components;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+public static class BoundAttributeDescriptorExtensions
 {
-    public static class BoundAttributeDescriptorExtensions
+    public static string GetPropertyName(this BoundAttributeDescriptor attribute)
     {
-        public static string GetPropertyName(this BoundAttributeDescriptor attribute)
+        if (attribute == null)
         {
-            if (attribute == null)
-            {
-                throw new ArgumentNullException(nameof(attribute));
-            }
-
-            attribute.Metadata.TryGetValue(TagHelperMetadata.Common.PropertyName, out var propertyName);
-            return propertyName;
+            throw new ArgumentNullException(nameof(attribute));
         }
 
-        public static bool IsDefaultKind(this BoundAttributeDescriptor attribute)
-        {
-            if (attribute == null)
-            {
-                throw new ArgumentNullException(nameof(attribute));
-            }
+        attribute.Metadata.TryGetValue(TagHelperMetadata.Common.PropertyName, out var propertyName);
+        return propertyName;
+    }
 
-            return string.Equals(attribute.Kind, TagHelperConventions.DefaultKind, StringComparison.Ordinal);
+    public static bool IsDefaultKind(this BoundAttributeDescriptor attribute)
+    {
+        if (attribute == null)
+        {
+            throw new ArgumentNullException(nameof(attribute));
         }
 
-        internal static bool ExpectsStringValue(this BoundAttributeDescriptor attribute, string name)
-        {
-            if (attribute.IsStringProperty)
-            {
-                return true;
-            }
+        return string.Equals(attribute.Kind, TagHelperConventions.DefaultKind, StringComparison.Ordinal);
+    }
 
-            var isIndexerNameMatch = TagHelperMatchingConventions.SatisfiesBoundAttributeIndexer(name, attribute);
-            return isIndexerNameMatch && attribute.IsIndexerStringProperty;
+    internal static bool ExpectsStringValue(this BoundAttributeDescriptor attribute, string name)
+    {
+        if (attribute.IsStringProperty)
+        {
+            return true;
         }
 
-        internal static bool ExpectsBooleanValue(this BoundAttributeDescriptor attribute, string name)
-        {
-            if (attribute.IsBooleanProperty)
-            {
-                return true;
-            }
+        var isIndexerNameMatch = TagHelperMatchingConventions.SatisfiesBoundAttributeIndexer(name, attribute);
+        return isIndexerNameMatch && attribute.IsIndexerStringProperty;
+    }
 
-            var isIndexerNameMatch = TagHelperMatchingConventions.SatisfiesBoundAttributeIndexer(name, attribute);
-            return isIndexerNameMatch && attribute.IsIndexerBooleanProperty;
+    internal static bool ExpectsBooleanValue(this BoundAttributeDescriptor attribute, string name)
+    {
+        if (attribute.IsBooleanProperty)
+        {
+            return true;
         }
 
-        public static bool IsDirectiveAttribute(this BoundAttributeDescriptor attribute)
-        {
-            if (attribute == null)
-            {
-                throw new ArgumentNullException(nameof(attribute));
-            }
+        var isIndexerNameMatch = TagHelperMatchingConventions.SatisfiesBoundAttributeIndexer(name, attribute);
+        return isIndexerNameMatch && attribute.IsIndexerBooleanProperty;
+    }
 
-            return
-                attribute.Metadata.TryGetValue(ComponentMetadata.Common.DirectiveAttribute, out var value) &&
-                string.Equals(bool.TrueString, value);
+    public static bool IsDirectiveAttribute(this BoundAttributeDescriptor attribute)
+    {
+        if (attribute == null)
+        {
+            throw new ArgumentNullException(nameof(attribute));
         }
 
-        public static bool IsDefaultKind(this BoundAttributeParameterDescriptor parameter)
-        {
-            if (parameter == null)
-            {
-                throw new ArgumentNullException(nameof(parameter));
-            }
+        return
+            attribute.Metadata.TryGetValue(ComponentMetadata.Common.DirectiveAttribute, out var value) &&
+            string.Equals(bool.TrueString, value);
+    }
 
-            return string.Equals(parameter.Kind, TagHelperConventions.DefaultKind, StringComparison.Ordinal);
+    public static bool IsDefaultKind(this BoundAttributeParameterDescriptor parameter)
+    {
+        if (parameter == null)
+        {
+            throw new ArgumentNullException(nameof(parameter));
         }
 
-        public static string GetPropertyName(this BoundAttributeParameterDescriptor parameter)
-        {
-            if (parameter == null)
-            {
-                throw new ArgumentNullException(nameof(parameter));
-            }
+        return string.Equals(parameter.Kind, TagHelperConventions.DefaultKind, StringComparison.Ordinal);
+    }
 
-            parameter.Metadata.TryGetValue(TagHelperMetadata.Common.PropertyName, out var propertyName);
-            return propertyName;
+    public static string GetPropertyName(this BoundAttributeParameterDescriptor parameter)
+    {
+        if (parameter == null)
+        {
+            throw new ArgumentNullException(nameof(parameter));
         }
+
+        parameter.Metadata.TryGetValue(TagHelperMetadata.Common.PropertyName, out var propertyName);
+        return propertyName;
     }
 }

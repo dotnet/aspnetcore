@@ -3,25 +3,24 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Razor.Language.Intermediate
+namespace Microsoft.AspNetCore.Razor.Language.Intermediate;
+
+public sealed class CSharpCodeIntermediateNode : IntermediateNode
 {
-    public sealed class CSharpCodeIntermediateNode : IntermediateNode
+    public override IntermediateNodeCollection Children { get; } = new IntermediateNodeCollection();
+
+    public override void Accept(IntermediateNodeVisitor visitor)
     {
-        public override IntermediateNodeCollection Children { get; } = new IntermediateNodeCollection();
-
-        public override void Accept(IntermediateNodeVisitor visitor)
+        if (visitor == null)
         {
-            if (visitor == null)
-            {
-                throw new ArgumentNullException(nameof(visitor));
-            }
-
-            visitor.VisitCSharpCode(this);
+            throw new ArgumentNullException(nameof(visitor));
         }
 
-        public override void FormatNode(IntermediateNodeFormatter formatter)
-        {
-            formatter.WriteChildren(Children);
-        }
+        visitor.VisitCSharpCode(this);
+    }
+
+    public override void FormatNode(IntermediateNodeFormatter formatter)
+    {
+        formatter.WriteChildren(Children);
     }
 }

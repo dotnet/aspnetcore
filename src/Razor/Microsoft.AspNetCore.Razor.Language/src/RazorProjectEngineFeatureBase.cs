@@ -3,29 +3,28 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+public abstract class RazorProjectEngineFeatureBase : IRazorProjectEngineFeature
 {
-    public abstract class RazorProjectEngineFeatureBase : IRazorProjectEngineFeature
+    private RazorProjectEngine _projectEngine;
+
+    public virtual RazorProjectEngine ProjectEngine
     {
-        private RazorProjectEngine _projectEngine;
-
-        public virtual RazorProjectEngine ProjectEngine
+        get => _projectEngine;
+        set
         {
-            get => _projectEngine;
-            set
+            if (value == null)
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                _projectEngine = value;
-                OnInitialized();
+                throw new ArgumentNullException(nameof(value));
             }
-        }
 
-        protected virtual void OnInitialized()
-        {
+            _projectEngine = value;
+            OnInitialized();
         }
+    }
+
+    protected virtual void OnInitialized()
+    {
     }
 }

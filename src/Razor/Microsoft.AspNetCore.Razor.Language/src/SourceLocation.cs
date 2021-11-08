@@ -5,131 +5,130 @@ using System;
 using System.Globalization;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+/// <summary>
+/// A location in a Razor file.
+/// </summary>
+public struct SourceLocation : IEquatable<SourceLocation>
 {
     /// <summary>
-    /// A location in a Razor file.
+    /// An undefined <see cref="SourceLocation"/>.
     /// </summary>
-    public struct SourceLocation : IEquatable<SourceLocation>
+    public static readonly SourceLocation Undefined =
+        new SourceLocation(absoluteIndex: -1, lineIndex: -1, characterIndex: -1);
+
+    /// <summary>
+    /// A <see cref="SourceLocation"/> with <see cref="AbsoluteIndex"/>, <see cref="LineIndex"/>, and
+    /// <see cref="CharacterIndex"/> initialized to 0.
+    /// </summary>
+    public static readonly SourceLocation Zero =
+        new SourceLocation(absoluteIndex: 0, lineIndex: 0, characterIndex: 0);
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="SourceLocation"/>.
+    /// </summary>
+    /// <param name="absoluteIndex">The absolute index.</param>
+    /// <param name="lineIndex">The line index.</param>
+    /// <param name="characterIndex">The character index.</param>
+    public SourceLocation(int absoluteIndex, int lineIndex, int characterIndex)
+        : this(filePath: null, absoluteIndex: absoluteIndex, lineIndex: lineIndex, characterIndex: characterIndex)
     {
-        /// <summary>
-        /// An undefined <see cref="SourceLocation"/>.
-        /// </summary>
-        public static readonly SourceLocation Undefined =
-            new SourceLocation(absoluteIndex: -1, lineIndex: -1, characterIndex: -1);
+    }
 
-        /// <summary>
-        /// A <see cref="SourceLocation"/> with <see cref="AbsoluteIndex"/>, <see cref="LineIndex"/>, and
-        /// <see cref="CharacterIndex"/> initialized to 0.
-        /// </summary>
-        public static readonly SourceLocation Zero =
-            new SourceLocation(absoluteIndex: 0, lineIndex: 0, characterIndex: 0);
+    /// <summary>
+    /// Initializes a new instance of <see cref="SourceLocation"/>.
+    /// </summary>
+    /// <param name="filePath">The file path.</param>
+    /// <param name="absoluteIndex">The absolute index.</param>
+    /// <param name="lineIndex">The line index.</param>
+    /// <param name="characterIndex">The character index.</param>
+    public SourceLocation(string filePath, int absoluteIndex, int lineIndex, int characterIndex)
+    {
+        FilePath = filePath;
+        AbsoluteIndex = absoluteIndex;
+        LineIndex = lineIndex;
+        CharacterIndex = characterIndex;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="SourceLocation"/>.
-        /// </summary>
-        /// <param name="absoluteIndex">The absolute index.</param>
-        /// <param name="lineIndex">The line index.</param>
-        /// <param name="characterIndex">The character index.</param>
-        public SourceLocation(int absoluteIndex, int lineIndex, int characterIndex)
-            : this(filePath: null, absoluteIndex: absoluteIndex, lineIndex: lineIndex, characterIndex: characterIndex)
-        {
-        }
+    /// <summary>
+    /// Path of the file.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// When <c>null</c>, the parser assumes the location is in the file currently being processed.
+    /// </para>
+    /// <para>Set property is only accessible for deserialization purposes.</para>
+    /// </remarks>
+    public string FilePath { get; set; }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="SourceLocation"/>.
-        /// </summary>
-        /// <param name="filePath">The file path.</param>
-        /// <param name="absoluteIndex">The absolute index.</param>
-        /// <param name="lineIndex">The line index.</param>
-        /// <param name="characterIndex">The character index.</param>
-        public SourceLocation(string filePath, int absoluteIndex, int lineIndex, int characterIndex)
-        {
-            FilePath = filePath;
-            AbsoluteIndex = absoluteIndex;
-            LineIndex = lineIndex;
-            CharacterIndex = characterIndex;
-        }
+    /// <remarks>Set property is only accessible for deserialization purposes.</remarks>
+    public int AbsoluteIndex { get; set; }
 
-        /// <summary>
-        /// Path of the file.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// When <c>null</c>, the parser assumes the location is in the file currently being processed.
-        /// </para>
-        /// <para>Set property is only accessible for deserialization purposes.</para>
-        /// </remarks>
-        public string FilePath { get; set;  }
+    /// <remarks>Set property is only accessible for deserialization purposes.</remarks>
+    public int LineIndex { get; set; }
 
-        /// <remarks>Set property is only accessible for deserialization purposes.</remarks>
-        public int AbsoluteIndex { get; set;  }
+    /// <remarks>Set property is only accessible for deserialization purposes.</remarks>
+    public int CharacterIndex { get; set; }
 
-        /// <remarks>Set property is only accessible for deserialization purposes.</remarks>
-        public int LineIndex { get; set; }
+    /// <summary>
+    /// Creates a new instance of <see cref="SourceLocation"/> from the provided span.
+    /// </summary>
+    /// <param name="span">
+    /// The souce span. If <c>null</c>, <see cref="SourceLocation.Undefined"/> will be returned.
+    /// </param>
+    /// <remarks>A <see cref="SourceLocation"/> that corresponds to the beginning of the span.</remarks>
+    public static SourceLocation FromSpan(SourceSpan? span)
+    {
+        return span == null ?
+            SourceLocation.Undefined :
+            new SourceLocation(span.Value.FilePath, span.Value.AbsoluteIndex, span.Value.LineIndex, span.Value.CharacterIndex);
+    }
 
-        /// <remarks>Set property is only accessible for deserialization purposes.</remarks>
-        public int CharacterIndex { get; set; }
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        return string.Format(
+            CultureInfo.CurrentCulture,
+            "({0}:{1},{2})",
+            AbsoluteIndex,
+            LineIndex,
+            CharacterIndex);
+    }
 
-        /// <summary>
-        /// Creates a new instance of <see cref="SourceLocation"/> from the provided span.
-        /// </summary>
-        /// <param name="span">
-        /// The souce span. If <c>null</c>, <see cref="SourceLocation.Undefined"/> will be returned.
-        /// </param>
-        /// <remarks>A <see cref="SourceLocation"/> that corresponds to the beginning of the span.</remarks>
-        public static SourceLocation FromSpan(SourceSpan? span)
-        {
-            return span == null ?
-                SourceLocation.Undefined :
-                new SourceLocation(span.Value.FilePath, span.Value.AbsoluteIndex, span.Value.LineIndex, span.Value.CharacterIndex);
-        }
+    /// <inheritdoc />
+    public override bool Equals(object obj)
+    {
+        return obj is SourceLocation &&
+            Equals((SourceLocation)obj);
+    }
 
-        /// <inheritdoc />
-        public override string ToString()
-        {
-            return string.Format(
-                CultureInfo.CurrentCulture,
-                "({0}:{1},{2})",
-                AbsoluteIndex,
-                LineIndex,
-                CharacterIndex);
-        }
+    /// <inheritdoc />
+    public override int GetHashCode()
+    {
+        var hashCodeCombiner = HashCodeCombiner.Start();
+        hashCodeCombiner.Add(FilePath, StringComparer.Ordinal);
+        hashCodeCombiner.Add(AbsoluteIndex);
 
-        /// <inheritdoc />
-        public override bool Equals(object obj)
-        {
-            return obj is SourceLocation &&
-                Equals((SourceLocation)obj);
-        }
+        return hashCodeCombiner;
+    }
 
-        /// <inheritdoc />
-        public override int GetHashCode()
-        {
-            var hashCodeCombiner = HashCodeCombiner.Start();
-            hashCodeCombiner.Add(FilePath, StringComparer.Ordinal);
-            hashCodeCombiner.Add(AbsoluteIndex);
+    /// <inheritdoc />
+    public bool Equals(SourceLocation other)
+    {
+        return string.Equals(FilePath, other.FilePath, StringComparison.Ordinal) &&
+            AbsoluteIndex == other.AbsoluteIndex &&
+            LineIndex == other.LineIndex &&
+            CharacterIndex == other.CharacterIndex;
+    }
 
-            return hashCodeCombiner;
-        }
+    public static bool operator ==(SourceLocation left, SourceLocation right)
+    {
+        return left.Equals(right);
+    }
 
-        /// <inheritdoc />
-        public bool Equals(SourceLocation other)
-        {
-            return string.Equals(FilePath, other.FilePath, StringComparison.Ordinal) &&
-                AbsoluteIndex == other.AbsoluteIndex &&
-                LineIndex == other.LineIndex &&
-                CharacterIndex == other.CharacterIndex;
-        }
-
-        public static bool operator==(SourceLocation left, SourceLocation right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(SourceLocation left, SourceLocation right)
-        {
-            return !left.Equals(right);
-        }
+    public static bool operator !=(SourceLocation left, SourceLocation right)
+    {
+        return !left.Equals(right);
     }
 }

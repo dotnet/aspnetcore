@@ -1,123 +1,122 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Razor.Language.Syntax
+namespace Microsoft.AspNetCore.Razor.Language.Syntax;
+
+internal abstract class SyntaxList : SyntaxNode
 {
-    internal abstract class SyntaxList : SyntaxNode
+    internal SyntaxList(InternalSyntax.SyntaxList green, SyntaxNode parent, int position)
+        : base(green, parent, position)
     {
-        internal SyntaxList(InternalSyntax.SyntaxList green, SyntaxNode parent, int position)
+    }
+
+    public override TResult Accept<TResult>(SyntaxVisitor<TResult> visitor)
+    {
+        return visitor.Visit(this);
+    }
+
+    public override void Accept(SyntaxVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
+
+    internal class WithTwoChildren : SyntaxList
+    {
+        private SyntaxNode _child0;
+        private SyntaxNode _child1;
+
+        internal WithTwoChildren(InternalSyntax.SyntaxList green, SyntaxNode parent, int position)
             : base(green, parent, position)
         {
         }
 
-        public override TResult Accept<TResult>(SyntaxVisitor<TResult> visitor)
+        internal override SyntaxNode GetNodeSlot(int index)
         {
-            return visitor.Visit(this);
-        }
-
-        public override void Accept(SyntaxVisitor visitor)
-        {
-            visitor.Visit(this);
-        }
-
-        internal class WithTwoChildren : SyntaxList
-        {
-            private SyntaxNode _child0;
-            private SyntaxNode _child1;
-
-            internal WithTwoChildren(InternalSyntax.SyntaxList green, SyntaxNode parent, int position)
-                : base(green, parent, position)
+            switch (index)
             {
-            }
-
-            internal override SyntaxNode GetNodeSlot(int index)
-            {
-                switch (index)
-                {
-                    case 0:
-                        return GetRedElement(ref _child0, 0);
-                    case 1:
-                        return GetRedElement(ref _child1, 1);
-                    default:
-                        return null;
-                }
-            }
-
-            internal override SyntaxNode GetCachedSlot(int index)
-            {
-                switch (index)
-                {
-                    case 0:
-                        return _child0;
-                    case 1:
-                        return _child1;
-                    default:
-                        return null;
-                }
+                case 0:
+                    return GetRedElement(ref _child0, 0);
+                case 1:
+                    return GetRedElement(ref _child1, 1);
+                default:
+                    return null;
             }
         }
 
-        internal class WithThreeChildren : SyntaxList
+        internal override SyntaxNode GetCachedSlot(int index)
         {
-            private SyntaxNode _child0;
-            private SyntaxNode _child1;
-            private SyntaxNode _child2;
-
-            internal WithThreeChildren(InternalSyntax.SyntaxList green, SyntaxNode parent, int position)
-                : base(green, parent, position)
+            switch (index)
             {
+                case 0:
+                    return _child0;
+                case 1:
+                    return _child1;
+                default:
+                    return null;
             }
+        }
+    }
 
-            internal override SyntaxNode GetNodeSlot(int index)
-            {
-                switch (index)
-                {
-                    case 0:
-                        return GetRedElement(ref _child0, 0);
-                    case 1:
-                        return GetRedElement(ref _child1, 1);
-                    case 2:
-                        return GetRedElement(ref _child2, 2);
-                    default:
-                        return null;
-                }
-            }
+    internal class WithThreeChildren : SyntaxList
+    {
+        private SyntaxNode _child0;
+        private SyntaxNode _child1;
+        private SyntaxNode _child2;
 
-            internal override SyntaxNode GetCachedSlot(int index)
+        internal WithThreeChildren(InternalSyntax.SyntaxList green, SyntaxNode parent, int position)
+            : base(green, parent, position)
+        {
+        }
+
+        internal override SyntaxNode GetNodeSlot(int index)
+        {
+            switch (index)
             {
-                switch (index)
-                {
-                    case 0:
-                        return _child0;
-                    case 1:
-                        return _child1;
-                    case 2:
-                        return _child2;
-                    default:
-                        return null;
-                }
+                case 0:
+                    return GetRedElement(ref _child0, 0);
+                case 1:
+                    return GetRedElement(ref _child1, 1);
+                case 2:
+                    return GetRedElement(ref _child2, 2);
+                default:
+                    return null;
             }
         }
 
-        internal class WithManyChildren : SyntaxList
+        internal override SyntaxNode GetCachedSlot(int index)
         {
-            private readonly ArrayElement<SyntaxNode>[] _children;
-
-            internal WithManyChildren(InternalSyntax.SyntaxList green, SyntaxNode parent, int position)
-                : base(green, parent, position)
+            switch (index)
             {
-                _children = new ArrayElement<SyntaxNode>[green.SlotCount];
+                case 0:
+                    return _child0;
+                case 1:
+                    return _child1;
+                case 2:
+                    return _child2;
+                default:
+                    return null;
             }
+        }
+    }
 
-            internal override SyntaxNode GetNodeSlot(int index)
-            {
-                return this.GetRedElement(ref _children[index].Value, index);
-            }
+    internal class WithManyChildren : SyntaxList
+    {
+        private readonly ArrayElement<SyntaxNode>[] _children;
 
-            internal override SyntaxNode GetCachedSlot(int index)
-            {
-                return _children[index];
-            }
+        internal WithManyChildren(InternalSyntax.SyntaxList green, SyntaxNode parent, int position)
+            : base(green, parent, position)
+        {
+            _children = new ArrayElement<SyntaxNode>[green.SlotCount];
+        }
+
+        internal override SyntaxNode GetNodeSlot(int index)
+        {
+            return this.GetRedElement(ref _children[index].Value, index);
+        }
+
+        internal override SyntaxNode GetCachedSlot(int index)
+        {
+            return _children[index];
         }
     }
 }

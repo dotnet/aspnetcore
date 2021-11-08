@@ -4,53 +4,52 @@
 using System.Buffers;
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Components
-{
-    /// <Summary>
-    /// A stream that pulls each chunk on demand using JavaScript interop. This implementation is used for
-    /// WebAssembly and WebView applications.
-    /// </Summary>
-    internal static class TransmitDataStreamToJS
-    {
-        internal static async Task TransmitStreamAsync(IJSRuntime runtime, long streamId, DotNetStreamReference dotNetStreamReference)
-        {
-            var buffer = ArrayPool<byte>.Shared.Rent(32 * 1024);
+namespace Microsoft.AspNetCore.Components;
 
+/// <Summary>
+/// A stream that pulls each chunk on demand using JavaScript interop. This implementation is used for
+/// WebAssembly and WebView applications.
+/// </Summary>
+internal static class TransmitDataStreamToJS
+{
+    internal static async Task TransmitStreamAsync(IJSRuntime runtime, long streamId, DotNetStreamReference dotNetStreamReference)
+    {
+        var buffer = ArrayPool<byte>.Shared.Rent(32 * 1024);
+
+        try
+        {
+            int bytesRead;
+            while ((bytesRead = await dotNetStreamReference.Stream.ReadAsync(buffer)) > 0)
+            {
+                await runtime.InvokeVoidAsync("Blazor._internal.receiveDotNetDataStream", streamId, buffer, bytesRead, null);
+            }
+
+            // Notify client that the stream has completed
+            await runtime.InvokeVoidAsync("Blazor._internal.receiveDotNetDataStream", streamId, Array.Empty<byte>(), 0, null);
+        }
+        catch (Exception ex)
+        {
             try
             {
-                int bytesRead;
-                while ((bytesRead = await dotNetStreamReference.Stream.ReadAsync(buffer)) > 0)
-                {
-                    await runtime.InvokeVoidAsync("Blazor._internal.receiveDotNetDataStream", streamId, buffer, bytesRead, null);
-                }
-
-                // Notify client that the stream has completed
-                await runtime.InvokeVoidAsync("Blazor._internal.receiveDotNetDataStream", streamId, Array.Empty<byte>(), 0, null);
+                // Attempt to notify the client of the error.
+                await runtime.InvokeVoidAsync("Blazor._internal.receiveDotNetDataStream", streamId, Array.Empty<byte>(), 0, ex.Message);
             }
-            catch (Exception ex)
+            catch
             {
-                try
-                {
-                    // Attempt to notify the client of the error.
-                    await runtime.InvokeVoidAsync("Blazor._internal.receiveDotNetDataStream", streamId, Array.Empty<byte>(), 0, ex.Message);
-                }
-                catch
-                {
-                    // JS Interop encountered an issue, unable to send error message to JS.
-                }
-
-                throw;
+                // JS Interop encountered an issue, unable to send error message to JS.
             }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(buffer, clearArray: true);
 
-                if (!dotNetStreamReference.LeaveOpen)
-                {
-                    dotNetStreamReference.Stream?.Dispose();
-                }
+            throw;
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer, clearArray: true);
+
+            if (!dotNetStreamReference.LeaveOpen)
+            {
+                dotNetStreamReference.Stream?.Dispose();
             }
         }
-
     }
+
 }

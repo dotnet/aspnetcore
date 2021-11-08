@@ -4,13 +4,12 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
-{
-    internal class ServerAddressesFeature : IServerAddressesFeature
-    {
-        public ServerAddressesCollection InternalCollection { get; } = new ServerAddressesCollection();
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
-        ICollection<string> IServerAddressesFeature.Addresses => InternalCollection.PublicCollection;
-        public bool PreferHostingUrls { get; set; }
-    }
+internal class ServerAddressesFeature : IServerAddressesFeature
+{
+    public ServerAddressesCollection InternalCollection { get; } = new ServerAddressesCollection();
+
+    ICollection<string> IServerAddressesFeature.Addresses => InternalCollection.PublicCollection;
+    public bool PreferHostingUrls { get; set; }
 }

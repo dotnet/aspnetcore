@@ -3,9 +3,8 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
+namespace Microsoft.AspNetCore.Mvc.Formatters.Xml;
+
+public class PersonList : List<Person>
 {
-    public class PersonList : List<Person>
-    {
-    }
 }

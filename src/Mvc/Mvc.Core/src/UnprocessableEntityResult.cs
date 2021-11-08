@@ -4,23 +4,22 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 
-namespace Microsoft.AspNetCore.Mvc
-{
-    /// <summary>
-    /// A <see cref="StatusCodeResult"/> that when
-    /// executed will produce a Unprocessable Entity (422) response.
-    /// </summary>
-    [DefaultStatusCode(DefaultStatusCode)]
-    public class UnprocessableEntityResult : StatusCodeResult
-    {
-        private const int DefaultStatusCode = StatusCodes.Status422UnprocessableEntity;
+namespace Microsoft.AspNetCore.Mvc;
 
-        /// <summary>
-        /// Creates a new <see cref="UnprocessableEntityResult"/> instance.
-        /// </summary>
-        public UnprocessableEntityResult()
-            : base(DefaultStatusCode)
-        {
-        }
+/// <summary>
+/// A <see cref="StatusCodeResult"/> that when
+/// executed will produce a Unprocessable Entity (422) response.
+/// </summary>
+[DefaultStatusCode(DefaultStatusCode)]
+public class UnprocessableEntityResult : StatusCodeResult
+{
+    private const int DefaultStatusCode = StatusCodes.Status422UnprocessableEntity;
+
+    /// <summary>
+    /// Creates a new <see cref="UnprocessableEntityResult"/> instance.
+    /// </summary>
+    public UnprocessableEntityResult()
+        : base(DefaultStatusCode)
+    {
     }
 }

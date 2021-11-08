@@ -5,26 +5,25 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+internal class EmptyProjectFileSystem : RazorProjectFileSystem
 {
-    internal class EmptyProjectFileSystem : RazorProjectFileSystem
+    public override IEnumerable<RazorProjectItem> EnumerateItems(string basePath)
     {
-        public override IEnumerable<RazorProjectItem> EnumerateItems(string basePath)
-        {
-            NormalizeAndEnsureValidPath(basePath);
-            return Enumerable.Empty<RazorProjectItem>();
-        }
+        NormalizeAndEnsureValidPath(basePath);
+        return Enumerable.Empty<RazorProjectItem>();
+    }
 
 
-        public override RazorProjectItem GetItem(string path)
-        {
-            return GetItem(path, fileKind: null);
-        }
+    public override RazorProjectItem GetItem(string path)
+    {
+        return GetItem(path, fileKind: null);
+    }
 
-        public override RazorProjectItem GetItem(string path, string fileKind)
-        {
-            NormalizeAndEnsureValidPath(path);
-            return new NotFoundProjectItem(string.Empty, path, fileKind);
-        }
+    public override RazorProjectItem GetItem(string path, string fileKind)
+    {
+        NormalizeAndEnsureValidPath(path);
+        return new NotFoundProjectItem(string.Empty, path, fileKind);
     }
 }

@@ -3,20 +3,19 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Builder
+namespace Microsoft.AspNetCore.Builder;
+
+/// <summary>
+/// Builds conventions that will be used for customization of <see cref="EndpointBuilder"/> instances.
+/// </summary>
+/// <remarks>
+/// This interface is used at application startup to customize endpoints for the application.
+/// </remarks>
+public interface IEndpointConventionBuilder
 {
     /// <summary>
-    /// Builds conventions that will be used for customization of <see cref="EndpointBuilder"/> instances.
+    /// Adds the specified convention to the builder. Conventions are used to customize <see cref="EndpointBuilder"/> instances.
     /// </summary>
-    /// <remarks>
-    /// This interface is used at application startup to customize endpoints for the application.
-    /// </remarks>
-    public interface IEndpointConventionBuilder
-    {
-        /// <summary>
-        /// Adds the specified convention to the builder. Conventions are used to customize <see cref="EndpointBuilder"/> instances.
-        /// </summary>
-        /// <param name="convention">The convention to add to the builder.</param>
-        void Add(Action<EndpointBuilder> convention);
-    }
+    /// <param name="convention">The convention to add to the builder.</param>
+    void Add(Action<EndpointBuilder> convention);
 }

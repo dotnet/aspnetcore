@@ -3,14 +3,13 @@
 
 using System.Security.Principal;
 
-namespace Microsoft.AspNetCore.Components.Authorization
+namespace Microsoft.AspNetCore.Components.Authorization;
+
+public class TestIdentity : IIdentity
 {
-    public class TestIdentity : IIdentity
-    {
-        public string AuthenticationType => "Test";
+    public string AuthenticationType => "Test";
 
-        public bool IsAuthenticated => true;
+    public bool IsAuthenticated => true;
 
-        public string Name { get; set; }
-    }
+    public string Name { get; set; }
 }

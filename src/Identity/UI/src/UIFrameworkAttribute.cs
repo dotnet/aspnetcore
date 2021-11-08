@@ -3,27 +3,26 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Identity.UI
+namespace Microsoft.AspNetCore.Identity.UI;
+
+/// <summary>
+/// The UIFramework Identity UI will use on the application.
+/// </summary>
+[AttributeUsage(AttributeTargets.Assembly, Inherited = false, AllowMultiple = false)]
+public sealed class UIFrameworkAttribute : Attribute
 {
+
     /// <summary>
-    /// The UIFramework Identity UI will use on the application.
+    /// Initializes a new instance of <see cref="UIFrameworkAttribute"/>.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Assembly, Inherited = false, AllowMultiple = false)]
-    public sealed class UIFrameworkAttribute : Attribute
+    /// <param name="uiFramework"></param>
+    public UIFrameworkAttribute(string uiFramework)
     {
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="UIFrameworkAttribute"/>.
-        /// </summary>
-        /// <param name="uiFramework"></param>
-        public UIFrameworkAttribute(string uiFramework)
-        {
-            UIFramework = uiFramework;
-        }
-
-        /// <summary>
-        /// The UI Framework Identity UI will use.
-        /// </summary>
-        public string UIFramework { get; }
+        UIFramework = uiFramework;
     }
+
+    /// <summary>
+    /// The UI Framework Identity UI will use.
+    /// </summary>
+    public string UIFramework { get; }
 }

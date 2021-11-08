@@ -7,36 +7,35 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers;
+
+[ExportCodeFixProvider(LanguageNames.CSharp)]
+[Shared]
+public class AddResponseTypeAttributeCodeFixProvider : CodeFixProvider
 {
-    [ExportCodeFixProvider(LanguageNames.CSharp)]
-    [Shared]
-    public class AddResponseTypeAttributeCodeFixProvider : CodeFixProvider
+    public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(
+        ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode.Id,
+        ApiDiagnosticDescriptors.API1001_ActionReturnsUndocumentedSuccessResult.Id);
+
+    public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+
+    public sealed override Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(
-            ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode.Id,
-            ApiDiagnosticDescriptors.API1001_ActionReturnsUndocumentedSuccessResult.Id);
-
-        public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
-
-        public sealed override Task RegisterCodeFixesAsync(CodeFixContext context)
+        if (context.Diagnostics.Length == 0)
         {
-            if (context.Diagnostics.Length == 0)
-            {
-                return Task.CompletedTask;
-            }
-
-            var diagnostic = context.Diagnostics[0];
-            if ((diagnostic.Descriptor.Id != ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode.Id) &&
-                (diagnostic.Descriptor.Id != ApiDiagnosticDescriptors.API1001_ActionReturnsUndocumentedSuccessResult.Id))
-            {
-                return Task.CompletedTask;
-            }
-
-            var codeFix = new AddResponseTypeAttributeCodeFixAction(context.Document, diagnostic);
-
-            context.RegisterCodeFix(codeFix, diagnostic);
             return Task.CompletedTask;
         }
+
+        var diagnostic = context.Diagnostics[0];
+        if ((diagnostic.Descriptor.Id != ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode.Id) &&
+            (diagnostic.Descriptor.Id != ApiDiagnosticDescriptors.API1001_ActionReturnsUndocumentedSuccessResult.Id))
+        {
+            return Task.CompletedTask;
+        }
+
+        var codeFix = new AddResponseTypeAttributeCodeFixAction(context.Document, diagnostic);
+
+        context.RegisterCodeFix(codeFix, diagnostic);
+        return Task.CompletedTask;
     }
 }

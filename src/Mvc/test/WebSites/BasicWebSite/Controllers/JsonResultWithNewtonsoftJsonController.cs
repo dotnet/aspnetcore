@@ -6,43 +6,42 @@ using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace BasicWebSite.Controllers
+namespace BasicWebSite.Controllers;
+
+public class JsonResultWithNewtonsoftJsonController : Controller
 {
-    public class JsonResultWithNewtonsoftJsonController : Controller
+    private static readonly JsonSerializerSettings _customSerializerSettings;
+
+    static JsonResultWithNewtonsoftJsonController()
     {
-        private static readonly JsonSerializerSettings _customSerializerSettings;
+        _customSerializerSettings = JsonSerializerSettingsProvider.CreateSerializerSettings();
+        _customSerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+    }
 
-        static JsonResultWithNewtonsoftJsonController()
-        {
-            _customSerializerSettings = JsonSerializerSettingsProvider.CreateSerializerSettings();
-            _customSerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-        }
+    public JsonResult Plain()
+    {
+        return new JsonResult(new { Message = "hello" });
+    }
 
-        public JsonResult Plain()
-        {
-            return new JsonResult(new { Message = "hello" });
-        }
+    public JsonResult CustomContentType()
+    {
+        var result = new JsonResult(new { Message = "hello" });
+        result.ContentType = "application/message+json";
+        return result;
+    }
 
-        public JsonResult CustomContentType()
-        {
-            var result = new JsonResult(new { Message = "hello" });
-            result.ContentType = "application/message+json";
-            return result;
-        }
+    public JsonResult CustomSerializerSettings()
+    {
+        return new JsonResult(new { Message = "hello" }, _customSerializerSettings);
+    }
 
-        public JsonResult CustomSerializerSettings()
-        {
-            return new JsonResult(new { Message = "hello" }, _customSerializerSettings);
-        }
+    public JsonResult Null()
+    {
+        return new JsonResult(null);
+    }
 
-        public JsonResult Null()
-        {
-            return new JsonResult(null);
-        }
-
-        public JsonResult String()
-        {
-            return new JsonResult("hello");
-        }
+    public JsonResult String()
+    {
+        return new JsonResult("hello");
     }
 }

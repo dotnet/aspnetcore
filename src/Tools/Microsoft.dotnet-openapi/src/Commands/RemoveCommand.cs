@@ -9,70 +9,69 @@ using Microsoft.DotNet.Openapi.Tools;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.OpenApi.Commands
+namespace Microsoft.DotNet.OpenApi.Commands;
+
+internal class RemoveCommand : BaseCommand
 {
-    internal class RemoveCommand : BaseCommand
+    private const string CommandName = "remove";
+
+    private const string SourceArgName = "source";
+
+    public RemoveCommand(Application parent, IHttpClientWrapper httpClient) : base(parent, CommandName, httpClient)
     {
-        private const string CommandName = "remove";
+        _sourceProjectArg = Argument(SourceArgName, "The OpenAPI reference to remove. Must represent a reference which is already in this project", multipleValues: true);
+    }
 
-        private const string SourceArgName = "source";
+    internal readonly CommandArgument _sourceProjectArg;
 
-        public RemoveCommand(Application parent, IHttpClientWrapper httpClient) : base(parent, CommandName, httpClient)
+    protected override Task<int> ExecuteCoreAsync()
+    {
+        var projectFile = ResolveProjectFile(ProjectFileOption);
+
+        var sourceFile = Ensure.NotNullOrEmpty(_sourceProjectArg.Value, SourceArgName);
+
+        if (IsProjectFile(sourceFile))
         {
-            _sourceProjectArg = Argument(SourceArgName, "The OpenAPI reference to remove. Must represent a reference which is already in this project", multipleValues: true);
+            RemoveServiceReference(OpenApiProjectReference, projectFile, sourceFile);
         }
-
-        internal readonly CommandArgument _sourceProjectArg;
-
-        protected override Task<int> ExecuteCoreAsync()
+        else
         {
-            var projectFile = ResolveProjectFile(ProjectFileOption);
+            var file = RemoveServiceReference(OpenApiReference, projectFile, sourceFile);
 
-            var sourceFile = Ensure.NotNullOrEmpty(_sourceProjectArg.Value, SourceArgName);
-
-            if (IsProjectFile(sourceFile))
+            if (file != null)
             {
-                RemoveServiceReference(OpenApiProjectReference, projectFile, sourceFile);
+                File.Delete(GetFullPath(file));
             }
-            else
-            {
-                var file = RemoveServiceReference(OpenApiReference, projectFile, sourceFile);
-
-                if (file != null)
-                {
-                    File.Delete(GetFullPath(file));
-                }
-            }
-
-            return Task.FromResult(0);
         }
 
-        private string RemoveServiceReference(string tagName, FileInfo projectFile, string sourceFile)
+        return Task.FromResult(0);
+    }
+
+    private string RemoveServiceReference(string tagName, FileInfo projectFile, string sourceFile)
+    {
+        var project = LoadProject(projectFile);
+        var openApiReferenceItems = project.GetItems(tagName);
+
+        foreach (ProjectItem item in openApiReferenceItems)
         {
-            var project = LoadProject(projectFile);
-            var openApiReferenceItems = project.GetItems(tagName);
-
-            foreach (ProjectItem item in openApiReferenceItems)
+            var include = item.EvaluatedInclude;
+            var sourceUrl = item.HasMetadata(SourceUrlAttrName) ? item.GetMetadataValue(SourceUrlAttrName) : null;
+            if (string.Equals(include, sourceFile, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(sourceUrl, sourceFile, StringComparison.OrdinalIgnoreCase))
             {
-                var include = item.EvaluatedInclude;
-                var sourceUrl = item.HasMetadata(SourceUrlAttrName) ? item.GetMetadataValue(SourceUrlAttrName) : null;
-                if (string.Equals(include, sourceFile, StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(sourceUrl, sourceFile, StringComparison.OrdinalIgnoreCase))
-                {
-                    project.RemoveItem(item);
-                    project.Save();
-                    return include;
-                }
+                project.RemoveItem(item);
+                project.Save();
+                return include;
             }
-
-            Warning.Write($"No OpenAPI reference was found with the file '{sourceFile}'");
-            return null;
         }
 
-        protected override bool ValidateArguments()
-        {
-            Ensure.NotNullOrEmpty(_sourceProjectArg.Value, SourceArgName);
-            return true;
-        }
+        Warning.Write($"No OpenAPI reference was found with the file '{sourceFile}'");
+        return null;
+    }
+
+    protected override bool ValidateArguments()
+    {
+        Ensure.NotNullOrEmpty(_sourceProjectArg.Value, SourceArgName);
+        return true;
     }
 }

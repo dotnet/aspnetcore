@@ -7,19 +7,19 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 
-namespace CodeGenerator
-{
-    public static class ReadOnlySpanStaticDataGenerator
-    {
-        public static string GenerateFile(string namespaceName, string className, IEnumerable<(string Name, string Value)> allProperties)
-        {
-            var properties = allProperties.Select((p, index) => new Property
-            {
-                Data = p,
-                Index = index
-            });
+namespace CodeGenerator;
 
-            var s = $@"// Licensed to the .NET Foundation under one or more agreements.
+public static class ReadOnlySpanStaticDataGenerator
+{
+    public static string GenerateFile(string namespaceName, string className, IEnumerable<(string Name, string Value)> allProperties)
+    {
+        var properties = allProperties.Select((p, index) => new Property
+        {
+            Data = p,
+            Index = index
+        });
+
+        var s = $@"// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -37,47 +37,46 @@ namespace {namespaceName}
 }}
 ";
 
-            return s;
-        }
+        return s;
+    }
 
-        private static string Each<T>(IEnumerable<T> values, Func<T, string> formatter)
+    private static string Each<T>(IEnumerable<T> values, Func<T, string> formatter)
+    {
+        return values.Any() ? values.Select(formatter).Aggregate((a, b) => a + b) : "";
+    }
+
+    private static string GetDataAsBytes(string value)
+    {
+        var stringBuilder = new StringBuilder();
+
+        for (var i = 0; i < value.Length; ++i)
         {
-            return values.Any() ? values.Select(formatter).Aggregate((a, b) => a + b) : "";
-        }
-
-        private static string GetDataAsBytes(string value)
-        {
-            var stringBuilder = new StringBuilder();
-
-            for (var i = 0; i < value.Length; ++i)
+            var c = value[i];
+            if (c == '\n')
             {
-                var c = value[i];
-                if (c == '\n')
-                {
-                    stringBuilder.Append("(byte)'\\n'");
-                }
-                else if (c == '\r')
-                {
-                    stringBuilder.Append("(byte)'\\r'");
-                }
-                else
-                {
-                    stringBuilder.AppendFormat(CultureInfo.InvariantCulture, "(byte)'{0}'", c);
-                }
-
-                if (i < value.Length - 1)
-                {
-                    stringBuilder.Append(", ");
-                }
+                stringBuilder.Append("(byte)'\\n'");
+            }
+            else if (c == '\r')
+            {
+                stringBuilder.Append("(byte)'\\r'");
+            }
+            else
+            {
+                stringBuilder.AppendFormat(CultureInfo.InvariantCulture, "(byte)'{0}'", c);
             }
 
-            return stringBuilder.ToString();
+            if (i < value.Length - 1)
+            {
+                stringBuilder.Append(", ");
+            }
         }
 
-        private class Property
-        {
-            public (string Name, string Value) Data;
-            public int Index;
-        }
+        return stringBuilder.ToString();
+    }
+
+    private class Property
+    {
+        public (string Name, string Value) Data;
+        public int Index;
     }
 }

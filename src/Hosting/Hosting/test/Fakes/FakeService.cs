@@ -3,15 +3,14 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Hosting.Fakes
-{
-    public class FakeService : IFakeEveryService, IDisposable
-    {
-        public bool Disposed { get; private set; }
+namespace Microsoft.AspNetCore.Hosting.Fakes;
 
-        public void Dispose()
-        {
-            Disposed = true;
-        }
+public class FakeService : IFakeEveryService, IDisposable
+{
+    public bool Disposed { get; private set; }
+
+    public void Dispose()
+    {
+        Disposed = true;
     }
 }

@@ -7,17 +7,17 @@ using Xunit;
 
 #nullable enable
 
-namespace Microsoft.Extensions.Diagnostics.HealthChecks
+namespace Microsoft.Extensions.Diagnostics.HealthChecks;
+
+public class HealthReportTest
 {
-    public class HealthReportTest
+    [Theory]
+    [InlineData(HealthStatus.Healthy)]
+    [InlineData(HealthStatus.Degraded)]
+    [InlineData(HealthStatus.Unhealthy)]
+    public void Status_MatchesWorstStatusInResults(HealthStatus status)
     {
-        [Theory]
-        [InlineData(HealthStatus.Healthy)]
-        [InlineData(HealthStatus.Degraded)]
-        [InlineData(HealthStatus.Unhealthy)]
-        public void Status_MatchesWorstStatusInResults(HealthStatus status)
-        {
-            var result = new HealthReport(new Dictionary<string, HealthReportEntry>()
+        var result = new HealthReport(new Dictionary<string, HealthReportEntry>()
             {
                 {"Foo", new HealthReportEntry(HealthStatus.Healthy, null,TimeSpan.MinValue, null, null) },
                 {"Bar", new HealthReportEntry(HealthStatus.Healthy, null, TimeSpan.MinValue,null, null) },
@@ -27,21 +27,20 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 {"Quock", new HealthReportEntry(HealthStatus.Healthy, null, TimeSpan.MinValue, null, null) },
             }, totalDuration: TimeSpan.MinValue);
 
-            Assert.Equal(status, result.Status);
-        }
+        Assert.Equal(status, result.Status);
+    }
 
-        [Theory]
-        [InlineData(200)]
-        [InlineData(300)]
-        [InlineData(400)]
-        public void TotalDuration_MatchesTotalDurationParameter(int milliseconds)
-        {
-            var result = new HealthReport(new Dictionary<string, HealthReportEntry>()
+    [Theory]
+    [InlineData(200)]
+    [InlineData(300)]
+    [InlineData(400)]
+    public void TotalDuration_MatchesTotalDurationParameter(int milliseconds)
+    {
+        var result = new HealthReport(new Dictionary<string, HealthReportEntry>()
             {
                 {"Foo", new HealthReportEntry(HealthStatus.Healthy, null,TimeSpan.MinValue, null, null) }
             }, totalDuration: TimeSpan.FromMilliseconds(milliseconds));
 
-            Assert.Equal(TimeSpan.FromMilliseconds(milliseconds), result.TotalDuration);
-        }
+        Assert.Equal(TimeSpan.FromMilliseconds(milliseconds), result.TotalDuration);
     }
 }

@@ -6,16 +6,15 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.TestHost
-{
-    internal class UpgradeFeature : IHttpUpgradeFeature
-    {
-        public bool IsUpgradableRequest => false;
+namespace Microsoft.AspNetCore.TestHost;
 
-        // TestHost provides an IHttpWebSocketFeature so it wont call UpgradeAsync()
-        public Task<Stream> UpgradeAsync()
-        {
-            throw new NotSupportedException();
-        }
+internal class UpgradeFeature : IHttpUpgradeFeature
+{
+    public bool IsUpgradableRequest => false;
+
+    // TestHost provides an IHttpWebSocketFeature so it wont call UpgradeAsync()
+    public Task<Stream> UpgradeAsync()
+    {
+        throw new NotSupportedException();
     }
 }

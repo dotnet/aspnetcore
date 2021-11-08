@@ -5,10 +5,9 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.DotNet.OpenApi;
 
-namespace Microsoft.DotNet.Openapi.Tools
+namespace Microsoft.DotNet.Openapi.Tools;
+
+internal interface IHttpClientWrapper : IDisposable
 {
-    internal interface IHttpClientWrapper : IDisposable
-    {
-        Task<IHttpResponseMessageWrapper> GetResponseAsync(string url);
-    }
+    Task<IHttpResponseMessageWrapper> GetResponseAsync(string url);
 }

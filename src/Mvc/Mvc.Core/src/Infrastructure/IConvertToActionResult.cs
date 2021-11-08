@@ -3,17 +3,16 @@
 
 #nullable enable
 
-namespace Microsoft.AspNetCore.Mvc.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.Infrastructure;
+
+/// <summary>
+/// Defines the contract to convert a type to an <see cref="IActionResult"/> during action invocation.
+/// </summary>
+public interface IConvertToActionResult
 {
     /// <summary>
-    /// Defines the contract to convert a type to an <see cref="IActionResult"/> during action invocation.
+    /// Converts the current instance to an instance of <see cref="IActionResult"/>.
     /// </summary>
-    public interface IConvertToActionResult
-    {
-        /// <summary>
-        /// Converts the current instance to an instance of <see cref="IActionResult"/>.
-        /// </summary>
-        /// <returns>The converted <see cref="IActionResult"/>.</returns>
-        IActionResult Convert();
-    }
+    /// <returns>The converted <see cref="IActionResult"/>.</returns>
+    IActionResult Convert();
 }

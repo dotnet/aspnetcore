@@ -4,21 +4,20 @@
 using System.IO;
 using Microsoft.Extensions.Configuration;
 
-namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test.Utilities
+namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test.Utilities;
+
+public static class TestEnvironment
 {
-    public static class TestEnvironment
+    public static IConfiguration Config { get; }
+
+    static TestEnvironment()
     {
-        public static IConfiguration Config { get; }
+        var configBuilder = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("config.json", optional: true)
+            .AddJsonFile("config.test.json", optional: true)
+            .AddEnvironmentVariables();
 
-        static TestEnvironment()
-        {
-            var configBuilder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("config.json", optional: true)
-                .AddJsonFile("config.test.json", optional: true)
-                .AddEnvironmentVariables();
-
-            Config = configBuilder.Build();
-        }
+        Config = configBuilder.Build();
     }
 }

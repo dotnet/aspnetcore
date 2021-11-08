@@ -3,15 +3,14 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
-{
-    internal class RemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount>
-        : IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount>
-        where TRemoteAuthenticationState : RemoteAuthenticationState
-        where TAccount : RemoteUserAccount
-    {
-        public RemoteAuthenticationBuilder(IServiceCollection services) => Services = services;
+namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
-        public IServiceCollection Services { get; }
-    }
+internal class RemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount>
+    : IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount>
+    where TRemoteAuthenticationState : RemoteAuthenticationState
+    where TAccount : RemoteUserAccount
+{
+    public RemoteAuthenticationBuilder(IServiceCollection services) => Services = services;
+
+    public IServiceCollection Services { get; }
 }

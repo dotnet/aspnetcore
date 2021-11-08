@@ -14,14 +14,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Components.Server.Circuits
+namespace Microsoft.AspNetCore.Components.Server.Circuits;
+
+internal interface ICircuitHandleRegistry
 {
-    internal interface ICircuitHandleRegistry
-    {
-        CircuitHandle GetCircuitHandle(IDictionary<object, object?> circuitHandles, object circuitKey);
+    CircuitHandle GetCircuitHandle(IDictionary<object, object?> circuitHandles, object circuitKey);
 
-        CircuitHost GetCircuit(IDictionary<object, object?> circuitHandles, object circuitKey);
+    CircuitHost GetCircuit(IDictionary<object, object?> circuitHandles, object circuitKey);
 
-        void SetCircuit(IDictionary<object, object?> circuitHandles, object circuitKey, CircuitHost circuitHost);
-    }
+    void SetCircuit(IDictionary<object, object?> circuitHandles, object circuitKey, CircuitHost circuitHost);
 }

@@ -3,41 +3,40 @@
 
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 
-namespace Microsoft.AspNetCore.Razor.Language.Extensions
+namespace Microsoft.AspNetCore.Razor.Language.Extensions;
+
+public sealed class SectionTargetExtension : ISectionTargetExtension
 {
-    public sealed class SectionTargetExtension : ISectionTargetExtension
+    // Compatibility for 1.X projects
+    private const string DefaultWriterName = "__razor_section_writer";
+
+    public static readonly string DefaultSectionMethodName = "DefineSection";
+
+    public string SectionMethodName { get; set; } = DefaultSectionMethodName;
+
+    public void WriteSection(CodeRenderingContext context, SectionIntermediateNode node)
     {
-        // Compatibility for 1.X projects
-        private const string DefaultWriterName = "__razor_section_writer";
+        context.CodeWriter
+            .WriteStartMethodInvocation(SectionMethodName)
+            .Write("\"")
+            .Write(node.SectionName)
+            .Write("\", ");
 
-        public static readonly string DefaultSectionMethodName = "DefineSection";
-
-        public string SectionMethodName { get; set; } = DefaultSectionMethodName;
-
-        public void WriteSection(CodeRenderingContext context, SectionIntermediateNode node)
+        if (context.Options.DesignTime)
         {
-            context.CodeWriter
-                .WriteStartMethodInvocation(SectionMethodName)
-                .Write("\"")
-                .Write(node.SectionName)
-                .Write("\", ");
-
-            if (context.Options.DesignTime)
+            using (context.CodeWriter.BuildAsyncLambda(DefaultWriterName))
             {
-                using (context.CodeWriter.BuildAsyncLambda(DefaultWriterName))
-                {
-                    context.RenderChildren(node);
-                }
+                context.RenderChildren(node);
             }
-            else
-            {
-                using (context.CodeWriter.BuildAsyncLambda())
-                {
-                    context.RenderChildren(node);
-                }
-            }
-
-            context.CodeWriter.WriteEndMethodInvocation(endLine: true);
         }
+        else
+        {
+            using (context.CodeWriter.BuildAsyncLambda())
+            {
+                context.RenderChildren(node);
+            }
+        }
+
+        context.CodeWriter.WriteEndMethodInvocation(endLine: true);
     }
 }

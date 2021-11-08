@@ -7,26 +7,25 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 
-namespace ServerComparison.TestSites
+namespace ServerComparison.TestSites;
+
+public class OneTransformPerRequest : IClaimsTransformation
 {
-    public class OneTransformPerRequest : IClaimsTransformation
+    public OneTransformPerRequest(IHttpContextAccessor contextAccessor)
     {
-        public OneTransformPerRequest(IHttpContextAccessor contextAccessor)
-        {
-            ContextAccessor = contextAccessor;
-        }
+        ContextAccessor = contextAccessor;
+    }
 
-        public IHttpContextAccessor ContextAccessor { get; }
+    public IHttpContextAccessor ContextAccessor { get; }
 
-        public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
+    public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
+    {
+        var context = ContextAccessor.HttpContext;
+        if (context.Items["Transformed"] != null)
         {
-            var context = ContextAccessor.HttpContext;
-            if (context.Items["Transformed"] != null)
-            {
-                throw new InvalidOperationException("Transformation ran multiple times.");
-            }
-            context.Items["Transformed"] = true;
-            return Task.FromResult(principal);
+            throw new InvalidOperationException("Transformation ran multiple times.");
         }
+        context.Items["Transformed"] = true;
+        return Task.FromResult(principal);
     }
 }

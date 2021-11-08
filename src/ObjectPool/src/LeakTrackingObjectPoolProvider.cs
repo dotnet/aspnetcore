@@ -3,35 +3,34 @@
 
 using System;
 
-namespace Microsoft.Extensions.ObjectPool
+namespace Microsoft.Extensions.ObjectPool;
+
+/// <summary>
+/// An <see cref="ObjectPoolProvider"/> that produces instances of
+/// <see cref="LeakTrackingObjectPool{T}"/>.
+/// </summary>
+public class LeakTrackingObjectPoolProvider : ObjectPoolProvider
 {
+    private readonly ObjectPoolProvider _inner;
+
     /// <summary>
-    /// An <see cref="ObjectPoolProvider"/> that produces instances of
-    /// <see cref="LeakTrackingObjectPool{T}"/>.
+    /// Initializes a new instance of <see cref="LeakTrackingObjectPoolProvider"/>.
     /// </summary>
-    public class LeakTrackingObjectPoolProvider : ObjectPoolProvider
+    /// <param name="inner">The <see cref="ObjectPoolProvider"/> to wrap.</param>
+    public LeakTrackingObjectPoolProvider(ObjectPoolProvider inner)
     {
-        private readonly ObjectPoolProvider _inner;
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="LeakTrackingObjectPoolProvider"/>.
-        /// </summary>
-        /// <param name="inner">The <see cref="ObjectPoolProvider"/> to wrap.</param>
-        public LeakTrackingObjectPoolProvider(ObjectPoolProvider inner)
+        if (inner == null)
         {
-            if (inner == null)
-            {
-                throw new ArgumentNullException(nameof(inner));
-            }
-
-            _inner = inner;
+            throw new ArgumentNullException(nameof(inner));
         }
 
-        /// <inheritdoc/>
-        public override ObjectPool<T> Create<T>(IPooledObjectPolicy<T> policy)
-        {
-            var inner = _inner.Create<T>(policy);
-            return new LeakTrackingObjectPool<T>(inner);
-        }
+        _inner = inner;
+    }
+
+    /// <inheritdoc/>
+    public override ObjectPool<T> Create<T>(IPooledObjectPolicy<T> policy)
+    {
+        var inner = _inner.Create<T>(policy);
+        return new LeakTrackingObjectPool<T>(inner);
     }
 }

@@ -3,10 +3,9 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.SignalR
-{
-    /// <summary>
-    /// An abstraction that provides access to client connections.
-    /// </summary>
-    public interface IHubClients : IHubClients<IClientProxy> { }
-}
+namespace Microsoft.AspNetCore.SignalR;
+
+/// <summary>
+/// An abstraction that provides access to client connections.
+/// </summary>
+public interface IHubClients : IHubClients<IClientProxy> { }

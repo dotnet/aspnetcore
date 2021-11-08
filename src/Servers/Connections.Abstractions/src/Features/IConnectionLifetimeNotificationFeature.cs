@@ -3,21 +3,20 @@
 
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Connections.Features
+namespace Microsoft.AspNetCore.Connections.Features;
+
+/// <summary>
+/// Enables graceful termination of the connection.
+/// </summary>
+public interface IConnectionLifetimeNotificationFeature
 {
     /// <summary>
-    /// Enables graceful termination of the connection.
+    /// Gets or set an <see cref="CancellationToken"/> that will be triggered when closing the connection has been requested.
     /// </summary>
-    public interface IConnectionLifetimeNotificationFeature
-    {
-        /// <summary>
-        /// Gets or set an <see cref="CancellationToken"/> that will be triggered when closing the connection has been requested.
-        /// </summary>
-        CancellationToken ConnectionClosedRequested { get; set; }
+    CancellationToken ConnectionClosedRequested { get; set; }
 
-        /// <summary>
-        /// Requests the connection to be closed.
-        /// </summary>
-        void RequestClose();
-    }
+    /// <summary>
+    /// Requests the connection to be closed.
+    /// </summary>
+    void RequestClose();
 }

@@ -2,12 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
-namespace Microsoft.Extensions.CommandLineUtils
+namespace Microsoft.Extensions.CommandLineUtils;
+
+internal enum CommandOptionType
 {
-    internal enum CommandOptionType
-    {
-        MultipleValue,
-        SingleValue,
-        NoValue
-    }
+    MultipleValue,
+    SingleValue,
+    NoValue
 }

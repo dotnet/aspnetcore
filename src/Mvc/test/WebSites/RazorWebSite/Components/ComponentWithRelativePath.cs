@@ -3,13 +3,12 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace RazorWebSite.Components
+namespace RazorWebSite.Components;
+
+public class ComponentWithRelativePath : ViewComponent
 {
-    public class ComponentWithRelativePath : ViewComponent
+    public IViewComponentResult Invoke(Person person)
     {
-        public IViewComponentResult Invoke(Person person)
-        {
-            return View("../Shared/Components/ComponentWithRelativePath.cshtml", person);
-        }
+        return View("../Shared/Components/ComponentWithRelativePath.cshtml", person);
     }
 }

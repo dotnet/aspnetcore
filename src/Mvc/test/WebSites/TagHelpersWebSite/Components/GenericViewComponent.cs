@@ -4,13 +4,12 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 
-namespace TagHelpersWebSite.Components
+namespace TagHelpersWebSite.Components;
+
+public class GenericViewComponent : ViewComponent
 {
-    public class GenericViewComponent : ViewComponent
+    public IViewComponentResult Invoke(Dictionary<string, List<string>> items)
     {
-        public IViewComponentResult Invoke(Dictionary<string, List<string>> items)
-        {
-            return View(items);
-        }
+        return View(items);
     }
 }

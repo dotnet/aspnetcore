@@ -5,47 +5,46 @@ using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Language.Extensions
+namespace Microsoft.AspNetCore.Razor.Language.Extensions;
+
+public class TemplateTargetExtensionTest
 {
-    public class TemplateTargetExtensionTest
+    [Fact]
+    public void WriteTemplate_WritesTemplateCode()
     {
-        [Fact]
-        public void WriteTemplate_WritesTemplateCode()
+        // Arrange
+        var node = new TemplateIntermediateNode()
         {
-            // Arrange
-            var node = new TemplateIntermediateNode()
-            {
-                Children =
+            Children =
                 {
                     new CSharpExpressionIntermediateNode()
                 }
-            };
-            var extension = new TemplateTargetExtension()
-            {
-                TemplateTypeName = "global::TestTemplate"
-            };
+        };
+        var extension = new TemplateTargetExtension()
+        {
+            TemplateTypeName = "global::TestTemplate"
+        };
 
-            var nodeWriter = new RuntimeNodeWriter()
-            {
-                PushWriterMethod = "TestPushWriter",
-                PopWriterMethod = "TestPopWriter"
-            };
+        var nodeWriter = new RuntimeNodeWriter()
+        {
+            PushWriterMethod = "TestPushWriter",
+            PopWriterMethod = "TestPopWriter"
+        };
 
-            var context = TestCodeRenderingContext.CreateRuntime(nodeWriter: nodeWriter);
+        var context = TestCodeRenderingContext.CreateRuntime(nodeWriter: nodeWriter);
 
-            // Act
-            extension.WriteTemplate(context, node);
+        // Act
+        extension.WriteTemplate(context, node);
 
-            // Assert
-            var expected = @"item => new global::TestTemplate(async(__razor_template_writer) => {
+        // Assert
+        var expected = @"item => new global::TestTemplate(async(__razor_template_writer) => {
     TestPushWriter(__razor_template_writer);
     Render Children
     TestPopWriter();
 }
 )";
 
-            var output = context.CodeWriter.GenerateCode();
-            Assert.Equal(expected, output);
-        }
+        var output = context.CodeWriter.GenerateCode();
+        Assert.Equal(expected, output);
     }
 }

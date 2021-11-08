@@ -3,132 +3,131 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+public static class TestTagHelperDescriptorBuilderExtensions
 {
-    public static class TestTagHelperDescriptorBuilderExtensions
+    public static TagHelperDescriptorBuilder TypeName(this TagHelperDescriptorBuilder builder, string typeName)
     {
-        public static TagHelperDescriptorBuilder TypeName(this TagHelperDescriptorBuilder builder, string typeName)
+        if (builder == null)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.SetTypeName(typeName);
-
-            return builder;
+            throw new ArgumentNullException(nameof(builder));
         }
 
-        public static TagHelperDescriptorBuilder DisplayName(this TagHelperDescriptorBuilder builder, string displayName)
+        builder.SetTypeName(typeName);
+
+        return builder;
+    }
+
+    public static TagHelperDescriptorBuilder DisplayName(this TagHelperDescriptorBuilder builder, string displayName)
+    {
+        if (builder == null)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.DisplayName = displayName;
-
-            return builder;
+            throw new ArgumentNullException(nameof(builder));
         }
 
-        public static TagHelperDescriptorBuilder AllowChildTag(this TagHelperDescriptorBuilder builder, string allowedChild)
+        builder.DisplayName = displayName;
+
+        return builder;
+    }
+
+    public static TagHelperDescriptorBuilder AllowChildTag(this TagHelperDescriptorBuilder builder, string allowedChild)
+    {
+        if (builder == null)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.AllowChildTag(childTagBuilder => childTagBuilder.Name = allowedChild);
-
-            return builder;
+            throw new ArgumentNullException(nameof(builder));
         }
 
-        public static TagHelperDescriptorBuilder TagOutputHint(this TagHelperDescriptorBuilder builder, string hint)
+        builder.AllowChildTag(childTagBuilder => childTagBuilder.Name = allowedChild);
+
+        return builder;
+    }
+
+    public static TagHelperDescriptorBuilder TagOutputHint(this TagHelperDescriptorBuilder builder, string hint)
+    {
+        if (builder == null)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.TagOutputHint = hint;
-
-            return builder;
+            throw new ArgumentNullException(nameof(builder));
         }
 
-        public static TagHelperDescriptorBuilder SetCaseSensitive(this TagHelperDescriptorBuilder builder)
+        builder.TagOutputHint = hint;
+
+        return builder;
+    }
+
+    public static TagHelperDescriptorBuilder SetCaseSensitive(this TagHelperDescriptorBuilder builder)
+    {
+        if (builder == null)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.CaseSensitive = true;
-
-            return builder;
+            throw new ArgumentNullException(nameof(builder));
         }
 
-        public static TagHelperDescriptorBuilder Documentation(this TagHelperDescriptorBuilder builder, string documentation)
+        builder.CaseSensitive = true;
+
+        return builder;
+    }
+
+    public static TagHelperDescriptorBuilder Documentation(this TagHelperDescriptorBuilder builder, string documentation)
+    {
+        if (builder == null)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.Documentation = documentation;
-
-            return builder;
+            throw new ArgumentNullException(nameof(builder));
         }
 
-        public static TagHelperDescriptorBuilder AddMetadata(this TagHelperDescriptorBuilder builder, string key, string value)
+        builder.Documentation = documentation;
+
+        return builder;
+    }
+
+    public static TagHelperDescriptorBuilder AddMetadata(this TagHelperDescriptorBuilder builder, string key, string value)
+    {
+        if (builder == null)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.Metadata[key] = value;
-
-            return builder;
+            throw new ArgumentNullException(nameof(builder));
         }
 
-        public static TagHelperDescriptorBuilder AddDiagnostic(this TagHelperDescriptorBuilder builder, RazorDiagnostic diagnostic)
+        builder.Metadata[key] = value;
+
+        return builder;
+    }
+
+    public static TagHelperDescriptorBuilder AddDiagnostic(this TagHelperDescriptorBuilder builder, RazorDiagnostic diagnostic)
+    {
+        if (builder == null)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.Diagnostics.Add(diagnostic);
-
-            return builder;
+            throw new ArgumentNullException(nameof(builder));
         }
 
-        public static TagHelperDescriptorBuilder BoundAttributeDescriptor(
-            this TagHelperDescriptorBuilder builder,
-            Action<BoundAttributeDescriptorBuilder> configure)
+        builder.Diagnostics.Add(diagnostic);
+
+        return builder;
+    }
+
+    public static TagHelperDescriptorBuilder BoundAttributeDescriptor(
+        this TagHelperDescriptorBuilder builder,
+        Action<BoundAttributeDescriptorBuilder> configure)
+    {
+        if (builder == null)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.BindAttribute(configure);
-
-            return builder;
+            throw new ArgumentNullException(nameof(builder));
         }
 
-        public static TagHelperDescriptorBuilder TagMatchingRuleDescriptor(
-            this TagHelperDescriptorBuilder builder,
-            Action<TagMatchingRuleDescriptorBuilder> configure)
+        builder.BindAttribute(configure);
+
+        return builder;
+    }
+
+    public static TagHelperDescriptorBuilder TagMatchingRuleDescriptor(
+        this TagHelperDescriptorBuilder builder,
+        Action<TagMatchingRuleDescriptorBuilder> configure)
+    {
+        if (builder == null)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.TagMatchingRule(configure);
-
-            return builder;
+            throw new ArgumentNullException(nameof(builder));
         }
+
+        builder.TagMatchingRule(configure);
+
+        return builder;
     }
 }

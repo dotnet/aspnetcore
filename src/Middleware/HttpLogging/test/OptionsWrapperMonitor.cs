@@ -4,30 +4,29 @@
 using System;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.HttpLogging
+namespace Microsoft.AspNetCore.HttpLogging;
+
+internal class OptionsWrapperMonitor<T> : IOptionsMonitor<T>
 {
-    internal class OptionsWrapperMonitor<T> : IOptionsMonitor<T>
+    private event Action<T, string> _listener;
+
+    public OptionsWrapperMonitor(T currentValue)
     {
-        private event Action<T, string> _listener;
+        CurrentValue = currentValue;
+    }
 
-        public OptionsWrapperMonitor(T currentValue)
-        {
-            CurrentValue = currentValue;
-        }
+    public IDisposable OnChange(Action<T, string> listener)
+    {
+        _listener = listener;
+        return null;
+    }
 
-        public IDisposable OnChange(Action<T, string> listener)
-        {
-            _listener = listener;
-            return null;
-        }
+    public T Get(string name) => CurrentValue;
 
-        public T Get(string name) => CurrentValue;
+    public T CurrentValue { get; }
 
-        public T CurrentValue { get; }
-
-        internal void InvokeChanged()
-        {
-            _listener.Invoke(CurrentValue, null);
-        }
+    internal void InvokeChanged()
+    {
+        _listener.Invoke(CurrentValue, null);
     }
 }

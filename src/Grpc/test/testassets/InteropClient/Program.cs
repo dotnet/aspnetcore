@@ -19,18 +19,17 @@
 using System;
 using System.Reflection;
 
-namespace InteropTestsClient
+namespace InteropTestsClient;
+
+public class Program
 {
-    public class Program
+    public static void Main(string[] args)
     {
-        public static void Main(string[] args)
-        {
-            Console.WriteLine("Application started.");
+        Console.WriteLine("Application started.");
 
-            var runtimeVersion = typeof(object).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "Unknown";
-            Console.WriteLine($"NetCoreAppVersion: {runtimeVersion}");
+        var runtimeVersion = typeof(object).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "Unknown";
+        Console.WriteLine($"NetCoreAppVersion: {runtimeVersion}");
 
-            InteropClient.Run(args);
-        }
+        InteropClient.Run(args);
     }
 }

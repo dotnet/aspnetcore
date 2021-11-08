@@ -5,16 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
+namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests;
+
+public class TestTagHelperDescriptors
 {
-    public class TestTagHelperDescriptors
+    public static IEnumerable<TagHelperDescriptor> SimpleTagHelperDescriptors
     {
-        public static IEnumerable<TagHelperDescriptor> SimpleTagHelperDescriptors
+        get
         {
-            get
+            return new[]
             {
-                return new[]
-                {
                     CreateTagHelperDescriptor(
                         tagName: "span",
                         typeName: "SpanTagHelper",
@@ -43,15 +43,15 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                                 .TypeName("System.Int32"),
                         })
                 };
-            }
         }
+    }
 
-        public static IEnumerable<TagHelperDescriptor> MinimizedBooleanTagHelperDescriptors
+    public static IEnumerable<TagHelperDescriptor> MinimizedBooleanTagHelperDescriptors
+    {
+        get
         {
-            get
+            return new[]
             {
-                return new[]
-                {
                     CreateTagHelperDescriptor(
                         tagName: "span",
                         typeName: "SpanTagHelper",
@@ -80,18 +80,18 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                                 .TypeName("System.Int32"),
                         })
                 };
-            }
         }
+    }
 
-        public static IEnumerable<TagHelperDescriptor> CssSelectorTagHelperDescriptors
+    public static IEnumerable<TagHelperDescriptor> CssSelectorTagHelperDescriptors
+    {
+        get
         {
-            get
-            {
-                var inputTypePropertyInfo = typeof(TestType).GetRuntimeProperty("Type");
-                var inputCheckedPropertyInfo = typeof(TestType).GetRuntimeProperty("Checked");
+            var inputTypePropertyInfo = typeof(TestType).GetRuntimeProperty("Type");
+            var inputCheckedPropertyInfo = typeof(TestType).GetRuntimeProperty("Checked");
 
-                return new[]
-                {
+            return new[]
+            {
                     CreateTagHelperDescriptor(
                         tagName: "a",
                         typeName: "TestNamespace.ATagHelper",
@@ -180,15 +180,15 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                                     .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)),
                         }),
                 };
-            }
         }
+    }
 
-        public static IEnumerable<TagHelperDescriptor> EnumTagHelperDescriptors
+    public static IEnumerable<TagHelperDescriptor> EnumTagHelperDescriptors
+    {
+        get
         {
-            get
+            return new[]
             {
-                return new[]
-                {
                     CreateTagHelperDescriptor(
                         tagName: "*",
                         typeName: "TestNamespace.CatchAllTagHelper",
@@ -214,15 +214,15 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                                 .TypeName($"{typeof(TestTagHelperDescriptors).FullName}.{nameof(MyEnum)}"),
                         }),
                 };
-            }
         }
+    }
 
-        public static IEnumerable<TagHelperDescriptor> SymbolBoundTagHelperDescriptors
+    public static IEnumerable<TagHelperDescriptor> SymbolBoundTagHelperDescriptors
+    {
+        get
         {
-            get
+            return new[]
             {
-                return new[]
-                {
                     CreateTagHelperDescriptor(
                         tagName: "*",
                         typeName: "TestNamespace.CatchAllTagHelper",
@@ -259,15 +259,15 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                             builder => builder.RequireAttributeDescriptor(attribute => attribute.Name("bound")),
                         }),
                 };
-            }
         }
+    }
 
-        public static IEnumerable<TagHelperDescriptor> MinimizedTagHelpers_Descriptors
+    public static IEnumerable<TagHelperDescriptor> MinimizedTagHelpers_Descriptors
+    {
+        get
         {
-            get
+            return new[]
             {
-                return new[]
-                {
                     CreateTagHelperDescriptor(
                         tagName: "*",
                         typeName: "TestNamespace.CatchAllTagHelper",
@@ -321,15 +321,15 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                                 .AsDictionaryAttribute("booldict-prefix-", typeof(bool).FullName),
                         }),
                 };
-            }
         }
+    }
 
-        public static IEnumerable<TagHelperDescriptor> DynamicAttributeTagHelpers_Descriptors
+    public static IEnumerable<TagHelperDescriptor> DynamicAttributeTagHelpers_Descriptors
+    {
+        get
         {
-            get
+            return new[]
             {
-                return new[]
-                {
                     CreateTagHelperDescriptor(
                         tagName: "input",
                         typeName: "TestNamespace.InputTagHelper",
@@ -342,17 +342,17 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                                 .TypeName(typeof(string).FullName)
                         }),
                 };
-            }
         }
+    }
 
-        public static IEnumerable<TagHelperDescriptor> DuplicateTargetTagHelperDescriptors
+    public static IEnumerable<TagHelperDescriptor> DuplicateTargetTagHelperDescriptors
+    {
+        get
         {
-            get
+            var typePropertyInfo = typeof(TestType).GetRuntimeProperty("Type");
+            var checkedPropertyInfo = typeof(TestType).GetRuntimeProperty("Checked");
+            return new[]
             {
-                var typePropertyInfo = typeof(TestType).GetRuntimeProperty("Type");
-                var checkedPropertyInfo = typeof(TestType).GetRuntimeProperty("Checked");
-                return new[]
-                {
                     CreateTagHelperDescriptor(
                         tagName: "*",
                         typeName: "TestNamespace.CatchAllTagHelper",
@@ -382,17 +382,17 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                             builder => builder.RequireAttributeDescriptor(attribute => attribute.Name("checked"))
                         })
                 };
-            }
         }
+    }
 
-        public static IEnumerable<TagHelperDescriptor> AttributeTargetingTagHelperDescriptors
+    public static IEnumerable<TagHelperDescriptor> AttributeTargetingTagHelperDescriptors
+    {
+        get
         {
-            get
+            var inputTypePropertyInfo = typeof(TestType).GetRuntimeProperty("Type");
+            var inputCheckedPropertyInfo = typeof(TestType).GetRuntimeProperty("Checked");
+            return new[]
             {
-                var inputTypePropertyInfo = typeof(TestType).GetRuntimeProperty("Type");
-                var inputCheckedPropertyInfo = typeof(TestType).GetRuntimeProperty("Checked");
-                return new[]
-                {
                     CreateTagHelperDescriptor(
                         tagName: "p",
                         typeName: "TestNamespace.PTagHelper",
@@ -437,15 +437,15 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                             builder => builder.RequireAttributeDescriptor(attribute => attribute.Name("catchAll")),
                         }),
                 };
-            }
         }
+    }
 
-        public static IEnumerable<TagHelperDescriptor> PrefixedAttributeTagHelperDescriptors
+    public static IEnumerable<TagHelperDescriptor> PrefixedAttributeTagHelperDescriptors
+    {
+        get
         {
-            get
+            return new[]
             {
-                return new[]
-                {
                     CreateTagHelperDescriptor(
                         tagName: "input",
                         typeName: "TestNamespace.InputTagHelper1",
@@ -489,16 +489,16 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                                 .AsDictionaryAttribute("string-prefix-", typeof(string).FullName),
                         }),
                 };
-            }
         }
+    }
 
-        public static IEnumerable<TagHelperDescriptor> TagHelpersInSectionDescriptors
+    public static IEnumerable<TagHelperDescriptor> TagHelpersInSectionDescriptors
+    {
+        get
         {
-            get
+            var propertyInfo = typeof(TestType).GetRuntimeProperty("BoundProperty");
+            return new[]
             {
-                var propertyInfo = typeof(TestType).GetRuntimeProperty("BoundProperty");
-                return new[]
-                {
                     CreateTagHelperDescriptor(
                         tagName: "MyTagHelper",
                         typeName: "TestNamespace.MyTagHelper",
@@ -512,19 +512,19 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         typeName: "TestNamespace.NestedTagHelper",
                         assemblyName: "TestAssembly"),
                 };
-            }
         }
+    }
 
-        public static IEnumerable<TagHelperDescriptor> DefaultPAndInputTagHelperDescriptors
+    public static IEnumerable<TagHelperDescriptor> DefaultPAndInputTagHelperDescriptors
+    {
+        get
         {
-            get
-            {
-                var pAgePropertyInfo = typeof(TestType).GetRuntimeProperty("Age");
-                var inputTypePropertyInfo = typeof(TestType).GetRuntimeProperty("Type");
-                var checkedPropertyInfo = typeof(TestType).GetRuntimeProperty("Checked");
+            var pAgePropertyInfo = typeof(TestType).GetRuntimeProperty("Age");
+            var inputTypePropertyInfo = typeof(TestType).GetRuntimeProperty("Type");
+            var checkedPropertyInfo = typeof(TestType).GetRuntimeProperty("Checked");
 
-                return new[]
-                {
+            return new[]
+            {
                     CreateTagHelperDescriptor(
                         tagName: "p",
                         typeName: "TestNamespace.PTagHelper",
@@ -559,79 +559,78 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                             builder => BuildBoundAttributeDescriptorFromPropertyInfo(builder, "checked", checkedPropertyInfo),
                         }),
                 };
+        }
+    }
+
+    private static TagHelperDescriptor CreateTagHelperDescriptor(
+        string tagName,
+        string typeName,
+        string assemblyName,
+        IEnumerable<Action<BoundAttributeDescriptorBuilder>> attributes = null,
+        IEnumerable<Action<TagMatchingRuleDescriptorBuilder>> ruleBuilders = null)
+    {
+        var builder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
+        builder.TypeName(typeName);
+
+        if (attributes != null)
+        {
+            foreach (var attributeBuilder in attributes)
+            {
+                builder.BoundAttributeDescriptor(attributeBuilder);
             }
         }
 
-        private static TagHelperDescriptor CreateTagHelperDescriptor(
-            string tagName,
-            string typeName,
-            string assemblyName,
-            IEnumerable<Action<BoundAttributeDescriptorBuilder>> attributes = null,
-            IEnumerable<Action<TagMatchingRuleDescriptorBuilder>> ruleBuilders = null)
+        if (ruleBuilders != null)
         {
-            var builder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
-            builder.TypeName(typeName);
-
-            if (attributes != null)
+            foreach (var ruleBuilder in ruleBuilders)
             {
-                foreach (var attributeBuilder in attributes)
+                builder.TagMatchingRuleDescriptor(innerRuleBuilder =>
                 {
-                    builder.BoundAttributeDescriptor(attributeBuilder);
-                }
+                    innerRuleBuilder.RequireTagName(tagName);
+                    ruleBuilder(innerRuleBuilder);
+                });
             }
-
-            if (ruleBuilders != null)
-            {
-                foreach (var ruleBuilder in ruleBuilders)
-                {
-                    builder.TagMatchingRuleDescriptor(innerRuleBuilder =>
-                    {
-                        innerRuleBuilder.RequireTagName(tagName);
-                        ruleBuilder(innerRuleBuilder);
-                    });
-                }
-            }
-            else
-            {
-                builder.TagMatchingRuleDescriptor(ruleBuilder => ruleBuilder.RequireTagName(tagName));
-            }
-
-            var descriptor = builder.Build();
-
-            return descriptor;
         }
-
-        private static void BuildBoundAttributeDescriptorFromPropertyInfo(
-            BoundAttributeDescriptorBuilder builder,
-            string name,
-            PropertyInfo propertyInfo)
+        else
         {
-            builder
-                .Name(name)
-                .PropertyName(propertyInfo.Name)
-                .TypeName(propertyInfo.PropertyType.FullName);
-
-            if (propertyInfo.PropertyType.GetTypeInfo().IsEnum)
-            {
-                builder.AsEnum();
-            }
+            builder.TagMatchingRuleDescriptor(ruleBuilder => ruleBuilder.RequireTagName(tagName));
         }
 
-        private class TestType
+        var descriptor = builder.Build();
+
+        return descriptor;
+    }
+
+    private static void BuildBoundAttributeDescriptorFromPropertyInfo(
+        BoundAttributeDescriptorBuilder builder,
+        string name,
+        PropertyInfo propertyInfo)
+    {
+        builder
+            .Name(name)
+            .PropertyName(propertyInfo.Name)
+            .TypeName(propertyInfo.PropertyType.FullName);
+
+        if (propertyInfo.PropertyType.GetTypeInfo().IsEnum)
         {
-            public int Age { get; set; }
-
-            public string Type { get; set; }
-
-            public bool Checked { get; set; }
-
-            public string BoundProperty { get; set; }
+            builder.AsEnum();
         }
+    }
 
-        public enum MyEnum
-        {
-            MyValue,
-            MySecondValue
-        }
+    private class TestType
+    {
+        public int Age { get; set; }
+
+        public string Type { get; set; }
+
+        public bool Checked { get; set; }
+
+        public string BoundProperty { get; set; }
+    }
+
+    public enum MyEnum
+    {
+        MyValue,
+        MySecondValue
     }
 }

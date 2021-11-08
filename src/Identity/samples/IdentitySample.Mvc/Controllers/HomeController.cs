@@ -3,14 +3,13 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace IdentitySample.Controllers
+namespace IdentitySample.Controllers;
+
+public class HomeController : Controller
 {
-    public class HomeController : Controller
+    [HttpGet]
+    public IActionResult Index()
     {
-        [HttpGet]
-        public IActionResult Index()
-        {
-            return View();
-        }
+        return View();
     }
 }

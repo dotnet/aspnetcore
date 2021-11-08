@@ -6,26 +6,25 @@ using System.Threading.Tasks;
 using BasicWebSite.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BasicWebSite.Controllers
+namespace BasicWebSite.Controllers;
+
+public class ActionResultOfTController : Controller
 {
-    public class ActionResultOfTController : Controller
+    [HttpGet]
+    public ActionResult<Product> GetProduct(int? productId)
     {
-        [HttpGet]
-        public ActionResult<Product> GetProduct(int? productId)
+        if (productId == null)
         {
-            if (productId == null)
-            {
-                return BadRequest();
-            }
-
-            return new Product { SampleInt = productId.Value, };
+            return BadRequest();
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProductsAsync()
-        {
-            await Task.Delay(0);
-            return new[] { new Product(), new Product() };
-        }
+        return new Product { SampleInt = productId.Value, };
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<Product>>> GetProductsAsync()
+    {
+        await Task.Delay(0);
+        return new[] { new Product(), new Product() };
     }
 }

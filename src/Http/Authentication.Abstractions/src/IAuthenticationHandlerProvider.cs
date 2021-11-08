@@ -4,19 +4,18 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Authentication
+namespace Microsoft.AspNetCore.Authentication;
+
+/// <summary>
+/// Provides the appropriate IAuthenticationHandler instance for the authenticationScheme and request.
+/// </summary>
+public interface IAuthenticationHandlerProvider
 {
     /// <summary>
-    /// Provides the appropriate IAuthenticationHandler instance for the authenticationScheme and request.
+    /// Returns the handler instance that will be used.
     /// </summary>
-    public interface IAuthenticationHandlerProvider
-    {
-        /// <summary>
-        /// Returns the handler instance that will be used.
-        /// </summary>
-        /// <param name="context">The <see cref="HttpContext"/>.</param>
-        /// <param name="authenticationScheme">The name of the authentication scheme being handled.</param>
-        /// <returns>The handler instance.</returns>
-        Task<IAuthenticationHandler?> GetHandlerAsync(HttpContext context, string authenticationScheme);
-    }
+    /// <param name="context">The <see cref="HttpContext"/>.</param>
+    /// <param name="authenticationScheme">The name of the authentication scheme being handled.</param>
+    /// <returns>The handler instance.</returns>
+    Task<IAuthenticationHandler?> GetHandlerAsync(HttpContext context, string authenticationScheme);
 }

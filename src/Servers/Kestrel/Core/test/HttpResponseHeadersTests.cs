@@ -17,375 +17,375 @@ using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
+
+public class HttpResponseHeadersTests
 {
-    public class HttpResponseHeadersTests
+    [Fact]
+    public void InitialDictionaryIsEmpty()
     {
-        [Fact]
-        public void InitialDictionaryIsEmpty()
+        using (var memoryPool = PinnedBlockMemoryPoolFactory.Create())
         {
-            using (var memoryPool = PinnedBlockMemoryPoolFactory.Create())
-            {
-                var options = new PipeOptions(memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
-                var pair = DuplexPipe.CreateConnectionPair(options, options);
-                var http1ConnectionContext = TestContextFactory.CreateHttpConnectionContext(
-                    serviceContext: new TestServiceContext(),
-                    connectionContext: Mock.Of<ConnectionContext>(),
-                    transport: pair.Transport,
-                    memoryPool: memoryPool,
-                    connectionFeatures: new FeatureCollection());
+            var options = new PipeOptions(memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
+            var pair = DuplexPipe.CreateConnectionPair(options, options);
+            var http1ConnectionContext = TestContextFactory.CreateHttpConnectionContext(
+                serviceContext: new TestServiceContext(),
+                connectionContext: Mock.Of<ConnectionContext>(),
+                transport: pair.Transport,
+                memoryPool: memoryPool,
+                connectionFeatures: new FeatureCollection());
 
-                var http1Connection = new Http1Connection(http1ConnectionContext);
+            var http1Connection = new Http1Connection(http1ConnectionContext);
 
-                http1Connection.Reset();
+            http1Connection.Reset();
 
-                IDictionary<string, StringValues> headers = http1Connection.ResponseHeaders;
+            IDictionary<string, StringValues> headers = http1Connection.ResponseHeaders;
 
-                Assert.Equal(0, headers.Count);
-                Assert.False(headers.IsReadOnly);
-            }
+            Assert.Equal(0, headers.Count);
+            Assert.False(headers.IsReadOnly);
         }
+    }
 
-        [Theory]
-        [InlineData("Server", "\r\nData")]
-        [InlineData("Server", "\0Data")]
-        [InlineData("Server", "Data\r")]
-        [InlineData("Server", "Da\0ta")]
-        [InlineData("Server", "Da\u001Fta")]
-        [InlineData("Unknown-Header", "\r\nData")]
-        [InlineData("Unknown-Header", "\0Data")]
-        [InlineData("Unknown-Header", "Data\0")]
-        [InlineData("Unknown-Header", "Da\nta")]
-        [InlineData("\r\nServer", "Data")]
-        [InlineData("Server\r", "Data")]
-        [InlineData("Ser\0ver", "Data")]
-        [InlineData("Server\r\n", "Data")]
-        [InlineData("\u0000Server", "Data")]
-        [InlineData("Server", "Data\u0000")]
-        [InlineData("\u001FServer", "Data")]
-        [InlineData("Unknown-Header\r\n", "Data")]
-        [InlineData("\0Unknown-Header", "Data")]
-        [InlineData("Unknown\r-Header", "Data")]
-        [InlineData("Unk\nown-Header", "Data")]
-        [InlineData("Server", "Da\u007Fta")]
-        [InlineData("Unknown\u007F-Header", "Data")]
-        [InlineData("Ser\u0080ver", "Data")]
-        [InlineData("Server", "Da\u0080ta")]
-        [InlineData("Unknown\u0080-Header", "Data")]
-        [InlineData("Ser™ver", "Data")]
-        [InlineData("Server", "Da™ta")]
-        [InlineData("Unknown™-Header", "Data")]
-        [InlineData("šerver", "Data")]
-        [InlineData("Server", "Dašta")]
-        [InlineData("Unknownš-Header", "Data")]
-        [InlineData("Seršver", "Data")]
-        [InlineData("Server\"", "Data")]
-        [InlineData("Server(", "Data")]
-        [InlineData("Server)", "Data")]
-        [InlineData("Server,", "Data")]
-        [InlineData("Server/", "Data")]
-        [InlineData("Server:", "Data")]
-        [InlineData("Server;", "Data")]
-        [InlineData("Server<", "Data")]
-        [InlineData("Server=", "Data")]
-        [InlineData("Server>", "Data")]
-        [InlineData("Server?", "Data")]
-        [InlineData("Server@", "Data")]
-        [InlineData("Server[", "Data")]
-        [InlineData("Server\\", "Data")]
-        [InlineData("Server]", "Data")]
-        [InlineData("Server{", "Data")]
-        [InlineData("Server}", "Data")]
-        [InlineData("", "Data")]
-        [InlineData(null, "Data")]
-        public void AddingControlOrNonAsciiCharactersToHeadersThrows(string key, string value)
+    [Theory]
+    [InlineData("Server", "\r\nData")]
+    [InlineData("Server", "\0Data")]
+    [InlineData("Server", "Data\r")]
+    [InlineData("Server", "Da\0ta")]
+    [InlineData("Server", "Da\u001Fta")]
+    [InlineData("Unknown-Header", "\r\nData")]
+    [InlineData("Unknown-Header", "\0Data")]
+    [InlineData("Unknown-Header", "Data\0")]
+    [InlineData("Unknown-Header", "Da\nta")]
+    [InlineData("\r\nServer", "Data")]
+    [InlineData("Server\r", "Data")]
+    [InlineData("Ser\0ver", "Data")]
+    [InlineData("Server\r\n", "Data")]
+    [InlineData("\u0000Server", "Data")]
+    [InlineData("Server", "Data\u0000")]
+    [InlineData("\u001FServer", "Data")]
+    [InlineData("Unknown-Header\r\n", "Data")]
+    [InlineData("\0Unknown-Header", "Data")]
+    [InlineData("Unknown\r-Header", "Data")]
+    [InlineData("Unk\nown-Header", "Data")]
+    [InlineData("Server", "Da\u007Fta")]
+    [InlineData("Unknown\u007F-Header", "Data")]
+    [InlineData("Ser\u0080ver", "Data")]
+    [InlineData("Server", "Da\u0080ta")]
+    [InlineData("Unknown\u0080-Header", "Data")]
+    [InlineData("Ser™ver", "Data")]
+    [InlineData("Server", "Da™ta")]
+    [InlineData("Unknown™-Header", "Data")]
+    [InlineData("šerver", "Data")]
+    [InlineData("Server", "Dašta")]
+    [InlineData("Unknownš-Header", "Data")]
+    [InlineData("Seršver", "Data")]
+    [InlineData("Server\"", "Data")]
+    [InlineData("Server(", "Data")]
+    [InlineData("Server)", "Data")]
+    [InlineData("Server,", "Data")]
+    [InlineData("Server/", "Data")]
+    [InlineData("Server:", "Data")]
+    [InlineData("Server;", "Data")]
+    [InlineData("Server<", "Data")]
+    [InlineData("Server=", "Data")]
+    [InlineData("Server>", "Data")]
+    [InlineData("Server?", "Data")]
+    [InlineData("Server@", "Data")]
+    [InlineData("Server[", "Data")]
+    [InlineData("Server\\", "Data")]
+    [InlineData("Server]", "Data")]
+    [InlineData("Server{", "Data")]
+    [InlineData("Server}", "Data")]
+    [InlineData("", "Data")]
+    [InlineData(null, "Data")]
+    public void AddingControlOrNonAsciiCharactersToHeadersThrows(string key, string value)
+    {
+        var responseHeaders = new HttpResponseHeaders();
+
+        Assert.Throws<InvalidOperationException>(() =>
         {
-            var responseHeaders = new HttpResponseHeaders();
+            ((IHeaderDictionary)responseHeaders)[key] = value;
+        });
 
-            Assert.Throws<InvalidOperationException>(() =>
-            {
-                ((IHeaderDictionary)responseHeaders)[key] = value;
-            });
-
-            Assert.Throws<InvalidOperationException>(() =>
-            {
-                ((IHeaderDictionary)responseHeaders)[key] = new StringValues(new[] { "valid", value });
-            });
-
-            Assert.Throws<InvalidOperationException>(() =>
-            {
-                ((IDictionary<string, StringValues>)responseHeaders)[key] = value;
-            });
-
-            Assert.Throws<InvalidOperationException>(() =>
-            {
-                var kvp = new KeyValuePair<string, StringValues>(key, value);
-                ((ICollection<KeyValuePair<string, StringValues>>)responseHeaders).Add(kvp);
-            });
-
-            Assert.Throws<InvalidOperationException>(() =>
-            {
-                var kvp = new KeyValuePair<string, StringValues>(key, value);
-                ((IDictionary<string, StringValues>)responseHeaders).Add(key, value);
-            });
-        }
-
-        [Theory]
-        [InlineData("\r\nData")]
-        [InlineData("\0Data")]
-        [InlineData("Data\r")]
-        [InlineData("Da\0ta")]
-        [InlineData("Da\u001Fta")]
-        [InlineData("Data\0")]
-        [InlineData("Da\nta")]
-        [InlineData("Da\u007Fta")]
-        [InlineData("Da\u0080ta")]
-        [InlineData("Da™ta")]
-        [InlineData("Dašta")]
-        public void AddingControlOrNonAsciiCharactersToHeaderPropertyThrows(string value)
+        Assert.Throws<InvalidOperationException>(() =>
         {
-            var responseHeaders = (IHeaderDictionary)new HttpResponseHeaders();
+            ((IHeaderDictionary)responseHeaders)[key] = new StringValues(new[] { "valid", value });
+        });
 
-            // Known special header
-            Assert.Throws<InvalidOperationException>(() =>
-            {
-                responseHeaders.Allow = value;
-            });
-
-            // Unknown header fallback
-            Assert.Throws<InvalidOperationException>(() =>
-            {
-                responseHeaders.Accept = value;
-            });
-        }
-
-        [Theory]
-        [InlineData("\r\nData")]
-        [InlineData("\0Data")]
-        [InlineData("Data\r")]
-        [InlineData("Da\0ta")]
-        [InlineData("Da\u001Fta")]
-        [InlineData("Data\0")]
-        [InlineData("Da\nta")]
-        [InlineData("Da\u007Fta")]
-        public void AddingControlCharactersWithCustomEncoderThrows(string value)
+        Assert.Throws<InvalidOperationException>(() =>
         {
-            var responseHeaders = new HttpResponseHeaders(_ => Encoding.UTF8);
+            ((IDictionary<string, StringValues>)responseHeaders)[key] = value;
+        });
 
-            // Known special header
-            Assert.Throws<InvalidOperationException>(() =>
-            {
-                ((IHeaderDictionary)responseHeaders).Allow = value;
-            });
-
-            // Unknown header fallback
-            Assert.Throws<InvalidOperationException>(() =>
-            {
-                ((IHeaderDictionary)responseHeaders).Accept = value;
-            });
-
-            Assert.Throws<InvalidOperationException>(() =>
-            {
-                ((IHeaderDictionary)responseHeaders)["Unknown"] = value;
-            });
-
-            Assert.Throws<InvalidOperationException>(() =>
-            {
-                ((IHeaderDictionary)responseHeaders)["Unknown"] = new StringValues(new[] { "valid", value });
-            });
-
-            Assert.Throws<InvalidOperationException>(() =>
-            {
-                ((IDictionary<string, StringValues>)responseHeaders)["Unknown"] = value;
-            });
-
-            Assert.Throws<InvalidOperationException>(() =>
-            {
-                var kvp = new KeyValuePair<string, StringValues>("Unknown", value);
-                ((ICollection<KeyValuePair<string, StringValues>>)responseHeaders).Add(kvp);
-            });
-
-            Assert.Throws<InvalidOperationException>(() =>
-            {
-                var kvp = new KeyValuePair<string, StringValues>("Unknown", value);
-                ((IDictionary<string, StringValues>)responseHeaders).Add("Unknown", value);
-            });
-        }
-
-        [Theory]
-        [InlineData("Da\u0080ta")]
-        [InlineData("Da™ta")]
-        [InlineData("Dašta")]
-        public void AddingNonAsciiCharactersWithCustomEncoderWorks(string value)
+        Assert.Throws<InvalidOperationException>(() =>
         {
-            var responseHeaders = new HttpResponseHeaders(_ => Encoding.UTF8);
+            var kvp = new KeyValuePair<string, StringValues>(key, value);
+            ((ICollection<KeyValuePair<string, StringValues>>)responseHeaders).Add(kvp);
+        });
 
-            // Known special header
+        Assert.Throws<InvalidOperationException>(() =>
+        {
+            var kvp = new KeyValuePair<string, StringValues>(key, value);
+            ((IDictionary<string, StringValues>)responseHeaders).Add(key, value);
+        });
+    }
+
+    [Theory]
+    [InlineData("\r\nData")]
+    [InlineData("\0Data")]
+    [InlineData("Data\r")]
+    [InlineData("Da\0ta")]
+    [InlineData("Da\u001Fta")]
+    [InlineData("Data\0")]
+    [InlineData("Da\nta")]
+    [InlineData("Da\u007Fta")]
+    [InlineData("Da\u0080ta")]
+    [InlineData("Da™ta")]
+    [InlineData("Dašta")]
+    public void AddingControlOrNonAsciiCharactersToHeaderPropertyThrows(string value)
+    {
+        var responseHeaders = (IHeaderDictionary)new HttpResponseHeaders();
+
+        // Known special header
+        Assert.Throws<InvalidOperationException>(() =>
+        {
+            responseHeaders.Allow = value;
+        });
+
+        // Unknown header fallback
+        Assert.Throws<InvalidOperationException>(() =>
+        {
+            responseHeaders.Accept = value;
+        });
+    }
+
+    [Theory]
+    [InlineData("\r\nData")]
+    [InlineData("\0Data")]
+    [InlineData("Data\r")]
+    [InlineData("Da\0ta")]
+    [InlineData("Da\u001Fta")]
+    [InlineData("Data\0")]
+    [InlineData("Da\nta")]
+    [InlineData("Da\u007Fta")]
+    public void AddingControlCharactersWithCustomEncoderThrows(string value)
+    {
+        var responseHeaders = new HttpResponseHeaders(_ => Encoding.UTF8);
+
+        // Known special header
+        Assert.Throws<InvalidOperationException>(() =>
+        {
             ((IHeaderDictionary)responseHeaders).Allow = value;
+        });
 
-            // Unknown header fallback
+        // Unknown header fallback
+        Assert.Throws<InvalidOperationException>(() =>
+        {
             ((IHeaderDictionary)responseHeaders).Accept = value;
+        });
 
+        Assert.Throws<InvalidOperationException>(() =>
+        {
             ((IHeaderDictionary)responseHeaders)["Unknown"] = value;
+        });
 
+        Assert.Throws<InvalidOperationException>(() =>
+        {
             ((IHeaderDictionary)responseHeaders)["Unknown"] = new StringValues(new[] { "valid", value });
+        });
 
+        Assert.Throws<InvalidOperationException>(() =>
+        {
             ((IDictionary<string, StringValues>)responseHeaders)["Unknown"] = value;
+        });
 
-            ((IHeaderDictionary)responseHeaders).Clear();
+        Assert.Throws<InvalidOperationException>(() =>
+        {
             var kvp = new KeyValuePair<string, StringValues>("Unknown", value);
             ((ICollection<KeyValuePair<string, StringValues>>)responseHeaders).Add(kvp);
+        });
 
-            ((IHeaderDictionary)responseHeaders).Clear();
-            kvp = new KeyValuePair<string, StringValues>("Unknown", value);
+        Assert.Throws<InvalidOperationException>(() =>
+        {
+            var kvp = new KeyValuePair<string, StringValues>("Unknown", value);
             ((IDictionary<string, StringValues>)responseHeaders).Add("Unknown", value);
-        }
+        });
+    }
 
-        [Fact]
-        public void ThrowsWhenAddingHeaderAfterReadOnlyIsSet()
-        {
-            var headers = new HttpResponseHeaders();
-            headers.SetReadOnly();
+    [Theory]
+    [InlineData("Da\u0080ta")]
+    [InlineData("Da™ta")]
+    [InlineData("Dašta")]
+    public void AddingNonAsciiCharactersWithCustomEncoderWorks(string value)
+    {
+        var responseHeaders = new HttpResponseHeaders(_ => Encoding.UTF8);
 
-            Assert.Throws<InvalidOperationException>(() => ((IDictionary<string, StringValues>)headers).Add("my-header", new[] { "value" }));
-        }
+        // Known special header
+        ((IHeaderDictionary)responseHeaders).Allow = value;
 
-        [Fact]
-        public void ThrowsWhenSettingContentLengthPropertyAfterReadOnlyIsSet()
-        {
-            var headers = new HttpResponseHeaders();
-            headers.SetReadOnly();
+        // Unknown header fallback
+        ((IHeaderDictionary)responseHeaders).Accept = value;
 
-            Assert.Throws<InvalidOperationException>(() => headers.ContentLength = null);
-        }
+        ((IHeaderDictionary)responseHeaders)["Unknown"] = value;
 
-        [Fact]
-        public void ThrowsWhenChangingHeaderAfterReadOnlyIsSet()
-        {
-            var headers = new HttpResponseHeaders();
-            var dictionary = (IDictionary<string, StringValues>)headers;
-            dictionary.Add("my-header", new[] { "value" });
-            headers.SetReadOnly();
+        ((IHeaderDictionary)responseHeaders)["Unknown"] = new StringValues(new[] { "valid", value });
 
-            Assert.Throws<InvalidOperationException>(() => dictionary["my-header"] = "other-value");
-        }
+        ((IDictionary<string, StringValues>)responseHeaders)["Unknown"] = value;
 
-        [Fact]
-        public void ThrowsWhenRemovingHeaderAfterReadOnlyIsSet()
-        {
-            var headers = new HttpResponseHeaders();
-            var dictionary = (IDictionary<string, StringValues>)headers;
-            dictionary.Add("my-header", new[] { "value" });
-            headers.SetReadOnly();
+        ((IHeaderDictionary)responseHeaders).Clear();
+        var kvp = new KeyValuePair<string, StringValues>("Unknown", value);
+        ((ICollection<KeyValuePair<string, StringValues>>)responseHeaders).Add(kvp);
 
-            Assert.Throws<InvalidOperationException>(() => dictionary.Remove("my-header"));
-        }
+        ((IHeaderDictionary)responseHeaders).Clear();
+        kvp = new KeyValuePair<string, StringValues>("Unknown", value);
+        ((IDictionary<string, StringValues>)responseHeaders).Add("Unknown", value);
+    }
 
-        [Fact]
-        public void ThrowsWhenClearingHeadersAfterReadOnlyIsSet()
-        {
-            var headers = new HttpResponseHeaders();
-            var dictionary = (IDictionary<string, StringValues>)headers;
-            dictionary.Add("my-header", new[] { "value" });
-            headers.SetReadOnly();
+    [Fact]
+    public void ThrowsWhenAddingHeaderAfterReadOnlyIsSet()
+    {
+        var headers = new HttpResponseHeaders();
+        headers.SetReadOnly();
 
-            Assert.Throws<InvalidOperationException>(() => dictionary.Clear());
-        }
+        Assert.Throws<InvalidOperationException>(() => ((IDictionary<string, StringValues>)headers).Add("my-header", new[] { "value" }));
+    }
 
-        [Theory]
-        [MemberData(nameof(BadContentLengths))]
-        public void ThrowsWhenAddingContentLengthWithNonNumericValue(string contentLength)
-        {
-            var headers = new HttpResponseHeaders();
-            var dictionary = (IDictionary<string, StringValues>)headers;
+    [Fact]
+    public void ThrowsWhenSettingContentLengthPropertyAfterReadOnlyIsSet()
+    {
+        var headers = new HttpResponseHeaders();
+        headers.SetReadOnly();
 
-            var exception = Assert.Throws<InvalidOperationException>(() => dictionary.Add("Content-Length", new[] { contentLength }));
-            Assert.Equal(CoreStrings.FormatInvalidContentLength_InvalidNumber(contentLength), exception.Message);
-        }
+        Assert.Throws<InvalidOperationException>(() => headers.ContentLength = null);
+    }
 
-        [Theory]
-        [MemberData(nameof(BadContentLengths))]
-        public void ThrowsWhenSettingContentLengthToNonNumericValue(string contentLength)
-        {
-            var headers = new HttpResponseHeaders();
-            var dictionary = (IDictionary<string, StringValues>)headers;
+    [Fact]
+    public void ThrowsWhenChangingHeaderAfterReadOnlyIsSet()
+    {
+        var headers = new HttpResponseHeaders();
+        var dictionary = (IDictionary<string, StringValues>)headers;
+        dictionary.Add("my-header", new[] { "value" });
+        headers.SetReadOnly();
 
-            var exception = Assert.Throws<InvalidOperationException>(() => ((IHeaderDictionary)headers)["Content-Length"] = contentLength);
-            Assert.Equal(CoreStrings.FormatInvalidContentLength_InvalidNumber(contentLength), exception.Message);
-        }
+        Assert.Throws<InvalidOperationException>(() => dictionary["my-header"] = "other-value");
+    }
 
-        [Theory]
-        [MemberData(nameof(BadContentLengths))]
-        public void ThrowsWhenAssigningHeaderContentLengthToNonNumericValue(string contentLength)
-        {
-            var headers = new HttpResponseHeaders();
+    [Fact]
+    public void ThrowsWhenRemovingHeaderAfterReadOnlyIsSet()
+    {
+        var headers = new HttpResponseHeaders();
+        var dictionary = (IDictionary<string, StringValues>)headers;
+        dictionary.Add("my-header", new[] { "value" });
+        headers.SetReadOnly();
 
-            var exception = Assert.Throws<InvalidOperationException>(() => headers.HeaderContentLength = contentLength);
-            Assert.Equal(CoreStrings.FormatInvalidContentLength_InvalidNumber(contentLength), exception.Message);
-        }
+        Assert.Throws<InvalidOperationException>(() => dictionary.Remove("my-header"));
+    }
 
-        [Theory]
-        [MemberData(nameof(GoodContentLengths))]
-        public void ContentLengthValueCanBeReadAsLongAfterAddingHeader(string contentLength)
-        {
-            var headers = new HttpResponseHeaders();
-            var dictionary = (IDictionary<string, StringValues>)headers;
-            dictionary.Add("Content-Length", contentLength);
+    [Fact]
+    public void ThrowsWhenClearingHeadersAfterReadOnlyIsSet()
+    {
+        var headers = new HttpResponseHeaders();
+        var dictionary = (IDictionary<string, StringValues>)headers;
+        dictionary.Add("my-header", new[] { "value" });
+        headers.SetReadOnly();
 
-            Assert.Equal(ParseLong(contentLength), headers.ContentLength);
-        }
+        Assert.Throws<InvalidOperationException>(() => dictionary.Clear());
+    }
 
-        [Theory]
-        [MemberData(nameof(GoodContentLengths))]
-        public void ContentLengthValueCanBeReadAsLongAfterSettingHeader(string contentLength)
-        {
-            var headers = new HttpResponseHeaders();
-            var dictionary = (IDictionary<string, StringValues>)headers;
-            dictionary["Content-Length"] = contentLength;
+    [Theory]
+    [MemberData(nameof(BadContentLengths))]
+    public void ThrowsWhenAddingContentLengthWithNonNumericValue(string contentLength)
+    {
+        var headers = new HttpResponseHeaders();
+        var dictionary = (IDictionary<string, StringValues>)headers;
 
-            Assert.Equal(ParseLong(contentLength), headers.ContentLength);
-        }
+        var exception = Assert.Throws<InvalidOperationException>(() => dictionary.Add("Content-Length", new[] { contentLength }));
+        Assert.Equal(CoreStrings.FormatInvalidContentLength_InvalidNumber(contentLength), exception.Message);
+    }
 
-        [Theory]
-        [MemberData(nameof(GoodContentLengths))]
-        public void ContentLengthValueCanBeReadAsLongAfterAssigningHeader(string contentLength)
-        {
-            var headers = new HttpResponseHeaders();
-            headers.HeaderContentLength = contentLength;
+    [Theory]
+    [MemberData(nameof(BadContentLengths))]
+    public void ThrowsWhenSettingContentLengthToNonNumericValue(string contentLength)
+    {
+        var headers = new HttpResponseHeaders();
+        var dictionary = (IDictionary<string, StringValues>)headers;
 
-            Assert.Equal(ParseLong(contentLength), headers.ContentLength);
-        }
+        var exception = Assert.Throws<InvalidOperationException>(() => ((IHeaderDictionary)headers)["Content-Length"] = contentLength);
+        Assert.Equal(CoreStrings.FormatInvalidContentLength_InvalidNumber(contentLength), exception.Message);
+    }
 
-        [Fact]
-        public void ContentLengthValueClearedWhenHeaderIsRemoved()
-        {
-            var headers = new HttpResponseHeaders();
-            headers.HeaderContentLength = "42";
-            var dictionary = (IDictionary<string, StringValues>)headers;
+    [Theory]
+    [MemberData(nameof(BadContentLengths))]
+    public void ThrowsWhenAssigningHeaderContentLengthToNonNumericValue(string contentLength)
+    {
+        var headers = new HttpResponseHeaders();
 
-            dictionary.Remove("Content-Length");
+        var exception = Assert.Throws<InvalidOperationException>(() => headers.HeaderContentLength = contentLength);
+        Assert.Equal(CoreStrings.FormatInvalidContentLength_InvalidNumber(contentLength), exception.Message);
+    }
 
-            Assert.Null(headers.ContentLength);
-        }
+    [Theory]
+    [MemberData(nameof(GoodContentLengths))]
+    public void ContentLengthValueCanBeReadAsLongAfterAddingHeader(string contentLength)
+    {
+        var headers = new HttpResponseHeaders();
+        var dictionary = (IDictionary<string, StringValues>)headers;
+        dictionary.Add("Content-Length", contentLength);
 
-        [Fact]
-        public void ContentLengthValueClearedWhenHeadersCleared()
-        {
-            var headers = new HttpResponseHeaders();
-            headers.HeaderContentLength = "42";
-            var dictionary = (IDictionary<string, StringValues>)headers;
+        Assert.Equal(ParseLong(contentLength), headers.ContentLength);
+    }
 
-            dictionary.Clear();
+    [Theory]
+    [MemberData(nameof(GoodContentLengths))]
+    public void ContentLengthValueCanBeReadAsLongAfterSettingHeader(string contentLength)
+    {
+        var headers = new HttpResponseHeaders();
+        var dictionary = (IDictionary<string, StringValues>)headers;
+        dictionary["Content-Length"] = contentLength;
 
-            Assert.Null(headers.ContentLength);
-        }
+        Assert.Equal(ParseLong(contentLength), headers.ContentLength);
+    }
 
-        private static long ParseLong(string value)
-        {
-            return long.Parse(value, NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite, CultureInfo.InvariantCulture);
-        }
+    [Theory]
+    [MemberData(nameof(GoodContentLengths))]
+    public void ContentLengthValueCanBeReadAsLongAfterAssigningHeader(string contentLength)
+    {
+        var headers = new HttpResponseHeaders();
+        headers.HeaderContentLength = contentLength;
 
-        public static TheoryData<string> GoodContentLengths => new TheoryData<string>
+        Assert.Equal(ParseLong(contentLength), headers.ContentLength);
+    }
+
+    [Fact]
+    public void ContentLengthValueClearedWhenHeaderIsRemoved()
+    {
+        var headers = new HttpResponseHeaders();
+        headers.HeaderContentLength = "42";
+        var dictionary = (IDictionary<string, StringValues>)headers;
+
+        dictionary.Remove("Content-Length");
+
+        Assert.Null(headers.ContentLength);
+    }
+
+    [Fact]
+    public void ContentLengthValueClearedWhenHeadersCleared()
+    {
+        var headers = new HttpResponseHeaders();
+        headers.HeaderContentLength = "42";
+        var dictionary = (IDictionary<string, StringValues>)headers;
+
+        dictionary.Clear();
+
+        Assert.Null(headers.ContentLength);
+    }
+
+    private static long ParseLong(string value)
+    {
+        return long.Parse(value, NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite, CultureInfo.InvariantCulture);
+    }
+
+    public static TheoryData<string> GoodContentLengths => new TheoryData<string>
         {
             "0",
             "00",
@@ -394,7 +394,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             long.MaxValue.ToString(CultureInfo.InvariantCulture)
         };
 
-        public static TheoryData<string> BadContentLengths => new TheoryData<string>
+    public static TheoryData<string> BadContentLengths => new TheoryData<string>
         {
             "",
             " ",
@@ -407,5 +407,4 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             "42,000",
             "42.000",
         };
-    }
 }

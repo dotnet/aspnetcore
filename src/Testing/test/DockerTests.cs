@@ -6,16 +6,15 @@ using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Testing
+namespace Microsoft.AspNetCore.Testing;
+
+public class DockerTests
 {
-    public class DockerTests
+    [ConditionalFact]
+    [DockerOnly]
+    [Trait("Docker", "true")]
+    public void DoesNotRunOnWindows()
     {
-        [ConditionalFact]
-        [DockerOnly]
-        [Trait("Docker", "true")]
-        public void DoesNotRunOnWindows()
-        {
-            Assert.False(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
-        }
+        Assert.False(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
     }
 }

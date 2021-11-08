@@ -4,221 +4,220 @@
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Language.Components
+namespace Microsoft.AspNetCore.Razor.Language.Components;
+
+public class ComponentDocumentClassifierPassTest : RazorProjectEngineTestBase
 {
-    public class ComponentDocumentClassifierPassTest : RazorProjectEngineTestBase
+    protected override RazorLanguageVersion Version => RazorLanguageVersion.Latest;
+
+    [Fact]
+    public void Execute_SetsDocumentKind()
     {
-        protected override RazorLanguageVersion Version => RazorLanguageVersion.Latest;
+        // Arrange
+        var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("some-content", "Test.razor"));
+        codeDocument.SetFileKind(FileKinds.Component);
 
-        [Fact]
-        public void Execute_SetsDocumentKind()
+        var projectEngine = CreateProjectEngine();
+        var irDocument = CreateIRDocument(projectEngine, codeDocument);
+        var pass = new ComponentDocumentClassifierPass
         {
-            // Arrange
-            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("some-content", "Test.razor"));
-            codeDocument.SetFileKind(FileKinds.Component);
+            Engine = projectEngine.Engine
+        };
 
-            var projectEngine = CreateProjectEngine();
-            var irDocument = CreateIRDocument(projectEngine, codeDocument);
-            var pass = new ComponentDocumentClassifierPass
-            {
-                Engine = projectEngine.Engine
-            };
+        // Act
+        pass.Execute(codeDocument, irDocument);
 
-            // Act
-            pass.Execute(codeDocument, irDocument);
+        // Assert
+        Assert.Equal(ComponentDocumentClassifierPass.ComponentDocumentKind, irDocument.DocumentKind);
+    }
 
-            // Assert
-            Assert.Equal(ComponentDocumentClassifierPass.ComponentDocumentKind, irDocument.DocumentKind);
-        }
+    [Fact]
+    public void ComponentDocumentClassifierPass_SetsNamespace()
+    {
+        // Arrange
+        var properties = new RazorSourceDocumentProperties(filePath: "/MyApp/Test.razor", relativePath: "Test.razor");
+        var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("some-content", properties));
+        codeDocument.SetFileKind(FileKinds.Component);
 
-        [Fact]
-        public void ComponentDocumentClassifierPass_SetsNamespace()
+        var projectEngine = CreateProjectEngine(b =>
         {
-            // Arrange
-            var properties = new RazorSourceDocumentProperties(filePath: "/MyApp/Test.razor", relativePath: "Test.razor");
-            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("some-content", properties));
-            codeDocument.SetFileKind(FileKinds.Component);
+            b.SetRootNamespace("MyApp");
+        });
 
-            var projectEngine = CreateProjectEngine(b =>
-            {
-                b.SetRootNamespace("MyApp");
-            });
-
-            var irDocument = CreateIRDocument(projectEngine, codeDocument);
-            var pass = new ComponentDocumentClassifierPass
-            {
-                Engine = projectEngine.Engine
-            };
-
-            // Act
-            pass.Execute(codeDocument, irDocument);
-            var visitor = new Visitor();
-            visitor.Visit(irDocument);
-
-            // Assert
-            Assert.Equal("MyApp", visitor.Namespace.Content);
-        }
-
-        [Fact]
-        public void ComponentDocumentClassifierPass_SetsClass()
+        var irDocument = CreateIRDocument(projectEngine, codeDocument);
+        var pass = new ComponentDocumentClassifierPass
         {
-            // Arrange
-            var properties = new RazorSourceDocumentProperties(filePath: "/MyApp/Test.razor", relativePath: "Test.razor");
-            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("some-content", properties));
-            codeDocument.SetFileKind(FileKinds.Component);
+            Engine = projectEngine.Engine
+        };
 
-            var projectEngine = CreateProjectEngine(b =>
-            {
-                b.SetRootNamespace("MyApp");
-            });
+        // Act
+        pass.Execute(codeDocument, irDocument);
+        var visitor = new Visitor();
+        visitor.Visit(irDocument);
 
-            var irDocument = CreateIRDocument(projectEngine, codeDocument);
-            var pass = new ComponentDocumentClassifierPass
-            {
-                Engine = projectEngine.Engine
-            };
+        // Assert
+        Assert.Equal("MyApp", visitor.Namespace.Content);
+    }
 
-            // Act
-            pass.Execute(codeDocument, irDocument);
-            var visitor = new Visitor();
-            visitor.Visit(irDocument);
+    [Fact]
+    public void ComponentDocumentClassifierPass_SetsClass()
+    {
+        // Arrange
+        var properties = new RazorSourceDocumentProperties(filePath: "/MyApp/Test.razor", relativePath: "Test.razor");
+        var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("some-content", properties));
+        codeDocument.SetFileKind(FileKinds.Component);
 
-            // Assert
-            Assert.Equal($"{ComponentsApi.ComponentBase.FullTypeName}", visitor.Class.BaseType);
-            Assert.Equal(new[] { "public", "partial" }, visitor.Class.Modifiers);
-            Assert.Equal("Test", visitor.Class.ClassName);
-        }
-
-        [Fact]
-        public void ComponentDocumentClassifierPass_UsesRelativePathToGenerateTypeNameAndNamespace()
+        var projectEngine = CreateProjectEngine(b =>
         {
-            // Arrange
-            var relativePath = "/Pages/Announcements/Banner.razor";
-            var properties = new RazorSourceDocumentProperties(filePath: $"/MyApp{relativePath}", relativePath: relativePath);
-            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("some-content", properties));
-            codeDocument.SetFileKind(FileKinds.Component);
+            b.SetRootNamespace("MyApp");
+        });
 
-            var projectEngine = CreateProjectEngine(b =>
-            {
-                b.SetRootNamespace("MyApp");
-            });
-
-            var irDocument = CreateIRDocument(projectEngine, codeDocument);
-            var pass = new ComponentDocumentClassifierPass
-            {
-                Engine = projectEngine.Engine
-            };
-
-            // Act
-            pass.Execute(codeDocument, irDocument);
-            var visitor = new Visitor();
-            visitor.Visit(irDocument);
-
-            // Assert
-            Assert.Equal("Banner", visitor.Class.ClassName);
-            Assert.Equal("MyApp.Pages.Announcements", visitor.Namespace.Content);
-        }
-
-        [Fact]
-        public void ComponentDocumentClassifierPass_SanitizesClassName()
+        var irDocument = CreateIRDocument(projectEngine, codeDocument);
+        var pass = new ComponentDocumentClassifierPass
         {
-            // Arrange
-            var properties = new RazorSourceDocumentProperties(filePath: @"x:\My.+App\path.with+invalid-chars.razor", relativePath: "path.with+invalid-chars.razor");
-            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("some-content", properties));
-            codeDocument.SetFileKind(FileKinds.Component);
+            Engine = projectEngine.Engine
+        };
 
-            var projectEngine = CreateProjectEngine(b =>
-            {
-                b.SetRootNamespace("My.+App");
-            });
+        // Act
+        pass.Execute(codeDocument, irDocument);
+        var visitor = new Visitor();
+        visitor.Visit(irDocument);
 
-            var irDocument = CreateIRDocument(projectEngine, codeDocument);
-            var pass = new ComponentDocumentClassifierPass
-            {
-                Engine = projectEngine.Engine
-            };
+        // Assert
+        Assert.Equal($"{ComponentsApi.ComponentBase.FullTypeName}", visitor.Class.BaseType);
+        Assert.Equal(new[] { "public", "partial" }, visitor.Class.Modifiers);
+        Assert.Equal("Test", visitor.Class.ClassName);
+    }
 
-            // Act
-            pass.Execute(codeDocument, irDocument);
-            var visitor = new Visitor();
-            visitor.Visit(irDocument);
+    [Fact]
+    public void ComponentDocumentClassifierPass_UsesRelativePathToGenerateTypeNameAndNamespace()
+    {
+        // Arrange
+        var relativePath = "/Pages/Announcements/Banner.razor";
+        var properties = new RazorSourceDocumentProperties(filePath: $"/MyApp{relativePath}", relativePath: relativePath);
+        var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("some-content", properties));
+        codeDocument.SetFileKind(FileKinds.Component);
 
-            // Assert
-            Assert.Equal("path_with_invalid_chars", visitor.Class.ClassName);
-            Assert.Equal("My._App", visitor.Namespace.Content);
-        }
-
-        [Fact]
-        public void ComponentDocumentClassifierPass_SetsUpMainMethod()
+        var projectEngine = CreateProjectEngine(b =>
         {
-            // Arrange
-            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("some-content", "Test.razor"));
-            codeDocument.SetFileKind(FileKinds.Component);
+            b.SetRootNamespace("MyApp");
+        });
 
-            var projectEngine = CreateProjectEngine();
-            var irDocument = CreateIRDocument(projectEngine, codeDocument);
-            var pass = new ComponentDocumentClassifierPass
-            {
-                Engine = projectEngine.Engine
-            };
-
-            // Act
-            pass.Execute(codeDocument, irDocument);
-            var visitor = new Visitor();
-            visitor.Visit(irDocument);
-
-            // Assert
-            Assert.Equal(ComponentsApi.ComponentBase.BuildRenderTree, visitor.Method.MethodName);
-            Assert.Equal("void", visitor.Method.ReturnType);
-            Assert.Equal(new[] { "protected", "override" }, visitor.Method.Modifiers);
-        }
-
-        private DocumentIntermediateNode CreateIRDocument(RazorProjectEngine projectEngine, RazorCodeDocument codeDocument)
+        var irDocument = CreateIRDocument(projectEngine, codeDocument);
+        var pass = new ComponentDocumentClassifierPass
         {
-            for (var i = 0; i < projectEngine.Phases.Count; i++)
-            {
-                var phase = projectEngine.Phases[i];
-                phase.Execute(codeDocument);
+            Engine = projectEngine.Engine
+        };
 
-                if (phase is IRazorIntermediateNodeLoweringPhase)
-                {
-                    break;
-                }
-            }
+        // Act
+        pass.Execute(codeDocument, irDocument);
+        var visitor = new Visitor();
+        visitor.Visit(irDocument);
 
-            return codeDocument.GetDocumentIntermediateNode();
-        }
+        // Assert
+        Assert.Equal("Banner", visitor.Class.ClassName);
+        Assert.Equal("MyApp.Pages.Announcements", visitor.Namespace.Content);
+    }
 
-        private class Visitor : IntermediateNodeWalker
+    [Fact]
+    public void ComponentDocumentClassifierPass_SanitizesClassName()
+    {
+        // Arrange
+        var properties = new RazorSourceDocumentProperties(filePath: @"x:\My.+App\path.with+invalid-chars.razor", relativePath: "path.with+invalid-chars.razor");
+        var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("some-content", properties));
+        codeDocument.SetFileKind(FileKinds.Component);
+
+        var projectEngine = CreateProjectEngine(b =>
         {
-            public NamespaceDeclarationIntermediateNode Namespace { get; private set; }
+            b.SetRootNamespace("My.+App");
+        });
 
-            public ClassDeclarationIntermediateNode Class { get; private set; }
+        var irDocument = CreateIRDocument(projectEngine, codeDocument);
+        var pass = new ComponentDocumentClassifierPass
+        {
+            Engine = projectEngine.Engine
+        };
 
-            public MethodDeclarationIntermediateNode Method { get; private set; }
+        // Act
+        pass.Execute(codeDocument, irDocument);
+        var visitor = new Visitor();
+        visitor.Visit(irDocument);
 
-            public override void VisitMethodDeclaration(MethodDeclarationIntermediateNode node)
+        // Assert
+        Assert.Equal("path_with_invalid_chars", visitor.Class.ClassName);
+        Assert.Equal("My._App", visitor.Namespace.Content);
+    }
+
+    [Fact]
+    public void ComponentDocumentClassifierPass_SetsUpMainMethod()
+    {
+        // Arrange
+        var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("some-content", "Test.razor"));
+        codeDocument.SetFileKind(FileKinds.Component);
+
+        var projectEngine = CreateProjectEngine();
+        var irDocument = CreateIRDocument(projectEngine, codeDocument);
+        var pass = new ComponentDocumentClassifierPass
+        {
+            Engine = projectEngine.Engine
+        };
+
+        // Act
+        pass.Execute(codeDocument, irDocument);
+        var visitor = new Visitor();
+        visitor.Visit(irDocument);
+
+        // Assert
+        Assert.Equal(ComponentsApi.ComponentBase.BuildRenderTree, visitor.Method.MethodName);
+        Assert.Equal("void", visitor.Method.ReturnType);
+        Assert.Equal(new[] { "protected", "override" }, visitor.Method.Modifiers);
+    }
+
+    private DocumentIntermediateNode CreateIRDocument(RazorProjectEngine projectEngine, RazorCodeDocument codeDocument)
+    {
+        for (var i = 0; i < projectEngine.Phases.Count; i++)
+        {
+            var phase = projectEngine.Phases[i];
+            phase.Execute(codeDocument);
+
+            if (phase is IRazorIntermediateNodeLoweringPhase)
             {
-                Method = node;
-            }
-
-            public override void VisitNamespaceDeclaration(NamespaceDeclarationIntermediateNode node)
-            {
-                Namespace = node;
-                base.VisitNamespaceDeclaration(node);
-            }
-
-            public override void VisitClassDeclaration(ClassDeclarationIntermediateNode node)
-            {
-                Class = node;
-                base.VisitClassDeclaration(node);
+                break;
             }
         }
 
-        private class TestComponentDocumentClassifierPass : ComponentDocumentClassifierPass
+        return codeDocument.GetDocumentIntermediateNode();
+    }
+
+    private class Visitor : IntermediateNodeWalker
+    {
+        public NamespaceDeclarationIntermediateNode Namespace { get; private set; }
+
+        public ClassDeclarationIntermediateNode Class { get; private set; }
+
+        public MethodDeclarationIntermediateNode Method { get; private set; }
+
+        public override void VisitMethodDeclaration(MethodDeclarationIntermediateNode node)
         {
-            public new bool IsMatch(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
-                => base.IsMatch(codeDocument, documentNode);
+            Method = node;
         }
+
+        public override void VisitNamespaceDeclaration(NamespaceDeclarationIntermediateNode node)
+        {
+            Namespace = node;
+            base.VisitNamespaceDeclaration(node);
+        }
+
+        public override void VisitClassDeclaration(ClassDeclarationIntermediateNode node)
+        {
+            Class = node;
+            base.VisitClassDeclaration(node);
+        }
+    }
+
+    private class TestComponentDocumentClassifierPass : ComponentDocumentClassifierPass
+    {
+        public new bool IsMatch(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
+            => base.IsMatch(codeDocument, documentNode);
     }
 }

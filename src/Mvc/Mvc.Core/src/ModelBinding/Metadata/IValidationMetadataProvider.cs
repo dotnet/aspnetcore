@@ -3,17 +3,16 @@
 
 #nullable enable
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+
+/// <summary>
+/// Provides <see cref="ValidationMetadata"/> for a <see cref="DefaultModelMetadata"/>.
+/// </summary>
+public interface IValidationMetadataProvider : IMetadataDetailsProvider
 {
     /// <summary>
-    /// Provides <see cref="ValidationMetadata"/> for a <see cref="DefaultModelMetadata"/>.
+    /// Gets the values for properties of <see cref="ValidationMetadata"/>.
     /// </summary>
-    public interface IValidationMetadataProvider : IMetadataDetailsProvider
-    {
-        /// <summary>
-        /// Gets the values for properties of <see cref="ValidationMetadata"/>.
-        /// </summary>
-        /// <param name="context">The <see cref="ValidationMetadataProviderContext"/>.</param>
-        void CreateValidationMetadata(ValidationMetadataProviderContext context);
-    }
+    /// <param name="context">The <see cref="ValidationMetadataProviderContext"/>.</param>
+    void CreateValidationMetadata(ValidationMetadataProviderContext context);
 }

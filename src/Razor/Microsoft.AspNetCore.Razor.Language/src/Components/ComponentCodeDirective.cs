@@ -3,26 +3,25 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Razor.Language.Components
+namespace Microsoft.AspNetCore.Razor.Language.Components;
+
+public static class ComponentCodeDirective
 {
-    public static class ComponentCodeDirective
-    {
-        public static readonly DirectiveDescriptor Directive = DirectiveDescriptor.CreateDirective(
-            "code",
-            DirectiveKind.CodeBlock,
-            builder =>
-            {
-                builder.Description = Resources.FunctionsDirective_Description;
-            });
-
-        public static void Register(RazorProjectEngineBuilder builder)
+    public static readonly DirectiveDescriptor Directive = DirectiveDescriptor.CreateDirective(
+        "code",
+        DirectiveKind.CodeBlock,
+        builder =>
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
+            builder.Description = Resources.FunctionsDirective_Description;
+        });
 
-            builder.AddDirective(Directive, FileKinds.Component);
+    public static void Register(RazorProjectEngineBuilder builder)
+    {
+        if (builder == null)
+        {
+            throw new ArgumentNullException(nameof(builder));
         }
+
+        builder.AddDirective(Directive, FileKinds.Component);
     }
 }

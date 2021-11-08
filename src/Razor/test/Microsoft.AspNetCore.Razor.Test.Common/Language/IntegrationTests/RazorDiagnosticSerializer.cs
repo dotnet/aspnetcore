@@ -1,13 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+public class RazorDiagnosticSerializer
 {
-    public class RazorDiagnosticSerializer
+    public static string Serialize(RazorDiagnostic diagnostic)
     {
-        public static string Serialize(RazorDiagnostic diagnostic)
-        {
-            return diagnostic.ToString();
-        }
+        return diagnostic.ToString();
     }
 }

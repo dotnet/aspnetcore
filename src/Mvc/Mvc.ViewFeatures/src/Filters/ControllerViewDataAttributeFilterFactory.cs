@@ -5,23 +5,22 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
+
+internal class ControllerViewDataAttributeFilterFactory : IFilterFactory
 {
-    internal class ControllerViewDataAttributeFilterFactory : IFilterFactory
+    public ControllerViewDataAttributeFilterFactory(IReadOnlyList<LifecycleProperty> properties)
     {
-        public ControllerViewDataAttributeFilterFactory(IReadOnlyList<LifecycleProperty> properties)
-        {
-            Properties = properties;
-        }
+        Properties = properties;
+    }
 
-        public IReadOnlyList<LifecycleProperty> Properties { get; }
+    public IReadOnlyList<LifecycleProperty> Properties { get; }
 
-        // ControllerViewDataAttributeFilter is stateful and cannot be reused.
-        public bool IsReusable => false;
+    // ControllerViewDataAttributeFilter is stateful and cannot be reused.
+    public bool IsReusable => false;
 
-        public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
-        {
-            return new ControllerViewDataAttributeFilter(Properties);
-        }
+    public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
+    {
+        return new ControllerViewDataAttributeFilter(Properties);
     }
 }

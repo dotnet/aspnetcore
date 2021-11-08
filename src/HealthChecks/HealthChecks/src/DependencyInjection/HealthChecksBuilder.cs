@@ -4,30 +4,29 @@
 using System;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection;
+
+internal class HealthChecksBuilder : IHealthChecksBuilder
 {
-    internal class HealthChecksBuilder : IHealthChecksBuilder
+    public HealthChecksBuilder(IServiceCollection services)
     {
-        public HealthChecksBuilder(IServiceCollection services)
+        Services = services;
+    }
+
+    public IServiceCollection Services { get; }
+
+    public IHealthChecksBuilder Add(HealthCheckRegistration registration)
+    {
+        if (registration == null)
         {
-            Services = services;
+            throw new ArgumentNullException(nameof(registration));
         }
 
-        public IServiceCollection Services { get; }
-
-        public IHealthChecksBuilder Add(HealthCheckRegistration registration)
+        Services.Configure<HealthCheckServiceOptions>(options =>
         {
-            if (registration == null)
-            {
-                throw new ArgumentNullException(nameof(registration));
-            }
+            options.Registrations.Add(registration);
+        });
 
-            Services.Configure<HealthCheckServiceOptions>(options =>
-            {
-                options.Registrations.Add(registration);
-            });
-
-            return this;
-        }
+        return this;
     }
 }

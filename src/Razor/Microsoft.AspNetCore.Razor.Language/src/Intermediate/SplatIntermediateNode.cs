@@ -3,30 +3,29 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Razor.Language.Intermediate
+namespace Microsoft.AspNetCore.Razor.Language.Intermediate;
+
+public sealed class SplatIntermediateNode : IntermediateNode
 {
-    public sealed class SplatIntermediateNode : IntermediateNode
+    public override IntermediateNodeCollection Children { get; } = new IntermediateNodeCollection();
+
+    public override void Accept(IntermediateNodeVisitor visitor)
     {
-        public override IntermediateNodeCollection Children { get; } = new IntermediateNodeCollection();
-
-        public override void Accept(IntermediateNodeVisitor visitor)
+        if (visitor == null)
         {
-            if (visitor == null)
-            {
-                throw new ArgumentNullException(nameof(visitor));
-            }
-
-            visitor.VisitSplat(this);
+            throw new ArgumentNullException(nameof(visitor));
         }
 
-        public override void FormatNode(IntermediateNodeFormatter formatter)
-        {
-            if (formatter == null)
-            {
-                throw new ArgumentNullException(nameof(formatter));
-            }
+        visitor.VisitSplat(this);
+    }
 
-            // No properties => do nothing
+    public override void FormatNode(IntermediateNodeFormatter formatter)
+    {
+        if (formatter == null)
+        {
+            throw new ArgumentNullException(nameof(formatter));
         }
+
+        // No properties => do nothing
     }
 }

@@ -9,58 +9,57 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
+
+internal partial class Http3Stream : IHttpResetFeature,
+                                     IHttpMinRequestBodyDataRateFeature,
+                                     IHttpResponseTrailersFeature
 {
-    internal partial class Http3Stream : IHttpResetFeature,
-                                         IHttpMinRequestBodyDataRateFeature,
-                                         IHttpResponseTrailersFeature
+    private IHeaderDictionary? _userTrailers;
+
+    IHeaderDictionary IHttpResponseTrailersFeature.Trailers
     {
-        private IHeaderDictionary? _userTrailers;
-
-        IHeaderDictionary IHttpResponseTrailersFeature.Trailers
+        get
         {
-            get
+            if (ResponseTrailers == null)
             {
-                if (ResponseTrailers == null)
+                ResponseTrailers = new HttpResponseTrailers(ServerOptions.ResponseHeaderEncodingSelector);
+                if (HasResponseCompleted)
                 {
-                    ResponseTrailers = new HttpResponseTrailers(ServerOptions.ResponseHeaderEncodingSelector);
-                    if (HasResponseCompleted)
-                    {
-                        ResponseTrailers.SetReadOnly();
-                    }
+                    ResponseTrailers.SetReadOnly();
                 }
-                return _userTrailers ?? ResponseTrailers;
             }
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                _userTrailers = value;
-            }
+            return _userTrailers ?? ResponseTrailers;
         }
-
-        MinDataRate? IHttpMinRequestBodyDataRateFeature.MinDataRate
+        set
         {
-            get => throw new NotSupportedException(CoreStrings.HttpMinDataRateNotSupported);
-            set
+            if (value == null)
             {
-                if (value != null)
-                {
-                    throw new NotSupportedException(CoreStrings.HttpMinDataRateNotSupported);
-                }
-
-                MinRequestBodyDataRate = value;
+                throw new ArgumentNullException(nameof(value));
             }
-        }
 
-        void IHttpResetFeature.Reset(int errorCode)
-        {
-            var message = CoreStrings.FormatHttp3StreamResetByApplication(Http3Formatting.ToFormattedErrorCode((Http3ErrorCode)errorCode));
-            var abortReason = new ConnectionAbortedException(message);
-            ApplicationAbort(abortReason, (Http3ErrorCode)errorCode);
+            _userTrailers = value;
         }
+    }
+
+    MinDataRate? IHttpMinRequestBodyDataRateFeature.MinDataRate
+    {
+        get => throw new NotSupportedException(CoreStrings.HttpMinDataRateNotSupported);
+        set
+        {
+            if (value != null)
+            {
+                throw new NotSupportedException(CoreStrings.HttpMinDataRateNotSupported);
+            }
+
+            MinRequestBodyDataRate = value;
+        }
+    }
+
+    void IHttpResetFeature.Reset(int errorCode)
+    {
+        var message = CoreStrings.FormatHttp3StreamResetByApplication(Http3Formatting.ToFormattedErrorCode((Http3ErrorCode)errorCode));
+        var abortReason = new ConnectionAbortedException(message);
+        ApplicationAbort(abortReason, (Http3ErrorCode)errorCode);
     }
 }

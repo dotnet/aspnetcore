@@ -7,151 +7,150 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.Extensions.Internal
+namespace Microsoft.Extensions.Internal;
+
+internal class CopyOnWriteDictionary<TKey, TValue> : IDictionary<TKey, TValue> where TKey : notnull
 {
-    internal class CopyOnWriteDictionary<TKey, TValue> : IDictionary<TKey, TValue> where TKey : notnull
+    private readonly IDictionary<TKey, TValue> _sourceDictionary;
+    private readonly IEqualityComparer<TKey> _comparer;
+    private IDictionary<TKey, TValue>? _innerDictionary;
+
+    public CopyOnWriteDictionary(
+        IDictionary<TKey, TValue> sourceDictionary,
+        IEqualityComparer<TKey> comparer)
     {
-        private readonly IDictionary<TKey, TValue> _sourceDictionary;
-        private readonly IEqualityComparer<TKey> _comparer;
-        private IDictionary<TKey, TValue>? _innerDictionary;
-
-        public CopyOnWriteDictionary(
-            IDictionary<TKey, TValue> sourceDictionary,
-            IEqualityComparer<TKey> comparer)
+        if (sourceDictionary == null)
         {
-            if (sourceDictionary == null)
+            throw new ArgumentNullException(nameof(sourceDictionary));
+        }
+
+        if (comparer == null)
+        {
+            throw new ArgumentNullException(nameof(comparer));
+        }
+
+        _sourceDictionary = sourceDictionary;
+        _comparer = comparer;
+    }
+
+    private IDictionary<TKey, TValue> ReadDictionary
+    {
+        get
+        {
+            return _innerDictionary ?? _sourceDictionary;
+        }
+    }
+
+    private IDictionary<TKey, TValue> WriteDictionary
+    {
+        get
+        {
+            if (_innerDictionary == null)
             {
-                throw new ArgumentNullException(nameof(sourceDictionary));
+                _innerDictionary = new Dictionary<TKey, TValue>(_sourceDictionary,
+                                                                _comparer);
             }
 
-            if (comparer == null)
-            {
-                throw new ArgumentNullException(nameof(comparer));
-            }
-
-            _sourceDictionary = sourceDictionary;
-            _comparer = comparer;
+            return _innerDictionary;
         }
+    }
 
-        private IDictionary<TKey, TValue> ReadDictionary
+    public virtual ICollection<TKey> Keys
+    {
+        get
         {
-            get
-            {
-                return _innerDictionary ?? _sourceDictionary;
-            }
+            return ReadDictionary.Keys;
         }
+    }
 
-        private IDictionary<TKey, TValue> WriteDictionary
+    public virtual ICollection<TValue> Values
+    {
+        get
         {
-            get
-            {
-                if (_innerDictionary == null)
-                {
-                    _innerDictionary = new Dictionary<TKey, TValue>(_sourceDictionary,
-                                                                    _comparer);
-                }
-
-                return _innerDictionary;
-            }
+            return ReadDictionary.Values;
         }
+    }
 
-        public virtual ICollection<TKey> Keys
+    public virtual int Count
+    {
+        get
         {
-            get
-            {
-                return ReadDictionary.Keys;
-            }
+            return ReadDictionary.Count;
         }
+    }
 
-        public virtual ICollection<TValue> Values
+    public virtual bool IsReadOnly
+    {
+        get
         {
-            get
-            {
-                return ReadDictionary.Values;
-            }
+            return false;
         }
+    }
 
-        public virtual int Count
+    public virtual TValue this[TKey key]
+    {
+        get
         {
-            get
-            {
-                return ReadDictionary.Count;
-            }
+            return ReadDictionary[key];
         }
+        set
+        {
+            WriteDictionary[key] = value;
+        }
+    }
 
-        public virtual bool IsReadOnly
-        {
-            get
-            {
-                return false;
-            }
-        }
+    public virtual bool ContainsKey(TKey key)
+    {
+        return ReadDictionary.ContainsKey(key);
+    }
 
-        public virtual TValue this[TKey key]
-        {
-            get
-            {
-                return ReadDictionary[key];
-            }
-            set
-            {
-                WriteDictionary[key] = value;
-            }
-        }
+    public virtual void Add(TKey key, TValue value)
+    {
+        WriteDictionary.Add(key, value);
+    }
 
-        public virtual bool ContainsKey(TKey key)
-        {
-            return ReadDictionary.ContainsKey(key);
-        }
+    public virtual bool Remove(TKey key)
+    {
+        return WriteDictionary.Remove(key);
+    }
 
-        public virtual void Add(TKey key, TValue value)
-        {
-            WriteDictionary.Add(key, value);
-        }
+    public virtual bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
+    {
+        return ReadDictionary.TryGetValue(key, out value);
+    }
 
-        public virtual bool Remove(TKey key)
-        {
-            return WriteDictionary.Remove(key);
-        }
+    public virtual void Add(KeyValuePair<TKey, TValue> item)
+    {
+        WriteDictionary.Add(item);
+    }
 
-        public virtual bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
-        {
-            return ReadDictionary.TryGetValue(key, out value);
-        }
+    public virtual void Clear()
+    {
+        WriteDictionary.Clear();
+    }
 
-        public virtual void Add(KeyValuePair<TKey, TValue> item)
-        {
-            WriteDictionary.Add(item);
-        }
+    public virtual bool Contains(KeyValuePair<TKey, TValue> item)
+    {
+        return ReadDictionary.Contains(item);
+    }
 
-        public virtual void Clear()
-        {
-            WriteDictionary.Clear();
-        }
+    public virtual void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
+    {
+        ReadDictionary.CopyTo(array, arrayIndex);
+    }
 
-        public virtual bool Contains(KeyValuePair<TKey, TValue> item)
-        {
-            return ReadDictionary.Contains(item);
-        }
+    public bool Remove(KeyValuePair<TKey, TValue> item)
+    {
+        return WriteDictionary.Remove(item);
+    }
 
-        public virtual void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
-        {
-            ReadDictionary.CopyTo(array, arrayIndex);
-        }
+    public virtual IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
+    {
+        return ReadDictionary.GetEnumerator();
+    }
 
-        public bool Remove(KeyValuePair<TKey, TValue> item)
-        {
-            return WriteDictionary.Remove(item);
-        }
-
-        public virtual IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
-        {
-            return ReadDictionary.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
     }
 }

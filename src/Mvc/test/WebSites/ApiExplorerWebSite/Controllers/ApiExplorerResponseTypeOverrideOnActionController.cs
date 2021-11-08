@@ -3,38 +3,37 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace ApiExplorerWebSite
+namespace ApiExplorerWebSite;
+
+[Produces("application/json", Type = typeof(Product))]
+[ProducesResponseType(typeof(ErrorInfo), 500)]
+[Route("ApiExplorerResponseTypeOverrideOnAction")]
+public class ApiExplorerResponseTypeOverrideOnActionController : Controller
 {
-    [Produces("application/json", Type = typeof(Product))]
-    [ProducesResponseType(typeof(ErrorInfo), 500)]
-    [Route("ApiExplorerResponseTypeOverrideOnAction")]
-    public class ApiExplorerResponseTypeOverrideOnActionController : Controller
+    [HttpGet("Controller")]
+    public void GetController()
     {
-        [HttpGet("Controller")]
-        public void GetController()
-        {
-        }
-
-        [HttpGet("Action")]
-        [Produces(typeof(Customer))]
-        [ProducesResponseType(typeof(ErrorInfoOverride), 500)] // overriding the type specified on the server
-        public object GetAction()
-        {
-            return null;
-        }
-
-        [HttpGet("Action2")]
-        [ProducesResponseType(typeof(Customer), 200, "text/plain")]
-        public object GetActionWithContentTypeOverride()
-        {
-            return null;
-        }
     }
 
-    public class ErrorInfo
+    [HttpGet("Action")]
+    [Produces(typeof(Customer))]
+    [ProducesResponseType(typeof(ErrorInfoOverride), 500)] // overriding the type specified on the server
+    public object GetAction()
     {
-        public string Message { get; set; }
+        return null;
     }
 
-    public class ErrorInfoOverride { }
+    [HttpGet("Action2")]
+    [ProducesResponseType(typeof(Customer), 200, "text/plain")]
+    public object GetActionWithContentTypeOverride()
+    {
+        return null;
+    }
 }
+
+public class ErrorInfo
+{
+    public string Message { get; set; }
+}
+
+public class ErrorInfoOverride { }

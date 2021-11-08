@@ -9,241 +9,240 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.HttpSys.Listener
+namespace Microsoft.AspNetCore.Server.HttpSys.Listener;
+
+public class ServerOnExistingQueueTests
 {
-    public class ServerOnExistingQueueTests
+    [ConditionalFact]
+    public async Task Server_200OK_Success()
     {
-        [ConditionalFact]
-        public async Task Server_200OK_Success()
+        using var baseServer = Utilities.CreateHttpServer(out var address);
+        using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
+
+        var responseTask = SendRequestAsync(address);
+
+        var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+        context.Dispose();
+
+        var response = await responseTask;
+        Assert.Equal(string.Empty, response);
+    }
+
+    [ConditionalFact]
+    public async Task Server_SendHelloWorld_Success()
+    {
+        using var baseServer = Utilities.CreateHttpServer(out var address);
+        using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
+
+        Task<string> responseTask = SendRequestAsync(address);
+
+        var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+        context.Response.ContentLength = 11;
+        await using (var writer = new StreamWriter(context.Response.Body))
         {
-            using var baseServer = Utilities.CreateHttpServer(out var address);
-            using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
-
-            var responseTask = SendRequestAsync(address);
-
-            var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-            context.Dispose();
-
-            var response = await responseTask;
-            Assert.Equal(string.Empty, response);
+            await writer.WriteAsync("Hello World");
         }
 
-        [ConditionalFact]
-        public async Task Server_SendHelloWorld_Success()
+        string response = await responseTask;
+        Assert.Equal("Hello World", response);
+    }
+
+    [ConditionalFact]
+    public async Task Server_EchoHelloWorld_Success()
+    {
+        using var baseServer = Utilities.CreateHttpServer(out var address);
+        using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
+
+        var responseTask = SendRequestAsync(address, "Hello World");
+
+        var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+        string input = await new StreamReader(context.Request.Body).ReadToEndAsync();
+        Assert.Equal("Hello World", input);
+        context.Response.ContentLength = 11;
+        await using (var writer = new StreamWriter(context.Response.Body))
         {
-            using var baseServer = Utilities.CreateHttpServer(out var address);
-            using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
-
-            Task<string> responseTask = SendRequestAsync(address);
-
-            var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-            context.Response.ContentLength = 11;
-            await using (var writer = new StreamWriter(context.Response.Body))
-            {
-                await writer.WriteAsync("Hello World");
-            }
-
-            string response = await responseTask;
-            Assert.Equal("Hello World", response);
+            await writer.WriteAsync("Hello World");
         }
 
-        [ConditionalFact]
-        public async Task Server_EchoHelloWorld_Success()
-        {
-            using var baseServer = Utilities.CreateHttpServer(out var address);
-            using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
+        var response = await responseTask;
+        Assert.Equal("Hello World", response);
+    }
 
-            var responseTask = SendRequestAsync(address, "Hello World");
+    [ConditionalFact]
+    // No-ops if you did not create the queue
+    public async Task Server_SetQueueLimit_Success()
+    {
+        using var baseServer = Utilities.CreateHttpServer(out var address);
+        using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
+        server.Options.RequestQueueLimit = 1001;
+        var responseTask = SendRequestAsync(address);
 
-            var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-            string input = await new StreamReader(context.Request.Body).ReadToEndAsync();
-            Assert.Equal("Hello World", input);
-            context.Response.ContentLength = 11;
-            await using (var writer = new StreamWriter(context.Response.Body))
-            {
-                await writer.WriteAsync("Hello World");
-            }
+        var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+        context.Dispose();
 
-            var response = await responseTask;
-            Assert.Equal("Hello World", response);
-        }
+        var response = await responseTask;
+        Assert.Equal(string.Empty, response);
+    }
 
-        [ConditionalFact]
-        // No-ops if you did not create the queue
-        public async Task Server_SetQueueLimit_Success()
-        {
-            using var baseServer = Utilities.CreateHttpServer(out var address);
-            using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
-            server.Options.RequestQueueLimit = 1001;
-            var responseTask = SendRequestAsync(address);
+    [ConditionalFact]
+    public async Task Server_PathBase_Success()
+    {
+        using var baseServer = Utilities.CreateDynamicHttpServer("/PathBase", out var root, out var address);
+        using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
+        server.Options.UrlPrefixes.Add(address); // Need to mirror the setting so we can parse out PathBase
 
-            var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-            context.Dispose();
+        var responseTask = SendRequestAsync(root + "/pathBase/paTh");
 
-            var response = await responseTask;
-            Assert.Equal(string.Empty, response);
-        }
+        var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
+        Assert.Equal("/pathBase", context.Request.PathBase);
+        Assert.Equal("/paTh", context.Request.Path);
+        context.Dispose();
 
-        [ConditionalFact]
-        public async Task Server_PathBase_Success()
-        {
-            using var baseServer = Utilities.CreateDynamicHttpServer("/PathBase", out var root, out var address);
-            using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
-            server.Options.UrlPrefixes.Add(address); // Need to mirror the setting so we can parse out PathBase
+        var response = await responseTask;
+        Assert.Equal(string.Empty, response);
+    }
 
-            var responseTask = SendRequestAsync(root + "/pathBase/paTh");
+    [ConditionalFact]
+    public async Task Server_PathBaseMismatch_Success()
+    {
+        using var baseServer = Utilities.CreateDynamicHttpServer("/PathBase", out var root, out var address);
+        using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
 
-            var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
-            Assert.Equal("/pathBase", context.Request.PathBase);
-            Assert.Equal("/paTh", context.Request.Path);
-            context.Dispose();
+        var responseTask = SendRequestAsync(root + "/pathBase/paTh");
 
-            var response = await responseTask;
-            Assert.Equal(string.Empty, response);
-        }
+        var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
+        Assert.Equal(string.Empty, context.Request.PathBase);
+        Assert.Equal("/pathBase/paTh", context.Request.Path);
+        context.Dispose();
 
-        [ConditionalFact]
-        public async Task Server_PathBaseMismatch_Success()
-        {
-            using var baseServer = Utilities.CreateDynamicHttpServer("/PathBase", out var root, out var address);
-            using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
+        var response = await responseTask;
+        Assert.Equal(string.Empty, response);
+    }
 
-            var responseTask = SendRequestAsync(root + "/pathBase/paTh");
+    [ConditionalTheory]
+    [InlineData("/", "/", "", "/")]
+    [InlineData("/basepath/", "/basepath", "/basepath", "")]
+    [InlineData("/basepath/", "/basepath/", "/basepath", "/")]
+    [InlineData("/basepath/", "/basepath/subpath", "/basepath", "/subpath")]
+    [InlineData("/base path/", "/base%20path/sub%20path", "/base path", "/sub path")]
+    [InlineData("/base葉path/", "/base%E8%91%89path/sub%E8%91%89path", "/base葉path", "/sub葉path")]
+    [InlineData("/basepath/", "/basepath/sub%2Fpath", "/basepath", "/sub%2Fpath")]
+    public async Task Server_PathSplitting(string pathBase, string requestPath, string expectedPathBase, string expectedPath)
+    {
+        using var baseServer = Utilities.CreateDynamicHttpServer(pathBase, out var root, out var baseAddress);
+        using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
+        server.Options.UrlPrefixes.Add(baseAddress); // Keep them in sync
 
-            var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
-            Assert.Equal(string.Empty, context.Request.PathBase);
-            Assert.Equal("/pathBase/paTh", context.Request.Path);
-            context.Dispose();
+        var responseTask = SendRequestAsync(root + requestPath);
 
-            var response = await responseTask;
-            Assert.Equal(string.Empty, response);
-        }
+        var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
+        Assert.Equal(expectedPathBase, context.Request.PathBase);
+        Assert.Equal(expectedPath, context.Request.Path);
+        context.Dispose();
 
-        [ConditionalTheory]
-        [InlineData("/", "/", "", "/")]
-        [InlineData("/basepath/", "/basepath", "/basepath", "")]
-        [InlineData("/basepath/", "/basepath/", "/basepath", "/")]
-        [InlineData("/basepath/", "/basepath/subpath", "/basepath", "/subpath")]
-        [InlineData("/base path/", "/base%20path/sub%20path", "/base path", "/sub path")]
-        [InlineData("/base葉path/", "/base%E8%91%89path/sub%E8%91%89path", "/base葉path", "/sub葉path")]
-        [InlineData("/basepath/", "/basepath/sub%2Fpath", "/basepath", "/sub%2Fpath")]
-        public async Task Server_PathSplitting(string pathBase, string requestPath, string expectedPathBase, string expectedPath)
-        {
-            using var baseServer = Utilities.CreateDynamicHttpServer(pathBase, out var root, out var baseAddress);
-            using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
-            server.Options.UrlPrefixes.Add(baseAddress); // Keep them in sync
+        var response = await responseTask;
+        Assert.Equal(string.Empty, response);
+    }
 
-            var responseTask = SendRequestAsync(root + requestPath);
+    [ConditionalFact]
+    public async Task Server_LongestPathSplitting()
+    {
+        using var baseServer = Utilities.CreateDynamicHttpServer("/basepath", out var root, out var baseAddress);
+        baseServer.Options.UrlPrefixes.Add(baseAddress + "secondTier");
+        using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
+        server.Options.UrlPrefixes.Add(baseAddress); // Keep them in sync
+        server.Options.UrlPrefixes.Add(baseAddress + "secondTier");
 
-            var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
-            Assert.Equal(expectedPathBase, context.Request.PathBase);
-            Assert.Equal(expectedPath, context.Request.Path);
-            context.Dispose();
+        var responseTask = SendRequestAsync(root + "/basepath/secondTier/path/thing");
 
-            var response = await responseTask;
-            Assert.Equal(string.Empty, response);
-        }
+        var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
+        Assert.Equal("/basepath/secondTier", context.Request.PathBase);
+        Assert.Equal("/path/thing", context.Request.Path);
+        context.Dispose();
 
-        [ConditionalFact]
-        public async Task Server_LongestPathSplitting()
-        {
-            using var baseServer = Utilities.CreateDynamicHttpServer("/basepath", out var root, out var baseAddress);
-            baseServer.Options.UrlPrefixes.Add(baseAddress + "secondTier");
-            using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
-            server.Options.UrlPrefixes.Add(baseAddress); // Keep them in sync
-            server.Options.UrlPrefixes.Add(baseAddress + "secondTier");
+        var response = await responseTask;
+        Assert.Equal(string.Empty, response);
+    }
 
-            var responseTask = SendRequestAsync(root + "/basepath/secondTier/path/thing");
+    [ConditionalFact]
+    // Changes to the base server are reflected
+    public async Task Server_HotAddPrefix_Success()
+    {
+        using var baseServer = Utilities.CreateHttpServer(out var address);
+        using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
+        server.Options.UrlPrefixes.Add(address); // Keep them in sync
 
-            var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
-            Assert.Equal("/basepath/secondTier", context.Request.PathBase);
-            Assert.Equal("/path/thing", context.Request.Path);
-            context.Dispose();
+        var responseTask = SendRequestAsync(address);
 
-            var response = await responseTask;
-            Assert.Equal(string.Empty, response);
-        }
+        var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
+        Assert.Equal(string.Empty, context.Request.PathBase);
+        Assert.Equal("/", context.Request.Path);
+        context.Dispose();
 
-        [ConditionalFact]
-        // Changes to the base server are reflected
-        public async Task Server_HotAddPrefix_Success()
-        {
-            using var baseServer = Utilities.CreateHttpServer(out var address);
-            using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
-            server.Options.UrlPrefixes.Add(address); // Keep them in sync
+        var response = await responseTask;
+        Assert.Equal(string.Empty, response);
 
-            var responseTask = SendRequestAsync(address);
+        address += "pathbase/";
+        baseServer.Options.UrlPrefixes.Add(address);
+        server.Options.UrlPrefixes.Add(address);
 
-            var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
-            Assert.Equal(string.Empty, context.Request.PathBase);
-            Assert.Equal("/", context.Request.Path);
-            context.Dispose();
+        responseTask = SendRequestAsync(address);
 
-            var response = await responseTask;
-            Assert.Equal(string.Empty, response);
+        context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
+        Assert.Equal("/pathbase", context.Request.PathBase);
+        Assert.Equal("/", context.Request.Path);
+        context.Dispose();
 
-            address += "pathbase/";
-            baseServer.Options.UrlPrefixes.Add(address);
-            server.Options.UrlPrefixes.Add(address);
+        response = await responseTask;
+        Assert.Equal(string.Empty, response);
+    }
 
-            responseTask = SendRequestAsync(address);
+    [ConditionalFact]
+    // Changes to the base server are reflected
+    public async Task Server_HotRemovePrefix_Success()
+    {
+        using var baseServer = Utilities.CreateHttpServer(out var address);
+        using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
+        server.Options.UrlPrefixes.Add(address); // Keep them in sync
 
-            context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
-            Assert.Equal("/pathbase", context.Request.PathBase);
-            Assert.Equal("/", context.Request.Path);
-            context.Dispose();
+        address += "pathbase/";
+        baseServer.Options.UrlPrefixes.Add(address);
+        server.Options.UrlPrefixes.Add(address);
+        var responseTask = SendRequestAsync(address);
 
-            response = await responseTask;
-            Assert.Equal(string.Empty, response);
-        }
+        var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
+        Assert.Equal("/pathbase", context.Request.PathBase);
+        Assert.Equal("/", context.Request.Path);
+        context.Dispose();
 
-        [ConditionalFact]
-        // Changes to the base server are reflected
-        public async Task Server_HotRemovePrefix_Success()
-        {
-            using var baseServer = Utilities.CreateHttpServer(out var address);
-            using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
-            server.Options.UrlPrefixes.Add(address); // Keep them in sync
+        var response = await responseTask;
+        Assert.Equal(string.Empty, response);
 
-            address += "pathbase/";
-            baseServer.Options.UrlPrefixes.Add(address);
-            server.Options.UrlPrefixes.Add(address);
-            var responseTask = SendRequestAsync(address);
+        Assert.True(baseServer.Options.UrlPrefixes.Remove(address));
+        Assert.True(server.Options.UrlPrefixes.Remove(address));
 
-            var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
-            Assert.Equal("/pathbase", context.Request.PathBase);
-            Assert.Equal("/", context.Request.Path);
-            context.Dispose();
+        responseTask = SendRequestAsync(address);
 
-            var response = await responseTask;
-            Assert.Equal(string.Empty, response);
+        context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
+        Assert.Equal(string.Empty, context.Request.PathBase);
+        Assert.Equal("/pathbase/", context.Request.Path);
+        context.Dispose();
 
-            Assert.True(baseServer.Options.UrlPrefixes.Remove(address));
-            Assert.True(server.Options.UrlPrefixes.Remove(address));
+        response = await responseTask;
+        Assert.Equal(string.Empty, response);
+    }
 
-            responseTask = SendRequestAsync(address);
+    private async Task<string> SendRequestAsync(string uri)
+    {
+        using HttpClient client = new HttpClient();
+        return await client.GetStringAsync(uri);
+    }
 
-            context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
-            Assert.Equal(string.Empty, context.Request.PathBase);
-            Assert.Equal("/pathbase/", context.Request.Path);
-            context.Dispose();
-
-            response = await responseTask;
-            Assert.Equal(string.Empty, response);
-        }
-
-        private async Task<string> SendRequestAsync(string uri)
-        {
-            using HttpClient client = new HttpClient();
-            return await client.GetStringAsync(uri);
-        }
-
-        private async Task<string> SendRequestAsync(string uri, string upload)
-        {
-            using HttpClient client = new HttpClient();
-            HttpResponseMessage response = await client.PostAsync(uri, new StringContent(upload));
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadAsStringAsync();
-        }
+    private async Task<string> SendRequestAsync(string uri, string upload)
+    {
+        using HttpClient client = new HttpClient();
+        HttpResponseMessage response = await client.PostAsync(uri, new StringContent(upload));
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadAsStringAsync();
     }
 }

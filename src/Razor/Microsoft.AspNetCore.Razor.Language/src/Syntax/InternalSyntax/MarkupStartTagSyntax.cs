@@ -4,31 +4,30 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
+namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
+
+internal sealed partial class MarkupStartTagSyntax
 {
-    internal sealed partial class MarkupStartTagSyntax
+    private const string MarkupTransitionKey = "MarkupTransition";
+
+    public bool IsMarkupTransition
     {
-        private const string MarkupTransitionKey = "MarkupTransition";
-
-        public bool IsMarkupTransition
+        get
         {
-            get
-            {
-                var annotation = GetAnnotations().FirstOrDefault(n => n.Kind == MarkupTransitionKey);
-                return annotation != null;
-            }
+            var annotation = GetAnnotations().FirstOrDefault(n => n.Kind == MarkupTransitionKey);
+            return annotation != null;
         }
+    }
 
-        public MarkupStartTagSyntax AsMarkupTransition()
-        {
-            var annotations = new List<SyntaxAnnotation>(GetAnnotations())
+    public MarkupStartTagSyntax AsMarkupTransition()
+    {
+        var annotations = new List<SyntaxAnnotation>(GetAnnotations())
             {
                 new SyntaxAnnotation(MarkupTransitionKey, new object())
             };
 
-            var newGreen = this.WithAnnotationsGreen(annotations.ToArray());
+        var newGreen = this.WithAnnotationsGreen(annotations.ToArray());
 
-            return newGreen;
-        }
+        return newGreen;
     }
 }

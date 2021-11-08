@@ -5,111 +5,110 @@ using System;
 using System.IO;
 using System.Text.Encodings.Web;
 
-namespace Microsoft.Extensions.WebEncoders.Testing
+namespace Microsoft.Extensions.WebEncoders.Testing;
+
+/// <summary>
+/// <see cref="UrlEncoder"/> used for unit testing. This encoder does not perform any encoding and should not be used in application code.
+/// </summary>
+public class UrlTestEncoder : UrlEncoder
 {
-    /// <summary>
-    /// <see cref="UrlEncoder"/> used for unit testing. This encoder does not perform any encoding and should not be used in application code.
-    /// </summary>
-    public class UrlTestEncoder : UrlEncoder
+    /// <inheritdoc />
+    public override int MaxOutputCharactersPerInputCharacter
     {
-        /// <inheritdoc />
-        public override int MaxOutputCharactersPerInputCharacter
+        get { return 1; }
+    }
+
+    /// <inheritdoc />
+    public override string Encode(string value)
+    {
+        if (value == null)
         {
-            get { return 1; }
+            throw new ArgumentNullException(nameof(value));
         }
 
-        /// <inheritdoc />
-        public override string Encode(string value)
+        if (value.Length == 0)
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            if (value.Length == 0)
-            {
-                return string.Empty;
-            }
-
-            return $"UrlEncode[[{value}]]";
+            return string.Empty;
         }
 
-        /// <inheritdoc />
-        public override void Encode(TextWriter output, char[] value, int startIndex, int characterCount)
+        return $"UrlEncode[[{value}]]";
+    }
+
+    /// <inheritdoc />
+    public override void Encode(TextWriter output, char[] value, int startIndex, int characterCount)
+    {
+        if (output == null)
         {
-            if (output == null)
-            {
-                throw new ArgumentNullException(nameof(output));
-            }
-
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            if (characterCount == 0)
-            {
-                return;
-            }
-
-            output.Write("UrlEncode[[");
-            output.Write(value, startIndex, characterCount);
-            output.Write("]]");
+            throw new ArgumentNullException(nameof(output));
         }
 
-        /// <inheritdoc />
-        public override void Encode(TextWriter output, string value, int startIndex, int characterCount)
+        if (value == null)
         {
-            if (output == null)
-            {
-                throw new ArgumentNullException(nameof(output));
-            }
+            throw new ArgumentNullException(nameof(value));
+        }
 
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+        if (characterCount == 0)
+        {
+            return;
+        }
 
-            if (characterCount == 0)
-            {
-                return;
-            }
+        output.Write("UrlEncode[[");
+        output.Write(value, startIndex, characterCount);
+        output.Write("]]");
+    }
 
-            output.Write("UrlEncode[[");
+    /// <inheritdoc />
+    public override void Encode(TextWriter output, string value, int startIndex, int characterCount)
+    {
+        if (output == null)
+        {
+            throw new ArgumentNullException(nameof(output));
+        }
+
+        if (value == null)
+        {
+            throw new ArgumentNullException(nameof(value));
+        }
+
+        if (characterCount == 0)
+        {
+            return;
+        }
+
+        output.Write("UrlEncode[[");
 #if NETFRAMEWORK || NETSTANDARD
-            output.Write(value.Substring(startIndex, characterCount));
+        output.Write(value.Substring(startIndex, characterCount));
 #else
-            output.Write(value.AsSpan(startIndex, characterCount));
+        output.Write(value.AsSpan(startIndex, characterCount));
 #endif
-            output.Write("]]");
-        }
+        output.Write("]]");
+    }
 
-        /// <inheritdoc />
-        public override bool WillEncode(int unicodeScalar)
+    /// <inheritdoc />
+    public override bool WillEncode(int unicodeScalar)
+    {
+        return false;
+    }
+
+    /// <inheritdoc />
+    public override unsafe int FindFirstCharacterToEncode(char* text, int textLength)
+    {
+        return -1;
+    }
+
+    /// <inheritdoc />
+    public override unsafe bool TryEncodeUnicodeScalar(
+        int unicodeScalar,
+        char* buffer,
+        int bufferLength,
+        out int numberOfCharactersWritten)
+    {
+        if (buffer == null)
         {
-            return false;
+            throw new ArgumentNullException(nameof(buffer));
         }
 
-        /// <inheritdoc />
-        public override unsafe int FindFirstCharacterToEncode(char* text, int textLength)
-        {
-            return -1;
-        }
-
-        /// <inheritdoc />
-        public override unsafe bool TryEncodeUnicodeScalar(
-            int unicodeScalar,
-            char* buffer,
-            int bufferLength,
-            out int numberOfCharactersWritten)
-        {
-            if (buffer == null)
-            {
-                throw new ArgumentNullException(nameof(buffer));
-            }
-
-            numberOfCharactersWritten = 0;
-            return false;
-        }
+        numberOfCharactersWritten = 0;
+        return false;
     }
 }

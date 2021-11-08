@@ -4,28 +4,27 @@
 using BasicWebSite.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BasicWebSite.Controllers.ActionConstraints
+namespace BasicWebSite.Controllers.ActionConstraints;
+
+[Route("ConsumesAttribute_WithFallbackActionController/[action]")]
+public class ConsumesAttribute_WithFallbackActionController : Controller
 {
-    [Route("ConsumesAttribute_WithFallbackActionController/[action]")]
-    public class ConsumesAttribute_WithFallbackActionController : Controller
+    [Consumes("application/json")]
+    [ActionName("CreateProduct")]
+    public IActionResult CreateProductJson()
     {
-        [Consumes("application/json")]
-        [ActionName("CreateProduct")]
-        public IActionResult CreateProductJson()
-        {
-            return Content("CreateProduct_Product_Json");
-        }
+        return Content("CreateProduct_Product_Json");
+    }
 
-        [Consumes("application/xml")]
-        [ActionName("CreateProduct")]
-        public IActionResult CreateProductXml()
-        {
-            return Content("CreateProduct_Product_Xml");
-        }
+    [Consumes("application/xml")]
+    [ActionName("CreateProduct")]
+    public IActionResult CreateProductXml()
+    {
+        return Content("CreateProduct_Product_Xml");
+    }
 
-        public IActionResult CreateProduct()
-        {
-            return Content("CreateProduct_Product_Text");
-        }
+    public IActionResult CreateProduct()
+    {
+        return Content("CreateProduct_Product_Text");
     }
 }

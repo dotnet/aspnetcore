@@ -3,26 +3,25 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace RoutingWebSite
+namespace RoutingWebSite;
+
+// This controller is reachable via traditional routing.
+public class ContactController : Controller
 {
-    // This controller is reachable via traditional routing.
-    public class ContactController : Controller
+    private readonly TestResponseGenerator _generator;
+
+    public ContactController(TestResponseGenerator generator)
     {
-        private readonly TestResponseGenerator _generator;
+        _generator = generator;
+    }
 
-        public ContactController(TestResponseGenerator generator)
-        {
-            _generator = generator;
-        }
+    public IActionResult Index()
+    {
+        return _generator.Generate(Url.RouteUrl("ActionAsMethod", null, Url.ActionContext.HttpContext.Request.Scheme));
+    }
 
-        public IActionResult Index()
-        {
-            return _generator.Generate(Url.RouteUrl("ActionAsMethod", null, Url.ActionContext.HttpContext.Request.Scheme));
-        }
-
-        public IActionResult Sso()
-        {
-            return _generator.Generate(Url.RouteUrl("ActionAsMethod", null, Url.ActionContext.HttpContext.Request.Scheme));
-        }
+    public IActionResult Sso()
+    {
+        return _generator.Generate(Url.RouteUrl("ActionAsMethod", null, Url.ActionContext.HttpContext.Request.Scheme));
     }
 }

@@ -3,14 +3,13 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace ApiExplorerWebSite
+namespace ApiExplorerWebSite;
+
+[Route("ApiExplorerVisibilityDisabledByConvention")]
+public class ApiExplorerVisibilityDisabledByConventionController : Controller
 {
-    [Route("ApiExplorerVisibilityDisabledByConvention")]
-    public class ApiExplorerVisibilityDisabledByConventionController : Controller
+    [HttpGet]
+    public void Get()
     {
-        [HttpGet]
-        public void Get()
-        {
-        }
     }
 }

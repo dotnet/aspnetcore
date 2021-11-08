@@ -3,19 +3,18 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.SignalR.Protocol
+namespace Microsoft.AspNetCore.SignalR.Protocol;
+
+/// <summary>
+/// The <see cref="CancelInvocationMessage"/> represents a cancellation of a streaming method.
+/// </summary>
+public class CancelInvocationMessage : HubInvocationMessage
 {
     /// <summary>
-    /// The <see cref="CancelInvocationMessage"/> represents a cancellation of a streaming method.
+    /// Initializes a new instance of the <see cref="CancelInvocationMessage"/> class.
     /// </summary>
-    public class CancelInvocationMessage : HubInvocationMessage
+    /// <param name="invocationId">The ID of the hub method invocation being canceled.</param>
+    public CancelInvocationMessage(string invocationId) : base(invocationId)
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CancelInvocationMessage"/> class.
-        /// </summary>
-        /// <param name="invocationId">The ID of the hub method invocation being canceled.</param>
-        public CancelInvocationMessage(string invocationId) : base(invocationId)
-        {
-        }
     }
 }

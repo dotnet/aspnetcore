@@ -8,196 +8,195 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
+namespace Microsoft.AspNetCore.Mvc.Razor.Extensions;
+
+public class ViewComponentTypeVisitorTest
 {
-    public class ViewComponentTypeVisitorTest
+    private static readonly Assembly _assembly = typeof(ViewComponentTypeVisitorTest).GetTypeInfo().Assembly;
+
+    private static CSharpCompilation Compilation { get; } = TestCompilation.Create(_assembly);
+
+    // In practice MVC will provide a marker attribute for ViewComponents. To prevent a circular reference between MVC and Razor
+    // we can use a test class as a marker.
+    private static INamedTypeSymbol TestViewComponentAttributeSymbol { get; } = Compilation.GetTypeByMetadataName(typeof(TestViewComponentAttribute).FullName);
+    private static INamedTypeSymbol TestNonViewComponentAttributeSymbol { get; } = Compilation.GetTypeByMetadataName(typeof(TestNonViewComponentAttribute).FullName);
+
+    [Fact]
+    public void IsViewComponent_PlainViewComponent_ReturnsTrue()
     {
-        private static readonly Assembly _assembly = typeof(ViewComponentTypeVisitorTest).GetTypeInfo().Assembly;
+        // Arrange
+        var testVisitor = new ViewComponentTypeVisitor(
+            TestViewComponentAttributeSymbol,
+            TestNonViewComponentAttributeSymbol,
+            new List<INamedTypeSymbol>());
+        var tagHelperSymbol = Compilation.GetTypeByMetadataName(typeof(Valid_PlainViewComponent).FullName);
 
-        private static CSharpCompilation Compilation { get; } = TestCompilation.Create(_assembly);
+        // Act
+        var isViewComponent = testVisitor.IsViewComponent(tagHelperSymbol);
 
-        // In practice MVC will provide a marker attribute for ViewComponents. To prevent a circular reference between MVC and Razor
-        // we can use a test class as a marker.
-        private static INamedTypeSymbol TestViewComponentAttributeSymbol { get; } = Compilation.GetTypeByMetadataName(typeof(TestViewComponentAttribute).FullName);
-        private static INamedTypeSymbol TestNonViewComponentAttributeSymbol { get; } = Compilation.GetTypeByMetadataName(typeof(TestNonViewComponentAttribute).FullName);
+        // Assert
+        Assert.True(isViewComponent);
+    }
 
-        [Fact]
-        public void IsViewComponent_PlainViewComponent_ReturnsTrue()
-        {
-            // Arrange
-            var testVisitor = new ViewComponentTypeVisitor(
-                TestViewComponentAttributeSymbol,
-                TestNonViewComponentAttributeSymbol,
-                new List<INamedTypeSymbol>());
-            var tagHelperSymbol = Compilation.GetTypeByMetadataName(typeof(Valid_PlainViewComponent).FullName);
+    [Fact]
+    public void IsViewComponent_DecoratedViewComponent_ReturnsTrue()
+    {
+        // Arrange
+        var testVisitor = new ViewComponentTypeVisitor(
+            TestViewComponentAttributeSymbol,
+            TestNonViewComponentAttributeSymbol,
+            new List<INamedTypeSymbol>());
+        var tagHelperSymbol = Compilation.GetTypeByMetadataName(typeof(Valid_DecoratedVC).FullName);
 
-            // Act
-            var isViewComponent = testVisitor.IsViewComponent(tagHelperSymbol);
+        // Act
+        var isViewComponent = testVisitor.IsViewComponent(tagHelperSymbol);
 
-            // Assert
-            Assert.True(isViewComponent);
-        }
+        // Assert
+        Assert.True(isViewComponent);
+    }
 
-        [Fact]
-        public void IsViewComponent_DecoratedViewComponent_ReturnsTrue()
-        {
-            // Arrange
-            var testVisitor = new ViewComponentTypeVisitor(
-                TestViewComponentAttributeSymbol,
-                TestNonViewComponentAttributeSymbol,
-                new List<INamedTypeSymbol>());
-            var tagHelperSymbol = Compilation.GetTypeByMetadataName(typeof(Valid_DecoratedVC).FullName);
+    [Fact]
+    public void IsViewComponent_InheritedViewComponent_ReturnsTrue()
+    {
+        // Arrange
+        var testVisitor = new ViewComponentTypeVisitor(
+            TestViewComponentAttributeSymbol,
+            TestNonViewComponentAttributeSymbol,
+            new List<INamedTypeSymbol>());
+        var tagHelperSymbol = Compilation.GetTypeByMetadataName(typeof(Valid_InheritedVC).FullName);
 
-            // Act
-            var isViewComponent = testVisitor.IsViewComponent(tagHelperSymbol);
+        // Act
+        var isViewComponent = testVisitor.IsViewComponent(tagHelperSymbol);
 
-            // Assert
-            Assert.True(isViewComponent);
-        }
+        // Assert
+        Assert.True(isViewComponent);
+    }
 
-        [Fact]
-        public void IsViewComponent_InheritedViewComponent_ReturnsTrue()
-        {
-            // Arrange
-            var testVisitor = new ViewComponentTypeVisitor(
-                TestViewComponentAttributeSymbol,
-                TestNonViewComponentAttributeSymbol,
-                new List<INamedTypeSymbol>());
-            var tagHelperSymbol = Compilation.GetTypeByMetadataName(typeof(Valid_InheritedVC).FullName);
+    [Fact]
+    public void IsViewComponent_AbstractViewComponent_ReturnsFalse()
+    {
+        // Arrange
+        var testVisitor = new ViewComponentTypeVisitor(
+            TestViewComponentAttributeSymbol,
+            TestNonViewComponentAttributeSymbol,
+            new List<INamedTypeSymbol>());
+        var tagHelperSymbol = Compilation.GetTypeByMetadataName(typeof(Invalid_AbstractViewComponent).FullName);
 
-            // Act
-            var isViewComponent = testVisitor.IsViewComponent(tagHelperSymbol);
+        // Act
+        var isViewComponent = testVisitor.IsViewComponent(tagHelperSymbol);
 
-            // Assert
-            Assert.True(isViewComponent);
-        }
+        // Assert
+        Assert.False(isViewComponent);
+    }
 
-        [Fact]
-        public void IsViewComponent_AbstractViewComponent_ReturnsFalse()
-        {
-            // Arrange
-            var testVisitor = new ViewComponentTypeVisitor(
-                TestViewComponentAttributeSymbol,
-                TestNonViewComponentAttributeSymbol,
-                new List<INamedTypeSymbol>());
-            var tagHelperSymbol = Compilation.GetTypeByMetadataName(typeof(Invalid_AbstractViewComponent).FullName);
+    [Fact]
+    public void IsViewComponent_GenericViewComponent_ReturnsFalse()
+    {
+        // Arrange
+        var testVisitor = new ViewComponentTypeVisitor(
+            TestViewComponentAttributeSymbol,
+            TestNonViewComponentAttributeSymbol,
+            new List<INamedTypeSymbol>());
+        var tagHelperSymbol = Compilation.GetTypeByMetadataName(typeof(Invalid_GenericViewComponent<>).FullName);
 
-            // Act
-            var isViewComponent = testVisitor.IsViewComponent(tagHelperSymbol);
+        // Act
+        var isViewComponent = testVisitor.IsViewComponent(tagHelperSymbol);
 
-            // Assert
-            Assert.False(isViewComponent);
-        }
+        // Assert
+        Assert.False(isViewComponent);
+    }
 
-        [Fact]
-        public void IsViewComponent_GenericViewComponent_ReturnsFalse()
-        {
-            // Arrange
-            var testVisitor = new ViewComponentTypeVisitor(
-                TestViewComponentAttributeSymbol,
-                TestNonViewComponentAttributeSymbol,
-                new List<INamedTypeSymbol>());
-            var tagHelperSymbol = Compilation.GetTypeByMetadataName(typeof(Invalid_GenericViewComponent<>).FullName);
+    [Fact]
+    public void IsViewComponent_InternalViewComponent_ReturnsFalse()
+    {
+        // Arrange
+        var testVisitor = new ViewComponentTypeVisitor(
+            TestViewComponentAttributeSymbol,
+            TestNonViewComponentAttributeSymbol,
+            new List<INamedTypeSymbol>());
+        var tagHelperSymbol = Compilation.GetTypeByMetadataName(typeof(Invalid_InternalViewComponent).FullName);
 
-            // Act
-            var isViewComponent = testVisitor.IsViewComponent(tagHelperSymbol);
+        // Act
+        var isViewComponent = testVisitor.IsViewComponent(tagHelperSymbol);
 
-            // Assert
-            Assert.False(isViewComponent);
-        }
+        // Assert
+        Assert.False(isViewComponent);
+    }
 
-        [Fact]
-        public void IsViewComponent_InternalViewComponent_ReturnsFalse()
-        {
-            // Arrange
-            var testVisitor = new ViewComponentTypeVisitor(
-                TestViewComponentAttributeSymbol,
-                TestNonViewComponentAttributeSymbol,
-                new List<INamedTypeSymbol>());
-            var tagHelperSymbol = Compilation.GetTypeByMetadataName(typeof(Invalid_InternalViewComponent).FullName);
+    [Fact]
+    public void IsViewComponent_DecoratedNonViewComponent_ReturnsFalse()
+    {
+        // Arrange
+        var testVisitor = new ViewComponentTypeVisitor(
+            TestViewComponentAttributeSymbol,
+            TestNonViewComponentAttributeSymbol,
+            new List<INamedTypeSymbol>());
+        var tagHelperSymbol = Compilation.GetTypeByMetadataName(typeof(Invalid_DecoratedViewComponent).FullName);
 
-            // Act
-            var isViewComponent = testVisitor.IsViewComponent(tagHelperSymbol);
+        // Act
+        var isViewComponent = testVisitor.IsViewComponent(tagHelperSymbol);
 
-            // Assert
-            Assert.False(isViewComponent);
-        }
+        // Assert
+        Assert.False(isViewComponent);
+    }
 
-        [Fact]
-        public void IsViewComponent_DecoratedNonViewComponent_ReturnsFalse()
-        {
-            // Arrange
-            var testVisitor = new ViewComponentTypeVisitor(
-                TestViewComponentAttributeSymbol,
-                TestNonViewComponentAttributeSymbol,
-                new List<INamedTypeSymbol>());
-            var tagHelperSymbol = Compilation.GetTypeByMetadataName(typeof(Invalid_DecoratedViewComponent).FullName);
+    [Fact]
+    public void IsViewComponent_InheritedNonViewComponent_ReturnsFalse()
+    {
+        // Arrange
+        var testVisitor = new ViewComponentTypeVisitor(
+            TestViewComponentAttributeSymbol,
+            TestNonViewComponentAttributeSymbol,
+            new List<INamedTypeSymbol>());
+        var tagHelperSymbol = Compilation.GetTypeByMetadataName(typeof(Invalid_InheritedViewComponent).FullName);
 
-            // Act
-            var isViewComponent = testVisitor.IsViewComponent(tagHelperSymbol);
+        // Act
+        var isViewComponent = testVisitor.IsViewComponent(tagHelperSymbol);
 
-            // Assert
-            Assert.False(isViewComponent);
-        }
+        // Assert
+        Assert.False(isViewComponent);
+    }
 
-        [Fact]
-        public void IsViewComponent_InheritedNonViewComponent_ReturnsFalse()
-        {
-            // Arrange
-            var testVisitor = new ViewComponentTypeVisitor(
-                TestViewComponentAttributeSymbol,
-                TestNonViewComponentAttributeSymbol,
-                new List<INamedTypeSymbol>());
-            var tagHelperSymbol = Compilation.GetTypeByMetadataName(typeof(Invalid_InheritedViewComponent).FullName);
+    public abstract class Invalid_AbstractViewComponent
+    {
+    }
 
-            // Act
-            var isViewComponent = testVisitor.IsViewComponent(tagHelperSymbol);
+    public class Invalid_GenericViewComponent<T>
+    {
+    }
 
-            // Assert
-            Assert.False(isViewComponent);
-        }
+    internal class Invalid_InternalViewComponent
+    {
+    }
 
-        public abstract class Invalid_AbstractViewComponent
-        {
-        }
+    public class Valid_PlainViewComponent
+    {
+    }
 
-        public class Invalid_GenericViewComponent<T>
-        {
-        }
+    [TestViewComponent]
+    public class Valid_DecoratedVC
+    {
+    }
 
-        internal class Invalid_InternalViewComponent
-        {
-        }
+    public class Valid_InheritedVC : Valid_DecoratedVC
+    {
+    }
 
-        public class Valid_PlainViewComponent
-        {
-        }
+    [TestNonViewComponent]
+    public class Invalid_DecoratedViewComponent
+    {
+    }
 
-        [TestViewComponent]
-        public class Valid_DecoratedVC
-        {
-        }
+    [TestViewComponent]
+    public class Invalid_InheritedViewComponent : Invalid_DecoratedViewComponent
+    {
+    }
 
-        public class Valid_InheritedVC : Valid_DecoratedVC
-        {
-        }
+    public class TestViewComponentAttribute : Attribute
+    {
+    }
 
-        [TestNonViewComponent]
-        public class Invalid_DecoratedViewComponent
-        {
-        }
-
-        [TestViewComponent]
-        public class Invalid_InheritedViewComponent : Invalid_DecoratedViewComponent
-        {
-        }
-
-        public class TestViewComponentAttribute : Attribute
-        {
-        }
-
-        public class TestNonViewComponentAttribute : Attribute
-        {
-        }
+    public class TestNonViewComponentAttribute : Attribute
+    {
     }
 }

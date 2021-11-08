@@ -9,69 +9,68 @@ using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 
-namespace Microsoft.AspNetCore.SignalR.Tests
+namespace Microsoft.AspNetCore.SignalR.Tests;
+
+// TestSink does not have an event
+internal class LogSinkProvider : ILoggerProvider
 {
-    // TestSink does not have an event
-    internal class LogSinkProvider : ILoggerProvider
+    private readonly ConcurrentQueue<LogRecord> _logs = new ConcurrentQueue<LogRecord>();
+
+    public event Action<LogRecord> RecordLogged;
+
+    public ILogger CreateLogger(string categoryName)
     {
-        private readonly ConcurrentQueue<LogRecord> _logs = new ConcurrentQueue<LogRecord>();
+        return new LogSinkLogger(categoryName, this);
+    }
 
-        public event Action<LogRecord> RecordLogged;
+    public void Dispose()
+    {
+    }
 
-        public ILogger CreateLogger(string categoryName)
+    public IList<LogRecord> GetLogs() => _logs.ToList();
+
+    public void Log<TState>(string categoryName, LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+    {
+        var record = new LogRecord(
+            DateTime.Now,
+            new WriteContext
+            {
+                LoggerName = categoryName,
+                LogLevel = logLevel,
+                EventId = eventId,
+                State = state,
+                Exception = exception,
+                Formatter = (o, e) => formatter((TState)o, e),
+            });
+        _logs.Enqueue(record);
+
+        RecordLogged?.Invoke(record);
+    }
+
+    private class LogSinkLogger : ILogger
+    {
+        private readonly string _categoryName;
+        private readonly LogSinkProvider _logSinkProvider;
+
+        public LogSinkLogger(string categoryName, LogSinkProvider logSinkProvider)
         {
-            return new LogSinkLogger(categoryName, this);
+            _categoryName = categoryName;
+            _logSinkProvider = logSinkProvider;
         }
 
-        public void Dispose()
+        public IDisposable BeginScope<TState>(TState state)
         {
+            return null;
         }
 
-        public IList<LogRecord> GetLogs() => _logs.ToList();
-
-        public void Log<TState>(string categoryName, LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        public bool IsEnabled(LogLevel logLevel)
         {
-            var record = new LogRecord(
-                DateTime.Now,
-                new WriteContext
-                {
-                    LoggerName = categoryName,
-                    LogLevel = logLevel,
-                    EventId = eventId,
-                    State = state,
-                    Exception = exception,
-                    Formatter = (o, e) => formatter((TState)o, e),
-                });
-            _logs.Enqueue(record);
-
-            RecordLogged?.Invoke(record);
+            return true;
         }
 
-        private class LogSinkLogger : ILogger
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
-            private readonly string _categoryName;
-            private readonly LogSinkProvider _logSinkProvider;
-
-            public LogSinkLogger(string categoryName, LogSinkProvider logSinkProvider)
-            {
-                _categoryName = categoryName;
-                _logSinkProvider = logSinkProvider;
-            }
-
-            public IDisposable BeginScope<TState>(TState state)
-            {
-                return null;
-            }
-
-            public bool IsEnabled(LogLevel logLevel)
-            {
-                return true;
-            }
-
-            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
-            {
-                _logSinkProvider.Log(_categoryName, logLevel, eventId, state, exception, formatter);
-            }
+            _logSinkProvider.Log(_categoryName, logLevel, eventId, state, exception, formatter);
         }
     }
 }

@@ -4,13 +4,12 @@
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Components;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
+namespace Microsoft.AspNetCore.Mvc.Razor.Extensions;
+
+internal class ExtensionInitializer : RazorExtensionInitializer
 {
-    internal class ExtensionInitializer : RazorExtensionInitializer
+    public override void Initialize(RazorProjectEngineBuilder builder)
     {
-        public override void Initialize(RazorProjectEngineBuilder builder)
-        {
-            RazorExtensions.Register(builder);
-        }
+        RazorExtensions.Register(builder);
     }
 }
