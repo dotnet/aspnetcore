@@ -259,6 +259,6 @@ dotnet_diagnostic.CA2016.severity = suggestion
 
 # Defaults for content in the shared src/ and shared runtime dir
 
-[{**/Shared/runtime/**.{cs,vb},**/microsoft.extensions.hostfactoryresolver.sources/**.{cs,vb}}]
+[{**/Shared/runtime/**.{cs,vb},src/Shared/test/Shared.Tests/runtime/**.{cs,vb},**/microsoft.extensions.hostfactoryresolver.sources/**.{cs,vb}}]
 # IDE0161: Convert to file-scoped namespace
 dotnet_diagnostic.IDE0161.severity = silent
