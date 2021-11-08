@@ -73,6 +73,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             return hostBuilder.ConfigureServices(services =>
             {
+                services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>());
                 services.Configure(options);
             });
         }
@@ -111,6 +112,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             return hostBuilder.ConfigureServices((context, services) =>
             {
+                services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>());
                 services.Configure<KestrelServerOptions>(options =>
                 {
                     configureOptions(context, options);
