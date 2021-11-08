@@ -29,7 +29,7 @@ public class DataProtectionCommonExtensionsTests
         ExceptionAssert.ThrowsArgument(
             testCode: () => provider.CreateProtector((IEnumerable<string>)purposes),
             paramName: "purposes",
-            exceptionMessage: Resources.DataProtectionExtensions_NullPurposesCollection);
+            exceptionMessage: Microsoft.AspNetCore.DataProtection.Abstractions.Resources.DataProtectionExtensions_NullPurposesCollection);
     }
 
     [Theory]
@@ -46,7 +46,7 @@ public class DataProtectionCommonExtensionsTests
         ExceptionAssert.ThrowsArgument(
             testCode: () => provider.CreateProtector("primary-purpose", subPurposes),
             paramName: "purposes",
-            exceptionMessage: Resources.DataProtectionExtensions_NullPurposesCollection);
+            exceptionMessage: Microsoft.AspNetCore.DataProtection.Abstractions.Resources.DataProtectionExtensions_NullPurposesCollection);
     }
 
     [Fact]
@@ -114,7 +114,7 @@ public class DataProtectionCommonExtensionsTests
 
         // Act & assert
         var ex = Assert.Throws<InvalidOperationException>(() => services.GetDataProtectionProvider());
-        Assert.Equal(Resources.FormatDataProtectionExtensions_NoService(typeof(IDataProtectionProvider).FullName), ex.Message);
+        Assert.Equal(Microsoft.AspNetCore.DataProtection.Abstractions.Resources.FormatDataProtectionExtensions_NoService(typeof(IDataProtectionProvider).FullName), ex.Message);
     }
 
     [Fact]
@@ -150,7 +150,7 @@ public class DataProtectionCommonExtensionsTests
         ExceptionAssert.ThrowsArgument(
             testCode: () => services.GetDataProtector((IEnumerable<string>)purposes),
             paramName: "purposes",
-            exceptionMessage: Resources.DataProtectionExtensions_NullPurposesCollection);
+            exceptionMessage: Microsoft.AspNetCore.DataProtection.Abstractions.Resources.DataProtectionExtensions_NullPurposesCollection);
     }
 
     [Theory]
@@ -169,7 +169,7 @@ public class DataProtectionCommonExtensionsTests
         ExceptionAssert.ThrowsArgument(
             testCode: () => services.GetDataProtector("primary-purpose", subPurposes),
             paramName: "purposes",
-            exceptionMessage: Resources.DataProtectionExtensions_NullPurposesCollection);
+            exceptionMessage: Microsoft.AspNetCore.DataProtection.Abstractions.Resources.DataProtectionExtensions_NullPurposesCollection);
     }
 
     [Fact]
