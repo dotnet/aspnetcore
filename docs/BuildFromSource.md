@@ -90,7 +90,7 @@ Visual Studio 2019 (16.10 Preview 3) is required to build the repo locally. If y
 
 The [global.json](/global.json) file specifies the minimum requirements needed to build using `msbuild`. The [eng/scripts/vs.16.json](/eng/scripts/vs.16.json) file provides a description of the components needed to build within VS. If you plan on developing in Visual Studio, you will need to have these components installed.
 
-> :bulb: The `InstallVisualStudio.ps1` script mentioned above reads from the `vs.json` file to determine what components to install.
+> :bulb: The `InstallVisualStudio.ps1` script mentioned above reads from the `vs.16.json` file to determine what components to install.
 
 #### [Git](https://git-scm.org) on Windows
 
