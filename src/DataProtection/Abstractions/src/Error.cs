@@ -3,9 +3,8 @@
 
 using System;
 using System.Security.Cryptography;
-using Microsoft.AspNetCore.DataProtection.Abstractions;
 
-namespace Microsoft.AspNetCore.DataProtection;
+namespace Microsoft.AspNetCore.DataProtection.Abstractions;
 
 internal static class Error
 {
