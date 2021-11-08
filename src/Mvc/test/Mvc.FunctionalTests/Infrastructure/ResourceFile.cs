@@ -1,16 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities.Resources;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc;
 
@@ -211,8 +205,13 @@ public static class ResourceFile
     /// <param name="content">
     /// New content of <paramref name="resourceName"/> in <paramref name="assembly"/>.
     /// </param>
-    public static void UpdateFile(Assembly assembly, string resourceName, string previousContent, string content)
+    private static void UpdateFile(Assembly assembly, string resourceName, string previousContent, string content)
     {
+        if (!GenerateBaselines)
+        {
+            throw new NotSupportedException("Calling UpdateFile is not supported when GenerateBaselines=false");
+        }
+
         // Normalize line endings to '\r\n' for comparison. This removes Environment.NewLine from the equation. Not
         // worth updating files just because we generate baselines on a different system.
         var normalizedPreviousContent = previousContent?.Replace("\r", "").Replace("\n", "\r\n");

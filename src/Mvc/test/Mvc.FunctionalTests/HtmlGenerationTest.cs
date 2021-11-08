@@ -1,20 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
+using AngleSharp.Dom;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Testing;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
@@ -94,7 +89,7 @@ public class HtmlGenerationTest :
         Assert.Equal($"Vrijdag{Environment.NewLine}Month: FirstOne", response, ignoreLineEndingDifferences: true);
     }
 
-    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/34599")]
+    [Theory]
     [MemberData(nameof(WebPagesData))]
     public async Task HtmlGenerationWebSite_GeneratesExpectedResults(string action, string antiforgeryPath)
     {
@@ -116,31 +111,97 @@ public class HtmlGenerationTest :
         responseContent = responseContent.Trim();
         if (antiforgeryPath == null)
         {
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
             Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
         }
         else
         {
             var forgeryToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseContent, antiforgeryPath);
-
-            if (ResourceFile.GenerateBaselines)
-            {
-                // Reverse usual substitution and insert a format item into the new file content.
-                responseContent = responseContent.Replace(forgeryToken, "{0}");
-                ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-            }
-            else
-            {
-                expectedContent = string.Format(CultureInfo.InvariantCulture, expectedContent, forgeryToken);
-                Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
-            }
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent, forgeryToken);
         }
     }
 
-    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/34599")]
+    [Fact]
     public async Task HtmlGenerationWebSite_GeneratesExpectedResults_WithImageData()
     {
-        await HtmlGenerationWebSite_GeneratesExpectedResults("Image", antiforgeryPath: null);
+        var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
+
+        // Act
+        // The host is not important as everything runs in memory and tests are isolated from each other.
+        var response = await Client.GetAsync("HtmlGeneration_Home/image");
+
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+        Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
+        var document = await response.GetHtmlDocumentAsync();
+
+        AssertImgElement(document.GetElementById("1"), new()
+        {
+            ["src"] = "/images/red.png",
+            ["alt"] = "Red block",
+            ["title"] = "<the title>",
+        });
+
+        // <img src = "/images/red.png?v=W2F5D366_nQ2fQqUk3URdgWy2ZekXjHzHJaY5yaiOOk" alt = "Red versioned" title = "Red versioned" />
+        AssertImgElement(document.GetElementById("2"), new()
+        {
+            ["src"] = "/images/red.png?v=W2F5D366_nQ2fQqUk3URdgWy2ZekXjHzHJaY5yaiOOk",
+            ["alt"] = "Red versioned",
+            ["title"] = "Red versioned",
+        });
+
+        // <img src="/images/red.png" alt="Red explicitly not versioned" title="Red versioned">
+        AssertImgElement(document.GetElementById("3"), new()
+        {
+            ["src"] = "/images/red.png",
+            ["alt"] = "Red explicitly not versioned",
+            ["title"] = "Red versioned",
+        });
+
+        // <img src="http://contoso.com/hello/world" alt="Absolute path versioned">
+        AssertImgElement(document.GetElementById("4"), new()
+        {
+            ["src"] = "http://contoso.com/hello/world",
+            ["alt"] = "Absolute path versioned",
+        });
+
+        // <img src="/images/fake.png" alt="Path to non existing file" />
+        AssertImgElement(document.GetElementById("5"), new()
+        {
+            ["src"] = "/images/fake.png",
+            ["alt"] = "Path to non existing file",
+        });
+
+        // <img src="/images/red.png?abc=def&amp;v=W2F5D366_nQ2fQqUk3URdgWy2ZekXjHzHJaY5yaiOOk" alt="Path with query string">
+        AssertImgElement(document.GetElementById("6"), new()
+        {
+            ["src"] = "/images/red.png?abc=def&v=W2F5D366_nQ2fQqUk3URdgWy2ZekXjHzHJaY5yaiOOk",
+            ["alt"] = "Path with query string",
+        });
+
+        // <img src="/images/red.png?v=W2F5D366_nQ2fQqUk3URdgWy2ZekXjHzHJaY5yaiOOk#abc" alt="Path with query string" />
+        AssertImgElement(document.GetElementById("7"), new()
+        {
+            ["src"] = "/images/red.png?v=W2F5D366_nQ2fQqUk3URdgWy2ZekXjHzHJaY5yaiOOk#abc",
+            ["alt"] = "Path with query string",
+        });
+
+        // <img src="/controller/action" alt="Path linking to some action">
+        AssertImgElement(document.GetElementById("8"), new()
+        {
+            ["src"] = "/controller/action",
+            ["alt"] = "Path linking to some action",
+        });
+
+        static void AssertImgElement(IElement imgElement, Dictionary<string, string> expectedAttributes)
+        {
+            Assert.NotNull(imgElement);
+            Assert.Equal("img", imgElement.TagName, ignoreCase: true);
+            Assert.Equal(expectedAttributes.Count + 1, imgElement.Attributes.Length); // + 1 for the id-attribute
+            foreach (var attribute in expectedAttributes)
+            {
+                Assert.Equal(attribute.Value, imgElement.GetAttribute(attribute.Key));
+            }
+        }
     }
 
     [Fact]
