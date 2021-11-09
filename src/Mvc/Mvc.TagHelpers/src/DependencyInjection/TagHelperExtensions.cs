@@ -84,6 +84,7 @@ public static class TagHelperServicesExtensions
 
         // Required default services for cache tag helpers
         services.AddDistributedMemoryCache();
+        services.AddMemoryCache(options => options.TrackLinkedCacheEntries = true);
         services.TryAddSingleton<CacheTagHelperMemoryCacheFactory>();
     }
 }
