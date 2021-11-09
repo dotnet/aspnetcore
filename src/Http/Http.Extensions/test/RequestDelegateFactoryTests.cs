@@ -3212,7 +3212,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         void TestJsonAndFormFile(Todo value1, IFormFile value2) { }
         void TestJsonAndFormFiles(Todo value1, IFormFile value2, IFormFile value3) { }
         void TestJsonAndFormFileCollection(Todo value1, IFormFileCollection value2) { }
-        void TestJsonAndFormFileWithAttribute(Todo value1, [FromFormFile] IFormFile value2) { }
+        void TestJsonAndFormFileWithAttribute(Todo value1, [FromForm] IFormFile value2) { }
 
         Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestFormFileAndJson));
         Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestFormFilesAndJson));
@@ -3422,7 +3422,7 @@ public class RequestDelegateFactoryTests : LoggedTest
     {
         IFormFile? fileArgument = null;
 
-        void TestAction([FromFormFile(Name = "my_file")] IFormFile file)
+        void TestAction([FromForm(Name = "my_file")] IFormFile file)
         {
             fileArgument = file;
         }
@@ -3843,7 +3843,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         public bool AllowEmpty { get; set; }
     }
 
-    private class FromFormFileAttribute : Attribute, IFromFormMetadata
+    private class FromFormAttribute : Attribute, IFromFormMetadata
     {
         public string? Name { get; set; }
     }
