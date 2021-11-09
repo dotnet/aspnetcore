@@ -3843,7 +3843,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         public bool AllowEmpty { get; set; }
     }
 
-    private class FromFormFileAttribute : Attribute, IFromFileMetadata
+    private class FromFormFileAttribute : Attribute, IFromFormMetadata
     {
         public string? Name { get; set; }
     }

@@ -249,7 +249,7 @@ public static partial class RequestDelegateFactory
             factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.BodyAttribute);
             return BindParameterFromBody(parameter, bodyAttribute.AllowEmpty, factoryContext);
         }
-        else if (parameterCustomAttributes.OfType<IFromFileMetadata>().FirstOrDefault() is { } fileAttribute)
+        else if (parameterCustomAttributes.OfType<IFromFormMetadata>().FirstOrDefault() is { } fileAttribute)
         {
             return BindParameterFromFormFile(parameter, fileAttribute.Name ?? parameter.Name, factoryContext, RequestDelegateFactoryConstants.FormFileAttribute);
         }

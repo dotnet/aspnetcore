@@ -4,12 +4,12 @@
 namespace Microsoft.AspNetCore.Http.Metadata;
 
 /// <summary>
-/// Interface marking attributes that specify a parameter should be bound using a form file from the request body.
+/// Interface marking attributes that specify a parameter should be bound using a form field from the request body.
 /// </summary>
-public interface IFromFileMetadata
+public interface IFromFormMetadata
 {
     /// <summary>
-    /// The file name.
+    /// The form field name.
     /// </summary>
     string? Name { get; }
 }
