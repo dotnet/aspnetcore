@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!-- This is needed to support codepaths that use NullabilityInfoContext. -->
     <Features>$(Features.Replace('nullablePublicOnly', '')</Features>
   </PropertyGroup>
@@ -11,10 +12,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.WebUtilities" />
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Http.Results" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Owin" />
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)ResultsTests\*.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Buffers.Testing\**\*.cs" />
   </ItemGroup>
 
 </Project>

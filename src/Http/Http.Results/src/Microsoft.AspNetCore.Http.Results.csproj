@@ -26,6 +26,7 @@
     <Reference Include="Microsoft.AspNetCore.Routing" />
 
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Results.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Combined.Tests" />
   </ItemGroup>
 
 </Project>
