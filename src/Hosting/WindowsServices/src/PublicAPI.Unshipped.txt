@@ -1,9 +1,1 @@
 #nullable enable
-*REMOVED*~Microsoft.AspNetCore.Hosting.WindowsServices.WebHostService.WebHostService(Microsoft.AspNetCore.Hosting.IWebHost host) -> void
-*REMOVED*~override sealed Microsoft.AspNetCore.Hosting.WindowsServices.WebHostService.OnStart(string[] args) -> void
-*REMOVED*~static Microsoft.AspNetCore.Hosting.WindowsServices.WebHostWindowsServiceExtensions.RunAsService(this Microsoft.AspNetCore.Hosting.IWebHost host) -> void
-*REMOVED*~virtual Microsoft.AspNetCore.Hosting.WindowsServices.WebHostService.OnStarting(string[] args) -> void
-Microsoft.AspNetCore.Hosting.WindowsServices.WebHostService.WebHostService(Microsoft.AspNetCore.Hosting.IWebHost! host) -> void
-override sealed Microsoft.AspNetCore.Hosting.WindowsServices.WebHostService.OnStart(string![]! args) -> void
-static Microsoft.AspNetCore.Hosting.WindowsServices.WebHostWindowsServiceExtensions.RunAsService(this Microsoft.AspNetCore.Hosting.IWebHost! host) -> void
-virtual Microsoft.AspNetCore.Hosting.WindowsServices.WebHostService.OnStarting(string![]! args) -> void

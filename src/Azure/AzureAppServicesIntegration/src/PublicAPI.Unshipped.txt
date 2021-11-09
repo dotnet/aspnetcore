@@ -1,2 +1,1 @@
 #nullable enable
-static Microsoft.AspNetCore.Hosting.AppServicesWebHostBuilderExtensions.UseAzureAppServices(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!

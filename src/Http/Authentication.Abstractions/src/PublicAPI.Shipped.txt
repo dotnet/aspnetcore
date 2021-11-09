@@ -85,6 +85,9 @@ Microsoft.AspNetCore.Authentication.AuthenticationToken.Name.set -> void
 Microsoft.AspNetCore.Authentication.AuthenticationToken.Value.get -> string!
 Microsoft.AspNetCore.Authentication.AuthenticationToken.Value.set -> void
 Microsoft.AspNetCore.Authentication.AuthenticationTokenExtensions
+Microsoft.AspNetCore.Authentication.IAuthenticateResultFeature
+Microsoft.AspNetCore.Authentication.IAuthenticateResultFeature.AuthenticateResult.get -> Microsoft.AspNetCore.Authentication.AuthenticateResult?
+Microsoft.AspNetCore.Authentication.IAuthenticateResultFeature.AuthenticateResult.set -> void
 Microsoft.AspNetCore.Authentication.IAuthenticationFeature
 Microsoft.AspNetCore.Authentication.IAuthenticationFeature.OriginalPath.get -> Microsoft.AspNetCore.Http.PathString
 Microsoft.AspNetCore.Authentication.IAuthenticationFeature.OriginalPath.set -> void
@@ -123,10 +126,10 @@ Microsoft.AspNetCore.Authentication.IAuthenticationSignOutHandler
 Microsoft.AspNetCore.Authentication.IAuthenticationSignOutHandler.SignOutAsync(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Authentication.IClaimsTransformation
 Microsoft.AspNetCore.Authentication.IClaimsTransformation.TransformAsync(System.Security.Claims.ClaimsPrincipal! principal) -> System.Threading.Tasks.Task<System.Security.Claims.ClaimsPrincipal!>!
-static Microsoft.AspNetCore.Authentication.AuthenticateResult.Fail(System.Exception! failure) -> Microsoft.AspNetCore.Authentication.AuthenticateResult!
-static Microsoft.AspNetCore.Authentication.AuthenticateResult.Fail(System.Exception! failure, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> Microsoft.AspNetCore.Authentication.AuthenticateResult!
 static Microsoft.AspNetCore.Authentication.AuthenticateResult.Fail(string! failureMessage) -> Microsoft.AspNetCore.Authentication.AuthenticateResult!
 static Microsoft.AspNetCore.Authentication.AuthenticateResult.Fail(string! failureMessage, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> Microsoft.AspNetCore.Authentication.AuthenticateResult!
+static Microsoft.AspNetCore.Authentication.AuthenticateResult.Fail(System.Exception! failure) -> Microsoft.AspNetCore.Authentication.AuthenticateResult!
+static Microsoft.AspNetCore.Authentication.AuthenticateResult.Fail(System.Exception! failure, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> Microsoft.AspNetCore.Authentication.AuthenticateResult!
 static Microsoft.AspNetCore.Authentication.AuthenticateResult.NoResult() -> Microsoft.AspNetCore.Authentication.AuthenticateResult!
 static Microsoft.AspNetCore.Authentication.AuthenticateResult.Success(Microsoft.AspNetCore.Authentication.AuthenticationTicket! ticket) -> Microsoft.AspNetCore.Authentication.AuthenticateResult!
 static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.AuthenticateAsync(this Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult!>!
@@ -141,17 +144,17 @@ static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.F
 static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.ForbidAsync(this Microsoft.AspNetCore.Http.HttpContext! context, string? scheme, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.GetTokenAsync(this Microsoft.AspNetCore.Http.HttpContext! context, string! tokenName) -> System.Threading.Tasks.Task<string?>!
 static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.GetTokenAsync(this Microsoft.AspNetCore.Http.HttpContext! context, string? scheme, string! tokenName) -> System.Threading.Tasks.Task<string?>!
-static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.SignInAsync(this Microsoft.AspNetCore.Http.HttpContext! context, System.Security.Claims.ClaimsPrincipal! principal) -> System.Threading.Tasks.Task!
-static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.SignInAsync(this Microsoft.AspNetCore.Http.HttpContext! context, System.Security.Claims.ClaimsPrincipal! principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.SignInAsync(this Microsoft.AspNetCore.Http.HttpContext! context, string? scheme, System.Security.Claims.ClaimsPrincipal! principal) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.SignInAsync(this Microsoft.AspNetCore.Http.HttpContext! context, string? scheme, System.Security.Claims.ClaimsPrincipal! principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.SignInAsync(this Microsoft.AspNetCore.Http.HttpContext! context, System.Security.Claims.ClaimsPrincipal! principal) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.SignInAsync(this Microsoft.AspNetCore.Http.HttpContext! context, System.Security.Claims.ClaimsPrincipal! principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.SignOutAsync(this Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.SignOutAsync(this Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.SignOutAsync(this Microsoft.AspNetCore.Http.HttpContext! context, string? scheme) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.SignOutAsync(this Microsoft.AspNetCore.Http.HttpContext! context, string? scheme, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Authentication.AuthenticationTokenExtensions.GetTokenAsync(this Microsoft.AspNetCore.Authentication.IAuthenticationService! auth, Microsoft.AspNetCore.Http.HttpContext! context, string! tokenName) -> System.Threading.Tasks.Task<string?>!
 static Microsoft.AspNetCore.Authentication.AuthenticationTokenExtensions.GetTokenAsync(this Microsoft.AspNetCore.Authentication.IAuthenticationService! auth, Microsoft.AspNetCore.Http.HttpContext! context, string? scheme, string! tokenName) -> System.Threading.Tasks.Task<string?>!
-static Microsoft.AspNetCore.Authentication.AuthenticationTokenExtensions.GetTokenValue(this Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties, string! tokenName) -> string?
 static Microsoft.AspNetCore.Authentication.AuthenticationTokenExtensions.GetTokens(this Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties) -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authentication.AuthenticationToken!>!
+static Microsoft.AspNetCore.Authentication.AuthenticationTokenExtensions.GetTokenValue(this Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties, string! tokenName) -> string?
 static Microsoft.AspNetCore.Authentication.AuthenticationTokenExtensions.StoreTokens(this Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authentication.AuthenticationToken!>! tokens) -> void
 static Microsoft.AspNetCore.Authentication.AuthenticationTokenExtensions.UpdateTokenValue(this Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties, string! tokenName, string! tokenValue) -> bool
