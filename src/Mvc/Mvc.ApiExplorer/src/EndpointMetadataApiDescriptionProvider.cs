@@ -249,9 +249,11 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
         {
             return (BindingSource.Body, parameter.Name ?? string.Empty, fromBodyAttribute.AllowEmpty, parameter.ParameterType);
         }
-        else if (attributes.OfType<IFromFileMetadata>().FirstOrDefault() is { } formFileAttribute)
+        else if (attributes.OfType<IFromFormMetadata>().FirstOrDefault() is { } fromFormAttribute)
         {
-            return (BindingSource.FormFile, formFileAttribute.Name ?? parameter.Name ?? string.Empty, false, parameter.ParameterType);
+            // TODO Should this be Form or FormFile if parameter.ParameterType is IFormFileCollection?
+            // Currently it's Services (see below) - which is the more appropriate?
+            return (BindingSource.FormFile, fromFormAttribute.Name ?? parameter.Name ?? string.Empty, false, parameter.ParameterType);
         }
         else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)) ||
                  parameter.ParameterType == typeof(HttpContext) ||

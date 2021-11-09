@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -997,7 +996,7 @@ public class EndpointMetadataApiDescriptionProviderTest
         }
 
         AssertFormFileParameter(GetApiDescription((IFormFile file) => { }), typeof(IFormFile), "file");
-        AssertFormFileParameter(GetApiDescription(([FromFile(Name = "file_name")] IFormFile file) => { }), typeof(IFormFile), "file_name");
+        AssertFormFileParameter(GetApiDescription(([FromForm(Name = "file_name")] IFormFile file) => { }), typeof(IFormFile), "file_name");
     }
 
     [Fact]
@@ -1098,12 +1097,6 @@ public class EndpointMetadataApiDescriptionProviderTest
             constraint => Assert.IsType<MinLengthRouteConstraint>(constraint),
             constraint => Assert.IsType<GuidRouteConstraint>(constraint),
             constraint => Assert.IsType<MaxLengthRouteConstraint>(constraint));
-    }
-
-    // TODO Can remove this when there's an agreed concrete implementation of IFromFileMetadata
-    private sealed class FromFileAttribute : Attribute, IFromFileMetadata
-    {
-        public string Name { get; set; }
     }
 
     private static IEnumerable<string> GetSortedMediaTypes(ApiResponseType apiResponseType)
