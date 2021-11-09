@@ -1,6 +1,6 @@
 #nullable enable
 Microsoft.AspNetCore.Hosting.Server.Abstractions.IHostContextContainer<TContext>
-Microsoft.AspNetCore.Hosting.Server.Abstractions.IHostContextContainer<TContext>.HostContext.get -> TContext
+Microsoft.AspNetCore.Hosting.Server.Abstractions.IHostContextContainer<TContext>.HostContext.get -> TContext?
 Microsoft.AspNetCore.Hosting.Server.Abstractions.IHostContextContainer<TContext>.HostContext.set -> void
 Microsoft.AspNetCore.Hosting.Server.Features.IServerAddressesFeature
 Microsoft.AspNetCore.Hosting.Server.Features.IServerAddressesFeature.Addresses.get -> System.Collections.Generic.ICollection<string!>!
@@ -8,7 +8,7 @@ Microsoft.AspNetCore.Hosting.Server.Features.IServerAddressesFeature.PreferHosti
 Microsoft.AspNetCore.Hosting.Server.Features.IServerAddressesFeature.PreferHostingUrls.set -> void
 Microsoft.AspNetCore.Hosting.Server.IHttpApplication<TContext>
 Microsoft.AspNetCore.Hosting.Server.IHttpApplication<TContext>.CreateContext(Microsoft.AspNetCore.Http.Features.IFeatureCollection! contextFeatures) -> TContext
-Microsoft.AspNetCore.Hosting.Server.IHttpApplication<TContext>.DisposeContext(TContext context, System.Exception! exception) -> void
+Microsoft.AspNetCore.Hosting.Server.IHttpApplication<TContext>.DisposeContext(TContext context, System.Exception? exception) -> void
 Microsoft.AspNetCore.Hosting.Server.IHttpApplication<TContext>.ProcessRequestAsync(TContext context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Hosting.Server.IServer
 Microsoft.AspNetCore.Hosting.Server.IServer.Features.get -> Microsoft.AspNetCore.Http.Features.IFeatureCollection!

@@ -1,4 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Authentication.IAuthenticateResultFeature
-Microsoft.AspNetCore.Authentication.IAuthenticateResultFeature.AuthenticateResult.get -> Microsoft.AspNetCore.Authentication.AuthenticateResult?
-Microsoft.AspNetCore.Authentication.IAuthenticateResultFeature.AuthenticateResult.set -> void

@@ -1,30 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Builder.OwinExtensions
-Microsoft.AspNetCore.Owin.IOwinEnvironmentFeature
-Microsoft.AspNetCore.Owin.OwinEnvironment
-Microsoft.AspNetCore.Owin.OwinEnvironment.FeatureMap
-Microsoft.AspNetCore.Owin.OwinEnvironment.FeatureMap.CanSet.get -> bool
-Microsoft.AspNetCore.Owin.OwinEnvironment.FeatureMap<TFeature>
-Microsoft.AspNetCore.Owin.OwinEnvironmentFeature
-Microsoft.AspNetCore.Owin.OwinEnvironmentFeature.OwinEnvironmentFeature() -> void
-Microsoft.AspNetCore.Owin.OwinFeatureCollection
-Microsoft.AspNetCore.Owin.OwinFeatureCollection.Dispose() -> void
-Microsoft.AspNetCore.Owin.OwinFeatureCollection.Get<TFeature>() -> TFeature
-Microsoft.AspNetCore.Owin.OwinFeatureCollection.IsReadOnly.get -> bool
-Microsoft.AspNetCore.Owin.OwinFeatureCollection.Revision.get -> int
-Microsoft.AspNetCore.Owin.OwinFeatureCollection.Set<TFeature>(TFeature instance) -> void
-Microsoft.AspNetCore.Owin.OwinFeatureCollection.SupportsWebSockets.get -> bool
-Microsoft.AspNetCore.Owin.OwinFeatureCollection.SupportsWebSockets.set -> void
-Microsoft.AspNetCore.Owin.OwinWebSocketAcceptAdapter
-Microsoft.AspNetCore.Owin.OwinWebSocketAcceptContext
-Microsoft.AspNetCore.Owin.OwinWebSocketAcceptContext.OwinWebSocketAcceptContext() -> void
-Microsoft.AspNetCore.Owin.OwinWebSocketAdapter
-Microsoft.AspNetCore.Owin.WebSocketAcceptAdapter
-Microsoft.AspNetCore.Owin.WebSocketAdapter
-override Microsoft.AspNetCore.Owin.OwinWebSocketAdapter.Abort() -> void
-override Microsoft.AspNetCore.Owin.OwinWebSocketAdapter.CloseStatus.get -> System.Net.WebSockets.WebSocketCloseStatus?
-override Microsoft.AspNetCore.Owin.OwinWebSocketAdapter.Dispose() -> void
-override Microsoft.AspNetCore.Owin.OwinWebSocketAdapter.State.get -> System.Net.WebSockets.WebSocketState
 ~Microsoft.AspNetCore.Owin.IOwinEnvironmentFeature.Environment.get -> System.Collections.Generic.IDictionary<string, object>
 ~Microsoft.AspNetCore.Owin.IOwinEnvironmentFeature.Environment.set -> void
 ~Microsoft.AspNetCore.Owin.OwinEnvironment.FeatureMap.FeatureMap(System.Type featureInterface, System.Func<object, object> getter) -> void
@@ -70,3 +44,29 @@ override Microsoft.AspNetCore.Owin.OwinWebSocketAdapter.State.get -> System.Net.
 ~static Microsoft.AspNetCore.Builder.OwinExtensions.UseOwin(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder, System.Action<System.Action<System.Func<System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>, System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>>>> pipeline) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
 ~static Microsoft.AspNetCore.Owin.OwinWebSocketAcceptAdapter.AdaptWebSockets(System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task> next) -> System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>
 ~static Microsoft.AspNetCore.Owin.WebSocketAcceptAdapter.AdaptWebSockets(System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task> next) -> System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>
+Microsoft.AspNetCore.Builder.OwinExtensions
+Microsoft.AspNetCore.Owin.IOwinEnvironmentFeature
+Microsoft.AspNetCore.Owin.OwinEnvironment
+Microsoft.AspNetCore.Owin.OwinEnvironment.FeatureMap
+Microsoft.AspNetCore.Owin.OwinEnvironment.FeatureMap.CanSet.get -> bool
+Microsoft.AspNetCore.Owin.OwinEnvironment.FeatureMap<TFeature>
+Microsoft.AspNetCore.Owin.OwinEnvironmentFeature
+Microsoft.AspNetCore.Owin.OwinEnvironmentFeature.OwinEnvironmentFeature() -> void
+Microsoft.AspNetCore.Owin.OwinFeatureCollection
+Microsoft.AspNetCore.Owin.OwinFeatureCollection.Dispose() -> void
+Microsoft.AspNetCore.Owin.OwinFeatureCollection.Get<TFeature>() -> TFeature
+Microsoft.AspNetCore.Owin.OwinFeatureCollection.IsReadOnly.get -> bool
+Microsoft.AspNetCore.Owin.OwinFeatureCollection.Revision.get -> int
+Microsoft.AspNetCore.Owin.OwinFeatureCollection.Set<TFeature>(TFeature instance) -> void
+Microsoft.AspNetCore.Owin.OwinFeatureCollection.SupportsWebSockets.get -> bool
+Microsoft.AspNetCore.Owin.OwinFeatureCollection.SupportsWebSockets.set -> void
+Microsoft.AspNetCore.Owin.OwinWebSocketAcceptAdapter
+Microsoft.AspNetCore.Owin.OwinWebSocketAcceptContext
+Microsoft.AspNetCore.Owin.OwinWebSocketAcceptContext.OwinWebSocketAcceptContext() -> void
+Microsoft.AspNetCore.Owin.OwinWebSocketAdapter
+Microsoft.AspNetCore.Owin.WebSocketAcceptAdapter
+Microsoft.AspNetCore.Owin.WebSocketAdapter
+override Microsoft.AspNetCore.Owin.OwinWebSocketAdapter.Abort() -> void
+override Microsoft.AspNetCore.Owin.OwinWebSocketAdapter.CloseStatus.get -> System.Net.WebSockets.WebSocketCloseStatus?
+override Microsoft.AspNetCore.Owin.OwinWebSocketAdapter.Dispose() -> void
+override Microsoft.AspNetCore.Owin.OwinWebSocketAdapter.State.get -> System.Net.WebSockets.WebSocketState

@@ -1,8 +1,11 @@
 #nullable enable
+const Microsoft.AspNetCore.Server.HttpSys.HttpSysDefaults.AuthenticationScheme = "Windows" -> string!
 Microsoft.AspNetCore.Hosting.WebHostBuilderHttpSysExtensions
 Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager
 Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager.AllowAnonymous.get -> bool
 Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager.AllowAnonymous.set -> void
+Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager.AuthenticationDisplayName.get -> string?
+Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager.AuthenticationDisplayName.set -> void
 Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager.AutomaticAuthentication.get -> bool
 Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager.AutomaticAuthentication.set -> void
 Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager.Schemes.get -> Microsoft.AspNetCore.Server.HttpSys.AuthenticationSchemes
@@ -10,15 +13,17 @@ Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager.Schemes.set -> void
 Microsoft.AspNetCore.Server.HttpSys.AuthenticationSchemes
 Microsoft.AspNetCore.Server.HttpSys.AuthenticationSchemes.Basic = 1 -> Microsoft.AspNetCore.Server.HttpSys.AuthenticationSchemes
 Microsoft.AspNetCore.Server.HttpSys.AuthenticationSchemes.Kerberos = 16 -> Microsoft.AspNetCore.Server.HttpSys.AuthenticationSchemes
-Microsoft.AspNetCore.Server.HttpSys.AuthenticationSchemes.NTLM = 4 -> Microsoft.AspNetCore.Server.HttpSys.AuthenticationSchemes
 Microsoft.AspNetCore.Server.HttpSys.AuthenticationSchemes.Negotiate = 8 -> Microsoft.AspNetCore.Server.HttpSys.AuthenticationSchemes
 Microsoft.AspNetCore.Server.HttpSys.AuthenticationSchemes.None = 0 -> Microsoft.AspNetCore.Server.HttpSys.AuthenticationSchemes
+Microsoft.AspNetCore.Server.HttpSys.AuthenticationSchemes.NTLM = 4 -> Microsoft.AspNetCore.Server.HttpSys.AuthenticationSchemes
 Microsoft.AspNetCore.Server.HttpSys.ClientCertificateMethod
 Microsoft.AspNetCore.Server.HttpSys.ClientCertificateMethod.AllowCertificate = 1 -> Microsoft.AspNetCore.Server.HttpSys.ClientCertificateMethod
 Microsoft.AspNetCore.Server.HttpSys.ClientCertificateMethod.AllowRenegotation = 2 -> Microsoft.AspNetCore.Server.HttpSys.ClientCertificateMethod
 Microsoft.AspNetCore.Server.HttpSys.ClientCertificateMethod.NoCertificate = 0 -> Microsoft.AspNetCore.Server.HttpSys.ClientCertificateMethod
 Microsoft.AspNetCore.Server.HttpSys.DelegationRule
 Microsoft.AspNetCore.Server.HttpSys.DelegationRule.Dispose() -> void
+Microsoft.AspNetCore.Server.HttpSys.DelegationRule.QueueName.get -> string!
+Microsoft.AspNetCore.Server.HttpSys.DelegationRule.UrlPrefix.get -> string!
 Microsoft.AspNetCore.Server.HttpSys.Http503VerbosityLevel
 Microsoft.AspNetCore.Server.HttpSys.Http503VerbosityLevel.Basic = 0 -> Microsoft.AspNetCore.Server.HttpSys.Http503VerbosityLevel
 Microsoft.AspNetCore.Server.HttpSys.Http503VerbosityLevel.Full = 2 -> Microsoft.AspNetCore.Server.HttpSys.Http503VerbosityLevel
@@ -28,6 +33,7 @@ Microsoft.AspNetCore.Server.HttpSys.HttpSysException
 Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions
 Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.AllowSynchronousIO.get -> bool
 Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.AllowSynchronousIO.set -> void
+Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.Authentication.get -> Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager!
 Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.ClientCertificateMethod.get -> Microsoft.AspNetCore.Server.HttpSys.ClientCertificateMethod
 Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.ClientCertificateMethod.set -> void
 Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.EnableResponseCaching.get -> bool
@@ -45,12 +51,23 @@ Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.RequestQueueLimit.get -> long
 Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.RequestQueueLimit.set -> void
 Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.RequestQueueMode.get -> Microsoft.AspNetCore.Server.HttpSys.RequestQueueMode
 Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.RequestQueueMode.set -> void
+Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.RequestQueueName.get -> string?
+Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.RequestQueueName.set -> void
 Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.ThrowWriteExceptions.get -> bool
 Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.ThrowWriteExceptions.set -> void
+Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.Timeouts.get -> Microsoft.AspNetCore.Server.HttpSys.TimeoutManager!
+Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.UnsafePreferInlineScheduling.get -> bool
+Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.UnsafePreferInlineScheduling.set -> void
+Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.UrlPrefixes.get -> Microsoft.AspNetCore.Server.HttpSys.UrlPrefixCollection!
+Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.UseLatin1RequestHeaders.get -> bool
+Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.UseLatin1RequestHeaders.set -> void
 Microsoft.AspNetCore.Server.HttpSys.IHttpSysRequestDelegationFeature
 Microsoft.AspNetCore.Server.HttpSys.IHttpSysRequestDelegationFeature.CanDelegate.get -> bool
+Microsoft.AspNetCore.Server.HttpSys.IHttpSysRequestDelegationFeature.DelegateRequest(Microsoft.AspNetCore.Server.HttpSys.DelegationRule! destination) -> void
 Microsoft.AspNetCore.Server.HttpSys.IHttpSysRequestInfoFeature
+Microsoft.AspNetCore.Server.HttpSys.IHttpSysRequestInfoFeature.RequestInfo.get -> System.Collections.Generic.IReadOnlyDictionary<int, System.ReadOnlyMemory<byte>>!
 Microsoft.AspNetCore.Server.HttpSys.IServerDelegationFeature
+Microsoft.AspNetCore.Server.HttpSys.IServerDelegationFeature.CreateDelegationRule(string! queueName, string! urlPrefix) -> Microsoft.AspNetCore.Server.HttpSys.DelegationRule!
 Microsoft.AspNetCore.Server.HttpSys.RequestQueueMode
 Microsoft.AspNetCore.Server.HttpSys.RequestQueueMode.Attach = 1 -> Microsoft.AspNetCore.Server.HttpSys.RequestQueueMode
 Microsoft.AspNetCore.Server.HttpSys.RequestQueueMode.Create = 0 -> Microsoft.AspNetCore.Server.HttpSys.RequestQueueMode
@@ -69,43 +86,30 @@ Microsoft.AspNetCore.Server.HttpSys.TimeoutManager.MinSendBytesPerSecond.set -> 
 Microsoft.AspNetCore.Server.HttpSys.TimeoutManager.RequestQueue.get -> System.TimeSpan
 Microsoft.AspNetCore.Server.HttpSys.TimeoutManager.RequestQueue.set -> void
 Microsoft.AspNetCore.Server.HttpSys.UrlPrefix
+Microsoft.AspNetCore.Server.HttpSys.UrlPrefix.FullPrefix.get -> string!
+Microsoft.AspNetCore.Server.HttpSys.UrlPrefix.Host.get -> string!
 Microsoft.AspNetCore.Server.HttpSys.UrlPrefix.IsHttps.get -> bool
+Microsoft.AspNetCore.Server.HttpSys.UrlPrefix.Path.get -> string!
+Microsoft.AspNetCore.Server.HttpSys.UrlPrefix.Port.get -> string!
 Microsoft.AspNetCore.Server.HttpSys.UrlPrefix.PortValue.get -> int
+Microsoft.AspNetCore.Server.HttpSys.UrlPrefix.Scheme.get -> string!
 Microsoft.AspNetCore.Server.HttpSys.UrlPrefixCollection
+Microsoft.AspNetCore.Server.HttpSys.UrlPrefixCollection.Add(Microsoft.AspNetCore.Server.HttpSys.UrlPrefix! item) -> void
+Microsoft.AspNetCore.Server.HttpSys.UrlPrefixCollection.Add(string! prefix) -> void
 Microsoft.AspNetCore.Server.HttpSys.UrlPrefixCollection.Clear() -> void
+Microsoft.AspNetCore.Server.HttpSys.UrlPrefixCollection.Contains(Microsoft.AspNetCore.Server.HttpSys.UrlPrefix! item) -> bool
+Microsoft.AspNetCore.Server.HttpSys.UrlPrefixCollection.CopyTo(Microsoft.AspNetCore.Server.HttpSys.UrlPrefix![]! array, int arrayIndex) -> void
 Microsoft.AspNetCore.Server.HttpSys.UrlPrefixCollection.Count.get -> int
+Microsoft.AspNetCore.Server.HttpSys.UrlPrefixCollection.GetEnumerator() -> System.Collections.Generic.IEnumerator<Microsoft.AspNetCore.Server.HttpSys.UrlPrefix!>!
 Microsoft.AspNetCore.Server.HttpSys.UrlPrefixCollection.IsReadOnly.get -> bool
+Microsoft.AspNetCore.Server.HttpSys.UrlPrefixCollection.Remove(Microsoft.AspNetCore.Server.HttpSys.UrlPrefix! item) -> bool
+Microsoft.AspNetCore.Server.HttpSys.UrlPrefixCollection.Remove(string! prefix) -> bool
 override Microsoft.AspNetCore.Server.HttpSys.HttpSysException.ErrorCode.get -> int
+override Microsoft.AspNetCore.Server.HttpSys.UrlPrefix.Equals(object? obj) -> bool
 override Microsoft.AspNetCore.Server.HttpSys.UrlPrefix.GetHashCode() -> int
-~Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager.AuthenticationDisplayName.get -> string
-~Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager.AuthenticationDisplayName.set -> void
-~Microsoft.AspNetCore.Server.HttpSys.DelegationRule.QueueName.get -> string
-~Microsoft.AspNetCore.Server.HttpSys.DelegationRule.UrlPrefix.get -> string
-~Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.Authentication.get -> Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager
-~Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.RequestQueueName.get -> string
-~Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.RequestQueueName.set -> void
-~Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.Timeouts.get -> Microsoft.AspNetCore.Server.HttpSys.TimeoutManager
-~Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.UrlPrefixes.get -> Microsoft.AspNetCore.Server.HttpSys.UrlPrefixCollection
-~Microsoft.AspNetCore.Server.HttpSys.IHttpSysRequestDelegationFeature.DelegateRequest(Microsoft.AspNetCore.Server.HttpSys.DelegationRule destination) -> void
-~Microsoft.AspNetCore.Server.HttpSys.IHttpSysRequestInfoFeature.RequestInfo.get -> System.Collections.Generic.IReadOnlyDictionary<int, System.ReadOnlyMemory<byte>>
-~Microsoft.AspNetCore.Server.HttpSys.IServerDelegationFeature.CreateDelegationRule(string queueName, string urlPrefix) -> Microsoft.AspNetCore.Server.HttpSys.DelegationRule
-~Microsoft.AspNetCore.Server.HttpSys.UrlPrefix.FullPrefix.get -> string
-~Microsoft.AspNetCore.Server.HttpSys.UrlPrefix.Host.get -> string
-~Microsoft.AspNetCore.Server.HttpSys.UrlPrefix.Path.get -> string
-~Microsoft.AspNetCore.Server.HttpSys.UrlPrefix.Port.get -> string
-~Microsoft.AspNetCore.Server.HttpSys.UrlPrefix.Scheme.get -> string
-~Microsoft.AspNetCore.Server.HttpSys.UrlPrefixCollection.Add(Microsoft.AspNetCore.Server.HttpSys.UrlPrefix item) -> void
-~Microsoft.AspNetCore.Server.HttpSys.UrlPrefixCollection.Add(string prefix) -> void
-~Microsoft.AspNetCore.Server.HttpSys.UrlPrefixCollection.Contains(Microsoft.AspNetCore.Server.HttpSys.UrlPrefix item) -> bool
-~Microsoft.AspNetCore.Server.HttpSys.UrlPrefixCollection.CopyTo(Microsoft.AspNetCore.Server.HttpSys.UrlPrefix[] array, int arrayIndex) -> void
-~Microsoft.AspNetCore.Server.HttpSys.UrlPrefixCollection.GetEnumerator() -> System.Collections.Generic.IEnumerator<Microsoft.AspNetCore.Server.HttpSys.UrlPrefix>
-~Microsoft.AspNetCore.Server.HttpSys.UrlPrefixCollection.Remove(Microsoft.AspNetCore.Server.HttpSys.UrlPrefix item) -> bool
-~Microsoft.AspNetCore.Server.HttpSys.UrlPrefixCollection.Remove(string prefix) -> bool
-~const Microsoft.AspNetCore.Server.HttpSys.HttpSysDefaults.AuthenticationScheme = "Windows" -> string
-~override Microsoft.AspNetCore.Server.HttpSys.UrlPrefix.Equals(object obj) -> bool
-~override Microsoft.AspNetCore.Server.HttpSys.UrlPrefix.ToString() -> string
-~static Microsoft.AspNetCore.Hosting.WebHostBuilderHttpSysExtensions.UseHttpSys(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder
-~static Microsoft.AspNetCore.Hosting.WebHostBuilderHttpSysExtensions.UseHttpSys(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder, System.Action<Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions> options) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder
-~static Microsoft.AspNetCore.Server.HttpSys.UrlPrefix.Create(string prefix) -> Microsoft.AspNetCore.Server.HttpSys.UrlPrefix
-~static Microsoft.AspNetCore.Server.HttpSys.UrlPrefix.Create(string scheme, string host, int? portValue, string path) -> Microsoft.AspNetCore.Server.HttpSys.UrlPrefix
-~static Microsoft.AspNetCore.Server.HttpSys.UrlPrefix.Create(string scheme, string host, string port, string path) -> Microsoft.AspNetCore.Server.HttpSys.UrlPrefix
+override Microsoft.AspNetCore.Server.HttpSys.UrlPrefix.ToString() -> string!
+static Microsoft.AspNetCore.Hosting.WebHostBuilderHttpSysExtensions.UseHttpSys(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.WebHostBuilderHttpSysExtensions.UseHttpSys(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, System.Action<Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions!>! options) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Server.HttpSys.UrlPrefix.Create(string! prefix) -> Microsoft.AspNetCore.Server.HttpSys.UrlPrefix!
+static Microsoft.AspNetCore.Server.HttpSys.UrlPrefix.Create(string! scheme, string! host, int? portValue, string! path) -> Microsoft.AspNetCore.Server.HttpSys.UrlPrefix!
+static Microsoft.AspNetCore.Server.HttpSys.UrlPrefix.Create(string! scheme, string! host, string! port, string! path) -> Microsoft.AspNetCore.Server.HttpSys.UrlPrefix!

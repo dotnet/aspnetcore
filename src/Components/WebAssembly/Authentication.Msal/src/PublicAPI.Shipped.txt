@@ -1,17 +1,4 @@
-﻿#nullable enable
-Microsoft.Authentication.WebAssembly.Msal.Models.MsalCacheOptions
-Microsoft.Authentication.WebAssembly.Msal.Models.MsalCacheOptions.MsalCacheOptions() -> void
-Microsoft.Authentication.WebAssembly.Msal.Models.MsalCacheOptions.StoreAuthStateInCookie.get -> bool
-Microsoft.Authentication.WebAssembly.Msal.Models.MsalCacheOptions.StoreAuthStateInCookie.set -> void
-Microsoft.Authentication.WebAssembly.Msal.Models.MsalProviderOptions
-Microsoft.Authentication.WebAssembly.Msal.Models.MsalProviderOptions.MsalProviderOptions() -> void
-Microsoft.Authentication.WebAssembly.Msal.MsalAuthenticationOptions
-Microsoft.Authentication.WebAssembly.Msal.MsalAuthenticationOptions.MsalAuthenticationOptions() -> void
-Microsoft.Authentication.WebAssembly.Msal.MsalAuthenticationOptions.NavigateToLoginRequestUrl.get -> bool
-Microsoft.Authentication.WebAssembly.Msal.MsalAuthenticationOptions.NavigateToLoginRequestUrl.set -> void
-Microsoft.Authentication.WebAssembly.Msal.MsalAuthenticationOptions.ValidateAuthority.get -> bool
-Microsoft.Authentication.WebAssembly.Msal.MsalAuthenticationOptions.ValidateAuthority.set -> void
-Microsoft.Extensions.DependencyInjection.MsalWebAssemblyServiceCollectionExtensions
+#nullable enable
 ~Microsoft.Authentication.WebAssembly.Msal.Models.MsalCacheOptions.CacheLocation.get -> string
 ~Microsoft.Authentication.WebAssembly.Msal.Models.MsalCacheOptions.CacheLocation.set -> void
 ~Microsoft.Authentication.WebAssembly.Msal.Models.MsalProviderOptions.AdditionalScopesToConsent.get -> System.Collections.Generic.IList<string>
@@ -37,3 +24,16 @@ Microsoft.Extensions.DependencyInjection.MsalWebAssemblyServiceCollectionExtensi
 ~static Microsoft.Extensions.DependencyInjection.MsalWebAssemblyServiceCollectionExtensions.AddMsalAuthentication(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationOptions<Microsoft.Authentication.WebAssembly.Msal.Models.MsalProviderOptions>> configure) -> Microsoft.Extensions.DependencyInjection.IRemoteAuthenticationBuilder<Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationState, Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteUserAccount>
 ~static Microsoft.Extensions.DependencyInjection.MsalWebAssemblyServiceCollectionExtensions.AddMsalAuthentication<TRemoteAuthenticationState, TAccount>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationOptions<Microsoft.Authentication.WebAssembly.Msal.Models.MsalProviderOptions>> configure) -> Microsoft.Extensions.DependencyInjection.IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount>
 ~static Microsoft.Extensions.DependencyInjection.MsalWebAssemblyServiceCollectionExtensions.AddMsalAuthentication<TRemoteAuthenticationState>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationOptions<Microsoft.Authentication.WebAssembly.Msal.Models.MsalProviderOptions>> configure) -> Microsoft.Extensions.DependencyInjection.IRemoteAuthenticationBuilder<TRemoteAuthenticationState, Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteUserAccount>
+Microsoft.Authentication.WebAssembly.Msal.Models.MsalCacheOptions
+Microsoft.Authentication.WebAssembly.Msal.Models.MsalCacheOptions.MsalCacheOptions() -> void
+Microsoft.Authentication.WebAssembly.Msal.Models.MsalCacheOptions.StoreAuthStateInCookie.get -> bool
+Microsoft.Authentication.WebAssembly.Msal.Models.MsalCacheOptions.StoreAuthStateInCookie.set -> void
+Microsoft.Authentication.WebAssembly.Msal.Models.MsalProviderOptions
+Microsoft.Authentication.WebAssembly.Msal.Models.MsalProviderOptions.MsalProviderOptions() -> void
+Microsoft.Authentication.WebAssembly.Msal.MsalAuthenticationOptions
+Microsoft.Authentication.WebAssembly.Msal.MsalAuthenticationOptions.MsalAuthenticationOptions() -> void
+Microsoft.Authentication.WebAssembly.Msal.MsalAuthenticationOptions.NavigateToLoginRequestUrl.get -> bool
+Microsoft.Authentication.WebAssembly.Msal.MsalAuthenticationOptions.NavigateToLoginRequestUrl.set -> void
+Microsoft.Authentication.WebAssembly.Msal.MsalAuthenticationOptions.ValidateAuthority.get -> bool
+Microsoft.Authentication.WebAssembly.Msal.MsalAuthenticationOptions.ValidateAuthority.set -> void
+Microsoft.Extensions.DependencyInjection.MsalWebAssemblyServiceCollectionExtensions

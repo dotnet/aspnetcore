@@ -1,4 +1,6 @@
 #nullable enable
+const Microsoft.Net.Http.Headers.HeaderQuality.Match = 1 -> double
+const Microsoft.Net.Http.Headers.HeaderQuality.NoMatch = 0 -> double
 Microsoft.Net.Http.Headers.CacheControlHeaderValue
 Microsoft.Net.Http.Headers.CacheControlHeaderValue.CacheControlHeaderValue() -> void
 Microsoft.Net.Http.Headers.CacheControlHeaderValue.Extensions.get -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.NameValueHeaderValue!>!
@@ -94,6 +96,7 @@ Microsoft.Net.Http.Headers.MediaTypeHeaderValue.IsSubsetOf(Microsoft.Net.Http.He
 Microsoft.Net.Http.Headers.MediaTypeHeaderValue.MatchesAllSubTypes.get -> bool
 Microsoft.Net.Http.Headers.MediaTypeHeaderValue.MatchesAllSubTypesWithoutSuffix.get -> bool
 Microsoft.Net.Http.Headers.MediaTypeHeaderValue.MatchesAllTypes.get -> bool
+Microsoft.Net.Http.Headers.MediaTypeHeaderValue.MatchesMediaType(Microsoft.Extensions.Primitives.StringSegment otherMediaType) -> bool
 Microsoft.Net.Http.Headers.MediaTypeHeaderValue.MediaType.get -> Microsoft.Extensions.Primitives.StringSegment
 Microsoft.Net.Http.Headers.MediaTypeHeaderValue.MediaType.set -> void
 Microsoft.Net.Http.Headers.MediaTypeHeaderValue.MediaTypeHeaderValue(Microsoft.Extensions.Primitives.StringSegment mediaType) -> void
@@ -121,9 +124,9 @@ Microsoft.Net.Http.Headers.NameValueHeaderValue.Value.set -> void
 Microsoft.Net.Http.Headers.RangeConditionHeaderValue
 Microsoft.Net.Http.Headers.RangeConditionHeaderValue.EntityTag.get -> Microsoft.Net.Http.Headers.EntityTagHeaderValue?
 Microsoft.Net.Http.Headers.RangeConditionHeaderValue.LastModified.get -> System.DateTimeOffset?
-Microsoft.Net.Http.Headers.RangeConditionHeaderValue.RangeConditionHeaderValue(Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag) -> void
-Microsoft.Net.Http.Headers.RangeConditionHeaderValue.RangeConditionHeaderValue(System.DateTimeOffset lastModified) -> void
+Microsoft.Net.Http.Headers.RangeConditionHeaderValue.RangeConditionHeaderValue(Microsoft.Net.Http.Headers.EntityTagHeaderValue! entityTag) -> void
 Microsoft.Net.Http.Headers.RangeConditionHeaderValue.RangeConditionHeaderValue(string? entityTag) -> void
+Microsoft.Net.Http.Headers.RangeConditionHeaderValue.RangeConditionHeaderValue(System.DateTimeOffset lastModified) -> void
 Microsoft.Net.Http.Headers.RangeHeaderValue
 Microsoft.Net.Http.Headers.RangeHeaderValue.RangeHeaderValue() -> void
 Microsoft.Net.Http.Headers.RangeHeaderValue.RangeHeaderValue(long? from, long? to) -> void
@@ -169,8 +172,6 @@ Microsoft.Net.Http.Headers.StringWithQualityHeaderValue.StringWithQualityHeaderV
 Microsoft.Net.Http.Headers.StringWithQualityHeaderValue.Value.get -> Microsoft.Extensions.Primitives.StringSegment
 Microsoft.Net.Http.Headers.StringWithQualityHeaderValueComparer
 Microsoft.Net.Http.Headers.StringWithQualityHeaderValueComparer.Compare(Microsoft.Net.Http.Headers.StringWithQualityHeaderValue? stringWithQuality1, Microsoft.Net.Http.Headers.StringWithQualityHeaderValue? stringWithQuality2) -> int
-const Microsoft.Net.Http.Headers.HeaderQuality.Match = 1 -> double
-const Microsoft.Net.Http.Headers.HeaderQuality.NoMatch = 0 -> double
 override Microsoft.Net.Http.Headers.CacheControlHeaderValue.Equals(object? obj) -> bool
 override Microsoft.Net.Http.Headers.CacheControlHeaderValue.GetHashCode() -> int
 override Microsoft.Net.Http.Headers.CacheControlHeaderValue.ToString() -> string!
@@ -301,6 +302,7 @@ static readonly Microsoft.Net.Http.Headers.HeaderNames.Allow -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.AltSvc -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.Authority -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.Authorization -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Baggage -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.CacheControl -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.Connection -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.ContentDisposition -> string!
@@ -315,8 +317,8 @@ static readonly Microsoft.Net.Http.Headers.HeaderNames.ContentSecurityPolicyRepo
 static readonly Microsoft.Net.Http.Headers.HeaderNames.ContentType -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.Cookie -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.CorrelationContext -> string!
-static readonly Microsoft.Net.Http.Headers.HeaderNames.DNT -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.Date -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.DNT -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.ETag -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.Expect -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.Expires -> string!
@@ -334,6 +336,7 @@ static readonly Microsoft.Net.Http.Headers.HeaderNames.IfRange -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.IfUnmodifiedSince -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.KeepAlive -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.LastModified -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Link -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.Location -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.MaxForwards -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.Method -> string!
@@ -342,12 +345,14 @@ static readonly Microsoft.Net.Http.Headers.HeaderNames.Path -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.Pragma -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.ProxyAuthenticate -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.ProxyAuthorization -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.ProxyConnection -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.Range -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.Referer -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.RequestId -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.RetryAfter -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.Scheme -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.SecWebSocketAccept -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.SecWebSocketExtensions -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.SecWebSocketKey -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.SecWebSocketProtocol -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.SecWebSocketVersion -> string!
@@ -366,8 +371,12 @@ static readonly Microsoft.Net.Http.Headers.HeaderNames.UpgradeInsecureRequests -
 static readonly Microsoft.Net.Http.Headers.HeaderNames.UserAgent -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.Vary -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.Via -> string!
-static readonly Microsoft.Net.Http.Headers.HeaderNames.WWWAuthenticate -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.Warning -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.WebSocketSubProtocols -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.WWWAuthenticate -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.XContentTypeOptions -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.XFrameOptions -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.XPoweredBy -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.XRequestedWith -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.XUACompatible -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.XXSSProtection -> string!

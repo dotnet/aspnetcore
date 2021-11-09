@@ -1,11 +1,1 @@
 #nullable enable
-*REMOVED*static Microsoft.AspNetCore.Authorization.AuthorizationServiceExtensions.AuthorizeAsync(this Microsoft.AspNetCore.Authorization.IAuthorizationService! service, System.Security.Claims.ClaimsPrincipal! user, object! resource, Microsoft.AspNetCore.Authorization.IAuthorizationRequirement! requirement) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult!>!
-Microsoft.AspNetCore.Authorization.AuthorizationFailure.FailureReasons.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.AuthorizationFailureReason!>!
-Microsoft.AspNetCore.Authorization.AuthorizationFailureReason
-Microsoft.AspNetCore.Authorization.AuthorizationFailureReason.AuthorizationFailureReason(Microsoft.AspNetCore.Authorization.IAuthorizationHandler! handler, string! message) -> void
-Microsoft.AspNetCore.Authorization.AuthorizationFailureReason.Handler.get -> Microsoft.AspNetCore.Authorization.IAuthorizationHandler!
-Microsoft.AspNetCore.Authorization.AuthorizationFailureReason.Message.get -> string!
-static Microsoft.AspNetCore.Authorization.AuthorizationFailure.Failed(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.AuthorizationFailureReason!>! reasons) -> Microsoft.AspNetCore.Authorization.AuthorizationFailure!
-static Microsoft.AspNetCore.Authorization.AuthorizationServiceExtensions.AuthorizeAsync(this Microsoft.AspNetCore.Authorization.IAuthorizationService! service, System.Security.Claims.ClaimsPrincipal! user, object? resource, Microsoft.AspNetCore.Authorization.IAuthorizationRequirement! requirement) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult!>!
-virtual Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext.Fail(Microsoft.AspNetCore.Authorization.AuthorizationFailureReason! reason) -> void
-virtual Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext.FailureReasons.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.AuthorizationFailureReason!>!

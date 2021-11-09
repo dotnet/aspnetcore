@@ -1,9 +1,14 @@
-﻿#nullable enable
-Microsoft.AspNetCore.Builder.ComponentsWebAssemblyApplicationBuilderExtensions
-Microsoft.AspNetCore.Builder.WebAssemblyNetDebugProxyAppBuilderExtensions
-Microsoft.AspNetCore.Components.WebAssembly.Server.TargetPickerUi
+#nullable enable
 ~Microsoft.AspNetCore.Components.WebAssembly.Server.TargetPickerUi.Display(Microsoft.AspNetCore.Http.HttpContext context) -> System.Threading.Tasks.Task
 ~Microsoft.AspNetCore.Components.WebAssembly.Server.TargetPickerUi.TargetPickerUi(string debugProxyUrl, string devToolsHost) -> void
 ~static Microsoft.AspNetCore.Builder.ComponentsWebAssemblyApplicationBuilderExtensions.UseBlazorFrameworkFiles(this Microsoft.AspNetCore.Builder.IApplicationBuilder applicationBuilder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
 ~static Microsoft.AspNetCore.Builder.ComponentsWebAssemblyApplicationBuilderExtensions.UseBlazorFrameworkFiles(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder, Microsoft.AspNetCore.Http.PathString pathPrefix) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
 ~static Microsoft.AspNetCore.Builder.WebAssemblyNetDebugProxyAppBuilderExtensions.UseWebAssemblyDebugging(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) -> void
+Microsoft.AspNetCore.Builder.ComponentsWebAssemblyApplicationBuilderExtensions
+Microsoft.AspNetCore.Builder.WebAssemblyNetDebugProxyAppBuilderExtensions
+Microsoft.AspNetCore.Components.WebAssembly.Server.TargetPickerUi
+Microsoft.AspNetCore.Components.WebAssembly.Server.TargetPickerUi.Display(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.WebAssembly.Server.TargetPickerUi.TargetPickerUi(string! debugProxyUrl, string! devToolsHost) -> void
+static Microsoft.AspNetCore.Builder.ComponentsWebAssemblyApplicationBuilderExtensions.UseBlazorFrameworkFiles(this Microsoft.AspNetCore.Builder.IApplicationBuilder! applicationBuilder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.ComponentsWebAssemblyApplicationBuilderExtensions.UseBlazorFrameworkFiles(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder, Microsoft.AspNetCore.Http.PathString pathPrefix) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.WebAssemblyNetDebugProxyAppBuilderExtensions.UseWebAssemblyDebugging(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> void

@@ -1,8 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.ResponseCaching.ResponseCachingFeature.VaryByQueryKeys.get -> string![]?
-Microsoft.AspNetCore.ResponseCaching.ResponseCachingFeature.VaryByQueryKeys.set -> void
-Microsoft.AspNetCore.ResponseCaching.ResponseCachingMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
-~Microsoft.AspNetCore.ResponseCaching.ResponseCachingMiddleware.ResponseCachingMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.ResponseCaching.ResponseCachingOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.Extensions.ObjectPool.ObjectPoolProvider! poolProvider) -> void
-static Microsoft.AspNetCore.Builder.ResponseCachingExtensions.UseResponseCaching(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-static Microsoft.Extensions.DependencyInjection.ResponseCachingServicesExtensions.AddResponseCaching(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-static Microsoft.Extensions.DependencyInjection.ResponseCachingServicesExtensions.AddResponseCaching(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.ResponseCaching.ResponseCachingOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
