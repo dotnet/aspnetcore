@@ -32,6 +32,7 @@
 
     <!-- Similar to ProjectLayout.props in the Arcade SDK. The Helix SDK contains nothing similar. -->
     <OutputPath Condition=" '$(OutputPath)' == '' ">$(RepoRoot)artifacts\bin\$(MSBuildProjectName)\</OutputPath>
+    <HelixBaseUri>https://helix.int-dot.net</HelixBaseUri>
   </PropertyGroup>
 
   <!-- Specify the runtime we need which will be included as a correlation payload -->
@@ -78,7 +79,7 @@
   <ItemGroup Condition="Exists('$(HelixTestConfigurationFilePath)')">
     <HelixCorrelationPayload Include="$(HelixTestConfigurationFilePath)" AsArchive="false" />
   </ItemGroup>
-  
+
   <Target Name="IncludeAspNetRuntime" BeforeTargets="Gather"
     Condition="'$(DoNotRequireSharedFxHelix)' != 'true' OR
     EXISTS('$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.$(TargetRuntimeIdentifier).$(SharedFxVersion).nupkg')">

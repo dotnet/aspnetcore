@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <Language>msbuild</Language>
+    <HelixBaseUri>https://helix.int-dot.net</HelixBaseUri>
   </PropertyGroup>
 
   <ItemGroup>

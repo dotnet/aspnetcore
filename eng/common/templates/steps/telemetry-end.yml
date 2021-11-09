@@ -30,7 +30,7 @@ steps:
         -H 'Content-Type: application/json' \
         -H "X-Helix-Job-Token: $Helix_JobToken" \
         -H 'Content-Length: 0' \
-        -X POST -G "https://helix.dot.net/api/2018-03-14/telemetry/job/build/$Helix_WorkItemId/finish" \
+        -X POST -G "https://helix.int-dot.net/api/2018-03-14/telemetry/job/build/$Helix_WorkItemId/finish" \
         --data-urlencode "errorCount=$errorCount" \
         --data-urlencode "warningCount=$warningCount"`
       curlStatus=$?
@@ -70,7 +70,7 @@ steps:
     $retryCount = 0
     while ($retryCount -lt $env:MaxRetries) {
       try {
-        Invoke-RestMethod -Uri "https://helix.dot.net/api/2018-03-14/telemetry/job/build/$env:Helix_WorkItemId/finish?errorCount=$ErrorCount&warningCount=$WarningCount" -Method Post -ContentType "application/json" -Body "" `
+        Invoke-RestMethod -Uri "https://helix.int-dot.net/api/2018-03-14/telemetry/job/build/$env:Helix_WorkItemId/finish?errorCount=$ErrorCount&warningCount=$WarningCount" -Method Post -ContentType "application/json" -Body "" `
           -Headers @{ 'X-Helix-Job-Token'=$env:Helix_JobToken }
         break
       }

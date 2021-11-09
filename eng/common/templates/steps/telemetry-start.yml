@@ -55,7 +55,7 @@ steps:
         cat $jobInfo |\
         curl --trace - --verbose --output $res --write-out "%{http_code}" \
         -H 'Content-Type: application/json' \
-        -X POST "https://helix.dot.net/api/2018-03-14/telemetry/job$accessTokenParameter" -d @-`
+        -X POST "https://helix.int-dot.net/api/2018-03-14/telemetry/job$accessTokenParameter" -d @-`
       curlStatus=$?
 
       if [ $curlStatus -eq 0 ]; then
@@ -112,7 +112,7 @@ steps:
         -H 'Content-Type: application/json' \
         -H "X-Helix-Job-Token: $Helix_JobToken" \
         -H 'Content-Length: 0' \
-        -X POST -G "https://helix.dot.net/api/2018-03-14/telemetry/job/build" \
+        -X POST -G "https://helix.int-dot.net/api/2018-03-14/telemetry/job/build" \
         --data-urlencode "buildUri=$BuildUri"`
       curlStatus=$?
 
@@ -165,7 +165,7 @@ steps:
     $retryCount = 0
     while ($retryCount -lt $env:MaxRetries) {
       try {
-        $jobToken = Invoke-RestMethod -Uri "https://helix.dot.net/api/2018-03-14/telemetry/job$($accessTokenParameter)" -Method Post -ContentType "application/json" -Body $jobInfoJson
+        $jobToken = Invoke-RestMethod -Uri "https://helix.int-dot.net/api/2018-03-14/telemetry/job$($accessTokenParameter)" -Method Post -ContentType "application/json" -Body $jobInfoJson
         break
       }
       catch {
@@ -207,7 +207,7 @@ steps:
     $retryCount = 0
     while ($retryCount -lt $env:MaxRetries) {
       try {
-        $workItemId = Invoke-RestMethod -Uri "https://helix.dot.net/api/2018-03-14/telemetry/job/build?buildUri=$([Net.WebUtility]::UrlEncode($env:BuildUri))" -Method Post -ContentType "application/json" -Body "" `
+        $workItemId = Invoke-RestMethod -Uri "https://helix.int-dot.net/api/2018-03-14/telemetry/job/build?buildUri=$([Net.WebUtility]::UrlEncode($env:BuildUri))" -Method Post -ContentType "application/json" -Body "" `
           -Headers @{ 'X-Helix-Job-Token'=$env:Helix_JobToken }
         break
       }

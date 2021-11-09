@@ -22,9 +22,9 @@ parameters:
   DotNetCliVersion: ''                   # optional -- version of the CLI to send to Helix; based on this: https://raw.githubusercontent.com/dotnet/core/main/release-notes/releases-index.json
   WaitForWorkItemCompletion: true        # optional -- true will make the task wait until work items have been completed and fail the build if work items fail. False is "fire and forget."
   IsExternal: false                      # [DEPRECATED] -- doesn't do anything, jobs are external if HelixAccessToken is empty and Creator is set
-  HelixBaseUri: 'https://helix.dot.net/' # optional -- sets the Helix API base URI (allows targeting int)
+  HelixBaseUri: 'https://helix.int-dot.net/' # optional -- sets the Helix API base URI (allows targeting int)
   Creator: ''                            # optional -- if the build is external, use this to specify who is sending the job
-  DisplayNamePrefix: 'Run Tests'         # optional -- rename the beginning of the displayName of the steps in AzDO 
+  DisplayNamePrefix: 'Run Tests'         # optional -- rename the beginning of the displayName of the steps in AzDO
   condition: succeeded()                 # optional -- condition for step to execute; defaults to succeeded()
   continueOnError: false                 # optional -- determines whether to continue the build if the step errors; defaults to false
 
