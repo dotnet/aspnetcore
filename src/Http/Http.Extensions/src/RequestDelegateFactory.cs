@@ -249,9 +249,20 @@ public static partial class RequestDelegateFactory
             factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.BodyAttribute);
             return BindParameterFromBody(parameter, bodyAttribute.AllowEmpty, factoryContext);
         }
-        else if (parameterCustomAttributes.OfType<IFromFormMetadata>().FirstOrDefault() is { } fileAttribute)
+        else if (parameterCustomAttributes.OfType<IFromFormMetadata>().FirstOrDefault() is { } formAttribute)
         {
-            return BindParameterFromFormFile(parameter, fileAttribute.Name ?? parameter.Name, factoryContext, RequestDelegateFactoryConstants.FormFileAttribute);
+            if (parameter.ParameterType == typeof(IFormFileCollection))
+            {
+                if (!string.IsNullOrEmpty(formAttribute.Name))
+                {
+                    throw new NotSupportedException(
+                        $"Assigning a value to the {nameof(IFromFormMetadata)}.{nameof(IFromFormMetadata.Name)} property is not supported for parameters of type {nameof(IFormFileCollection)}.");
+                }
+
+                return BindParameterFromFormFiles(parameter, factoryContext);
+            }
+
+            return BindParameterFromFormFile(parameter, formAttribute.Name ?? parameter.Name, factoryContext, RequestDelegateFactoryConstants.FormFileAttribute);
         }
         else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)))
         {

@@ -3264,6 +3264,59 @@ public class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
+    public async Task RequestDelegatePopulatesFromIFormFileCollectionParameterWithAttribute()
+    {
+        IFormFileCollection? formFilesArgument = null;
+
+        void TestAction([FromForm] IFormFileCollection formFiles)
+        {
+            formFilesArgument = formFiles;
+        }
+
+        var fileContent = new StringContent("hello", Encoding.UTF8, "application/octet-stream");
+        var form = new MultipartFormDataContent("some-boundary");
+        form.Add(fileContent, "file", "file.txt");
+
+        var stream = new MemoryStream();
+        await form.CopyToAsync(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Type"] = "multipart/form-data;boundary=some-boundary";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.Request.Form.Files, formFilesArgument);
+        Assert.NotNull(formFilesArgument!["file"]);
+
+        var allAcceptsMetadata = factoryResult.EndpointMetadata.OfType<IAcceptsMetadata>();
+        var acceptsMetadata = Assert.Single(allAcceptsMetadata);
+
+        Assert.NotNull(acceptsMetadata);
+        Assert.Equal(new[] { "multipart/form-data" }, acceptsMetadata.ContentTypes);
+    }
+
+    [Fact]
+    public void CreateThrowsNotSupportedExceptionIfIFormFileCollectionHasMetadataParameterName()
+    {
+        IFormFileCollection? formFilesArgument = null;
+
+        void TestAction([FromForm(Name = "foo")] IFormFileCollection formFiles)
+        {
+            formFilesArgument = formFiles;
+        }
+
+        var nse = Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(TestAction));
+        Assert.Equal("Assigning a value to the IFromFormMetadata.Name property is not supported for parameters of type IFormFileCollection.", nse.Message);
+    }
+
+    [Fact]
     public async Task RequestDelegatePopulatesFromIFormFileParameter()
     {
         IFormFile? fileArgument = null;
