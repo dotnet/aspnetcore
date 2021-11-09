@@ -1,4 +1,109 @@
 #nullable enable
+~abstract Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.Append(string unencoded) -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
+~abstract Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.AppendHtml(Microsoft.AspNetCore.Html.IHtmlContent htmlContent) -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
+~abstract Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.AppendHtml(string encoded) -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
+~abstract Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.Clear() -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
+~abstract Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.CopyTo(Microsoft.AspNetCore.Html.IHtmlContentBuilder destination) -> void
+~abstract Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.GetContent() -> string
+~abstract Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.GetContent(System.Text.Encodings.Web.HtmlEncoder encoder) -> string
+~abstract Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.MoveTo(Microsoft.AspNetCore.Html.IHtmlContentBuilder destination) -> void
+~abstract Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.WriteTo(System.IO.TextWriter writer, System.Text.Encodings.Web.HtmlEncoder encoder) -> void
+~const Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute.ElementCatchAllTarget = "*" -> string
+~Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute.DictionaryAttributePrefix.get -> string
+~Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute.DictionaryAttributePrefix.set -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute.HtmlAttributeNameAttribute(string name) -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute.Name.get -> string
+~Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute.Attributes.get -> string
+~Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute.Attributes.set -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute.HtmlTargetElementAttribute(string tag) -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute.ParentTag.get -> string
+~Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute.ParentTag.set -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute.Tag.get -> string
+~Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent.Init(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context) -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent.ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) -> System.Threading.Tasks.Task
+~Microsoft.AspNetCore.Razor.TagHelpers.OutputElementHintAttribute.OutputElement.get -> string
+~Microsoft.AspNetCore.Razor.TagHelpers.OutputElementHintAttribute.OutputElementHintAttribute(string outputElement) -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.ReadOnlyTagHelperAttributeList.ContainsName(string name) -> bool
+~Microsoft.AspNetCore.Razor.TagHelpers.ReadOnlyTagHelperAttributeList.IndexOfName(string name) -> int
+~Microsoft.AspNetCore.Razor.TagHelpers.ReadOnlyTagHelperAttributeList.ReadOnlyTagHelperAttributeList(System.Collections.Generic.IList<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute> attributes) -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.ReadOnlyTagHelperAttributeList.this[string name].get -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute
+~Microsoft.AspNetCore.Razor.TagHelpers.ReadOnlyTagHelperAttributeList.TryGetAttribute(string name, out Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute attribute) -> bool
+~Microsoft.AspNetCore.Razor.TagHelpers.ReadOnlyTagHelperAttributeList.TryGetAttributes(string name, out System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute> attributes) -> bool
+~Microsoft.AspNetCore.Razor.TagHelpers.RestrictChildrenAttribute.ChildTags.get -> System.Collections.Generic.IEnumerable<string>
+~Microsoft.AspNetCore.Razor.TagHelpers.RestrictChildrenAttribute.RestrictChildrenAttribute(string childTag, params string[] childTags) -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.CopyTo(Microsoft.AspNetCore.Html.IHtmlContentBuilder destination) -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.Equals(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute other) -> bool
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.MoveTo(Microsoft.AspNetCore.Html.IHtmlContentBuilder destination) -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.Name.get -> string
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.TagHelperAttribute(string name) -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.TagHelperAttribute(string name, object value) -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.TagHelperAttribute(string name, object value, Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle valueStyle) -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.Value.get -> object
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.WriteTo(System.IO.TextWriter writer, System.Text.Encodings.Web.HtmlEncoder encoder) -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList.Add(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute attribute) -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList.Add(string name, object value) -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList.Insert(int index, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute attribute) -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList.Remove(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute attribute) -> bool
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList.RemoveAll(string name) -> bool
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList.SetAttribute(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute attribute) -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList.SetAttribute(string name, object value) -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList.TagHelperAttributeList(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute> attributes) -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList.TagHelperAttributeList(System.Collections.Generic.List<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute> attributes) -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList.this[int index].get -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList.this[int index].set -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.AppendFormat(string format, params object[] args) -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.AppendFormat(System.IFormatProvider provider, string format, params object[] args) -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.SetContent(string unencoded) -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.SetHtmlContent(Microsoft.AspNetCore.Html.IHtmlContent htmlContent) -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.SetHtmlContent(string encoded) -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext.AllAttributes.get -> Microsoft.AspNetCore.Razor.TagHelpers.ReadOnlyTagHelperAttributeList
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext.Items.get -> System.Collections.Generic.IDictionary<object, object>
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext.Reinitialize(string tagName, System.Collections.Generic.IDictionary<object, object> items, string uniqueId) -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext.Reinitialize(System.Collections.Generic.IDictionary<object, object> items, string uniqueId) -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext.TagHelperContext(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList allAttributes, System.Collections.Generic.IDictionary<object, object> items, string uniqueId) -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext.TagHelperContext(string tagName, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList allAttributes, System.Collections.Generic.IDictionary<object, object> items, string uniqueId) -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext.TagName.get -> string
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext.UniqueId.get -> string
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.Attributes.get -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.Content.get -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.Content.set -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.GetChildContentAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent>
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.GetChildContentAsync(bool useCachedResult) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent>
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.GetChildContentAsync(bool useCachedResult, System.Text.Encodings.Web.HtmlEncoder encoder) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent>
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.GetChildContentAsync(System.Text.Encodings.Web.HtmlEncoder encoder) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent>
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.PostContent.get -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.PostElement.get -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.PreContent.get -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.PreElement.get -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.Reinitialize(string tagName, Microsoft.AspNetCore.Razor.TagHelpers.TagMode tagMode) -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.TagHelperOutput(string tagName, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList attributes, System.Func<bool, System.Text.Encodings.Web.HtmlEncoder, System.Threading.Tasks.Task<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent>> getChildContentAsync) -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.TagName.get -> string
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.TagName.set -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.WriteTo(System.IO.TextWriter writer, System.Text.Encodings.Web.HtmlEncoder encoder) -> void
+~override Microsoft.AspNetCore.Razor.TagHelpers.DefaultTagHelperContent.Append(string unencoded) -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
+~override Microsoft.AspNetCore.Razor.TagHelpers.DefaultTagHelperContent.AppendHtml(Microsoft.AspNetCore.Html.IHtmlContent htmlContent) -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
+~override Microsoft.AspNetCore.Razor.TagHelpers.DefaultTagHelperContent.AppendHtml(string encoded) -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
+~override Microsoft.AspNetCore.Razor.TagHelpers.DefaultTagHelperContent.Clear() -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
+~override Microsoft.AspNetCore.Razor.TagHelpers.DefaultTagHelperContent.CopyTo(Microsoft.AspNetCore.Html.IHtmlContentBuilder destination) -> void
+~override Microsoft.AspNetCore.Razor.TagHelpers.DefaultTagHelperContent.GetContent() -> string
+~override Microsoft.AspNetCore.Razor.TagHelpers.DefaultTagHelperContent.GetContent(System.Text.Encodings.Web.HtmlEncoder encoder) -> string
+~override Microsoft.AspNetCore.Razor.TagHelpers.DefaultTagHelperContent.MoveTo(Microsoft.AspNetCore.Html.IHtmlContentBuilder destination) -> void
+~override Microsoft.AspNetCore.Razor.TagHelpers.DefaultTagHelperContent.WriteTo(System.IO.TextWriter writer, System.Text.Encodings.Web.HtmlEncoder encoder) -> void
+~override Microsoft.AspNetCore.Razor.TagHelpers.NullHtmlEncoder.Encode(string value) -> string
+~override Microsoft.AspNetCore.Razor.TagHelpers.NullHtmlEncoder.Encode(System.IO.TextWriter output, char[] value, int startIndex, int characterCount) -> void
+~override Microsoft.AspNetCore.Razor.TagHelpers.NullHtmlEncoder.Encode(System.IO.TextWriter output, string value, int startIndex, int characterCount) -> void
+~override Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.Equals(object obj) -> bool
+~static Microsoft.AspNetCore.Razor.TagHelpers.NullHtmlEncoder.Default.get -> Microsoft.AspNetCore.Razor.TagHelpers.NullHtmlEncoder
+~static Microsoft.AspNetCore.Razor.TagHelpers.ReadOnlyTagHelperAttributeList.NameEquals(string name, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute attribute) -> bool
+~virtual Microsoft.AspNetCore.Razor.TagHelpers.TagHelper.Init(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context) -> void
+~virtual Microsoft.AspNetCore.Razor.TagHelpers.TagHelper.Process(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) -> void
+~virtual Microsoft.AspNetCore.Razor.TagHelpers.TagHelper.ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) -> System.Threading.Tasks.Task
+~virtual Microsoft.AspNetCore.Razor.TagHelpers.TagHelperComponent.Init(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context) -> void
+~virtual Microsoft.AspNetCore.Razor.TagHelpers.TagHelperComponent.Process(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) -> void
+~virtual Microsoft.AspNetCore.Razor.TagHelpers.TagHelperComponent.ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) -> System.Threading.Tasks.Task
+abstract Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.IsEmptyOrWhiteSpace.get -> bool
+abstract Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.IsModified.get -> bool
+abstract Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.Reinitialize() -> void
 Microsoft.AspNetCore.Razor.TagHelpers.DefaultTagHelperContent
 Microsoft.AspNetCore.Razor.TagHelpers.DefaultTagHelperContent.DefaultTagHelperContent() -> void
 Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute
@@ -49,9 +154,6 @@ Microsoft.AspNetCore.Razor.TagHelpers.TagStructure
 Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.NormalOrSelfClosing = 1 -> Microsoft.AspNetCore.Razor.TagHelpers.TagStructure
 Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.Unspecified = 0 -> Microsoft.AspNetCore.Razor.TagHelpers.TagStructure
 Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag = 2 -> Microsoft.AspNetCore.Razor.TagHelpers.TagStructure
-abstract Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.IsEmptyOrWhiteSpace.get -> bool
-abstract Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.IsModified.get -> bool
-abstract Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.Reinitialize() -> void
 override Microsoft.AspNetCore.Razor.TagHelpers.DefaultTagHelperContent.IsEmptyOrWhiteSpace.get -> bool
 override Microsoft.AspNetCore.Razor.TagHelpers.DefaultTagHelperContent.IsModified.get -> bool
 override Microsoft.AspNetCore.Razor.TagHelpers.DefaultTagHelperContent.Reinitialize() -> void
@@ -62,105 +164,3 @@ override Microsoft.AspNetCore.Razor.TagHelpers.NullHtmlEncoder.WillEncode(int un
 override Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.GetHashCode() -> int
 virtual Microsoft.AspNetCore.Razor.TagHelpers.TagHelper.Order.get -> int
 virtual Microsoft.AspNetCore.Razor.TagHelpers.TagHelperComponent.Order.get -> int
-~Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute.DictionaryAttributePrefix.get -> string
-~Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute.DictionaryAttributePrefix.set -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute.HtmlAttributeNameAttribute(string name) -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute.Name.get -> string
-~Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute.Attributes.get -> string
-~Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute.Attributes.set -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute.HtmlTargetElementAttribute(string tag) -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute.ParentTag.get -> string
-~Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute.ParentTag.set -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute.Tag.get -> string
-~Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent.Init(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context) -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent.ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) -> System.Threading.Tasks.Task
-~Microsoft.AspNetCore.Razor.TagHelpers.OutputElementHintAttribute.OutputElement.get -> string
-~Microsoft.AspNetCore.Razor.TagHelpers.OutputElementHintAttribute.OutputElementHintAttribute(string outputElement) -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.ReadOnlyTagHelperAttributeList.ContainsName(string name) -> bool
-~Microsoft.AspNetCore.Razor.TagHelpers.ReadOnlyTagHelperAttributeList.IndexOfName(string name) -> int
-~Microsoft.AspNetCore.Razor.TagHelpers.ReadOnlyTagHelperAttributeList.ReadOnlyTagHelperAttributeList(System.Collections.Generic.IList<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute> attributes) -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.ReadOnlyTagHelperAttributeList.TryGetAttribute(string name, out Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute attribute) -> bool
-~Microsoft.AspNetCore.Razor.TagHelpers.ReadOnlyTagHelperAttributeList.TryGetAttributes(string name, out System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute> attributes) -> bool
-~Microsoft.AspNetCore.Razor.TagHelpers.ReadOnlyTagHelperAttributeList.this[string name].get -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute
-~Microsoft.AspNetCore.Razor.TagHelpers.RestrictChildrenAttribute.ChildTags.get -> System.Collections.Generic.IEnumerable<string>
-~Microsoft.AspNetCore.Razor.TagHelpers.RestrictChildrenAttribute.RestrictChildrenAttribute(string childTag, params string[] childTags) -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.CopyTo(Microsoft.AspNetCore.Html.IHtmlContentBuilder destination) -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.Equals(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute other) -> bool
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.MoveTo(Microsoft.AspNetCore.Html.IHtmlContentBuilder destination) -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.Name.get -> string
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.TagHelperAttribute(string name) -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.TagHelperAttribute(string name, object value) -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.TagHelperAttribute(string name, object value, Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle valueStyle) -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.Value.get -> object
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.WriteTo(System.IO.TextWriter writer, System.Text.Encodings.Web.HtmlEncoder encoder) -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList.Add(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute attribute) -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList.Add(string name, object value) -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList.Insert(int index, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute attribute) -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList.Remove(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute attribute) -> bool
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList.RemoveAll(string name) -> bool
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList.SetAttribute(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute attribute) -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList.SetAttribute(string name, object value) -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList.TagHelperAttributeList(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute> attributes) -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList.TagHelperAttributeList(System.Collections.Generic.List<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute> attributes) -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList.this[int index].get -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList.this[int index].set -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.AppendFormat(System.IFormatProvider provider, string format, params object[] args) -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.AppendFormat(string format, params object[] args) -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.SetContent(string unencoded) -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.SetHtmlContent(Microsoft.AspNetCore.Html.IHtmlContent htmlContent) -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.SetHtmlContent(string encoded) -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext.AllAttributes.get -> Microsoft.AspNetCore.Razor.TagHelpers.ReadOnlyTagHelperAttributeList
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext.Items.get -> System.Collections.Generic.IDictionary<object, object>
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext.Reinitialize(System.Collections.Generic.IDictionary<object, object> items, string uniqueId) -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext.Reinitialize(string tagName, System.Collections.Generic.IDictionary<object, object> items, string uniqueId) -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext.TagHelperContext(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList allAttributes, System.Collections.Generic.IDictionary<object, object> items, string uniqueId) -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext.TagHelperContext(string tagName, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList allAttributes, System.Collections.Generic.IDictionary<object, object> items, string uniqueId) -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext.TagName.get -> string
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext.UniqueId.get -> string
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.Attributes.get -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.Content.get -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.Content.set -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.GetChildContentAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent>
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.GetChildContentAsync(System.Text.Encodings.Web.HtmlEncoder encoder) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent>
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.GetChildContentAsync(bool useCachedResult) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent>
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.GetChildContentAsync(bool useCachedResult, System.Text.Encodings.Web.HtmlEncoder encoder) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent>
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.PostContent.get -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.PostElement.get -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.PreContent.get -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.PreElement.get -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.Reinitialize(string tagName, Microsoft.AspNetCore.Razor.TagHelpers.TagMode tagMode) -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.TagHelperOutput(string tagName, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList attributes, System.Func<bool, System.Text.Encodings.Web.HtmlEncoder, System.Threading.Tasks.Task<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent>> getChildContentAsync) -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.TagName.get -> string
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.TagName.set -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.WriteTo(System.IO.TextWriter writer, System.Text.Encodings.Web.HtmlEncoder encoder) -> void
-~abstract Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.Append(string unencoded) -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
-~abstract Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.AppendHtml(Microsoft.AspNetCore.Html.IHtmlContent htmlContent) -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
-~abstract Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.AppendHtml(string encoded) -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
-~abstract Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.Clear() -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
-~abstract Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.CopyTo(Microsoft.AspNetCore.Html.IHtmlContentBuilder destination) -> void
-~abstract Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.GetContent() -> string
-~abstract Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.GetContent(System.Text.Encodings.Web.HtmlEncoder encoder) -> string
-~abstract Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.MoveTo(Microsoft.AspNetCore.Html.IHtmlContentBuilder destination) -> void
-~abstract Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent.WriteTo(System.IO.TextWriter writer, System.Text.Encodings.Web.HtmlEncoder encoder) -> void
-~const Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute.ElementCatchAllTarget = "*" -> string
-~override Microsoft.AspNetCore.Razor.TagHelpers.DefaultTagHelperContent.Append(string unencoded) -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
-~override Microsoft.AspNetCore.Razor.TagHelpers.DefaultTagHelperContent.AppendHtml(Microsoft.AspNetCore.Html.IHtmlContent htmlContent) -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
-~override Microsoft.AspNetCore.Razor.TagHelpers.DefaultTagHelperContent.AppendHtml(string encoded) -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
-~override Microsoft.AspNetCore.Razor.TagHelpers.DefaultTagHelperContent.Clear() -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
-~override Microsoft.AspNetCore.Razor.TagHelpers.DefaultTagHelperContent.CopyTo(Microsoft.AspNetCore.Html.IHtmlContentBuilder destination) -> void
-~override Microsoft.AspNetCore.Razor.TagHelpers.DefaultTagHelperContent.GetContent() -> string
-~override Microsoft.AspNetCore.Razor.TagHelpers.DefaultTagHelperContent.GetContent(System.Text.Encodings.Web.HtmlEncoder encoder) -> string
-~override Microsoft.AspNetCore.Razor.TagHelpers.DefaultTagHelperContent.MoveTo(Microsoft.AspNetCore.Html.IHtmlContentBuilder destination) -> void
-~override Microsoft.AspNetCore.Razor.TagHelpers.DefaultTagHelperContent.WriteTo(System.IO.TextWriter writer, System.Text.Encodings.Web.HtmlEncoder encoder) -> void
-~override Microsoft.AspNetCore.Razor.TagHelpers.NullHtmlEncoder.Encode(System.IO.TextWriter output, char[] value, int startIndex, int characterCount) -> void
-~override Microsoft.AspNetCore.Razor.TagHelpers.NullHtmlEncoder.Encode(System.IO.TextWriter output, string value, int startIndex, int characterCount) -> void
-~override Microsoft.AspNetCore.Razor.TagHelpers.NullHtmlEncoder.Encode(string value) -> string
-~override Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.Equals(object obj) -> bool
-~static Microsoft.AspNetCore.Razor.TagHelpers.NullHtmlEncoder.Default.get -> Microsoft.AspNetCore.Razor.TagHelpers.NullHtmlEncoder
-~static Microsoft.AspNetCore.Razor.TagHelpers.ReadOnlyTagHelperAttributeList.NameEquals(string name, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute attribute) -> bool
-~virtual Microsoft.AspNetCore.Razor.TagHelpers.TagHelper.Init(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context) -> void
-~virtual Microsoft.AspNetCore.Razor.TagHelpers.TagHelper.Process(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) -> void
-~virtual Microsoft.AspNetCore.Razor.TagHelpers.TagHelper.ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) -> System.Threading.Tasks.Task
-~virtual Microsoft.AspNetCore.Razor.TagHelpers.TagHelperComponent.Init(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context) -> void
-~virtual Microsoft.AspNetCore.Razor.TagHelpers.TagHelperComponent.Process(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) -> void
-~virtual Microsoft.AspNetCore.Razor.TagHelpers.TagHelperComponent.ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) -> System.Threading.Tasks.Task

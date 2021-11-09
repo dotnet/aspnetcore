@@ -1,4 +1,5 @@
 #nullable enable
+~Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.ResourceManagerStringLocalizerFactory(Microsoft.Extensions.Options.IOptions<Microsoft.Extensions.Localization.LocalizationOptions!>! localizationOptions, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.Extensions.DependencyInjection.LocalizationServiceCollectionExtensions
 Microsoft.Extensions.Localization.IResourceNamesCache
 Microsoft.Extensions.Localization.IResourceNamesCache.GetOrAdd(string! name, System.Func<string!, System.Collections.Generic.IList<string!>?>! valueFactory) -> System.Collections.Generic.IList<string!>?
@@ -14,8 +15,8 @@ Microsoft.Extensions.Localization.ResourceManagerStringLocalizer.GetAllStrings(b
 Microsoft.Extensions.Localization.ResourceManagerStringLocalizer.GetStringSafely(string! name, System.Globalization.CultureInfo? culture) -> string?
 Microsoft.Extensions.Localization.ResourceManagerStringLocalizer.ResourceManagerStringLocalizer(System.Resources.ResourceManager! resourceManager, System.Reflection.Assembly! resourceAssembly, string! baseName, Microsoft.Extensions.Localization.IResourceNamesCache! resourceNamesCache, Microsoft.Extensions.Logging.ILogger! logger) -> void
 Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory
-Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.Create(System.Type! resourceSource) -> Microsoft.Extensions.Localization.IStringLocalizer!
 Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.Create(string! baseName, string! location) -> Microsoft.Extensions.Localization.IStringLocalizer!
+Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.Create(System.Type! resourceSource) -> Microsoft.Extensions.Localization.IStringLocalizer!
 Microsoft.Extensions.Localization.ResourceNamesCache
 Microsoft.Extensions.Localization.ResourceNamesCache.GetOrAdd(string! name, System.Func<string!, System.Collections.Generic.IList<string!>?>! valueFactory) -> System.Collections.Generic.IList<string!>?
 Microsoft.Extensions.Localization.ResourceNamesCache.ResourceNamesCache() -> void
@@ -29,9 +30,8 @@ virtual Microsoft.Extensions.Localization.ResourceManagerStringLocalizer.this[st
 virtual Microsoft.Extensions.Localization.ResourceManagerStringLocalizer.this[string! name].get -> Microsoft.Extensions.Localization.LocalizedString!
 virtual Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.CreateResourceManagerStringLocalizer(System.Reflection.Assembly! assembly, string! baseName) -> Microsoft.Extensions.Localization.ResourceManagerStringLocalizer!
 virtual Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.GetResourceLocationAttribute(System.Reflection.Assembly! assembly) -> Microsoft.Extensions.Localization.ResourceLocationAttribute?
-virtual Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.GetResourcePrefix(System.Reflection.TypeInfo! typeInfo) -> string!
-virtual Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.GetResourcePrefix(System.Reflection.TypeInfo! typeInfo, string? baseNamespace, string? resourcesRelativePath) -> string!
 virtual Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.GetResourcePrefix(string! baseResourceName, string! baseNamespace) -> string!
 virtual Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.GetResourcePrefix(string! location, string! baseName, string! resourceLocation) -> string!
+virtual Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.GetResourcePrefix(System.Reflection.TypeInfo! typeInfo) -> string!
+virtual Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.GetResourcePrefix(System.Reflection.TypeInfo! typeInfo, string? baseNamespace, string? resourcesRelativePath) -> string!
 virtual Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.GetRootNamespaceAttribute(System.Reflection.Assembly! assembly) -> Microsoft.Extensions.Localization.RootNamespaceAttribute?
-~Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.ResourceManagerStringLocalizerFactory(Microsoft.Extensions.Options.IOptions<Microsoft.Extensions.Localization.LocalizationOptions!>! localizationOptions, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
