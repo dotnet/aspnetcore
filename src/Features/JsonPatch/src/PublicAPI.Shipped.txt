@@ -1,70 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.JsonPatch.Adapters.AdapterFactory
-Microsoft.AspNetCore.JsonPatch.Adapters.AdapterFactory.AdapterFactory() -> void
-Microsoft.AspNetCore.JsonPatch.Adapters.IAdapterFactory
-Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter
-Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapterWithTest
-Microsoft.AspNetCore.JsonPatch.Adapters.ObjectAdapter
-Microsoft.AspNetCore.JsonPatch.Converters.JsonPatchDocumentConverter
-Microsoft.AspNetCore.JsonPatch.Converters.JsonPatchDocumentConverter.JsonPatchDocumentConverter() -> void
-Microsoft.AspNetCore.JsonPatch.Converters.TypedJsonPatchDocumentConverter
-Microsoft.AspNetCore.JsonPatch.Converters.TypedJsonPatchDocumentConverter.TypedJsonPatchDocumentConverter() -> void
-Microsoft.AspNetCore.JsonPatch.Exceptions.JsonPatchException
-Microsoft.AspNetCore.JsonPatch.Exceptions.JsonPatchException.JsonPatchException() -> void
-Microsoft.AspNetCore.JsonPatch.Helpers.GetValueResult
-Microsoft.AspNetCore.JsonPatch.Helpers.GetValueResult.HasError.get -> bool
-Microsoft.AspNetCore.JsonPatch.IJsonPatchDocument
-Microsoft.AspNetCore.JsonPatch.Internal.ConversionResult
-Microsoft.AspNetCore.JsonPatch.Internal.ConversionResult.CanBeConverted.get -> bool
-Microsoft.AspNetCore.JsonPatch.Internal.ConversionResultProvider
-Microsoft.AspNetCore.JsonPatch.Internal.DictionaryAdapter<TKey, TValue>
-Microsoft.AspNetCore.JsonPatch.Internal.DictionaryAdapter<TKey, TValue>.DictionaryAdapter() -> void
-Microsoft.AspNetCore.JsonPatch.Internal.DynamicObjectAdapter
-Microsoft.AspNetCore.JsonPatch.Internal.DynamicObjectAdapter.DynamicObjectAdapter() -> void
-Microsoft.AspNetCore.JsonPatch.Internal.IAdapter
-Microsoft.AspNetCore.JsonPatch.Internal.JObjectAdapter
-Microsoft.AspNetCore.JsonPatch.Internal.JObjectAdapter.JObjectAdapter() -> void
-Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter
-Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.ListAdapter() -> void
-Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.OperationType
-Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.OperationType.Add = 0 -> Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.OperationType
-Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.OperationType.Get = 2 -> Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.OperationType
-Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.OperationType.Remove = 1 -> Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.OperationType
-Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.OperationType.Replace = 3 -> Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.OperationType
-Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionInfo
-Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionInfo.Index.get -> int
-Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionInfo.PositionInfo(Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType type, int index) -> void
-Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionInfo.Type.get -> Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType
-Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType
-Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType.EndOfList = 1 -> Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType
-Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType.Index = 0 -> Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType
-Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType.Invalid = 2 -> Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType
-Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType.OutOfBounds = 3 -> Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType
-Microsoft.AspNetCore.JsonPatch.Internal.ObjectVisitor
-Microsoft.AspNetCore.JsonPatch.Internal.ParsedPath
-Microsoft.AspNetCore.JsonPatch.Internal.PocoAdapter
-Microsoft.AspNetCore.JsonPatch.Internal.PocoAdapter.PocoAdapter() -> void
-Microsoft.AspNetCore.JsonPatch.JsonPatchDocument
-Microsoft.AspNetCore.JsonPatch.JsonPatchDocument.JsonPatchDocument() -> void
-Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.JsonPatchDocument() -> void
-Microsoft.AspNetCore.JsonPatch.JsonPatchError
-Microsoft.AspNetCore.JsonPatch.JsonPatchProperty
-Microsoft.AspNetCore.JsonPatch.Operations.Operation
-Microsoft.AspNetCore.JsonPatch.Operations.Operation.Operation() -> void
-Microsoft.AspNetCore.JsonPatch.Operations.Operation.ShouldSerializevalue() -> bool
-Microsoft.AspNetCore.JsonPatch.Operations.Operation<TModel>.Operation() -> void
-Microsoft.AspNetCore.JsonPatch.Operations.OperationBase
-Microsoft.AspNetCore.JsonPatch.Operations.OperationBase.OperationBase() -> void
-Microsoft.AspNetCore.JsonPatch.Operations.OperationBase.OperationType.get -> Microsoft.AspNetCore.JsonPatch.Operations.OperationType
-Microsoft.AspNetCore.JsonPatch.Operations.OperationBase.ShouldSerializefrom() -> bool
-Microsoft.AspNetCore.JsonPatch.Operations.OperationType
-Microsoft.AspNetCore.JsonPatch.Operations.OperationType.Add = 0 -> Microsoft.AspNetCore.JsonPatch.Operations.OperationType
-Microsoft.AspNetCore.JsonPatch.Operations.OperationType.Copy = 4 -> Microsoft.AspNetCore.JsonPatch.Operations.OperationType
-Microsoft.AspNetCore.JsonPatch.Operations.OperationType.Invalid = 6 -> Microsoft.AspNetCore.JsonPatch.Operations.OperationType
-Microsoft.AspNetCore.JsonPatch.Operations.OperationType.Move = 3 -> Microsoft.AspNetCore.JsonPatch.Operations.OperationType
-Microsoft.AspNetCore.JsonPatch.Operations.OperationType.Remove = 1 -> Microsoft.AspNetCore.JsonPatch.Operations.OperationType
-Microsoft.AspNetCore.JsonPatch.Operations.OperationType.Replace = 2 -> Microsoft.AspNetCore.JsonPatch.Operations.OperationType
-Microsoft.AspNetCore.JsonPatch.Operations.OperationType.Test = 5 -> Microsoft.AspNetCore.JsonPatch.Operations.OperationType
 ~Microsoft.AspNetCore.JsonPatch.Adapters.IAdapterFactory.Create(object target, Newtonsoft.Json.Serialization.IContractResolver contractResolver) -> Microsoft.AspNetCore.JsonPatch.Internal.IAdapter
 ~Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter.Add(Microsoft.AspNetCore.JsonPatch.Operations.Operation operation, object objectToApplyTo) -> void
 ~Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter.Copy(Microsoft.AspNetCore.JsonPatch.Operations.Operation operation, object objectToApplyTo) -> void
@@ -172,11 +106,11 @@ Microsoft.AspNetCore.JsonPatch.Operations.OperationType.Test = 5 -> Microsoft.As
 ~Microsoft.AspNetCore.JsonPatch.Operations.Operation<TModel>.Apply(TModel objectToApplyTo, Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter adapter) -> void
 ~Microsoft.AspNetCore.JsonPatch.Operations.Operation<TModel>.Operation(string op, string path, string from) -> void
 ~Microsoft.AspNetCore.JsonPatch.Operations.Operation<TModel>.Operation(string op, string path, string from, object value) -> void
-~Microsoft.AspNetCore.JsonPatch.Operations.OperationBase.OperationBase(string op, string path, string from) -> void
 ~Microsoft.AspNetCore.JsonPatch.Operations.OperationBase.from.get -> string
 ~Microsoft.AspNetCore.JsonPatch.Operations.OperationBase.from.set -> void
 ~Microsoft.AspNetCore.JsonPatch.Operations.OperationBase.op.get -> string
 ~Microsoft.AspNetCore.JsonPatch.Operations.OperationBase.op.set -> void
+~Microsoft.AspNetCore.JsonPatch.Operations.OperationBase.OperationBase(string op, string path, string from) -> void
 ~Microsoft.AspNetCore.JsonPatch.Operations.OperationBase.path.get -> string
 ~Microsoft.AspNetCore.JsonPatch.Operations.OperationBase.path.set -> void
 ~override Microsoft.AspNetCore.JsonPatch.Converters.JsonPatchDocumentConverter.CanConvert(System.Type objectType) -> bool
@@ -210,6 +144,7 @@ Microsoft.AspNetCore.JsonPatch.Operations.OperationType.Test = 5 -> Microsoft.As
 ~virtual Microsoft.AspNetCore.JsonPatch.Internal.JObjectAdapter.TryTest(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, object value, out string errorMessage) -> bool
 ~virtual Microsoft.AspNetCore.JsonPatch.Internal.JObjectAdapter.TryTraverse(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, out object nextTarget, out string errorMessage) -> bool
 ~virtual Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.TryAdd(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, object value, out string errorMessage) -> bool
+~virtual Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.TryConvertValue(object originalValue, System.Type listTypeArgument, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, out object convertedValue, out string errorMessage) -> bool
 ~virtual Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.TryConvertValue(object originalValue, System.Type listTypeArgument, string segment, out object convertedValue, out string errorMessage) -> bool
 ~virtual Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.TryGet(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, out object value, out string errorMessage) -> bool
 ~virtual Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.TryGetListTypeArgument(System.Collections.IList list, out System.Type listTypeArgument, out string errorMessage) -> bool
@@ -226,3 +161,69 @@ Microsoft.AspNetCore.JsonPatch.Operations.OperationType.Test = 5 -> Microsoft.As
 ~virtual Microsoft.AspNetCore.JsonPatch.Internal.PocoAdapter.TryReplace(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, object value, out string errorMessage) -> bool
 ~virtual Microsoft.AspNetCore.JsonPatch.Internal.PocoAdapter.TryTest(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, object value, out string errorMessage) -> bool
 ~virtual Microsoft.AspNetCore.JsonPatch.Internal.PocoAdapter.TryTraverse(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, out object value, out string errorMessage) -> bool
+Microsoft.AspNetCore.JsonPatch.Adapters.AdapterFactory
+Microsoft.AspNetCore.JsonPatch.Adapters.AdapterFactory.AdapterFactory() -> void
+Microsoft.AspNetCore.JsonPatch.Adapters.IAdapterFactory
+Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter
+Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapterWithTest
+Microsoft.AspNetCore.JsonPatch.Adapters.ObjectAdapter
+Microsoft.AspNetCore.JsonPatch.Converters.JsonPatchDocumentConverter
+Microsoft.AspNetCore.JsonPatch.Converters.JsonPatchDocumentConverter.JsonPatchDocumentConverter() -> void
+Microsoft.AspNetCore.JsonPatch.Converters.TypedJsonPatchDocumentConverter
+Microsoft.AspNetCore.JsonPatch.Converters.TypedJsonPatchDocumentConverter.TypedJsonPatchDocumentConverter() -> void
+Microsoft.AspNetCore.JsonPatch.Exceptions.JsonPatchException
+Microsoft.AspNetCore.JsonPatch.Exceptions.JsonPatchException.JsonPatchException() -> void
+Microsoft.AspNetCore.JsonPatch.Helpers.GetValueResult
+Microsoft.AspNetCore.JsonPatch.Helpers.GetValueResult.HasError.get -> bool
+Microsoft.AspNetCore.JsonPatch.IJsonPatchDocument
+Microsoft.AspNetCore.JsonPatch.Internal.ConversionResult
+Microsoft.AspNetCore.JsonPatch.Internal.ConversionResult.CanBeConverted.get -> bool
+Microsoft.AspNetCore.JsonPatch.Internal.ConversionResultProvider
+Microsoft.AspNetCore.JsonPatch.Internal.DictionaryAdapter<TKey, TValue>
+Microsoft.AspNetCore.JsonPatch.Internal.DictionaryAdapter<TKey, TValue>.DictionaryAdapter() -> void
+Microsoft.AspNetCore.JsonPatch.Internal.DynamicObjectAdapter
+Microsoft.AspNetCore.JsonPatch.Internal.DynamicObjectAdapter.DynamicObjectAdapter() -> void
+Microsoft.AspNetCore.JsonPatch.Internal.IAdapter
+Microsoft.AspNetCore.JsonPatch.Internal.JObjectAdapter
+Microsoft.AspNetCore.JsonPatch.Internal.JObjectAdapter.JObjectAdapter() -> void
+Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter
+Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.ListAdapter() -> void
+Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.OperationType
+Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.OperationType.Add = 0 -> Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.OperationType
+Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.OperationType.Get = 2 -> Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.OperationType
+Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.OperationType.Remove = 1 -> Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.OperationType
+Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.OperationType.Replace = 3 -> Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.OperationType
+Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionInfo
+Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionInfo.Index.get -> int
+Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionInfo.PositionInfo(Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType type, int index) -> void
+Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionInfo.Type.get -> Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType
+Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType
+Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType.EndOfList = 1 -> Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType
+Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType.Index = 0 -> Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType
+Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType.Invalid = 2 -> Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType
+Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType.OutOfBounds = 3 -> Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType
+Microsoft.AspNetCore.JsonPatch.Internal.ObjectVisitor
+Microsoft.AspNetCore.JsonPatch.Internal.ParsedPath
+Microsoft.AspNetCore.JsonPatch.Internal.PocoAdapter
+Microsoft.AspNetCore.JsonPatch.Internal.PocoAdapter.PocoAdapter() -> void
+Microsoft.AspNetCore.JsonPatch.JsonPatchDocument
+Microsoft.AspNetCore.JsonPatch.JsonPatchDocument.JsonPatchDocument() -> void
+Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.JsonPatchDocument() -> void
+Microsoft.AspNetCore.JsonPatch.JsonPatchError
+Microsoft.AspNetCore.JsonPatch.JsonPatchProperty
+Microsoft.AspNetCore.JsonPatch.Operations.Operation
+Microsoft.AspNetCore.JsonPatch.Operations.Operation.Operation() -> void
+Microsoft.AspNetCore.JsonPatch.Operations.Operation.ShouldSerializevalue() -> bool
+Microsoft.AspNetCore.JsonPatch.Operations.Operation<TModel>.Operation() -> void
+Microsoft.AspNetCore.JsonPatch.Operations.OperationBase
+Microsoft.AspNetCore.JsonPatch.Operations.OperationBase.OperationBase() -> void
+Microsoft.AspNetCore.JsonPatch.Operations.OperationBase.OperationType.get -> Microsoft.AspNetCore.JsonPatch.Operations.OperationType
+Microsoft.AspNetCore.JsonPatch.Operations.OperationBase.ShouldSerializefrom() -> bool
+Microsoft.AspNetCore.JsonPatch.Operations.OperationType
+Microsoft.AspNetCore.JsonPatch.Operations.OperationType.Add = 0 -> Microsoft.AspNetCore.JsonPatch.Operations.OperationType
+Microsoft.AspNetCore.JsonPatch.Operations.OperationType.Copy = 4 -> Microsoft.AspNetCore.JsonPatch.Operations.OperationType
+Microsoft.AspNetCore.JsonPatch.Operations.OperationType.Invalid = 6 -> Microsoft.AspNetCore.JsonPatch.Operations.OperationType
+Microsoft.AspNetCore.JsonPatch.Operations.OperationType.Move = 3 -> Microsoft.AspNetCore.JsonPatch.Operations.OperationType
+Microsoft.AspNetCore.JsonPatch.Operations.OperationType.Remove = 1 -> Microsoft.AspNetCore.JsonPatch.Operations.OperationType
+Microsoft.AspNetCore.JsonPatch.Operations.OperationType.Replace = 2 -> Microsoft.AspNetCore.JsonPatch.Operations.OperationType
+Microsoft.AspNetCore.JsonPatch.Operations.OperationType.Test = 5 -> Microsoft.AspNetCore.JsonPatch.Operations.OperationType

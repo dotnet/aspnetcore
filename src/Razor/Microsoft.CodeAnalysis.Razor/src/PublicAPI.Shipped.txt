@@ -1,4 +1,16 @@
 #nullable enable
+~const Microsoft.CodeAnalysis.Razor.RazorLanguage.ContentType = "RazorCSharp" -> string
+~const Microsoft.CodeAnalysis.Razor.RazorLanguage.CoreContentType = "RazorCoreCSharp" -> string
+~const Microsoft.CodeAnalysis.Razor.RazorLanguage.Name = "Razor" -> string
+~Microsoft.CodeAnalysis.Razor.CompilationTagHelperFeature.GetDescriptors() -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Razor.Language.TagHelperDescriptor>
+~Microsoft.CodeAnalysis.Razor.DefaultMetadataReferenceFeature.References.get -> System.Collections.Generic.IReadOnlyList<Microsoft.CodeAnalysis.MetadataReference>
+~Microsoft.CodeAnalysis.Razor.DefaultMetadataReferenceFeature.References.set -> void
+~Microsoft.CodeAnalysis.Razor.DefaultTagHelperDescriptorProvider.Execute(Microsoft.AspNetCore.Razor.Language.TagHelperDescriptorProviderContext context) -> void
+~Microsoft.CodeAnalysis.Razor.IMetadataReferenceFeature.References.get -> System.Collections.Generic.IReadOnlyList<Microsoft.CodeAnalysis.MetadataReference>
+~static Microsoft.CodeAnalysis.Razor.CompilerFeatures.Register(Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder builder) -> void
+~static Microsoft.CodeAnalysis.Razor.RazorProjectEngineBuilderExtensions.SetCSharpLanguageVersion(this Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder builder, Microsoft.CodeAnalysis.CSharp.LanguageVersion csharpLanguageVersion) -> Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder
+~static Microsoft.CodeAnalysis.Razor.TagHelperDescriptorProviderContextExtensions.GetCompilation(this Microsoft.AspNetCore.Razor.Language.TagHelperDescriptorProviderContext context) -> Microsoft.CodeAnalysis.Compilation
+~static Microsoft.CodeAnalysis.Razor.TagHelperDescriptorProviderContextExtensions.SetCompilation(this Microsoft.AspNetCore.Razor.Language.TagHelperDescriptorProviderContext context, Microsoft.CodeAnalysis.Compilation compilation) -> void
 Microsoft.CodeAnalysis.Razor.CompilationTagHelperFeature
 Microsoft.CodeAnalysis.Razor.CompilationTagHelperFeature.CompilationTagHelperFeature() -> void
 Microsoft.CodeAnalysis.Razor.CompilerFeatures
@@ -12,15 +24,3 @@ Microsoft.CodeAnalysis.Razor.IMetadataReferenceFeature
 Microsoft.CodeAnalysis.Razor.RazorLanguage
 Microsoft.CodeAnalysis.Razor.RazorProjectEngineBuilderExtensions
 Microsoft.CodeAnalysis.Razor.TagHelperDescriptorProviderContextExtensions
-~Microsoft.CodeAnalysis.Razor.CompilationTagHelperFeature.GetDescriptors() -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Razor.Language.TagHelperDescriptor>
-~Microsoft.CodeAnalysis.Razor.DefaultMetadataReferenceFeature.References.get -> System.Collections.Generic.IReadOnlyList<Microsoft.CodeAnalysis.MetadataReference>
-~Microsoft.CodeAnalysis.Razor.DefaultMetadataReferenceFeature.References.set -> void
-~Microsoft.CodeAnalysis.Razor.DefaultTagHelperDescriptorProvider.Execute(Microsoft.AspNetCore.Razor.Language.TagHelperDescriptorProviderContext context) -> void
-~Microsoft.CodeAnalysis.Razor.IMetadataReferenceFeature.References.get -> System.Collections.Generic.IReadOnlyList<Microsoft.CodeAnalysis.MetadataReference>
-~const Microsoft.CodeAnalysis.Razor.RazorLanguage.ContentType = "RazorCSharp" -> string
-~const Microsoft.CodeAnalysis.Razor.RazorLanguage.CoreContentType = "RazorCoreCSharp" -> string
-~const Microsoft.CodeAnalysis.Razor.RazorLanguage.Name = "Razor" -> string
-~static Microsoft.CodeAnalysis.Razor.CompilerFeatures.Register(Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder builder) -> void
-~static Microsoft.CodeAnalysis.Razor.RazorProjectEngineBuilderExtensions.SetCSharpLanguageVersion(this Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder builder, Microsoft.CodeAnalysis.CSharp.LanguageVersion csharpLanguageVersion) -> Microsoft.AspNetCore.Razor.Language.RazorProjectEngineBuilder
-~static Microsoft.CodeAnalysis.Razor.TagHelperDescriptorProviderContextExtensions.GetCompilation(this Microsoft.AspNetCore.Razor.Language.TagHelperDescriptorProviderContext context) -> Microsoft.CodeAnalysis.Compilation
-~static Microsoft.CodeAnalysis.Razor.TagHelperDescriptorProviderContextExtensions.SetCompilation(this Microsoft.AspNetCore.Razor.Language.TagHelperDescriptorProviderContext context, Microsoft.CodeAnalysis.Compilation compilation) -> void
