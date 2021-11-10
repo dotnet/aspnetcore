@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace HtmlGenerationWebSite;
@@ -22,6 +23,7 @@ public class Startup
 
         services.AddSingleton(typeof(ISignalTokenProviderService<>), typeof(SignalTokenProviderService<>));
         services.AddSingleton<ProductsService>();
+        services.Configure<MemoryCacheOptions>(o => o.TrackLinkedCacheEntries = true);
     }
 
     public virtual void Configure(IApplicationBuilder app)
