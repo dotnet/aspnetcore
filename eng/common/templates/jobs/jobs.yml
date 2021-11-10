@@ -83,7 +83,7 @@ jobs:
         - ${{ if eq(parameters.enableSourceBuild, true) }}:
           - Source_Build_Complete
         pool:
-          vmImage: vs2017-win2016
+          vmImage: windows-2019
         runAsPublic: ${{ parameters.runAsPublic }}
         publishUsingPipelines: ${{ parameters.enablePublishUsingPipelines }}
         enablePublishBuildArtifacts: ${{ parameters.enablePublishBuildArtifacts }}
@@ -96,4 +96,4 @@ jobs:
         dependsOn:
           - Asset_Registry_Publish
         pool:
-          vmImage: vs2017-win2016
+          vmImage: windows-2019
