@@ -249,6 +249,48 @@ public class StringSegmentTest
     }
 
     [Fact]
+    public void StringSegment_Equals_NullString()
+    {
+        // Arrange
+        var stringSegment = new StringSegment("text");
+        var @string = (string)null;
+
+        // Act
+        var result = stringSegment.Equals(@string, StringComparison.Ordinal);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void StringSegment_DefaultValue_Equals_NullString()
+    {
+        // Arrange
+        var stringSegment = StringSegment.Empty;
+        var @string = (string)null;
+
+        // Act
+        var result = stringSegment.Equals(@string, StringComparison.Ordinal);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void StringSegment_DefaultValue_Equals_EmptyString()
+    {
+        // Arrange
+        var stringSegment = StringSegment.Empty;
+        var @string = string.Empty;
+
+        // Act
+        var result = stringSegment.Equals(@string, StringComparison.Ordinal);
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
     public void StringSegment_StaticEquals_Valid()
     {
         var segment1 = new StringSegment("My Car Is Cool", 3, 3);
