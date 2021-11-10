@@ -20,13 +20,13 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
         private static readonly RequestDelegate TestDelegate = async context => await Task.Yield();
         private static readonly string AuthErrorMessage = "Endpoint / contains authorization metadata, but a middleware was not found that supports authorization." +
             Environment.NewLine +
-            "Configure your application startup by adding app.UseAuthorization() inside the call to Configure(..) in the application startup code. " +
-            "The call to app.UseAuthorization() must appear between app.UseRouting() and app.UseEndpoints(...).";
+            "Configure your application startup by adding app.UseAuthorization() in the application startup code. " +
+            "If there are calls to app.UseRouting() and app.UseEndpoints(...), the call to app.UseAuthorization() must go between them.";
 
         private static readonly string CORSErrorMessage = "Endpoint / contains CORS metadata, but a middleware was not found that supports CORS." +
             Environment.NewLine +
-            "Configure your application startup by adding app.UseCors() inside the call to Configure(..) in the application startup code. " +
-            "The call to app.UseCors() must appear between app.UseRouting() and app.UseEndpoints(...).";
+            "Configure your application startup by adding app.UseCors() in the application startup code. " +
+            "If there are calls to app.UseRouting() and app.UseEndpoints(...), the call to app.UseCors() must go between them.";
 
         [Fact]
         public async Task AuthorizationMiddleware_WhenNoAuthMetadataIsConfigured()
