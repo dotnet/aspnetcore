@@ -1,3 +1,4 @@
+TEST ONLY CHANGE
 # How to get daily builds of ASP.NET Core
 
 Daily builds include the latest source code changes. They are not supported for production use and are subject to frequent changes, but we strive to make sure daily builds function correctly.
