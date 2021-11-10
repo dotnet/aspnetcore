@@ -142,6 +142,7 @@ public class SecurityStampValidator<TUser> : ISecurityStampValidator where TUser
                 Logger.LogDebug(EventIds.SecurityStampValidationFailed, "Security stamp validation failed, rejecting cookie.");
                 context.RejectPrincipal();
                 await SignInManager.SignOutAsync();
+                await SignInManager.Context.SignOutAsync(IdentityConstants.TwoFactorRememberMeScheme);
             }
         }
     }

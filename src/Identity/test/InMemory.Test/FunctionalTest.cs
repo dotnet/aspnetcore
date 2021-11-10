@@ -1,14 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Authentication;
@@ -20,7 +16,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.InMemory;
 
@@ -67,8 +62,10 @@ public class FunctionalTest
         Assert.Null(transaction3.SetCookie);
     }
 
-    [Fact]
-    public async Task CanCreateMeLoginAndCookieStopsWorkingAfterExpiration()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanCreateMeLoginAndCookieStopsWorkingAfterExpiration(bool testCore)
     {
         var clock = new TestClock();
         var server = await CreateServer(services =>
@@ -79,7 +76,7 @@ public class FunctionalTest
                 options.SlidingExpiration = false;
             });
             services.AddSingleton<ISystemClock>(clock);
-        });
+        }, testCore: testCore);
 
         var transaction1 = await SendAsync(server, "http://example.com/createMe");
         Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
@@ -108,12 +105,14 @@ public class FunctionalTest
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task CanCreateMeLoginAndSecurityStampExtendsExpiration(bool rememberMe)
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public async Task CanCreateMeLoginAndSecurityStampExtendsExpiration(bool rememberMe, bool testCore)
     {
         var clock = new TestClock();
-        var server = await CreateServer(services => services.AddSingleton<ISystemClock>(clock));
+        var server = await CreateServer(services => services.AddSingleton<ISystemClock>(clock), testCore: testCore);
 
         var transaction1 = await SendAsync(server, "http://example.com/createMe");
         Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
@@ -153,8 +152,10 @@ public class FunctionalTest
         Assert.Equal("hao", FindClaimValue(transaction6, ClaimTypes.Name));
     }
 
-    [Fact]
-    public async Task CanAccessOldPrincipalDuringSecurityStampReplacement()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanAccessOldPrincipalDuringSecurityStampReplacement(bool testCore)
     {
         var clock = new TestClock();
         var server = await CreateServer(services =>
@@ -170,7 +171,7 @@ public class FunctionalTest
                 };
             });
             services.AddSingleton<ISystemClock>(clock);
-        });
+        }, testCore: testCore);
 
         var transaction1 = await SendAsync(server, "http://example.com/createMe");
         Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
@@ -204,11 +205,13 @@ public class FunctionalTest
         Assert.Equal("hao", FindClaimValue(transaction6, ClaimTypes.Name));
     }
 
-    [Fact]
-    public async Task TwoFactorRememberCookieVerification()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task TwoFactorRememberCookieVerification(bool testCore)
     {
         var clock = new TestClock();
-        var server = await CreateServer(services => services.AddSingleton<ISystemClock>(clock));
+        var server = await CreateServer(services => services.AddSingleton<ISystemClock>(clock), testCore: testCore);
 
         var transaction1 = await SendAsync(server, "http://example.com/createMe");
         Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
@@ -231,11 +234,13 @@ public class FunctionalTest
         Assert.Equal(HttpStatusCode.OK, transaction4.Response.StatusCode);
     }
 
-    [Fact]
-    public async Task TwoFactorRememberCookieClearedBySecurityStampChange()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task TwoFactorRememberCookieClearedBySecurityStampChange(bool testCore)
     {
         var clock = new TestClock();
-        var server = await CreateServer(services => services.AddSingleton<ISystemClock>(clock));
+        var server = await CreateServer(services => services.AddSingleton<ISystemClock>(clock), testCore: testCore);
 
         var transaction1 = await SendAsync(server, "http://example.com/createMe");
         Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
@@ -273,17 +278,6 @@ public class FunctionalTest
             return null;
         }
         return claim.Attribute("value").Value;
-    }
-
-    private static async Task<XElement> GetAuthData(TestServer server, string url, string cookie)
-    {
-        var request = new HttpRequestMessage(HttpMethod.Get, url);
-        request.Headers.Add("Cookie", cookie);
-
-        var response2 = await server.CreateClient().SendAsync(request);
-        var text = await response2.Content.ReadAsStringAsync();
-        var me = XElement.Parse(text);
-        return me;
     }
 
     private static async Task<TestServer> CreateServer(Action<IServiceCollection> configureServices = null, Func<HttpContext, Task> testpath = null, Uri baseAddress = null, bool testCore = false)
