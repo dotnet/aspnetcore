@@ -81,7 +81,14 @@ public static class IdentityCookieAuthenticationBuilderExtensions
     /// <returns>The <see cref="OptionsBuilder{TOptions}"/> which can be used to configure the cookie authentication.</returns>
     public static OptionsBuilder<CookieAuthenticationOptions> AddTwoFactorRememberMeCookie(this AuthenticationBuilder builder)
     {
-        builder.AddCookie(IdentityConstants.TwoFactorRememberMeScheme, o => o.Cookie.Name = IdentityConstants.TwoFactorRememberMeScheme);
+        builder.AddCookie(IdentityConstants.TwoFactorRememberMeScheme, o =>
+        {
+            o.Cookie.Name = IdentityConstants.TwoFactorRememberMeScheme;
+            o.Events = new CookieAuthenticationEvents
+            {
+                OnValidatePrincipal = SecurityStampValidator.ValidateAsync<ITwoFactorSecurityStampValidator>
+            };
+        });
         return new OptionsBuilder<CookieAuthenticationOptions>(builder.Services, IdentityConstants.TwoFactorRememberMeScheme);
     }
 
