@@ -39,7 +39,7 @@
   "scripts": {
     "preclean": "cd .. && yarn run build",
     "clean": "node ../common/node_modules/rimraf/bin.js ./wwwroot/dist ./obj/js",
-    "prebuild": "yarn run clean && yarn install --mutex network",
+    "prebuild": "yarn run clean && yarn install --mutex network --frozen-lockfile",
     "build": "yarn run build:inner",
     "build:inner": "yarn run build:lint && yarn run build:webpack",
     "build:lint": "node ../common/node_modules/eslint/bin/eslint . --ext .ts --resolve-plugins-relative-to ../common",
