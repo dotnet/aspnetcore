@@ -1,7 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language;
@@ -153,5 +154,39 @@ public class TagHelperMatchingConventionsTest
 
         // Assert
         Assert.Equal(expectedResult, result);
+    }
+
+    [Fact]
+    public void CanSatisfyBoundAttribute_IndexerAttribute_ReturnsFalseIsNotMatching()
+    {
+        // Arrange
+        var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "TestTagHelper", "Test");
+        var builder = new DefaultBoundAttributeDescriptorBuilder(tagHelperBuilder, TagHelperConventions.DefaultKind);
+        builder.AsDictionary("asp-", typeof(Dictionary<string, string>).FullName);
+
+        var boundAttribute = builder.Build();
+
+        // Act
+        var result = TagHelperMatchingConventions.CanSatisfyBoundAttribute("style", boundAttribute);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void CanSatisfyBoundAttribute_IndexerAttribute_ReturnsTrueIfMatching()
+    {
+        // Arrange
+        var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "TestTagHelper", "Test");
+        var builder = new DefaultBoundAttributeDescriptorBuilder(tagHelperBuilder, TagHelperConventions.DefaultKind);
+        builder.AsDictionary("asp-", typeof(Dictionary<string, string>).FullName);
+
+        var boundAttribute = builder.Build();
+
+        // Act
+        var result = TagHelperMatchingConventions.CanSatisfyBoundAttribute("asp-route-controller", boundAttribute);
+
+        // Assert
+        Assert.True(result);
     }
 }
