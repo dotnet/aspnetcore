@@ -7,6 +7,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
@@ -42,11 +43,7 @@ internal class PropertyHelper
 
     private static readonly ConcurrentDictionary<Type, PropertyHelper[]> VisiblePropertiesCache = new();
 
-    // We need to be able to check if a type is a 'ref struct' - but we need to be able to compile
-    // for platforms where the attribute is not defined, like net46. So we can fetch the attribute
-    // by late binding. If the attribute isn't defined, then we assume we won't encounter any
-    // 'ref struct' types.
-    private static readonly Type? IsByRefLikeAttribute = Type.GetType("System.Runtime.CompilerServices.IsByRefLikeAttribute", throwOnError: false);
+    private static readonly Type IsByRefLikeAttribute = typeof(System.Runtime.CompilerServices.IsByRefLikeAttribute);
 
     private Action<object, object?>? _valueSetter;
     private Func<object, object?>? _valueGetter;
@@ -542,7 +539,6 @@ internal class PropertyHelper
     private static bool IsRefStructProperty(PropertyInfo property)
     {
         return
-            IsByRefLikeAttribute != null &&
             property.PropertyType.IsValueType &&
             property.PropertyType.IsDefined(IsByRefLikeAttribute);
     }

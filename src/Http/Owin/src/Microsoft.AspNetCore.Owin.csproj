@@ -7,6 +7,8 @@
     <PackageTags>aspnetcore;owin</PackageTags>
     <!-- Nullable disabled because package is not a commonly used. -->
     <Nullable>disable</Nullable>
+    <IsTrimmable>true</IsTrimmable>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
   </PropertyGroup>
 
   <ItemGroup>

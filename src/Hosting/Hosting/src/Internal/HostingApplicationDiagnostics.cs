@@ -1,10 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
@@ -228,38 +227,22 @@ internal class HostingApplicationDiagnostics
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void RecordBeginRequestDiagnostics(HttpContext httpContext, long startTimestamp)
     {
-        _diagnosticListener.Write(
-            DeprecatedDiagnosticsBeginRequestKey,
-            new
-            {
-                httpContext = httpContext,
-                timestamp = startTimestamp
-            });
+        WriteDiagnosticEvent(_diagnosticListener, DeprecatedDiagnosticsBeginRequestKey,
+            new RequestActivityData(startTimestamp, httpContext));
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void RecordEndRequestDiagnostics(HttpContext httpContext, long currentTimestamp)
     {
-        _diagnosticListener.Write(
-            DeprecatedDiagnosticsEndRequestKey,
-            new
-            {
-                httpContext = httpContext,
-                timestamp = currentTimestamp
-            });
+        WriteDiagnosticEvent(_diagnosticListener, DeprecatedDiagnosticsEndRequestKey,
+            new RequestActivityData(currentTimestamp, httpContext));
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void RecordUnhandledExceptionDiagnostics(HttpContext httpContext, long currentTimestamp, Exception exception)
     {
-        _diagnosticListener.Write(
-            DiagnosticsUnhandledExceptionKey,
-            new
-            {
-                httpContext = httpContext,
-                timestamp = currentTimestamp,
-                exception = exception
-            });
+        WriteDiagnosticEvent(_diagnosticListener, DiagnosticsUnhandledExceptionKey,
+            new RequestExceptionActivityData(currentTimestamp, httpContext, exception));
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -348,6 +331,8 @@ internal class HostingApplicationDiagnostics
     }
 
     // These are versions of DiagnosticSource.Start/StopActivity that don't allocate strings per call (see https://github.com/dotnet/corefx/issues/37055)
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(HttpContext))]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Properties preserved by DynamicDependency")]
     private Activity StartActivity(Activity activity, HttpContext httpContext)
     {
         activity.Start();
@@ -355,6 +340,8 @@ internal class HostingApplicationDiagnostics
         return activity;
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(HttpContext))]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Properties preserved by DynamicDependency")]
     private void StopActivity(Activity activity, HttpContext httpContext)
     {
         // Stop sets the end time if it was unset, but we want it set before we issue the write
@@ -365,6 +352,18 @@ internal class HostingApplicationDiagnostics
         }
         _diagnosticListener.Write(ActivityStopKey, httpContext);
         activity.Stop();    // Resets Activity.Current (we want this after the Write)
+    }
+
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:UnrecognizedReflectionPattern",
+        Justification = "The values being passed into Write have the commonly used properties being preserved with DynamicDependency.")]
+    private static void WriteDiagnosticEvent<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
+        TValue>(
+            DiagnosticSource diagnosticSource,
+            string name,
+            TValue value)
+    {
+        diagnosticSource.Write(name, value);
     }
 
     private static class Log
@@ -435,5 +434,33 @@ internal class HostingApplicationDiagnostics
                 return GetEnumerator();
             }
         }
+    }
+
+    private class RequestActivityData
+    {
+        [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(HttpContext))]
+        public RequestActivityData(long timeStamp, HttpContext httpContext)
+        {
+            TimeStamp = timeStamp;
+            HttpContext = httpContext;
+        }
+
+        long TimeStamp { get; }
+        HttpContext HttpContext { get; }
+    }
+
+    private class RequestExceptionActivityData
+    {
+        [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(HttpContext))]
+        public RequestExceptionActivityData(long timeStamp, HttpContext httpContext, Exception exception)
+        {
+            TimeStamp = timeStamp;
+            HttpContext = httpContext;
+            Exception = exception;
+        }
+
+        long TimeStamp { get; }
+        HttpContext HttpContext { get; }
+        Exception Exception { get; }
     }
 }

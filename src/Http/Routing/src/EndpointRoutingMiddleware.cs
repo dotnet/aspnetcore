@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -87,6 +88,8 @@ internal sealed partial class EndpointRoutingMiddleware
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCodeAttribute", Justification = "Type preserved with DynamicDependency")]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(HttpContext))]
     private Task SetRoutingAndContinue(HttpContext httpContext)
     {
         // If there was no mutation of the endpoint then log failure

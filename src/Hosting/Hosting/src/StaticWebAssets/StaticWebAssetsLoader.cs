@@ -48,7 +48,9 @@ public class StaticWebAssetsLoader
     {
         try
         {
+#pragma warning disable IL2026 // RequiresUnreferencedCodeAttribute: string should not be trimmed away and thus is safe to use
             var candidate = configuration.GetValue<string>(WebHostDefaults.StaticWebAssetsKey) ?? ResolveRelativeToAssembly(environment);
+#pragma warning restore IL2026
             if (candidate != null && File.Exists(candidate))
             {
                 return File.OpenRead(candidate);

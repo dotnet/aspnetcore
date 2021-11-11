@@ -36,7 +36,9 @@ public class DefaultInlineConstraintResolver : IInlineConstraintResolver
             throw new ArgumentNullException(nameof(serviceProvider));
         }
 
+#pragma warning disable IL2026 // RequiresUnreferencedCodeAttribute: ConstraintMap is safe to use if it's only used for reading/deleting constraints
         _inlineConstraintMap = routeOptions.Value.ConstraintMap;
+#pragma warning restore IL2026
         _serviceProvider = serviceProvider;
     }
 

@@ -72,7 +72,7 @@ public class RouteOptions
     /// </summary>
     public IDictionary<string, Type> ConstraintMap
     {
-        [RequiresUnreferencedCode($"The linker cannot determine what constraints are being added via the ConstraintMap property. Prefer {nameof(RouteOptions)}.{nameof(SetParameterPolicy)} instead for setting constraints. This warning can be suppressed if this property is being used to read of delete constraints.")]
+        [RequiresUnreferencedCode($"The linker cannot determine what constraints are being added via the ConstraintMap property. Prefer {nameof(RouteOptions)}.{nameof(SetParameterPolicy)} instead for setting constraints. This warning can be suppressed if this property is being used to read or delete constraints.")]
         get
         {
             return _constraintTypeMap;
@@ -125,11 +125,12 @@ public class RouteOptions
         return defaults;
     }
 
-   /// <summary>
-   /// Adds or overwrites the parameter policy with the associated route pattern token.
-   /// </summary>
+    /// <summary>
+    /// Adds or overwrites the parameter policy with the associated route pattern token.
+    /// </summary>
     /// <typeparam name="T">The parameter policy type.</typeparam>
     /// <param name="token">The route token used to apply the parameter policy.</param>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCodeAttribute", Justification = "DynamicallyAccessedMembers preserves type")]
     public void SetParameterPolicy<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]T>(string token) where T : IParameterPolicy
     {
         ConstraintMap[token] = typeof(T);
@@ -141,6 +142,7 @@ public class RouteOptions
     /// <param name="token">The route token used to apply the parameter policy.</param>
     /// <param name="type">The parameter policy type.</param>
     /// <exception cref="InvalidOperationException">Throws an exception if the type is not an <see cref="IParameterPolicy"/>.</exception>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCodeAttribute", Justification = "DynamicallyAccessedMembers preserves type")]
     public void SetParameterPolicy(string token, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type)
     {
         if (!type.IsAssignableTo(typeof(IParameterPolicy)))

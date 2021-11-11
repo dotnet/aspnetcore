@@ -44,7 +44,9 @@ internal class DefaultParameterPolicyFactory : ParameterPolicyFactory
         }
 
         var parameterPolicy = ParameterPolicyActivator.ResolveParameterPolicy<IParameterPolicy>(
+#pragma warning disable IL2026 // RequiresUnreferencedCodeAttribute: ConstraintMap is safe to use if it's only used for reading/deleting constraints
             _options.ConstraintMap,
+#pragma warning restore IL2026
             _serviceProvider,
             inlineText,
             out var parameterPolicyKey);

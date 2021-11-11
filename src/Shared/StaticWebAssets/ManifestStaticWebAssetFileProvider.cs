@@ -19,6 +19,9 @@ internal sealed class ManifestStaticWebAssetFileProvider : IFileProvider
 
     private static readonly IEqualityComparer<IFileInfo> _nameComparer = new FileNameComparer();
 
+    private const DynamicallyAccessedMemberTypes JsonSerializerSettings =
+        DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor;
+
     private readonly IFileProvider[] _fileProviders;
     private readonly StaticWebAssetNode _root;
 
@@ -320,6 +323,8 @@ internal sealed class ManifestStaticWebAssetFileProvider : IFileProvider
 
         public StaticWebAssetNode Root { get; set; } = null!;
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Public properties preserved with DynamicDependency")]
+        [DynamicDependency(JsonSerializerSettings, typeof(StaticWebAssetManifest))]
         internal static StaticWebAssetManifest Parse(Stream manifest)
         {
             return JsonSerializer.Deserialize<StaticWebAssetManifest>(manifest)!;
@@ -364,6 +369,8 @@ internal sealed class ManifestStaticWebAssetFileProvider : IFileProvider
 
     private sealed class OSBasedCaseConverter : JsonConverter<Dictionary<string, StaticWebAssetNode>>
     {
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Public properties preserved with DynamicDependency")]
+        [DynamicDependency(JsonSerializerSettings, typeof(StaticWebAssetNode))]
         public override Dictionary<string, StaticWebAssetNode> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             var parsed = JsonSerializer.Deserialize<IDictionary<string, StaticWebAssetNode>>(ref reader, options)!;
@@ -420,6 +427,8 @@ internal sealed class ManifestStaticWebAssetFileProvider : IFileProvider
             }
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Public properties preserved with DynamicDependency")]
+        [DynamicDependency(JsonSerializerSettings, typeof(StaticWebAssetNode))]
         public override void Write(Utf8JsonWriter writer, Dictionary<string, StaticWebAssetNode> value, JsonSerializerOptions options)
         {
             JsonSerializer.Serialize(writer, value, options);

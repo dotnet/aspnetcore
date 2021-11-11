@@ -8,6 +8,7 @@
     <PackageTags>aspnetcore</PackageTags>
     <Nullable>enable</Nullable>
     <Trimmable>true</Trimmable>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
   </PropertyGroup>
 
 </Project>

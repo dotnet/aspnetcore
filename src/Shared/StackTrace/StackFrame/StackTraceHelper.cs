@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -16,6 +17,7 @@ namespace Microsoft.Extensions.StackTrace.Sources;
 
 internal class StackTraceHelper
 {
+    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "StackFrame.GetMethod() is best effort to display helpful information.")]
     public static IList<StackFrameInfo> GetFrames(Exception exception, out AggregateException? error)
     {
         if (exception == null)
