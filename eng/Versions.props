@@ -226,11 +226,11 @@
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension60x64Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension60Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension60x64Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension60x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension60Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension60x86Version>
     <!-- 3rd party dependencies -->
-    <AngleSharpVersion>0.9.9</AngleSharpVersion>
+    <AngleSharpVersion>0.10.0</AngleSharpVersion>
     <BenchmarkDotNetVersion>0.13.0</BenchmarkDotNetVersion>
     <CastleCoreVersion>4.2.1</CastleCoreVersion>
     <CommandLineParserVersion>2.3.0</CommandLineParserVersion>
-    <FSharpCoreVersion>4.2.1</FSharpCoreVersion>
+    <FSharpCoreVersion>6.0.0</FSharpCoreVersion>
     <GoogleProtobufVersion>3.18.0</GoogleProtobufVersion>
     <GrpcAspNetCoreVersion>2.40.0</GrpcAspNetCoreVersion>
     <GrpcAuthVersion>2.40.0</GrpcAuthVersion>
@@ -261,7 +261,7 @@
     <SerilogExtensionsLoggingVersion>1.4.0</SerilogExtensionsLoggingVersion>
     <SerilogSinksFileVersion>4.0.0</SerilogSinksFileVersion>
     <StackExchangeRedisVersion>2.2.4</StackExchangeRedisVersion>
-    <SystemReactiveLinqVersion>3.1.1</SystemReactiveLinqVersion>
+    <SystemReactiveLinqVersion>5.0.0</SystemReactiveLinqVersion>
     <SwashbuckleAspNetCoreVersion>6.2.3</SwashbuckleAspNetCoreVersion>
     <XunitAbstractionsVersion>2.0.3</XunitAbstractionsVersion>
     <XunitAnalyzersVersion>0.10.0</XunitAnalyzersVersion>
