@@ -6,19 +6,13 @@ using Moq;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests;
 
-[AttributeUsage(AttributeTargets.Method)]
-internal class HubServerProxyAttribute : Attribute
-{
-
-}
-
 internal static partial class HubServerProxyExtensions
 {
-    [HubServerProxy]
+    [ServerHubProxy]
     public static partial T GetHubServer<T>(this HubConnection conn);
 }
 
-public class HubServerProxyGeneratorTests
+public class ServerHubProxyGeneratorTests
 {
     public interface IMyHub
     {

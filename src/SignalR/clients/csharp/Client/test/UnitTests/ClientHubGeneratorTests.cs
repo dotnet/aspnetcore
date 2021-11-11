@@ -5,19 +5,13 @@ using Moq;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests;
 
-[AttributeUsage(AttributeTargets.Method)]
-internal class HubClientProxyAttribute : Attribute
-{
-
-}
-
 internal static partial class RegisterCallbackProviderExtensions
 {
-    [HubClientProxy]
-    public static partial IDisposable SetHubClient<T>(this HubConnection conn, T provider);
+    [ClientHub]
+    public static partial IDisposable SetHubClient<T>(this HubConnection conn, T p);
 }
 
-public class HubClientProxyGeneratorTests
+public class ClientHubGeneratorTests
 {
     public interface IMyClient
     {
