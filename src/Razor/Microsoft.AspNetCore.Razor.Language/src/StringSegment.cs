@@ -110,7 +110,6 @@ namespace Microsoft.AspNetCore.Razor
             return Equals(other, StringComparison.Ordinal);
         }
 
-
         /// <summary>
         /// Indicates whether the current object is equal to another object of the same type.
         /// </summary>
@@ -160,15 +159,7 @@ namespace Microsoft.AspNetCore.Razor
         /// <param name="comparisonType">One of the enumeration values that specifies the rules to use in the comparison.</param>
         /// <returns><code>true</code> if the specified <see cref="string"/> is equal to the current <see cref="StringSegment"/>; otherwise, <code>false</code>.</returns>
         public bool Equals(string text, StringComparison comparisonType)
-        {
-            var textLength = text.Length;
-            if (!HasValue || Length != textLength)
-            {
-                return false;
-            }
-
-            return string.Compare(Buffer, Offset, text, 0, textLength, comparisonType) == 0;
-        }
+            => Equals(new StringSegment(text), comparisonType);
 
         /// <inheritdoc />
         public override int GetHashCode()
@@ -225,10 +216,7 @@ namespace Microsoft.AspNetCore.Razor
         /// <param name="comparisonType">One of the enumeration values that specifies the rules to use in the comparison.</param>
         /// <returns><code>true</code> if <paramref name="text"/> matches the beginning of this <see cref="StringSegment"/>; otherwise, <code>false</code>.</returns>
         public bool StartsWith(string text, StringComparison comparisonType)
-        {
-            var textLength = text.Length;
-            return string.Compare(Buffer, Offset, text, 0, textLength, comparisonType) == 0;
-        }
+            => StartsWith(new StringSegment(text), comparisonType);
 
         public bool StartsWith(StringSegment text, StringComparison comparisonType)
         {
