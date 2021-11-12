@@ -1,9 +1,1 @@
 #nullable enable
-*REMOVED*Microsoft.AspNetCore.Html.HtmlFormattableString.HtmlFormattableString(System.IFormatProvider? formatProvider, string! format, params object![]! args) -> void
-*REMOVED*Microsoft.AspNetCore.Html.HtmlFormattableString.HtmlFormattableString(string! format, params object![]! args) -> void
-*REMOVED*static Microsoft.AspNetCore.Html.HtmlContentBuilderExtensions.AppendFormat(this Microsoft.AspNetCore.Html.IHtmlContentBuilder! builder, System.IFormatProvider! formatProvider, string! format, params object![]! args) -> Microsoft.AspNetCore.Html.IHtmlContentBuilder!
-*REMOVED*static Microsoft.AspNetCore.Html.HtmlContentBuilderExtensions.AppendFormat(this Microsoft.AspNetCore.Html.IHtmlContentBuilder! builder, string! format, params object![]! args) -> Microsoft.AspNetCore.Html.IHtmlContentBuilder!
-Microsoft.AspNetCore.Html.HtmlFormattableString.HtmlFormattableString(System.IFormatProvider? formatProvider, string! format, params object?[]! args) -> void
-Microsoft.AspNetCore.Html.HtmlFormattableString.HtmlFormattableString(string! format, params object?[]! args) -> void
-static Microsoft.AspNetCore.Html.HtmlContentBuilderExtensions.AppendFormat(this Microsoft.AspNetCore.Html.IHtmlContentBuilder! builder, System.IFormatProvider! formatProvider, string! format, params object?[]! args) -> Microsoft.AspNetCore.Html.IHtmlContentBuilder!
-static Microsoft.AspNetCore.Html.HtmlContentBuilderExtensions.AppendFormat(this Microsoft.AspNetCore.Html.IHtmlContentBuilder! builder, string! format, params object?[]! args) -> Microsoft.AspNetCore.Html.IHtmlContentBuilder!

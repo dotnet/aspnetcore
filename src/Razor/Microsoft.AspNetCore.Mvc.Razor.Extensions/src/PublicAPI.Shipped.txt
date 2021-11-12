@@ -1,41 +1,11 @@
 #nullable enable
-Microsoft.AspNetCore.Mvc.Razor.Extensions.IInjectTargetExtension
-Microsoft.AspNetCore.Mvc.Razor.Extensions.IViewComponentTagHelperTargetExtension
-Microsoft.AspNetCore.Mvc.Razor.Extensions.InjectDirective
-Microsoft.AspNetCore.Mvc.Razor.Extensions.InjectIntermediateNode
-Microsoft.AspNetCore.Mvc.Razor.Extensions.InjectIntermediateNode.InjectIntermediateNode() -> void
-Microsoft.AspNetCore.Mvc.Razor.Extensions.InjectTargetExtension
-Microsoft.AspNetCore.Mvc.Razor.Extensions.InjectTargetExtension.InjectTargetExtension() -> void
-Microsoft.AspNetCore.Mvc.Razor.Extensions.ModelDirective
-Microsoft.AspNetCore.Mvc.Razor.Extensions.ModelExpressionPass
-Microsoft.AspNetCore.Mvc.Razor.Extensions.ModelExpressionPass.ModelExpressionPass() -> void
-Microsoft.AspNetCore.Mvc.Razor.Extensions.MvcViewDocumentClassifierPass
-Microsoft.AspNetCore.Mvc.Razor.Extensions.MvcViewDocumentClassifierPass.MvcViewDocumentClassifierPass() -> void
-Microsoft.AspNetCore.Mvc.Razor.Extensions.PageDirective
-Microsoft.AspNetCore.Mvc.Razor.Extensions.PagesPropertyInjectionPass
-Microsoft.AspNetCore.Mvc.Razor.Extensions.PagesPropertyInjectionPass.PagesPropertyInjectionPass() -> void
-Microsoft.AspNetCore.Mvc.Razor.Extensions.RazorExtensions
-Microsoft.AspNetCore.Mvc.Razor.Extensions.RazorPageDocumentClassifierPass
-Microsoft.AspNetCore.Mvc.Razor.Extensions.RazorPageDocumentClassifierPass.RazorPageDocumentClassifierPass() -> void
-Microsoft.AspNetCore.Mvc.Razor.Extensions.TagHelperDescriptorExtensions
-Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperConventions
-Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperDescriptorProvider
-Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperDescriptorProvider.Order.get -> int
-Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperDescriptorProvider.Order.set -> void
-Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperDescriptorProvider.ViewComponentTagHelperDescriptorProvider() -> void
-Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperIntermediateNode
-Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperIntermediateNode.ViewComponentTagHelperIntermediateNode() -> void
-Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperMetadata
-Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperPass
-Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperPass.ViewComponentTagHelperPass() -> void
-override Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperPass.Order.get -> int
 ~Microsoft.AspNetCore.Mvc.Razor.Extensions.IInjectTargetExtension.WriteInjectProperty(Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeRenderingContext context, Microsoft.AspNetCore.Mvc.Razor.Extensions.InjectIntermediateNode node) -> void
-~Microsoft.AspNetCore.Mvc.Razor.Extensions.IViewComponentTagHelperTargetExtension.WriteViewComponentTagHelper(Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeRenderingContext context, Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperIntermediateNode node) -> void
 ~Microsoft.AspNetCore.Mvc.Razor.Extensions.InjectIntermediateNode.MemberName.get -> string
 ~Microsoft.AspNetCore.Mvc.Razor.Extensions.InjectIntermediateNode.MemberName.set -> void
 ~Microsoft.AspNetCore.Mvc.Razor.Extensions.InjectIntermediateNode.TypeName.get -> string
 ~Microsoft.AspNetCore.Mvc.Razor.Extensions.InjectIntermediateNode.TypeName.set -> void
 ~Microsoft.AspNetCore.Mvc.Razor.Extensions.InjectTargetExtension.WriteInjectProperty(Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeRenderingContext context, Microsoft.AspNetCore.Mvc.Razor.Extensions.InjectIntermediateNode node) -> void
+~Microsoft.AspNetCore.Mvc.Razor.Extensions.IViewComponentTagHelperTargetExtension.WriteViewComponentTagHelper(Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeRenderingContext context, Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperIntermediateNode node) -> void
 ~Microsoft.AspNetCore.Mvc.Razor.Extensions.PageDirective.DirectiveNode.get -> Microsoft.AspNetCore.Razor.Language.Intermediate.IntermediateNode
 ~Microsoft.AspNetCore.Mvc.Razor.Extensions.PageDirective.RouteTemplate.get -> string
 ~Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperDescriptorProvider.Execute(Microsoft.AspNetCore.Razor.Language.TagHelperDescriptorProviderContext context) -> void
@@ -79,3 +49,35 @@ override Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperPass.Or
 ~static readonly Microsoft.AspNetCore.Mvc.Razor.Extensions.RazorPageDocumentClassifierPass.RouteTemplateKey -> string
 ~static readonly Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperConventions.Kind -> string
 ~static readonly Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperMetadata.Name -> string
+Microsoft.AspNetCore.Mvc.Razor.Extensions.IInjectTargetExtension
+Microsoft.AspNetCore.Mvc.Razor.Extensions.InjectDirective
+Microsoft.AspNetCore.Mvc.Razor.Extensions.InjectIntermediateNode
+Microsoft.AspNetCore.Mvc.Razor.Extensions.InjectIntermediateNode.InjectIntermediateNode() -> void
+Microsoft.AspNetCore.Mvc.Razor.Extensions.InjectTargetExtension
+Microsoft.AspNetCore.Mvc.Razor.Extensions.InjectTargetExtension.InjectTargetExtension() -> void
+Microsoft.AspNetCore.Mvc.Razor.Extensions.IViewComponentTagHelperTargetExtension
+Microsoft.AspNetCore.Mvc.Razor.Extensions.ModelDirective
+Microsoft.AspNetCore.Mvc.Razor.Extensions.ModelExpressionPass
+Microsoft.AspNetCore.Mvc.Razor.Extensions.ModelExpressionPass.ModelExpressionPass() -> void
+Microsoft.AspNetCore.Mvc.Razor.Extensions.MvcViewDocumentClassifierPass
+Microsoft.AspNetCore.Mvc.Razor.Extensions.MvcViewDocumentClassifierPass.MvcViewDocumentClassifierPass() -> void
+Microsoft.AspNetCore.Mvc.Razor.Extensions.MvcViewDocumentClassifierPass.MvcViewDocumentClassifierPass(bool useConsolidatedMvcViews) -> void
+Microsoft.AspNetCore.Mvc.Razor.Extensions.PageDirective
+Microsoft.AspNetCore.Mvc.Razor.Extensions.PagesPropertyInjectionPass
+Microsoft.AspNetCore.Mvc.Razor.Extensions.PagesPropertyInjectionPass.PagesPropertyInjectionPass() -> void
+Microsoft.AspNetCore.Mvc.Razor.Extensions.RazorExtensions
+Microsoft.AspNetCore.Mvc.Razor.Extensions.RazorPageDocumentClassifierPass
+Microsoft.AspNetCore.Mvc.Razor.Extensions.RazorPageDocumentClassifierPass.RazorPageDocumentClassifierPass() -> void
+Microsoft.AspNetCore.Mvc.Razor.Extensions.RazorPageDocumentClassifierPass.RazorPageDocumentClassifierPass(bool useConsolidatedMvcViews) -> void
+Microsoft.AspNetCore.Mvc.Razor.Extensions.TagHelperDescriptorExtensions
+Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperConventions
+Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperDescriptorProvider
+Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperDescriptorProvider.Order.get -> int
+Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperDescriptorProvider.Order.set -> void
+Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperDescriptorProvider.ViewComponentTagHelperDescriptorProvider() -> void
+Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperIntermediateNode
+Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperIntermediateNode.ViewComponentTagHelperIntermediateNode() -> void
+Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperMetadata
+Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperPass
+Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperPass.ViewComponentTagHelperPass() -> void
+override Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentTagHelperPass.Order.get -> int

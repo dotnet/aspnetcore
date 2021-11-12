@@ -485,7 +485,6 @@ public class CacheTagHelperTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/36765")]
     public async Task ProcessAsync_FlowsEntryLinkThatAllowsAddingTriggersToAddedEntry()
     {
         // Arrange
@@ -493,7 +492,7 @@ public class CacheTagHelperTest
         var expectedContent = new DefaultTagHelperContent();
         expectedContent.SetContent("some-content");
         var tokenSource = new CancellationTokenSource();
-        var cache = new MemoryCache(new MemoryCacheOptions());
+        var cache = new MemoryCache(new MemoryCacheOptions() { TrackLinkedCacheEntries = true });
         var cacheEntryOptions = new MemoryCacheEntryOptions()
             .AddExpirationToken(new CancellationChangeToken(tokenSource.Token));
         var tagHelperContext = new TagHelperContext(

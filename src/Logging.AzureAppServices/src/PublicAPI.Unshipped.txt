@@ -1,9 +1,1 @@
 #nullable enable
-Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerContext
-Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerContext.Timestamp.get -> System.DateTimeOffset
-~Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerContext.AppName.get -> string
-~Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerContext.AzureBlobLoggerContext(string appName, string identifier, System.DateTimeOffset timestamp) -> void
-~Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerContext.Identifier.get -> string
-~Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerOptions.FileNameFormat.get -> System.Func<Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerContext, string>
-~Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerOptions.FileNameFormat.set -> void
-~static Microsoft.Extensions.Logging.AzureAppServicesLoggerFactoryExtensions.AddAzureWebAppDiagnostics(this Microsoft.Extensions.Logging.ILoggingBuilder builder, System.Action<Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerOptions> configureBlobLoggerOptions) -> Microsoft.Extensions.Logging.ILoggingBuilder

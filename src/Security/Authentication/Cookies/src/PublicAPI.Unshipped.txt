@@ -1,15 +1,1 @@
 #nullable enable
-*REMOVED*Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.RetrieveAsync(string! key) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticationTicket!>!
-Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationEvents.OnCheckSlidingExpiration.get -> System.Func<Microsoft.AspNetCore.Authentication.Cookies.CookieSlidingExpirationContext!, System.Threading.Tasks.Task!>!
-Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationEvents.OnCheckSlidingExpiration.set -> void
-Microsoft.AspNetCore.Authentication.Cookies.CookieSlidingExpirationContext
-Microsoft.AspNetCore.Authentication.Cookies.CookieSlidingExpirationContext.CookieSlidingExpirationContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions! options, Microsoft.AspNetCore.Authentication.AuthenticationTicket! ticket, System.TimeSpan elapsedTime, System.TimeSpan remainingTime) -> void
-Microsoft.AspNetCore.Authentication.Cookies.CookieSlidingExpirationContext.ElapsedTime.get -> System.TimeSpan
-Microsoft.AspNetCore.Authentication.Cookies.CookieSlidingExpirationContext.RemainingTime.get -> System.TimeSpan
-Microsoft.AspNetCore.Authentication.Cookies.CookieSlidingExpirationContext.ShouldRenew.get -> bool
-Microsoft.AspNetCore.Authentication.Cookies.CookieSlidingExpirationContext.ShouldRenew.set -> void
-Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.RemoveAsync(string! key, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.RenewAsync(string! key, Microsoft.AspNetCore.Authentication.AuthenticationTicket! ticket, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.RetrieveAsync(string! key) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticationTicket?>!
-Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.RetrieveAsync(string! key, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticationTicket?>!
-Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.StoreAsync(Microsoft.AspNetCore.Authentication.AuthenticationTicket! ticket, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string!>!

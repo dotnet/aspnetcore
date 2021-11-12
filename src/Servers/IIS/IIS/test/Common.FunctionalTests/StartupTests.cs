@@ -49,6 +49,7 @@ public class StartupTests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38260")]
     public async Task ExpandEnvironmentVariableInWebConfig()
     {
         // Point to dotnet installed in user profile.
