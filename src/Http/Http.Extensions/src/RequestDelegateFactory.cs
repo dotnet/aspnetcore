@@ -1048,8 +1048,8 @@ public static partial class RequestDelegateFactory
                 Expression.Convert(Expression.Constant(parameter.DefaultValue), parameter.ParameterType)));
     }
 
-    private static Expression BindParameterFromProperty(ParameterInfo parameter, MemberExpression property, string key, FactoryContext factoryContext, string source, Type? returnType = null) =>
-        BindParameterFromValue(parameter, GetValueFromProperty(property, key, returnType), factoryContext, source);
+    private static Expression BindParameterFromProperty(ParameterInfo parameter, MemberExpression property, string key, FactoryContext factoryContext, string source) =>
+        BindParameterFromValue(parameter, GetValueFromProperty(property, key), factoryContext, source);
 
     private static Expression BindParameterFromRouteValueOrQueryString(ParameterInfo parameter, string key, FactoryContext factoryContext)
     {
