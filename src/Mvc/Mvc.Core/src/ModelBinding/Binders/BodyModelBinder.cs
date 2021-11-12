@@ -144,10 +144,15 @@ public class BodyModelBinder : IModelBinder
 
         if (formatter == null)
         {
-            if (AllowEmptyBody && httpContext.Features.Get<IHttpRequestBodyDetectionFeature>()?.CanHaveBody == false)
+            if (AllowEmptyBody)
             {
-                bindingContext.Result = ModelBindingResult.Success(model: null);
-                return;
+                var hasBody = httpContext.Features.Get<IHttpRequestBodyDetectionFeature>()?.CanHaveBody;
+                hasBody ??= httpContext.Request.ContentLength is not null && httpContext.Request.ContentLength == 0;
+                if (hasBody == false)
+                {
+                    bindingContext.Result = ModelBindingResult.Success(model: null);
+                    return;
+                }
             }
 
             _logger.NoInputFormatterSelected(formatterContext);

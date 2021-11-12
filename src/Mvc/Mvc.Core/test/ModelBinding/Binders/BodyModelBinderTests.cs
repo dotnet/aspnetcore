@@ -195,6 +195,62 @@ public class BodyModelBinderTests
             Times.Once);
     }
 
+    [Fact]
+    public async Task BindModel_SetsModelIfAllowEmpty()
+    {
+        // Arrange
+        var mockInputFormatter = new Mock<IInputFormatter>();
+        mockInputFormatter.Setup(f => f.CanRead(It.IsAny<InputFormatterContext>()))
+            .Returns(false);
+        var inputFormatter = mockInputFormatter.Object;
+
+        var provider = new TestModelMetadataProvider();
+        provider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Body);
+
+        var bindingContext = GetBindingContext(
+            typeof(Person),
+            metadataProvider: provider);
+        bindingContext.BinderModelName = "custom";
+
+        var binder = CreateBinder(new[] { inputFormatter }, treatEmptyInputAsDefaultValueOption : true);
+
+        // Act
+        await binder.BindModelAsync(bindingContext);
+
+        // Assert
+        Assert.True(bindingContext.Result.IsModelSet);
+        Assert.Null(bindingContext.Result.Model);
+        Assert.True(bindingContext.ModelState.IsValid);
+    }
+
+    [Fact]
+    public async Task BindModel_FailsIfNotAllowEmpty()
+    {
+        // Arrange
+        var mockInputFormatter = new Mock<IInputFormatter>();
+        mockInputFormatter.Setup(f => f.CanRead(It.IsAny<InputFormatterContext>()))
+            .Returns(false);
+        var inputFormatter = mockInputFormatter.Object;
+
+        var provider = new TestModelMetadataProvider();
+        provider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Body);
+
+        var bindingContext = GetBindingContext(
+            typeof(Person),
+            metadataProvider: provider);
+        bindingContext.BinderModelName = "custom";
+
+        var binder = CreateBinder(new[] { inputFormatter }, treatEmptyInputAsDefaultValueOption: false);
+
+        // Act
+        await binder.BindModelAsync(bindingContext);
+
+        // Assert
+        Assert.False(bindingContext.ModelState.IsValid);
+        Assert.Single(bindingContext.ModelState[bindingContext.BinderModelName].Errors);
+        Assert.Equal("Unsupported content type ''.", bindingContext.ModelState[bindingContext.BinderModelName].Errors[0].Exception.Message);
+    }
+
     // Throwing InputFormatterException
     [Fact]
     public async Task BindModel_CustomFormatter_ThrowingInputFormatterException_AddsErrorToModelState()
