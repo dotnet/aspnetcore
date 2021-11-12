@@ -587,6 +587,12 @@ public static partial class RequestDelegateFactory
     {
         Debug.Assert(factoryContext.JsonRequestBodyParameter is not null, "factoryContext.JsonRequestBodyParameter is null for a JSON body.");
 
+        var bodyType = factoryContext.JsonRequestBodyParameter.ParameterType;
+        var parameterTypeName = TypeNameHelper.GetTypeDisplayName(factoryContext.JsonRequestBodyParameter.ParameterType, fullName: false);
+        var parameterName = factoryContext.JsonRequestBodyParameter.Name;
+
+        Debug.Assert(parameterName is not null, "CreateArgument() should throw if parameter.Name is null.");
+
         if (factoryContext.ParameterBinders.Count > 0)
         {
             // We need to generate the code for reading from the body before calling into the delegate
@@ -607,7 +613,13 @@ public static partial class RequestDelegateFactory
                     boundValues[i] = await binders[i](httpContext);
                 }
 
-                (var bodyValue, var successful) = await TryReadBodyAsync(httpContext, factoryContext);
+                var (bodyValue, successful) = await TryReadBodyAsync(
+                    httpContext,
+                    bodyType,
+                    parameterTypeName,
+                    parameterName,
+                    factoryContext.AllowEmptyRequestBody,
+                    factoryContext.ThrowOnBadRequest);
 
                 if (!successful)
                 {
@@ -625,7 +637,13 @@ public static partial class RequestDelegateFactory
 
             return async (target, httpContext) =>
             {
-                (var bodyValue, var successful) = await TryReadBodyAsync(httpContext, factoryContext);
+                var (bodyValue, successful) = await TryReadBodyAsync(
+                    httpContext,
+                    bodyType,
+                    parameterTypeName,
+                    parameterName,
+                    factoryContext.AllowEmptyRequestBody,
+                    factoryContext.ThrowOnBadRequest);
 
                 if (!successful)
                 {
@@ -638,19 +656,15 @@ public static partial class RequestDelegateFactory
 
         static async Task<(object? FormValue, bool Successful)> TryReadBodyAsync(
             HttpContext httpContext,
-            FactoryContext factoryContext)
+            Type bodyType,
+            string parameterTypeName,
+            string parameterName,
+            bool allowEmptyRequestBody,
+            bool throwOnBadRequest)
         {
-            Debug.Assert(factoryContext.JsonRequestBodyParameter is not null, "TryReadFormAsync() should not be called if there is no JSON body parameter.");
-
-            var bodyType = factoryContext.JsonRequestBodyParameter.ParameterType;
-            var parameterTypeName = TypeNameHelper.GetTypeDisplayName(factoryContext.JsonRequestBodyParameter.ParameterType, fullName: false);
-            var parameterName = factoryContext.JsonRequestBodyParameter.Name;
-
-            Debug.Assert(parameterName is not null, "CreateArgument() should throw if parameter.Name is null.");
-
             object? defaultBodyValue = null;
 
-            if (factoryContext.AllowEmptyRequestBody && bodyType.IsValueType)
+            if (allowEmptyRequestBody && bodyType.IsValueType)
             {
                 defaultBodyValue = Activator.CreateInstance(bodyType);
             }
@@ -662,7 +676,7 @@ public static partial class RequestDelegateFactory
             {
                 if (!httpContext.Request.HasJsonContentType())
                 {
-                    Log.UnexpectedJsonContentType(httpContext, httpContext.Request.ContentType, factoryContext.ThrowOnBadRequest);
+                    Log.UnexpectedJsonContentType(httpContext, httpContext.Request.ContentType, throwOnBadRequest);
                     httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
                     return (null, false);
                 }
@@ -677,7 +691,7 @@ public static partial class RequestDelegateFactory
                 }
                 catch (JsonException ex)
                 {
-                    Log.InvalidJsonRequestBody(httpContext, parameterTypeName, parameterName, ex, factoryContext.ThrowOnBadRequest);
+                    Log.InvalidJsonRequestBody(httpContext, parameterTypeName, parameterName, ex, throwOnBadRequest);
                     httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                     return (null, false);
                 }
@@ -692,6 +706,13 @@ public static partial class RequestDelegateFactory
         FactoryContext factoryContext)
     {
         Debug.Assert(factoryContext.FirstFormRequestBodyParameter is not null, "factoryContext.FirstFormRequestBodyParameter is null for a form body.");
+
+        // If there are multiple parameters associated with the form, just use the name of
+        // the first one to report the failure to bind the parameter if reading the form fails.
+        var parameterTypeName = TypeNameHelper.GetTypeDisplayName(factoryContext.FirstFormRequestBodyParameter.ParameterType, fullName: false);
+        var parameterName = factoryContext.FirstFormRequestBodyParameter.Name;
+
+        Debug.Assert(parameterName is not null, "CreateArgument() should throw if parameter.Name is null.");
 
         if (factoryContext.ParameterBinders.Count > 0)
         {
@@ -713,7 +734,11 @@ public static partial class RequestDelegateFactory
                     boundValues[i] = await binders[i](httpContext);
                 }
 
-                (var formValue, var successful) = await TryReadFormAsync(httpContext, factoryContext);
+                var (formValue, successful) = await TryReadFormAsync(
+                    httpContext,
+                    parameterTypeName,
+                    parameterName,
+                    factoryContext.ThrowOnBadRequest);
 
                 if (!successful)
                 {
@@ -731,7 +756,11 @@ public static partial class RequestDelegateFactory
 
             return async (target, httpContext) =>
             {
-                (var formValue, var successful) = await TryReadFormAsync(httpContext, factoryContext);
+                var (formValue, successful) = await TryReadFormAsync(
+                    httpContext,
+                    parameterTypeName,
+                    parameterName,
+                    factoryContext.ThrowOnBadRequest);
 
                 if (!successful)
                 {
@@ -744,17 +773,10 @@ public static partial class RequestDelegateFactory
 
         static async Task<(object? FormValue, bool Successful)> TryReadFormAsync(
             HttpContext httpContext,
-            FactoryContext factoryContext)
+            string parameterTypeName,
+            string parameterName,
+            bool throwOnBadRequest)
         {
-            Debug.Assert(factoryContext.FirstFormRequestBodyParameter is not null, "TryReadFormAsync() should not be called if there are no form parameters.");
-
-            // If there are multiple parameters associated with the form, just use the name of
-            // the first one to report the failure to bind the parameter if reading the form fails.
-            var parameterTypeName = TypeNameHelper.GetTypeDisplayName(factoryContext.FirstFormRequestBodyParameter.ParameterType, fullName: false);
-            var parameterName = factoryContext.FirstFormRequestBodyParameter.Name;
-
-            Debug.Assert(parameterName is not null, "CreateArgument() should throw if parameter.Name is null.");
-
             object? formValue = null;
             var feature = httpContext.Features.Get<IHttpRequestBodyDetectionFeature>();
 
@@ -762,7 +784,7 @@ public static partial class RequestDelegateFactory
             {
                 if (!httpContext.Request.HasFormContentType)
                 {
-                    Log.UnexpectedNonFormContentType(httpContext, httpContext.Request.ContentType, factoryContext.ThrowOnBadRequest);
+                    Log.UnexpectedNonFormContentType(httpContext, httpContext.Request.ContentType, throwOnBadRequest);
                     httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
                     return (null, false);
                 }
@@ -780,7 +802,7 @@ public static partial class RequestDelegateFactory
                 }
                 catch (InvalidDataException ex)
                 {
-                    Log.InvalidFormRequestBody(httpContext, parameterTypeName, parameterName, ex, factoryContext.ThrowOnBadRequest);
+                    Log.InvalidFormRequestBody(httpContext, parameterTypeName, parameterName, ex, throwOnBadRequest);
                     httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                     return (null, false);
                 }
