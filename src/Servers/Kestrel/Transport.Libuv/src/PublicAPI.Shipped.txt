@@ -1,4 +1,6 @@
 #nullable enable
+~static Microsoft.AspNetCore.Hosting.WebHostBuilderLibuvExtensions.UseLibuv(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder
+~static Microsoft.AspNetCore.Hosting.WebHostBuilderLibuvExtensions.UseLibuv(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder, System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransportOptions> configureOptions) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder
 Microsoft.AspNetCore.Hosting.WebHostBuilderLibuvExtensions
 Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransportOptions
 Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransportOptions.Backlog.get -> int
@@ -12,5 +14,3 @@ Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransportOptions.NoDela
 Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransportOptions.NoDelay.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransportOptions.ThreadCount.get -> int
 Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransportOptions.ThreadCount.set -> void
-~static Microsoft.AspNetCore.Hosting.WebHostBuilderLibuvExtensions.UseLibuv(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder
-~static Microsoft.AspNetCore.Hosting.WebHostBuilderLibuvExtensions.UseLibuv(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder, System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransportOptions> configureOptions) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder

@@ -1,4 +1,79 @@
 #nullable enable
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext.BindingInfo.get -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo!
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext.CreateBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata! metadata) -> Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder!
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext.Metadata.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext.MetadataProvider.get -> Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider!
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ActionContext.get -> Microsoft.AspNetCore.Mvc.ActionContext!
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ActionContext.set -> void
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.BinderModelName.get -> string?
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.BinderModelName.set -> void
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.BindingSource.get -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource?
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.BindingSource.set -> void
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.EnterNestedScope() -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.NestedScope
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.EnterNestedScope(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata! modelMetadata, string! fieldName, string! modelName, object? model) -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.NestedScope
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ExitNestedScope() -> void
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.FieldName.get -> string!
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.FieldName.set -> void
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.IsTopLevelObject.get -> bool
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.IsTopLevelObject.set -> void
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.Model.get -> object?
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.Model.set -> void
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ModelMetadata.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ModelMetadata.set -> void
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ModelName.get -> string!
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ModelName.set -> void
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ModelState.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary!
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ModelState.set -> void
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.PropertyFilter.get -> System.Func<Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!, bool>?
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.PropertyFilter.set -> void
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.Result.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.Result.set -> void
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ValidationState.get -> Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary!
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ValidationState.set -> void
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ValueProvider.get -> Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider!
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ValueProvider.set -> void
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.AdditionalValues.get -> System.Collections.Generic.IReadOnlyDictionary<object!, object!>!
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.BinderModelName.get -> string?
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.BinderType.get -> System.Type?
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.BindingSource.get -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource?
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.ConvertEmptyStringToNull.get -> bool
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.DataTypeName.get -> string?
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.Description.get -> string?
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.DisplayFormatString.get -> string?
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.DisplayName.get -> string?
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.EditFormatString.get -> string?
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.ElementMetadata.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata?
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.EnumGroupedDisplayNamesAndValues.get -> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<Microsoft.AspNetCore.Mvc.ModelBinding.EnumGroupAndName, string!>>?
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.EnumNamesAndValues.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>?
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.HasNonDefaultEditFormat.get -> bool
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.HideSurroundingHtml.get -> bool
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.HtmlEncode.get -> bool
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.IsBindingAllowed.get -> bool
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.IsBindingRequired.get -> bool
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.IsEnum.get -> bool
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.IsFlagsEnum.get -> bool
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.IsReadOnly.get -> bool
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.IsRequired.get -> bool
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.ModelBindingMessageProvider.get -> Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelBindingMessageProvider!
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.NullDisplayText.get -> string?
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.Order.get -> int
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.Placeholder.get -> string?
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.Properties.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelPropertyCollection!
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.PropertyFilterProvider.get -> Microsoft.AspNetCore.Mvc.ModelBinding.IPropertyFilterProvider?
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.PropertyGetter.get -> System.Func<object!, object?>?
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.PropertySetter.get -> System.Action<object!, object?>?
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.ShowForDisplay.get -> bool
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.ShowForEdit.get -> bool
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.SimpleDisplayProperty.get -> string?
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.TemplateHint.get -> string?
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.ValidateChildren.get -> bool
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.ValidatorMetadata.get -> System.Collections.Generic.IReadOnlyList<object!>!
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadataProvider.GetMetadataForParameter(System.Reflection.ParameterInfo! parameter) -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadataProvider.GetMetadataForProperties(System.Type! modelType) -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!>!
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadataProvider.GetMetadataForType(System.Type! modelType) -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry.Children.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry!>?
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry.GetModelStateForProperty(string! propertyName) -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry?
+abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry.IsContainerNode.get -> bool
 Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor
 Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor.ActionConstraints.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraintMetadata!>?
 Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor.ActionConstraints.set -> void
@@ -14,9 +89,9 @@ Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor.FilterDescriptors.set -> 
 Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor.Id.get -> string!
 Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor.Parameters.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Abstractions.ParameterDescriptor!>!
 Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor.Parameters.set -> void
-Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor.Properties.get -> System.Collections.Generic.IDictionary<object!, object!>!
+Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor.Properties.get -> System.Collections.Generic.IDictionary<object!, object?>!
 Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor.Properties.set -> void
-Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor.RouteValues.get -> System.Collections.Generic.IDictionary<string!, string!>!
+Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor.RouteValues.get -> System.Collections.Generic.IDictionary<string!, string?>!
 Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor.RouteValues.set -> void
 Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptorExtensions
 Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptorProviderContext
@@ -38,7 +113,7 @@ Microsoft.AspNetCore.Mvc.Abstractions.IActionInvokerProvider.OnProvidersExecuted
 Microsoft.AspNetCore.Mvc.Abstractions.IActionInvokerProvider.OnProvidersExecuting(Microsoft.AspNetCore.Mvc.Abstractions.ActionInvokerProviderContext! context) -> void
 Microsoft.AspNetCore.Mvc.Abstractions.IActionInvokerProvider.Order.get -> int
 Microsoft.AspNetCore.Mvc.Abstractions.ParameterDescriptor
-Microsoft.AspNetCore.Mvc.Abstractions.ParameterDescriptor.BindingInfo.get -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo!
+Microsoft.AspNetCore.Mvc.Abstractions.ParameterDescriptor.BindingInfo.get -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo?
 Microsoft.AspNetCore.Mvc.Abstractions.ParameterDescriptor.BindingInfo.set -> void
 Microsoft.AspNetCore.Mvc.Abstractions.ParameterDescriptor.Name.get -> string!
 Microsoft.AspNetCore.Mvc.Abstractions.ParameterDescriptor.Name.set -> void
@@ -55,7 +130,7 @@ Microsoft.AspNetCore.Mvc.ActionConstraints.ActionConstraintContext.RouteContext.
 Microsoft.AspNetCore.Mvc.ActionConstraints.ActionConstraintContext.RouteContext.set -> void
 Microsoft.AspNetCore.Mvc.ActionConstraints.ActionConstraintItem
 Microsoft.AspNetCore.Mvc.ActionConstraints.ActionConstraintItem.ActionConstraintItem(Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraintMetadata! metadata) -> void
-Microsoft.AspNetCore.Mvc.ActionConstraints.ActionConstraintItem.Constraint.get -> Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraint!
+Microsoft.AspNetCore.Mvc.ActionConstraints.ActionConstraintItem.Constraint.get -> Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraint?
 Microsoft.AspNetCore.Mvc.ActionConstraints.ActionConstraintItem.Constraint.set -> void
 Microsoft.AspNetCore.Mvc.ActionConstraints.ActionConstraintItem.IsReusable.get -> bool
 Microsoft.AspNetCore.Mvc.ActionConstraints.ActionConstraintItem.IsReusable.set -> void
@@ -67,8 +142,8 @@ Microsoft.AspNetCore.Mvc.ActionConstraints.ActionConstraintProviderContext.HttpC
 Microsoft.AspNetCore.Mvc.ActionConstraints.ActionConstraintProviderContext.Results.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ActionConstraints.ActionConstraintItem!>!
 Microsoft.AspNetCore.Mvc.ActionConstraints.ActionSelectorCandidate
 Microsoft.AspNetCore.Mvc.ActionConstraints.ActionSelectorCandidate.Action.get -> Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor!
-Microsoft.AspNetCore.Mvc.ActionConstraints.ActionSelectorCandidate.ActionSelectorCandidate(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor! action, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraint!>! constraints) -> void
-Microsoft.AspNetCore.Mvc.ActionConstraints.ActionSelectorCandidate.Constraints.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraint!>!
+Microsoft.AspNetCore.Mvc.ActionConstraints.ActionSelectorCandidate.ActionSelectorCandidate(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor! action, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraint!>? constraints) -> void
+Microsoft.AspNetCore.Mvc.ActionConstraints.ActionSelectorCandidate.Constraints.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraint!>?
 Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraint
 Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraint.Accept(Microsoft.AspNetCore.Mvc.ActionConstraints.ActionConstraintContext! context) -> bool
 Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraint.Order.get -> int
@@ -102,7 +177,7 @@ Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.HttpMethod.get -> string?
 Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.HttpMethod.set -> void
 Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.ParameterDescriptions.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription!>!
 Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.Properties.get -> System.Collections.Generic.IDictionary<object!, object!>!
-Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.RelativePath.get -> string!
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.RelativePath.get -> string?
 Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.RelativePath.set -> void
 Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.SupportedRequestFormats.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApiExplorer.ApiRequestFormat!>!
 Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.SupportedResponseTypes.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType!>!
@@ -170,7 +245,7 @@ Microsoft.AspNetCore.Mvc.Authorization.IAllowAnonymousFilter
 Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext
 Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext.ActionExecutedContext(Microsoft.AspNetCore.Mvc.ActionContext! actionContext, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata!>! filters, object! controller) -> void
 Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext
-Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext.ActionExecutingContext(Microsoft.AspNetCore.Mvc.ActionContext! actionContext, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata!>! filters, System.Collections.Generic.IDictionary<string!, object!>! actionArguments, object! controller) -> void
+Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext.ActionExecutingContext(Microsoft.AspNetCore.Mvc.ActionContext! actionContext, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata!>! filters, System.Collections.Generic.IDictionary<string!, object?>! actionArguments, object! controller) -> void
 Microsoft.AspNetCore.Mvc.Filters.ActionExecutionDelegate
 Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext
 Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext.AuthorizationFilterContext(Microsoft.AspNetCore.Mvc.ActionContext! actionContext, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata!>! filters) -> void
@@ -188,7 +263,7 @@ Microsoft.AspNetCore.Mvc.Filters.FilterDescriptor.Order.set -> void
 Microsoft.AspNetCore.Mvc.Filters.FilterDescriptor.Scope.get -> int
 Microsoft.AspNetCore.Mvc.Filters.FilterItem
 Microsoft.AspNetCore.Mvc.Filters.FilterItem.Descriptor.get -> Microsoft.AspNetCore.Mvc.Filters.FilterDescriptor!
-Microsoft.AspNetCore.Mvc.Filters.FilterItem.Filter.get -> Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata!
+Microsoft.AspNetCore.Mvc.Filters.FilterItem.Filter.get -> Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata?
 Microsoft.AspNetCore.Mvc.Filters.FilterItem.Filter.set -> void
 Microsoft.AspNetCore.Mvc.Filters.FilterItem.FilterItem(Microsoft.AspNetCore.Mvc.Filters.FilterDescriptor! descriptor) -> void
 Microsoft.AspNetCore.Mvc.Filters.FilterItem.FilterItem(Microsoft.AspNetCore.Mvc.Filters.FilterDescriptor! descriptor, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata! filter) -> void
@@ -259,9 +334,6 @@ Microsoft.AspNetCore.Mvc.Formatters.IInputFormatter.CanRead(Microsoft.AspNetCore
 Microsoft.AspNetCore.Mvc.Formatters.IInputFormatter.ReadAsync(Microsoft.AspNetCore.Mvc.Formatters.InputFormatterContext! context) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!>!
 Microsoft.AspNetCore.Mvc.Formatters.IInputFormatterExceptionPolicy
 Microsoft.AspNetCore.Mvc.Formatters.IInputFormatterExceptionPolicy.ExceptionPolicy.get -> Microsoft.AspNetCore.Mvc.Formatters.InputFormatterExceptionPolicy
-Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter
-Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter.CanWriteResult(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterCanWriteContext! context) -> bool
-Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter.WriteAsync(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Mvc.Formatters.InputFormatterContext
 Microsoft.AspNetCore.Mvc.Formatters.InputFormatterContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
 Microsoft.AspNetCore.Mvc.Formatters.InputFormatterContext.InputFormatterContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, string! modelName, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary! modelState, Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata! metadata, System.Func<System.IO.Stream!, System.Text.Encoding!, System.IO.TextReader!>! readerFactory) -> void
@@ -283,10 +355,13 @@ Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult
 Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.HasError.get -> bool
 Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.IsModelSet.get -> bool
 Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.Model.get -> object?
+Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter
+Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter.CanWriteResult(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterCanWriteContext! context) -> bool
+Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter.WriteAsync(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterCanWriteContext
 Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterCanWriteContext.OutputFormatterCanWriteContext(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> void
 Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext
-Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext.OutputFormatterWriteContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, System.Func<System.IO.Stream!, System.Text.Encoding!, System.IO.TextWriter!>! writerFactory, System.Type! objectType, object! object) -> void
+Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext.OutputFormatterWriteContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, System.Func<System.IO.Stream!, System.Text.Encoding!, System.IO.TextWriter!>! writerFactory, System.Type? objectType, object? object) -> void
 Microsoft.AspNetCore.Mvc.IActionResult
 Microsoft.AspNetCore.Mvc.IActionResult.ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Mvc.IUrlHelper
@@ -326,12 +401,12 @@ Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior.Allow = 1 -> Microsoft.A
 Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior.Default = 0 -> Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior
 Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior.Disallow = 2 -> Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior
 Microsoft.AspNetCore.Mvc.ModelBinding.EnumGroupAndName
-Microsoft.AspNetCore.Mvc.ModelBinding.EnumGroupAndName.EnumGroupAndName(string! group, System.Func<string!>! name) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.EnumGroupAndName.EnumGroupAndName(string! group, string! name) -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.EnumGroupAndName.EnumGroupAndName(string! group, System.Func<string!>! name) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.EnumGroupAndName.Group.get -> string!
 Microsoft.AspNetCore.Mvc.ModelBinding.EnumGroupAndName.Name.get -> string!
 Microsoft.AspNetCore.Mvc.ModelBinding.IBinderTypeProviderMetadata
-Microsoft.AspNetCore.Mvc.ModelBinding.IBinderTypeProviderMetadata.BinderType.get -> System.Type!
+Microsoft.AspNetCore.Mvc.ModelBinding.IBinderTypeProviderMetadata.BinderType.get -> System.Type?
 Microsoft.AspNetCore.Mvc.ModelBinding.IBindingSourceMetadata
 Microsoft.AspNetCore.Mvc.ModelBinding.IBindingSourceMetadata.BindingSource.get -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource?
 Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder
@@ -342,7 +417,7 @@ Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider
 Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider.GetMetadataForProperties(System.Type! modelType) -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!>!
 Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider.GetMetadataForType(System.Type! modelType) -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!
 Microsoft.AspNetCore.Mvc.ModelBinding.IModelNameProvider
-Microsoft.AspNetCore.Mvc.ModelBinding.IModelNameProvider.Name.get -> string!
+Microsoft.AspNetCore.Mvc.ModelBinding.IModelNameProvider.Name.get -> string?
 Microsoft.AspNetCore.Mvc.ModelBinding.IPropertyFilterProvider
 Microsoft.AspNetCore.Mvc.ModelBinding.IPropertyFilterProvider.PropertyFilter.get -> System.Func<Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!, bool>!
 Microsoft.AspNetCore.Mvc.ModelBinding.IRequestPredicateProvider
@@ -384,12 +459,12 @@ Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult.Model.get -> object?
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelError
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelError.ErrorMessage.get -> string!
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelError.Exception.get -> System.Exception?
+Microsoft.AspNetCore.Mvc.ModelBinding.ModelError.ModelError(string? errorMessage) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelError.ModelError(System.Exception! exception) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelError.ModelError(System.Exception! exception, string? errorMessage) -> void
-Microsoft.AspNetCore.Mvc.ModelBinding.ModelError.ModelError(string? errorMessage) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelErrorCollection
-Microsoft.AspNetCore.Mvc.ModelBinding.ModelErrorCollection.Add(System.Exception! exception) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelErrorCollection.Add(string! errorMessage) -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.ModelErrorCollection.Add(System.Exception! exception) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelErrorCollection.ModelErrorCollection() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.ContainerType.get -> System.Type?
@@ -415,8 +490,8 @@ Microsoft.AspNetCore.Mvc.ModelBinding.ModelPropertyCollection
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelPropertyCollection.ModelPropertyCollection(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!>! properties) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelPropertyCollection.this[string! propertyName].get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata?
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary
-Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.AddModelError(string! key, System.Exception! exception, Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata! metadata) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.AddModelError(string! key, string! errorMessage) -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.AddModelError(string! key, System.Exception! exception, Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata! metadata) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.Clear() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.ClearValidationState(string! key) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.ContainsKey(string! key) -> bool
@@ -450,17 +525,18 @@ Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.MaxAllowedErrors.get 
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.MaxAllowedErrors.set -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.Merge(Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary! dictionary) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.ModelStateDictionary() -> void
-Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.ModelStateDictionary(Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary! dictionary) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.ModelStateDictionary(int maxAllowedErrors) -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.ModelStateDictionary(Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary! dictionary) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.PrefixEnumerable
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.PrefixEnumerable.GetEnumerator() -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.Enumerator
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.PrefixEnumerable.PrefixEnumerable(Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary! dictionary, string! prefix) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.Remove(string! key) -> bool
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.Root.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry!
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.SetModelValue(string! key, Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult valueProviderResult) -> void
-Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.SetModelValue(string! key, object? rawValue, string! attemptedValue) -> void
-Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.TryAddModelError(string! key, System.Exception! exception, Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata! metadata) -> bool
+Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.SetModelValue(string! key, object? rawValue, string? attemptedValue) -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.this[string! key].get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry?
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.TryAddModelError(string! key, string! errorMessage) -> bool
+Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.TryAddModelError(string! key, System.Exception! exception, Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata! metadata) -> bool
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.TryAddModelException(string! key, System.Exception! exception) -> bool
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.TryGetValue(string! key, out Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry? value) -> bool
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.ValidationState.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState
@@ -474,7 +550,6 @@ Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.ValueEnumerator.MoveN
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.ValueEnumerator.Reset() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.ValueEnumerator.ValueEnumerator(Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary! dictionary, string! prefix) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.Values.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.ValueEnumerable
-Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.this[string! key].get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry!
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry.AttemptedValue.get -> string?
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry.AttemptedValue.set -> void
@@ -496,12 +571,12 @@ Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientModelValidationContext.At
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientModelValidationContext.ClientModelValidationContext(Microsoft.AspNetCore.Mvc.ActionContext! actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata! metadata, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! metadataProvider, System.Collections.Generic.IDictionary<string!, string!>! attributes) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientValidatorItem
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientValidatorItem.ClientValidatorItem() -> void
-Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientValidatorItem.ClientValidatorItem(object! validatorMetadata) -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientValidatorItem.ClientValidatorItem(object? validatorMetadata) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientValidatorItem.IsReusable.get -> bool
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientValidatorItem.IsReusable.set -> void
-Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientValidatorItem.Validator.get -> Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IClientModelValidator!
+Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientValidatorItem.Validator.get -> Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IClientModelValidator?
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientValidatorItem.Validator.set -> void
-Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientValidatorItem.ValidatorMetadata.get -> object!
+Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientValidatorItem.ValidatorMetadata.get -> object?
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientValidatorProviderContext
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientValidatorProviderContext.ClientValidatorProviderContext(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata! modelMetadata, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientValidatorItem!>! items) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientValidatorProviderContext.ModelMetadata.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!
@@ -520,9 +595,9 @@ Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IPropertyValidationFilter.Shoul
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IValidationStrategy
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IValidationStrategy.GetChildren(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata! metadata, string! key, object! model) -> System.Collections.Generic.IEnumerator<Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationEntry>!
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationContext
-Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationContext.Container.get -> object!
-Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationContext.Model.get -> object!
-Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationContext.ModelValidationContext(Microsoft.AspNetCore.Mvc.ActionContext! actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata! modelMetadata, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! metadataProvider, object! container, object! model) -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationContext.Container.get -> object?
+Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationContext.Model.get -> object?
+Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationContext.ModelValidationContext(Microsoft.AspNetCore.Mvc.ActionContext! actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata! modelMetadata, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! metadataProvider, object? container, object? model) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationContextBase
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationContextBase.ActionContext.get -> Microsoft.AspNetCore.Mvc.ActionContext!
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationContextBase.MetadataProvider.get -> Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider!
@@ -531,7 +606,7 @@ Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationContextBase.Mode
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationResult
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationResult.MemberName.get -> string!
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationResult.Message.get -> string!
-Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationResult.ModelValidationResult(string! memberName, string! message) -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationResult.ModelValidationResult(string? memberName, string? message) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidatorProviderContext
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidatorProviderContext.ModelMetadata.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidatorProviderContext.ModelMetadata.set -> void
@@ -542,11 +617,11 @@ Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationEntry
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationEntry.Key.get -> string!
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationEntry.Metadata.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationEntry.Model.get -> object?
-Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationEntry.ValidationEntry(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata! metadata, string! key, System.Func<object!>! modelAccessor) -> void
-Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationEntry.ValidationEntry(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata! metadata, string! key, object! model) -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationEntry.ValidationEntry(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata! metadata, string! key, object? model) -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationEntry.ValidationEntry(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata! metadata, string! key, System.Func<object?>! modelAccessor) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary
-Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary.Add(System.Collections.Generic.KeyValuePair<object!, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry!> item) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary.Add(object! key, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry! value) -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary.Add(System.Collections.Generic.KeyValuePair<object!, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry!> item) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary.Clear() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary.Contains(System.Collections.Generic.KeyValuePair<object!, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry!> item) -> bool
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary.ContainsKey(object! key) -> bool
@@ -555,13 +630,13 @@ Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary.Count
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary.GetEnumerator() -> System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<object!, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry!>>!
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary.IsReadOnly.get -> bool
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary.Keys.get -> System.Collections.Generic.ICollection<object!>!
-Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary.Remove(System.Collections.Generic.KeyValuePair<object!, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry!> item) -> bool
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary.Remove(object! key) -> bool
+Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary.Remove(System.Collections.Generic.KeyValuePair<object!, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry!> item) -> bool
+Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary.this[object! key].get -> Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry?
+Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary.this[object! key].set -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary.TryGetValue(object! key, out Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry! value) -> bool
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary.ValidationStateDictionary() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary.Values.get -> System.Collections.Generic.ICollection<Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry!>!
-Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary.this[object! key].get -> Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry?
-Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary.this[object! key].set -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry.Key.get -> string!
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry.Key.set -> void
@@ -575,7 +650,7 @@ Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateEntry.Validation
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidatorItem
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidatorItem.IsReusable.get -> bool
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidatorItem.IsReusable.set -> void
-Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidatorItem.Validator.get -> Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IModelValidator!
+Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidatorItem.Validator.get -> Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IModelValidator?
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidatorItem.Validator.set -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidatorItem.ValidatorItem() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidatorItem.ValidatorItem(object! validatorMetadata) -> void
@@ -594,11 +669,11 @@ Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult.FirstValue.get -> stri
 Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult.GetEnumerator() -> System.Collections.Generic.IEnumerator<string!>!
 Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult.Length.get -> int
 Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult.ValueProviderResult(Microsoft.Extensions.Primitives.StringValues values) -> void
-Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult.ValueProviderResult(Microsoft.Extensions.Primitives.StringValues values, System.Globalization.CultureInfo! culture) -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult.ValueProviderResult(Microsoft.Extensions.Primitives.StringValues values, System.Globalization.CultureInfo? culture) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult.Values.get -> Microsoft.Extensions.Primitives.StringValues
 Microsoft.AspNetCore.Mvc.Routing.AttributeRouteInfo
 Microsoft.AspNetCore.Mvc.Routing.AttributeRouteInfo.AttributeRouteInfo() -> void
-Microsoft.AspNetCore.Mvc.Routing.AttributeRouteInfo.Name.get -> string!
+Microsoft.AspNetCore.Mvc.Routing.AttributeRouteInfo.Name.get -> string?
 Microsoft.AspNetCore.Mvc.Routing.AttributeRouteInfo.Name.set -> void
 Microsoft.AspNetCore.Mvc.Routing.AttributeRouteInfo.Order.get -> int
 Microsoft.AspNetCore.Mvc.Routing.AttributeRouteInfo.Order.set -> void
@@ -634,81 +709,6 @@ Microsoft.AspNetCore.Mvc.Routing.UrlRouteContext.RouteName.set -> void
 Microsoft.AspNetCore.Mvc.Routing.UrlRouteContext.UrlRouteContext() -> void
 Microsoft.AspNetCore.Mvc.Routing.UrlRouteContext.Values.get -> object?
 Microsoft.AspNetCore.Mvc.Routing.UrlRouteContext.Values.set -> void
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext.BindingInfo.get -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext.CreateBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata! metadata) -> Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext.Metadata.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext.MetadataProvider.get -> Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ActionContext.get -> Microsoft.AspNetCore.Mvc.ActionContext!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ActionContext.set -> void
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.BinderModelName.get -> string!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.BinderModelName.set -> void
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.BindingSource.get -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.BindingSource.set -> void
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.EnterNestedScope() -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.NestedScope
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.EnterNestedScope(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata! modelMetadata, string! fieldName, string! modelName, object! model) -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.NestedScope
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ExitNestedScope() -> void
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.FieldName.get -> string!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.FieldName.set -> void
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.IsTopLevelObject.get -> bool
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.IsTopLevelObject.set -> void
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.Model.get -> object!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.Model.set -> void
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ModelMetadata.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ModelMetadata.set -> void
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ModelName.get -> string!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ModelName.set -> void
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ModelState.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ModelState.set -> void
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.PropertyFilter.get -> System.Func<Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!, bool>!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.PropertyFilter.set -> void
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.Result.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.Result.set -> void
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ValidationState.get -> Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ValidationState.set -> void
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ValueProvider.get -> Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ValueProvider.set -> void
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.AdditionalValues.get -> System.Collections.Generic.IReadOnlyDictionary<object!, object!>!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.BinderModelName.get -> string!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.BinderType.get -> System.Type!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.BindingSource.get -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.ConvertEmptyStringToNull.get -> bool
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.DataTypeName.get -> string!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.Description.get -> string!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.DisplayFormatString.get -> string!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.DisplayName.get -> string!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.EditFormatString.get -> string!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.ElementMetadata.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata?
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.EnumGroupedDisplayNamesAndValues.get -> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<Microsoft.AspNetCore.Mvc.ModelBinding.EnumGroupAndName, string!>>!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.EnumNamesAndValues.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.HasNonDefaultEditFormat.get -> bool
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.HideSurroundingHtml.get -> bool
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.HtmlEncode.get -> bool
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.IsBindingAllowed.get -> bool
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.IsBindingRequired.get -> bool
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.IsEnum.get -> bool
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.IsFlagsEnum.get -> bool
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.IsReadOnly.get -> bool
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.IsRequired.get -> bool
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.ModelBindingMessageProvider.get -> Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelBindingMessageProvider!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.NullDisplayText.get -> string!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.Order.get -> int
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.Placeholder.get -> string!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.Properties.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelPropertyCollection!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.PropertyFilterProvider.get -> Microsoft.AspNetCore.Mvc.ModelBinding.IPropertyFilterProvider!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.PropertyGetter.get -> System.Func<object!, object!>!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.PropertySetter.get -> System.Action<object!, object!>!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.ShowForDisplay.get -> bool
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.ShowForEdit.get -> bool
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.SimpleDisplayProperty.get -> string!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.TemplateHint.get -> string!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.ValidateChildren.get -> bool
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.ValidatorMetadata.get -> System.Collections.Generic.IReadOnlyList<object!>!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadataProvider.GetMetadataForParameter(System.Reflection.ParameterInfo! parameter) -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadataProvider.GetMetadataForProperties(System.Type! modelType) -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!>!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadataProvider.GetMetadataForType(System.Type! modelType) -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry.Children.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry!>?
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry.GetModelStateForProperty(string! propertyName) -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry?
-abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry.IsContainerNode.get -> bool
 override Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource.Equals(object? obj) -> bool
 override Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource.GetHashCode() -> int
 override Microsoft.AspNetCore.Mvc.ModelBinding.CompositeBindingSource.CanAcceptDataFrom(Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource! bindingSource) -> bool
@@ -722,14 +722,14 @@ override Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.GetHashCode() -> in
 override Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult.Equals(object? obj) -> bool
 override Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult.GetHashCode() -> int
 override Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult.ToString() -> string!
-static Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptorExtensions.GetProperty<T>(this Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor! actionDescriptor) -> T
+static Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptorExtensions.GetProperty<T>(this Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor! actionDescriptor) -> T?
 static Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptorExtensions.SetProperty<T>(this Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor! actionDescriptor, T value) -> void
 static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.Failure() -> Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!
 static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.FailureAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!>!
 static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.NoValue() -> Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!
 static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.NoValueAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!>!
-static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.Success(object! model) -> Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!
-static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.SuccessAsync(object! model) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!>!
+static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.Success(object? model) -> Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!
+static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.SuccessAsync(object? model) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!>!
 static Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo.GetBindingInfo(System.Collections.Generic.IEnumerable<object!>! attributes) -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo?
 static Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo.GetBindingInfo(System.Collections.Generic.IEnumerable<object!>! attributes, Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata! modelMetadata) -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo?
 static Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource.operator !=(Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource? s1, Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource? s2) -> bool
@@ -742,13 +742,13 @@ static Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity.ForP
 static Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity.ForProperty(System.Type! modelType, string! name, System.Type! containerType) -> Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity
 static Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity.ForType(System.Type! modelType) -> Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity
 static Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult.Failed() -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult
-static Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult.Success(object? model) -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult
 static Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult.operator !=(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult x, Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult y) -> bool
 static Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult.operator ==(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult x, Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult y) -> bool
+static Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult.Success(object? model) -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult
 static Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.StartsWithPrefix(string! prefix, string! key) -> bool
-static Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult.None -> Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult
 static Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult.explicit operator string!(Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult result) -> string!
 static Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult.explicit operator string![]!(Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult result) -> string![]!
+static Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult.None -> Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult
 static Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult.operator !=(Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult x, Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult y) -> bool
 static Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult.operator ==(Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult x, Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult y) -> bool
 static readonly Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource.Body -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource!
@@ -774,9 +774,9 @@ virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext.ExceptionDispatch
 virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext.ExceptionDispatchInfo.set -> void
 virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext.ExceptionHandled.get -> bool
 virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext.ExceptionHandled.set -> void
-virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext.Result.get -> Microsoft.AspNetCore.Mvc.IActionResult!
+virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext.Result.get -> Microsoft.AspNetCore.Mvc.IActionResult?
 virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext.Result.set -> void
-virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext.ActionArguments.get -> System.Collections.Generic.IDictionary<string!, object!>!
+virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext.ActionArguments.get -> System.Collections.Generic.IDictionary<string!, object?>!
 virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext.Controller.get -> object!
 virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext.Result.get -> Microsoft.AspNetCore.Mvc.IActionResult?
 virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext.Result.set -> void
@@ -847,9 +847,9 @@ virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext.Service
 virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
 virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ModelType.get -> System.Type!
 virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.BoundConstructor.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata?
-virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.BoundConstructorInvoker.get -> System.Func<object![]!, object!>?
+virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.BoundConstructorInvoker.get -> System.Func<object?[]!, object!>?
 virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.BoundConstructorParameters.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!>?
-virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.ContainerMetadata.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!
+virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.ContainerMetadata.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata?
 virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.GetMetadataForProperties(System.Type! modelType) -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!>!
 virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.GetMetadataForType(System.Type! modelType) -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!
 virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.HasValidators.get -> bool?

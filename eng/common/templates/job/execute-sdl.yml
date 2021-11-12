@@ -62,7 +62,7 @@ jobs:
   pool:
     # To extract archives (.tar.gz, .zip), we need access to "tar", added in Windows 10/2019.
     ${{ if eq(parameters.extractArchiveArtifacts, 'false') }}:
-      name: Hosted VS2017
+      vmImage: windows-2019
     ${{ if ne(parameters.extractArchiveArtifacts, 'false') }}:
       vmImage: windows-2019
   steps:
