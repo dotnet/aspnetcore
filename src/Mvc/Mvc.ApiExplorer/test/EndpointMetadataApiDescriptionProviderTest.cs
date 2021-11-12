@@ -1002,32 +1002,37 @@ public class EndpointMetadataApiDescriptionProviderTest
     [Fact]
     public void AddsMultipartFormDataResponseFormatWhenFormFileCollectionSpecified()
     {
-        // Arrange
-        var services = new ServiceCollection();
-        var serviceProvider = services.BuildServiceProvider();
-        var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
-        builder.MapPost("/file/upload", (IFormFileCollection files) => Results.NoContent());
-        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+        AssertFormFileCollection((IFormFileCollection files) => Results.NoContent(), "files");
+        AssertFormFileCollection(([FromForm] IFormFileCollection uploads) => Results.NoContent(), "uploads");
 
-        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
-        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+        static void AssertFormFileCollection(Delegate handler, string expectedName)
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var serviceProvider = services.BuildServiceProvider();
+            var builder = new TestEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+            builder.MapPost("/file/upload", handler);
+            var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
 
-        // Act
-        provider.OnProvidersExecuting(context);
-        provider.OnProvidersExecuted(context);
+            var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+            var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
 
-        // Assert
-        var parameterDescriptions = context.Results.SelectMany(r => r.ParameterDescriptions);
-        var bodyParameterDescription = parameterDescriptions.Single();
-        Assert.Equal(typeof(IFormFileCollection), bodyParameterDescription.Type);
-        Assert.Equal(typeof(IFormFileCollection).Name, bodyParameterDescription.Name);
-        Assert.True(bodyParameterDescription.IsRequired);
+            // Act
+            provider.OnProvidersExecuting(context);
+            provider.OnProvidersExecuted(context);
 
-        // Assert
-        var requestFormats = context.Results.SelectMany(r => r.SupportedRequestFormats);
-        var defaultRequestFormat = requestFormats.Single();
-        Assert.Equal("multipart/form-data", defaultRequestFormat.MediaType);
-        Assert.Null(defaultRequestFormat.Formatter);
+            // Assert
+            var parameterDescriptions = context.Results.SelectMany(r => r.ParameterDescriptions);
+            var bodyParameterDescription = parameterDescriptions.Single();
+            Assert.Equal(typeof(IFormFileCollection), bodyParameterDescription.Type);
+            Assert.Equal(expectedName, bodyParameterDescription.Name);
+            Assert.True(bodyParameterDescription.IsRequired);
+
+            var requestFormats = context.Results.SelectMany(r => r.SupportedRequestFormats);
+            var defaultRequestFormat = requestFormats.Single();
+            Assert.Equal("multipart/form-data", defaultRequestFormat.MediaType);
+            Assert.Null(defaultRequestFormat.Formatter);
+        }
     }
 
 #nullable restore

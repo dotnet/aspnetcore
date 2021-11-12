@@ -251,8 +251,6 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
         }
         else if (attributes.OfType<IFromFormMetadata>().FirstOrDefault() is { } fromFormAttribute)
         {
-            // TODO Should this be Form or FormFile if parameter.ParameterType is IFormFileCollection?
-            // Currently it's Services (see below) - which is the more appropriate?
             return (BindingSource.FormFile, fromFormAttribute.Name ?? parameter.Name ?? string.Empty, false, parameter.ParameterType);
         }
         else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)) ||
@@ -261,7 +259,6 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
                  parameter.ParameterType == typeof(HttpResponse) ||
                  parameter.ParameterType == typeof(ClaimsPrincipal) ||
                  parameter.ParameterType == typeof(CancellationToken) ||
-                 parameter.ParameterType == typeof(IFormFileCollection) ||
                  ParameterBindingMethodCache.HasBindAsyncMethod(parameter) ||
                  _serviceProviderIsService?.IsService(parameter.ParameterType) == true)
         {
@@ -282,7 +279,7 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
                 return (BindingSource.Query, parameter.Name ?? string.Empty, false, displayType);
             }
         }
-        else if (parameter.ParameterType == typeof(IFormFile))
+        else if (parameter.ParameterType == typeof(IFormFile) || parameter.ParameterType == typeof(IFormFileCollection))
         {
             return (BindingSource.FormFile, parameter.Name ?? string.Empty, false, parameter.ParameterType);
         }
