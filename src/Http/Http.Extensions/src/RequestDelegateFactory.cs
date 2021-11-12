@@ -261,6 +261,11 @@ public static partial class RequestDelegateFactory
 
                 return BindParameterFromFormFiles(parameter, factoryContext);
             }
+            else if (parameter.ParameterType != typeof(IFormFile))
+            {
+                throw new NotSupportedException(
+                    $"{nameof(IFromFormMetadata)} is only supported for parameters of type {nameof(IFormFileCollection)} and {nameof(IFormFile)}.");
+            }
 
             return BindParameterFromFormFile(parameter, formAttribute.Name ?? parameter.Name, factoryContext, RequestDelegateFactoryConstants.FormFileAttribute);
         }

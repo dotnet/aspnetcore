@@ -3317,6 +3317,34 @@ public class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
+    public void CreateThrowsNotSupportedExceptionIfFromFormParameterIsNotIFormFileCollectionOrIFormFile()
+    {
+        void TestActionBool([FromForm] bool value) { };
+        void TestActionInt([FromForm] int value) { };
+        void TestActionObject([FromForm] object value) { };
+        void TestActionString([FromForm] string value) { };
+        void TestActionCancellationToken([FromForm] CancellationToken value) { };
+        void TestActionClaimsPrincipal([FromForm] ClaimsPrincipal value) { };
+        void TestActionHttpContext([FromForm] HttpContext value) { };
+        void TestActionIFormCollection([FromForm] IFormCollection value) { };
+
+        AssertNotSupportedExceptionThrown(TestActionBool);
+        AssertNotSupportedExceptionThrown(TestActionInt);
+        AssertNotSupportedExceptionThrown(TestActionObject);
+        AssertNotSupportedExceptionThrown(TestActionString);
+        AssertNotSupportedExceptionThrown(TestActionCancellationToken);
+        AssertNotSupportedExceptionThrown(TestActionClaimsPrincipal);
+        AssertNotSupportedExceptionThrown(TestActionHttpContext);
+        AssertNotSupportedExceptionThrown(TestActionIFormCollection);
+
+        static void AssertNotSupportedExceptionThrown(Delegate handler)
+        {
+            var nse = Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(handler));
+            Assert.Equal("IFromFormMetadata is only supported for parameters of type IFormFileCollection and IFormFile.", nse.Message);
+        }
+    }
+
+    [Fact]
     public async Task RequestDelegatePopulatesFromIFormFileParameter()
     {
         IFormFile? fileArgument = null;
