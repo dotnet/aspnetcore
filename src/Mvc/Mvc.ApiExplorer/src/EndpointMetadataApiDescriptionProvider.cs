@@ -118,7 +118,6 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
             // exists for something derived from the body's content, such as a form file.
             var alreadyHasAnyBodyParameter = apiDescription.ParameterDescriptions.Any(x =>
                 x.Source == BindingSource.Body ||
-                x.Source == BindingSource.Form ||
                 x.Source == BindingSource.FormFile);
 
             if (!alreadyHasAnyBodyParameter)
